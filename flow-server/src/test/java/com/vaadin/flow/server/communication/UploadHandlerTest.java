@@ -42,7 +42,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
@@ -83,7 +82,9 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -137,19 +138,17 @@ class UploadHandlerTest {
             }
         };
         streamResourceRegistry = new StreamResourceRegistry(session);
-        request = Mockito.mock(VaadinServletRequest.class);
-        ServletContext servletContext = Mockito.mock(ServletContext.class);
-        Mockito.when(servletContext.getMimeType(Mockito.anyString()))
-                .thenReturn(null);
-        Mockito.when(request.getServletContext()).thenReturn(servletContext);
-        stateNode = Mockito.mock(StateNode.class);
+        request = mock(VaadinServletRequest.class);
+        ServletContext servletContext = mock(ServletContext.class);
+        when(servletContext.getMimeType(anyString())).thenReturn(null);
+        when(request.getServletContext()).thenReturn(servletContext);
+        stateNode = mock(StateNode.class);
         when(stateNode.isAttached()).thenReturn(true);
-        element = Mockito.mock(Element.class);
+        element = mock(Element.class);
         component = new TestComponent();
-        Mockito.when(element.getNode()).thenReturn(stateNode);
-        Mockito.when(element.getComponent())
-                .thenReturn(Optional.of(this.component));
-        response = Mockito.mock(VaadinResponse.class);
+        when(element.getNode()).thenReturn(stateNode);
+        when(element.getComponent()).thenReturn(Optional.of(this.component));
+        response = mock(VaadinResponse.class);
     }
 
     @AfterEach
@@ -166,9 +165,9 @@ class UploadHandlerTest {
 
         handler.handleRequest(request, response, session, element);
 
-        Mockito.verify(response).setContentType(
+        verify(response).setContentType(
                 ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
-        Mockito.verify(response, Mockito.times(1)).setStatus(200);
+        verify(response, times(1)).setStatus(200);
     }
 
     @Test
@@ -179,7 +178,7 @@ class UploadHandlerTest {
             capturedFilename[0] = event.getFileName();
         };
 
-        Mockito.when(request.getHeader("X-Filename")).thenReturn("test.txt");
+        when(request.getHeader("X-Filename")).thenReturn("test.txt");
 
         handler.handleRequest(request, response, session, element);
 
@@ -195,7 +194,7 @@ class UploadHandlerTest {
         };
 
         // encodeURIComponent("my file åäö.txt") in JavaScript
-        Mockito.when(request.getHeader("X-Filename"))
+        when(request.getHeader("X-Filename"))
                 .thenReturn("my%20file%20%C3%A5%C3%A4%C3%B6.txt");
 
         handler.handleRequest(request, response, session, element);
@@ -212,9 +211,8 @@ class UploadHandlerTest {
             capturedContentType[0] = event.getContentType();
         };
 
-        Mockito.when(request.getHeader("X-Filename")).thenReturn("test.txt");
-        Mockito.when(request.getHeader("Content-Type"))
-                .thenReturn("text/plain");
+        when(request.getHeader("X-Filename")).thenReturn("test.txt");
+        when(request.getHeader("Content-Type")).thenReturn("text/plain");
 
         handler.handleRequest(request, response, session, element);
 
@@ -230,8 +228,8 @@ class UploadHandlerTest {
             capturedContentType[0] = event.getContentType();
         };
 
-        Mockito.when(request.getHeader("X-Filename")).thenReturn("test.txt");
-        Mockito.when(request.getHeader("Content-Type")).thenReturn(null);
+        when(request.getHeader("X-Filename")).thenReturn("test.txt");
+        when(request.getHeader("Content-Type")).thenReturn(null);
 
         handler.handleRequest(request, response, session, element);
 
@@ -247,7 +245,7 @@ class UploadHandlerTest {
 
         handler.handleRequest(request, response, session, element);
 
-        Mockito.verify(response, Mockito.times(1)).setStatus(500);
+        verify(response, times(1)).setStatus(500);
     }
 
     @Test
@@ -413,8 +411,7 @@ class UploadHandlerTest {
         AbstractStreamResource res = streamRegistration.getResource();
 
         mockRequest(res, MULTIPART_STREAM_CONTENT);
-        Mockito.when(request.getContentType())
-                .thenReturn(MULTIPART_CONTENT_TYPE);
+        when(request.getContentType()).thenReturn(MULTIPART_CONTENT_TYPE);
 
         handler.handleRequest(session, request, response);
 
@@ -439,7 +436,7 @@ class UploadHandlerTest {
         parts.add(createPart(createInputStream("two"), MULTIPART_CONTENT_TYPE,
                 "two.txt", 3));
 
-        Mockito.when(request.getParts()).thenReturn(parts);
+        when(request.getParts()).thenReturn(parts);
 
         List<String> outList = new ArrayList<>(2);
         List<String> fileNames = new ArrayList<>(2);
@@ -462,8 +459,7 @@ class UploadHandlerTest {
         AbstractStreamResource res = streamRegistration.getResource();
 
         mockRequest(res, testContent);
-        Mockito.when(request.getContentType())
-                .thenReturn(MULTIPART_CONTENT_TYPE);
+        when(request.getContentType()).thenReturn(MULTIPART_CONTENT_TYPE);
 
         handler.handleRequest(session, request, response);
 
@@ -489,7 +485,7 @@ class UploadHandlerTest {
         parts.add(createPart(createInputStream("two"), MULTIPART_CONTENT_TYPE,
                 "two.txt", 3));
 
-        Mockito.when(request.getParts()).thenReturn(parts);
+        when(request.getParts()).thenReturn(parts);
 
         AtomicBoolean handled = new AtomicBoolean(false);
 
@@ -511,8 +507,7 @@ class UploadHandlerTest {
         AbstractStreamResource res = streamRegistration.getResource();
 
         mockRequest(res, testContent);
-        Mockito.when(request.getContentType())
-                .thenReturn(MULTIPART_CONTENT_TYPE);
+        when(request.getContentType()).thenReturn(MULTIPART_CONTENT_TYPE);
 
         handler.handleRequest(session, request, response);
 
@@ -543,8 +538,7 @@ class UploadHandlerTest {
         AbstractStreamResource res = streamRegistration.getResource();
 
         mockRequest(res, MULTIPART_STREAM_CONTENT);
-        Mockito.when(request.getContentType())
-                .thenReturn(MULTIPART_CONTENT_TYPE);
+        when(request.getContentType()).thenReturn(MULTIPART_CONTENT_TYPE);
 
         handler.handleRequest(session, request, response);
 
@@ -563,7 +557,7 @@ class UploadHandlerTest {
         parts.add(createPart(createInputStream("two"), MULTIPART_CONTENT_TYPE,
                 "two.txt", 3));
 
-        Mockito.when(request.getParts()).thenReturn(parts);
+        when(request.getParts()).thenReturn(parts);
 
         AtomicBoolean handled = new AtomicBoolean(false);
 
@@ -584,8 +578,7 @@ class UploadHandlerTest {
         AbstractStreamResource res = streamRegistration.getResource();
 
         mockRequest(res, testContent);
-        Mockito.when(request.getContentType())
-                .thenReturn(MULTIPART_CONTENT_TYPE);
+        when(request.getContentType()).thenReturn(MULTIPART_CONTENT_TYPE);
 
         handler.handleRequest(session, request, response);
 
@@ -616,8 +609,7 @@ class UploadHandlerTest {
         AbstractStreamResource res = streamRegistration.getResource();
 
         mockRequest(res, MULTIPART_STREAM_CONTENT);
-        Mockito.when(request.getContentType())
-                .thenReturn(MULTIPART_CONTENT_TYPE);
+        when(request.getContentType()).thenReturn(MULTIPART_CONTENT_TYPE);
 
         handler.handleRequest(session, request, response);
 
@@ -686,8 +678,7 @@ class UploadHandlerTest {
         AbstractStreamResource res = streamRegistration.getResource();
 
         mockRequest(res, MULTIPART_STREAM_CONTENT);
-        Mockito.when(request.getContentType())
-                .thenReturn(MULTIPART_CONTENT_TYPE);
+        when(request.getContentType()).thenReturn(MULTIPART_CONTENT_TYPE);
 
         handler.handleRequest(request, response, session, element);
         assertEquals(2, startFired.get(), "Start event was not fired");
@@ -703,7 +694,7 @@ class UploadHandlerTest {
         parts.add(createPart(createInputStream("two"), MULTIPART_CONTENT_TYPE,
                 "two.txt", 3));
 
-        Mockito.when(request.getParts()).thenReturn(parts);
+        when(request.getParts()).thenReturn(parts);
 
         AtomicInteger startFired = new AtomicInteger(0);
         AtomicInteger completeFired = new AtomicInteger(0);
@@ -721,8 +712,7 @@ class UploadHandlerTest {
         AbstractStreamResource res = streamRegistration.getResource();
 
         mockRequest(res, MULTIPART_STREAM_CONTENT);
-        Mockito.when(request.getContentType())
-                .thenReturn(MULTIPART_CONTENT_TYPE);
+        when(request.getContentType()).thenReturn(MULTIPART_CONTENT_TYPE);
 
         handler.handleRequest(request, response, session, element);
         assertEquals(2, startFired.get(), "Start event was not fired");
@@ -759,14 +749,13 @@ class UploadHandlerTest {
             }
         };
 
-        Mockito.when(request.getHeader("X-Filename")).thenReturn("test.zip");
-        Mockito.when(response.getWriter())
-                .thenReturn(Mockito.mock(java.io.PrintWriter.class));
+        when(request.getHeader("X-Filename")).thenReturn("test.zip");
+        when(response.getWriter()).thenReturn(mock(java.io.PrintWriter.class));
 
         handler.handleRequest(request, response, session, element);
 
-        Mockito.verify(response).setStatus(422);
-        Mockito.verify(response).setContentType("application/json");
+        verify(response).setStatus(422);
+        verify(response).setContentType("application/json");
     }
 
     @Test
@@ -775,11 +764,11 @@ class UploadHandlerTest {
             // Accept the file
         };
 
-        Mockito.when(request.getHeader("X-Filename")).thenReturn("test.png");
+        when(request.getHeader("X-Filename")).thenReturn("test.png");
 
         handler.handleRequest(request, response, session, element);
 
-        Mockito.verify(response).setStatus(200);
+        verify(response).setStatus(200);
     }
 
     @Test
@@ -794,14 +783,13 @@ class UploadHandlerTest {
             }
         };
 
-        Mockito.when(request.getHeader("X-Filename")).thenReturn("test.zip");
-        Mockito.when(response.getWriter())
-                .thenReturn(Mockito.mock(java.io.PrintWriter.class));
+        when(request.getHeader("X-Filename")).thenReturn("test.zip");
+        when(response.getWriter()).thenReturn(mock(java.io.PrintWriter.class));
 
         handler.handleRequest(request, response, session, element);
 
         assertTrue(rejected.get(), "File should have been rejected");
-        Mockito.verify(response).setStatus(422);
+        verify(response).setStatus(422);
     }
 
     @Test
@@ -815,7 +803,7 @@ class UploadHandlerTest {
         parts.add(createPart(createInputStream("three"), MULTIPART_CONTENT_TYPE,
                 "file3.png", 5));
 
-        Mockito.when(request.getParts()).thenReturn(parts);
+        when(request.getParts()).thenReturn(parts);
 
         List<String> processedFiles = new ArrayList<>();
 
@@ -832,10 +820,8 @@ class UploadHandlerTest {
         AbstractStreamResource res = streamRegistration.getResource();
 
         mockRequest(res, "testContent");
-        Mockito.when(request.getContentType())
-                .thenReturn(MULTIPART_CONTENT_TYPE);
-        Mockito.when(response.getWriter())
-                .thenReturn(Mockito.mock(java.io.PrintWriter.class));
+        when(request.getContentType()).thenReturn(MULTIPART_CONTENT_TYPE);
+        when(response.getWriter()).thenReturn(mock(java.io.PrintWriter.class));
 
         handler.handleRequest(session, request, response);
 
@@ -848,8 +834,8 @@ class UploadHandlerTest {
                 "file3.png should be in processed files");
 
         // Should return 207 Multi-Status for mixed results
-        Mockito.verify(response).setStatus(207);
-        Mockito.verify(response).setContentType("application/json");
+        verify(response).setStatus(207);
+        verify(response).setContentType("application/json");
     }
 
     @Test
@@ -897,7 +883,7 @@ class UploadHandlerTest {
         parts.add(createPart(createInputStream("two"), MULTIPART_CONTENT_TYPE,
                 "file2.exe", 3));
 
-        Mockito.when(request.getParts()).thenReturn(parts);
+        when(request.getParts()).thenReturn(parts);
 
         UploadHandler uploadHandler = (event) -> {
             event.reject("File type not allowed");
@@ -908,16 +894,14 @@ class UploadHandlerTest {
         AbstractStreamResource res = streamRegistration.getResource();
 
         mockRequest(res, "testContent");
-        Mockito.when(request.getContentType())
-                .thenReturn(MULTIPART_CONTENT_TYPE);
-        Mockito.when(response.getWriter())
-                .thenReturn(Mockito.mock(java.io.PrintWriter.class));
+        when(request.getContentType()).thenReturn(MULTIPART_CONTENT_TYPE);
+        when(response.getWriter()).thenReturn(mock(java.io.PrintWriter.class));
 
         handler.handleRequest(session, request, response);
 
         // Should return 422 for all rejected
-        Mockito.verify(response).setStatus(422);
-        Mockito.verify(response).setContentType("application/json");
+        verify(response).setStatus(422);
+        verify(response).setContentType("application/json");
     }
 
     @Test
@@ -929,7 +913,7 @@ class UploadHandlerTest {
         parts.add(createPart(createInputStream("two"), MULTIPART_CONTENT_TYPE,
                 "file2.png", 3));
 
-        Mockito.when(request.getParts()).thenReturn(parts);
+        when(request.getParts()).thenReturn(parts);
 
         UploadHandler uploadHandler = (event) -> {
             // Accept all files
@@ -940,13 +924,12 @@ class UploadHandlerTest {
         AbstractStreamResource res = streamRegistration.getResource();
 
         mockRequest(res, "testContent");
-        Mockito.when(request.getContentType())
-                .thenReturn(MULTIPART_CONTENT_TYPE);
+        when(request.getContentType()).thenReturn(MULTIPART_CONTENT_TYPE);
 
         handler.handleRequest(session, request, response);
 
         // Should return 200 for all accepted
-        Mockito.verify(response).setStatus(200);
+        verify(response).setStatus(200);
     }
 
     @Test
@@ -957,7 +940,7 @@ class UploadHandlerTest {
                 MULTIPART_CONTENT_TYPE, "file.zip", 7);
         parts.add(rejectedPart);
 
-        Mockito.when(request.getParts()).thenReturn(parts);
+        when(request.getParts()).thenReturn(parts);
 
         AtomicBoolean inputStreamAccessed = new AtomicBoolean(false);
 
@@ -980,16 +963,14 @@ class UploadHandlerTest {
         AbstractStreamResource res = streamRegistration.getResource();
 
         mockRequest(res, "testContent");
-        Mockito.when(request.getContentType())
-                .thenReturn(MULTIPART_CONTENT_TYPE);
-        Mockito.when(response.getWriter())
-                .thenReturn(Mockito.mock(java.io.PrintWriter.class));
+        when(request.getContentType()).thenReturn(MULTIPART_CONTENT_TYPE);
+        when(response.getWriter()).thenReturn(mock(java.io.PrintWriter.class));
 
         handler.handleRequest(session, request, response);
 
         assertFalse(inputStreamAccessed.get(),
                 "Input stream should not be accessed for rejected file");
-        Mockito.verify(response).setStatus(422);
+        verify(response).setStatus(422);
     }
 
     private Part createPart(InputStream inputStream, String contentType,
@@ -1005,20 +986,18 @@ class UploadHandlerTest {
     private void mockRequest(AbstractStreamResource res, String content)
             throws IOException {
 
-        ServletOutputStream outputStream = Mockito
-                .mock(ServletOutputStream.class);
-        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(request.getPathInfo())
+        ServletOutputStream outputStream = mock(ServletOutputStream.class);
+        when(response.getOutputStream()).thenReturn(outputStream);
+        when(request.getPathInfo())
                 .thenReturn(String.format("/%s%s/%s/%s", DYN_RES_PREFIX,
                         ui.getId().orElse("-1"), res.getId(), res.getName()));
-        Mockito.when(request.getContentLengthLong())
+        when(request.getContentLengthLong())
                 .thenReturn(Long.valueOf(content.length()));
-        Mockito.when(request.getContentLength()).thenReturn(content.length());
-        Mockito.when(request.getHeader("Content-length"))
+        when(request.getContentLength()).thenReturn(content.length());
+        when(request.getHeader("Content-length"))
                 .thenReturn(String.valueOf(content.length()));
-        Mockito.when(request.getInputStream())
-                .thenReturn(createInputStream(content));
-        Mockito.when(request.getMethod()).thenReturn("POST");
+        when(request.getInputStream()).thenReturn(createInputStream(content));
+        when(request.getMethod()).thenReturn("POST");
 
         // Mock getParts() for multipart content
         if (content.equals(MULTIPART_STREAM_CONTENT)) {
@@ -1028,7 +1007,7 @@ class UploadHandlerTest {
                         "sound.txt", 5));
                 parts.add(createPart(createInputStream("Bytes"), "text/plain",
                         "bytes.txt", 5));
-                Mockito.when(request.getParts()).thenReturn(parts);
+                when(request.getParts()).thenReturn(parts);
             } catch (ServletException e) {
                 throw new IOException(e);
             }

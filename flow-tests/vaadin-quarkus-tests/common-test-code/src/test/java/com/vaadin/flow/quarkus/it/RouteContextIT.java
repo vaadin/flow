@@ -43,6 +43,8 @@ import com.vaadin.flow.quarkus.it.routecontext.ProxiedViewPresenter;
 import com.vaadin.flow.quarkus.it.routecontext.RerouteView;
 import com.vaadin.flow.quarkus.it.routecontext.RootView;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 @QuarkusIntegrationTest
 public class RouteContextIT extends AbstractCdiIT {
 
@@ -188,7 +190,7 @@ public class RouteContextIT extends AbstractCdiIT {
     public void routeScopeDoesNotExist_injectionWithOwnerOutOfNavigationThrows_invalidViewIsNotRendered() {
         follow(MainLayout.INVALID);
 
-        Assertions.assertFalse(isElementPresent(By.id("invalid-injection")));
+        assertFalse(isElementPresent(By.id("invalid-injection")));
     }
 
     @Test

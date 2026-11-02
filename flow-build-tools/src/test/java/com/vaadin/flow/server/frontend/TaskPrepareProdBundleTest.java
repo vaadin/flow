@@ -32,7 +32,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.PwaConfiguration;
@@ -40,6 +39,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class TaskPrepareProdBundleTest {
 
@@ -69,8 +69,8 @@ class TaskPrepareProdBundleTest {
         ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
                 new URLClassLoader(new URL[] { bundleJar.toURI().toURL() },
                         null));
-        options = new Options(Mockito.mock(Lookup.class), classFinder,
-                projectDirectory).withBuildResultFolders(
+        options = new Options(mock(Lookup.class), classFinder, projectDirectory)
+                .withBuildResultFolders(
                         resourceOutputDirectory.resolve("webapp").toFile(),
                         resourceOutputDirectory.toFile());
     }

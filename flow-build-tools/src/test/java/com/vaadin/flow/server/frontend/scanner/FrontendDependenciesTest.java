@@ -17,13 +17,20 @@ package com.vaadin.flow.server.frontend.scanner;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
@@ -31,6 +38,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
@@ -42,6 +50,7 @@ import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.ErrorComponent;
@@ -52,6 +61,7 @@ import com.vaadin.flow.server.frontend.scanner.samples.MyUIInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponentWithMethodReference;
 import com.vaadin.flow.server.frontend.scanner.samples.RuntimeJavaScriptComponent;
+import com.vaadin.flow.server.frontend.scanner.samples.RuntimeOnlyJavaScriptComponent;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -62,35 +72,43 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class FrontendDependenciesTest {
 
-    private ClassFinder classFinder = Mockito.mock(ClassFinder.class);
+    private static final String RUNTIME_JS_MODULE_WARNING = "@JsModule values with a runtime URL";
+    private static final String UNLOADED_RUNTIME_WARNING = "neither components nor the app shell";
+
+    private ClassFinder classFinder = mock(ClassFinder.class);
 
     @BeforeEach
     void setUp() throws ClassNotFoundException {
-        Mockito.when(classFinder.loadClass(Mockito.anyString()))
-                .thenAnswer(q -> {
-                    String className = q.getArgument(0);
-                    if (className.equals(FrontendDependencies.LUMO)) {
-                        return FakeLumo.class;
-                    }
-                    return Class.forName(className);
-                });
+        when(classFinder.loadClass(anyString())).thenAnswer(q -> {
+            String className = q.getArgument(0);
+            if (className.equals(FrontendDependencies.LUMO)) {
+                return FakeLumo.class;
+            }
+            return Class.forName(className);
+        });
 
-        Mockito.doAnswer(invocation -> FrontendDependenciesTest.class
-                .getClassLoader().getResource(invocation.getArgument(0)))
-                .when(classFinder).getResource(Mockito.anyString());
-        Mockito.when(classFinder.shouldInspectClass(Mockito.anyString()))
-                .thenReturn(true);
+        doAnswer(invocation -> FrontendDependenciesTest.class.getClassLoader()
+                .getResource(invocation.getArgument(0))).when(classFinder)
+                .getResource(anyString());
+        when(classFinder.shouldInspectClass(anyString())).thenReturn(true);
 
-        Mockito.when(classFinder.loadClass(UI.class.getName()))
+        when(classFinder.loadClass(UI.class.getName()))
                 .thenReturn((Class) UI.class);
     }
 
     @Test
     void routedComponent_entryPointsAreCollected() {
-        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+        when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(RouteComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false, null, true);
@@ -100,8 +118,26 @@ class FrontendDependenciesTest {
     }
 
     @Test
-    void javaScriptWithTypeModule_excludedFromBundleImports() {
-        Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
+    void developmentOnlyRoute_collectedOnlyOutsideProductionMode() {
+        when(classFinder.getAnnotatedClasses(Route.class))
+                .thenReturn(Collections.singleton(DevelopmentOnlyRoute.class));
+
+        FrontendDependencies development = new FrontendDependencies(classFinder,
+                false, null, true, false);
+        DepsTests.assertImportsExcludingUI(development.getModules(),
+                "dev-only.js");
+
+        FrontendDependencies production = new FrontendDependencies(classFinder,
+                false, null, true, true);
+        DepsTests.assertImportsExcludingUI(production.getModules());
+        assertFalse(production.getEntryPoints().stream()
+                .anyMatch(entryPoint -> entryPoint.getName()
+                        .equals(DevelopmentOnlyRoute.class.getName())));
+    }
+
+    @Test
+    void javaScriptWithRuntimePrefixOrTypeModule_excludedFromBundleImports() {
+        when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
                 Collections.singleton(RuntimeJavaScriptComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false, null, true);
@@ -110,11 +146,158 @@ class FrontendDependenciesTest {
     }
 
     @Test
+    void jsModuleWithRuntimeUrl_excludedFromBundleImports() {
+        when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
+                Collections.singleton(RuntimeJavaScriptComponent.class));
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false, null, true);
+
+        DepsTests.assertImportsExcludingUI(dependencies.getModules(),
+                "./bundled-module.js");
+        assertFalse(dependencies.getModulesDevelopment().values().stream()
+                .anyMatch(modules -> modules
+                        .contains("https://cdn.example.com/dev-module.js")));
+    }
+
+    @Test
+    void bundledJavaScript_allUsagesWarnedAboutInOneWarning() {
+        Logger logger = scanWithSpyLogger(new LinkedHashSet<>(List
+                .of(RuntimeJavaScriptComponent.class, JsOrderComponent.class)));
+
+        ArgumentCaptor<Object> usages = ArgumentCaptor.forClass(Object.class);
+        Mockito.verify(logger).warn(
+                ArgumentMatchers.contains("bundled interpretation"),
+                usages.capture());
+        String listed = (String) usages.getValue();
+        String jsOrder = JsOrderComponent.class.getName();
+        assertTrue(listed
+                .contains("\n  - " + RuntimeJavaScriptComponent.class.getName()
+                        + ": \"bundled.js\""),
+                listed);
+        assertTrue(
+                listed.contains(
+                        "\n  - " + jsOrder + ": \"a.js\"\n  - " + jsOrder
+                                + ": \"b.js\"\n  - " + jsOrder + ": \"c.js\""),
+                listed);
+        assertFalse(listed.contains("runtime.js"), listed);
+        assertFalse(listed.contains("other-scheme.js"), listed);
+    }
+
+    @Test
+    void jsModuleWithRuntimeUrl_allUsagesWarnedAboutInOneWarning() {
+        Logger logger = scanWithSpyLogger(
+                Collections.singleton(RuntimeJavaScriptComponent.class));
+
+        ArgumentCaptor<Object> usages = ArgumentCaptor.forClass(Object.class);
+        verify(logger).warn(contains(RUNTIME_JS_MODULE_WARNING),
+                usages.capture());
+        String listed = (String) usages.getValue();
+        String component = RuntimeJavaScriptComponent.class.getName();
+        assertTrue(listed.contains("\n  - " + component
+                + ": \"https://cdn.example.com/external-module.js\"\n  - "
+                + component + ": \"context://runtime-module.js\"\n  - "
+                + component + ": \"/absolute-module.js\"\n  - " + component
+                + ": \"ftp://example.net/other-scheme-module.js\"\n  - "
+                + component + ": \"https://cdn.example.com/dev-module.js\""),
+                listed);
+        assertFalse(listed.contains("bundled-module.js"), listed);
+        // Runtime @JavaScript values are not deprecated
+        assertFalse(listed.contains("runtime.js"), listed);
+        assertFalse(listed.contains("other-scheme.js"), listed);
+    }
+
+    @Test
+    void runtimeValuesOnNonComponentEntryPoint_moduleStillBundledAndWarnedAbout() {
+        // Nothing loads runtime values at runtime for a class that is not a
+        // component or the app shell, so the module must stay in the bundle
+        when(classFinder.getSubTypesOf(VaadinServiceInitListener.class))
+                .thenReturn(Collections
+                        .singleton(RuntimeJsModuleServiceListener.class));
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false, null, true);
+        DepsTests.assertImportsExcludingUI(dependencies.getModules(),
+                "./listener-bundled.js", "/absolute-module.js");
+
+        // Scans the service listener stubbed above again, with a spy logger
+        Logger logger = scanWithSpyLogger(Collections.emptySet());
+        verify(logger, never()).warn(contains(RUNTIME_JS_MODULE_WARNING),
+                ArgumentMatchers.<Object> any());
+        ArgumentCaptor<Object> usages = ArgumentCaptor.forClass(Object.class);
+        verify(logger).warn(contains(UNLOADED_RUNTIME_WARNING),
+                usages.capture());
+        String listener = RuntimeJsModuleServiceListener.class.getName();
+        // Bundled values are fine on any class and not listed
+        String prefix = "\n  - " + listener + ": ";
+        assertEquals(prefix + "@JsModule(value = \"/absolute-module.js\")"
+                + prefix
+                + "@JsModule(value = \"/dev-module.js\", developmentOnly = true)"
+                + prefix + "@JavaScript(value = \"context://listener.js\")"
+                + prefix
+                + "@JavaScript(value = \"listener-module.js\", type = MODULE)",
+                usages.getValue());
+    }
+
+    @Test
+    void jsModuleWithRuntimeUrlOnComponentInterfaceOrAppShell_warnedAbout() {
+        // Components inherit annotations from their interfaces, and the app
+        // shell adds its own runtime modules to the page, so these values are
+        // runtime modules like the ones declared on a component
+        when(classFinder.getSubTypesOf(AppShellConfigurator.class)).thenReturn(
+                Collections.singleton(RuntimeJsModuleAppShell.class));
+        Logger logger = scanWithSpyLogger(
+                Collections.singleton(RuntimeJsModuleMixinComponent.class));
+
+        ArgumentCaptor<Object> usages = ArgumentCaptor.forClass(Object.class);
+        verify(logger).warn(contains(RUNTIME_JS_MODULE_WARNING),
+                usages.capture());
+        String listed = (String) usages.getValue();
+        assertTrue(listed.contains(RuntimeJsModuleMixin.class.getName()
+                + ": \"/mixin-module.js\""), listed);
+        assertTrue(listed.contains(RuntimeJsModuleAppShell.class.getName()
+                + ": \"context://shell-module.js\""), listed);
+        verify(logger, never()).warn(contains(UNLOADED_RUNTIME_WARNING),
+                ArgumentMatchers.<Object> any());
+    }
+
+    @Test
+    void onlyBundledJsModules_noRuntimeJsModuleWarning() {
+        Logger logger = scanWithSpyLogger(
+                Collections.singleton(RouteComponent.class));
+
+        verify(logger, never()).warn(contains(RUNTIME_JS_MODULE_WARNING),
+                ArgumentMatchers.<Object> any());
+    }
+
+    @Test
+    void onlyRuntimeJavaScript_noDeprecationWarning() {
+        Logger logger = scanWithSpyLogger(
+                Collections.singleton(RuntimeOnlyJavaScriptComponent.class));
+
+        Mockito.verify(logger, Mockito.never()).warn(
+                ArgumentMatchers.contains("bundled interpretation"),
+                ArgumentMatchers.<Object> any());
+    }
+
+    private Logger scanWithSpyLogger(Set<Class<?>> routes) {
+        when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(routes);
+        Logger logger = Mockito.spy(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
+                .mockStatic(LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
+            loggerFactoryMocked.when(
+                    () -> LoggerFactory.getLogger(FrontendDependencies.class))
+                    .thenReturn(logger);
+
+            new FrontendDependencies(classFinder, false, null, true);
+        }
+        return logger;
+    }
+
+    @Test
     void appShellConfigurator_collectedAsEntryPoint()
             throws ClassNotFoundException {
-        Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
+        when(classFinder.getSubTypesOf(AppShellConfigurator.class))
                 .thenReturn(Collections.singleton(MyAppShell.class));
-        Mockito.when(classFinder.loadClass(FakeLumo.class.getName()))
+        when(classFinder.loadClass(FakeLumo.class.getName()))
                 .thenReturn((Class) FakeLumo.class);
 
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -134,9 +317,9 @@ class FrontendDependenciesTest {
     @Test
     void themeDefiningClassAndName_throwsException()
             throws ClassNotFoundException {
-        Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
+        when(classFinder.getSubTypesOf(AppShellConfigurator.class))
                 .thenReturn(Collections.singleton(FaultyThemeAnnotation.class));
-        Mockito.when(classFinder.loadClass(FakeLumo.class.getName()))
+        when(classFinder.loadClass(FakeLumo.class.getName()))
                 .thenReturn((Class) FakeLumo.class);
 
         IllegalStateException exception = assertThrows(
@@ -152,9 +335,9 @@ class FrontendDependenciesTest {
     @Test
     void noDefaultThemeAvailable_throwsException()
             throws ClassNotFoundException {
-        Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
+        when(classFinder.getSubTypesOf(AppShellConfigurator.class))
                 .thenReturn(Collections.singleton(MyAppThemeShell.class));
-        Mockito.when(classFinder.loadClass(FrontendDependencies.LUMO))
+        when(classFinder.loadClass(FrontendDependencies.LUMO))
                 .thenThrow(ClassNotFoundException.class);
 
         IllegalStateException exception = assertThrows(
@@ -169,7 +352,7 @@ class FrontendDependenciesTest {
 
     @Test
     void appThemeDefined_getsLumoAsTheme() {
-        Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
+        when(classFinder.getSubTypesOf(AppShellConfigurator.class))
                 .thenReturn(Collections.singleton(MyAppThemeShell.class));
 
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -182,7 +365,7 @@ class FrontendDependenciesTest {
 
     @Test
     void themeDefined_themeCssLoaded() {
-        Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
+        when(classFinder.getSubTypesOf(AppShellConfigurator.class))
                 .thenReturn(Collections.singleton(MyAppShell.class));
 
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -200,7 +383,7 @@ class FrontendDependenciesTest {
 
     @Test
     void themeNotDefined_ButReferenced_themeCssNotLoaded() {
-        Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
+        when(classFinder.getSubTypesOf(AppShellConfigurator.class))
                 .thenReturn(Collections.singleton(ThemeReferenceShell.class));
 
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -218,7 +401,7 @@ class FrontendDependenciesTest {
 
     @Test
     void onlyThemeVariantDefined_getsLumoAsTheme_preserveVariant() {
-        Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
+        when(classFinder.getSubTypesOf(AppShellConfigurator.class))
                 .thenReturn(Collections.singleton(ThemeVariantOnly.class));
 
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -233,9 +416,8 @@ class FrontendDependenciesTest {
 
     @Test
     void defaultThemeAnnotation_getsLumoAsTheme() {
-        Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
-                .thenReturn(
-                        Collections.singleton(DefaultThemeAnnotation.class));
+        when(classFinder.getSubTypesOf(AppShellConfigurator.class)).thenReturn(
+                Collections.singleton(DefaultThemeAnnotation.class));
 
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false, null, true);
@@ -256,7 +438,7 @@ class FrontendDependenciesTest {
 
     @Test
     void hasErrorParameterComponent_entryPointIsCollected() {
-        Mockito.when(classFinder.getSubTypesOf(HasErrorParameter.class))
+        when(classFinder.getSubTypesOf(HasErrorParameter.class))
                 .thenReturn(Collections.singleton(ErrorComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false, null, true);
@@ -267,7 +449,7 @@ class FrontendDependenciesTest {
 
     @Test
     void componentInsideUiInitListener_entryPointsAreCollected() {
-        Mockito.when(classFinder.getSubTypesOf(UIInitListener.class))
+        when(classFinder.getSubTypesOf(UIInitListener.class))
                 .thenReturn(Collections.singleton(MyUIInitListener.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false, null, true);
@@ -279,7 +461,7 @@ class FrontendDependenciesTest {
 
     @Test
     void componentInsideUiInitListenerInsideServiceInitListener_entryPointsAreCollected() {
-        Mockito.when(classFinder.getSubTypesOf(VaadinServiceInitListener.class))
+        when(classFinder.getSubTypesOf(VaadinServiceInitListener.class))
                 .thenReturn(Collections.singleton(MyServiceListener.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false, null, true);
@@ -289,7 +471,7 @@ class FrontendDependenciesTest {
 
     @Test
     void jsScriptOrderIsPreserved() {
-        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+        when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(JsOrderComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false, null, true);
@@ -300,7 +482,7 @@ class FrontendDependenciesTest {
 
     @Test
     void jsModuleOrderIsPreserved() {
-        Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
+        when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
                 Collections.singleton(JsModuleOrderComponent.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false, null, true);
@@ -312,7 +494,7 @@ class FrontendDependenciesTest {
     // flow #6524
     @Test
     void extractsAndScansClassesFromMethodReferences() {
-        Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
+        when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
                 Collections.singleton(RouteComponentWithMethodReference.class));
 
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -325,9 +507,8 @@ class FrontendDependenciesTest {
     @Test
     void defaultThemeIsNotLoadedForExporters() throws Exception {
         FakeLumo.class.getDeclaredConstructor().newInstance();
-        Mockito.when(classFinder.getSubTypesOf(WebComponentExporter.class))
-                .thenReturn(Stream.of(MyExporter.class)
-                        .collect(Collectors.toSet()));
+        when(classFinder.getSubTypesOf(WebComponentExporter.class)).thenReturn(
+                Stream.of(MyExporter.class).collect(Collectors.toSet()));
 
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, true, null, true);
@@ -351,10 +532,10 @@ class FrontendDependenciesTest {
     @Test // #9861
     void classInMultipleEntryPoints_collectEntryPointsNotOverrideInitial() {
         // Reference found through first entry point
-        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+        when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(TestRoute.class));
         // Reference found through second entry point, should not clear
-        Mockito.when(classFinder.getSubTypesOf(HasErrorParameter.class))
+        when(classFinder.getSubTypesOf(HasErrorParameter.class))
                 .thenReturn(Collections.singleton(TestRoute.class));
 
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -365,7 +546,7 @@ class FrontendDependenciesTest {
 
     @Test // 20074
     void layoutClasses_collectedAsEntrypoint() {
-        Mockito.when(classFinder.getAnnotatedClasses(Layout.class))
+        when(classFinder.getAnnotatedClasses(Layout.class))
                 .thenReturn(Collections.singleton(MainLayout.class));
 
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -386,12 +567,11 @@ class FrontendDependenciesTest {
 
         FakeLumo.class.getDeclaredConstructor().newInstance();
         // Reference found through first entry point
-        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+        when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(ReferenceExporter.class));
         // Re-visit through exporter.
-        Mockito.when(classFinder.getSubTypesOf(WebComponentExporter.class))
-                .thenReturn(Stream.of(ReferenceExporter.class)
-                        .collect(Collectors.toSet()));
+        when(classFinder.getSubTypesOf(WebComponentExporter.class)).thenReturn(
+                Stream.of(ReferenceExporter.class).collect(Collectors.toSet()));
 
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, true, null, true);
@@ -428,7 +608,7 @@ class FrontendDependenciesTest {
                         ChildRoute.class, GrandChildRoute.class)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+        when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(hierarchy);
 
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -445,7 +625,7 @@ class FrontendDependenciesTest {
                         ParentRoute.class, ChildRoute.class)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+        when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(hierarchy);
 
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -462,7 +642,7 @@ class FrontendDependenciesTest {
                         AnnotatedChildRoute.class, ParentRoute.class)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+        when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(hierarchy);
 
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -478,8 +658,7 @@ class FrontendDependenciesTest {
         LinkedHashSet<Class<?>> hierarchy = Stream.of(Assets.class)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        Mockito.when(
-                classFinder.getAnnotatedClasses(NpmPackage.class.getName()))
+        when(classFinder.getAnnotatedClasses(NpmPackage.class.getName()))
                 .thenReturn(hierarchy);
 
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -498,8 +677,7 @@ class FrontendDependenciesTest {
                 .of(Assets.class, DuplicatedAssets.class)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        Mockito.when(
-                classFinder.getAnnotatedClasses(NpmPackage.class.getName()))
+        when(classFinder.getAnnotatedClasses(NpmPackage.class.getName()))
                 .thenReturn(hierarchy);
 
         FrontendDependencies dependencies = new FrontendDependencies(
@@ -543,6 +721,33 @@ class FrontendDependenciesTest {
     }
 
     public static class MyComponent extends Component {
+    }
+
+    @JsModule("/mixin-module.js")
+    public interface RuntimeJsModuleMixin {
+    }
+
+    @Route("mixin")
+    public static class RuntimeJsModuleMixinComponent extends Component
+            implements RuntimeJsModuleMixin {
+    }
+
+    @JsModule("context://shell-module.js")
+    public static class RuntimeJsModuleAppShell
+            implements AppShellConfigurator {
+    }
+
+    @JsModule("./listener-bundled.js")
+    @JsModule("/absolute-module.js")
+    @JsModule(value = "/dev-module.js", developmentOnly = true)
+    @JavaScript("listener-bundled.js")
+    @JavaScript("context://listener.js")
+    @JavaScript(value = "listener-module.js", type = JavaScript.Type.MODULE)
+    public static class RuntimeJsModuleServiceListener
+            implements VaadinServiceInitListener {
+        @Override
+        public void serviceInit(ServiceInitEvent event) {
+        }
     }
 
     public static class MyExporter extends WebComponentExporter<MyComponent> {
@@ -613,6 +818,12 @@ class FrontendDependenciesTest {
                 MyComponent component) {
             Referenced ref = new Referenced();
         }
+    }
+
+    @Route(value = "dev-only", developmentOnly = true)
+    @JsModule("dev-only.js")
+    @Tag("div")
+    public static class DevelopmentOnlyRoute extends Component {
     }
 
     @Route("reference")

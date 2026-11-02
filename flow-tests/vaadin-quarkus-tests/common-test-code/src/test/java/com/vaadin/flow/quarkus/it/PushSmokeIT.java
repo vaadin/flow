@@ -16,12 +16,13 @@
 package com.vaadin.flow.quarkus.it;
 
 import io.quarkus.test.junit.QuarkusIntegrationTest;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 
 import com.vaadin.flow.test.AbstractChromeIT;
 import com.vaadin.testbench.TestBenchElement;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusIntegrationTest
 public class PushSmokeIT extends AbstractChromeIT {
@@ -37,7 +38,7 @@ public class PushSmokeIT extends AbstractChromeIT {
 
         int expectedUpdates = 50;
         int initialUpdateCount = getUpdateCount();
-        Assertions.assertTrue(initialUpdateCount < expectedUpdates,
+        assertTrue(initialUpdateCount < expectedUpdates,
                 "The initial update count should be less than maximum 50, but it has value "
                         + initialUpdateCount);
 
@@ -45,7 +46,7 @@ public class PushSmokeIT extends AbstractChromeIT {
 
         int nextUpdateCount = getUpdateCount();
 
-        Assertions.assertTrue(nextUpdateCount < expectedUpdates,
+        assertTrue(nextUpdateCount < expectedUpdates,
                 "The next interim update count should be less than maximum 50, but it has value "
                         + nextUpdateCount);
 

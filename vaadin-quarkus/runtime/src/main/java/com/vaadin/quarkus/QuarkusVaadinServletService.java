@@ -75,6 +75,17 @@ public class QuarkusVaadinServletService extends VaadinServletService {
 
     private final UIEventListener uiEventListener;
 
+    /**
+     * Creates a servlet service that takes Vaadin services from CDI beans and
+     * fires Vaadin events as CDI events.
+     *
+     * @param servlet
+     *            the servlet this service belongs to
+     * @param configuration
+     *            the deployment configuration
+     * @param beanManager
+     *            the bean manager to look up beans and fire events with
+     */
     public QuarkusVaadinServletService(final QuarkusVaadinServlet servlet,
             final DeploymentConfiguration configuration,
             final BeanManager beanManager) {

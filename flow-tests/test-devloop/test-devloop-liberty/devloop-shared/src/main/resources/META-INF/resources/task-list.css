@@ -1,0 +1,8 @@
+/* Served from this module's target/classes and loaded by the application's view.
+   Here rather than in the application so the CSS leg of an apply is exercised
+   across a module boundary, and under a container that serves a deployed copy
+   of the WAR rather than the module's own output. Edit the gap to watch an
+   apply push a stylesheet. */
+.task-list-view {
+  row-gap: 12px;
+}

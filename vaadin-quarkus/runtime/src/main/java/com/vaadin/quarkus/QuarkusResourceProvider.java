@@ -78,7 +78,7 @@ public class QuarkusResourceProvider implements ResourceProvider {
         throw exception;
     }
 
-    private static class CachedStreamData {
+    private static final class CachedStreamData {
 
         private final byte[] data;
         private final IOException exception;

@@ -56,10 +56,10 @@ public class BeforeLeaveEvent extends BeforeEvent {
         public void setReferences(NavigationHandler handler,
                 NavigationEvent event) {
             if (event != null) {
-                event.getUI().getSession().hasLock();
+                event.getUI().getSessionOrThrow().hasLock();
             } else {
                 assert UI.getCurrent() != null
-                        && UI.getCurrent().getSession().hasLock();
+                        && UI.getCurrent().getSessionOrThrow().hasLock();
             }
             this.handler = handler;
             this.event = event;
@@ -67,11 +67,14 @@ public class BeforeLeaveEvent extends BeforeEvent {
 
         /**
          * Resumes the page transition associated with the postponed event.
+         * <p>
+         * The resumed navigation is reported as a navigation of its own with
+         * {@link NavigationStartedEvent} and {@link NavigationEndedEvent}.
          */
         public void proceed() {
             BeforeLeaveEvent.this.continueNavigationAction = null;
             if (handler != null && event != null) {
-                if (!event.getUI().getSession().hasLock()) {
+                if (!event.getUI().getSessionOrThrow().hasLock()) {
                     throw new IllegalStateException(
                             "The method 'proceed' may not be called without the session lock. "
                                     + "Use UI.access() to execute any UI related code from a separate thread properly");
@@ -83,7 +86,8 @@ public class BeforeLeaveEvent extends BeforeEvent {
                             .callJsFunction("serverConnected", false);
                 }
 
-                handler.handle(event);
+                Router.observeNavigation(event.getUI(), event.getLocation(),
+                        event.getTrigger(), () -> handler.handle(event));
                 setReferences(null, null);
             }
         }

@@ -129,35 +129,24 @@ class TypeInspectorTest {
                 .collectTypes((org.jboss.jandex.Type) null, index).isEmpty());
     }
 
-    @SuppressWarnings("unused")
-    static class Signatures {
-        public void array(Payload[] payloads) {
-        }
+    interface Signatures {
+        void array(Payload[] payloads);
 
-        public void nestedArray(Payload[][] payloads) {
-        }
+        void nestedArray(Payload[][] payloads);
 
-        public void upperBounded(List<? extends Payload> payloads) {
-        }
+        void upperBounded(List<? extends Payload> payloads);
 
-        public void lowerBounded(List<? super Payload> payloads) {
-        }
+        void lowerBounded(List<? super Payload> payloads);
 
-        public void unbounded(List<?> anything) {
-        }
+        void unbounded(List<?> anything);
 
-        public <T extends Bound> void typeVariable(T value) {
-        }
+        <T extends Bound> void typeVariable(T value);
 
-        public Map<String, List<Payload>> nestedGenerics(Nested nested) {
-            return null;
-        }
+        Map<String, List<Payload>> nestedGenerics(Nested nested);
 
-        public void primitives(int count, boolean flag) {
-        }
+        void primitives(int count, boolean flag);
 
-        public void notIndexed(Unindexed value) {
-        }
+        void notIndexed(Unindexed value);
     }
 
     static class Payload {

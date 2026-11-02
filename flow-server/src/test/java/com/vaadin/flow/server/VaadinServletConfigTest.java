@@ -25,9 +25,13 @@ import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Test VaadinServletConfig property handling and function with VaadinContext.
@@ -42,28 +46,27 @@ class VaadinServletConfigTest {
 
     @BeforeEach
     void setup() {
-        ServletConfig servletConfig = Mockito.mock(ServletConfig.class);
-        servletContext = Mockito.mock(ServletContext.class);
+        ServletConfig servletConfig = mock(ServletConfig.class);
+        servletContext = mock(ServletContext.class);
 
-        Mockito.when(servletConfig.getServletContext())
-                .thenReturn(servletContext);
+        when(servletConfig.getServletContext()).thenReturn(servletContext);
 
-        Mockito.when(servletContext.getAttribute(Mockito.anyString()))
+        when(servletContext.getAttribute(anyString()))
                 .then(invocationOnMock -> attributeMap
                         .get(invocationOnMock.getArguments()[0].toString()));
-        Mockito.doAnswer(invocationOnMock -> attributeMap.put(
+        doAnswer(invocationOnMock -> attributeMap.put(
                 invocationOnMock.getArguments()[0].toString(),
                 invocationOnMock.getArguments()[1])).when(servletContext)
-                .setAttribute(Mockito.anyString(), Mockito.any());
+                .setAttribute(anyString(), any());
 
         properties = new HashMap<>();
         properties.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
                 "true");
         properties.put(InitParameters.FRONTEND_HOTDEPLOY, "false");
 
-        Mockito.when(servletConfig.getInitParameterNames())
+        when(servletConfig.getInitParameterNames())
                 .thenReturn(Collections.enumeration(properties.keySet()));
-        Mockito.when(servletConfig.getInitParameter(Mockito.anyString())).then(
+        when(servletConfig.getInitParameter(anyString())).then(
                 invocation -> properties.get(invocation.getArguments()[0]));
         config = new VaadinServletConfig(servletConfig);
     }

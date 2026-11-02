@@ -89,6 +89,14 @@ _ThemeImport_class _TagCamel_ extends HTMLElement {
 
     // Needed to make Flow do lookup correctly
     const poller = () => {
+      if (!this.isConnected) {
+        // Removed before it could connect, e.g. replaced after a session
+        // resynchronization. Connecting it now would leave a server-side
+        // component that is never disconnected. It registers anew if it is
+        // attached again.
+        delete this.$.id;
+        return;
+      }
       var flowClient = this._getClient();
       if (flowClient && flowClient.connectWebComponent) {
         document.body.$ = document.body.$ || {};

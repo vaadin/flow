@@ -195,8 +195,15 @@ public abstract class Trigger implements Serializable {
         // Record intent now so the deferred wiring is not flagged as forgotten;
         // the actual triggers(...) call (which also sets armed) runs at attach.
         armed = true;
-        attachTarget.getElement().getNode()
-                .runWhenAttached(ui -> triggers(action.get()));
+        // remove() may run before the target attaches; the pending wiring must
+        // then not build or install the action once the target does attach.
+        boolean[] removed = { false };
+        registrations.add(() -> removed[0] = true);
+        attachTarget.getElement().getNode().runWhenAttached(ui -> {
+            if (!removed[0]) {
+                triggers(action.get());
+            }
+        });
     }
 
     /**
@@ -230,8 +237,23 @@ public abstract class Trigger implements Serializable {
     protected abstract Registration install(JsFunction action);
 
     /**
+     * Adds a cleanup that runs when this trigger is removed. Actions and inputs
+     * call it from {@link Action#toJs(Trigger)} or
+     * {@link Action.Input#toJs(Trigger)} for state they set up besides the
+     * client-side listener, such as a registered stream resource.
+     *
+     * @param cleanup
+     *            the cleanup to run on {@link #remove()}, not {@code null}
+     * @since 25.4
+     */
+    public final void addCleanup(Registration cleanup) {
+        registrations.add(Objects.requireNonNull(cleanup));
+    }
+
+    /**
      * Removes this trigger and all wirings created from it. The corresponding
-     * client-side listeners are detached as part of the next synchronisation.
+     * client-side listeners are detached as part of the next synchronisation,
+     * and the cleanups registered by its actions run.
      */
     public final void remove() {
         registrations.forEach(Registration::remove);

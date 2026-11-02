@@ -51,10 +51,18 @@ import com.vaadin.quarkus.annotation.VaadinSessionScoped;
  */
 public class RouteScopedContext extends AbstractContext {
 
+    /**
+     * Manages the contextual storages of route scoped beans, one for each route
+     * owner in each browser window or UI.
+     */
     public abstract static class ContextualStorageManager
             extends AbstractContextualStorageManager<RouteStorageKey> {
 
-        public ContextualStorageManager() {
+        /**
+         * Creates a storage manager that relies on the session lock instead of
+         * locking on its own.
+         */
+        protected ContextualStorageManager() {
             // Session lock checked in VaadinSessionScopedContext while
             // getting the session attribute.
             super(false);
@@ -62,7 +70,7 @@ public class RouteScopedContext extends AbstractContext {
 
         @Override
         protected ContextualStorage newContextualStorage(RouteStorageKey key) {
-            UI.getCurrent().addDetachListener(
+            UI.getCurrentOrThrow().addDetachListener(
                     event -> handleUIDetach(event.getUI(), key));
             return super.newContextualStorage(key);
         }
@@ -127,7 +135,7 @@ public class RouteScopedContext extends AbstractContext {
         }
 
         private UI findPreservingUI(UI ui) {
-            VaadinSession session = ui.getSession();
+            VaadinSession session = ui.getSessionOrThrow();
             String windowName = getWindowName(ui);
             for (UI sessionUi : session.getUIs()) {
                 if (sessionUi != ui && windowName != null
@@ -170,10 +178,11 @@ public class RouteScopedContext extends AbstractContext {
         }
 
         private List<ContextualStorage> getActiveContextualStorages() {
-            return getKeySet().stream().filter(
-                    key -> key.getUIId().equals(getUIStoreId(UI.getCurrent())))
-                    .map(key -> getContextualStorage(key, false))
-                    .collect(Collectors.toList());
+            return getKeySet().stream()
+                    .filter(key -> key.getUIId()
+                            .equals(getUIStoreId(UI.getCurrentOrThrow())))
+                    .map(key -> super.getContextualStorage(key, false))
+                    .toList();
         }
 
     }
@@ -185,7 +194,7 @@ public class RouteScopedContext extends AbstractContext {
 
     }
 
-    static class RouteStorageKey implements Serializable {
+    static final class RouteStorageKey implements Serializable {
         private final Class<?> owner;
         private final String uiId;
 
@@ -245,10 +254,6 @@ public class RouteScopedContext extends AbstractContext {
         }
     }
 
-    public RouteScopedContext() {
-        super();
-    }
-
     @Override
     public Class<? extends Annotation> getScope() {
         return NormalRouteScoped.class;
@@ -297,7 +302,7 @@ public class RouteScopedContext extends AbstractContext {
 
     private RouteStorageKey convertToKey(Contextual<?> contextual) {
         Bean<?> bean = getBean(contextual);
-        UI ui = UI.getCurrent();
+        UI ui = UI.getCurrentOrThrow();
         Class<?> owner = getOwner(ui, bean);
         if (!navigationChainHasOwner(ui, owner)) {
             throw new IllegalStateException(String.format(
@@ -327,7 +332,7 @@ public class RouteScopedContext extends AbstractContext {
     @SuppressWarnings("unchecked")
     private Class<?> getOwner(UI ui, Bean<?> bean) {
         return bean.getQualifiers().stream()
-                .filter(annotation -> annotation instanceof RouteScopeOwner)
+                .filter(RouteScopeOwner.class::isInstance)
                 .map(annotation -> (Class<?>) (((RouteScopeOwner) annotation)
                         .value()))
                 .findFirst()

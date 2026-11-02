@@ -52,8 +52,9 @@ public class DownloadResponse implements Serializable {
      *            Content-Disposition header to 'attachment' if the value is not
      *            <code>null</code>, otherwise the header is not set
      * @param contentType
-     *            content type or a value determined from fileName if
-     *            {@code null}
+     *            content type, or {@code null} for the one set with
+     *            {@link AbstractDownloadHandler#withContentType(String)} on the
+     *            handler, or else a value determined from fileName
      * @param contentLength
      *            byte size of a stream or <code>-1</code> if unknown
      */
@@ -88,9 +89,10 @@ public class DownloadResponse implements Serializable {
     /**
      * Get the content type.
      * <p>
-     * For a {@code null} value the type should be gotten from
-     * {@code VaadinService.getMimeType(fileName)} or be set to default value
-     * {@code application/octet-stream}
+     * For a {@code null} value the type should be the one set with
+     * {@link AbstractDownloadHandler#withContentType(String)} on the handler,
+     * or else be gotten from {@code VaadinService.getMimeType(fileName)} or be
+     * set to default value {@code application/octet-stream}
      *
      * @return content type
      */

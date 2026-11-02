@@ -33,7 +33,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -66,7 +65,9 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
+import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.AbstractAuthenticationTargetUrlRequestHandler;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
@@ -94,9 +95,13 @@ import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @WebAppConfiguration
 @ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
@@ -348,7 +353,7 @@ class VaadinSecurityConfigurerTest {
         VaadinDefaultRequestCache requestCache = applicationContext
                 .getBean(VaadinDefaultRequestCache.class);
 
-        var mockSuccessHandler = Mockito.mock(
+        var mockSuccessHandler = mock(
                 VaadinSavedRequestAwareAuthenticationSuccessHandler.class);
         http.setSharedObject(
                 VaadinSavedRequestAwareAuthenticationSuccessHandler.class,
@@ -358,14 +363,13 @@ class VaadinSecurityConfigurerTest {
             c.loginView("/login");
         }).build();
 
-        Mockito.verify(mockSuccessHandler, times(1))
-                .setRequestCache(Mockito.eq(requestCache));
+        verify(mockSuccessHandler, times(1)).setRequestCache(eq(requestCache));
     }
 
     @Test
     void hillaAnonymousEndpointRequest_arePermitted() {
-        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = Mockito
-                .mockStatic(EndpointRequestUtil.class)) {
+        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = mockStatic(
+                EndpointRequestUtil.class)) {
             endpointRequestUtilMockedStatic
                     .when(EndpointRequestUtil::isHillaAvailable)
                     .thenReturn(true);
@@ -377,7 +381,7 @@ class VaadinSecurityConfigurerTest {
             var request = new MockHttpServletRequest("POST", path);
             request.setPathInfo(path);
 
-            Mockito.when(endpointRequestUtil.isAnonymousEndpoint(request))
+            when(endpointRequestUtil.isAnonymousEndpoint(request))
                     .thenReturn(true);
 
             var filters = http.with(configurer, Customizer.withDefaults())
@@ -394,8 +398,8 @@ class VaadinSecurityConfigurerTest {
 
     @Test
     void hillaEndpointRequest_areAuthenticated() {
-        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = Mockito
-                .mockStatic(EndpointRequestUtil.class)) {
+        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = mockStatic(
+                EndpointRequestUtil.class)) {
             endpointRequestUtilMockedStatic
                     .when(EndpointRequestUtil::isHillaAvailable)
                     .thenReturn(true);
@@ -407,7 +411,7 @@ class VaadinSecurityConfigurerTest {
             var request = new MockHttpServletRequest("POST", path);
             request.setPathInfo(path);
 
-            Mockito.when(endpointRequestUtil.isEndpointRequest(request))
+            when(endpointRequestUtil.isEndpointRequest(request))
                     .thenReturn(true);
 
             var filters = http.with(configurer, Customizer.withDefaults())
@@ -424,8 +428,8 @@ class VaadinSecurityConfigurerTest {
 
     @Test
     void hilla_checkAllowedRoutes() {
-        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = Mockito
-                .mockStatic(EndpointRequestUtil.class)) {
+        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = mockStatic(
+                EndpointRequestUtil.class)) {
             endpointRequestUtilMockedStatic
                     .when(EndpointRequestUtil::isHillaAvailable)
                     .thenReturn(true);
@@ -438,7 +442,7 @@ class VaadinSecurityConfigurerTest {
             request.setPathInfo(path);
 
             // Simulate usage of Hilla API, providing file-router request info
-            Mockito.when(fileRouterRequestUtil.isAnonymousRoute(request))
+            when(fileRouterRequestUtil.isAnonymousRoute(request))
                     .thenReturn(true);
 
             var filters = http.with(configurer, Customizer.withDefaults())
@@ -536,6 +540,49 @@ class VaadinSecurityConfigurerTest {
         assertThat(handler).isNotNull();
         assertThat(getDefaultTargetUrl(handler)).isEqualTo("/");
         assertThat(isAlwaysUseDefaultTargetUrl(handler)).isFalse();
+    }
+
+    @Test
+    void successUrlResolver_withLoginViewAndAlwaysUseDefaultTargetUrl_redirectsToResolvedUrl()
+            throws Exception {
+        http.with(configurer, c -> c.loginView("/login")
+                .defaultSuccessUrl("/dashboard", true)
+                .successUrlResolver((request, authentication,
+                        savedUrl) -> "/landing-" + authentication.getName()))
+                .build();
+
+        var handler = http.getSharedObject(
+                VaadinSavedRequestAwareAuthenticationSuccessHandler.class);
+        assertThat(isAlwaysUseDefaultTargetUrl(handler)).isTrue();
+        var loginResponse = new MockHttpServletResponse();
+        handler.onAuthenticationSuccess(
+                new MockHttpServletRequest("POST", "/login"), loginResponse,
+                new TestingAuthenticationToken("john", "pwd"));
+
+        assertThat(loginResponse.getRedirectedUrl()).isEqualTo("/landing-john");
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void failureHandler_customHandlerIsUsedByAuthenticationFilter(
+            boolean oauth2) throws Exception {
+        var failureHandler = mock(AuthenticationFailureHandler.class);
+
+        var filters = http.with(configurer, c -> {
+            if (oauth2) {
+                c.oauth2LoginPage("/oauth2/login");
+            } else {
+                c.loginView("/login");
+            }
+            c.failureHandler(failureHandler);
+        }).build().getFilters();
+
+        var filter = filters.stream().filter(
+                AbstractAuthenticationProcessingFilter.class::isInstance)
+                .map(AbstractAuthenticationProcessingFilter.class::cast)
+                .findFirst().orElseThrow();
+        assertThat(invokeGetter(filter, "getFailureHandler"))
+                .isSameAs(failureHandler);
     }
 
     @Test
@@ -725,6 +772,14 @@ class VaadinSecurityConfigurerTest {
                 .getDeclaredMethod("getDefaultTargetUrl");
         method.setAccessible(true);
         return (String) method.invoke(handler);
+    }
+
+    private Object invokeGetter(AbstractAuthenticationProcessingFilter filter,
+            String getterName) throws Exception {
+        Method method = AbstractAuthenticationProcessingFilter.class
+                .getDeclaredMethod(getterName);
+        method.setAccessible(true);
+        return method.invoke(filter);
     }
 
     private boolean isAlwaysUseDefaultTargetUrl(

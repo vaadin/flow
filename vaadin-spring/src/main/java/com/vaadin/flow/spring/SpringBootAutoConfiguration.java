@@ -140,6 +140,15 @@ public class SpringBootAutoConfiguration {
             initParameters.put(
                     VaadinServlet.INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH,
                     "");
+        } else if (configurationProperties.getExcludeUrls() != null
+                && !configurationProperties.getExcludeUrls().isEmpty()) {
+            LoggerFactory.getLogger(SpringBootAutoConfiguration.class)
+                    .warn("vaadin.exclude-urls {} is ignored because it only "
+                            + "applies when Vaadin is mapped to the context "
+                            + "root, but vaadin.url-mapping is '{}'. Serve "
+                            + "the excluded URLs outside of that mapping "
+                            + "instead.",
+                            configurationProperties.getExcludeUrls(), mapping);
         }
 
         String pushUrl = rootMapping ? "" : mapping.replace("/*", "");

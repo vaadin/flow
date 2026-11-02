@@ -62,7 +62,6 @@ function makeRegistry(maxMessageSuspendTimeout = 10000) {
       },
       StateTree: { prepareForResync: () => {} },
       RequestResponseTracker: {
-        fireResponseHandlingStarted: () => {},
         endRequest: () => {
           // The real tracker throws when there is nothing to end.
           if (!activeRequest) {
@@ -168,7 +167,6 @@ function makeWiredRegistry() {
     })
     .register('URIResolver', { resolveVaadinUri: (uri: string) => uri })
     .register('RequestResponseTracker', {
-      fireResponseHandlingStarted: () => {},
       // The Java suite's TestRequestResponseTracker makes endRequest a no-op.
       endRequest: () => {},
       hasActiveRequest: () => true
@@ -480,7 +478,6 @@ describe('MessageHandler', () => {
             setClientToServerMessageId: () => {}
           },
           RequestResponseTracker: {
-            fireResponseHandlingStarted: () => {},
             endRequest: () => {},
             hasActiveRequest: () => true
           },

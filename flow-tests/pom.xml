@@ -306,6 +306,17 @@
 
   <profiles>
     <profile>
+      <!--
+        Adds the Quarkus suite to the reactor, so that -am can build the Flow
+        modules it depends on. Opt-in only, for the reason given where the
+        it-test-modules profile leaves the suite out.
+      -->
+      <id>quarkus-tests</id>
+      <modules>
+        <module>vaadin-quarkus-tests</module>
+      </modules>
+    </profile>
+    <profile>
       <!-- Modules that have shared stuff used in other modules -->
       <id>it-shared-modules</id>
       <activation>
@@ -399,7 +410,7 @@
           builds the suite from its own root with -f, computeMatrix.js
           set-version rewrites POMs off the filesystem rather than off the
           reactor, and the modules still inherit from this POM as their
-          parent.
+          parent. The quarkus-tests profile adds it to the reactor on request.
         -->
         <module>test-vaadin-router</module>
         <module>test-react-adapter</module>

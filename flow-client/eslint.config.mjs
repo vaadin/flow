@@ -1,4 +1,3 @@
-import prettier from 'eslint-config-vaadin/prettier';
 import typescript from 'eslint-config-vaadin/typescript';
 import globals from 'globals';
 import tsdoc from 'eslint-plugin-tsdoc';
@@ -8,7 +7,6 @@ export default [
     ignores: ['target/**/*', '**/*.js', '*.mjs']
   },
   ...typescript,
-  ...prettier,
   {
     // Validate the TSDoc/JSDoc syntax of doc comments in the migrated modules so
     // ported Javadoc tags stay well-formed (e.g. @param/@returns/@typeParam and

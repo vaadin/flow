@@ -68,6 +68,22 @@
     <!-- Test dependencies -->
     <dependency>
       <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-quarkus-common-test-code</artifactId>
+      <version>${project.version}</version>
+      <classifier>tests</classifier>
+      <type>test-jar</type>
+      <scope>test</scope>
+      <!-- Only the TestBench base classes are used; what they need is
+           declared below. -->
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
       <artifactId>flow-test-util</artifactId>
       <scope>test</scope>
     </dependency>

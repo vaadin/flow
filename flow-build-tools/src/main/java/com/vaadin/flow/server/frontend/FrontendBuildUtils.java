@@ -72,6 +72,20 @@ public class FrontendBuildUtils {
     }
 
     /**
+     * Checks whether the given npm dependency version is a URL, such as a link
+     * to a tarball of a preview build, rather than a version number or range.
+     *
+     * @param version
+     *            the npm dependency version, may be {@code null}
+     * @return {@code true} if the version is an http(s) URL, {@code false}
+     *         otherwise
+     */
+    static boolean isUrlVersion(String version) {
+        return version != null && (version.startsWith("https://")
+                || version.startsWith("http://"));
+    }
+
+    /**
      * Checks if integration with Tailwind CSS framework is enabled.
      *
      * @param options

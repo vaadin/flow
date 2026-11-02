@@ -15,10 +15,15 @@
  */
 package com.vaadin.flow.spring;
 
+import java.util.List;
 import java.util.Set;
 
 import org.atmosphere.cpr.ApplicationConfig;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
@@ -29,6 +34,13 @@ import com.vaadin.flow.server.Constants;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 @SpringBootTest(classes = SpringBootAutoConfiguration.class)
 @TestPropertySource(properties = { "vaadin.urlMapping = /zing/*" })
@@ -48,5 +60,42 @@ class SpringBootAutoConfigurationUrlMappedTest {
         assertEquals("/zing/" + Constants.PUSH_MAPPING,
                 servletRegistrationBean.getInitParameters()
                         .get(ApplicationConfig.JSR356_MAPPING_PATH));
+    }
+
+    @Test
+    void excludeUrlsWithNonRootMapping_warningLogged() {
+        Logger logger = configureServletWithExcludeUrls(
+                List.of("/zing/sitemap.txt"));
+
+        verify(logger).warn(anyString(), eq(List.of("/zing/sitemap.txt")),
+                eq("/zing/*"));
+    }
+
+    @Test
+    void noExcludeUrlsWithNonRootMapping_noWarningLogged() {
+        verify(configureServletWithExcludeUrls(null), never()).warn(anyString(),
+                any(), any());
+        verify(configureServletWithExcludeUrls(List.of()), never())
+                .warn(anyString(), any(), any());
+    }
+
+    private static Logger configureServletWithExcludeUrls(
+            List<String> excludeUrls) {
+        VaadinConfigurationProperties properties = new VaadinConfigurationProperties();
+        properties.setUrlMapping("/zing/*");
+        properties.setExcludeUrls(excludeUrls);
+        Logger logger = mock(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            loggerFactory
+                    .when(() -> LoggerFactory
+                            .getLogger(SpringBootAutoConfiguration.class))
+                    .thenReturn(logger);
+
+            SpringBootAutoConfiguration.configureServletRegistrationBean(
+                    mock(ObjectProvider.class), properties,
+                    mock(SpringServlet.class));
+        }
+        return logger;
     }
 }

@@ -18,9 +18,10 @@ package com.vaadin.flow.quarkus.test;
 import io.quarkus.test.QuarkusUnitTest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class VaadinQuarkusTest {
 
@@ -34,7 +35,6 @@ public class VaadinQuarkusTest {
         // Write your unit tests here - see the testing extension guide
         // https://quarkus.io/guides/writing-extensions#testing-extensions for
         // more information
-        Assertions.assertTrue(true,
-                "Add some assertions to " + getClass().getName());
+        assertTrue(true, "Add some assertions to " + getClass().getName());
     }
 }

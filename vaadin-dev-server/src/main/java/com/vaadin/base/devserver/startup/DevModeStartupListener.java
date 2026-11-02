@@ -91,6 +91,7 @@ public class DevModeStartupListener
     }
 
     @Override
+    @SuppressWarnings("removal")
     public void initialize(Set<Class<?>> classes, VaadinContext context)
             throws VaadinInitializerException {
         lookupDevModeHandlerManager(context).initDevModeHandler(classes,
@@ -115,6 +116,7 @@ public class DevModeStartupListener
     }
 
     @Override
+    @SuppressWarnings("removal")
     public void contextDestroyed(ServletContextEvent ctx) {
         if (devModeHandlerManager == null) {
             // devModeHandlerManager should never be null here.
@@ -135,6 +137,7 @@ public class DevModeStartupListener
             devModeHandlerManager.stopDevModeHandler();
         }
         devModeHandlerManager = null;
+        ComponentUtil.unregisterAllComponentClasses();
     }
 
     private DevModeHandlerManager lookupDevModeHandlerManager(

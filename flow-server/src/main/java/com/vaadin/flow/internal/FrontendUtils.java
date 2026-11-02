@@ -1483,7 +1483,7 @@ public class FrontendUtils {
      */
     public static List<String> getClientRoutes() {
         return MenuRegistry.getClientRoutes(false,
-                VaadinService.getCurrent().getDeploymentConfiguration());
+                VaadinService.getCurrentOrThrow().getDeploymentConfiguration());
     }
 
 }

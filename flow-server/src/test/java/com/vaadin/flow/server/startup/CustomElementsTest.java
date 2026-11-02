@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -29,6 +28,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -90,7 +90,7 @@ class CustomElementsTest {
         elementsToAdd.forEach(
                 element -> customElements.addElement(getTag(element), element));
 
-        MatcherAssert.assertThat(
+        assertThat(
                 "Custom elements should contain only one class that we put into",
                 customElements.computeTagToElementRelation(),
                 is(expectedClasses.stream().collect(Collectors.toMap(

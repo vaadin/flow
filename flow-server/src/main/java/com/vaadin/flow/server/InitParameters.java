@@ -55,6 +55,16 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_SYNC_ID_CHECK = "syncIdCheck";
     public static final String SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS = "sendUrlsAsParameters";
     /**
+     * Configuration parameter name for the Content Security Policy mode of the
+     * application. The permitted values are {@code off} (the default),
+     * {@code warn} and {@code strict}, see {@link CspMode}. Values are
+     * case-insensitive; any other value fails the deployment configuration with
+     * an {@link IllegalArgumentException}.
+     *
+     * @since 25.4
+     */
+    public static final String CSP = "csp";
+    /**
      * Configuration parameter name for the value of the {@code X-Frame-Options}
      * HTTP response header sent with the application page. The header lets the
      * browser opt in to protection against clickjacking. Common values are
@@ -460,5 +470,20 @@ public class InitParameters implements Serializable {
      */
     @Deprecated
     public static final String URL_SAFE_SCHEMES_LEGACY = "com.vaadin.safeUrlSchemes";
+
+    /**
+     * Configuration name for letting the theme style plain HTML elements, such
+     * as a <code>&lt;table&gt;</code>, across the whole application. When
+     * enabled, the {@code <body>} of the application page carries the
+     * {@link Constants#THEMED_HTML_CLASS_NAME} class name, which the Aura and
+     * Lumo themes style the native elements under. A single element opts out
+     * with the {@link Constants#UNTHEMED_HTML_CLASS_NAME} class name.
+     * <p>
+     * Disabled by default, so that upgrading does not change how an existing
+     * application looks. The default is planned to become enabled in Vaadin 26.
+     * 
+     * @since 25.3.1
+     */
+    public static final String THEMED_HTML = "themedHtml";
 
 }

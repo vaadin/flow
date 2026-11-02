@@ -19,6 +19,8 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+
 /**
  * Assert utility class.
  */
@@ -59,8 +61,7 @@ class AssertUtils {
         }
 
         if (expected.getClass().isArray() && actual.getClass().isArray()) {
-            Assertions.assertArrayEquals((Object[]) expected, (Object[]) actual,
-                    message);
+            assertArrayEquals((Object[]) expected, (Object[]) actual, message);
 
         } else {
             Assertions.assertEquals(expected, actual, message);

@@ -15,12 +15,9 @@
  */
 package com.vaadin.flow.devloop.daemon;
 
-import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -56,11 +53,6 @@ final class MainClass {
 
     /** {@code @SpringBootApplication}, as it appears in a class file. */
     private static final String SPRING_BOOT_APPLICATION = "Lorg/springframework/boot/autoconfigure/SpringBootApplication;";
-
-    private static final String MAIN_DESCRIPTOR = "([Ljava/lang/String;)V";
-
-    private static final int ACC_PUBLIC = 0x0001;
-    private static final int ACC_STATIC = 0x0008;
 
     private MainClass() {
     }
@@ -114,7 +106,7 @@ final class MainClass {
             return fromManifest;
         }
         return firstMatching(appModule, classFilesOf(appModule.classesDir()),
-                ClassFile::isSpringBootApplication);
+                file -> file.strings().contains(SPRING_BOOT_APPLICATION));
     }
 
     /**
@@ -202,138 +194,5 @@ final class MainClass {
             }
         }
         return Optional.empty();
-    }
-
-    /**
-     * As much of a class file as the two questions above need: which strings
-     * its constant pool holds, and which methods it declares.
-     * <p>
-     * Hand-parsed because the alternative is loading the class, which would
-     * mean the application's classpath in the daemon JVM - the one thing this
-     * module exists to avoid. Only the structure up to the method table is
-     * walked; the bytecode is skipped.
-     */
-    private record ClassFile(List<String> strings, boolean hasMainMethod) {
-
-        boolean isSpringBootApplication() {
-            return strings.contains(SPRING_BOOT_APPLICATION);
-        }
-
-        static Optional<ClassFile> read(Path file) {
-            try (InputStream in = Files.newInputStream(file);
-                    DataInputStream data = new DataInputStream(in)) {
-                if (data.readInt() != 0xCAFEBABE) {
-                    return Optional.empty();
-                }
-                data.readUnsignedShort(); // minor version
-                data.readUnsignedShort(); // major version
-                List<String> strings = readConstantPool(data);
-                data.readUnsignedShort(); // access flags
-                data.readUnsignedShort(); // this class
-                data.readUnsignedShort(); // super class
-                skipShorts(data, data.readUnsignedShort()); // interfaces
-                skipMembers(data); // fields
-                return Optional.of(
-                        new ClassFile(strings, hasMainMethod(data, strings)));
-            } catch (IOException | RuntimeException e) {
-                // A truncated or unsupported class file answers neither
-                // question; the next candidate is asked instead.
-                return Optional.empty();
-            }
-        }
-
-        /**
-         * The UTF-8 entries of the constant pool, indexed as the pool is - long
-         * and double entries take two slots, which is what makes a blind walk
-         * impossible and this method necessary.
-         */
-        private static List<String> readConstantPool(DataInputStream data)
-                throws IOException {
-            int count = data.readUnsignedShort();
-            List<String> strings = new ArrayList<>(count);
-            strings.add(""); // the pool is 1-based
-            for (int index = 1; index < count; index++) {
-                int tag = data.readUnsignedByte();
-                switch (tag) {
-                case 1 -> strings.add(data.readUTF());
-                case 7, 8, 16, 19, 20 -> {
-                    data.skipBytes(2);
-                    strings.add("");
-                }
-                case 15 -> {
-                    data.skipBytes(3);
-                    strings.add("");
-                }
-                case 3, 4, 9, 10, 11, 12, 17, 18 -> {
-                    data.skipBytes(4);
-                    strings.add("");
-                }
-                case 5, 6 -> {
-                    data.skipBytes(8);
-                    strings.add("");
-                    // A long or a double occupies the following slot as well.
-                    strings.add("");
-                    index++;
-                }
-                default -> throw new IOException(
-                        "unsupported constant pool tag " + tag);
-                }
-            }
-            return strings;
-        }
-
-        private static boolean hasMainMethod(DataInputStream data,
-                List<String> strings) throws IOException {
-            int methods = data.readUnsignedShort();
-            for (int i = 0; i < methods; i++) {
-                int flags = data.readUnsignedShort();
-                String name = at(strings, data.readUnsignedShort());
-                String descriptor = at(strings, data.readUnsignedShort());
-                skipAttributes(data);
-                if ("main".equals(name) && MAIN_DESCRIPTOR.equals(descriptor)
-                        && (flags & ACC_PUBLIC) != 0
-                        && (flags & ACC_STATIC) != 0) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private static String at(List<String> strings, int index) {
-            return index >= 0 && index < strings.size() ? strings.get(index)
-                    : "";
-        }
-
-        private static void skipMembers(DataInputStream data)
-                throws IOException {
-            int count = data.readUnsignedShort();
-            for (int i = 0; i < count; i++) {
-                data.skipBytes(6); // access flags, name, descriptor
-                skipAttributes(data);
-            }
-        }
-
-        private static void skipAttributes(DataInputStream data)
-                throws IOException {
-            int count = data.readUnsignedShort();
-            for (int i = 0; i < count; i++) {
-                data.skipBytes(2); // name index
-                int length = data.readInt();
-                // skipBytes is allowed to skip fewer, and for a Code attribute
-                // read from a stream it does; looping is what makes it exact.
-                for (int skipped = 0; skipped < length;) {
-                    int step = data.skipBytes(length - skipped);
-                    if (step <= 0) {
-                        throw new IOException("truncated attribute");
-                    }
-                    skipped += step;
-                }
-            }
-        }
-    }
-
-    private static void skipShorts(DataInputStream data, int count)
-            throws IOException {
-        data.skipBytes(count * 2);
     }
 }

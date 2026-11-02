@@ -81,6 +81,15 @@ moving a test.
 | `test-dev-mode` fixtures with no IT: `DebugWindowErrorHandlingView`, `DevToolsPluginView`, `FeatureView` (+ `externalErrorTrigger.js`) | **dropped on purpose** — their ITs were deleted in #19205, so the views were only manual dev-tools/feature-flag fixtures; no IT coverage was lost |
 | `AttachExistingElementById` (Polymer template, from `test-dev-mode`) | **home moved to `test-root-context`**, next to the other `templates.polymer` tests; it reaches `test-default` with that batch, which keeps `flow-polymer-template` (and the license check its constructor runs in dev mode) out of `test-default` until then |
 | `test-misc` × production | **retained as production**: the module runs `build-frontend`, which writes `productionMode=true`, so its ITs are production ITs, not defaults; the mode-independent ones move to `test-default` when that module is migrated |
+| `dom` ITs × Tomcat 10 — `servlet-containers/tomcat10` runs `test-root-context`'s test-jar | **dropped on purpose** for the migrated `dom` ITs: that module is excluded from the CI matrix and no workflow runs it, and `test-default` runs on Spring Boot's embedded Tomcat, so the ITs still run on Tomcat |
+| `ElementInitOrder` (Polymer element vs plain custom element) | **stays in `test-root-context`** with the `templates.polymer` batch: its frontend module imports `@polymer/polymer`, which `test-default` does not install |
+| `dom` keyword matches that are not DOM tests: `ServiceInitListeners`, `CustomBrowserTooOldPage`, `TransferProgressListener` | **re-mapped, not moved**: the first two go with `bootstrap`, `TransferProgressListener` with the stream/download tests in `components` (it shares `AbstractStreamResourceIT` with them) |
+| `DomEventStopPropagationAndPreventDefault` — the keyword heuristic files it under `errorhandling` (`preventdefault` contains `fault`) | **moved with `dom`**: it tests `@DomEvent` / `DomListenerRegistration` `stopPropagation` and `preventDefault`, so it is a DOM-event test |
+| `components` ITs × Tomcat 10 — `servlet-containers/tomcat10` runs `test-root-context`'s test-jar | **dropped on purpose** for the migrated `components` ITs, for the same reason as the `dom` ITs |
+| `components` ITs × dev bundle — `test-root-context` runs with `vaadin.frontend.hotdeploy=false`, `test-default` with hotdeploy | **dropped on purpose**, per the feature × dev-bundle rule. One case **stays** instead: the download whose file name has a quote is kept in `test-root-context` as `DownloadQuoteFileNameIT`, because it guards a Jetty-specific path and, under hotdeploy, the dev server handler answers `/VAADIN/` paths that contain a quote with 403 before the stream handler sees them |
+| `CompositeView`'s Polymer `paper-slider` content | **replaced** by a plain custom element with its own `@JsModule`: the test checks that a `Composite`'s content brings its frontend dependency along, which does not need Polymer, and `test-default` does not install `@polymer/polymer` |
+| `TransferProgressListenerView`'s `@Push` | **replaced** by enabling push for the view's UI in `onAttach`: Spring Boot only accepts `@Push` on the `AppShellConfigurator`, and the test only needs push for that one view |
+| `DownloadHandlerIT`'s callback-exception case asserted Jetty's error page text | **rewritten** to assert the HTTP 500 status, which does not depend on the container |
 | `test-spring-common` × {war, jar, undertow, contextpath, reverseproxy, scan, …} | **retain**: 10+ sibling modules already run its ITs by reusing its `test-jar`, so migrating it has to turn those into reuse-runs instead of moving the source away |
 
 Every source module's migration PR updates this ledger so each retain/drop is
@@ -278,9 +287,9 @@ in `computeMatrix.js` so its tests fan out across parallel slices.
    with the `templates.polymer` batch.
 3. Establish the remaining feature packages in `test-default` and migrate the
    default-settings ITs from `test-root-context` feature-by-feature
-   (`dom`, `components`, `routing`, `lifecycle`, `dependencies`, `scroll`,
-   `signals`, `templates.lit`, `templates.polymer`, `push`, `errorhandling`,
-   `bootstrap`, `i18n`).
+   (**`dom` done**, **`components` done**, `routing`, `lifecycle`, `dependencies`,
+   `scroll`, `signals`, `templates.lit`, `templates.polymer`, `push`,
+   `errorhandling`, `bootstrap`, `i18n`).
 4. Add **test-plain-servlet** for the custom-servlet ITs.
 5. Collapse the **spring-security** 14→~4 and the **context-path** 3→1.
 6. Split the theme modules (**test-themes**, **test-no-theme**, **test-tailwind**)

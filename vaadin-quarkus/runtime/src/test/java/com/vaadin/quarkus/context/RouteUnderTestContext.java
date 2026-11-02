@@ -20,7 +20,6 @@ import java.util.List;
 
 import io.quarkus.arc.Arc;
 import net.bytebuddy.ByteBuddy;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
@@ -31,6 +30,8 @@ import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.Router;
 import com.vaadin.quarkus.context.RouteScopedContext.NavigationData;
+
+import static org.mockito.Mockito.mock;
 
 public class RouteUnderTestContext implements UnderTestContext {
 
@@ -81,9 +82,8 @@ public class RouteUnderTestContext implements UnderTestContext {
         List<HasElement> newNavigation = Collections
                 .singletonList(new TestHasElement());
         Arc.container().beanManager().getEvent()
-                .fire(new AfterNavigationEvent(
-                        new LocationChangeEvent(Mockito.mock(Router.class), ui,
-                                NavigationTrigger.PROGRAMMATIC,
-                                new Location("foo"), newNavigation)));
+                .fire(new AfterNavigationEvent(new LocationChangeEvent(
+                        mock(Router.class), ui, NavigationTrigger.PROGRAMMATIC,
+                        new Location("foo"), newNavigation)));
     }
 }

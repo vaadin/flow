@@ -10,7 +10,7 @@ metadata:
   categories:
     - "web"
   status: "stable"
-  unlisted: "true"
+  unlisted: true
   codestart:
     name: "vaadin-flow"
     languages:

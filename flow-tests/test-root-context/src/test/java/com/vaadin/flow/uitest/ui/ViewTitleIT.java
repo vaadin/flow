@@ -35,7 +35,7 @@ public class ViewTitleIT extends ChromeBrowserTest {
     @Test
     public void testNoViewTitle() {
         open();
-        openView("BasicElementView");
+        openView("BaseHrefView");
 
         verifyTitle("");
     }

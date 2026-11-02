@@ -25,8 +25,8 @@
 
 import type { Registry } from '../Registry';
 import type { Command } from '../Command';
-import { CONNECTED, CONNECTION_LOST, RECONNECTING, setState } from '../ConnectionIndicator';
-import { ConnectionMessageType, isHigherPriorityThan } from './ConnectionMessageType';
+import { CONNECTION_LOST, RECONNECTING, setState } from '../ConnectionIndicator';
+import { type ConnectionMessageType, isHigherPriorityThan } from './ConnectionMessageType';
 import { Console } from '../Console';
 
 /**
@@ -140,15 +140,12 @@ export class ReconnectStateMachine {
     this.#reconnectionCause = null;
     this.#reconnectAttempt = 0;
     this.#cancelScheduledReconnect();
-    if (type === ConnectionMessageType.HEARTBEAT) {
-      // Heartbeat never has loading indication, it is safe to assume that no
-      // other requests are in progress and set the `CONNECTED` state directly.
-      setState(CONNECTED);
-    } else {
-      // Let the loading indicator state handler check and remove the prior
-      // loading state indication if necessary.
-      this.#registry.getLoadingIndicatorStateHandler().stopLoading();
-    }
+    // Let the loading indicator state handler leave the reconnecting state,
+    // showing a request still in progress without dropping the loading of
+    // other parties, and remove the prior loading indication if necessary. A
+    // request can be in progress also when a heartbeat failure started the
+    // reconnect.
+    this.#registry.getLoadingIndicatorStateHandler().restoreLoading();
     Console.debug('Re-established connection to server');
   }
 

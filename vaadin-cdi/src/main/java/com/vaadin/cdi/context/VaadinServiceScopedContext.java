@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -42,10 +42,22 @@ public class VaadinServiceScopedContext extends AbstractContext {
 
     private ContextualStorageManager contextManager;
 
+    /**
+     * Creates a new Vaadin service scoped context.
+     *
+     * @param beanManager
+     *            the bean manager
+     */
     public VaadinServiceScopedContext(BeanManager beanManager) {
         super(beanManager);
     }
 
+    /**
+     * Initializes the context by looking up its storage manager.
+     *
+     * @param beanManager
+     *            the bean manager
+     */
     public void init(BeanManager beanManager) {
         contextManager = BeanProvider.getContextualReference(beanManager,
                 ContextualStorageManager.class, false);
@@ -78,10 +90,17 @@ public class VaadinServiceScopedContext extends AbstractContext {
                 && CdiVaadinServlet.getCurrentServletName() != null);
     }
 
+    /**
+     * Manages the contextual storages of Vaadin service scoped beans, keyed by
+     * servlet name.
+     */
     @ApplicationScoped
     public static class ContextualStorageManager
             extends AbstractContextualStorageManager<String> {
 
+        /**
+         * Creates a new storage manager.
+         */
         public ContextualStorageManager() {
             super(true);
         }

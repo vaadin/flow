@@ -410,7 +410,7 @@ public class StateTree implements NodeOwner {
                             .equals(DefaultErrorHandler.class)) {
                         throw e;
                     }
-                    getUI().getSession().getErrorHandler()
+                    getUI().getSessionOrThrow().getErrorHandler()
                             .error(new ErrorEvent(e, entry.getStateNode()));
                 }
             });

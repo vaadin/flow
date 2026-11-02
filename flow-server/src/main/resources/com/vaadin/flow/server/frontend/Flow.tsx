@@ -13,6 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
+/*
+ * Connects React Router to Flow: server-side views are rendered by the `Flow`
+ * component under the `serverSideRoutes` catch-all route. For how the
+ * bootstrap and navigation work, see `flow-client/ARCHITECTURE.md` in
+ * https://github.com/vaadin/flow.
+ */
 /// <reference lib="es2018" />
 import { Flow as _Flow } from 'Frontend/generated/jar-resources/Flow.js';
 import React, { useCallback, useEffect, useReducer, useRef, useState, type ReactNode } from 'react';

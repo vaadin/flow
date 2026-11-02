@@ -15,49 +15,18 @@
  */
 
 // TypeScript port of com.vaadin.client.communication.RequestResponseTracker.
-// It ensures a single active server request at a time and fires
-// request-starting / response-handling-started/ended and reconnection-attempt
-// events. The GWT EventBus is replaced by a per-event-type handler list, which
-// keeps its registration semantics: the same handler added twice is notified
-// twice, and one removal detaches one registration.
+// It ensures a single active server request at a time. The Java version fires
+// its lifecycle events through the GWT EventBus; their only listeners are in the
+// engine, which the port calls directly instead.
 
 import type { Registry } from '../Registry';
-import type { EventRemover } from '../../EventRemover';
-import type { ReconnectionAttemptEventHandler } from './ReconnectionAttemptEvent';
-import type { RequestStartingEventHandler } from './RequestStartingEvent';
-import type { ResponseHandlingEndedEventHandler } from './ResponseHandlingEndedEvent';
-import type { ResponseHandlingStartedEventHandler } from './ResponseHandlingStartedEvent';
-import { ReconnectionAttemptEvent } from './ReconnectionAttemptEvent';
-import { RequestStartingEvent } from './RequestStartingEvent';
-import { ResponseHandlingEndedEvent } from './ResponseHandlingEndedEvent';
-import { ResponseHandlingStartedEvent } from './ResponseHandlingStartedEvent';
 import { ResynchronizationState } from './MessageSender';
 
-function addListener<T>(listeners: T[], listener: T): EventRemover {
-  listeners.push(listener);
-  return {
-    remove: () => {
-      const index = listeners.indexOf(listener);
-      if (index !== -1) {
-        listeners.splice(index, 1);
-      }
-    }
-  };
-}
-
-/** Tracks active server UIDL requests and fires their lifecycle events; mirrors RequestResponseTracker.java. */
+/** Tracks active server UIDL requests; mirrors RequestResponseTracker.java. */
 export class RequestResponseTracker {
   #hasActiveRequestState = false;
 
   readonly #registry: Registry;
-
-  readonly #requestStartingHandlers: RequestStartingEventHandler[] = [];
-
-  readonly #responseHandlingStartedHandlers: ResponseHandlingStartedEventHandler[] = [];
-
-  readonly #responseHandlingEndedHandlers: ResponseHandlingEndedEventHandler[] = [];
-
-  readonly #reconnectionAttemptHandlers: ReconnectionAttemptEventHandler[] = [];
 
   /**
    * Creates a new instance connected to the given registry.
@@ -68,16 +37,12 @@ export class RequestResponseTracker {
     this.#registry = registry;
   }
 
-  /** Marks that a new request has started and fires the request-starting event. */
+  /** Marks that a new request has started. */
   startRequest(): void {
     if (this.#hasActiveRequestState) {
       throw new Error('Trying to start a new request while another is active');
     }
     this.#hasActiveRequestState = true;
-    // Iterate a copy, as SimpleEventBus does, so a handler added or removed
-    // during dispatch does not change who is notified for this event.
-    const event = new RequestStartingEvent();
-    [...this.#requestStartingHandlers].forEach((handler) => handler(event));
   }
 
   /**
@@ -90,8 +55,7 @@ export class RequestResponseTracker {
   }
 
   /**
-   * Marks that the current request has ended, sending any pending invocations
-   * and firing the response-handling-ended event.
+   * Marks that the current request has ended, sending any pending invocations.
    */
   endRequest(): void {
     if (!this.#hasActiveRequestState) {
@@ -113,59 +77,7 @@ export class RequestResponseTracker {
       messageSender.sendInvocationsToServer();
     }
 
-    const event = new ResponseHandlingEndedEvent();
-    [...this.#responseHandlingEndedHandlers].forEach((handler) => handler(event));
-  }
-
-  /** Fires the response-handling-started event (called by the message handler). */
-  fireResponseHandlingStarted(): void {
-    const event = new ResponseHandlingStartedEvent();
-    [...this.#responseHandlingStartedHandlers].forEach((handler) => handler(event));
-  }
-
-  /** Fires a reconnection-attempt event with the attempt count. */
-  fireReconnectionAttempt(attempt: number): void {
-    const event = new ReconnectionAttemptEvent(attempt);
-    [...this.#reconnectionAttemptHandlers].forEach((handler) => handler(event));
-  }
-
-  /**
-   * Adds a handler for {@link RequestStartingEvent}s.
-   *
-   * @param handler - the handler to add
-   * @returns a registration object which can be used to remove the handler
-   */
-  addRequestStartingHandler(handler: RequestStartingEventHandler): EventRemover {
-    return addListener(this.#requestStartingHandlers, handler);
-  }
-
-  /**
-   * Adds a handler for {@link ResponseHandlingStartedEvent}s.
-   *
-   * @param handler - the handler to add
-   * @returns a registration object which can be used to remove the handler
-   */
-  addResponseHandlingStartedHandler(handler: ResponseHandlingStartedEventHandler): EventRemover {
-    return addListener(this.#responseHandlingStartedHandlers, handler);
-  }
-
-  /**
-   * Adds a handler for {@link ResponseHandlingEndedEvent}s.
-   *
-   * @param handler - the handler to add
-   * @returns a registration object which can be used to remove the handler
-   */
-  addResponseHandlingEndedHandler(handler: ResponseHandlingEndedEventHandler): EventRemover {
-    return addListener(this.#responseHandlingEndedHandlers, handler);
-  }
-
-  /**
-   * Adds a handler for {@link ReconnectionAttemptEvent}s.
-   *
-   * @param handler - the handler to add
-   * @returns a registration object which can be used to remove the handler
-   */
-  addReconnectionAttemptHandler(handler: ReconnectionAttemptEventHandler): EventRemover {
-    return addListener(this.#reconnectionAttemptHandlers, handler);
+    // Java's XhrConnection listens to the response-handling-ended event for this.
+    this.#registry.getXhrConnection().clearWebkitMaybeIgnoringRequests();
   }
 }

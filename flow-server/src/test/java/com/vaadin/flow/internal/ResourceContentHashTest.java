@@ -23,13 +23,16 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.server.VaadinService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ResourceContentHashTest {
 
@@ -40,7 +43,7 @@ class ResourceContentHashTest {
 
     @BeforeEach
     void setUp() {
-        service = Mockito.mock(VaadinService.class);
+        service = mock(VaadinService.class);
     }
 
     private URL createTempResource(String content) throws Exception {
@@ -54,9 +57,8 @@ class ResourceContentHashTest {
         byte[] content = "body { color: red; }"
                 .getBytes(StandardCharsets.UTF_8);
         URL url = createTempResource("body { color: red; }");
-        Mockito.when(service.resolveResource("styles.css"))
-                .thenReturn("styles.css");
-        Mockito.when(service.getStaticResource("/styles.css")).thenReturn(url);
+        when(service.resolveResource("styles.css")).thenReturn("styles.css");
+        when(service.getStaticResource("/styles.css")).thenReturn(url);
 
         String hash = ResourceContentHash.getContentHash(service, "styles.css");
 
@@ -98,10 +100,8 @@ class ResourceContentHashTest {
 
     @Test
     void getContentHash_missingResource_returnsNull() {
-        Mockito.when(service.resolveResource("missing.css"))
-                .thenReturn("missing.css");
-        Mockito.when(service.getStaticResource("/missing.css"))
-                .thenReturn(null);
+        when(service.resolveResource("missing.css")).thenReturn("missing.css");
+        when(service.getStaticResource("/missing.css")).thenReturn(null);
 
         assertNull(ResourceContentHash.getContentHash(service, "missing.css"));
     }
@@ -109,9 +109,8 @@ class ResourceContentHashTest {
     @Test
     void getContentHash_barePath_normalizedWithSlashPrefix() throws Exception {
         URL url = createTempResource("body { color: blue; }");
-        Mockito.when(service.resolveResource("bare.css"))
-                .thenReturn("bare.css");
-        Mockito.when(service.getStaticResource("/bare.css")).thenReturn(url);
+        when(service.resolveResource("bare.css")).thenReturn("bare.css");
+        when(service.getStaticResource("/bare.css")).thenReturn(url);
 
         String hash = ResourceContentHash.getContentHash(service, "bare.css");
         assertNotNull(hash);
@@ -121,9 +120,8 @@ class ResourceContentHashTest {
     @Test
     void getContentHash_cachedAfterFirstCall() throws Exception {
         URL url = createTempResource("body {}");
-        Mockito.when(service.resolveResource("cached.css"))
-                .thenReturn("cached.css");
-        Mockito.when(service.getStaticResource("/cached.css")).thenReturn(url);
+        when(service.resolveResource("cached.css")).thenReturn("cached.css");
+        when(service.getStaticResource("/cached.css")).thenReturn(url);
 
         String hash1 = ResourceContentHash.getContentHash(service,
                 "cached.css");
@@ -132,8 +130,7 @@ class ResourceContentHashTest {
 
         assertEquals(hash1, hash2);
         // Resource URL should only be looked up once due to caching
-        Mockito.verify(service, Mockito.times(1))
-                .getStaticResource("/cached.css");
+        verify(service, times(1)).getStaticResource("/cached.css");
     }
 
 }

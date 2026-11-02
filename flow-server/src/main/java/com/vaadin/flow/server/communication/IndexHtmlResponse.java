@@ -18,8 +18,11 @@ package com.vaadin.flow.server.communication;
 import java.util.Optional;
 
 import org.jsoup.nodes.Document;
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.ContentSecurityPolicy;
+import com.vaadin.flow.server.CspMode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 
@@ -35,6 +38,8 @@ public class IndexHtmlResponse {
     private final VaadinRequest vaadinRequest;
     private final VaadinResponse vaadinResponse;
     private final Document document;
+    private @Nullable String cspNonce;
+    private @Nullable ContentSecurityPolicy contentSecurityPolicy;
 
     /**
      * Create a response object for client side bootstrapping with UI.
@@ -112,5 +117,63 @@ public class IndexHtmlResponse {
         } else {
             return Optional.ofNullable(UI.getCurrent());
         }
+    }
+
+    /**
+     * Gets the nonce of this response, which Vaadin puts on every
+     * {@code <script>} element of the document and allows in the
+     * {@code script-src} directive of the Content Security Policy.
+     * <p>
+     * A new nonce is created for every response when the application runs with
+     * the {@link CspMode#STRICT} mode. Scripts added by an
+     * {@link IndexHtmlRequestListener} get the nonce automatically, but the
+     * value can also be used for other content that needs it. The nonce is not
+     * put on the scripts in development mode.
+     *
+     * @return the nonce, or {@code null} if the mode is not
+     *         {@link CspMode#STRICT}
+     */
+    public @Nullable String getCspNonce() {
+        return cspNonce;
+    }
+
+    /**
+     * Gets the Content Security Policy that is sent with this response.
+     * <p>
+     * The policy is created when the application runs with the
+     * {@link CspMode#STRICT} mode. An {@link IndexHtmlRequestListener} can add
+     * or override directives for resources of the application, such as
+     * {@code connect-src}, {@code img-src}, {@code frame-src} or
+     * {@code report-to}.
+     * <p>
+     * Do not change {@code script-src}: it holds the nonce and
+     * {@code 'strict-dynamic'}, so replacing it with
+     * {@link ContentSecurityPolicy#setDirective(String, String...)} blocks
+     * every script of the page, and host sources added to it are ignored by the
+     * browser. To load a script from another origin, add a {@code <script>}
+     * element to the document, which gets the nonce, or load it from a script
+     * that is already trusted.
+     * <p>
+     * The header is written after all listeners have run. It is not written in
+     * development mode, because the development server and the development
+     * tools need {@code eval}. In production mode, the request fails with an
+     * {@link IllegalStateException} if the response already has a
+     * {@code Content-Security-Policy} header when the page is written, for
+     * example from a servlet filter that runs before Vaadin. A filter that
+     * writes its header only when the response is committed, such as Spring
+     * Security's {@code HeaderWriterFilter} by default, cannot be detected; its
+     * policy should be configured here instead.
+     *
+     * @return the mutable policy, or {@code null} if the mode is not
+     *         {@link CspMode#STRICT}
+     */
+    public @Nullable ContentSecurityPolicy getContentSecurityPolicy() {
+        return contentSecurityPolicy;
+    }
+
+    void setContentSecurityPolicy(String cspNonce,
+            ContentSecurityPolicy contentSecurityPolicy) {
+        this.cspNonce = cspNonce;
+        this.contentSecurityPolicy = contentSecurityPolicy;
     }
 }

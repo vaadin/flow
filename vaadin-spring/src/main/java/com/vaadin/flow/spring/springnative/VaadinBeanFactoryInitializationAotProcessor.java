@@ -16,6 +16,7 @@
 package com.vaadin.flow.spring.springnative;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -25,6 +26,7 @@ import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aot.hint.BindingReflectionHintsRegistrar;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.TypeReference;
@@ -44,9 +46,11 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventBusUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.js.JsDefinition;
@@ -114,7 +118,7 @@ public class VaadinBeanFactoryInitializationAotProcessor
 
         return (generationContext, beanFactoryInitializationCode) -> {
             var hints = generationContext.getRuntimeHints();
-            for (var pkg : getPackages(beanFactory)) {
+            for (var pkg : AotScanPackages.getPackagesToScan(beanFactory)) {
                 /*
                  * This aims to register most types in the project that are
                  * needed for Flow to function properly. Examples are @Route
@@ -146,7 +150,7 @@ public class VaadinBeanFactoryInitializationAotProcessor
                 registerSubTypes(hints, pkg, RouterLayout.class);
                 registerSubTypes(hints, pkg, HasErrorParameter.class,
                         VaadinBeanFactoryInitializationAotProcessor::getExceptionTypeFromHasErrorParameter);
-                registerSubTypes(hints, pkg, ComponentEvent.class);
+                registerComponentEvents(hints, pkg);
                 registerSubTypes(hints, pkg, HasUrlParameter.class);
                 registerSubTypes(hints, pkg,
                         "com.vaadin.flow.data.converter.Converter");
@@ -192,6 +196,62 @@ public class VaadinBeanFactoryInitializationAotProcessor
         }
     }
 
+    /**
+     * Registers the {@link ComponentEvent} subtypes in the given package along
+     * with the types of their {@code @EventData} constructor parameters, so
+     * that Jackson can decode the event data into them.
+     */
+    private void registerComponentEvents(RuntimeHints hints, String pkg) {
+        Set<Class<?>> eventDataTypes = new HashSet<>();
+        for (var c : getSubtypesOf(pkg, ComponentEvent.class)) {
+            registerType(hints, c);
+            eventDataTypes.addAll(getEventDataTypes(c));
+        }
+        if (!eventDataTypes.isEmpty()) {
+            new BindingReflectionHintsRegistrar().registerReflectionHints(
+                    hints.reflection(), eventDataTypes.toArray(new Class[0]));
+        }
+    }
+
+    // Visible for testing
+    static Set<Class<?>> getEventDataTypes(Class<?> eventType) {
+        Set<Class<?>> types = new HashSet<>();
+        for (Constructor<?> constructor : eventType.getConstructors()) {
+            if (!ComponentEventBusUtil.isDomEventConstructor(constructor)) {
+                continue;
+            }
+            Class<?>[] parameterTypes = constructor.getParameterTypes();
+            // The first two parameters are the source and fromClient
+            for (int i = 2; i < parameterTypes.length; i++) {
+                Class<?> type = parameterTypes[i];
+                while (type.isArray()) {
+                    type = type.getComponentType();
+                }
+                if (isDecodedEventDataType(type)) {
+                    types.add(type);
+                }
+            }
+        }
+        return types;
+    }
+
+    /**
+     * Checks whether Jackson decodes event data of the given type through
+     * reflection. Components and elements are looked up from the state tree
+     * instead, and JDK and Jackson types need no hints.
+     */
+    private static boolean isDecodedEventDataType(Class<?> type) {
+        if (type.isPrimitive() || Component.class.isAssignableFrom(type)
+                || type == Element.class) {
+            return false;
+        }
+        String packageName = type.getPackageName();
+        return !packageName.startsWith("java.")
+                && !packageName.startsWith("javax.")
+                && !packageName.startsWith("jakarta.")
+                && !packageName.startsWith("tools.jackson.");
+    }
+
     // Visible for testing
     static Set<Class<?>> getExceptionTypeFromHasErrorParameter(Class<?> clazz) {
         Class<?> exceptionType = ReflectTools.getGenericInterfaceType(clazz,
@@ -202,6 +262,10 @@ public class VaadinBeanFactoryInitializationAotProcessor
         return Set.of();
     }
 
+    // Leaves out vaadin.allowed-packages on purpose: at runtime,
+    // VaadinServletContextInitializer looks for routes only in its default
+    // packages, not in the allowed packages, so a route that is only in an
+    // allowed package is not registered and needs no bean.
     private static List<String> getPackagesWithRoutes(BeanFactory beanFactory) {
         List<String> packages = new ArrayList<String>();
         packages.add("com.vaadin");
@@ -329,13 +393,6 @@ public class VaadinBeanFactoryInitializationAotProcessor
         // VaadinServletContextInitializer to discover classes at runtime
         // in native builds (GraalVM)
         registerResources(hints, c);
-    }
-
-    private static List<String> getPackages(BeanFactory beanFactory) {
-        var listOf = new ArrayList<String>();
-        listOf.add("com.vaadin");
-        listOf.addAll(AutoConfigurationPackages.get(beanFactory));
-        return listOf;
     }
 
     // List taken from AwtProcessor in Quarkus AWT extension
@@ -482,15 +539,22 @@ public class VaadinBeanFactoryInitializationAotProcessor
     /**
      * Loads the classes a scan of the given package found, leaving out what the
      * class loader can not load.
+     * <p>
+     * The classes are not initialized, so that a static initializer of an
+     * application or add-on class does not run during the AOT build. A class
+     * that still fails to load, for example because an optional dependency of
+     * an add-on is missing, is skipped instead of failing the build.
      */
     private Set<Class<?>> loadCandidates(
             ClassPathScanningCandidateComponentProvider scanner,
             String basePackage) {
+        ClassLoader classLoader = scanner.getResourceLoader().getClassLoader();
         Set<Class<?>> result = new HashSet<>();
         for (BeanDefinition bd : scanner.findCandidateComponents(basePackage)) {
             try {
-                result.add(Class.forName(bd.getBeanClassName()));
-            } catch (ClassNotFoundException e) {
+                result.add(Class.forName(bd.getBeanClassName(), false,
+                        classLoader));
+            } catch (ClassNotFoundException | LinkageError e) {
                 logger.warn("Could not load class {}", bd.getBeanClassName(),
                         e);
             }

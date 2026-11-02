@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -44,6 +43,9 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class AbstractSinglePropertyFieldTest {
 
@@ -91,6 +93,35 @@ class AbstractSinglePropertyFieldTest {
         monitor.assertEvent(false, "bar", "");
     }
 
+    public static class GenericStringField<T> extends StringField {
+    }
+
+    @Test
+    void genericSubclassOfConcreteField_propertyTypeFromSuperclass() {
+        GenericStringField<Object> field = new GenericStringField<>();
+
+        field.setValue("foo");
+
+        assertEquals("foo", field.getElement().getProperty("property"));
+    }
+
+    @Tag("tag")
+    @SuppressWarnings("rawtypes")
+    public static class RawField extends AbstractSinglePropertyField {
+        public RawField() {
+            super("property", "", false);
+        }
+    }
+
+    @Test
+    void rawField_propertyTypeNotResolvable_throws() {
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class, RawField::new);
+        assertEquals(
+                "Cannot automatically determine element property type based on type parameters.",
+                exception.getMessage());
+    }
+
     @Test
     void stringField_setValueNull_exceptionAndNoEvent() {
         StringField field = new StringField();
@@ -127,14 +158,14 @@ class AbstractSinglePropertyFieldTest {
         StringField stringField = new StringField();
         DomListenerRegistration origReg = stringField
                 .getSynchronizationRegistration();
-        SerializableRunnable unregisterListener = Mockito
-                .mock(SerializableRunnable.class);
+        SerializableRunnable unregisterListener = mock(
+                SerializableRunnable.class);
         origReg.onUnregister(unregisterListener);
 
         stringField.setSynchronizedEvent("blur");
         DomListenerRegistration recentReg = stringField
                 .getSynchronizationRegistration();
-        Mockito.verify(unregisterListener).run();
+        verify(unregisterListener).run();
         assertNotSame(origReg, recentReg);
         assertEquals("blur", recentReg.getEventType());
     }
@@ -142,14 +173,14 @@ class AbstractSinglePropertyFieldTest {
     @Test
     void synchronizedEvent_null_noSynchronization() {
         StringField stringField = new StringField();
-        SerializableRunnable unregisterListener = Mockito
-                .mock(SerializableRunnable.class);
+        SerializableRunnable unregisterListener = mock(
+                SerializableRunnable.class);
         stringField.getSynchronizationRegistration()
                 .onUnregister(unregisterListener);
 
         stringField.setSynchronizedEvent(null);
         assertNull(stringField.getSynchronizationRegistration());
-        Mockito.verify(unregisterListener).run();
+        verify(unregisterListener).run();
     }
 
     @Test
@@ -523,12 +554,12 @@ class AbstractSinglePropertyFieldTest {
         UI ui = new MockUI();
         UI.setCurrent(ui);
 
-        Instantiator instantiator = Mockito.mock(Instantiator.class);
+        Instantiator instantiator = mock(Instantiator.class);
         TestVaadinServletService service = (TestVaadinServletService) ui
                 .getSession().getService();
         service.setInstantiator(instantiator);
 
-        Mockito.when(instantiator.createComponent(StringField.class))
+        when(instantiator.createComponent(StringField.class))
                 .thenAnswer(a -> new StringField());
 
         StringField field = Component.from(element, StringField.class);

@@ -26,11 +26,12 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
@@ -43,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.Mockito.mock;
 
 class TaskGenerateJsDefinitionsTest {
 
@@ -51,6 +53,14 @@ class TaskGenerateJsDefinitionsTest {
     private static final String COUNT_EXPRESSION = "this.count = ($0 || 0) + 1";
 
     private static final String SHOUT_EXPRESSION = "window.alert([$0, ...$1].join(' '))";
+
+    private static final String LOG_EXPRESSION = "console.log($0, value);";
+
+    private static final String FORMAT_EXPRESSION = "return (point) => point.y + $0;";
+
+    private static final String TICK_EXPRESSION = "console.log($0, Date.now());";
+
+    private static final String SNIPPETS_REGISTRY = "window.Vaadin.Flow.jsSnippets = window.Vaadin.Flow.jsSnippets || {};";
 
     private static final String NAMES_REGISTRY = "window.Vaadin.Flow.jsDefinitionNames = window.Vaadin.Flow.jsDefinitionNames || {};";
 
@@ -61,6 +71,27 @@ class TaskGenerateJsDefinitionsTest {
 
         @JsExpression("window.alert('Hello')")
         void showGreeting();
+    }
+
+    @JsDefinition
+    public interface LoggerJs extends Serializable {
+        @JsExpression(LOG_EXPRESSION)
+        @JsCalledWith("value")
+        JsFunction createLogger(String prefix);
+
+        @JsExpression(FORMAT_EXPRESSION)
+        JsFunction createFormatter(String unit);
+
+        @JsExpression(TICK_EXPRESSION)
+        @JsCalledWith({})
+        JsFunction createTicker(String label);
+    }
+
+    @JsDefinition
+    public interface InvalidNameJs extends Serializable {
+        @JsExpression(LOG_EXPRESSION)
+        @JsCalledWith("class")
+        JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
@@ -91,7 +122,7 @@ class TaskGenerateJsDefinitionsTest {
     void setUp() {
         frontendFolder = new File(temporaryFolder, FRONTEND);
         frontendFolder.mkdirs();
-        options = new Options(Mockito.mock(Lookup.class),
+        options = new Options(mock(Lookup.class),
                 new DefaultClassFinder(
                         Set.of(GreeterJs.class, NothingJs.class)),
                 null).withFrontendDirectory(frontendFolder)
@@ -133,6 +164,70 @@ class TaskGenerateJsDefinitionsTest {
                         + "\"] = async function ($0, ...$1) {"),
                 "the last parameter should collect the arguments that follow the fixed ones, as it does in Java: "
                         + content);
+    }
+
+    @Test
+    void snippetMethod_registersASynchronousFunctionOfTheCaptures()
+            throws NoSuchMethodException {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(LoggerJs.class), false);
+        String separator = System.lineSeparator();
+
+        assertTrue(content.contains(SNIPPETS_REGISTRY),
+                "the registry a snippet is assigned into has to be there, or the module throws: "
+                        + content);
+        assertTrue(
+                content.contains(String.join(separator,
+                        "window.Vaadin.Flow.jsSnippets[\""
+                                + JsCall.functionId(LoggerJs.class.getMethod(
+                                        "createLogger", String.class))
+                                + "\"] = function ($0) {",
+                        "  return function (value) {", LOG_EXPRESSION, "  };",
+                        "};")),
+                "the expression should be the body of a function of the declared parameters, returned by one of the captures: "
+                        + content);
+        String formatterId = JsCall.functionId(
+                LoggerJs.class.getMethod("createFormatter", String.class));
+        assertTrue(
+                content.contains(String.join(separator,
+                        "window.Vaadin.Flow.jsSnippets[\"" + formatterId
+                                + "\"] = function ($0) {",
+                        FORMAT_EXPRESSION, "};",
+                        "window.Vaadin.Flow.jsSnippets[\"" + formatterId
+                                + "\"].lazy = true;")),
+                "without declared parameters the expression should return the function itself, marked for the client to run it on the first call rather than when decoding: "
+                        + content);
+        String tickerId = JsCall.functionId(
+                LoggerJs.class.getMethod("createTicker", String.class));
+        assertTrue(
+                content.contains(String.join(separator,
+                        "window.Vaadin.Flow.jsSnippets[\"" + tickerId
+                                + "\"] = function ($0) {",
+                        "  return function () {", TICK_EXPRESSION, "  };",
+                        "};")),
+                "an empty list of parameters should still wrap a function around the expression: "
+                        + content);
+        assertFalse(content.contains(tickerId + "\"].lazy"),
+                "and the expression of that function only runs when it is called: "
+                        + content);
+        assertFalse(content.contains("jsDefinitions[\""),
+                "a snippet is not run by a call: " + content);
+    }
+
+    @Test
+    void definitionThatCanNotWork_isLeftOutWithoutFailingTheBuild()
+            throws NoSuchMethodException {
+        // A bad name would be a syntax error that breaks every function in
+        // the module, and the definition may be in an add-on that the
+        // application can not fix, so it is left out and fails when used
+        String content = TaskGenerateJsDefinitions.renderFileContent(
+                List.of(InvalidNameJs.class, LoggerJs.class), false);
+
+        assertFalse(content.contains("function (class)"), content);
+        assertTrue(
+                content.contains(JsCall.functionId(LoggerJs.class
+                        .getMethod("createLogger", String.class))),
+                "the other definitions should still be generated: " + content);
     }
 
     @Test
@@ -185,6 +280,31 @@ class TaskGenerateJsDefinitionsTest {
                 written.contains(
                         JsCall.functionId(GREETING_EXPRESSION, 1, false)),
                 "and what the file held should still be in it: " + written);
+    }
+
+    @Test
+    void updateJsDefinitions_snippetIntoAFileWithoutTheirRegistry_addsIt()
+            throws IOException {
+        // A file that a build wrote before snippets were generated at all
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+        generated.getParentFile().mkdirs();
+        Files.writeString(generated.toPath(), TaskGenerateJsDefinitions
+                .renderFileContent(List.of(GreeterJs.class), true)
+                .replace(SNIPPETS_REGISTRY + System.lineSeparator(), ""));
+
+        TaskGenerateJsDefinitions.updateJsDefinitions(options,
+                List.of(LoggerJs.class));
+
+        String written = Files.readString(generated.toPath());
+        assertTrue(written.contains(SNIPPETS_REGISTRY),
+                "the registry should be added to a file that has none: "
+                        + written);
+        assertTrue(
+                written.indexOf(SNIPPETS_REGISTRY) < written
+                        .indexOf("window.Vaadin.Flow.jsSnippets[\""),
+                "and it should come before the snippets it holds: " + written);
     }
 
     @Test
@@ -387,8 +507,8 @@ class TaskGenerateJsDefinitionsTest {
         // application runs builds: it knows the definitions, so it has nothing
         // to scan with, and going through the generating side is a mistake
         // that should say so
-        Options withoutAClassFinder = new Options(Mockito.mock(Lookup.class),
-                null, null).withFrontendDirectory(frontendFolder);
+        Options withoutAClassFinder = new Options(mock(Lookup.class), null,
+                null).withFrontendDirectory(frontendFolder);
 
         assertTrue(
                 assertThrows(NullPointerException.class,

@@ -32,11 +32,8 @@ import java.util.function.Supplier;
 
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
@@ -47,6 +44,15 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * The servlet publishes the name of the Vaadin servlet handling the current
@@ -66,50 +72,47 @@ public class QuarkusVaadinServletTest {
 
     @BeforeEach
     public void setUp() {
-        servletConfig = Mockito.mock(ServletConfig.class);
-        final ServletContext servletContext = Mockito
-                .mock(ServletContext.class);
-        Mockito.when(servletContext.getClassLoader())
+        servletConfig = mock(ServletConfig.class);
+        final ServletContext servletContext = mock(ServletContext.class);
+        when(servletContext.getClassLoader())
                 .thenReturn(getClass().getClassLoader());
 
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
-                .thenReturn(Mockito.mock(ResourceProvider.class));
-        Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
+        Lookup lookup = mock(Lookup.class);
+        when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(mock(ResourceProvider.class));
+        when(servletContext.getAttribute(Lookup.class.getName()))
                 .thenReturn(lookup);
 
-        final DefaultApplicationConfigurationFactory configurationFactory = Mockito
-                .mock(DefaultApplicationConfigurationFactory.class);
-        final ApplicationConfiguration applicationConfiguration = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(applicationConfiguration.getPropertyNames())
+        final DefaultApplicationConfigurationFactory configurationFactory = mock(
+                DefaultApplicationConfigurationFactory.class);
+        final ApplicationConfiguration applicationConfiguration = mock(
+                ApplicationConfiguration.class);
+        when(applicationConfiguration.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
-        final VaadinContext context = Mockito.mock(VaadinContext.class);
-        Mockito.when(applicationConfiguration.getContext()).thenReturn(context);
-        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
-        Mockito.when(context.getAttribute(ArgumentMatchers.any(Class.class),
-                ArgumentMatchers.any(Supplier.class)))
+        final VaadinContext context = mock(VaadinContext.class);
+        when(applicationConfiguration.getContext()).thenReturn(context);
+        when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        when(context.getAttribute(any(Class.class), any(Supplier.class)))
                 .then(i -> i.getArgument(1, Supplier.class).get());
-        Mockito.when(lookup.lookup(ApplicationConfigurationFactory.class))
+        when(lookup.lookup(ApplicationConfigurationFactory.class))
                 .thenReturn(configurationFactory);
-        Mockito.when(configurationFactory.create(Mockito.any()))
+        when(configurationFactory.create(any()))
                 .thenReturn(applicationConfiguration);
-        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
+        when(lookup.lookup(StaticFileHandlerFactory.class))
                 .thenReturn((StaticFileHandlerFactory) StaticFileServer::new);
 
-        Mockito.when(servletConfig.getInitParameterNames())
+        when(servletConfig.getInitParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
-        Mockito.when(servletConfig.getServletContext())
-                .thenReturn(servletContext);
-        Mockito.when(servletConfig.getServletName()).thenReturn("test-servlet");
-        Mockito.when(servletContext.getInitParameterNames())
+        when(servletConfig.getServletContext()).thenReturn(servletContext);
+        when(servletConfig.getServletName()).thenReturn("test-servlet");
+        when(servletContext.getInitParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
 
-        final ServletRegistration servletRegistration = Mockito
-                .mock(ServletRegistration.class);
-        Mockito.when(servletRegistration.getMappings())
+        final ServletRegistration servletRegistration = mock(
+                ServletRegistration.class);
+        when(servletRegistration.getMappings())
                 .thenReturn(Collections.emptyList());
-        Mockito.when(servletContext.getServletRegistrations())
+        when(servletContext.getServletRegistrations())
                 .thenReturn((Map) Collections.singletonMap("test-servlet",
                         servletRegistration));
 
@@ -140,14 +143,14 @@ public class QuarkusVaadinServletTest {
 
         servlet.init(servletConfig);
 
-        Assertions.assertEquals(Optional.of("test-servlet"), duringInit.get(),
+        assertEquals(Optional.of("test-servlet"), duringInit.get(),
                 "the name has to be readable while the service is being "
                         + "created, which is what needs it");
-        Assertions.assertTrue(
+        assertTrue(
                 QuarkusVaadinServletService.class
                         .isAssignableFrom(servlet.getService().getClass()),
                 "the servlet has to create the Quarkus aware service");
-        Assertions.assertEquals(Optional.empty(),
+        assertEquals(Optional.empty(),
                 QuarkusVaadinServlet.getCurrentServletName(),
                 "and it has to be gone once init() returns");
     }
@@ -157,26 +160,25 @@ public class QuarkusVaadinServletTest {
             throws Exception {
         servlet.init(servletConfig);
 
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
         // A context root without the trailing slash, which VaadinServlet
         // answers with a redirect before it touches the request pipeline.
-        Mockito.when(request.getRequestURI()).thenReturn("/app");
-        Mockito.when(request.getPathInfo()).thenReturn(null);
+        when(request.getRequestURI()).thenReturn("/app");
+        when(request.getPathInfo()).thenReturn(null);
 
         AtomicReference<Optional<String>> duringService = new AtomicReference<>();
-        Mockito.doAnswer(invocation -> {
+        doAnswer(invocation -> {
             duringService.set(QuarkusVaadinServlet.getCurrentServletName());
             return null;
-        }).when(response).sendRedirect(Mockito.anyString());
+        }).when(response).sendRedirect(anyString());
 
         servlet.service(request, response);
 
-        Mockito.verify(response).sendRedirect("/app/");
-        Assertions.assertEquals(Optional.of("test-servlet"),
-                duringService.get(),
+        verify(response).sendRedirect("/app/");
+        assertEquals(Optional.of("test-servlet"), duringService.get(),
                 "the name has to be readable for the whole request");
-        Assertions.assertEquals(Optional.empty(),
+        assertEquals(Optional.empty(),
                 QuarkusVaadinServlet.getCurrentServletName(),
                 "and cleared again afterwards, so it cannot leak to the next "
                         + "request on this thread");
@@ -193,7 +195,7 @@ public class QuarkusVaadinServletTest {
         thread.start();
         thread.join();
 
-        Assertions.assertEquals(Optional.empty(), onOtherThread.get(),
+        assertEquals(Optional.empty(), onOtherThread.get(),
                 "the name is per thread, and a thread that never entered the "
                         + "servlet has to answer an empty Optional rather than "
                         + "null");

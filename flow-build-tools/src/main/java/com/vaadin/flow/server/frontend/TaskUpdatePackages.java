@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -57,6 +58,15 @@ public class TaskUpdatePackages extends NodeUpdater {
     private final boolean forceCleanUp;
     private final boolean enablePnpm;
     private final File jarResourcesFolder;
+    private ObjectNode allPinnedNpmDependencies;
+    private ObjectNode pinnedNpmDependencies;
+
+    /**
+     * A version npm resolves within a known minor or major: an exact version, a
+     * tilde range or a caret range, each with a full major.minor.patch.
+     */
+    private static final Pattern RANGE_CHECKED_VERSION = Pattern
+            .compile("[~^]?\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?");
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -84,6 +94,8 @@ public class TaskUpdatePackages extends NodeUpdater {
             modified = updatePackageJsonDependencies(packageJson,
                     scannedApplicationDependencies,
                     scannedApplicationDevDependencies);
+            warnOnVersionRangeMismatch(packageJson);
+
             generateVersionsJson(packageJson);
             modified = pinVersionsForNpm(packageJson) || modified;
 
@@ -359,7 +371,7 @@ public class TaskUpdatePackages extends NodeUpdater {
                 // Already provided by the default (e.g. workbox) overrides.
                 continue;
             }
-            final FrontendVersion pinnedVersion = getPinnableVersion(
+            final String pinnedVersion = getPinnableVersion(
                     pinnedEntry.getValue());
             if (pinnedVersion == null) {
                 continue;
@@ -368,8 +380,9 @@ public class TaskUpdatePackages extends NodeUpdater {
                     devDependencies, dependency);
             if (directVersion == null) {
                 // Not declared directly, pin to the pinned version.
-                vaadinOverrides.put(dependency, pinnedVersion.getFullVersion());
-            } else if (isNumericVersion(directVersion)) {
+                vaadinOverrides.put(dependency, pinnedVersion);
+            } else if (isNumericVersion(directVersion)
+                    || FrontendBuildUtils.isUrlVersion(directVersion)) {
                 // Pinned by a dependency/devDependency; reference it so the
                 // declared version is enforced for transitive uses too.
                 vaadinOverrides.put(dependency, "$" + dependency);
@@ -385,20 +398,24 @@ public class TaskUpdatePackages extends NodeUpdater {
      *
      * @param version
      *            the version declared for the package
-     * @return the version to pin the package to, or {@code null} if it cannot
-     *         be pinned, which is the case for a package that points at the
-     *         build folder and for a SNAPSHOT or otherwise non-numeric version
+     * @return the version to pin the package to, which is a numeric version or
+     *         a URL, or {@code null} if it cannot be pinned, which is the case
+     *         for a package that points at the build folder and for a SNAPSHOT
+     *         or otherwise non-numeric version
      */
-    private FrontendVersion getPinnableVersion(String version) {
+    private String getPinnableVersion(String version) {
         if (isInternalPseudoDependency(version)) {
             return null;
+        }
+        if (FrontendBuildUtils.isUrlVersion(version)) {
+            return version;
         }
         try {
             final FrontendVersion frontendVersion = new FrontendVersion(
                     version);
             return "SNAPSHOT".equals(frontendVersion.getBuildIdentifier())
                     ? null
-                    : frontendVersion;
+                    : frontendVersion.getFullVersion();
         } catch (NumberFormatException nfe) {
             return null;
         }
@@ -512,7 +529,29 @@ public class TaskUpdatePackages extends NodeUpdater {
      * @see PinnedNpmVersions
      */
     private ObjectNode getAllPinnedNpmDependencies() throws IOException {
-        return getPinnedNpmVersions().getAllDependencies();
+        // Read once per run, as merging the versions files warns about the
+        // packages they disagree on
+        if (allPinnedNpmDependencies == null) {
+            allPinnedNpmDependencies = getPinnedNpmVersions()
+                    .getAllDependencies();
+        }
+        return allPinnedNpmDependencies;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Read once per run, as merging the versions files warns about the packages
+     * they disagree on and about the ones package.json pins to an older
+     * version.
+     */
+    @Override
+    ObjectNode getPinnedNpmDependencies() throws IOException {
+        if (pinnedNpmDependencies == null) {
+            pinnedNpmDependencies = super.getPinnedNpmDependencies();
+        }
+        // A copy, as the callers add to what they get
+        return pinnedNpmDependencies.deepCopy();
     }
 
     private boolean isInternalPseudoDependency(String dependencyVersion) {
@@ -732,9 +771,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     protected static boolean pinNpmDependency(JsonNode packageJson,
             JsonNode pinnedNpmVersions, String pkg) {
-        final FrontendVersion pinnedVersion = FrontendUtils
-                .getPackageVersionFromJson(pinnedNpmVersions, pkg,
-                        "vaadin_dependencies.json");
+        final String pinnedVersion = getPinnedVersion(pinnedNpmVersions, pkg);
         if (pinnedVersion == null) {
             return false;
         }
@@ -747,41 +784,204 @@ public class TaskUpdatePackages extends NodeUpdater {
         assert vaadinDeps != null : "vaadin{ dependencies { } } should exist";
         assert packageJsonDeps != null : "dependencies { } should exist";
 
-        FrontendVersion packageJsonVersion = null, vaadinDepsVersion = null;
-        try {
-            if (packageJsonDeps.has(pkg)) {
-                packageJsonVersion = new FrontendVersion(
-                        packageJsonDeps.get(pkg).asString());
-            }
-        } catch (NumberFormatException e) {
-            // Overridden to a file link in package.json, do not change
+        final String packageJsonVersion = packageJsonDeps.has(pkg)
+                ? packageJsonDeps.get(pkg).asString()
+                : null;
+        final String vaadinDepsVersion = vaadinDeps.has(pkg)
+                ? vaadinDeps.get(pkg).asString()
+                : null;
+
+        if (packageJsonVersion != null && vaadinDepsVersion == null
+                && !isNumericVersion(packageJsonVersion)) {
+            // The user declared a non-numeric version, such as a file link, a
+            // URL or a dist-tag, which is not compared and so not changed
             return false;
         }
-        try {
-            if (vaadinDeps.has(pkg)) {
-                vaadinDepsVersion = new FrontendVersion(
-                        vaadinDeps.get(pkg).asString());
-            }
-        } catch (NumberFormatException e) {
-            // Vaadin defines a non-numeric version. Not sure what the case
-            // would be but probably it should be pinned like any other version
-        }
-
-        if ((vaadinDepsVersion != null && packageJsonVersion != null)
-                && !vaadinDepsVersion.isSameDependency(packageJsonVersion)) {
+        if (packageJsonVersion != null && vaadinDepsVersion != null
+                && !isSameDependency(vaadinDepsVersion, packageJsonVersion)) {
             // The user has overridden the version, use that
             return false;
         }
-
-        if (packageJsonVersion != null && vaadinDepsVersion != null
-                && pinnedVersion.isSameDependency(packageJsonVersion)
-                && pinnedVersion.isSameDependency(vaadinDepsVersion)) {
+        if (isSameDependency(pinnedVersion, packageJsonVersion)
+                && isSameDependency(pinnedVersion, vaadinDepsVersion)) {
             return false;
         }
 
-        packageJsonDeps.put(pkg, pinnedVersion.getFullVersion());
-        vaadinDeps.put(pkg, pinnedVersion.getFullVersion());
+        packageJsonDeps.put(pkg, pinnedVersion);
+        vaadinDeps.put(pkg, pinnedVersion);
         return true;
+    }
+
+    /**
+     * Warns about packages the versions files pin, that the project has
+     * declared in the {@code dependencies} or {@code devDependencies} of
+     * {@code package.json} with a version from a different minor or major range
+     * than the one the current Vaadin version pins them to.
+     * <p>
+     * This is checked once the dependencies have been updated, so that a
+     * version the build overwrites with the one it ships is not reported. Only
+     * values that differ from the ones Vaadin manages (kept in the
+     * {@code vaadin} section) are considered, as those are the explicit
+     * opt-outs that the build leaves untouched. Entries in the
+     * {@code overrides} section are intentionally not reported here, as those
+     * are reconciled with the pinned versions by the override management.
+     * Declaring a package with another maintenance (patch) release of the same
+     * minor is a supported way of picking up a fix early, but using a different
+     * minor or major version is usually a mistake, since the rest of the
+     * platform is built and tested against the pinned version. Such mismatches
+     * can lead to runtime errors or broken generated frontend files (a blank
+     * page).
+     *
+     * @param packageJson
+     *            the package.json with the dependencies updated, before the
+     *            overrides pin the versions
+     * @throws IOException
+     *             if the versions files cannot be read
+     */
+    void warnOnVersionRangeMismatch(ObjectNode packageJson) throws IOException {
+        // With the web components excluded, Vaadin uses none of them, so they
+        // are the project's own to manage. Otherwise even a package pinned for
+        // another mode is checked, as the overrides still force the declared
+        // version on its transitive uses.
+        final ObjectNode expectedVersions = options.isNpmExcludeWebComponents()
+                ? getPinnedNpmDependencies()
+                : getAllPinnedNpmDependencies();
+        final JsonNode vaadin = packageJson.get(VAADIN_DEP_KEY);
+
+        // Collect mismatches into a single warning to avoid flooding the log
+        // when a whole platform worth of packages has drifted.
+        final List<String> mismatches = new ArrayList<>();
+        collectRangeMismatches(sectionToMap(packageJson.get(DEPENDENCIES)),
+                sectionToMap(vaadin == null ? null : vaadin.get(DEPENDENCIES)),
+                expectedVersions, DEPENDENCIES, mismatches);
+        collectRangeMismatches(sectionToMap(packageJson.get(DEV_DEPENDENCIES)),
+                sectionToMap(
+                        vaadin == null ? null : vaadin.get(DEV_DEPENDENCIES)),
+                expectedVersions, DEV_DEPENDENCIES, mismatches);
+
+        if (!mismatches.isEmpty()) {
+            log().warn(
+                    """
+                            The following packages are pinned in package.json to a different \
+                            minor/major version than the version expected by the current Vaadin \
+                            version. Pinning to another maintenance release is supported, but \
+                            using a different minor or major version is usually a mistake and may \
+                            cause runtime errors or a blank page:
+                            {}
+                            Unless these versions are intentional, remove the entries from \
+                            package.json and clean the frontend ('mvn vaadin:clean-frontend' \
+                            with Maven, 'gradle vaadinClean' with Gradle) to reset it to a clean \
+                            state.""",
+                    String.join("\n", mismatches));
+        }
+    }
+
+    private void collectRangeMismatches(Map<String, String> projectSection,
+            Map<String, String> vaadinSection, ObjectNode expectedVersions,
+            String location, List<String> mismatches) {
+        for (Map.Entry<String, String> entry : projectSection.entrySet()) {
+            final String pkg = entry.getKey();
+            final FrontendVersion expected = parseVersion(
+                    expectedVersions.has(pkg)
+                            ? expectedVersions.get(pkg).asString()
+                            : null);
+            if (expected == null) {
+                continue;
+            }
+            // Skip values managed by Vaadin: the build updates those itself, so
+            // any range difference is transient and not a user mistake.
+            if (entry.getValue().equals(vaadinSection.get(pkg))) {
+                continue;
+            }
+            if (resolvesOutsideRange(entry.getValue(), expected)) {
+                mismatches.add(String.format("  - %s: %s (in %s), expected %s",
+                        pkg, entry.getValue(), location,
+                        expected.getFullVersion()));
+            }
+        }
+    }
+
+    private FrontendVersion parseVersion(String version) {
+        if (version == null) {
+            return null;
+        }
+        try {
+            return new FrontendVersion(version);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Tells whether a version declared in package.json resolves to a different
+     * minor or major version than the expected one. An exact version and a
+     * tilde range stay within their minor, while a caret range accepts any
+     * later minor of its major (from 1.0.0 on), so for it only the major is
+     * compared. Versions without a minor or patch, compound and other ranges,
+     * tags, URLs and file links are not reported, as what they resolve to is
+     * not known here.
+     */
+    private boolean resolvesOutsideRange(String declared,
+            FrontendVersion expected) {
+        if (!RANGE_CHECKED_VERSION.matcher(declared).matches()) {
+            return false;
+        }
+        final boolean caret = declared.startsWith("^");
+        final FrontendVersion actual = parseVersion(declared);
+        if (actual == null) {
+            return false;
+        }
+        if (expected.getMajorVersion() != actual.getMajorVersion()) {
+            return true;
+        }
+        final boolean anyMinor = caret && actual.getMajorVersion() > 0;
+        return !anyMinor
+                && expected.getMinorVersion() != actual.getMinorVersion();
+    }
+
+    private Map<String, String> sectionToMap(JsonNode section) {
+        if (section == null) {
+            return Map.of();
+        }
+        // Keeps the package.json order, so that the warning lists the
+        // packages the same way from one build to the next
+        final Map<String, String> map = new LinkedHashMap<>();
+        for (String key : JacksonUtils.getKeys(section)) {
+            map.put(key, section.get(key).asString());
+        }
+        return map;
+    }
+
+    /**
+     * Gets the version a package is pinned to, which is either a numeric
+     * version or a URL, or {@code null} if it has no such version.
+     */
+    private static String getPinnedVersion(JsonNode pinnedNpmVersions,
+            String pkg) {
+        if (pinnedNpmVersions.has(pkg) && FrontendBuildUtils
+                .isUrlVersion(pinnedNpmVersions.get(pkg).asString(null))) {
+            return pinnedNpmVersions.get(pkg).asString();
+        }
+        final FrontendVersion pinnedVersion = FrontendUtils
+                .getPackageVersionFromJson(pinnedNpmVersions, pkg,
+                        "vaadin_dependencies.json");
+        return pinnedVersion == null ? null : pinnedVersion.getFullVersion();
+    }
+
+    /**
+     * Compares two versions as versions when both are numeric, and as is
+     * otherwise, e.g. when one is a URL or a file link.
+     */
+    private static boolean isSameDependency(String version,
+            String otherVersion) {
+        if (version == null || otherVersion == null) {
+            return false;
+        }
+        if (isNumericVersion(version) && isNumericVersion(otherVersion)) {
+            return new FrontendVersion(version)
+                    .isSameDependency(new FrontendVersion(otherVersion));
+        }
+        return version.equals(otherVersion);
     }
 
     /**

@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -119,10 +120,11 @@ public class DefaultDeploymentConfiguration
     private boolean requestTiming;
     private boolean frontendHotdeploy;
     private SessionLockCheckStrategy sessionLockCheckStrategy;
+    private CspMode cspMode;
 
     private static AtomicBoolean logging = new AtomicBoolean(true);
-    private List<String> warnings = new ArrayList<>();
-    private List<String> info = new ArrayList<>();
+    private final List<String> warnings = new ArrayList<>();
+    private final List<String> info = new ArrayList<>();
 
     /**
      * Create a new deployment configuration instance.
@@ -158,6 +160,7 @@ public class DefaultDeploymentConfiguration
         checkSendUrlsAsParameters();
         checkFrontendHotdeploy();
         checkSessionLockCheckStrategy();
+        checkCspMode();
 
         if (log) {
             logMessages();
@@ -307,6 +310,11 @@ public class DefaultDeploymentConfiguration
     }
 
     @Override
+    public CspMode getCspMode() {
+        return cspMode;
+    }
+
+    @Override
     public Mode getMode() {
         return frontendHotdeploy ? Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
                 : super.getMode();
@@ -437,8 +445,8 @@ public class DefaultDeploymentConfiguration
         try {
             pushMode = getApplicationOrSystemProperty(
                     InitParameters.SERVLET_PARAMETER_PUSH_MODE,
-                    PushMode.DISABLED, stringMode -> Enum
-                            .valueOf(PushMode.class, stringMode.toUpperCase()));
+                    PushMode.DISABLED, value -> parseEnum(PushMode.class,
+                            InitParameters.SERVLET_PARAMETER_PUSH_MODE, value));
         } catch (IllegalArgumentException e) {
             warnings.add(WARNING_PUSH_MODE_NOT_RECOGNIZED);
             pushMode = PushMode.DISABLED;
@@ -450,13 +458,49 @@ public class DefaultDeploymentConfiguration
             sessionLockCheckStrategy = getApplicationOrSystemProperty(
                     InitParameters.SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY,
                     SessionLockCheckStrategy.ASSERT,
-                    stringStrategy -> Enum.valueOf(
-                            SessionLockCheckStrategy.class,
-                            stringStrategy.toUpperCase()));
+                    value -> parseEnum(SessionLockCheckStrategy.class,
+                            InitParameters.SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY,
+                            value));
         } catch (IllegalArgumentException e) {
             warnings.add(WARNING_SESSION_LOCK_CHECK_STRATEGY_NOT_RECOGNIZED);
             sessionLockCheckStrategy = SessionLockCheckStrategy.ASSERT;
         }
+    }
+
+    private void checkCspMode() {
+        cspMode = getApplicationOrSystemProperty(InitParameters.CSP,
+                CspMode.OFF,
+                value -> parseEnum(CspMode.class, InitParameters.CSP, value));
+    }
+
+    /**
+     * Parses a property value into a constant of the given enum, ignoring case.
+     *
+     * @param enumType
+     *            the enum type to parse the value into
+     * @param propertyName
+     *            the name of the property, used in the error message
+     * @param value
+     *            the property value to parse
+     * @param <E>
+     *            the enum type
+     * @return the enum constant whose name matches the value
+     * @throws IllegalArgumentException
+     *             if no constant of the enum matches the value
+     */
+    private static <E extends Enum<E>> E parseEnum(Class<E> enumType,
+            String propertyName, String value) {
+        E[] constants = enumType.getEnumConstants();
+        return Arrays.stream(constants)
+                .filter(constant -> constant.name().equalsIgnoreCase(value))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(String.format(
+                        "Property named '%s' contains unrecognized value '%s'. The permitted values are %s (case-insensitive).",
+                        propertyName, value,
+                        Arrays.stream(constants)
+                                .map(constant -> "'" + constant.name()
+                                        .toLowerCase(Locale.ENGLISH) + "'")
+                                .collect(Collectors.joining(", ")))));
     }
 
     private void checkPushServletMapping() {

@@ -27,13 +27,19 @@ class TodoElement extends LitElement {
       <div class="todo" elevation="1">
         <input type="checkbox" ?hidden=${this.completed} ?checked=${this.complete} id="checkbox" />
 
-        ${this.completed
-          ? html`<button icon="icons:delete" @click="${this.delete}">REMOVE</button>`
-          : html`<button ?hidden=${this.editing} icon="icons:create" @click="${this._doEdit}" class="edit">EDIT</button>
-              <button ?hidden=${!this.editing} icon="icons:done" @click="${this._doEdit}" class="done">SAVE</button>`}
-        ${this.editing
-          ? html`<input type="text" id="edit"  @change="${this.updateTask}"></input>`
-          : html`<span id="task">${this.task}</span>`}
+        ${
+          this.completed
+            ? html`<button icon="icons:delete" @click="${this.delete}">REMOVE</button>`
+            : html`<button ?hidden=${this.editing} icon="icons:create" @click="${this._doEdit}" class="edit"
+                  >EDIT</button
+                >
+                <button ?hidden=${!this.editing} icon="icons:done" @click="${this._doEdit}" class="done">SAVE</button>`
+        }
+        ${
+          this.editing
+            ? html`<input type="text" id="edit"  @change="${this.updateTask}"></input>`
+            : html`<span id="task">${this.task}</span>`
+        }
 
         <div class="info">Created by: <span>${this.user}</span></div>
         <div class="info">${this.time}</div>

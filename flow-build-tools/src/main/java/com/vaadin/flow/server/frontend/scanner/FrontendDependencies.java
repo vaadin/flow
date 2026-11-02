@@ -109,11 +109,38 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private PwaConfiguration pwaConfiguration;
     private Class<? extends Annotation> routeClass;
     private Set<String> eagerRoutes = null;
+    private final boolean productionMode;
 
     public FrontendDependencies(ClassFinder finder,
             boolean generateEmbeddableWebComponents, FeatureFlags featureFlags,
             boolean reactEnabled) {
+        this(finder, generateEmbeddableWebComponents, featureFlags,
+                reactEnabled, false);
+    }
+
+    /**
+     * Scans the application classes for frontend dependencies.
+     *
+     * @param finder
+     *            a class finder
+     * @param generateEmbeddableWebComponents
+     *            checks {@code WebComponentExporter} classes for dependencies
+     *            if {@code true}, doesn't check otherwise
+     * @param featureFlags
+     *            available feature flags and their status
+     * @param reactEnabled
+     *            {@code true} if react is enabled, {@code false} otherwise
+     * @param productionMode
+     *            {@code true} if scanning for a production build, in which case
+     *            routes marked with {@link Route#developmentOnly()} are not
+     *            collected as entry points
+     * @since 25.3.4
+     */
+    public FrontendDependencies(ClassFinder finder,
+            boolean generateEmbeddableWebComponents, FeatureFlags featureFlags,
+            boolean reactEnabled, boolean productionMode) {
         super(finder, featureFlags);
+        this.productionMode = productionMode;
         log().info(
                 "Scanning classes to find frontend configurations and dependencies...");
         long start = System.nanoTime();
@@ -136,6 +163,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             computePackages();
             computePwaConfiguration();
             aggregateEntryPointInformation();
+            warnAboutDeprecatedJavaScriptUses();
             long ms = (System.nanoTime() - start) / 1000000;
             log().info("Visited {} classes. Took {} ms.", visitedClasses.size(),
                     ms);
@@ -205,6 +233,64 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             }
         }
 
+    }
+
+    private void warnAboutDeprecatedJavaScriptUses() {
+        Set<String> usages = new LinkedHashSet<>();
+        Set<String> runtimeModuleUsages = new LinkedHashSet<>();
+        Set<String> unloadedUsages = new LinkedHashSet<>();
+        for (Entry<String, ClassInfo> entry : visitedClasses.entrySet()) {
+            ClassInfo classInfo = entry.getValue();
+            if (classInfo == null) {
+                continue;
+            }
+            Stream.concat(classInfo.scripts.stream(),
+                    classInfo.scriptsDevelopmentOnly.stream())
+                    .map(value -> entry.getKey() + ": \"" + value + "\"")
+                    .forEach(usages::add);
+            classInfo.deprecatedRuntimeModules.stream()
+                    .map(value -> entry.getKey() + ": \"" + value + "\"")
+                    .forEach(runtimeModuleUsages::add);
+            classInfo.unloadedRuntimeDependencies.stream()
+                    .map(annotation -> entry.getKey() + ": " + annotation)
+                    .forEach(unloadedUsages::add);
+        }
+        // Logged once per scan rather than per usage, as annotations coming
+        // from add-ons cannot be changed by the application developer
+        if (!usages.isEmpty()) {
+            log().warn("Found @JavaScript values that are bundled. "
+                    + "This bundled interpretation of @JavaScript is deprecated.{}"
+                    + "\nTo keep bundling a file, replace @JavaScript with @JsModule using the same value. "
+                    + "To load a file from the frontend directory at runtime instead, move it to a statically served location "
+                    + "(e.g. src/main/resources/META-INF/resources) and reference it with a context:// prefix, "
+                    + "or set type = JavaScript.Type.MODULE for an ES module. "
+                    + "Usages in add-ons need to be updated by the add-on maintainer.",
+                    formatUsages(usages));
+        }
+        if (!runtimeModuleUsages.isEmpty()) {
+            log().warn("Found @JsModule values with a runtime URL. "
+                    + "These are loaded at runtime and not bundled, which is deprecated for @JsModule.{}"
+                    + "\n@JsModule is for build-time bundle sources only. "
+                    + "Replace these with @JavaScript(value = ..., type = JavaScript.Type.MODULE) using the same value. "
+                    + "To bundle a file in the frontend directory that is referenced with a leading /, use a relative value such as ./foo.js instead. "
+                    + "Usages in add-ons need to be updated by the add-on maintainer.",
+                    formatUsages(runtimeModuleUsages));
+        }
+        if (!unloadedUsages.isEmpty()) {
+            log().warn(
+                    "Found runtime @JsModule and @JavaScript values on classes that are neither components nor the app shell.{}"
+                            + "\nRuntime values are only added to the page for components and the AppShellConfigurator. "
+                            + "On these classes, runtime values are not loaded at all, and a @JsModule value with a leading / is bundled from the frontend directory instead, which makes the frontend build fail if the file is not there. "
+                            + "Move a runtime value to the component that needs it or to the AppShellConfigurator, using @JavaScript(value = ..., type = JavaScript.Type.MODULE) for a module. "
+                            + "To bundle a file in the frontend directory, use @JsModule with a relative value such as ./foo.js. "
+                            + "Usages in add-ons need to be updated by the add-on maintainer.",
+                    formatUsages(unloadedUsages));
+        }
+    }
+
+    private static String formatUsages(Set<String> usages) {
+        return usages.stream().map(usage -> "\n  - " + usage)
+                .collect(Collectors.joining());
     }
 
     Set<String> collectReachableClasses(EntryPointData entryPointData) {
@@ -448,6 +534,12 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         routeClasses.sort(this::compareEntryPoints);
 
         for (Class<?> route : routeClasses) {
+            if (productionMode && isDevelopmentOnlyRoute(route)) {
+                log().debug(
+                        "Skipping development only route {} in production mode",
+                        route.getName());
+                continue;
+            }
             List<String> triggerClasses = getDependencyTriggers(route,
                     triggerClass);
             boolean eager = isEagerRoute(route);
@@ -497,6 +589,21 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             collectExporterEntrypoints(WebComponentExporterFactory.class);
         }
 
+    }
+
+    private boolean isDevelopmentOnlyRoute(Class<?> route) {
+        try {
+            Annotation routeAnnotation = route.getAnnotation(routeClass);
+            Method developmentOnlyMethod = routeClass
+                    .getMethod("developmentOnly");
+            return (boolean) developmentOnlyMethod.invoke(routeAnnotation);
+        } catch (ReflectiveOperationException | SecurityException
+                | IllegalArgumentException e) {
+            log().error(
+                    "Unable to read @Route annotation for " + route.getName(),
+                    e);
+        }
+        return false;
     }
 
     private boolean isEagerRoute(Class<?> route) {
@@ -882,10 +989,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         }
         ClassInfo info = new ClassInfo(className);
         try {
-            if (AbstractTheme.class
-                    .isAssignableFrom(getFinder().loadClass(className))) {
+            Class<?> clazz = getFinder().loadClass(className);
+            if (AbstractTheme.class.isAssignableFrom(clazz)) {
                 info.loadCss = false;
             }
+            info.loadsRuntimeDependencies = loadsRuntimeDependencies(clazz);
         } catch (ClassNotFoundException | NoClassDefFoundError ignore) { // NOSONAR
             // NO-OP
         }

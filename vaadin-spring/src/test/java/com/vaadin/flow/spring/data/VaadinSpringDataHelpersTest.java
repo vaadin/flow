@@ -22,7 +22,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -35,6 +34,9 @@ import com.vaadin.flow.data.provider.QuerySortOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 
 class VaadinSpringDataHelpersTest {
 
@@ -90,10 +92,10 @@ class VaadinSpringDataHelpersTest {
 
     @Test
     void fromPagingRepository_fetchesItemsFromPagingRepoAccordingToVaadinQuery() {
-        PagingAndSortingRepository repo = Mockito
-                .mock(PagingAndSortingRepository.class);
+        PagingAndSortingRepository repo = mock(
+                PagingAndSortingRepository.class);
 
-        Mockito.doAnswer(mock -> {
+        doAnswer(mock -> {
             PageRequest pageRequest = mock.getArgument(0);
             int from = pageRequest.getPageNumber() * pageRequest.getPageSize();
 
@@ -109,7 +111,7 @@ class VaadinSpringDataHelpersTest {
                     .limit(pageRequest.getPageSize()).map(i -> "Item " + i)
                     .collect(Collectors.toList());
             return new PageImpl<>(items);
-        }).when(repo).findAll(Mockito.any(PageRequest.class));
+        }).when(repo).findAll(any(PageRequest.class));
 
         CallbackDataProvider.FetchCallback<String, Void> callback = VaadinSpringDataHelpers
                 .fromPagingRepository(repo);

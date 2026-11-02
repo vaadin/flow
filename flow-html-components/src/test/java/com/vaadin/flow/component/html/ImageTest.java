@@ -21,7 +21,6 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
@@ -37,6 +36,11 @@ import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ImageTest extends ComponentTest {
 
@@ -65,7 +69,7 @@ class ImageTest extends ComponentTest {
 
     @Test
     void setSrc_downloadHandler_disabledUpdateModeIsAlways() {
-        Element element = Mockito.mock(Element.class);
+        Element element = mock(Element.class);
         class TestImage extends Image {
             @Override
             public Element getElement() {
@@ -80,15 +84,14 @@ class ImageTest extends ComponentTest {
 
         ArgumentCaptor<DownloadHandler> captor = ArgumentCaptor
                 .forClass(DownloadHandler.class);
-        Mockito.verify(element).setAttribute(Mockito.eq("src"),
-                captor.capture());
+        verify(element).setAttribute(eq("src"), captor.capture());
         assertEquals(DisabledUpdateMode.ALWAYS,
                 captor.getValue().getDisabledUpdateMode());
     }
 
     @Test
     void downloadHandler_isSetToInline() {
-        Element element = Mockito.mock(Element.class);
+        Element element = mock(Element.class);
         class TestImage extends Image {
             public TestImage(DownloadHandler downloadHandler, String alt) {
                 super(downloadHandler, alt);
@@ -115,22 +118,21 @@ class ImageTest extends ComponentTest {
             throws Exception {
         ArgumentCaptor<DownloadHandler> handlerCaptor = ArgumentCaptor
                 .forClass(DownloadHandler.class);
-        Mockito.verify(element).setAttribute(Mockito.eq("src"),
-                handlerCaptor.capture());
+        verify(element).setAttribute(eq("src"), handlerCaptor.capture());
 
         DownloadHandler handler = handlerCaptor.getValue();
         assertEquals(DisabledUpdateMode.ALWAYS, handler.getDisabledUpdateMode(),
                 "Handler set on the image must allow disabled, so the browser can still load the image when the component is disabled");
 
         // Create mock event and response to capture content type
-        VaadinRequest request = Mockito.mock(VaadinRequest.class);
-        VaadinResponse response = Mockito.mock(VaadinResponse.class);
-        VaadinSession session = Mockito.mock(VaadinSession.class);
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinRequest request = mock(VaadinRequest.class);
+        VaadinResponse response = mock(VaadinResponse.class);
+        VaadinSession session = mock(VaadinSession.class);
+        VaadinService service = mock(VaadinService.class);
         OutputStream outputStream = new ByteArrayOutputStream();
-        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(response.getService()).thenReturn(service);
-        Mockito.when(service.getMimeType(Mockito.anyString()))
+        when(response.getOutputStream()).thenReturn(outputStream);
+        when(response.getService()).thenReturn(service);
+        when(service.getMimeType(anyString()))
                 .thenReturn("application/octet-stream");
 
         DownloadEvent event = new DownloadEvent(request, response, session,
@@ -139,13 +141,13 @@ class ImageTest extends ComponentTest {
 
         ArgumentCaptor<String> contentTypeCaptor = ArgumentCaptor
                 .forClass(String.class);
-        Mockito.verify(response).setContentType(contentTypeCaptor.capture());
+        verify(response).setContentType(contentTypeCaptor.capture());
         return contentTypeCaptor.getValue();
     }
 
     @Test
     void byteArrayConstructor_typicalUseCase() throws Exception {
-        Element element = Mockito.mock(Element.class);
+        Element element = mock(Element.class);
         byte[] imageData = new byte[] { 1, 2, 3, 4, 5 };
 
         class TestImage extends Image {
@@ -160,7 +162,7 @@ class ImageTest extends ComponentTest {
         }
 
         new TestImage(imageData, "test.png");
-        Mockito.verify(element).setAttribute("alt", "test.png");
+        verify(element).setAttribute("alt", "test.png");
 
         String contentType = captureAndInvokeDownloadHandler(element);
         assertEquals("image/png", contentType);
@@ -168,7 +170,7 @@ class ImageTest extends ComponentTest {
 
     @Test
     void byteArrayConstructor_withExplicitMimeType() throws Exception {
-        Element element = Mockito.mock(Element.class);
+        Element element = mock(Element.class);
         byte[] imageData = new byte[] { 1, 2, 3, 4, 5 };
 
         class TestImage extends Image {
@@ -183,7 +185,7 @@ class ImageTest extends ComponentTest {
         }
 
         new TestImage(imageData, "test.webp", "image/webp");
-        Mockito.verify(element).setAttribute("alt", "test.webp");
+        verify(element).setAttribute("alt", "test.webp");
 
         String contentType = captureAndInvokeDownloadHandler(element);
         assertEquals("image/webp", contentType);
@@ -191,7 +193,7 @@ class ImageTest extends ComponentTest {
 
     @Test
     void byteArrayConstructor_withNullMimeType() throws Exception {
-        Element element = Mockito.mock(Element.class);
+        Element element = mock(Element.class);
         byte[] imageData = new byte[] { 1, 2, 3, 4, 5 };
 
         class TestImage extends Image {
@@ -206,7 +208,7 @@ class ImageTest extends ComponentTest {
         }
 
         new TestImage(imageData, "test.img", null);
-        Mockito.verify(element).setAttribute("alt", "test.img");
+        verify(element).setAttribute("alt", "test.img");
 
         String contentType = captureAndInvokeDownloadHandler(element);
         // When MIME type is null, it falls back to the service's getMimeType

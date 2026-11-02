@@ -65,12 +65,11 @@ class BuildWithoutLicenseTest : AbstractGradleTest() {
             // Copy the cached flow-build-info.json so that tests can assert
             // on it after the build (the original is deleted by the task so
             // IDE runs default to development mode).
+            def cachedFile = layout.buildDirectory.file("cached-flow-build-info.json").get().asFile
+            def destFile = file("${buildInfo.absolutePath}")
             tasks.named('vaadinBuildFrontend').configure {
                 doLast {
-                    def cachedFile = new File(project.buildDir, "cached-flow-build-info.json")
-
                     if (cachedFile.exists()) {
-                        def destFile = project.file("${buildInfo.absolutePath}")
                         destFile.text = cachedFile.text
 
                         logger.lifecycle("Copied cached flow-build-info.json to temporary file: ${buildInfo.absolutePath}")

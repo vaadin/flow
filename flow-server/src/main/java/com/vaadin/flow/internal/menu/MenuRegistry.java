@@ -166,7 +166,7 @@ public class MenuRegistry {
 
         Map<String, AvailableViewInfo> menuRoutes = new HashMap<>(
                 collectClientMenuItems(filterClientViews, VaadinService
-                        .getCurrent().getDeploymentConfiguration()));
+                        .getCurrentOrThrow().getDeploymentConfiguration()));
 
         collectAndAddServerMenuItems(routeConfiguration, menuRoutes);
 

@@ -23,7 +23,6 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
@@ -38,6 +37,10 @@ import com.vaadin.flow.testutil.ClassesSerializableTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class SpringClassesSerializableTest extends ClassesSerializableTest {
 
@@ -95,6 +98,7 @@ class SpringClassesSerializableTest extends ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.spring\\.SpringLookupInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinConfigurationProperties",
                 "com\\.vaadin\\.flow\\.spring\\.SpringDevToolsPortHandler",
+                "com\\.vaadin\\.flow\\.spring\\.springnative\\.AotScanPackages",
                 "com\\.vaadin\\.flow\\.spring\\.springnative\\.AtmosphereHintsRegistrar",
                 "com\\.vaadin\\.flow\\.spring\\.springnative\\.ClientCallableAotProcessor(\\$.*)?",
                 "com\\.vaadin\\.flow\\.spring\\.springnative\\.VaadinBeanFactoryInitializationAotProcessor(\\$.*)?",
@@ -118,6 +122,7 @@ class SpringClassesSerializableTest extends ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinExpiredSessionStrategy",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinSavedRequestAwareAuthenticationSuccessHandler",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinSavedRequestAwareAuthenticationSuccessHandler\\$RedirectStrategy",
+                "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinSavedRequestAwareAuthenticationSuccessHandler\\$SuccessUrlResolver",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.WebIconsRequestMatcher(\\$.*)?",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.PwaResourcesRequestMatcher(\\$.*)?",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.stateless\\.JwtSecurityContextRepository",
@@ -169,20 +174,18 @@ class SpringClassesSerializableTest extends ClassesSerializableTest {
 
     private TestBeanStore createStore() {
         final Properties initParameters = new Properties();
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.getPropertyNames())
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
+        when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        Mockito.when(
-                context.getAttribute(Mockito.any(Class.class), Mockito.any()))
+        VaadinContext context = mock(VaadinContext.class);
+        when(context.getAttribute(any(Class.class), any()))
                 .then(i -> i.getArgument(1, Supplier.class).get());
-        Mockito.when(context.getAttribute(
-                Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
+        when(context.getAttribute(eq(ApplicationConfiguration.class), any()))
                 .thenReturn(appConfig);
-        Mockito.when(appConfig.getContext()).thenReturn(context);
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        when(appConfig.getContext()).thenReturn(context);
+        Lookup lookup = mock(Lookup.class);
+        when(context.getAttribute(Lookup.class)).thenReturn(lookup);
         VaadinService service = new VaadinServletService(new VaadinServlet(),
                 new DefaultDeploymentConfiguration(appConfig, getClass(),
                         initParameters)) {

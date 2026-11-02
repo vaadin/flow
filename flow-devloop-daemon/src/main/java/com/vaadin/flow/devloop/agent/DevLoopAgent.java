@@ -43,8 +43,22 @@ import java.lang.instrument.Instrumentation;
 public final class DevLoopAgent {
 
     /**
-     * The system properties key the {@link Instrumentation} handle is published
-     * under.
+     * The system properties key the {@link Instrumentation} handle used to be
+     * published under.
+     * <p>
+     * It is no longer written. The system properties table is a
+     * {@code Hashtable<Object, Object>} and will hold an arbitrary object,
+     * which is what made it a convenient way to hand the handle across class
+     * loaders - but a table that is declared to map strings to strings and does
+     * not is a trap for everything else in the JVM that reads it. Measured
+     * against WildFly 38: Narayana merges the system properties when it loads
+     * {@code jbossts-properties.xml}, took the handle for a string, and the
+     * transactions subsystem failed its boot operations with a
+     * {@link NullPointerException} - fatally, after the HTTP listener had
+     * already bound. The handle now travels by {@link #get()} instead.
+     * <p>
+     * Kept only so that a reader who finds the name in an older log or an older
+     * dev server can see what became of it.
      */
     public static final String PROPERTY = "devloop.instrumentation";
 
@@ -80,7 +94,6 @@ public final class DevLoopAgent {
 
     private static void install(Instrumentation inst) {
         instrumentation = inst;
-        System.getProperties().put(PROPERTY, inst);
         // System.out rather than a logger: this runs in premain, before the
         // application's logging framework exists, and the output belongs to the
         // app log the daemon reads anyway.
@@ -92,6 +105,15 @@ public final class DevLoopAgent {
     /**
      * The captured instrumentation handle, or {@code null} when this class was
      * loaded without the agent having been installed.
+     * <p>
+     * This is the one channel. A {@code -javaagent} jar is appended to the
+     * system class path, so this class is the system class loader's and its
+     * static is the same object for every loader beneath it - including a
+     * servlet container's, which is the case the system-properties table was
+     * once used for. A caller that cannot name the class directly, because the
+     * agent jar is not on its own class path, reaches it through
+     * {@link ClassLoader#getSystemClassLoader()}; see the dev server's
+     * {@code DevLoopRedefiner}.
      *
      * @return the instrumentation handle, or {@code null}
      */

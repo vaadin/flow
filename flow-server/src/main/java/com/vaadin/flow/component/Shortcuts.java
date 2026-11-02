@@ -83,7 +83,7 @@ public final class Shortcuts {
             throw new IllegalArgumentException(String.format(NULL, "key"));
         }
         return new ShortcutRegistration(lifecycleOwner,
-                () -> new Component[] { lifecycleOwner.getUI().get() },
+                () -> new Component[] { lifecycleOwner.getUIOrThrow() },
                 event -> command.execute(), key).withModifiers(keyModifiers);
     }
 
@@ -128,7 +128,7 @@ public final class Shortcuts {
             throw new IllegalArgumentException(String.format(NULL, "key"));
         }
         return new ShortcutRegistration(lifecycleOwner,
-                () -> new Component[] { lifecycleOwner.getUI().get() },
+                () -> new Component[] { lifecycleOwner.getUIOrThrow() },
                 listener, key).withModifiers(keyModifiers);
     }
 

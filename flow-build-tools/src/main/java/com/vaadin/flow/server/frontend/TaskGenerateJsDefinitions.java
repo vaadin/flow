@@ -34,7 +34,10 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionProxy;
+import com.vaadin.flow.js.JsDefinitionProxy.Kind;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
@@ -43,7 +46,12 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
 /**
  * Generates {@link FrontendUtils#JS_DEFINITIONS_FILE_NAME}, which registers the
  * JavaScript of every {@link JsDefinition} interface on the class path as an
- * ordinary function of the bundle.
+ * ordinary function of the bundle: in one registry for the methods that run
+ * their JavaScript when called, and in another for the methods that declare a
+ * {@link JsSnippet}, which the client turns into a function when it decodes the
+ * snippet. A definition that does not pass
+ * {@link JsDefinitionProxy#checkDefinition(Class)} is left out, with an error
+ * in the log.
  * <p>
  * This is what lets the client run a server-initiated call without compiling
  * anything from a string: the server sends the identifier of the function to
@@ -62,10 +70,16 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
  */
 public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
+    // Snippets are evaluated by what they are passed to, which may need their
+    // value during an event dispatch, so they are kept apart from the async
+    // functions a call runs
+    private static final String SNIPPETS = "window.Vaadin.Flow.jsSnippets = window.Vaadin.Flow.jsSnippets || {};";
+
     private static final List<String> HEADER = List.of("// @ts-nocheck",
             "window.Vaadin = window.Vaadin || {};",
             "window.Vaadin.Flow = window.Vaadin.Flow || {};",
-            "window.Vaadin.Flow.jsDefinitions = window.Vaadin.Flow.jsDefinitions || {};");
+            "window.Vaadin.Flow.jsDefinitions = window.Vaadin.Flow.jsDefinitions || {};",
+            SNIPPETS);
 
     // What a message about a call names it by, which is of no use to a browser
     // running the application and is left out of a production bundle
@@ -238,6 +252,11 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         String separator = System.lineSeparator();
         String footer = String.join(separator, FOOTER);
         List<String> added = new ArrayList<>();
+        if (!generated.contains(SNIPPETS)) {
+            // Written before snippets were generated, and a snippet is
+            // assigned into a registry that has to be there
+            added.add(SNIPPETS);
+        }
         if (!generated.contains(NAMES)) {
             // Written before names were registered at all, and a name is
             // assigned into an object that has to be there
@@ -319,38 +338,83 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      */
     private static List<String> renderFunctions(Class<?> definition,
             boolean withNames) {
+        boolean snippets;
+        try {
+            snippets = JsDefinitionProxy
+                    .checkDefinition(definition) == Kind.SNIPPETS;
+        } catch (IllegalArgumentException e) {
+            // Left out rather than failing the build, which would break every
+            // application that has the definition on its class path, an
+            // add-on its developer can not fix among them. Using it fails at
+            // runtime with the same message.
+            getLogger().error(
+                    "Leaving the JavaScript of {} out of the bundle: {}",
+                    definition.getName(), e.getMessage());
+            return List.of();
+        }
         List<Method> methods = new ArrayList<>();
         for (Method method : definition.getMethods()) {
             if (method.isAnnotationPresent(JsExpression.class)) {
                 methods.add(method);
             }
         }
-        methods.sort(
-                Comparator.comparing(TaskGenerateJsDefinitions::functionId));
+        methods.sort(Comparator.comparing(JsCall::functionId));
 
         List<String> functions = new ArrayList<>();
         for (Method method : methods) {
+            String functionId = quote(JsCall.functionId(method));
             // The parameters of the generated function are the arguments of the
-            // call, referenced as $0, $1, ... by the declared expression, and
-            // the element the definition was obtained from is its `this` - the
-            // same contract as an executeJs expression has. The last parameter
-            // of a variadic method collects the arguments that follow the
-            // fixed ones into an array, as it does in Java.
+            // call, referenced as $0, $1, ... by the declared expression. The
+            // last parameter of a variadic method collects the arguments that
+            // follow the fixed ones into an array, as it does in Java.
             String parameters = IntStream.range(0, method.getParameterCount())
                     .mapToObj(index -> isRestParameter(method, index)
                             ? "...$" + index
                             : "$" + index)
                     .reduce((first, second) -> first + ", " + second)
                     .orElse("");
-            List<String> function = new ArrayList<>(List.of(String.format(
-                    "window.Vaadin.Flow.jsDefinitions[%s] = async function (%s) {",
-                    quote(functionId(method)), parameters),
-                    method.getAnnotation(JsExpression.class).value(), "};"));
+            String expression = method.getAnnotation(JsExpression.class)
+                    .value();
+            List<String> function = new ArrayList<>();
+            if (snippets) {
+                // A snippet is evaluated by what it is passed to, which may
+                // need the value right away, so its function is not async.
+                // Its arguments are captured, and the parameters it is called
+                // with are those of a function around the expression, whose
+                // `this` is whatever the invoker calls it with.
+                function.add(String.format(
+                        "window.Vaadin.Flow.jsSnippets[%s] = function (%s) {",
+                        functionId, parameters));
+                List<String> calledWith = JsCall.getCalledWithNames(method);
+                if (calledWith == null) {
+                    function.add(expression);
+                    function.add("};");
+                    // The expression returns the function itself, so running
+                    // it runs declared JavaScript: the client defers that to
+                    // the first call rather than doing it while it decodes
+                    function.add(String.format(
+                            "window.Vaadin.Flow.jsSnippets[%s].lazy = true;",
+                            functionId));
+                } else {
+                    function.add(String.format("  return function (%s) {",
+                            String.join(", ", calledWith)));
+                    function.add(expression);
+                    function.add("  };");
+                    function.add("};");
+                }
+            } else {
+                // The element the definition was obtained from is the `this`
+                // of a call - the same contract as an executeJs expression has
+                function.add(String.format(
+                        "window.Vaadin.Flow.jsDefinitions[%s] = async function (%s) {",
+                        functionId, parameters));
+                function.add(expression);
+                function.add("};");
+            }
             if (withNames) {
                 function.add(String.format(
                         "window.Vaadin.Flow.jsDefinitionNames[%s] = %s;",
-                        quote(functionId(method)),
-                        quote(nameOf(definition, method))));
+                        functionId, quote(nameOf(definition, method))));
             }
             functions.add(String.join(System.lineSeparator(), function));
         }
@@ -368,12 +432,6 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
     private static boolean isRestParameter(Method method, int index) {
         return method.isVarArgs() && index == method.getParameterCount() - 1;
-    }
-
-    private static String functionId(Method method) {
-        return JsCall.functionId(
-                method.getAnnotation(JsExpression.class).value(),
-                method.getParameterCount(), method.isVarArgs());
     }
 
     private static String quote(String value) {

@@ -61,22 +61,26 @@ short id, and everything that uses it carries only the id.
   `knownValues` (every id ever sent to this client) and `newKeys` (the
   ids first seen since the last response). `getConstantId` registers,
   `dumpConstants` emits the new ones and clears the set.
-- There are two ways in. A value stored in a state node as a
-  `ConstantPoolKey` is replaced by its id when the `NodeChange` encoders
+- There are two ways in. A `ConstantPoolKey` that is the value of a
+  `MapPutChange` is replaced by its id when the `NodeChange` encoders
   call `JacksonCodec.encodeWithConstantPool`; every other node value is
-  encoded inline. And `UidlWriter` registers what each `executeJs`
-  invocation runs directly with the pool while encoding it —
+  encoded inline. The key usually sits in the state node, but a feature
+  can also create it only while changes are collected. And `UidlWriter`
+  registers what each `executeJs` invocation runs directly with the pool
+  while encoding it —
   `UidlRequestHandler` does the same for a reload script it adds to a
   response that is already written, which is why it patches `constants`
   in place.
 
 ### What is in the pool today
 
-Three kinds of value. Two node features store the settings of a DOM event
-listener: `ElementListenerMap` one constant per event type on an element,
-`PolymerEventListenerMap` the event data expressions of a Polymer
-template listener. The third kind is what an `executeJs` invocation
-runs, covered [below](#wire-shape).
+Three kinds of value. Two node features send the settings of a DOM event
+listener. `ElementListenerMap` sends one constant per event type on an
+element. It stores only a marker in the node and builds the key from the
+registered listeners in `collectChanges`, so the JSON is not kept in
+memory between responses. `PolymerEventListenerMap` stores the event data
+expressions of a Polymer template listener. The third kind is what an
+`executeJs` invocation runs, covered [below](#wire-shape).
 
 An `ElementListenerMap` value is an object keyed by the JavaScript
 expressions the client evaluates when the event fires. The value of each
@@ -244,6 +248,22 @@ travels as a single-key wrapper object whose key is reserved:
   manifested on the client as a real function with its captures pre-bound.
   This is how `Element.addJsInitializer` ships a user expression as a
   parameter of a fixed framework expression.
+- `{"@v-fn": {"id": …, "captures": […]}}` — a `JsFunction` declared as a
+  `JsSnippet` by a `@JsDefinition` method. The client looks the id up in
+  `window.Vaadin.Flow.jsSnippets` and calls that function with the
+  captures; what it returns is the decoded value, so nothing is compiled
+  from a string. For a snippet with `@JsCalledWith` that is a function
+  whose body is the declared expression. One without it is marked `lazy`
+  in the bundle, because its expression returns the function: the client
+  hands out a wrapper that runs it on the first call, so no declared
+  JavaScript runs while decoding. The registry is separate from
+  `jsDefinitions` because a snippet function is not `async`: whatever it
+  is passed to may need its value synchronously. A missing id decodes to
+  a function that throws when it is called rather than failing the
+  decoding of the whole invocation. Where the error ends up depends on
+  the caller: an invocation that calls it reports it through its error
+  channel, while a call from an event listener only reaches the browser
+  console.
 
 `ClientJsonCodec.decodeWithTypeInfo` decodes these **recursively through
 objects and arrays**. The whole `@v-` prefix is consequently reserved on

@@ -42,6 +42,10 @@ public class PushDispatchRecorder {
     private static final Logger LOG = Logger
             .getLogger(PushDispatchRecorder.class);
 
+    /**
+     * Logs at debug level that Vaadin Push WebSocket frames are dispatched on
+     * the worker thread pool, and what changes when that is turned off.
+     */
     public void logDispatchOnWorker() {
         LOG.debug(
                 """

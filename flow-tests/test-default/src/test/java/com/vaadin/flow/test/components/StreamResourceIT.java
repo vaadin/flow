@@ -15,28 +15,23 @@
  */
 package com.vaadin.flow.test.components;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.test.AbstractDefaultIT;
 import com.vaadin.flow.test.TestFor;
 import com.vaadin.testbench.BrowserTest;
 
 @TestFor(StreamResourceView.class)
-public class StreamResourceIT extends AbstractDefaultIT {
+public class StreamResourceIT extends AbstractStreamResourceIT {
 
     @BrowserTest
     public void getDynamicVaadinResource() throws IOException {
@@ -78,36 +73,5 @@ public class StreamResourceIT extends AbstractDefaultIT {
         }
 
         Assertions.assertEquals(filename, FilenameUtils.getName(url));
-    }
-
-    /*
-     * Stolen from stackexchange.
-     *
-     * It's not possible to use a straight way to download the link externally
-     * since it will use another session and the link will be invalid in this
-     * session. So either this pure client side way or external download with
-     * cookies copy (which allows preserve the session) needs to be used.
-     */
-    private InputStream download(String url) {
-        String script = "var url = arguments[0];"
-                + "var callback = arguments[arguments.length - 1];"
-                + "var xhr = new XMLHttpRequest();"
-                + "xhr.open('GET', url, true);"
-                + "xhr.responseType = \"arraybuffer\";" +
-                // force the HTTP response, response-type header to be array
-                // buffer
-                "xhr.onload = function() {"
-                + "  var arrayBuffer = xhr.response;"
-                + "  var byteArray = new Uint8Array(arrayBuffer);"
-                + "  callback(byteArray);" + "};" + "xhr.send();";
-        Object response = ((JavascriptExecutor) getDriver())
-                .executeAsyncScript(script, url);
-        // Selenium returns an Array of Long, we need byte[]
-        List<?> byteList = (ArrayList<?>) response;
-        byte[] bytes = new byte[byteList.size()];
-        for (int i = 0; i < byteList.size(); i++) {
-            bytes[i] = ((Long) byteList.get(i)).byteValue();
-        }
-        return new ByteArrayInputStream(bytes);
     }
 }

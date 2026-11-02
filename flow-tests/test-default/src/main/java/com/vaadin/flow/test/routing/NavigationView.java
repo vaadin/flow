@@ -31,6 +31,8 @@ public class NavigationView extends Div {
     public static final String ANCHOR_QUERY_ID = "anchor-query-navigation";
     public static final String ROUTER_LINK_QUERY_ID = "router-link-query-navigation";
     public static final String ROUTER_LINK_ID = "router-link-navigation";
+    public static final String ROUTER_LINK_NEW_TAB_ID = "router-link-new-tab-navigation";
+    public static final String ROUTER_LINK_SELF_TARGET_ID = "router-link-self-target-navigation";
     public static final String POSTPONE_ID = "postpone-view-link";
 
     public static final String REACT_ANCHOR_ID = "anchor-react-navigation";
@@ -51,13 +53,22 @@ public class NavigationView extends Div {
         serverNavigation.setId(SERVER_ID);
         RouterLink link = new RouterLink("RouterView", RouterView.class);
         link.setId(ROUTER_LINK_ID);
+        RouterLink newTabLink = new RouterLink("RouterView in new tab",
+                RouterView.class);
+        newTabLink.setOpenInNewBrowserTab(true);
+        newTabLink.setId(ROUTER_LINK_NEW_TAB_ID);
+        RouterLink selfTargetLink = new RouterLink("RouterView in this tab",
+                RouterView.class);
+        selfTargetLink.setTarget("_self");
+        selfTargetLink.setId(ROUTER_LINK_SELF_TARGET_ID);
 
         RouterLink postponeView = new RouterLink("PostponeView",
                 PostponeView.class);
         postponeView.setId(POSTPONE_ID);
 
         add(new Span("NavigationView"), new Div(), anchorNavigation, new Div(),
-                serverNavigation, new Div(), link, new Div(), postponeView);
+                serverNavigation, new Div(), link, new Div(), newTabLink,
+                new Div(), selfTargetLink, new Div(), postponeView);
 
         // React navigation
         Anchor reactAnchorNavigation = new Anchor("react",

@@ -131,7 +131,7 @@ public class ElementAttributeMap extends NodeMap {
     public Serializable remove(String attribute) {
         if (hasSignal(attribute)) {
             throw new BindingActiveException(
-                    "removeAttribute is not allowed while a binding for the given attribute exists.");
+                    "Removing an attribute with removeAttribute or with setAttribute and a null value is not allowed while a binding for the given attribute exists.");
         }
         unregisterResource(attribute);
         return super.remove(attribute);
@@ -316,7 +316,7 @@ public class ElementAttributeMap extends NodeMap {
     private VaadinSession getSession() {
         NodeOwner owner = getNode().getOwner();
         assert owner instanceof StateTree;
-        return ((StateTree) owner).getUI().getSession();
+        return ((StateTree) owner).getUI().getSessionOrThrow();
     }
 
 }

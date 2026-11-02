@@ -90,9 +90,19 @@ class DevLoopLifecycleIT extends AbstractDevLoopIT {
         outcome.assertOutputContains("\"state\":\"running\"");
     }
 
+    /**
+     * The restart also carries {@code --jvm-args}, which the CLI splits on
+     * whitespace and the daemon puts on the app JVM through whichever channel
+     * this runtime takes its flags in - so both flags have to show up in the
+     * launch the restart prints. They stay for later launches, which a property
+     * nothing reads does not mind.
+     */
     @Test
     void restart_bringsTheApplicationBackUpOnTheSamePort() {
-        cli.run("restart").assertExitCode(0);
+        cli.run("restart", "--jvm-args",
+                "-Ddevloop.it.first=1 -Ddevloop.it.second=2").assertExitCode(0)
+                .assertOutputContains("-Ddevloop.it.first=1")
+                .assertOutputContains("-Ddevloop.it.second=2");
 
         cli.run("status").assertExitCode(0).assertOutputContains("running")
                 .assertOutputContains("registered=true");

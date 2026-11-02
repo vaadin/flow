@@ -19,6 +19,7 @@ import jakarta.servlet.ServletContext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 
 import com.vaadin.experimental.FeatureFlags;
@@ -46,6 +46,12 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 @PWA(name = "foo", shortName = "bar")
 class PwaRegistryTest {
@@ -187,15 +193,14 @@ class PwaRegistryTest {
             boolean productionMode,
             BiFunction<PwaRegistry, VaadinRequest, T> action)
             throws IOException {
-        try (MockedStatic<VaadinService> vaadinService = Mockito
-                .mockStatic(VaadinService.class);
-                MockedStatic<FeatureFlags> featureFlags = Mockito
-                        .mockStatic(FeatureFlags.class)) {
+        try (MockedStatic<VaadinService> vaadinService = mockStatic(
+                VaadinService.class);
+                MockedStatic<FeatureFlags> featureFlags = mockStatic(
+                        FeatureFlags.class)) {
 
-            VaadinServletService vaadinServiceMocked = Mockito
-                    .mock(VaadinServletService.class);
-            Mockito.when(vaadinServiceMocked
-                    .isResourceAvailable(Mockito.anyString()))
+            VaadinServletService vaadinServiceMocked = mock(
+                    VaadinServletService.class);
+            when(vaadinServiceMocked.isResourceAvailable(anyString()))
                     .thenAnswer((InvocationOnMock invocation) -> {
                         final String resourceUrl = (String) invocation
                                 .getArguments()[0];
@@ -206,8 +211,7 @@ class PwaRegistryTest {
                     });
             // Mimic ServiceContextUriResolver, which expands context:// to the
             // context root and base:// to the servlet root
-            Mockito.when(
-                    vaadinServiceMocked.resolveResource(Mockito.anyString()))
+            when(vaadinServiceMocked.resolveResource(anyString()))
                     .thenAnswer(invocation -> {
                         String url = invocation.getArgument(0);
                         if (url.startsWith(
@@ -226,48 +230,44 @@ class PwaRegistryTest {
                     });
             // Only declared resources are readable, so ResourceContentHash
             // computes a hash for those and returns null for the rest
-            Mockito.when(
-                    vaadinServiceMocked.getStaticResource(Mockito.anyString()))
-                    .thenAnswer(invocation -> resources
-                            .contains(invocation.getArgument(0))
-                                    ? PwaRegistryTest.class.getResource(
-                                            "/META-INF/resources/icons/icon.png")
-                                    : null);
+            when(vaadinServiceMocked.getStaticResource(anyString())).thenAnswer(
+                    invocation -> resources.contains(invocation.getArgument(0))
+                            ? PwaRegistryTest.class.getResource(
+                                    "/META-INF/resources/icons/icon.png")
+                            : null);
 
             final Map<String, Object> attributeMap = new HashMap<>();
-            ServletContext servletContext = Mockito.mock(ServletContext.class);
-            Mockito.when(servletContext.getAttribute(Mockito.anyString()))
+            ServletContext servletContext = mock(ServletContext.class);
+            when(servletContext.getAttribute(anyString()))
                     .then(invocation -> attributeMap
                             .get(invocation.getArguments()[0].toString()));
-            Mockito.doAnswer(invocation -> attributeMap.put(
+            doAnswer(invocation -> attributeMap.put(
                     invocation.getArguments()[0].toString(),
                     invocation.getArguments()[1])).when(servletContext)
-                    .setAttribute(Mockito.anyString(), Mockito.any());
+                    .setAttribute(anyString(), any());
 
             final VaadinServletContext context = new VaadinServletContext(
                     servletContext);
 
             MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
             deploymentConfiguration.setProductionMode(productionMode);
-            Mockito.when(vaadinServiceMocked.getDeploymentConfiguration())
+            when(vaadinServiceMocked.getDeploymentConfiguration())
                     .thenReturn(deploymentConfiguration);
 
             vaadinService.when(VaadinService::getCurrent)
                     .thenReturn(vaadinServiceMocked);
-            Mockito.when(vaadinServiceMocked.getContext()).thenReturn(context);
+            when(vaadinServiceMocked.getContext()).thenReturn(context);
 
-            FeatureFlags flags = Mockito.mock(FeatureFlags.class);
-            featureFlags.when(() -> FeatureFlags.get(Mockito.any()))
-                    .thenReturn(flags);
+            FeatureFlags flags = mock(FeatureFlags.class);
+            featureFlags.when(() -> FeatureFlags.get(any())).thenReturn(flags);
 
             AppShellRegistry.getInstance(context).setShell(appShell);
 
             // The request that fetches sw-runtime.js; its servlet root is what
             // the stylesheet entries are relative to
-            VaadinRequest request = Mockito.mock(VaadinRequest.class);
-            Mockito.when(request.getService()).thenReturn(vaadinServiceMocked);
-            Mockito.when(vaadinServiceMocked
-                    .getContextRootRelativePath(Mockito.any()))
+            VaadinRequest request = mock(VaadinRequest.class);
+            when(request.getService()).thenReturn(vaadinServiceMocked);
+            when(vaadinServiceMocked.getContextRootRelativePath(any()))
                     .thenReturn(contextRootRelativePath);
 
             return action.apply(new PwaRegistry(pwa, servletContext), request);
@@ -477,6 +477,27 @@ class PwaRegistryTest {
         String sw = runtimeServiceWorkerJs(
                 PwaRegistryTest.class.getAnnotation(PWA.class));
         assertTrue(sw.contains("{ url: '.', revision:"));
+    }
+
+    @Test
+    void pwaWithoutCustomOfflinePath_offlineHtmlShowsAppNameAndLargestIcon()
+            throws IOException {
+        PwaRegistry registry = preparePwaRegistry(
+                PwaRegistryTest.class.getAnnotation(PWA.class));
+        PwaIcon largestCachedIcon = registry.getIcons().stream()
+                .filter(PwaIcon::shouldBeCached)
+                .max(Comparator.comparingInt(PwaIcon::getWidth)).get();
+        // The 512x512 manifest icon is the largest one the default @PWA caches
+        assertEquals(512, largestCachedIcon.getWidth());
+
+        String html = registry.getOfflineHtml();
+
+        assertTrue(html.contains("<div class=\"app-name\">foo</div>"), html);
+        assertTrue(
+                html.contains(
+                        "<img src=\"" + largestCachedIcon.getHref() + "\""),
+                html);
+        assertFalse(html.contains("%%%"), html);
     }
 
     @Test

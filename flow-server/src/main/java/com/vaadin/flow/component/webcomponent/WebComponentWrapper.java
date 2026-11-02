@@ -140,8 +140,9 @@ public class WebComponentWrapper extends Component {
             disconnect = System.currentTimeMillis();
             disconnectRegistration = uiOptional.get().getInternals()
                     .addHeartbeatListener(event -> {
-                        int disconnectTimeout = event.getSource().getSession()
-                                .getConfiguration().getWebComponentDisconnect();
+                        int disconnectTimeout = event.getSource()
+                                .getSessionOrThrow().getConfiguration()
+                                .getWebComponentDisconnect();
 
                         int timeout = 1000 * disconnectTimeout;
 

@@ -20,7 +20,6 @@ import java.io.File;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
@@ -29,6 +28,8 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.internal.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class TaskGenerateWebComponentBootstrapTest {
     @TempDir
@@ -45,10 +46,10 @@ class TaskGenerateWebComponentBootstrapTest {
                 .getFlowGeneratedImports(frontendDirectory);
         generatedImports.getParentFile().mkdirs();
         generatedImports.createNewFile();
-        FrontendDependenciesScanner scanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
-        Mockito.when(scanner.getThemeDefinition()).thenReturn(null);
-        Options options = new Options(Mockito.mock(Lookup.class), null)
+        FrontendDependenciesScanner scanner = mock(
+                FrontendDependenciesScanner.class);
+        when(scanner.getThemeDefinition()).thenReturn(null);
+        Options options = new Options(mock(Lookup.class), null)
                 .withFrontendDirectory(frontendDirectory)
                 .withFrontendDependenciesScanner(scanner);
 
@@ -72,6 +73,14 @@ class TaskGenerateWebComponentBootstrapTest {
         assertTrue(content.contains(
                 "import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT
                         + "FlowClient.js';\n" + "init()"));
+    }
+
+    @Test
+    void should_importBrowserHelpers() throws ExecutionFailedException {
+        taskGenerateWebComponentBootstrap.execute();
+        String content = taskGenerateWebComponentBootstrap.getFileContent();
+        assertTrue(content.contains("import '"
+                + FrontendUtils.JAR_RESOURCES_IMPORT + "BrowserHelpers.js';"));
     }
 
     @Test

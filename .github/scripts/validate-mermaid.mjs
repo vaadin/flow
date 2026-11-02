@@ -41,7 +41,15 @@ const RULES = [
     {
         id: 'backtick-opens-label',
         test: (line) => /[[({]\s*"`/.test(line),
-        says: 'a backtick right after the quote starts a Mermaid markdown string; write ["@PWA offline"], not ["`@PWA` offline"]',
+        says: 'a backtick right after the quote starts a Mermaid markdown string; write ["PWA annotation offline"], not ["`PWA` offline"]',
+    },
+    {
+        // The safe-outputs step wraps every @word in backticks so that it
+        // cannot mention anyone, fenced code included. In a label that opens
+        // with it, that is the backtick-opens-label error after validation.
+        id: 'at-sign',
+        test: (line) => /(^|[^\w`])@\w/.test(line),
+        says: 'the comment poster turns @Route into `@Route`, which breaks or garbles the label; write "Route annotation", not "@Route"',
     },
     {
         id: 'semicolon-in-message-text',
