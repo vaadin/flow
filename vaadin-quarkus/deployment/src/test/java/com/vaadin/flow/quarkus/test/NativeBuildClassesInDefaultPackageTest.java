@@ -18,9 +18,10 @@ package com.vaadin.flow.quarkus.test;
 import io.quarkus.test.QuarkusUnitTest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class NativeBuildClassesInDefaultPackageTest {
 
@@ -33,7 +34,7 @@ public class NativeBuildClassesInDefaultPackageTest {
 
     @Test
     public void classesInDefaultPackage_vaadinNativeSupport_scanShouldNotFail() {
-        Assertions.assertTrue(true,
+        assertTrue(true,
                 "Quarkus build should not fail with classes in default package");
     }
 

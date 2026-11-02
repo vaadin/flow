@@ -28,7 +28,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals;
@@ -54,6 +53,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -227,7 +228,7 @@ class ShortcutRegistrationTest {
                 }, Key.KEY_A);
 
         for (Component component : listenOn) {
-            when(component.addDetachListener(Mockito.any()))
+            when(component.addDetachListener(any()))
                     .thenReturn(mock(Registration.class));
         }
         clientResponse();
@@ -678,7 +679,7 @@ class ShortcutRegistrationTest {
                 Key.KEY_A);
 
         mockLifecycle(true);
-        Mockito.when(lifecycleOwner.getParent())
+        when(lifecycleOwner.getParent())
                 .thenReturn(Optional.of(new FakeComponent()));
 
         clientResponse();
@@ -693,17 +694,17 @@ class ShortcutRegistrationTest {
     void uiRegistration_uiHasModalComponent_eventIsSentFromModalComponentInsteadOfUi() {
         AtomicReference<ShortcutEvent> eventRef = new AtomicReference<>();
 
-        Component modal = Mockito.mock(Component.class);
+        Component modal = mock(Component.class);
         when(modal.getUI()).thenReturn(Optional.of(ui));
         when(modal.getUIOrThrow()).thenCallRealMethod();
         when(modal.getEventBus()).thenReturn(new ComponentEventBus(modal));
         when(modal.getElement()).thenReturn(new Element("tag"));
         when(modal.isVisible()).thenReturn(true);
 
-        UIInternals uiInternals = Mockito.mock(UIInternals.class);
-        Mockito.when(uiInternals.hasModalComponent()).thenReturn(true);
-        Mockito.when(uiInternals.getActiveModalComponent()).thenReturn(modal);
-        Mockito.when(ui.getInternals()).thenReturn(uiInternals);
+        UIInternals uiInternals = mock(UIInternals.class);
+        when(uiInternals.hasModalComponent()).thenReturn(true);
+        when(uiInternals.getActiveModalComponent()).thenReturn(modal);
+        when(ui.getInternals()).thenReturn(uiInternals);
 
         listenOn = new Component[] { ui };
         when(ui.getUI()).thenReturn(Optional.of(ui));
@@ -713,7 +714,7 @@ class ShortcutRegistrationTest {
                 Key.KEY_A);
 
         mockLifecycle(true);
-        Mockito.when(lifecycleOwner.getParent()).thenReturn(Optional.of(modal));
+        when(lifecycleOwner.getParent()).thenReturn(Optional.of(modal));
 
         clientResponse(listenOn);
 
@@ -737,8 +738,7 @@ class ShortcutRegistrationTest {
         FakeComponent component = new FakeComponent();
         component.setVisible(false);
         component.getElement().appendChild(ownerElement);
-        Mockito.when(lifecycleOwner.getParent())
-                .thenReturn(Optional.of(component));
+        when(lifecycleOwner.getParent()).thenReturn(Optional.of(component));
 
         clientResponse();
 
@@ -777,7 +777,7 @@ class ShortcutRegistrationTest {
     @Test
     void constructedRegistration_lifeCycleOwnerIsDetached_detachListenerIsDeregisteredFromListenOnComponents() {
         AtomicReference<ComponentEventListener> detachListener = new AtomicReference<>();
-        Mockito.doAnswer(invocaation -> {
+        doAnswer(invocaation -> {
             detachListener.set(
                     invocaation.getArgument(0, ComponentEventListener.class));
             return mock(Registration.class);
@@ -786,17 +786,16 @@ class ShortcutRegistrationTest {
         new ShortcutRegistration(lifecycleOwner, () -> listenOn, event -> {
         }, Key.KEY_A);
 
-        Registration registration = Mockito.mock(Registration.class);
+        Registration registration = mock(Registration.class);
         for (Component component : listenOn) {
-            Mockito.when(component.addDetachListener(Mockito.any()))
-                    .thenReturn(registration);
+            when(component.addDetachListener(any())).thenReturn(registration);
         }
 
         clientResponse();
 
         detachListener.get().onComponentEvent(new DetachEvent(lifecycleOwner));
 
-        Mockito.verify(registration, Mockito.times(3)).remove();
+        verify(registration, times(3)).remove();
     }
 
     @Test
@@ -804,9 +803,9 @@ class ShortcutRegistrationTest {
         UI ui = spyUiWithSession();
         Component owner = new FakeComponent();
 
-        Registration registration = Mockito.mock(Registration.class);
+        Registration registration = mock(Registration.class);
         AtomicInteger count = new AtomicInteger();
-        Mockito.doAnswer(invocation -> {
+        doAnswer(invocation -> {
             count.incrementAndGet();
             return registration;
         }).when(ui).addDetachListener(any());
@@ -900,10 +899,10 @@ class ShortcutRegistrationTest {
     }
 
     private Element mockLifecycle(boolean visible) {
-        Mockito.when(lifecycleOwner.isVisible()).thenReturn(visible);
+        when(lifecycleOwner.isVisible()).thenReturn(visible);
         Element element = ElementFactory.createAnchor();
         element.setVisible(visible);
-        Mockito.when(lifecycleOwner.getElement()).thenReturn(element);
+        when(lifecycleOwner.getElement()).thenReturn(element);
         return element;
     }
 
@@ -916,9 +915,9 @@ class ShortcutRegistrationTest {
         private final UI ui;
 
         ElementLocatorTestFixture() {
-            VaadinSession session = Mockito.mock(VaadinSession.class);
-            Mockito.when(session.hasLock()).thenReturn(true);
-            ui = Mockito.spy(UI.class);
+            VaadinSession session = mock(VaadinSession.class);
+            when(session.hasLock()).thenReturn(true);
+            ui = spy(UI.class);
             ui.getInternals().setSession(session);
 
             owner = new FakeComponent();
@@ -984,7 +983,7 @@ class ShortcutRegistrationTest {
     }
 
     private static UI spyUiWithSession() {
-        UI spyUi = Mockito.spy(UI.class);
+        UI spyUi = spy(UI.class);
         // A locked session lets initShortcutClient's executeJs run.
         VaadinSession session = mock(VaadinSession.class);
         when(session.hasLock()).thenReturn(true);

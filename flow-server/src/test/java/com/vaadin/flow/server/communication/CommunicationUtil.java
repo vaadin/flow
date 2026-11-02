@@ -23,8 +23,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.mockito.internal.verification.VerificationModeFactory;
+
+import static org.mockito.Mockito.verify;
 
 class CommunicationUtil {
 
@@ -35,9 +36,8 @@ class CommunicationUtil {
         ArgumentCaptor<Integer> offsetArg = ArgumentCaptor.forClass(int.class);
         ArgumentCaptor<Integer> lengthArg = ArgumentCaptor.forClass(int.class);
 
-        Mockito.verify(outputStream, VerificationModeFactory.atLeastOnce())
-                .write(contentArg.capture(), offsetArg.capture(),
-                        lengthArg.capture());
+        verify(outputStream, VerificationModeFactory.atLeastOnce()).write(
+                contentArg.capture(), offsetArg.capture(), lengthArg.capture());
 
         List<Integer> offsetValues = offsetArg.getAllValues();
         List<Integer> lengthValues = lengthArg.getAllValues();
@@ -55,7 +55,7 @@ class CommunicationUtil {
         ArgumentCaptor<byte[]> contentArg = ArgumentCaptor
                 .forClass(byte[].class);
 
-        Mockito.verify(outputStream, VerificationModeFactory.atLeastOnce())
+        verify(outputStream, VerificationModeFactory.atLeastOnce())
                 .write(contentArg.capture());
 
         return contentArg.getAllValues().stream()
@@ -66,7 +66,7 @@ class CommunicationUtil {
         ArgumentCaptor<String> contentArg = ArgumentCaptor
                 .forClass(String.class);
 
-        Mockito.verify(printWriter, VerificationModeFactory.atLeastOnce())
+        verify(printWriter, VerificationModeFactory.atLeastOnce())
                 .write(contentArg.capture());
 
         return String.join("", contentArg.getAllValues());

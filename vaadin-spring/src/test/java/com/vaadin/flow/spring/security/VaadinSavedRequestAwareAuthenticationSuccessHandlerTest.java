@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,6 +34,11 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
 
@@ -274,8 +278,8 @@ class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
                 "spring-csrf-header-name", "spring-csrf-parameter-name",
                 "spring-csrf-token-value");
 
-        var mockCsrfTokenRepository = Mockito.mock(CsrfTokenRepository.class);
-        Mockito.when(mockCsrfTokenRepository.generateToken(Mockito.any()))
+        var mockCsrfTokenRepository = mock(CsrfTokenRepository.class);
+        when(mockCsrfTokenRepository.generateToken(any()))
                 .thenReturn(springCsrfToken);
         vaadinSavedRequestAwareAuthenticationSuccessHandler
                 .setCsrfTokenRepository(mockCsrfTokenRepository);
@@ -296,10 +300,9 @@ class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
         assertEquals("spring-csrf-token-value",
                 loginResponse.getHeader("Spring-CSRF-token"));
 
-        Mockito.verify(mockCsrfTokenRepository, Mockito.times(1))
-                .generateToken(loginRequest);
-        Mockito.verify(mockCsrfTokenRepository, Mockito.times(1))
-                .saveToken(springCsrfToken, loginRequest, loginResponse);
+        verify(mockCsrfTokenRepository, times(1)).generateToken(loginRequest);
+        verify(mockCsrfTokenRepository, times(1)).saveToken(springCsrfToken,
+                loginRequest, loginResponse);
     }
 
     @Test

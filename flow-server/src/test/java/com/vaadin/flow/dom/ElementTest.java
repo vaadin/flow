@@ -49,7 +49,6 @@ import java.util.stream.DoubleStream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -103,6 +102,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 
 @Isolated
 class ElementTest extends AbstractNodeTest {
@@ -1616,7 +1616,7 @@ class ElementTest extends AbstractNodeTest {
     void setResourceAttribute_classAttribute() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element element = ElementFactory.createDiv();
-            element.setAttribute("class", Mockito.mock(StreamResource.class));
+            element.setAttribute("class", mock(StreamResource.class));
         });
     }
 
@@ -1624,7 +1624,7 @@ class ElementTest extends AbstractNodeTest {
     void setResourceAttribute_nullAttribute() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element element = ElementFactory.createDiv();
-            element.setAttribute(null, Mockito.mock(StreamResource.class));
+            element.setAttribute(null, mock(StreamResource.class));
         });
     }
 
@@ -2005,7 +2005,7 @@ class ElementTest extends AbstractNodeTest {
     void setResourceAttribute_elementIsText_operationIsNotSupported() {
         assertThrows(UnsupportedOperationException.class, () -> {
             Element.createText("").setAttribute("foo",
-                    Mockito.mock(StreamResource.class));
+                    mock(StreamResource.class));
         });
     }
 

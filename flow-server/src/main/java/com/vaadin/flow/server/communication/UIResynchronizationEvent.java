@@ -30,7 +30,7 @@ import com.vaadin.flow.server.VaadinService;
  * push connection that was closed by a proxy. The server then sends the full
  * state of the UI to the client.
  * 
- * @since 25.4
+ * @since 25.3.3
  */
 public class UIResynchronizationEvent extends EventObject {
 

@@ -21,7 +21,6 @@ import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.data.binder.testcomponents.TestHasValidatorDatePicker;
@@ -30,6 +29,11 @@ import com.vaadin.flow.tests.data.bean.Person;
 import static com.vaadin.flow.data.binder.testcomponents.TestHasValidatorDatePicker.INVALID_DATE_FORMAT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 class BinderValidationStatusChangeListenerTest
         extends BinderTestBase<Binder<Person>, Person> {
@@ -58,48 +62,43 @@ class BinderValidationStatusChangeListenerTest
 
     @Test
     void fieldWithHasValidatorDefaults_bindIsCalled_addValidationStatusListenerIsCalled() {
-        var field = Mockito.spy(
+        var field = spy(
                 TestHasValidatorDatePicker.DatePickerHasValidatorDefaults.class);
         binder.bind(field, BIRTH_DATE_PROPERTY);
-        Mockito.verify(field, Mockito.times(1))
-                .addValidationStatusChangeListener(Mockito.any());
+        verify(field, times(1)).addValidationStatusChangeListener(any());
     }
 
     @Test
     void binderWithFieldsValidationStatusChangeListenerDisabled_bindIsCalled_noValidationStatusListenerIsCalled() {
         binder.setFieldsValidationStatusChangeListenerEnabled(false);
-        var field = Mockito.spy(
+        var field = spy(
                 TestHasValidatorDatePicker.DatePickerHasValidatorDefaults.class);
         binder.bind(field, BIRTH_DATE_PROPERTY);
-        Mockito.verify(field, Mockito.never())
-                .addValidationStatusChangeListener(Mockito.any());
+        verify(field, never()).addValidationStatusChangeListener(any());
     }
 
     @Test
     void fieldWithHasValidatorOnlyGetDefaultValidatorOverridden_bindIsCalled_addValidationStatusListenerIsCalled() {
-        var field = Mockito.spy(
+        var field = spy(
                 TestHasValidatorDatePicker.DataPickerHasValidatorGetDefaultValidatorOverridden.class);
         binder.bind(field, BIRTH_DATE_PROPERTY);
-        Mockito.verify(field, Mockito.times(1))
-                .addValidationStatusChangeListener(Mockito.any());
+        verify(field, times(1)).addValidationStatusChangeListener(any());
     }
 
     @Test
     void fieldWithHasValidatorOnlyAddListenerOverridden_bindIsCalled_addValidationStatusListenerIsCalled() {
-        var field = Mockito.spy(
+        var field = spy(
                 TestHasValidatorDatePicker.DataPickerHasValidatorAddListenerOverridden.class);
         binder.bind(field, BIRTH_DATE_PROPERTY);
-        Mockito.verify(field, Mockito.times(1))
-                .addValidationStatusChangeListener(Mockito.any());
+        verify(field, times(1)).addValidationStatusChangeListener(any());
     }
 
     @Test
     void fieldWithHasValidatorFullyOverridden_bindIsCalled_addValidationStatusChangeListenerIsCalled() {
-        var field = Mockito.spy(
+        var field = spy(
                 TestHasValidatorDatePicker.DataPickerHasValidatorOverridden.class);
         binder.bind(field, BIRTH_DATE_PROPERTY);
-        Mockito.verify(field, Mockito.times(1))
-                .addValidationStatusChangeListener(Mockito.any());
+        verify(field, times(1)).addValidationStatusChangeListener(any());
     }
 
     @Test

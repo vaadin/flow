@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,7 +20,6 @@ import jakarta.inject.Provider;
 
 import org.jsoup.Jsoup;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -36,6 +35,9 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModel;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 public class PolymerTest extends AbstractWeldTest {
 
@@ -84,13 +86,12 @@ public class PolymerTest extends AbstractWeldTest {
     @Test
     public void injectField_componentHasScope_scopeIsIgnored() {
         final PseudoScopedLabel label = pseudoScopedLabelProvider.get();
-        Assertions.assertNotSame(label, template.pseudo);
+        assertNotSame(label, template.pseudo);
     }
 
     @Test
     public void injectField_componentHasScope_elementBindingSuccess() {
-        Assertions.assertNotNull(
-                template.pseudo.getElement().getNode().getParent());
+        assertNotNull(template.pseudo.getElement().getNode().getParent());
     }
 
     private static String getTemplateContent() {

@@ -30,8 +30,6 @@ import org.apache.commons.io.file.AccumulatorPathVisitor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -40,6 +38,11 @@ import com.vaadin.tests.util.MockOptions;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 
 /**
  * Test that commands in NodeTasks are always executed in a predefined order.
@@ -141,13 +144,13 @@ class NodeTasksExecutionTest {
             }
         };
 
-        NodeTasks nodeTasks1 = Mockito.spy(new NodeTasks(options));
+        NodeTasks nodeTasks1 = spy(new NodeTasks(options));
         getCommands(nodeTasks1).add(command1);
-        Mockito.doReturn(1).when(nodeTasks1).getIndex(command1);
+        doReturn(1).when(nodeTasks1).getIndex(command1);
 
-        NodeTasks nodeTasks2 = Mockito.spy(new NodeTasks(options));
+        NodeTasks nodeTasks2 = spy(new NodeTasks(options));
         getCommands(nodeTasks2).add(command2);
-        Mockito.doReturn(1).when(nodeTasks2).getIndex(command2);
+        doReturn(1).when(nodeTasks2).getIndex(command2);
 
         Thread t1 = new Thread(() -> {
             try {
@@ -203,11 +206,11 @@ class NodeTasksExecutionTest {
     void nodeTasks_deletesOldGeneratedFiles() throws Exception {
         options.withCleanOldGeneratedFiles(true);
 
-        NodeTasks spiedNodeTasks = Mockito.spy(new NodeTasks(options));
+        NodeTasks spiedNodeTasks = spy(new NodeTasks(options));
         // TaskRemoveOldFrontendGeneratedFiles should be the last executed task
-        Mockito.doAnswer(i -> i.getArgument(
+        doAnswer(i -> i.getArgument(
                 0) instanceof TaskRemoveOldFrontendGeneratedFiles ? 1 : 0)
-                .when(spiedNodeTasks).getIndex(ArgumentMatchers.any());
+                .when(spiedNodeTasks).getIndex(any());
 
         List<Path> generatedFiles = List.of(Paths.get("file.tsx"),
                 Paths.get("another.js"), Paths.get("sub", "a.tsx"),
@@ -306,10 +309,10 @@ class NodeTasksExecutionTest {
         List<FallibleCommand> commands = new ArrayList<>(commandsOrder.size());
 
         for (Class<? extends FallibleCommand> command : commandsOrder) {
-            final FallibleCommand mock = Mockito.mock(command);
+            final FallibleCommand mock = mock(command);
             commands.add(mock);
             // When execute() is called add executing command to execution list.
-            Mockito.doAnswer(invocation -> {
+            doAnswer(invocation -> {
                 executionOrder.add(command);
                 return null;
             }).when(mock).execute();

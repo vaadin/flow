@@ -24,7 +24,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -32,6 +31,7 @@ import tools.jackson.databind.node.ObjectNode;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mockStatic;
 
 class BundleUtilsTest {
 
@@ -114,7 +114,7 @@ class BundleUtilsTest {
     }
 
     private void mockStatsJsonLoading(JsonNode statsJson) {
-        MockedStatic<BundleUtils> mock = Mockito.mockStatic(BundleUtils.class);
+        MockedStatic<BundleUtils> mock = mockStatic(BundleUtils.class);
         mock.when(() -> BundleUtils.loadStatsJson()).thenReturn(statsJson);
         mock.when(() -> BundleUtils.loadBundleImports()).thenCallRealMethod();
         closeOnTearDown.add(mock);

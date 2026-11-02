@@ -31,12 +31,10 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -70,6 +68,7 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import static com.vaadin.flow.router.internal.RouteModelTest.parameters;
 import static com.vaadin.flow.router.internal.RouteModelTest.varargs;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -78,6 +77,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Isolated
 public class RouterTest extends RoutingTestBase {
@@ -87,10 +88,10 @@ public class RouterTest extends RoutingTestBase {
 
     private UI ui;
 
-    private VaadinService service = Mockito.mock(VaadinService.class);
+    private VaadinService service = mock(VaadinService.class);
 
-    private DeploymentConfiguration configuration = Mockito
-            .mock(DeploymentConfiguration.class);
+    private DeploymentConfiguration configuration = mock(
+            DeploymentConfiguration.class);
 
     @Route("")
     @Tag(Tag.DIV)
@@ -1881,12 +1882,11 @@ public class RouterTest extends RoutingTestBase {
 
         VaadinService.setCurrent(service);
 
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
-        Mockito.when(service.getRouter()).thenReturn(router);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
+        when(service.getRouter()).thenReturn(router);
 
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
-        Mockito.when(configuration.getUrlSafeSchemes())
+        when(configuration.isProductionMode()).thenReturn(true);
+        when(configuration.getUrlSafeSchemes())
                 .thenReturn(Constants.DEFAULT_URL_SAFE_SCHEMES);
     }
 
@@ -1992,8 +1992,8 @@ public class RouterTest extends RoutingTestBase {
                 new Location("navigation-target-with-dynamic-title"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        MatcherAssert.assertThat("Dynamic title is wrong",
-                ui.getInternals().getTitle(), is(DYNAMIC_TITLE));
+        assertThat("Dynamic title is wrong", ui.getInternals().getTitle(),
+                is(DYNAMIC_TITLE));
     }
 
     @Test
@@ -2004,8 +2004,8 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("url/hello"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        MatcherAssert.assertThat("Dynamic title is wrong",
-                ui.getInternals().getTitle(), is("hello"));
+        assertThat("Dynamic title is wrong", ui.getInternals().getTitle(),
+                is("hello"));
     }
 
     @Test
@@ -2017,8 +2017,8 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("url"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        MatcherAssert.assertThat("Dynamic title is wrong",
-                ui.getInternals().getTitle(), is("ACTIVATING"));
+        assertThat("Dynamic title is wrong", ui.getInternals().getTitle(),
+                is("ACTIVATING"));
     }
 
     @Test
@@ -3901,12 +3901,10 @@ public class RouterTest extends RoutingTestBase {
     public void optional_parameter_non_existing_route()
             throws InvalidRouteConfigurationException {
         OptionalParameter.events.clear();
-        Mockito.when(configuration.isProductionMode()).thenReturn(false);
-        Mockito.when(configuration.getFrontendFolder())
-                .thenReturn(new File("front"));
-        Mockito.when(configuration.getProjectFolder())
-                .thenReturn(new File("./"));
-        Mockito.when(configuration.getBuildFolder()).thenReturn("build");
+        when(configuration.isProductionMode()).thenReturn(false);
+        when(configuration.getFrontendFolder()).thenReturn(new File("front"));
+        when(configuration.getProjectFolder()).thenReturn(new File("./"));
+        when(configuration.getBuildFolder()).thenReturn("build");
         setNavigationTargets(OptionalParameter.class);
 
         String locationString = "optional/doesnotExist/parameter";
@@ -3933,12 +3931,10 @@ public class RouterTest extends RoutingTestBase {
     public void without_optional_parameter()
             throws InvalidRouteConfigurationException {
         OptionalParameter.events.clear();
-        Mockito.when(configuration.isProductionMode()).thenReturn(false);
-        Mockito.when(configuration.getFrontendFolder())
-                .thenReturn(new File("front"));
-        Mockito.when(configuration.getProjectFolder())
-                .thenReturn(new File("./"));
-        Mockito.when(configuration.getBuildFolder()).thenReturn("build");
+        when(configuration.isProductionMode()).thenReturn(false);
+        when(configuration.getFrontendFolder()).thenReturn(new File("front"));
+        when(configuration.getProjectFolder()).thenReturn(new File("./"));
+        when(configuration.getBuildFolder()).thenReturn("build");
         setNavigationTargets(WithoutOptionalParameter.class);
 
         String locationString = "optional";
@@ -4015,11 +4011,10 @@ public class RouterTest extends RoutingTestBase {
                 .getExtendedClientDetails();
 
         // Used with PreserveOnRefresh.
-        ExtendedClientDetails clientDetails = Mockito
-                .mock(ExtendedClientDetails.class);
+        ExtendedClientDetails clientDetails = mock(ExtendedClientDetails.class);
         ui.getInternals().setExtendedClientDetails(clientDetails);
 
-        Mockito.when(clientDetails.getWindowName()).thenReturn("mock");
+        when(clientDetails.getWindowName()).thenReturn("mock");
 
         setNavigationTargets(ProcessEventsFruit.class);
 

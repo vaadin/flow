@@ -28,6 +28,7 @@ import java.util.Objects;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.ReflectionCache;
 
 /**
  * Hands out implementations of {@link JsDefinition} interfaces, which turn a
@@ -43,6 +44,19 @@ import com.vaadin.flow.function.SerializableFunction;
  * @since 25.4
  */
 public final class JsDefinitionProxy {
+
+    /**
+     * The JavaScript definitions whose methods have been checked, so that the
+     * methods of an interface are checked once rather than every time a call is
+     * made through it. A definition that fails the check is not kept, so it
+     * fails again on the next attempt. Keyed by any class, since a JavaScript
+     * definition is marked by an annotation rather than by a common supertype.
+     */
+    private static final ReflectionCache<Object, Boolean> checkedDefinitions = new ReflectionCache<>(
+            definitionType -> {
+                checkMethods(definitionType);
+                return Boolean.TRUE;
+            });
 
     private JsDefinitionProxy() {
         // Only static members
@@ -80,7 +94,7 @@ public final class JsDefinitionProxy {
                     + " is not annotated with @JsDefinition, so the build does not"
                     + " collect its JavaScript into the bundle");
         }
-        checkMethods(definitionType);
+        checkedDefinitions.get(definitionType);
         return (T) Proxy.newProxyInstance(definitionType.getClassLoader(),
                 new Class<?>[] { definitionType },
                 new JsDefinitionHandler(runner, definitionType));

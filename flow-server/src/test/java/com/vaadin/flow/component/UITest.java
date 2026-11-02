@@ -26,14 +26,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
@@ -91,6 +87,8 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -100,6 +98,10 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class UITest {
 
@@ -237,8 +239,8 @@ public class UITest {
     private static void initUI(UI ui, String initialLocation,
             ArgumentCaptor<Integer> statusCodeCaptor)
             throws InvalidRouteConfigurationException {
-        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
-        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        VaadinServletRequest request = mock(VaadinServletRequest.class);
+        VaadinResponse response = mock(VaadinResponse.class);
 
         String pathInfo;
         if (initialLocation.isEmpty()) {
@@ -247,7 +249,7 @@ public class UITest {
             assertFalse(initialLocation.startsWith("/"));
             pathInfo = "/" + initialLocation;
         }
-        Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
+        when(request.getPathInfo()).thenReturn(pathInfo);
 
         VaadinService service = new MockVaadinServletService() {
             @Override
@@ -259,12 +261,11 @@ public class UITest {
 
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
 
-        DeploymentConfiguration config = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(config.isProductionMode()).thenReturn(false);
-        Mockito.when(config.getFrontendFolder()).thenReturn(new File("front"));
-        Mockito.when(config.getProjectFolder()).thenReturn(new File("./"));
-        Mockito.when(config.getBuildFolder()).thenReturn("build");
+        DeploymentConfiguration config = mock(DeploymentConfiguration.class);
+        when(config.isProductionMode()).thenReturn(false);
+        when(config.getFrontendFolder()).thenReturn(new File("front"));
+        when(config.getProjectFolder()).thenReturn(new File("./"));
+        when(config.getBuildFolder()).thenReturn("build");
 
         session.lock();
         ((MockVaadinServletService) service).setConfiguration(config);
@@ -288,7 +289,7 @@ public class UITest {
         session.unlock();
 
         if (statusCodeCaptor != null) {
-            Mockito.verify(response).setStatus(statusCodeCaptor.capture());
+            verify(response).setStatus(statusCodeCaptor.capture());
         }
     }
 
@@ -328,8 +329,8 @@ public class UITest {
                 location.getQueryParameters().getParameters().get("t"));
         assertEquals("foo/bar?t=abc&t=def#total",
                 location.getPathWithQueryParameters());
-        MatcherAssert.assertThat(ui.getCurrentView(),
-                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+        assertThat(ui.getCurrentView(),
+                instanceOf(FooBarNavigationTarget.class));
     }
 
     @Test
@@ -346,8 +347,8 @@ public class UITest {
         assertEquals(Collections.emptyMap(),
                 location.getQueryParameters().getParameters());
         assertEquals("foo/bar#a?b", location.getPathWithQueryParameters());
-        MatcherAssert.assertThat(ui.getCurrentView(),
-                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+        assertThat(ui.getCurrentView(),
+                instanceOf(FooBarNavigationTarget.class));
     }
 
     @Test
@@ -361,8 +362,8 @@ public class UITest {
         // A fragment must not be resolved to the "" route
         ui.navigate("#total");
 
-        MatcherAssert.assertThat(ui.getCurrentView(),
-                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+        assertThat(ui.getCurrentView(),
+                instanceOf(FooBarNavigationTarget.class));
         assertEquals("foo/bar", ui.getInternals().getActiveViewLocation()
                 .getPathWithQueryParameters());
         assertEquals(List.of("#total"), dumpClientNavigations(ui),
@@ -381,8 +382,7 @@ public class UITest {
         // fragment, so only the fragment is left for the client
         ui.navigate("?tab=items#total");
 
-        MatcherAssert.assertThat(ui.getCurrentView(),
-                CoreMatchers.instanceOf(RootNavigationTarget.class));
+        assertThat(ui.getCurrentView(), instanceOf(RootNavigationTarget.class));
         assertEquals("?tab=items#total", ui.getInternals()
                 .getActiveViewLocation().getPathWithQueryParameters());
         assertEquals(List.of(), dumpClientNavigations(ui));
@@ -409,8 +409,8 @@ public class UITest {
         Location location = ui.getInternals().getActiveViewLocation();
         assertEquals("foo/bar", location.getPath());
         assertEquals("t=abc", location.getQueryParameters().getQueryString());
-        MatcherAssert.assertThat(ui.getCurrentView(),
-                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+        assertThat(ui.getCurrentView(),
+                instanceOf(FooBarNavigationTarget.class));
     }
 
     @Test
@@ -472,8 +472,7 @@ public class UITest {
                 .getActiveRouterTargetsChain();
         assertEquals(1, chain.size());
         Component currentRoute = ui.getCurrentView();
-        MatcherAssert.assertThat(currentRoute,
-                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+        assertThat(currentRoute, instanceOf(FooBarNavigationTarget.class));
     }
 
     @Test
@@ -503,7 +502,7 @@ public class UITest {
     @Disabled("Check what is the new Router.navigate for JavaScriptUI")
     public void navigateWithParameters_delegateToRouter() {
         final String route = "params";
-        Router router = Mockito.mock(Router.class);
+        Router router = mock(Router.class);
         UI ui = new MockUI(router);
 
         QueryParameters params = QueryParameters
@@ -514,9 +513,8 @@ public class UITest {
 
         ui.navigate(route, params);
 
-        Mockito.verify(router).navigate(ArgumentMatchers.eq(ui),
-                location.capture(),
-                ArgumentMatchers.eq(NavigationTrigger.UI_NAVIGATE));
+        verify(router).navigate(eq(ui), location.capture(),
+                eq(NavigationTrigger.UI_NAVIGATE));
 
         Location value = location.getValue();
         assertEquals(route, value.getPath());
@@ -542,10 +540,9 @@ public class UITest {
         List<HasElement> chain = ui.getInternals()
                 .getActiveRouterTargetsChain();
         assertEquals(2, chain.size());
-        MatcherAssert.assertThat(chain.get(0),
-                CoreMatchers.instanceOf(FooBarParamNavigationTarget.class));
-        MatcherAssert.assertThat(chain.get(1), CoreMatchers
-                .instanceOf(FooBarParamParentNavigationTarget.class));
+        assertThat(chain.get(0), instanceOf(FooBarParamNavigationTarget.class));
+        assertThat(chain.get(1),
+                instanceOf(FooBarParamParentNavigationTarget.class));
     }
 
     @Test
@@ -568,10 +565,9 @@ public class UITest {
         List<HasElement> chain = ui.getInternals()
                 .getActiveRouterTargetsChain();
         assertEquals(2, chain.size());
-        MatcherAssert.assertThat(chain.get(0),
-                CoreMatchers.instanceOf(FooBarParamNavigationTarget.class));
-        MatcherAssert.assertThat(chain.get(1), CoreMatchers
-                .instanceOf(FooBarParamParentNavigationTarget.class));
+        assertThat(chain.get(0), instanceOf(FooBarParamNavigationTarget.class));
+        assertThat(chain.get(1),
+                instanceOf(FooBarParamParentNavigationTarget.class));
     }
 
     @Test
@@ -618,8 +614,7 @@ public class UITest {
 
         assertEquals(1, ui.getChildren().count());
         Optional<Component> errorComponent = ui.getChildren().findFirst();
-        MatcherAssert.assertThat(errorComponent.get(),
-                CoreMatchers.instanceOf(RouteNotFoundError.class));
+        assertThat(errorComponent.get(), instanceOf(RouteNotFoundError.class));
         assertEquals(Integer.valueOf(404), statusCodeCaptor.getValue());
     }
 
@@ -2010,13 +2005,11 @@ public class UITest {
         UI ui = new UI();
         initUI(ui, "", null);
         Component currentRoute = ui.getCurrentView();
-        MatcherAssert.assertThat(currentRoute,
-                CoreMatchers.instanceOf(RootNavigationTarget.class));
+        assertThat(currentRoute, instanceOf(RootNavigationTarget.class));
 
         ui.navigate("foo/bar");
         currentRoute = ui.getCurrentView();
-        MatcherAssert.assertThat(currentRoute,
-                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+        assertThat(currentRoute, instanceOf(FooBarNavigationTarget.class));
     }
 
     @Test

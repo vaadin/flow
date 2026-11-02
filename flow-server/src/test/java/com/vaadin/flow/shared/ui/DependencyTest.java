@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.shared.ui;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -23,6 +22,7 @@ import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -55,8 +55,7 @@ class DependencyTest {
         // the initial request: it's processed by the bootstrap handler via
         // adding an element into the document head right away (no client side
         // processing is involved).
-        assertThat(dependency.getLoadMode(),
-                CoreMatchers.equalTo(LoadMode.LAZY));
+        assertThat(dependency.getLoadMode(), equalTo(LoadMode.LAZY));
     }
 
     @Test

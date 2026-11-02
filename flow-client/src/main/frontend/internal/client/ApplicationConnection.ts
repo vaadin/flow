@@ -152,7 +152,13 @@ export class ApplicationConnection implements PublishedClient {
     }
 
     window.addEventListener('pagehide', () => this.#registry.getMessageSender().sendUnloadBeacon());
-    window.addEventListener('pageshow', () => {
+    window.addEventListener('pageshow', (event) => {
+      // The initial display of the document also fires pageshow, after the
+      // client has started if a slow resource delays the load event. Only a
+      // page restored from the back/forward cache needs reloading.
+      if (!event.persisted) {
+        return;
+      }
       // Currently only Safari gets here, sometimes when going back/forward with
       // browser buttons. Chrome discards our state as beforeunload is used. As
       // state is most likely cleared on the server already (especially now with

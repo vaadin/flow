@@ -28,7 +28,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -50,7 +49,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 
 class NodeTasksViteTest {
 
@@ -91,9 +94,9 @@ class NodeTasksViteTest {
         Class<?>[] classes = { FlagView.class,
                 ExampleExperimentalComponent.class };
 
-        Lookup mockedLookup = Mockito.mock(Lookup.class);
+        Lookup mockedLookup = mock(Lookup.class);
         ClassFinder finder = NodeUpdateTestUtil.getClassFinder(classes);
-        Mockito.doReturn(finder).when(mockedLookup).lookup(ClassFinder.class);
+        doReturn(finder).when(mockedLookup).lookup(ClassFinder.class);
 
         Options options = new Options(mockedLookup, npmFolder)
                 .withBuildDirectory(TARGET).enablePackagesUpdate(false)
@@ -131,9 +134,9 @@ class NodeTasksViteTest {
                 "com.vaadin.experimental.exampleFeatureFlag=true\n",
                 StandardCharsets.UTF_8);
 
-        Lookup mockedLookup = Mockito.mock(Lookup.class);
+        Lookup mockedLookup = mock(Lookup.class);
         ClassFinder finder = NodeUpdateTestUtil.getClassFinder(classes);
-        Mockito.doReturn(finder).when(mockedLookup).lookup(ClassFinder.class);
+        doReturn(finder).when(mockedLookup).lookup(ClassFinder.class);
 
         Options options = new Options(mockedLookup, npmFolder)
                 .withBuildDirectory(TARGET).enablePackagesUpdate(false)
@@ -158,9 +161,8 @@ class NodeTasksViteTest {
 
     @Test
     void should_UseDefaultFolders() throws Exception {
-        Lookup mockedLookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(
-                new DefaultClassFinder(this.getClass().getClassLoader()))
+        Lookup mockedLookup = mock(Lookup.class);
+        doReturn(new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
         Options options = new Options(mockedLookup, npmFolder)
                 .withBuildDirectory(TARGET).enablePackagesUpdate(false)
@@ -181,8 +183,7 @@ class NodeTasksViteTest {
     @Test
     void should_generateServiceWorkerWhenPwa() throws Exception {
         Lookup mockedLookup = mock(Lookup.class);
-        Mockito.doReturn(
-                new DefaultClassFinder(this.getClass().getClassLoader()))
+        doReturn(new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
         Options options = new Options(mockedLookup, npmFolder)
                 .withBuildDirectory(TARGET).enablePackagesUpdate(false)
@@ -204,8 +205,7 @@ class NodeTasksViteTest {
         System.setProperty(PARAM_FRONTEND_DIR, "my_custom_sources_folder");
 
         Lookup mockedLookup = mock(Lookup.class);
-        Mockito.doReturn(
-                new DefaultClassFinder(this.getClass().getClassLoader()))
+        doReturn(new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
         Options options = new Options(mockedLookup, npmFolder)
                 .withBuildDirectory(TARGET).enablePackagesUpdate(false)
@@ -236,8 +236,7 @@ class NodeTasksViteTest {
     void should_GenerateTsConfigAndTsDefinitions_When_Vaadin14BootstrapMode()
             throws ExecutionFailedException {
         Lookup mockedLookup = mock(Lookup.class);
-        Mockito.doReturn(
-                new DefaultClassFinder(this.getClass().getClassLoader()))
+        doReturn(new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
         Options options = new Options(mockedLookup, npmFolder)
                 .withBuildDirectory(TARGET).enablePackagesUpdate(false)
@@ -255,8 +254,7 @@ class NodeTasksViteTest {
     void should_copyPackageLockJson_When_frontendHotdeploy()
             throws ExecutionFailedException {
         Lookup mockedLookup = mock(Lookup.class);
-        Mockito.doReturn(
-                new DefaultClassFinder(this.getClass().getClassLoader()))
+        doReturn(new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
         Options options = new Options(mockedLookup, npmFolder)
                 .withBuildDirectory(TARGET).enablePackagesUpdate(false)
@@ -265,17 +263,17 @@ class NodeTasksViteTest {
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .withFrontendHotdeploy(true).withProductionMode(false)
                 .withBuildResultFolders(npmFolder, npmFolder);
-        try (MockedStatic<BundleBuildUtils> bundleBuildUtils = Mockito
-                .mockStatic(BundleBuildUtils.class);
-                MockedStatic<BundleValidationUtil> validationUtil = Mockito
-                        .mockStatic(BundleValidationUtil.class)) {
+        try (MockedStatic<BundleBuildUtils> bundleBuildUtils = mockStatic(
+                BundleBuildUtils.class);
+                MockedStatic<BundleValidationUtil> validationUtil = mockStatic(
+                        BundleValidationUtil.class)) {
             new NodeTasks(options).execute();
             bundleBuildUtils.verify(
                     () -> BundleBuildUtils.copyPackageLockFromBundle(options),
-                    Mockito.times(1));
+                    times(1));
             validationUtil.verify(() -> BundleValidationUtil.needsBuild(
                     any(Options.class), any(FrontendDependenciesScanner.class),
-                    any(Mode.class)), Mockito.never());
+                    any(Mode.class)), never());
         }
     }
 

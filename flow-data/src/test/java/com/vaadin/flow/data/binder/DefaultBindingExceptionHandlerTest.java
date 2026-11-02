@@ -19,7 +19,6 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.HasValue;
@@ -33,6 +32,10 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class DefaultBindingExceptionHandlerTest {
 
@@ -42,13 +45,13 @@ class DefaultBindingExceptionHandlerTest {
 
     }
 
-    private TestComponent component = Mockito.mock(TestComponent.class);
+    private TestComponent component = mock(TestComponent.class);
 
     private Element element = ElementFactory.createAnchor();
 
     @BeforeEach
     void setUp() {
-        Mockito.when(component.getElement()).thenReturn(element);
+        when(component.getElement()).thenReturn(element);
     }
 
     @Test
@@ -106,22 +109,20 @@ class DefaultBindingExceptionHandlerTest {
 
     private UI mockUI(boolean productionMode) {
         UI ui = new UI();
-        VaadinService service = Mockito.mock(VaadinService.class);
-        VaadinSession session = Mockito.mock(VaadinSession.class);
+        VaadinService service = mock(VaadinService.class);
+        VaadinSession session = mock(VaadinSession.class);
         ui.getInternals().setSession(session);
 
-        Mockito.when(session.getService()).thenReturn(service);
+        when(session.getService()).thenReturn(service);
 
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        Mockito.when(service.getContext()).thenReturn(context);
+        VaadinContext context = mock(VaadinContext.class);
+        when(service.getContext()).thenReturn(context);
 
-        ApplicationConfiguration configuration = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(context.getAttribute(
-                Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
+        ApplicationConfiguration configuration = mock(
+                ApplicationConfiguration.class);
+        when(context.getAttribute(eq(ApplicationConfiguration.class), any()))
                 .thenReturn(configuration);
-        Mockito.when(configuration.isProductionMode())
-                .thenReturn(productionMode);
+        when(configuration.isProductionMode()).thenReturn(productionMode);
 
         return ui;
     }

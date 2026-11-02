@@ -29,7 +29,6 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -76,8 +75,8 @@ class RouteConfigurationTest {
         vaadinContext = new MockVaadinContext(servletContext);
         registry = ApplicationRouteRegistry.getInstance(vaadinContext);
 
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         when(configuration.getFrontendFolder())
                 .thenReturn(new File("/frontend"));
 

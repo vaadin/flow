@@ -16,7 +16,6 @@
 package com.vaadin.flow.router;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -26,6 +25,9 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class RoutingTestBase {
 
@@ -94,11 +96,11 @@ class RoutingTestBase {
 
         private static VaadinSession createMockSession(Router router) {
 
-            VaadinSession session = Mockito.mock(VaadinSession.class);
-            VaadinService service = Mockito.mock(VaadinService.class);
+            VaadinSession session = mock(VaadinSession.class);
+            VaadinService service = mock(VaadinService.class);
 
-            Mockito.when(session.getService()).thenReturn(service);
-            Mockito.when(service.getRouter()).thenReturn(router);
+            when(session.getService()).thenReturn(service);
+            when(service.getRouter()).thenReturn(router);
 
             return session;
         }

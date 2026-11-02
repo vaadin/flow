@@ -19,7 +19,6 @@ import jakarta.servlet.http.Cookie;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.pro.licensechecker.dau.DauIntegration;
@@ -27,16 +26,19 @@ import com.vaadin.pro.licensechecker.dau.DauIntegration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 class FlowDauIntegrationTest {
 
     @Test
     void generateNewCookie_setsUpExpectedParameters() {
-        try (MockedStatic<DauIntegration> key = Mockito
-                .mockStatic(DauIntegration.class)) {
+        try (MockedStatic<DauIntegration> key = mockStatic(
+                DauIntegration.class)) {
             key.when(DauIntegration::newTrackingHash).thenReturn("hash");
-            VaadinRequest request = Mockito.mock(VaadinRequest.class);
-            Mockito.when(request.isSecure()).thenReturn(true);
+            VaadinRequest request = mock(VaadinRequest.class);
+            when(request.isSecure()).thenReturn(true);
             Cookie cookie = FlowDauIntegration.generateNewCookie(request);
             String[] hashAndTime = cookie.getValue().split("\\$");
             assertEquals("hash", hashAndTime[0]);
@@ -52,11 +54,11 @@ class FlowDauIntegrationTest {
 
     @Test
     void generateNewCookie_notSecureRequest_cookieNotSecure() {
-        try (MockedStatic<DauIntegration> key = Mockito
-                .mockStatic(DauIntegration.class)) {
+        try (MockedStatic<DauIntegration> key = mockStatic(
+                DauIntegration.class)) {
             key.when(DauIntegration::newTrackingHash).thenReturn("hash");
-            VaadinRequest request = Mockito.mock(VaadinRequest.class);
-            Mockito.when(request.isSecure()).thenReturn(false);
+            VaadinRequest request = mock(VaadinRequest.class);
+            when(request.isSecure()).thenReturn(false);
             Cookie cookie = FlowDauIntegration.generateNewCookie(request);
             assertFalse(cookie.getSecure());
         }

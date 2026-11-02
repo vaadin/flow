@@ -17,10 +17,10 @@ package com.vaadin.flow.spring.io;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class FilterableResourceResolverTest {
 
@@ -29,7 +29,7 @@ class FilterableResourceResolverTest {
     @BeforeEach
     void setup() {
         filterableResourceResolver = new FilterableResourceResolver(
-                Mockito.mock(FilterableResourceResolver.class));
+                mock(FilterableResourceResolver.class));
     }
 
     @Test
