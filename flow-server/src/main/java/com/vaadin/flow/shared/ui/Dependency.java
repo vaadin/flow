@@ -29,6 +29,7 @@ import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JsonDecodingException;
 
 /**
  * Represents an html import, stylesheet or JavaScript to include on the page.
@@ -44,9 +45,6 @@ public class Dependency implements Serializable {
     public static final String KEY_CONTENTS = "contents";
     public static final String KEY_ID = "id";
     public static final String KEY_LAYER = "layer";
-
-    // How a function that JacksonCodec encodes starts
-    private static final String ENCODED_FUNCTION_PREFIX = "{\"@v-fn\":";
 
     /**
      * The type of a dependency.
@@ -323,13 +321,19 @@ public class Dependency implements Serializable {
     @JsonIgnore
     public JsonNode getEncodedDynamicImport() {
         // Read from the URL alone, so that a copy made from the type and the
-        // URL loads the function too. No expression starts like this, as it
-        // would not compile as the body of a function.
-        if (type == Type.DYNAMIC_IMPORT
-                && url.startsWith(ENCODED_FUNCTION_PREFIX)) {
-            return JacksonUtils.readTree(url);
+        // URL loads the function too. An expression can start with '{' (a
+        // block), so one that is not JSON is an expression. A JSON object
+        // with the function key never is one: it does not compile as the
+        // body of a function.
+        if (type != Type.DYNAMIC_IMPORT || !url.startsWith("{")) {
+            return null;
         }
-        return null;
+        try {
+            JsonNode node = JacksonUtils.readTree(url);
+            return node.has(JacksonCodec.FUNCTION_KEY) ? node : null;
+        } catch (JsonDecodingException e) {
+            return null;
+        }
     }
 
     @Override

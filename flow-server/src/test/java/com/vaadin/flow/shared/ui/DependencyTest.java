@@ -18,9 +18,11 @@ package com.vaadin.flow.shared.ui;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -83,6 +85,35 @@ class DependencyTest {
     void expressionDependency_hasNoEncodedFunction() {
         assertNull(new Dependency(Dependency.Type.DYNAMIC_IMPORT,
                 "return import('a.js')").getEncodedDynamicImport());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            // A block is a valid function body that starts like JSON
+            "{ return import('a.js'); }",
+            // JSON, but not an encoded function
+            "{\"other\":1}" })
+    void expressionStartingWithBrace_hasNoEncodedFunction(String expression) {
+        assertNull(new Dependency(Dependency.Type.DYNAMIC_IMPORT, expression)
+                .getEncodedDynamicImport());
+    }
+
+    @Test
+    void encodedFunctionWithWhitespace_isRecognized() {
+        // Depends only on the key, not on how the JSON is written
+        Dependency dependency = new Dependency(Dependency.Type.DYNAMIC_IMPORT,
+                "{ \"" + JacksonCodec.FUNCTION_KEY
+                        + "\" : { \"id\": \"f\", \"captures\": [] } }");
+
+        assertEquals("f", dependency.getEncodedDynamicImport()
+                .get(JacksonCodec.FUNCTION_KEY).get("id").asString());
+    }
+
+    @Test
+    void otherTypeWithEncodedFunctionUrl_hasNoEncodedFunction() {
+        assertNull(new Dependency(Dependency.Type.JAVASCRIPT,
+                "{\"" + JacksonCodec.FUNCTION_KEY + "\":{}}")
+                .getEncodedDynamicImport());
     }
 
     @Test
