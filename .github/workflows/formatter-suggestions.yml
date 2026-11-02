@@ -44,5 +44,9 @@ jobs:
         uses: vaadin/github-actions/formatter-suggestions@aa988b8310613280895c08e7cf981b573590fcbf # main
         with:
           fix-command: mvn spotless:apply
+          # Only uploaded by this branch's formatter.yml. The copies on
+          # maintenance branches, also named Formatter, post their own comment
+          # and upload formatter-diff, so their runs are skipped.
+          artifact-name: formatter-suggestions-diff
           # The marker of the comments already on open pull requests
           comment-marker: '<!-- tc-formatter -->'
