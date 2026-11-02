@@ -324,8 +324,8 @@ describe('MessageHandler', () => {
 
       [
         { refusal: 'the session expired', meta: { sessionExpired: true } },
-        // What the server replies with instead of processing the request, e.g.
-        // for a bad security key or a message id out of sync.
+        // What the server replies with when it refuses the request, e.g. for a
+        // bad security key or a message id out of sync, or fails to process it.
         { refusal: 'an application error', meta: { appError: { caption: null, message: null } } }
       ].forEach(({ refusal, meta }) => {
         it(`rejects the request a reply with ${refusal} answers`, () => {

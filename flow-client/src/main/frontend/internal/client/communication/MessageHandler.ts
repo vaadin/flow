@@ -197,9 +197,9 @@ export class MessageHandler {
         ? messageSender.getRequest(payload)
         : messageSender.findRequest(json[CLIENT_TO_SERVER_ID] as number | undefined);
     if (request) {
-      // A reply with an application error is what the server sends instead of
-      // processing the request, e.g. for a bad security key or a message id
-      // out of sync.
+      // A reply with an application error is what the server sends when it
+      // refuses the request, e.g. for a bad security key or a message id out
+      // of sync, or fails to process it.
       const meta = json.meta as ValueMap | undefined;
       const refused = meta && (META_SESSION_EXPIRED in meta || META_APP_ERROR in meta);
       dispatchResponse(request, refused ? 'rejected' : 'acknowledged');
