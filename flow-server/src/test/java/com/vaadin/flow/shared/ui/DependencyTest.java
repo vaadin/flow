@@ -69,6 +69,9 @@ class DependencyTest {
         // Lazy for the same reason as dynamicDependency_hasLazyMode
         assertEquals(LoadMode.LAZY, dependency.getLoadMode());
         assertDependency(dependency);
+        // The function is sent once, as the url
+        assertFalse(JacksonUtils.createNode(dependency)
+                .has("encodedDynamicImport"));
         // As a dependency filter or DependencyList copies a dependency
         Dependency copy = new Dependency(dependency.getType(),
                 dependency.getUrl(), dependency.getLoadMode());
