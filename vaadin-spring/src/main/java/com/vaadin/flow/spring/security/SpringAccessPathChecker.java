@@ -130,6 +130,7 @@ public class SpringAccessPathChecker implements AccessPathChecker {
      * @param securityContextHolderStrategy
      *            the strategy to read the current authentication from, not
      *            {@literal null}
+     * @since 25.4
      */
     public SpringAccessPathChecker(WebInvocationPrivilegeEvaluator evaluator,
             String urlMapping,
