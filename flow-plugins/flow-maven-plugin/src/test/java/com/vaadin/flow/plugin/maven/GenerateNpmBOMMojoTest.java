@@ -33,6 +33,8 @@ import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
@@ -189,12 +191,17 @@ class GenerateNpmBOMMojoTest {
         });
     }
 
-    @Test
-    void shouldRunNpmInstallIfNodeModulesIsNotPresent() throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void shouldInstallWithProjectPackageManagerIfNodeModulesIsNotPresent(
+            boolean pnpm) throws Exception {
+        ReflectionUtils.setVariableValueInObject(mojo, "pnpmEnable", pnpm);
         assertTrue(nodeModulesDir.delete());
         assertFalse(nodeModulesDir.exists());
         mojo.execute();
         assertTrue(nodeModulesDir.exists());
+        assertEquals(pnpm, Files.exists(tempDir.resolve("pnpm-lock.yaml")));
+        assertEquals(!pnpm, Files.exists(tempDir.resolve("package-lock.json")));
     }
 
     @Test
