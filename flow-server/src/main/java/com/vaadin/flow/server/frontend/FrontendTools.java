@@ -78,7 +78,7 @@ public class FrontendTools {
      * lockfiles that recent pnpm releases write, so a project that has already
      * built keeps working.
      */
-    public static final String DEFAULT_PNPM_VERSION = "10.34.5";
+    public static final String DEFAULT_PNPM_VERSION = "10.34.9";
 
     /**
      * The npm package specifier Flow hands to npx when it installs pnpm.
