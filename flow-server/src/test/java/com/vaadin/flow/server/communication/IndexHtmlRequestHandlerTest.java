@@ -49,6 +49,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.MockedStatic;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -96,10 +97,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
@@ -257,6 +260,21 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
         verify(response, never()).setHeader(eq("Cache-Control"), any());
+        verify(response, never()).setHeader(eq("Pragma"), any());
+        verify(response, never()).setDateHeader(eq("Expires"), anyLong());
+    }
+
+    @Test
+    public void serveIndexHtml_listenerSetsCacheControl_overridesDefault()
+            throws IOException {
+        service.addIndexHtmlRequestListener(evt -> evt.getVaadinResponse()
+                .setHeader("Cache-Control", "max-age=60"));
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        InOrder inOrder = inOrder(response);
+        inOrder.verify(response).setHeader("Cache-Control",
+                "no-cache, no-store");
+        inOrder.verify(response).setHeader("Cache-Control", "max-age=60");
     }
 
     @Test
