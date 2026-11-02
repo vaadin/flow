@@ -39,80 +39,85 @@ function makeRegistry(maxMessageSuspendTimeout = 10000) {
     sessionExpiredHandled: false,
     unrecoverableErrorHandled: false
   };
-  let state: UIState = UIState.INITIALIZING;
   // A response normally arrives while the request that triggered it is still
   // active, so the tracker starts out with one; ending it clears the flag, as
   // the real tracker does.
   let activeRequest = true;
-  const lifecycleHandlers: StateChangeHandler[] = [];
   // The request the sender knows a reply to answer.
   const request = new VaadinRequest();
   const clientEvents = new ClientEvents();
+  const registry = testRegistry({
+    MessageSender: {
+      getResynchronizationState: () => 'NOT_ACTIVE',
+      clearResynchronizationState: () => {},
+      setClientToServerMessageId: () => {},
+      requestResynchronize: () => true,
+      resynchronize: () => {
+        log.resynchronized = true;
+      },
+      getRequest: () => request,
+      findRequest: (nextClientId: number | undefined) => (nextClientId === 1 ? request : undefined)
+    },
+    ClientEvents: clientEvents,
+    StateTree: { prepareForResync: () => {} },
+    RequestResponseTracker: {
+      endRequest: () => {
+        // The real tracker throws when there is nothing to end.
+        if (!activeRequest) {
+          throw new Error('endRequest called when no request is active');
+        }
+        log.endRequests++;
+        activeRequest = false;
+      },
+      hasActiveRequest: () => activeRequest
+    },
+    LoadingIndicatorStateHandler: { stopLoading: () => log.stopLoadings++ },
+    ConstantPool: { importFromJson: (c: unknown) => log.constants.push(c) },
+    ExecuteJavaScriptProcessor: { execute: (c: unknown) => log.executed.push(c) },
+    DependencyLoader: { loadDependencies: () => {} },
+    SystemErrorHandler: {
+      handleSessionExpiredError: () => {
+        log.sessionExpiredHandled = true;
+      },
+      handleUnrecoverableError: () => {
+        log.unrecoverableErrorHandled = true;
+      }
+    },
+    ApplicationConfiguration: { getMaxMessageSuspendTimeout: () => maxMessageSuspendTimeout },
+    ResourceLoader: { clearLoadedResourceById: (id: string) => log.clearedResources.push(id) }
+  }).registerResettable('UILifecycle', () => {
+    // Recreated on a reset, as DefaultRegistry does.
+    let state: UIState = UIState.INITIALIZING;
+    const lifecycleHandlers: StateChangeHandler[] = [];
+    return {
+      getState: () => state,
+      setState: (s: UIState) => {
+        state = s;
+        log.states.push(s);
+        if (s === UIState.TERMINATED) {
+          const terminated = new UILifecycle();
+          terminated.setState(UIState.RUNNING);
+          terminated.setState(UIState.TERMINATED);
+          lifecycleHandlers.forEach((handler) => handler({ getUiLifecycle: () => terminated }));
+        }
+      },
+      addHandler: (handler: StateChangeHandler) => {
+        lifecycleHandlers.push(handler);
+        return {
+          remove: () => lifecycleHandlers.splice(lifecycleHandlers.indexOf(handler), 1)
+        };
+      }
+    };
+  });
   return {
     log,
     request,
     clientEvents,
-    getState: () => state,
+    getState: () => registry.getUILifecycle().getState(),
     startRequest: () => {
       activeRequest = true;
     },
-    registry: testRegistry({
-      UILifecycle: {
-        getState: () => state,
-        setState: (s: UIState) => {
-          state = s;
-          log.states.push(s);
-          if (s === UIState.TERMINATED) {
-            const terminated = new UILifecycle();
-            terminated.setState(UIState.RUNNING);
-            terminated.setState(UIState.TERMINATED);
-            lifecycleHandlers.forEach((handler) => handler({ getUiLifecycle: () => terminated }));
-          }
-        },
-        addHandler: (handler: StateChangeHandler) => {
-          lifecycleHandlers.push(handler);
-          return { remove: () => {} };
-        }
-      },
-      MessageSender: {
-        getResynchronizationState: () => 'NOT_ACTIVE',
-        clearResynchronizationState: () => {},
-        setClientToServerMessageId: () => {},
-        requestResynchronize: () => true,
-        resynchronize: () => {
-          log.resynchronized = true;
-        },
-        getRequest: () => request,
-        findRequest: (nextClientId: number | undefined) => (nextClientId === 1 ? request : undefined)
-      },
-      ClientEvents: clientEvents,
-      StateTree: { prepareForResync: () => {} },
-      RequestResponseTracker: {
-        endRequest: () => {
-          // The real tracker throws when there is nothing to end.
-          if (!activeRequest) {
-            throw new Error('endRequest called when no request is active');
-          }
-          log.endRequests++;
-          activeRequest = false;
-        },
-        hasActiveRequest: () => activeRequest
-      },
-      LoadingIndicatorStateHandler: { stopLoading: () => log.stopLoadings++ },
-      ConstantPool: { importFromJson: (c: unknown) => log.constants.push(c) },
-      ExecuteJavaScriptProcessor: { execute: (c: unknown) => log.executed.push(c) },
-      DependencyLoader: { loadDependencies: () => {} },
-      SystemErrorHandler: {
-        handleSessionExpiredError: () => {
-          log.sessionExpiredHandled = true;
-        },
-        handleUnrecoverableError: () => {
-          log.unrecoverableErrorHandled = true;
-        }
-      },
-      ApplicationConfiguration: { getMaxMessageSuspendTimeout: () => maxMessageSuspendTimeout },
-      ResourceLoader: { clearLoadedResourceById: (id: string) => log.clearedResources.push(id) }
-    })
+    registry
   };
 }
 
@@ -410,6 +415,35 @@ describe('MessageHandler', () => {
         const late = announce(registry, handler);
         handler.handleMessage({ syncId: 2, meta: { async: true } }, late.message);
         expect(late.events).to.deep.equal(['message parsed false', 'message end discarded']);
+      });
+
+      it('ends a redirecting message as applied', () => {
+        const registry = makeRegistry();
+        const handler = new MessageHandler(registry.registry);
+        const { message, events } = announce(registry, handler);
+        const href = window.location.href;
+        try {
+          // Only the fragment changes, so the page stays.
+          handler.handleMessage({ syncId: 0, meta: { async: true }, redirect: { url: '#redirected' } }, message);
+          expect(window.location.hash).to.equal('#redirected');
+          expect(events).to.deep.equal(['message parsed false', 'message start', 'message end applied']);
+        } finally {
+          window.history.replaceState(null, '', href);
+        }
+      });
+
+      it('ends the waiting messages as discarded when the UI lifecycle that replaced the first one stops', () => {
+        const registry = makeRegistry();
+        const handler = new MessageHandler(registry.registry);
+        handler.handleMessage({ syncId: 0 });
+
+        // E.g. an exported web component resynchronizing its session.
+        registry.registry.reset();
+        registry.registry.getUILifecycle().setState(UIState.RUNNING);
+        const waiting = announce(registry, handler);
+        handler.handleMessage({ syncId: 2, meta: { async: true } }, waiting.message);
+        registry.registry.getUILifecycle().setState(UIState.TERMINATED);
+        expect(waiting.events).to.deep.equal(['message parsed false', 'message end discarded']);
       });
 
       it('ends a message waiting for one that never arrives as discarded', async () => {

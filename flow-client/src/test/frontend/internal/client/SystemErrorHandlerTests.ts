@@ -273,6 +273,41 @@ describe('SystemErrorHandler', () => {
       expect(announced).to.equal(message);
     });
 
+    it('ends an unparseable session resynchronization message as discarded and resynchronizes nothing', async () => {
+      const message = new VaadinServerMessage();
+      const handleMessage = sinon.spy();
+      const setState = sinon.spy();
+      const registry = testRegistry({
+        ApplicationConfiguration: {
+          isWebComponentMode: () => true,
+          getExportedWebComponents: () => [],
+          getSessionExpiredError: () => null,
+          // A file the test server serves that is not JSON.
+          getServiceUrl: () => '/README.md#',
+          getUIId: () => 0,
+          setUIId: () => {},
+          getHeartbeatInterval: () => 0
+        },
+        Heartbeat: { setInterval: () => {} },
+        PushConfiguration: { isPushEnabled: () => false },
+        UILifecycle: { setState },
+        MessageHandler: { announceMessage: () => message, handleMessage }
+      });
+      const reset = sinon.spy(registry, 'reset');
+      const errorStub = sinon.stub(Console, 'error');
+      try {
+        new SystemErrorHandler(registry).handleUnrecoverableError(null, null, null, null, null);
+
+        await waitUntil(() => message.outcome !== undefined);
+        expect(message.outcome).to.equal('discarded');
+        expect(handleMessage.called).to.be.false;
+        expect(reset.called).to.be.false;
+        expect(setState.called).to.be.false;
+      } finally {
+        errorStub.restore();
+      }
+    });
+
     it('recreates exported web components after resynchronization, also those that never connected', async () => {
       const connected = document.createElement('x-resync-test') as HTMLElement & {
         $server?: { disconnected: () => void };

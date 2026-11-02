@@ -31,6 +31,7 @@ import type { ConstantPool } from '../flow/ConstantPool';
 import type { StateNode } from '../flow/StateNode';
 import type { Registry } from '../Registry';
 import type { Command } from '../Command';
+import type { EventRemover } from '../../EventRemover';
 import { getScheduler } from '../TrackingScheduler';
 import {
   getRelativeTimeMillis,
@@ -146,6 +147,8 @@ export class MessageHandler {
   // parsed message.
   readonly #messages = new WeakMap<ValueMap, VaadinServerMessage>();
 
+  #uiLifecycleRegistration: EventRemover | null = null;
+
   /**
    * Creates a new instance connected to the given registry.
    *
@@ -153,7 +156,15 @@ export class MessageHandler {
    */
   constructor(registry: Registry) {
     this.#registry = registry;
-    registry.getUILifecycle().addHandler((event) => {
+    this.#listenToUILifecycle();
+    // A reset replaces the UI lifecycle, e.g. after an exported web component
+    // resynchronizes its session.
+    registry.addResetListener(() => this.#listenToUILifecycle());
+  }
+
+  #listenToUILifecycle(): void {
+    this.#uiLifecycleRegistration?.remove();
+    this.#uiLifecycleRegistration = this.#registry.getUILifecycle().addHandler((event) => {
       if (event.getUiLifecycle().isTerminated()) {
         // Nothing waiting for its turn is handled after the application stops.
         this.#ordering.clear().forEach((json) => this.#endMessage(json, 'discarded'));

@@ -38,9 +38,12 @@ export type VaadinServerMessageOutcome = 'applied' | 'discarded' | 'failed';
  *   other work holds handling back, before it loads the dependencies the
  *   message brings.
  * - `end`: {@link VaadinServerMessage.outcome} says how the message was
- *   handled. Dispatched exactly once, as the last event, except for a message
- *   that waits for an eager dependency that never loads, as the client never
- *   gets to handle it.
+ *   handled. Dispatched exactly once, as the last event, unless the client
+ *   never gets to handle the message. That happens to a message waiting for an
+ *   eager dependency that never loads, and to one waiting for an earlier
+ *   message that never arrives once nothing forces it through: the timeout
+ *   that does is cancelled when other work stops holding handling back, and
+ *   only a later message from the server starts it again.
  */
 export interface VaadinServerMessageEventMap {
   parsed: Event;
