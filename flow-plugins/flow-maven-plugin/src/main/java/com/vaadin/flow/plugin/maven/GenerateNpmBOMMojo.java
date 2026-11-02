@@ -166,7 +166,7 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
             // node_modules dir is required
             File nodeModulesDir = new File(this.npmFolder(), "/node_modules");
             if (!nodeModulesDir.exists()) {
-                logInfo("No node_modules directory found. Running npm install.");
+                logInfo("No node_modules directory found. Installing frontend dependencies.");
                 ClassFinder classFinder = getClassFinder();
                 Lookup lookup = createLookup(classFinder);
                 File jarFrontendResourcesFolder = new File(
@@ -183,6 +183,10 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
                         .withFrontendGeneratedFolder(generatedTsFolder())
                         .withNodeVersion(nodeVersion())
                         .withNodeDownloadRoot(nodeDownloadRoot())
+                        // Install with the project's package manager, so that
+                        // node_modules, and thus the SBOM, follows the
+                        // project's lock file. npm would resolve the versions
+                        // anew and remove pnpm-lock.yaml.
                         .withEnablePnpm(pnpmEnable()).withEnableBun(bunEnable())
                         .useGlobalPnpm(useGlobalPnpm())
                         .withHomeNodeExecRequired(requireHomeNodeExec())
