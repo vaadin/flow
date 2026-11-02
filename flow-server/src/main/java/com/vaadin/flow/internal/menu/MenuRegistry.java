@@ -962,8 +962,9 @@ public class MenuRegistry {
                     .map(MenuData::getOrder).orElse(Double.MAX_VALUE)
                     .compareTo(Optional.ofNullable(o2.menu())
                             .map(MenuData::getOrder).orElse(Double.MAX_VALUE));
-            return ordersCompareTo != 0 ? ordersCompareTo
-                    : collator.compare(o1.route(), o2.route());
+            return ordersCompareTo == 0
+                    ? collator.compare(o1.route(), o2.route())
+                    : ordersCompareTo;
         };
     }
 
