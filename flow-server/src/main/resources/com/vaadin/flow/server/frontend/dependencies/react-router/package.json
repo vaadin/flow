@@ -2,9 +2,9 @@
   "private": true,
   "description": "A list of Flow dependencies when using React router",
   "dependencies": {
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
-    "react-router": "7.18.4"
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-router": "7.18.5"
   },
   "devDependencies": {
     "@types/react": "19.3.0",

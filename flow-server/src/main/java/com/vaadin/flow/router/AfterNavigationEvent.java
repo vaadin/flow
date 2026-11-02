@@ -94,6 +94,12 @@ public class AfterNavigationEvent extends EventObject {
 
     /**
      * Check if event is for a refresh of a preserveOnRefresh view.
+     * <p>
+     * This is {@code true} only when the browser page is reloaded and the
+     * preserved view is reused, also when the reload reaches the view through a
+     * forward or reroute. Other navigations that reuse a preserved view, e.g. a
+     * router link, browser history or {@code UI.navigate} navigation that only
+     * changes the query parameters, are not refresh events.
      *
      * @return true if refresh of a preserve on refresh view
      * @since 23.2.8

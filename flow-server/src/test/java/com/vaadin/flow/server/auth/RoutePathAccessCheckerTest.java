@@ -367,6 +367,21 @@ class RoutePathAccessCheckerTest {
     }
 
     @Test
+    void trailingSlashPath_slashTrimmedBeforeCheck() {
+        // The router resolves "anon/" to the "anon" route
+        eventDataFactory = target -> new Pair<>("anon/",
+                RouteParameters.empty());
+        Mockito.when(accessPathChecker.hasAccess(eq("anon"), any(), any()))
+                .thenReturn(true);
+        AccessCheckResult result = checkAccess(AnonymousAllowedView.class,
+                null);
+        assertEquals(AccessCheckResult.allow(), result);
+        Mockito.verify(accessPathChecker).hasAccess(eq("anon"), any(), any());
+        Mockito.verify(accessPathChecker, Mockito.never())
+                .hasAccess(eq("anon/"), any(), any());
+    }
+
+    @Test
     void rerouteToError_neutral() {
         eventDataFactory = target -> new Pair<>("some-path",
                 RouteParameters.empty());

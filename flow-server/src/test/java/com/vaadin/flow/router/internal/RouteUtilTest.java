@@ -162,6 +162,16 @@ class RouteUtilTest {
     private static class AutoLayout extends Component implements RouterLayout {
     }
 
+    @Tag(Tag.DIV)
+    private static class AliasLayout extends Component implements RouterLayout {
+    }
+
+    @Route("primary")
+    @RouteAlias(value = "aliased", layout = AliasLayout.class)
+    @Tag(Tag.DIV)
+    public static class AliasWithOwnLayoutView extends Component {
+    }
+
     @Route(value = "auto")
     @RouteAlias(value = "alias", autoLayout = false)
     @RouteAlias(value = "mainLayout", layout = AutoLayout.class)
@@ -370,6 +380,20 @@ class RouteUtilTest {
                 "mainLayout"), "'mainLayout' has a defined layout");
         assertTrue(RouteUtil.isAutolayoutEnabled(AutoLayoutView.class,
                 "autoAlias"));
+    }
+
+    @Test
+    void resolveTargetParentLayouts_aliasPath_returnsAliasLayouts() {
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(new MockVaadinContext());
+        RouteConfiguration.forRegistry(registry)
+                .setAnnotatedRoute(AliasWithOwnLayoutView.class);
+
+        assertEquals(List.of(AliasLayout.class),
+                RouteUtil.resolveTargetParentLayouts(registry,
+                        AliasWithOwnLayoutView.class, "aliased"));
+        assertEquals(List.of(), RouteUtil.resolveTargetParentLayouts(registry,
+                AliasWithOwnLayoutView.class, "primary"));
     }
 
     @Test

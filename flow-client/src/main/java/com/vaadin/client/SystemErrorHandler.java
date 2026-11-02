@@ -34,6 +34,7 @@ import elemental.client.Browser;
 import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.events.Event;
+import elemental.events.EventListener;
 import elemental.events.KeyboardEvent;
 import elemental.events.KeyboardEvent.KeyCode;
 
@@ -47,6 +48,12 @@ public class SystemErrorHandler {
 
     private Registry registry;
 
+    // Set when the browser starts leaving the page, until the page is used
+    // again.
+    private boolean leavingPage = false;
+
+    private Runnable deferredSessionExpiration;
+
     /**
      * Creates a new instance connected to the given registry.
      *
@@ -55,18 +62,69 @@ public class SystemErrorHandler {
      */
     public SystemErrorHandler(Registry registry) {
         this.registry = registry;
+        Browser.getWindow().addEventListener("beforeunload", event -> {
+            // vite-devmode dispatches a synthetic beforeunload when its HMR
+            // socket is closed with 1008, which does not mean the page is
+            // being left.
+            if (isTrusted(event)) {
+                leavingPage = true;
+            }
+        }, false);
+        // A navigation that does not replace the page, such as a download,
+        // leaves the page in use. The session expiration is handled once it is
+        // used. Whether the navigation is still pending cannot be known, so
+        // input while a slow response loads still handles the expiration and
+        // may cancel it.
+        EventListener handlePageInUse = event -> {
+            leavingPage = false;
+            Runnable deferred = deferredSessionExpiration;
+            deferredSessionExpiration = null;
+            if (deferred != null) {
+                deferred.run();
+            }
+        };
+        Browser.getWindow().addEventListener("pointerdown", handlePageInUse,
+                true);
+        Browser.getWindow().addEventListener(Event.KEYDOWN, handlePageInUse,
+                true);
     }
 
     /**
-     * Shows the session expiration notification.
+     * Shows the session expiration notification, or defers it while the browser
+     * is leaving the page.
+     * <p>
+     * The request that ended the session, such as a logout URL, typically
+     * responds with the page the browser is navigating to. Going to the session
+     * expired URL meanwhile would cancel that navigation. In web-component mode
+     * the session is resynchronized instead, which does not navigate, so it is
+     * not deferred.
      *
      * @param details
      *            message details or null if there are no details
      */
     public void handleSessionExpiredError(String details) {
-        handleUnrecoverableError(details, registry.getApplicationConfiguration()
-                .getSessionExpiredError());
+        Runnable handle = () -> handleUnrecoverableError(details, registry
+                .getApplicationConfiguration().getSessionExpiredError());
+        if (leavingPage && !isWebComponentMode()) {
+            Console.debug("Session expiration deferred while leaving the page");
+            deferredSessionExpiration = handle;
+            return;
+        }
+        handle.run();
     }
+
+    /**
+     * Checks whether the given event was dispatched by the browser rather than
+     * by a script.
+     *
+     * @param event
+     *            the event to check
+     * @return {@code true} if the event is trusted
+     */
+    native boolean isTrusted(Event event)
+    /*-{
+        return !!event.isTrusted;
+    }-*/;
 
     /**
      * Shows an error notification for an error which is unrecoverable.

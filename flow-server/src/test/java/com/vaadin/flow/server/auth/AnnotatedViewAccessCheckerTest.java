@@ -18,18 +18,18 @@ package com.vaadin.flow.server.auth;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.ErrorNavigationEvent;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
@@ -39,6 +39,8 @@ import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.RouteRegistry;
@@ -62,6 +64,10 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class AnnotatedViewAccessCheckerTest {
 
@@ -135,21 +141,41 @@ class AnnotatedViewAccessCheckerTest {
     void loggedInNoRolesAccessToPermitAllViewWithNonAnnotatedParentDenied() {
         NavigationContext context = setupNavigationContext(
                 AccessControlTestClasses.PermitAllWithEmptyParentView.class,
-                User.USER_NO_ROLES);
-
-        RouteData data = new RouteData(
-                Collections.singletonList(
-                        AccessControlTestClasses.NoPermitParent.class),
-                "permitall", Collections.emptyMap(),
-                AccessControlTestClasses.PermitAllWithEmptyParentView.class,
-                Collections.emptyList());
-        Router router = context.getRouter();
-        RouteRegistry registry = router.getRegistry();
-        Mockito.when(registry.getRegisteredRoutes())
-                .thenReturn(Collections.singletonList(data));
+                User.USER_NO_ROLES,
+                List.of(AccessControlTestClasses.NoPermitParent.class));
 
         AccessCheckResult result = this.viewAccessChecker.check(context);
         assertEquals(AccessCheckDecision.DENY, result.decision());
+    }
+
+    @Test
+    void aliasLayoutDiffersFromPrimaryRouteLayout_aliasLayoutChecked_denied() {
+        NavigationContext context = setupNavigationContext(PermitAllView.class,
+                User.NORMAL_USER,
+                List.of(AccessControlTestClasses.RolesAllowedLayout.class));
+        RouteData primaryRoute = new RouteData(
+                List.of(AccessControlTestClasses.PermitAllLayout.class),
+                "permitall", Collections.emptyMap(), PermitAllView.class,
+                Collections.emptyList());
+        when(context.getRouter().getRegistry().getRegisteredRoutes())
+                .thenReturn(List.of(primaryRoute));
+
+        AccessCheckResult result = this.viewAccessChecker.check(context);
+        assertEquals(AccessCheckDecision.DENY, result.decision());
+    }
+
+    @Test
+    void automaticLayoutAccessible_parentLayoutNotAccessible_denied() {
+        NavigationContext context = setupLayoutDenialContext(
+                PermitAllView.class, User.USER_NO_ROLES,
+                AccessControlTestClasses.PermitAllLayoutInNoPermitParent.class,
+                true, false);
+
+        AccessCheckResult result = this.viewAccessChecker.check(context);
+        assertEquals(AccessCheckDecision.DENY, result.decision());
+        assertTrue(result.reason().contains("NoPermitParent"),
+                "Reason should name the parent layout, got: "
+                        + result.reason());
     }
 
     @Test
@@ -465,6 +491,29 @@ class AnnotatedViewAccessCheckerTest {
     }
 
     @Test
+    void rerouteToError_errorViewLayoutNotAccessible_allowed() {
+        Router router = mock(Router.class);
+        RouteRegistry registry = mock(RouteRegistry.class);
+        when(router.getRegistry()).thenReturn(registry);
+        when(registry.getNavigationRouteTarget("restricted"))
+                .thenReturn(new NavigationRouteTarget("restricted", null,
+                        Collections.emptyMap()));
+        ErrorNavigationEvent errorEvent = new ErrorNavigationEvent(router,
+                new Location("restricted"), mock(UI.class),
+                NavigationTrigger.ROUTER_LINK, null);
+        // The error view has an application layout as its parent layout,
+        // which the user is not allowed to access
+        BeforeEnterEvent event = new BeforeEnterEvent(errorEvent,
+                RouteNotFoundError.class,
+                List.of(AccessControlTestClasses.NoAuthLayout.class));
+        NavigationContext context = new NavigationContext(event, null,
+                role -> false);
+
+        assertEquals(AccessCheckResult.allow(),
+                this.viewAccessChecker.check(context));
+    }
+
+    @Test
     void rerouteToError_customAnonymousErrorHandler_allowed() {
         AccessCheckResult result = checkAccess(
                 AccessControlTestClasses.CustomErrorView.class, null);
@@ -482,11 +531,8 @@ class AnnotatedViewAccessCheckerTest {
     @Test
     void routeWithNoAnnotationLayout_deny() {
         NavigationContext context = setupNavigationContext(
-                AccessControlTestClasses.AnonymousAllowedView.class, null);
-        RouteRegistry registry = context.getRouter().getRegistry();
-        Mockito.when(registry.hasLayout("anon")).thenReturn(true);
-        Mockito.when(registry.getLayout("anon")).thenAnswer(
-                invocation -> AccessControlTestClasses.NoAuthLayout.class);
+                AccessControlTestClasses.AnonymousAllowedView.class, null,
+                List.of(AccessControlTestClasses.NoAuthLayout.class));
         AccessCheckResult result = this.viewAccessChecker.check(context);
         assertEquals(AccessCheckDecision.DENY, result.decision());
     }
@@ -494,11 +540,8 @@ class AnnotatedViewAccessCheckerTest {
     @Test
     void routeWithNoAnnotationsAllowedLayout_allowed() {
         NavigationContext context = setupNavigationContext(
-                AccessControlTestClasses.AnonymousAllowedView.class, null);
-        RouteRegistry registry = context.getRouter().getRegistry();
-        Mockito.when(registry.hasLayout("anon")).thenReturn(true);
-        Mockito.when(registry.getLayout("anon")).thenAnswer(
-                invocation -> AccessControlTestClasses.AnonymousAllowedLayout.class);
+                AccessControlTestClasses.AnonymousAllowedView.class, null,
+                List.of(AccessControlTestClasses.AnonymousAllowedLayout.class));
         AccessCheckResult result = this.viewAccessChecker.check(context);
         assertEquals(AccessCheckDecision.ALLOW, result.decision());
     }
@@ -506,11 +549,8 @@ class AnnotatedViewAccessCheckerTest {
     @Test
     void routeWithNoAnnotationsAllowed_LayoutWithAllowed_denied() {
         NavigationContext context = setupNavigationContext(
-                AccessControlTestClasses.NoAnnotationView.class, null);
-        RouteRegistry registry = context.getRouter().getRegistry();
-        Mockito.when(registry.hasLayout("noannotation")).thenReturn(true);
-        Mockito.when(registry.getLayout("noannotation")).thenAnswer(
-                invocation -> AccessControlTestClasses.AnonymousAllowedLayout.class);
+                AccessControlTestClasses.NoAnnotationView.class, null,
+                List.of(AccessControlTestClasses.AnonymousAllowedLayout.class));
         AccessCheckResult result = this.viewAccessChecker.check(context);
         assertEquals(AccessCheckDecision.DENY, result.decision());
     }
@@ -523,6 +563,12 @@ class AnnotatedViewAccessCheckerTest {
 
     static NavigationContext setupNavigationContext(
             Class<? extends Component> navigationTarget, User user) {
+        return setupNavigationContext(navigationTarget, user, List.of());
+    }
+
+    static NavigationContext setupNavigationContext(
+            Class<? extends Component> navigationTarget, User user,
+            List<Class<? extends RouterLayout>> layouts) {
         CurrentInstance.clearAll();
 
         Principal principal;
@@ -540,16 +586,16 @@ class AnnotatedViewAccessCheckerTest {
             principal = null;
         }
 
-        Router router = Mockito.mock(Router.class);
-        UI ui = Mockito.mock(UI.class);
+        Router router = mock(Router.class);
+        UI ui = mock(UI.class);
         Location location = new Location(getRoute(navigationTarget));
         NavigationEvent navigationEvent = new NavigationEvent(router, location,
                 ui, NavigationTrigger.ROUTER_LINK);
         BeforeEnterEvent event = new BeforeEnterEvent(navigationEvent,
-                navigationTarget, new ArrayList<>());
+                navigationTarget, layouts);
 
-        RouteRegistry routeRegistry = Mockito.mock(RouteRegistry.class);
-        Mockito.when(router.getRegistry()).thenReturn(routeRegistry);
+        RouteRegistry routeRegistry = mock(RouteRegistry.class);
+        when(router.getRegistry()).thenReturn(routeRegistry);
         return new NavigationContext(event, principal, roles::contains);
     }
 
@@ -677,28 +723,29 @@ class AnnotatedViewAccessCheckerTest {
         Principal principal = getPrincipal(user);
         Set<String> roles = getRoles(user);
 
-        Router router = Mockito.mock(Router.class);
-        RouteRegistry routeRegistry = Mockito.mock(RouteRegistry.class);
-        Mockito.when(router.getRegistry()).thenReturn(routeRegistry);
+        Router router = mock(Router.class);
+        RouteRegistry routeRegistry = mock(RouteRegistry.class);
+        when(router.getRegistry()).thenReturn(routeRegistry);
 
-        VaadinContext vaadinContext = Mockito.mock(VaadinContext.class);
-        Mockito.when(routeRegistry.getContext()).thenReturn(vaadinContext);
+        VaadinContext vaadinContext = mock(VaadinContext.class);
+        when(routeRegistry.getContext()).thenReturn(vaadinContext);
 
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.isProductionMode()).thenReturn(productionMode);
-        Mockito.when(vaadinContext.getAttribute(
-                Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
+        when(appConfig.isProductionMode()).thenReturn(productionMode);
+        when(vaadinContext.getAttribute(eq(ApplicationConfiguration.class),
+                any())).thenReturn(appConfig);
+        when(vaadinContext.getAttribute(ApplicationConfiguration.class))
                 .thenReturn(appConfig);
-        Mockito.when(vaadinContext.getAttribute(ApplicationConfiguration.class))
-                .thenReturn(appConfig);
 
-        Mockito.when(routeRegistry.getRegisteredRoutes())
+        when(routeRegistry.getRegisteredRoutes())
                 .thenReturn(Collections.emptyList());
 
         String route = getRoute(viewClass);
-        Mockito.when(routeRegistry.hasLayout(route)).thenReturn(true);
-        Mockito.when(routeRegistry.getLayout(route))
+        when(routeRegistry.getNavigationRouteTarget(route)).thenReturn(
+                new NavigationRouteTarget(route, null, Collections.emptyMap()));
+        when(routeRegistry.hasLayout(route)).thenReturn(true);
+        when(routeRegistry.getLayout(route))
                 .thenAnswer(invocation -> layoutClass);
 
         Location location = new Location(route);
@@ -721,30 +768,31 @@ class AnnotatedViewAccessCheckerTest {
         Principal principal = getPrincipal(user);
         Set<String> roles = getRoles(user);
 
-        Router router = Mockito.mock(Router.class);
-        RouteRegistry routeRegistry = Mockito.mock(RouteRegistry.class);
-        Mockito.when(router.getRegistry()).thenReturn(routeRegistry);
+        Router router = mock(Router.class);
+        RouteRegistry routeRegistry = mock(RouteRegistry.class);
+        when(router.getRegistry()).thenReturn(routeRegistry);
 
-        VaadinContext vaadinContext = Mockito.mock(VaadinContext.class);
-        Mockito.when(routeRegistry.getContext()).thenReturn(vaadinContext);
+        VaadinContext vaadinContext = mock(VaadinContext.class);
+        when(routeRegistry.getContext()).thenReturn(vaadinContext);
 
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.isProductionMode()).thenReturn(productionMode);
-        Mockito.when(vaadinContext.getAttribute(
-                Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
-                .thenReturn(appConfig);
-        Mockito.when(vaadinContext.getAttribute(ApplicationConfiguration.class))
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
+        when(appConfig.isProductionMode()).thenReturn(productionMode);
+        when(vaadinContext.getAttribute(eq(ApplicationConfiguration.class),
+                any())).thenReturn(appConfig);
+        when(vaadinContext.getAttribute(ApplicationConfiguration.class))
                 .thenReturn(appConfig);
 
         RouteData data = new RouteData(
                 Collections.singletonList((Class) parentLayoutClass),
                 getRoute(viewClass), Collections.emptyMap(), viewClass,
                 Collections.emptyList());
-        Mockito.when(routeRegistry.getRegisteredRoutes())
+        when(routeRegistry.getRegisteredRoutes())
                 .thenReturn(Collections.singletonList(data));
 
         String route = getRoute(viewClass);
+        when(routeRegistry.getNavigationRouteTarget(route)).thenReturn(
+                new NavigationRouteTarget(route, null, Collections.emptyMap()));
         Location location = new Location(route);
         return new NavigationContext(router, viewClass, location,
                 RouteParameters.empty(), principal, roles::contains, false,
