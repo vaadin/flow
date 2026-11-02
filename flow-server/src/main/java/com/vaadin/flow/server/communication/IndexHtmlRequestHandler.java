@@ -66,6 +66,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ContentSecurityPolicy;
 import com.vaadin.flow.server.CspMode;
 import com.vaadin.flow.server.DevToolsToken;
+import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
@@ -165,6 +166,15 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         addStyleTagReferences(indexDocument, config.isProductionMode());
 
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
+
+        // The page references hashed bundle files and embeds session bound
+        // data, so a stored copy must not be reused, e.g. when the browser
+        // restores a tab after the application has been redeployed. A
+        // header set elsewhere (e.g. by a servlet filter) is respected.
+        if (!response.containsHeader("Cache-Control")) {
+            HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
+                    response::setDateHeader);
+        }
 
         String frameOptions = config.getFrameOptions();
         if (frameOptions != null && !frameOptions.isEmpty()) {

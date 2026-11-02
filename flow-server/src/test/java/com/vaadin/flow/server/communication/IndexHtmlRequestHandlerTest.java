@@ -242,6 +242,24 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
+    public void serveIndexHtml_setsNoCacheHeaders() throws IOException {
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        verify(response).setHeader("Cache-Control", "no-cache, no-store");
+        verify(response).setHeader("Pragma", "no-cache");
+        verify(response).setDateHeader("Expires", 0L);
+    }
+
+    @Test
+    public void serveIndexHtml_cacheControlAlreadyPresent_doesNotOverride()
+            throws IOException {
+        when(response.containsHeader("Cache-Control")).thenReturn(true);
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        verify(response, never()).setHeader(eq("Cache-Control"), any());
+    }
+
+    @Test
     public void serveIndexHtml_strictCsp_sendsPolicyWithNonceOnEveryScript()
             throws IOException {
         deploymentConfiguration.setCspMode(CspMode.STRICT);
