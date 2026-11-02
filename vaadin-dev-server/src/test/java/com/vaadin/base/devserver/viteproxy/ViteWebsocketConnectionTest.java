@@ -39,8 +39,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 import org.mockito.ThrowingConsumer;
 
 import com.vaadin.flow.internal.ReflectTools;
@@ -48,6 +46,10 @@ import com.vaadin.flow.internal.ReflectTools;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 class ViteWebsocketConnectionTest {
 
@@ -169,21 +171,20 @@ class ViteWebsocketConnectionTest {
                 .getDeclaredField("clientWebsocket");
         CompletableFuture<WebSocket> clientWebsocketFuture = (CompletableFuture<WebSocket>) ReflectTools
                 .getJavaFieldValue(connection, clientWebsocketField);
-        WebSocket mockWebSocket = Mockito.spy(clientWebsocketFuture.get());
-        Mockito.when(mockWebSocket.sendClose(ArgumentMatchers.anyInt(),
-                ArgumentMatchers.anyString())).then(i -> {
-                    CompletableFuture<?> closeFuture = (CompletableFuture<?>) i
-                            .callRealMethod();
-                    return closeFuture.thenRunAsync(() -> {
-                        try {
-                            // Wait longer than test timeout.
-                            // Close should not wait that much
-                            Thread.sleep(5000);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
-                });
+        WebSocket mockWebSocket = spy(clientWebsocketFuture.get());
+        when(mockWebSocket.sendClose(anyInt(), anyString())).then(i -> {
+            CompletableFuture<?> closeFuture = (CompletableFuture<?>) i
+                    .callRealMethod();
+            return closeFuture.thenRunAsync(() -> {
+                try {
+                    // Wait longer than test timeout.
+                    // Close should not wait that much
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        });
         ReflectTools.setJavaFieldValue(connection, clientWebsocketField,
                 CompletableFuture.completedFuture(mockWebSocket));
         Awaitility.await().atMost(2, TimeUnit.SECONDS).until(() -> {

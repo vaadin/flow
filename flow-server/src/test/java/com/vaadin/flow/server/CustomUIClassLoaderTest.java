@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -29,6 +28,8 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class CustomUIClassLoaderTest {
 
@@ -79,30 +80,28 @@ class CustomUIClassLoaderTest {
         Properties properties = new Properties();
         properties.put(InitParameters.UI_PARAMETER, MyUI.class.getName());
         VaadinContext context = new MockVaadinContext();
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(config.getPropertyNames())
+        ApplicationConfiguration config = mock(ApplicationConfiguration.class);
+        when(config.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
-        Mockito.when(config.getBuildFolder()).thenReturn(".");
-        Mockito.when(config.getContext()).thenReturn(context);
+        when(config.getBuildFolder()).thenReturn(".");
+        when(config.getContext()).thenReturn(context);
         return new DefaultDeploymentConfiguration(config,
                 CustomUIClassLoaderTest.class, properties);
     }
 
     private static VaadinRequest createRequestMock(ClassLoader classloader) {
         // Mock a VaadinService to give the passed classloader
-        VaadinService configurationMock = Mockito.mock(VaadinService.class);
+        VaadinService configurationMock = mock(VaadinService.class);
         DeploymentConfiguration deploymentConfiguration = createConfigurationMock();
-        Mockito.when(configurationMock.getDeploymentConfiguration())
+        when(configurationMock.getDeploymentConfiguration())
                 .thenReturn(deploymentConfiguration);
-        Mockito.when(configurationMock.getClassLoader())
-                .thenReturn(classloader);
+        when(configurationMock.getClassLoader()).thenReturn(classloader);
 
         // Mock a VaadinRequest to give the mocked vaadin service
-        VaadinRequest requestMock = Mockito.mock(VaadinRequest.class);
-        Mockito.when(requestMock.getService()).thenReturn(configurationMock);
-        Mockito.when(requestMock.getService()).thenReturn(configurationMock);
-        Mockito.when(requestMock.getService()).thenReturn(configurationMock);
+        VaadinRequest requestMock = mock(VaadinRequest.class);
+        when(requestMock.getService()).thenReturn(configurationMock);
+        when(requestMock.getService()).thenReturn(configurationMock);
+        when(requestMock.getService()).thenReturn(configurationMock);
 
         return requestMock;
     }

@@ -25,7 +25,9 @@ import static com.vaadin.flow.internal.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.internal.FrontendUtils.SERVICE_WORKER_SRC_JS;
 
 /**
- * Generate <code>index.html</code> if it is missing in frontend folder.
+ * Generate the default service worker source, <code>sw.ts</code>, into the
+ * build folder if the frontend folder has no <code>sw.ts</code> or
+ * <code>sw.js</code> of its own.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -33,7 +35,7 @@ import static com.vaadin.flow.internal.FrontendUtils.SERVICE_WORKER_SRC_JS;
  */
 public class TaskGenerateServiceWorker extends AbstractTaskClientGenerator {
 
-    private Options options;
+    private final Options options;
 
     /**
      * Create a task to generate <code>sw.ts</code> if necessary.

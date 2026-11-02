@@ -104,13 +104,14 @@ class JsCallTest {
 
     @Test
     void getExpression_methodWithoutDeclaredJavaScript_throws() {
+        JsCall undeclared = call("undeclared");
         IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
-                () -> call("undeclared").getExpression());
+                IllegalStateException.class, undeclared::getExpression);
 
         assertTrue(exception.getMessage().contains("@JsExpression"),
                 "the message should name what the method is missing: "
                         + exception.getMessage());
+        assertThrows(IllegalStateException.class, undeclared::getFunctionId);
     }
 
     @Test

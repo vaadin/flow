@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
@@ -76,6 +75,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -185,8 +185,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 withSettings().extraInterfaces(BeanDefinitionRegistry.class));
         BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
+        try (var mockedStatic = mockStatic(AutoConfigurationPackages.class)) {
             mockedStatic.when(() -> AutoConfigurationPackages.get(beanFactory))
                     .thenReturn(List.of(getClass().getPackageName()));
 
@@ -232,8 +231,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 withSettings().extraInterfaces(BeanDefinitionRegistry.class));
         BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
+        try (var mockedStatic = mockStatic(AutoConfigurationPackages.class)) {
             mockedStatic.when(() -> AutoConfigurationPackages.get(beanFactory))
                     .thenReturn(List.of(getClass().getPackageName()));
 
@@ -265,8 +263,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 withSettings().extraInterfaces(BeanDefinitionRegistry.class));
         BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
+        try (var mockedStatic = mockStatic(AutoConfigurationPackages.class)) {
             mockedStatic.when(() -> AutoConfigurationPackages.get(beanFactory))
                     .thenReturn(List.of(getClass().getPackageName()));
 
@@ -487,8 +484,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 ConfigurableListableBeanFactory.class);
         // Note: NOT adding BeanDefinitionRegistry interface
 
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
+        try (var mockedStatic = mockStatic(AutoConfigurationPackages.class)) {
             mockedStatic.when(() -> AutoConfigurationPackages.get(beanFactory))
                     .thenReturn(List.of(getClass().getPackageName()));
 
@@ -936,8 +932,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 withSettings().extraInterfaces(BeanDefinitionRegistry.class));
         BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
+        try (var mockedStatic = mockStatic(AutoConfigurationPackages.class)) {
             mockedStatic.when(() -> AutoConfigurationPackages.get(beanFactory))
                     .thenReturn(List.of(getClass().getPackageName()));
 
@@ -977,8 +972,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 withSettings().extraInterfaces(BeanDefinitionRegistry.class));
         BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
+        try (var mockedStatic = mockStatic(AutoConfigurationPackages.class)) {
             mockedStatic.when(() -> AutoConfigurationPackages.get(beanFactory))
                     .thenReturn(List.of(getClass().getPackageName()));
 

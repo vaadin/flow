@@ -3,6 +3,20 @@
 How the core pieces of Flow fit together, and what to keep in mind when
 touching them.
 
+The more involved features have their own architecture notes next to the code:
+
+| Feature                               | Note                                                         |
+| ------------------------------------- | ------------------------------------------------------------ |
+| Client-side bootstrap and routing     | [`flow-client/ARCHITECTURE.md`](../flow-client/ARCHITECTURE.md) |
+| Connection state and loading indicator | [`flow-client/ARCHITECTURE.md`](../flow-client/ARCHITECTURE.md#connection-state-and-loading-indicator) |
+| React component adapter               | [`flow-react/ARCHITECTURE.md`](../flow-react/ARCHITECTURE.md) |
+| `@PWA` and the offline service worker | [`vite-plugin-service-worker/ARCHITECTURE.md`](../flow-build-tools/src/main/resources/plugins/vite-plugin-service-worker/ARCHITECTURE.md) |
+| Translations for Hilla views          | [`rollup-plugin-vaadin-i18n/ARCHITECTURE.md`](../flow-build-tools/src/main/resources/plugins/rollup-plugin-vaadin-i18n/ARCHITECTURE.md) |
+| Spring Security for client-side views | [`vaadin-spring/.../security/ARCHITECTURE.md`](../vaadin-spring/src/main/java/com/vaadin/flow/spring/security/ARCHITECTURE.md) |
+| Stateless authentication with JWT     | [`vaadin-spring/.../security/stateless/ARCHITECTURE.md`](../vaadin-spring/src/main/java/com/vaadin/flow/spring/security/stateless/ARCHITECTURE.md) |
+| npm dependency pinning                | [`flow-build-tools/ARCHITECTURE.md`](../flow-build-tools/ARCHITECTURE.md#npm-dependency-pinning) |
+| Tailwind CSS                          | [`flow-build-tools/ARCHITECTURE.md`](../flow-build-tools/ARCHITECTURE.md#tailwind-css) |
+
 ## State management
 
 Flow keeps the server-side representation of the UI in a tree and synchronizes
@@ -57,6 +71,10 @@ Push uses a WebSocket-based connection (`PushConnection`,
 before-leave, before-enter and after-navigation observers. Route resolution is
 driven by `@Route` annotations, discovered at startup or registered
 programmatically.
+
+In the browser, the router of the application (React Router by default) owns
+the URL, and server-side routes are its catch-all fallback. See
+[Client-side bootstrap and routing](../flow-client/ARCHITECTURE.md).
 
 ## Instantiation and lookup
 

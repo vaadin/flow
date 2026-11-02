@@ -20,7 +20,6 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.engine.TestDescriptor;
@@ -29,6 +28,11 @@ import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor;
 import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.launcher.TestIdentifier;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class QuietTestOutputListenerTest {
 
@@ -62,9 +66,9 @@ class QuietTestOutputListenerTest {
         System.err.println("Unexpected error: null");
         listener.executionFinished(test, TestExecutionResult.successful());
 
-        Assertions.assertEquals("", buildOutput(),
+        assertEquals("", buildOutput(),
                 "output of a passing test should be discarded");
-        Assertions.assertNotSame(streamInstalledByListener, System.out,
+        assertNotSame(streamInstalledByListener, System.out,
                 "System.out should be restored");
     }
 
@@ -77,7 +81,7 @@ class QuietTestOutputListenerTest {
         listener.executionFinished(test,
                 TestExecutionResult.failed(new AssertionError("failed")));
 
-        Assertions.assertTrue(buildOutput().contains("Unexpected error: null"),
+        assertTrue(buildOutput().contains("Unexpected error: null"),
                 "output of a failing test should be printed, but was: "
                         + buildOutput());
     }
@@ -94,7 +98,7 @@ class QuietTestOutputListenerTest {
         listener.executionFinished(test, TestExecutionResult.successful());
         listener.executionFinished(testClass, TestExecutionResult.successful());
 
-        Assertions.assertEquals("", buildOutput(),
+        assertEquals("", buildOutput(),
                 "output of a passing test class should be discarded");
     }
 
@@ -110,7 +114,7 @@ class QuietTestOutputListenerTest {
                 TestExecutionResult.failed(new AssertionError("failed")));
         listener.executionFinished(testClass, TestExecutionResult.successful());
 
-        Assertions.assertTrue(buildOutput().contains("test output"),
+        assertTrue(buildOutput().contains("test output"),
                 "the failing test output should not be swallowed by the test class, but was: "
                         + buildOutput());
     }
@@ -126,9 +130,9 @@ class QuietTestOutputListenerTest {
         System.err.println("printed by a test");
         disabled.executionFinished(test, TestExecutionResult.successful());
 
-        Assertions.assertSame(streamBefore, System.err,
+        assertSame(streamBefore, System.err,
                 "the streams should be left alone when the capture is off");
-        Assertions.assertTrue(buildOutput().contains("printed by a test"),
+        assertTrue(buildOutput().contains("printed by a test"),
                 "output should go to the build output when the capture is off");
     }
 
@@ -144,18 +148,18 @@ class QuietTestOutputListenerTest {
         parallelTest.start();
         parallelTest.join();
 
-        Assertions.assertSame(streamBeforeCapture, System.err,
+        assertSame(streamBeforeCapture, System.err,
                 "the streams should be restored when tests run in parallel");
         System.err.println("printed by a test");
         listener.executionFinished(first, TestExecutionResult.successful());
-        Assertions.assertTrue(buildOutput().contains("printed by a test"),
+        assertTrue(buildOutput().contains("printed by a test"),
                 "output should go to the build output once the capture gave up, but was: "
                         + buildOutput());
 
         // and stays given up for the rest of the run
         listener.executionStarted(testIdentifier());
 
-        Assertions.assertSame(streamBeforeCapture, System.err,
+        assertSame(streamBeforeCapture, System.err,
                 "the capture should not start again once it gave up");
     }
 
@@ -166,7 +170,7 @@ class QuietTestOutputListenerTest {
 
         listener.testPlanExecutionFinished(null);
 
-        Assertions.assertNotSame(streamInstalledByListener, System.out,
+        assertNotSame(streamInstalledByListener, System.out,
                 "System.out should be restored when the test plan ends");
     }
 

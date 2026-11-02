@@ -23,9 +23,9 @@ import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -41,7 +41,7 @@ class SkipExecutionTest {
     @BeforeEach
     void setup() throws Exception {
         mojo = new PrepareFrontendMojo();
-        mockLog = Mockito.mock(Log.class);
+        mockLog = mock(Log.class);
         projectBase = tempDir.toFile();
 
         // Set up the mojo with basic configuration

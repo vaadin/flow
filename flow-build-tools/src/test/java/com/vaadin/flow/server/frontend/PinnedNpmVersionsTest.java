@@ -35,7 +35,6 @@ import java.util.jar.JarOutputStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -49,6 +48,10 @@ import com.vaadin.tests.util.MockOptions;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 class PinnedNpmVersionsTest {
 
@@ -385,16 +388,16 @@ class PinnedNpmVersionsTest {
         File file = new File(folder, "versions.json");
         Files.writeString(file.toPath(), versionsFile, StandardCharsets.UTF_8);
         String origin = file.getAbsolutePath();
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+        ClassFinder finder = mock(ClassFinder.class);
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(folder.toURI().toURL()));
         Options options = new MockOptions(finder, temporaryFolder);
         ExclusionFilter exclusionFilter = new ExclusionFilter(options, true,
                 false);
 
         MockLogger logger = new MockLogger();
-        try (MockedStatic<LoggerFactory> loggerFactory = Mockito
-                .mockStatic(LoggerFactory.class)) {
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
             loggerFactory.when(
                     () -> LoggerFactory.getLogger(PinnedNpmVersions.class))
                     .thenReturn(logger);
@@ -547,9 +550,8 @@ class PinnedNpmVersionsTest {
 
         // No file of the platform, so the version of the Vaadin on the
         // classpath is used and what the file says is ignored
-        try (MockedStatic<Platform> platform = Mockito
-                .mockStatic(Platform.class)) {
-            platform.when(() -> Platform.getVaadinVersion(Mockito.any()))
+        try (MockedStatic<Platform> platform = mockStatic(Platform.class)) {
+            platform.when(() -> Platform.getVaadinVersion(any()))
                     .thenReturn(Optional.of("25.1.0"));
 
             assertEquals(Optional.of("25.1.0"),
@@ -626,8 +628,8 @@ class PinnedNpmVersionsTest {
 
         // A class loader does not report a folder that has no entry of its
         // own, but the files are still read for a handler that reports it
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+        ClassFinder finder = mock(ClassFinder.class);
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(URI
                         .create("jar:" + jar.toURI() + "!/"
                                 + Constants.PINNED_NPM_VERSIONS_FOLDER)
@@ -766,8 +768,8 @@ class PinnedNpmVersionsTest {
                     content, StandardCharsets.UTF_8);
             folders.add(folder.toURI().toURL());
         }
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+        ClassFinder finder = mock(ClassFinder.class);
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(folders);
         return new PinnedNpmVersions(finder);
     }

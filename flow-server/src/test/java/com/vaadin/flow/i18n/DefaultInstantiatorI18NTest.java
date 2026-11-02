@@ -32,7 +32,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.MockedConstruction;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Lookup;
@@ -43,6 +42,9 @@ import com.vaadin.flow.server.VaadinService;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.when;
 
 @Isolated
 class DefaultInstantiatorI18NTest {
@@ -93,7 +95,7 @@ class DefaultInstantiatorI18NTest {
     }
 
     private void assertTranslationsOfCreatedFiles() {
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         mockLookup(service);
         VaadinService.setCurrent(service);
 
@@ -104,7 +106,7 @@ class DefaultInstantiatorI18NTest {
                 return urlClassLoader;
             }
         };
-        Mockito.when(service.getInstantiator()).thenReturn(defaultInstantiator);
+        when(service.getInstantiator()).thenReturn(defaultInstantiator);
         I18NProvider i18NProvider = defaultInstantiator.getI18NProvider();
         assertNotNull(i18NProvider);
         assertTrue(i18NProvider instanceof DefaultI18NProvider);
@@ -144,7 +146,7 @@ class DefaultInstantiatorI18NTest {
         Files.writeString(file.toPath(), "title=Default lang",
                 StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         mockLookup(service);
         VaadinService.setCurrent(service);
 
@@ -155,7 +157,7 @@ class DefaultInstantiatorI18NTest {
                 return urlClassLoader;
             }
         };
-        Mockito.when(service.getInstantiator()).thenReturn(defaultInstantiator);
+        when(service.getInstantiator()).thenReturn(defaultInstantiator);
         I18NProvider i18NProvider = defaultInstantiator.getI18NProvider();
         assertNotNull(i18NProvider);
         assertTrue(i18NProvider instanceof DefaultI18NProvider);
@@ -188,7 +190,7 @@ class DefaultInstantiatorI18NTest {
         Files.writeString(file.toPath(), "title=No Default",
                 StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         mockLookup(service);
         VaadinService.setCurrent(service);
 
@@ -199,7 +201,7 @@ class DefaultInstantiatorI18NTest {
                 return urlClassLoader;
             }
         };
-        Mockito.when(service.getInstantiator()).thenReturn(defaultInstantiator);
+        when(service.getInstantiator()).thenReturn(defaultInstantiator);
         I18NProvider i18NProvider = defaultInstantiator.getI18NProvider();
         assertNotNull(i18NProvider);
         assertTrue(i18NProvider instanceof DefaultI18NProvider);
@@ -217,12 +219,12 @@ class DefaultInstantiatorI18NTest {
 
     @Test
     void translate_withoutProvider_returnsKey() {
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         VaadinService.setCurrent(service);
 
         DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
                 service);
-        Mockito.when(service.getInstantiator()).thenReturn(defaultInstantiator);
+        when(service.getInstantiator()).thenReturn(defaultInstantiator);
 
         assertEquals("!{foo.bar}!", I18NProvider.translate("foo.bar"),
                 "Should return the key with !{}! to show no translation available");
@@ -233,27 +235,25 @@ class DefaultInstantiatorI18NTest {
             throws IOException {
         createTranslationFiles(translations);
 
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         mockLookup(service);
         VaadinService.setCurrent(service);
 
         DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
                 service);
-        Mockito.when(service.getInstantiator()).thenReturn(defaultInstantiator);
+        when(service.getInstantiator()).thenReturn(defaultInstantiator);
 
         ClassLoader threadContextClassLoader = Thread.currentThread()
                 .getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(urlClassLoader);
 
-            try (MockedConstruction<DefaultI18NProvider> mockedConstruction = Mockito
-                    .mockConstruction(DefaultI18NProvider.class,
-                            (mock, context) -> {
-                                ClassLoader classLoaderArgument = (ClassLoader) context
-                                        .arguments().get(1);
-                                assertEquals(urlClassLoader,
-                                        classLoaderArgument);
-                            })) {
+            try (MockedConstruction<DefaultI18NProvider> mockedConstruction = mockConstruction(
+                    DefaultI18NProvider.class, (mock, context) -> {
+                        ClassLoader classLoaderArgument = (ClassLoader) context
+                                .arguments().get(1);
+                        assertEquals(urlClassLoader, classLoaderArgument);
+                    })) {
                 I18NProvider i18NProvider = defaultInstantiator
                         .getI18NProvider();
 
@@ -291,11 +291,11 @@ class DefaultInstantiatorI18NTest {
     }
 
     private Lookup mockLookup(VaadinService service) {
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        Mockito.when(service.getContext()).thenReturn(context);
+        VaadinContext context = mock(VaadinContext.class);
+        when(service.getContext()).thenReturn(context);
 
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        Lookup lookup = mock(Lookup.class);
+        when(context.getAttribute(Lookup.class)).thenReturn(lookup);
         return lookup;
     }
 }

@@ -24,10 +24,14 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * The daemon has to outlive the command that spawned it, and surviving the
@@ -52,9 +56,9 @@ class DevLoopDaemonSurvivalIT {
 
     @Test
     void daemon_runsInASessionOfItsOwn() {
-        Assumptions.assumeFalse(VaadinDevCli.WINDOWS,
+        assumeFalse(VaadinDevCli.WINDOWS,
                 "process groups and sessions are a POSIX notion");
-        Assumptions.assumeTrue(onPath("setsid") || onPath("perl"),
+        assumeTrue(onPath("setsid") || onPath("perl"),
                 "no setsid and no perl, so this platform has nothing to detach with");
 
         VaadinDevCli cli = VaadinDevCli.of(AbstractDevLoopIT.APP);
@@ -63,19 +67,19 @@ class DevLoopDaemonSurvivalIT {
         cli.run("ping").assertExitCode(0);
 
         long daemon = daemonPid();
-        Assertions.assertTrue(ProcessHandle.of(daemon).isPresent(),
+        assertTrue(ProcessHandle.of(daemon).isPresent(),
                 "the daemon the handshake names (pid " + daemon
                         + ") is not running");
 
         String own = session(ProcessHandle.current().pid());
         String daemonSession = session(daemon);
-        Assumptions.assumeFalse(own.isEmpty() || daemonSession.isEmpty(),
+        assumeFalse(own.isEmpty() || daemonSession.isEmpty(),
                 "ps here cannot report a session id");
 
         // The CLI is a child of this JVM and does not change session, so the
         // daemon sharing this session is exactly the state a group kill takes
         // down with the command.
-        Assertions.assertNotEquals(own, daemonSession,
+        assertNotEquals(own, daemonSession,
                 "the daemon runs in this test JVM's session (" + own
                         + "), so a kill aimed at the spawning command's process "
                         + "group would take the daemon and its application down "
@@ -93,7 +97,7 @@ class DevLoopDaemonSurvivalIT {
             throw new AssertionError("could not read " + handshake, e);
         }
         String pid = properties.getProperty("pid", "");
-        Assertions.assertFalse(pid.isEmpty(),
+        assertFalse(pid.isEmpty(),
                 handshake + " carries no pid, so no daemon can be found");
         return Long.parseLong(pid.trim());
     }

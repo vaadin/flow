@@ -28,6 +28,9 @@ import com.vaadin.flow.test.TestFor;
 import com.vaadin.testbench.BrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 @TestFor(BackNavFirstView.class)
 public class BackNavIT extends AbstractDefaultIT {
 
@@ -54,8 +57,7 @@ public class BackNavIT extends AbstractDefaultIT {
             waitUntil(arg -> getDriver().getCurrentUrl()
                     .endsWith(BACK_NAV_FIRST_VIEW));
         } catch (TimeoutException e) {
-            Assertions.fail("URL wasn't updated to expected one: "
-                    + BACK_NAV_FIRST_VIEW);
+            fail("URL wasn't updated to expected one: " + BACK_NAV_FIRST_VIEW);
         }
 
         navigationElement.get().click();
@@ -64,8 +66,7 @@ public class BackNavIT extends AbstractDefaultIT {
             waitUntil(arg -> getDriver().getCurrentUrl()
                     .endsWith(BACK_NAV_SECOND_VIEW));
         } catch (TimeoutException e) {
-            Assertions.fail("URL wasn't updated to expected one: "
-                    + BACK_NAV_SECOND_VIEW);
+            fail("URL wasn't updated to expected one: " + BACK_NAV_SECOND_VIEW);
         }
 
         // Navigate back; ensure we get the first URL again
@@ -74,11 +75,10 @@ public class BackNavIT extends AbstractDefaultIT {
             waitUntil(arg -> getDriver().getCurrentUrl()
                     .endsWith(BACK_NAV_FIRST_VIEW));
         } catch (TimeoutException e) {
-            Assertions.fail("URL wasn't updated to expected one: "
-                    + BACK_NAV_FIRST_VIEW);
+            fail("URL wasn't updated to expected one: " + BACK_NAV_FIRST_VIEW);
         }
 
-        Assertions.assertTrue(navigationElement.get().isDisplayed(),
+        assertTrue(navigationElement.get().isDisplayed(),
                 "Expected button is not available.");
     }
 
@@ -90,8 +90,7 @@ public class BackNavIT extends AbstractDefaultIT {
             waitUntil(arg -> getDriver().getCurrentUrl()
                     .endsWith(BACK_NAV_FIRST_VIEW));
         } catch (TimeoutException e) {
-            Assertions.fail("URL wasn't updated to expected one: "
-                    + BACK_NAV_FIRST_VIEW);
+            fail("URL wasn't updated to expected one: " + BACK_NAV_FIRST_VIEW);
         }
 
         $(NativeButtonElement.class).first().click();
@@ -100,8 +99,7 @@ public class BackNavIT extends AbstractDefaultIT {
             waitUntil(arg -> getDriver().getCurrentUrl()
                     .endsWith(BACK_NAV_SECOND_VIEW));
         } catch (TimeoutException e) {
-            Assertions.fail("URL wasn't updated to expected one: "
-                    + BACK_NAV_SECOND_VIEW);
+            fail("URL wasn't updated to expected one: " + BACK_NAV_SECOND_VIEW);
         }
         // Refresh page
         getDriver().navigate().refresh();
@@ -116,12 +114,10 @@ public class BackNavIT extends AbstractDefaultIT {
             waitUntil(arg -> getDriver().getCurrentUrl()
                     .endsWith(BACK_NAV_FIRST_VIEW));
         } catch (TimeoutException e) {
-            Assertions.fail("URL wasn't updated to expected one: "
-                    + BACK_NAV_FIRST_VIEW);
+            fail("URL wasn't updated to expected one: " + BACK_NAV_FIRST_VIEW);
         }
 
-        Assertions.assertTrue(
-                $(NativeButtonElement.class).first().isDisplayed(),
+        assertTrue($(NativeButtonElement.class).first().isDisplayed(),
                 "Expected button is not available.");
     }
 
@@ -133,8 +129,7 @@ public class BackNavIT extends AbstractDefaultIT {
             waitUntil(arg -> getDriver().getCurrentUrl()
                     .endsWith(BACK_NAV_FIRST_VIEW));
         } catch (TimeoutException e) {
-            Assertions.fail("URL wasn't updated to expected one: "
-                    + BACK_NAV_FIRST_VIEW);
+            fail("URL wasn't updated to expected one: " + BACK_NAV_FIRST_VIEW);
         }
 
         $(NativeButtonElement.class).first().click();
@@ -143,8 +138,7 @@ public class BackNavIT extends AbstractDefaultIT {
             waitUntil(arg -> getDriver().getCurrentUrl()
                     .endsWith(BACK_NAV_SECOND_VIEW));
         } catch (TimeoutException e) {
-            Assertions.fail("URL wasn't updated to expected one: "
-                    + BACK_NAV_SECOND_VIEW);
+            fail("URL wasn't updated to expected one: " + BACK_NAV_SECOND_VIEW);
         }
 
         Assertions.assertEquals("Second view: 1",

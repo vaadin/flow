@@ -18,7 +18,6 @@ package com.vaadin.flow.component.fullscreen;
 import java.io.Serializable;
 import java.util.Objects;
 
-import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
@@ -71,13 +70,10 @@ public final class Fullscreen implements Serializable {
      * @param component
      *            the component whose clicks trigger the fullscreen request, not
      *            {@code null}
-     * @param <T>
-     *            the component type, must implement {@link ClickNotifier}
      * @return a binding for chaining the fullscreen request on click
      * @see FullscreenBinding
      */
-    public static <T extends Component & ClickNotifier<?>> FullscreenBinding onClick(
-            T component) {
+    public static FullscreenBinding onClick(Component component) {
         Objects.requireNonNull(component, "component must not be null");
         return new FullscreenBinding(new ClickTrigger(component));
     }

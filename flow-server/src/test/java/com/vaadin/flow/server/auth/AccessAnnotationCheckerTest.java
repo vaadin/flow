@@ -29,7 +29,6 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI.ClientViewPlaceholder;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -47,6 +46,9 @@ import com.vaadin.flow.server.auth.AccessControlTestClasses.RolesAllowedUserClas
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class AccessAnnotationCheckerTest {
     public static final Class<?>[] ENDPOINT_CLASSES = new Class<?>[] {
@@ -373,14 +375,12 @@ class AccessAnnotationCheckerTest {
         Set<String> roleSet = new HashSet<>();
         Collections.addAll(roleSet, roles);
 
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(request.getUserPrincipal()).thenReturn(userPrincipal);
-        Mockito.when(request.isUserInRole(Mockito.anyString()))
-                .thenAnswer(query -> {
-                    return roleSet.contains(query.getArguments()[0]);
-                });
-        Mockito.when(request.getRequestURL())
-                .thenReturn(new StringBuffer(REQUEST_URL));
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getUserPrincipal()).thenReturn(userPrincipal);
+        when(request.isUserInRole(anyString())).thenAnswer(query -> {
+            return roleSet.contains(query.getArguments()[0]);
+        });
+        when(request.getRequestURL()).thenReturn(new StringBuffer(REQUEST_URL));
         return request;
     }
 

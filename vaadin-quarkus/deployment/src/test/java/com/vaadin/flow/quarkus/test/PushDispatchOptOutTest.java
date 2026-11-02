@@ -22,9 +22,11 @@ import io.quarkus.test.QuarkusUnitTest;
 import io.undertow.websockets.ServerWebSocketContainer;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 /**
  * Verifies that an explicit user override of
@@ -42,9 +44,8 @@ public class PushDispatchOptOutTest {
     public void userOverride_takesPrecedence() {
         WebSocketContainer container = ContainerProvider
                 .getWebSocketContainer();
-        Assertions.assertInstanceOf(ServerWebSocketContainer.class, container);
-        Assertions.assertFalse(
-                ((ServerWebSocketContainer) container).isDispatchToWorker(),
+        assertInstanceOf(ServerWebSocketContainer.class, container);
+        assertFalse(((ServerWebSocketContainer) container).isDispatchToWorker(),
                 "Explicit quarkus.websocket.dispatch-to-worker=false must "
                         + "override the extension's default.");
     }

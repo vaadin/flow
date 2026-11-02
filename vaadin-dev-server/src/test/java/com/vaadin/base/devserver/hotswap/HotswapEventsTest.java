@@ -23,7 +23,6 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -41,6 +40,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class HotswapEventsTest {
@@ -351,7 +352,7 @@ class HotswapEventsTest {
 
     @Test
     void updateClientResource_validPathAndContent_succeeds() {
-        BrowserLiveReload reload = Mockito.mock(BrowserLiveReload.class);
+        BrowserLiveReload reload = mock(BrowserLiveReload.class);
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 true);
 
@@ -360,12 +361,12 @@ class HotswapEventsTest {
         event.updateClientResource(path, content);
 
         event.applyClientCommands(reload);
-        Mockito.verify(reload).update(path, content);
+        verify(reload).update(path, content);
     }
 
     @Test
     void updateClientResource_validPathNullContent_succeeds() {
-        BrowserLiveReload reload = Mockito.mock(BrowserLiveReload.class);
+        BrowserLiveReload reload = mock(BrowserLiveReload.class);
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 true);
 
@@ -373,7 +374,7 @@ class HotswapEventsTest {
         event.updateClientResource(path, null);
 
         event.applyClientCommands(reload);
-        Mockito.verify(reload).update(path, null);
+        verify(reload).update(path, null);
     }
 
     @Test
@@ -394,7 +395,7 @@ class HotswapEventsTest {
 
     @Test
     void updateClientResource_multipleResources_succeeds() {
-        BrowserLiveReload reload = Mockito.mock(BrowserLiveReload.class);
+        BrowserLiveReload reload = mock(BrowserLiveReload.class);
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 true);
 
@@ -410,14 +411,14 @@ class HotswapEventsTest {
         event.updateClientResource(path3, null);
 
         event.applyClientCommands(reload);
-        Mockito.verify(reload).update(path1, content1);
-        Mockito.verify(reload).update(path2, content2);
-        Mockito.verify(reload).update(path3, null);
+        verify(reload).update(path1, content1);
+        verify(reload).update(path2, content2);
+        verify(reload).update(path3, null);
     }
 
     @Test
     void updateClientResource_samePath_allowsDuplicates() {
-        BrowserLiveReload reload = Mockito.mock(BrowserLiveReload.class);
+        BrowserLiveReload reload = mock(BrowserLiveReload.class);
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 true);
 
@@ -428,8 +429,8 @@ class HotswapEventsTest {
         event.updateClientResource(path, content2);
 
         event.applyClientCommands(reload);
-        Mockito.verify(reload).update(path, content1);
-        Mockito.verify(reload).update(path, content2);
+        verify(reload).update(path, content1);
+        verify(reload).update(path, content2);
 
     }
 
@@ -437,7 +438,7 @@ class HotswapEventsTest {
 
     @Test
     void sendHmrEvent_validEventAndData_succeeds() {
-        BrowserLiveReload reload = Mockito.mock(BrowserLiveReload.class);
+        BrowserLiveReload reload = mock(BrowserLiveReload.class);
 
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 true);
@@ -448,13 +449,13 @@ class HotswapEventsTest {
         event.sendHmrEvent(eventName, data);
 
         event.applyClientCommands(reload);
-        Mockito.verify(reload).sendHmrEvent(eventName, data);
+        verify(reload).sendHmrEvent(eventName, data);
 
     }
 
     @Test
     void sendHmrEvent_validEventNullData_succeeds() {
-        BrowserLiveReload reload = Mockito.mock(BrowserLiveReload.class);
+        BrowserLiveReload reload = mock(BrowserLiveReload.class);
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 true);
 
@@ -462,7 +463,7 @@ class HotswapEventsTest {
         event.sendHmrEvent(eventName, null);
 
         event.applyClientCommands(reload);
-        Mockito.verify(reload).sendHmrEvent(eventName, null);
+        verify(reload).sendHmrEvent(eventName, null);
     }
 
     @Test
@@ -485,7 +486,7 @@ class HotswapEventsTest {
 
     @Test
     void sendHmrEvent_multipleMessages_succeeds() {
-        BrowserLiveReload reload = Mockito.mock(BrowserLiveReload.class);
+        BrowserLiveReload reload = mock(BrowserLiveReload.class);
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 true);
         String eventName1 = "event1";
@@ -501,14 +502,14 @@ class HotswapEventsTest {
         event.sendHmrEvent(eventName3, null);
 
         event.applyClientCommands(reload);
-        Mockito.verify(reload).sendHmrEvent(eventName1, data1);
-        Mockito.verify(reload).sendHmrEvent(eventName2, data2);
-        Mockito.verify(reload).sendHmrEvent(eventName3, null);
+        verify(reload).sendHmrEvent(eventName1, data1);
+        verify(reload).sendHmrEvent(eventName2, data2);
+        verify(reload).sendHmrEvent(eventName3, null);
     }
 
     @Test
     void sendHmrEvent_sameEvent_allowsDuplicates() {
-        BrowserLiveReload reload = Mockito.mock(BrowserLiveReload.class);
+        BrowserLiveReload reload = mock(BrowserLiveReload.class);
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 true);
         ObjectNode data1 = objectMapper.createObjectNode();
@@ -521,8 +522,8 @@ class HotswapEventsTest {
         event.sendHmrEvent(eventName, data2);
 
         event.applyClientCommands(reload);
-        Mockito.verify(reload).sendHmrEvent(eventName, data1);
-        Mockito.verify(reload).sendHmrEvent(eventName, data2);
+        verify(reload).sendHmrEvent(eventName, data1);
+        verify(reload).sendHmrEvent(eventName, data2);
 
     }
 
@@ -541,7 +542,7 @@ class HotswapEventsTest {
     }
 
     private VaadinSession createMockVaadinSession() {
-        WrappedSession wrappedSession = Mockito.mock(WrappedSession.class);
+        WrappedSession wrappedSession = mock(WrappedSession.class);
         when(wrappedSession.getId()).thenReturn(UUID.randomUUID().toString());
 
         return new MockVaadinSession(vaadinService) {

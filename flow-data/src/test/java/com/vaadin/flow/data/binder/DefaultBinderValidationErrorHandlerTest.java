@@ -18,7 +18,6 @@ package com.vaadin.flow.data.binder;
 import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.HasTheme;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
@@ -26,6 +25,8 @@ import com.vaadin.flow.dom.ThemeList;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 class DefaultBinderValidationErrorHandlerTest {
 
@@ -33,7 +34,7 @@ class DefaultBinderValidationErrorHandlerTest {
 
     private TestTextField field = new TestTextField();
 
-    private ThemeList themes = Mockito.mock(ThemeList.class);
+    private ThemeList themes = mock(ThemeList.class);
 
     private class TestHasTheme extends TestTextField implements HasTheme {
 
@@ -58,8 +59,7 @@ class DefaultBinderValidationErrorHandlerTest {
         TestHasTheme field = new TestHasTheme();
         handler.handleError(field, ValidationResult.error(""));
 
-        Mockito.verify(themes)
-                .add(ErrorLevel.ERROR.name().toLowerCase(Locale.ENGLISH));
+        verify(themes).add(ErrorLevel.ERROR.name().toLowerCase(Locale.ENGLISH));
     }
 
     @Test
@@ -80,7 +80,7 @@ class DefaultBinderValidationErrorHandlerTest {
         TestHasTheme field = new TestHasTheme();
         handler.clearError(field);
 
-        Mockito.verify(themes)
+        verify(themes)
                 .remove(ErrorLevel.ERROR.name().toLowerCase(Locale.ENGLISH));
     }
 }

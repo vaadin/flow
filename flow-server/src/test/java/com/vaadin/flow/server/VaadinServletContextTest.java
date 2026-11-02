@@ -24,12 +24,16 @@ import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for VaadinServletContext attribute storage and property delegation.
@@ -49,28 +53,28 @@ class VaadinServletContextTest {
 
     @BeforeEach
     void setup() {
-        ServletContext servletContext = Mockito.mock(ServletContext.class);
-        Mockito.when(servletContext.getAttribute(Mockito.anyString()))
+        ServletContext servletContext = mock(ServletContext.class);
+        when(servletContext.getAttribute(anyString()))
                 .then(invocationOnMock -> attributeMap
                         .get(invocationOnMock.getArguments()[0].toString()));
-        Mockito.doAnswer(invocationOnMock -> {
+        doAnswer(invocationOnMock -> {
             attributeMap.remove(invocationOnMock.getArguments()[0].toString());
             return null;
-        }).when(servletContext).removeAttribute(Mockito.anyString());
+        }).when(servletContext).removeAttribute(anyString());
 
-        Mockito.doAnswer(invocationOnMock -> attributeMap.put(
+        doAnswer(invocationOnMock -> attributeMap.put(
                 invocationOnMock.getArguments()[0].toString(),
                 invocationOnMock.getArguments()[1])).when(servletContext)
-                .setAttribute(Mockito.anyString(), Mockito.any());
+                .setAttribute(anyString(), any());
 
         properties = new HashMap<>();
         properties.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
                 "true");
         properties.put(InitParameters.FRONTEND_HOTDEPLOY, "false");
 
-        Mockito.when(servletContext.getInitParameterNames())
+        when(servletContext.getInitParameterNames())
                 .thenReturn(Collections.enumeration(properties.keySet()));
-        Mockito.when(servletContext.getInitParameter(Mockito.anyString())).then(
+        when(servletContext.getInitParameter(anyString())).then(
                 invocation -> properties.get(invocation.getArguments()[0]));
         context = new VaadinServletContext(servletContext);
     }

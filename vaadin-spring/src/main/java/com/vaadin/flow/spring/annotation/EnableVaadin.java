@@ -70,8 +70,13 @@ public @interface EnableVaadin {
     /**
      * Base packages to scan for annotated classes on Vaadin startup.
      * <p>
-     * If packages are not specified then default Spring Boot application
+     * If no annotation declares packages, the default Spring Boot application
      * package is used.
+     * <p>
+     * The annotation can be added to several configuration classes. The
+     * packages of all of them are scanned. An annotation without packages adds
+     * no packages. If another annotation declares packages, the default
+     * application package is not scanned, so add it to the packages explicitly.
      *
      * @return the base packages to scan
      */

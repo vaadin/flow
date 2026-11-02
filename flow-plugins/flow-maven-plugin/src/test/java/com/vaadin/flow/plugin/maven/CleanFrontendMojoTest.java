@@ -30,7 +30,6 @@ import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -47,6 +46,8 @@ import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class CleanFrontendMojoTest {
     @TempDir
@@ -63,8 +64,8 @@ class CleanFrontendMojoTest {
 
         projectBase = tempDir.toFile();
 
-        project = Mockito.mock(MavenProject.class);
-        Mockito.when(project.getBasedir()).thenReturn(projectBase);
+        project = mock(MavenProject.class);
+        when(project.getBasedir()).thenReturn(projectBase);
 
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
         frontendGenerated = new File(projectBase,

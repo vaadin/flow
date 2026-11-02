@@ -24,11 +24,11 @@ import java.util.zip.GZIPInputStream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 /**
  * Tests the JDK gzip fallback used when Node is not available.
@@ -39,7 +39,7 @@ class TaskCompressStaticResourcesTest {
     File resourcesDir;
 
     private final TaskCompressStaticResources task = new TaskCompressStaticResources(
-            Mockito.mock(Options.class));
+            mock(Options.class));
 
     @Test
     void gzipStaticResources_largeCompressibleFile_getsGzipSibling()

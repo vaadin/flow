@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -39,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests the {@link GeolocationClient} seam — both the public
@@ -66,7 +66,7 @@ class GeolocationClientSeamTest {
         FakeClient fake = new FakeClient();
         VaadinService service = VaadinService.getCurrent();
         Lookup lookup = service.getContext().getAttribute(Lookup.class);
-        Mockito.when(lookup.lookup(GeolocationClientFactory.class))
+        when(lookup.lookup(GeolocationClientFactory.class))
                 .thenReturn(unused -> fake);
 
         MockUI freshUi = new MockUI();

@@ -23,7 +23,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import tools.jackson.databind.JsonNode;
 
@@ -38,6 +37,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class AbstractLazyDataViewTest {
 
@@ -81,8 +85,7 @@ class AbstractLazyDataViewTest {
             }
         };
 
-        Mockito.when(arrayUpdater.startUpdate(Mockito.anyInt()))
-                .thenReturn(update);
+        when(arrayUpdater.startUpdate(anyInt())).thenReturn(update);
 
         badProvider = DataProvider.ofItems("foo", "bar");
         dataProvider = DataProvider.fromCallbacks(query -> {
@@ -358,15 +361,15 @@ class AbstractLazyDataViewTest {
         Item item1 = new Item(0L, "value1");
         Item item2 = new Item(1L, "value2");
 
-        DataProvider<Item, Void> dataProvider = Mockito
-                .spy(DataProvider.fromCallbacks(query -> {
+        DataProvider<Item, Void> dataProvider = spy(
+                DataProvider.fromCallbacks(query -> {
                     query.getOffset();
                     query.getLimit();
                     return Stream.of(item1, item2);
                 }, query -> 2));
 
-        DataCommunicator<Item> dataCommunicator = Mockito
-                .spy(new DataCommunicator<>((item, jsonObject) -> {
+        DataCommunicator<Item> dataCommunicator = spy(
+                new DataCommunicator<>((item, jsonObject) -> {
                 }, arrayUpdater, null, component.getElement().getNode()));
 
         dataCommunicator.setDataProvider(dataProvider, null);
@@ -380,8 +383,8 @@ class AbstractLazyDataViewTest {
 
         // Verify that the refresh request causes both data provider and
         // data communicator invocation.
-        Mockito.verify(dataProvider).refreshItem(item1);
-        Mockito.verify(dataCommunicator).refresh(item1);
+        verify(dataProvider).refreshItem(item1);
+        verify(dataCommunicator).refresh(item1);
 
         dataView.setIdentifierProvider(Item::getId);
 
@@ -389,25 +392,25 @@ class AbstractLazyDataViewTest {
         dataView.refreshItem(updatedItem2);
         // Verify that the refresh is made on a new object, no on an old
         // object.
-        Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(item2);
-        Mockito.verify(dataCommunicator, Mockito.times(0)).refresh(item2);
-        Mockito.verify(dataProvider).refreshItem(updatedItem2);
-        Mockito.verify(dataCommunicator).refresh(updatedItem2);
+        verify(dataProvider, times(0)).refreshItem(item2);
+        verify(dataCommunicator, times(0)).refresh(item2);
+        verify(dataProvider).refreshItem(updatedItem2);
+        verify(dataCommunicator).refresh(updatedItem2);
     }
 
     @Test
     void refreshItem_itemNotPresent_itemNotRefreshed() {
         Item item1 = new Item(0L, "value1");
 
-        DataProvider<Item, Void> dataProvider = Mockito
-                .spy(DataProvider.fromCallbacks(query -> {
+        DataProvider<Item, Void> dataProvider = spy(
+                DataProvider.fromCallbacks(query -> {
                     query.getOffset();
                     query.getLimit();
                     return Stream.of(item1);
                 }, query -> 1));
 
-        DataCommunicator<Item> dataCommunicator = Mockito
-                .spy(new DataCommunicator<>((item, jsonObject) -> {
+        DataCommunicator<Item> dataCommunicator = spy(
+                new DataCommunicator<>((item, jsonObject) -> {
                 }, arrayUpdater, null, component.getElement().getNode()));
 
         dataCommunicator.setDataProvider(dataProvider, null);
@@ -421,8 +424,8 @@ class AbstractLazyDataViewTest {
 
         // Verify that the refresh request is not promoted to data provider and
         // data communicator, because item with id=1 is not found.
-        Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(item2);
-        Mockito.verify(dataCommunicator, Mockito.times(0)).refresh(item2);
+        verify(dataProvider, times(0)).refreshItem(item2);
+        verify(dataCommunicator, times(0)).refresh(item2);
     }
 
     @Test

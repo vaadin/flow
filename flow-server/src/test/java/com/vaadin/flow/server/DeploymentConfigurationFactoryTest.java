@@ -44,7 +44,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
@@ -64,6 +63,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class DeploymentConfigurationFactoryTest {
 
@@ -94,7 +98,7 @@ class DeploymentConfigurationFactoryTest {
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
         FileUtils.writeLines(tokenFile, Arrays.asList("{", "}"));
         appConfiguration = mockApplicationConfiguration();
-        contextMock = Mockito.mock(ServletContext.class);
+        contextMock = mock(ServletContext.class);
 
         defaultServletParams.put(PARAM_TOKEN_FILE, tokenFile.getPath());
     }
@@ -315,26 +319,24 @@ class DeploymentConfigurationFactoryTest {
     void createInitParameters_valuesFromContextAreIgnored_valuesAreTakenFromservletConfig() {
         DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
 
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        VaadinContext context = mock(VaadinContext.class);
+        VaadinConfig config = mock(VaadinConfig.class);
 
-        Mockito.when(config.getVaadinContext()).thenReturn(context);
-        Mockito.when(context.getAttribute(Lookup.class))
-                .thenReturn(Mockito.mock(Lookup.class));
+        when(config.getVaadinContext()).thenReturn(context);
+        when(context.getAttribute(Lookup.class)).thenReturn(mock(Lookup.class));
 
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
 
-        Mockito.when(config.getConfigParameterNames()).thenReturn(
+        when(config.getConfigParameterNames()).thenReturn(
                 Collections.enumeration(Collections.singleton("foo")));
-        Mockito.when(context.getContextParameterNames()).thenReturn(
+        when(context.getContextParameterNames()).thenReturn(
                 Collections.enumeration(Collections.singleton("bar")));
 
-        Mockito.when(config.getConfigParameter("foo")).thenReturn("baz");
-        Mockito.when(context.getContextParameter("bar")).thenReturn("foobar");
+        when(config.getConfigParameter("foo")).thenReturn("baz");
+        when(context.getContextParameter("bar")).thenReturn("foobar");
 
-        Mockito.when(context.getAttribute(
-                Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
+        when(context.getAttribute(eq(ApplicationConfiguration.class), any()))
                 .thenReturn(appConfig);
 
         Properties parameters = factory.createInitParameters(Object.class,
@@ -374,14 +376,13 @@ class DeploymentConfigurationFactoryTest {
         // works
         allParamsList.removeIf(paramString -> paramString
                 .equals(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE));
-        Mockito.when(config.getConfigParameterNames())
+        when(config.getConfigParameterNames())
                 .thenReturn(Collections.enumeration(allParamsList));
 
-        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinContext context = mock(VaadinContext.class);
 
-        Mockito.when(config.getVaadinContext()).thenReturn(context);
-        Mockito.when(context.getAttribute(Lookup.class))
-                .thenReturn(Mockito.mock(Lookup.class));
+        when(config.getVaadinContext()).thenReturn(context);
+        when(context.getAttribute(Lookup.class)).thenReturn(mock(Lookup.class));
 
         Properties parameters = factory.createInitParameters(Object.class,
                 config);
@@ -414,10 +415,10 @@ class DeploymentConfigurationFactoryTest {
             try {
                 String paramName = (String) fields[i].get(null);
                 if (!stringParams.contains(paramName)) {
-                    Mockito.when(config.getConfigParameter(paramName))
+                    when(config.getConfigParameter(paramName))
                             .thenReturn("false");
                 } else {
-                    Mockito.when(config.getConfigParameter(paramName))
+                    when(config.getConfigParameter(paramName))
                             .thenReturn("foo");
                 }
                 allParamsList.add(paramName);
@@ -462,11 +463,10 @@ class DeploymentConfigurationFactoryTest {
         VaadinConfig config = mockTokenFileViaContextParam(
                 "{ \"externalStatsUrl\": \"http://my.server/static/stats.json\"}");
 
-        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinContext context = mock(VaadinContext.class);
 
-        Mockito.when(config.getVaadinContext()).thenReturn(context);
-        Mockito.when(context.getAttribute(Lookup.class))
-                .thenReturn(Mockito.mock(Lookup.class));
+        when(config.getVaadinContext()).thenReturn(context);
+        when(context.getAttribute(Lookup.class)).thenReturn(mock(Lookup.class));
 
         Properties parameters = factory.createInitParameters(Object.class,
                 config);
@@ -485,11 +485,10 @@ class DeploymentConfigurationFactoryTest {
         VaadinConfig config = mockTokenFileViaContextParam(
                 "{ \"externalStatsFile\": true}");
 
-        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinContext context = mock(VaadinContext.class);
 
-        Mockito.when(config.getVaadinContext()).thenReturn(context);
-        Mockito.when(context.getAttribute(Lookup.class))
-                .thenReturn(Mockito.mock(Lookup.class));
+        when(config.getVaadinContext()).thenReturn(context);
+        when(context.getAttribute(Lookup.class)).thenReturn(mock(Lookup.class));
 
         Properties parameters = factory.createInitParameters(Object.class,
                 config);
@@ -506,11 +505,10 @@ class DeploymentConfigurationFactoryTest {
         VaadinConfig config = mockTokenFileViaContextParam(
                 "{ \"" + SERVLET_PARAMETER_PRODUCTION_MODE + "\": true}");
 
-        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinContext context = mock(VaadinContext.class);
 
-        Mockito.when(config.getVaadinContext()).thenReturn(context);
-        Mockito.when(context.getAttribute(Lookup.class))
-                .thenReturn(Mockito.mock(Lookup.class));
+        when(config.getVaadinContext()).thenReturn(context);
+        when(context.getAttribute(Lookup.class)).thenReturn(mock(Lookup.class));
 
         Properties parameters = factory.createInitParameters(Object.class,
                 config);
@@ -521,33 +519,31 @@ class DeploymentConfigurationFactoryTest {
 
     private VaadinConfig mockTokenFileViaContextParam(String content)
             throws IOException {
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        VaadinContext context = mock(VaadinContext.class);
+        VaadinConfig config = mock(VaadinConfig.class);
 
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
 
-        Mockito.when(config.getConfigParameterNames())
+        when(config.getConfigParameterNames())
                 .thenReturn(Collections.enumeration(
                         Collections.singleton(FrontendUtils.PARAM_TOKEN_FILE)));
-        Mockito.when(context.getContextParameterNames())
+        when(context.getContextParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
 
-        Mockito.when(config.getVaadinContext()).thenReturn(context);
+        when(config.getVaadinContext()).thenReturn(context);
 
         File tmpFile = java.nio.file.Files
                 .createTempFile(temporaryFolder, "tmp", null).toFile();
         Files.write(tmpFile.toPath(), Collections.singletonList(content));
 
-        Mockito.when(
-                context.getContextParameter(FrontendUtils.PARAM_TOKEN_FILE))
+        when(context.getContextParameter(FrontendUtils.PARAM_TOKEN_FILE))
                 .thenReturn(tmpFile.getPath());
 
-        Mockito.when(config.getConfigParameter(FrontendUtils.PARAM_TOKEN_FILE))
+        when(config.getConfigParameter(FrontendUtils.PARAM_TOKEN_FILE))
                 .thenReturn(tmpFile.toString());
 
-        Mockito.when(context.getAttribute(
-                Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
+        when(context.getAttribute(eq(ApplicationConfiguration.class), any()))
                 .thenReturn(appConfig);
 
         return config;
@@ -638,15 +634,15 @@ class DeploymentConfigurationFactoryTest {
 
     private ApplicationConfiguration mockApplicationConfiguration() {
         VaadinContext context = new MockVaadinContext();
-        ApplicationConfiguration configuration = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
-        Mockito.when(configuration.getContext()).thenReturn(context);
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString())).thenReturn(null);
-        Mockito.when(configuration.isXsrfProtectionEnabled()).thenReturn(false);
+        ApplicationConfiguration configuration = mock(
+                ApplicationConfiguration.class);
+        when(configuration.isProductionMode()).thenReturn(true);
+        when(configuration.getContext()).thenReturn(context);
+        when(configuration.getStringProperty(anyString(), anyString()))
+                .thenReturn(null);
+        when(configuration.isXsrfProtectionEnabled()).thenReturn(false);
 
-        Mockito.when(configuration.getPropertyNames())
+        when(configuration.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
 
         return configuration;
@@ -660,21 +656,19 @@ class DeploymentConfigurationFactoryTest {
         URLClassLoader classLoader = new URLClassLoader(
                 new URL[] { temporaryFolder.toFile().toURI().toURL() });
 
-        Mockito.when(contextMock
-                .getAttribute(ApplicationConfiguration.class.getName()))
+        when(contextMock.getAttribute(ApplicationConfiguration.class.getName()))
                 .thenReturn(appConfiguration);
 
-        Mockito.when(contextMock.getInitParameterNames()).thenReturn(
+        when(contextMock.getInitParameterNames()).thenReturn(
                 Collections.enumeration(servletContextParameters.keySet()));
-        Mockito.when(contextMock.getClassLoader()).thenReturn(classLoader);
+        when(contextMock.getClassLoader()).thenReturn(classLoader);
 
-        Mockito.when(contextMock.getInitParameter(Mockito.anyString()))
-                .thenAnswer(answer -> {
-                    String name = answer.getArgument(0);
-                    return servletContextParameters.get(name);
-                });
+        when(contextMock.getInitParameter(anyString())).thenAnswer(answer -> {
+            String name = answer.getArgument(0);
+            return servletContextParameters.get(name);
+        });
 
-        ResourceProvider provider = Mockito.mock(ResourceProvider.class);
+        ResourceProvider provider = mock(ResourceProvider.class);
 
         Lookup lookup = new Lookup() {
 
@@ -692,11 +686,11 @@ class DeploymentConfigurationFactoryTest {
             }
         };
 
-        Mockito.when(provider
+        when(provider
                 .getApplicationResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
                 .thenReturn(Collections.emptyList());
 
-        Mockito.when(contextMock.getAttribute(Lookup.class.getName()))
+        when(contextMock.getAttribute(Lookup.class.getName()))
                 .thenReturn(lookup);
 
         return new ServletConfig() {

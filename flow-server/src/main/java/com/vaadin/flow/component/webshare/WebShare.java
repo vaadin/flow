@@ -18,7 +18,6 @@ package com.vaadin.flow.component.webshare;
 import java.io.Serializable;
 import java.util.Objects;
 
-import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
@@ -77,13 +76,10 @@ public final class WebShare implements Serializable {
      * @param component
      *            the component whose clicks trigger the share action, not
      *            {@code null}
-     * @param <T>
-     *            the component type, must implement {@link ClickNotifier}
      * @return a binding for chaining the content to share on click
      * @see WebShareBinding
      */
-    public static <T extends Component & ClickNotifier<?>> WebShareBinding onClick(
-            T component) {
+    public static WebShareBinding onClick(Component component) {
         Objects.requireNonNull(component, "component must not be null");
         return new WebShareBinding(new ClickTrigger(component));
     }

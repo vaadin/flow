@@ -19,7 +19,6 @@ import java.io.File;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
@@ -31,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class DownloadHandlerTest {
 
@@ -50,10 +50,9 @@ class DownloadHandlerTest {
         AtomicReference<DownloadEvent> received = new AtomicReference<>();
         DownloadHandler delegate = received::set;
 
-        DownloadEvent event = new DownloadEvent(
-                Mockito.mock(VaadinRequest.class),
-                Mockito.mock(VaadinResponse.class),
-                Mockito.mock(VaadinSession.class), Mockito.mock(Element.class));
+        DownloadEvent event = new DownloadEvent(mock(VaadinRequest.class),
+                mock(VaadinResponse.class), mock(VaadinSession.class),
+                mock(Element.class));
 
         delegate.allowDisabled().handleDownloadRequest(event);
 

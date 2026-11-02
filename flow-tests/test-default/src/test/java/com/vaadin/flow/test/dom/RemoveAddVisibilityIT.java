@@ -23,6 +23,8 @@ import com.vaadin.flow.test.AbstractDefaultIT;
 import com.vaadin.flow.test.TestFor;
 import com.vaadin.testbench.BrowserTest;
 
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 @TestFor(RemoveAddVisibilityView.class)
 public class RemoveAddVisibilityIT extends AbstractDefaultIT {
 
@@ -36,7 +38,7 @@ public class RemoveAddVisibilityIT extends AbstractDefaultIT {
 
         $(NativeButtonElement.class).id("make-visible").click();
 
-        Assertions.assertNull(span.getAttribute("hidden"));
+        assertNull(span.getAttribute("hidden"));
         Assertions.assertEquals("Initially hidden", span.getText());
     }
 }
