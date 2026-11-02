@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.Component;
@@ -334,6 +335,9 @@ public class Dependency implements Serializable {
             JsonNode node = JacksonUtils.readTree(url);
             return node.has(JacksonCodec.FUNCTION_KEY) ? node : null;
         } catch (JsonDecodingException e) {
+            LoggerFactory.getLogger(Dependency.class).debug(
+                    "Loading dynamic import '{}' as an expression, as it is not JSON",
+                    url, e);
             return null;
         }
     }
