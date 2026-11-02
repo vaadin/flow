@@ -63,7 +63,7 @@ public class Dependency implements Serializable {
     private final Type type;
     private final String url;
     private final LoadMode loadMode;
-    private String id;
+    private final String id;
     private final String layer;
     private final JsFunction dynamicImport;
 

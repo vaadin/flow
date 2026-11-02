@@ -86,7 +86,7 @@ public class UidlWriter implements Serializable {
      * Provides context information for the resolve operations.
      */
     public static class ResolveContext implements Serializable {
-        private VaadinService service;
+        private final VaadinService service;
 
         /**
          * Creates a new context.
