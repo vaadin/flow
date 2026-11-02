@@ -100,7 +100,7 @@ jobs:
           TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
           mkdir -p ~/.vaadin/
-          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
+          echo '{"username":"'$(echo $TB_LICENSE | cut -d / -f1)'","proKey":"'$(echo $TB_LICENSE | cut -d / -f2)'"}' > ~/.vaadin/proKey
       - name: Compile and Install Flow
         run: |
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
@@ -160,7 +160,7 @@ jobs:
           TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
           mkdir -p ~/.vaadin/
-          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
+          echo '{"username":"'$(echo $TB_LICENSE | cut -d / -f1)'","proKey":"'$(echo $TB_LICENSE | cut -d / -f2)'"}' > ~/.vaadin/proKey
       - name: Compile and Install Flow
         if: ${{ github.run_attempt > 1 }}
         run: |
@@ -273,7 +273,7 @@ jobs:
           TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
           mkdir -p ~/.vaadin/
-          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
+          echo '{"username":"'$(echo $TB_LICENSE | cut -d / -f1)'","proKey":"'$(echo $TB_LICENSE | cut -d / -f2)'"}' > ~/.vaadin/proKey
       - name: Compile and Install Flow
         if: ${{ github.run_attempt > 1 }}
         run: |
@@ -388,6 +388,8 @@ jobs:
               merge_group)
                 DIFF_BASE=$_MERGE_GROUP_BASE_SHA
                 ;;
+              *)
+                ;;
             esac
             if [ -z "$DIFF_BASE" ]; then
               echo "No base to compare against, running every container."
@@ -448,7 +450,7 @@ jobs:
           TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
           mkdir -p ~/.vaadin/
-          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
+          echo '{"username":"'$(echo $TB_LICENSE | cut -d / -f1)'","proKey":"'$(echo $TB_LICENSE | cut -d / -f2)'"}' > ~/.vaadin/proKey
       - name: Compile and Install Flow
         if: ${{ steps.decide.outputs.run == 'true' && github.run_attempt > 1 }}
         run: |
@@ -570,6 +572,8 @@ jobs:
               merge_group)
                 DIFF_BASE=$_MERGE_GROUP_BASE_SHA
                 ;;
+              *)
+                ;;
             esac
             if [ -z "$DIFF_BASE" ]; then
               echo "No base to compare against, running every module."
@@ -634,7 +638,7 @@ jobs:
           TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
           mkdir -p ~/.vaadin/
-          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
+          echo '{"username":"'$(echo $TB_LICENSE | cut -d / -f1)'","proKey":"'$(echo $TB_LICENSE | cut -d / -f2)'"}' > ~/.vaadin/proKey
       - name: Run Quarkus ITs
         if: ${{ steps.decide.outputs.run == 'true' }}
         timeout-minutes: 35
@@ -734,6 +738,8 @@ jobs:
               # The merge group branch is built on top of base_sha, so it is
               # already in the history checked out here.
               DIFF_BASE=$_MERGE_GROUP_BASE_SHA
+              ;;
+            *)
               ;;
           esac
           if [ -z "$DIFF_BASE" ]; then
@@ -840,7 +846,7 @@ jobs:
           TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
           mkdir -p ~/.vaadin/
-          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
+          echo '{"username":"'$(echo $TB_LICENSE | cut -d / -f1)'","proKey":"'$(echo $TB_LICENSE | cut -d / -f2)'"}' > ~/.vaadin/proKey
       - name: Compile and Install Flow
         # On re-runs the saved-workspace artifact has already been deleted,
         # so compile from scratch like the test jobs do.
@@ -1113,7 +1119,7 @@ jobs:
           TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
           mkdir -p ~/.vaadin/
-          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
+          echo '{"username":"'$(echo $TB_LICENSE | cut -d / -f1)'","proKey":"'$(echo $TB_LICENSE | cut -d / -f2)'"}' > ~/.vaadin/proKey
       - name: Resolve merge base with target branch
         id: merge-base
         run: |
