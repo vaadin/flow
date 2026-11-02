@@ -2,6 +2,7 @@ import { expect } from '@open-wc/testing';
 import { testRegistry } from './testRegistry';
 import { DependencyLoader } from '../../../../main/frontend/internal/client/DependencyLoader';
 import { ResourceLoader } from '../../../../main/frontend/internal/client/ResourceLoader';
+import { runWhenEagerDependenciesLoaded } from '../../../../main/frontend/internal/client/EagerDependencyTracker';
 import type { ResourceLoadListener } from '../../../../main/frontend/internal/client/ResourceRegistry';
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -136,15 +137,28 @@ describe('DependencyLoader (class)', () => {
     }
   });
 
-  it('fails only the dynamic import when its function cannot be decoded', () => {
+  it('fails only the dynamic import when its function cannot be decoded', async () => {
     // A node the client does not have, which the codec cannot resolve
     const dynamicImport = { '@v-fn': { id: 'import-fn', captures: [{ '@v-node': 42 }] } };
-    const registry = makeRegistry();
-    new DependencyLoader(registry.registry).loadDependencies(
-      new Map([['LAZY', [{ type: 'DYNAMIC_IMPORT', url: dynamicImport }]]])
-    );
-    const call = registry.calls.find((c) => c.method === 'loadDynamicImport');
-    expect(call?.args[2] as () => unknown).to.throw();
+    const registry = testRegistry({
+      SystemErrorHandler: { handleError: () => {} },
+      StateTree: { getNode: () => null }
+    });
+    const resourceLoader = new ResourceLoader(registry, false);
+    registry.register('ResourceLoader', resourceLoader);
+    const errors: string[] = [];
+    const originalError = console.error;
+    console.error = (error: unknown) => errors.push(String(error));
+    try {
+      new DependencyLoader(registry).loadDependencies(
+        new Map([['LAZY', [{ type: 'DYNAMIC_IMPORT', url: dynamicImport }]]])
+      );
+      // The eager gate opens again, so the rest of the message is processed
+      await new Promise<void>((resolve) => runWhenEagerDependenciesLoaded(resolve));
+    } finally {
+      console.error = originalError;
+    }
+    expect(errors.some((error) => error.includes('getDomNode'))).to.be.true;
   });
 
   it('defers lazy dependencies until after eager ones complete', async () => {

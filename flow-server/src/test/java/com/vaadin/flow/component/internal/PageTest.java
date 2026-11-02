@@ -17,10 +17,14 @@ package com.vaadin.flow.component.internal;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -157,9 +161,17 @@ class PageTest {
         assertCaptureRejected(new TestComponent());
     }
 
-    @Test
-    void addDynamicImportFunction_elementInCollection_throws() {
-        assertCaptureRejected(List.of("a", new Element("div")));
+    static Stream<Object> containersWithElement() {
+        // Detached, so only the check on the Java values can catch them
+        return Stream.of(List.of("a", new Element("div")),
+                Map.of("k", new Element("div")),
+                new Object[] { new Element("div") });
+    }
+
+    @ParameterizedTest
+    @MethodSource("containersWithElement")
+    void addDynamicImportFunction_elementInContainer_throws(Object capture) {
+        assertCaptureRejected(capture);
     }
 
     @Test
@@ -171,6 +183,17 @@ class PageTest {
     void addDynamicImportFunction_attachedElementInBean_throws() {
         // Only seen in the encoded value, as beans are not walked
         assertCaptureRejected(new ElementHolder(ui.getElement()));
+    }
+
+    @Test
+    void addDynamicImportFunction_detachedElementInBean_isSentAsNull() {
+        page.addDynamicImport(JsFunction.of("return import($0)",
+                new ElementHolder(new Element("div"))));
+
+        Dependency dependency = ui.getInternals().getDependencyList()
+                .getPendingSendToClient().iterator().next();
+        assertTrue(dependency.getEncodedDynamicImport().get("@v-fn")
+                .get("captures").get(0).get("element").isNull());
     }
 
     public record ElementHolder(Element element) {
