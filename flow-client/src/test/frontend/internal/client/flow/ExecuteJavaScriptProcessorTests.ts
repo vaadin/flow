@@ -151,6 +151,45 @@ describe('ExecuteJavaScriptProcessor', () => {
       expect(calls[0].args).to.eql(['Hello']);
     });
 
+    it('runs a call with a declared function argument without compiling a string', () => {
+      // What a page without unsafe-eval allows: both the call and its function
+      // argument come from the bundle, so neither Function nor eval is needed
+      const SNIPPET = 'c'.repeat(64);
+      registerDefinition(GREETING, function (this: unknown, greeter: unknown) {
+        (greeter as (this: unknown, name: string) => void).call(this, 'World');
+      });
+      const vaadinFlow = (window as DefinitionWindow).Vaadin!.Flow as Record<string, unknown>;
+      const snippets = (vaadinFlow.jsSnippets ?? {}) as Record<string, DefinitionFunction>;
+      vaadinFlow.jsSnippets = snippets;
+      snippets[SNIPPET] = function (greeting: unknown) {
+        return function (this: { text?: string }, name: unknown) {
+          this.text = `${greeting} ${name}`;
+        };
+      };
+      const originalFunction = window.Function;
+      const originalEval = window.eval;
+      const compiled: string[] = [];
+      window.Function = function (...args: string[]) {
+        compiled.push(args.join(','));
+        throw new EvalError('Refused to compile a string');
+      } as unknown as FunctionConstructor;
+      window.eval = (code: string) => {
+        compiled.push(code);
+        throw new EvalError('Refused to evaluate a string');
+      };
+      const element: { tagName: string; text?: string } = { tagName: 'div' };
+      try {
+        run([{ '@v-fn': { id: SNIPPET, captures: ['Hello'] } }, element, greeting]);
+      } finally {
+        window.Function = originalFunction;
+        window.eval = originalEval;
+        Reflect.deleteProperty(snippets, SNIPPET);
+      }
+
+      expect(compiled).to.eql([]);
+      expect(element.text).to.equal('Hello World');
+    });
+
     it('runs a call that has nothing to run on without a this', () => {
       // What a call made on the page carries: the arguments, and nothing
       // where a call made on an element has the element
@@ -244,6 +283,20 @@ describe('ExecuteJavaScriptProcessor', () => {
       expect(errors).to.have.lengthOf(1);
       // Nothing registered it, so the message has only the identifier
       expect(String(errors[0])).to.contain(VALUE);
+    });
+
+    it('does not resolve a function or its name to what the registry inherits', () => {
+      const flow = ((window as DefinitionWindow).Vaadin ??= {});
+      flow.Flow = flow.Flow ?? {};
+      flow.Flow.jsDefinitions = flow.Flow.jsDefinitions ?? {};
+      flow.Flow.jsDefinitionNames = flow.Flow.jsDefinitionNames ?? {};
+      const errors: unknown[] = [];
+      const element = { tagName: 'div' };
+
+      run([element, () => {}, (error: unknown) => errors.push(error), { f: 'constructor' }]);
+
+      expect(errors).to.have.lengthOf(1);
+      expect(String(errors[0])).to.contain('No JavaScript in the bundle for constructor.');
     });
   });
 
