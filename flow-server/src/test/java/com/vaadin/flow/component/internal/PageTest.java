@@ -167,6 +167,15 @@ class PageTest {
         assertCaptureRejected(JsFunction.of("return $0", new Element("div")));
     }
 
+    @Test
+    void addDynamicImportFunction_attachedElementInBean_throws() {
+        // Only seen in the encoded value, as beans are not walked
+        assertCaptureRejected(new ElementHolder(ui.getElement()));
+    }
+
+    public record ElementHolder(Element element) {
+    }
+
     private void assertCaptureRejected(Object capture) {
         JsFunction function = JsFunction.of("return import($0)", capture);
 

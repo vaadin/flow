@@ -475,12 +475,16 @@ public class Page implements Serializable {
      * only once. The function cannot capture an element or a component,
      * attached or not, as the browser loads dependencies before it applies the
      * changes of the same round trip, and a detached element cannot be
-     * referenced.
+     * referenced. This is checked for a capture itself and for what a
+     * collection, a map, an array or a captured function holds. Bean properties
+     * are only checked for attached elements; a detached one in a bean is sent
+     * as {@code null}, as it is for any other value sent to the browser.
      *
      * @param dynamicImport
      *            the function that returns a Promise, not {@code null}
      * @throws IllegalArgumentException
-     *             if the function captures an element or a component
+     *             if the function captures an element or a component, as
+     *             described above
      */
     public void addDynamicImport(JsFunction dynamicImport) {
         addDependency(new Dependency(dynamicImport));

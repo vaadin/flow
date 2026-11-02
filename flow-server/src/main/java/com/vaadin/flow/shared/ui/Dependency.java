@@ -196,9 +196,11 @@ public class Dependency implements Serializable {
      *            the function that loads the dependency, not {@code null}
      * @throws IllegalArgumentException
      *             if the function captures an element or a component, attached
-     *             or not: the browser loads dependencies before it applies the
-     *             changes of the same round trip, and a detached element cannot
-     *             be referenced
+     *             or not, directly or in a collection, a map, an array or a
+     *             captured function, or an attached one in a bean property: the
+     *             browser loads dependencies before it applies the changes of
+     *             the same round trip, and a detached element cannot be
+     *             referenced
      */
     public Dependency(JsFunction dynamicImport) {
         // LAZY for the same reason as in Dependency(Type, String)
