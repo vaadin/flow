@@ -20,8 +20,6 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.stream.Stream;
 
-import com.googlecode.gentyref.GenericTypeReflector;
-
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.internal.ReflectTools;
@@ -83,11 +81,11 @@ public abstract class Composite<T extends Component> extends Component {
 
     private static Class<? extends Component> findContentType(
             Class<? extends Composite<?>> compositeClass) {
-        Type type = GenericTypeReflector.getTypeParameter(
+        Type type = ReflectTools.getTypeParameter(
                 compositeClass.getGenericSuperclass(),
                 Composite.class.getTypeParameters()[0]);
         if (type instanceof Class || type instanceof ParameterizedType) {
-            return GenericTypeReflector.erase(type).asSubclass(Component.class);
+            return ReflectTools.erase(type).asSubclass(Component.class);
         }
         throw new IllegalStateException(getExceptionMessage(type));
     }
