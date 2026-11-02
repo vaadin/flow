@@ -80,6 +80,9 @@ class HtmlComponentSmokeTest {
         testValues.put(HasText.WhiteSpace.class, HasText.WhiteSpace.PRE_LINE);
         testValues.put(TableHeaderCell.Scope.class, TableHeaderCell.Scope.COL);
         testValues.put(Media.Preload.class, Media.Preload.METADATA);
+        testValues.put(NativeForm.Method.class, NativeForm.Method.POST);
+        testValues.put(NativeForm.Enctype.class, NativeForm.Enctype.MULTIPART);
+        testValues.put(NativeButton.Type.class, NativeButton.Type.RESET);
     }
 
     private static final Map<Class<?>, Map<Class<?>, Object>> specialTestValues = new HashMap<>();

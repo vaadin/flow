@@ -17,13 +17,36 @@ package com.vaadin.flow.component.html;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.component.html.NativeButton.Type;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 class NativeButtonTest extends ComponentTest {
 
     // Actual test methods in super class
 
     @Override
     protected void addProperties() {
-        // Component defines no new properties
+        // nullable getter, covered by setType_getType
+        whitelistProperty("type");
+    }
+
+    @Test
+    void setType_getType() {
+        NativeButton button = new NativeButton();
+        assertNull(button.getType());
+
+        button.setType(Type.SUBMIT);
+        assertEquals(Type.SUBMIT, button.getType());
+        assertEquals("submit", button.getElement().getAttribute("type"));
+
+        button.getElement().setAttribute("type", "RESET");
+        assertEquals(Type.RESET, button.getType());
+
+        button.setType(null);
+        assertNull(button.getType());
+        assertNull(button.getElement().getAttribute("type"));
     }
 
     @Test
