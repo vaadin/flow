@@ -259,6 +259,24 @@ class HandlerHelperTest {
     }
 
     @Test
+    void isFrameworkInternalRequest_ssePushUrl() {
+        VaadinServletRequest request = createVaadinRequest("VAADIN/push", "",
+                RequestType.SSE);
+
+        assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
+                request.getHttpServletRequest()));
+    }
+
+    @Test
+    void isFrameworkInternalRequest_vaadinServletMapping_ssePushUrl() {
+        VaadinServletRequest request = createVaadinRequest("/VAADIN/push",
+                "/ui", RequestType.SSE);
+
+        assertTrue(HandlerHelper.isFrameworkInternalRequest("/ui/*",
+                request.getHttpServletRequest()));
+    }
+
+    @Test
     void isFrameworkInternalRequest_fakeUploadUrl() {
         VaadinServletRequest request = createVaadinRequest(
                 "VAADIN/dynamic/resource/../../../upload", "", null);
