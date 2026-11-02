@@ -68,7 +68,7 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
   // declared functions, where the capture values are sent for this element
   // instead of being shared through the constant pool.
   function bindWithClickCaptures(
-    shared: Record<string, { c?: number; d: unknown; f: string; s?: string }>,
+    shared: Record<string, { c?: number; d: unknown; e?: string; f?: string; s?: string }>,
     captured: Record<string, unknown[]>
   ): void {
     bind(node, element);
@@ -231,21 +231,61 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
     expect(harness.collectedNodes).to.have.length(2);
   });
 
-  it('calls the side effect of an entry only when it is truthy', () => {
-    snippets()['fn-id'] = (name) => (_event, target) => target.hasAttribute(name as string);
-    bindWithClickCaptures(
-      { shared: { c: 1, d: false, f: 'fn-id', s: 'preventDefault' } },
-      { shared$match: ['shared', 'id'] }
-    );
+  // An entry with a side effect evaluates the filter of its listener, declared
+  // with captures or as an expression without, and calls the method of the
+  // event it names only when that passes.
+  const sideEffectCases: Array<{
+    name: string;
+    shared: Record<string, { c?: number; d: unknown; e?: string; f?: string; s: string }>;
+    captured: Record<string, unknown[]>;
+  }> = [
+    {
+      name: 'preventDefault of a declared function with captures',
+      shared: { shared: { c: 1, d: false, f: 'fn-id', s: 'preventDefault' } },
+      captured: { shared$match: ['shared', 'id'] }
+    },
+    {
+      name: 'preventDefault of an expression',
+      shared: { shared: { e: "element.hasAttribute('id')", d: false, s: 'preventDefault' } },
+      captured: {}
+    },
+    {
+      name: 'stopPropagation of an expression',
+      shared: { shared: { e: "element.hasAttribute('id')", d: false, s: 'stopPropagation' } },
+      captured: {}
+    }
+  ];
 
-    const notMatching = new MouseEvent('click', { cancelable: true });
-    element.dispatchEvent(notMatching);
-    expect(notMatching.defaultPrevented).to.be.false;
+  sideEffectCases.forEach(({ name, shared, captured }) => {
+    it(`calls ${name} only when the entry is truthy`, () => {
+      snippets()['fn-id'] = (attribute) => (_event, target) => target.hasAttribute(attribute as string);
+      const sideEffect = Object.values(shared)[0].s;
+      let parentCalls = 0;
+      const countParentCall = (): void => {
+        parentCalls += 1;
+      };
+      document.body.addEventListener('click', countParentCall);
+      try {
+        bindWithClickCaptures(shared, captured);
 
-    element.setAttribute('id', 'set');
-    const matching = new MouseEvent('click', { cancelable: true });
-    element.dispatchEvent(matching);
-    expect(matching.defaultPrevented).to.be.true;
+        const notMatching = new MouseEvent('click', { bubbles: true, cancelable: true });
+        element.dispatchEvent(notMatching);
+
+        element.setAttribute('id', 'set');
+        const matching = new MouseEvent('click', { bubbles: true, cancelable: true });
+        element.dispatchEvent(matching);
+
+        if (sideEffect === 'preventDefault') {
+          expect(notMatching.defaultPrevented).to.be.false;
+          expect(matching.defaultPrevented).to.be.true;
+        } else {
+          // Only the event that did not match reaches the parent
+          expect(parentCalls).to.equal(1);
+        }
+      } finally {
+        document.body.removeEventListener('click', countParentCall);
+      }
+    });
   });
 
   it('decodes an element capture into a DOM node', () => {

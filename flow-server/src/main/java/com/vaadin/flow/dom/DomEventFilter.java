@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.dom;
 
-import java.util.List;
 import java.util.Objects;
 
-import com.vaadin.flow.internal.JacksonCodec;
+import tools.jackson.databind.node.ArrayNode;
+
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
@@ -67,9 +67,11 @@ import com.vaadin.flow.js.JsSnippets;
 public final class DomEventFilter implements JsSnippet {
 
     private final JsCall declaredCall;
+    private final ArrayNode captures;
 
     private DomEventFilter(JsCall declaredCall) {
         this.declaredCall = declaredCall;
+        this.captures = declaredCall.encodeSnippetCaptures();
     }
 
     /**
@@ -91,13 +93,12 @@ public final class DomEventFilter implements JsSnippet {
      *             the client
      */
     public static DomEventFilter ofDeclaredCall(JsCall call) {
-        return new DomEventFilter(checkDeclaredCall(call));
+        return new DomEventFilter(Objects.requireNonNull(call, "call"));
     }
 
     /**
      * Gets the call of the {@link JsDefinition} method that declared this
-     * filter, which names the function of the bundle it runs and carries the
-     * captured values.
+     * filter, which names the function of the bundle it runs.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      *
@@ -108,22 +109,15 @@ public final class DomEventFilter implements JsSnippet {
     }
 
     /**
-     * Checks that a call declares a snippet and that its arguments can be sent
-     * to the client, so that a value that can not be captured fails at the call
-     * that captures it.
+     * Gets the captured values as they were encoded when this filter was
+     * created, which is what they are sent to the client as. Not to be
+     * modified.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @return the encoded captures, not <code>null</code>
      */
-    static JsCall checkDeclaredCall(JsCall call) {
-        Objects.requireNonNull(call, "call");
-        if (!call.isSnippet()) {
-            throw new IllegalArgumentException("Method " + call.methodName()
-                    + " of " + call.definitionType().getName()
-                    + " does not declare a JsSnippet, so a call of it runs"
-                    + " JavaScript rather than declaring a snippet");
-        }
-        List<Object> captures = call.flattenArguments();
-        for (Object capture : captures) {
-            JacksonCodec.encodeWithTypeInfo(capture);
-        }
-        return call;
+    public ArrayNode getEncodedCaptures() {
+        return captures;
     }
 }

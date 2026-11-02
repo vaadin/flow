@@ -19,12 +19,18 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventData;
 import com.vaadin.flow.dom.DomEventFilter;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -92,6 +98,21 @@ class JsDefinitionProxyTest {
 
         @JsExpression("return element.getAttribute($0);")
         DomEventData<String> attribute(String name);
+
+        @JsExpression("return event.detail === $0;")
+        DomEventFilter isDetail(Object detail);
+
+        @JsExpression("return $0;")
+        DomEventData<Object> echo(Object value);
+    }
+
+    /**
+     * A bean that cannot be encoded since it refers to itself.
+     */
+    public static class SelfReference {
+        public SelfReference getSelf() {
+            return this;
+        }
     }
 
     @JsDefinition
@@ -230,6 +251,38 @@ class JsDefinitionProxyTest {
                 events.isKey("Enter").getDeclaredCall());
         assertEquals(new JsCall(EventJs.class, "attribute", List.of("id")),
                 events.attribute("id").getDeclaredCall());
+    }
+
+    @Test
+    void createSnippets_domEventSnippetCaptureTheClientCanNotReceive_throwsWhenDeclared() {
+        EventJs events = JsDefinitionProxy.createSnippets(EventJs.class);
+        SelfReference unencodable = new SelfReference();
+
+        assertThrows(RuntimeException.class,
+                () -> events.isDetail(unencodable));
+        assertThrows(RuntimeException.class, () -> events.echo(unencodable));
+    }
+
+    @Test
+    void createSnippets_domEventSnippets_surviveSerialization() {
+        EventJs events = JsDefinitionProxy.createSnippets(EventJs.class);
+        DomEventFilter filter = events.isKey("Enter");
+        DomEventData<String> data = events.attribute("id");
+
+        DomEventFilter filterCopy = SerializationUtils.roundtrip(filter);
+        DomEventData<String> dataCopy = SerializationUtils.roundtrip(data);
+
+        assertEquals(filter.getDeclaredCall(), filterCopy.getDeclaredCall());
+        assertEquals(filter.getEncodedCaptures(),
+                filterCopy.getEncodedCaptures());
+        // Still read by the same key, as the type the method declares
+        assertEquals(ElementListenerMap.getEventDataKey(data),
+                ElementListenerMap.getEventDataKey(dataCopy));
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put(ElementListenerMap.getEventDataKey(data), "value");
+        assertEquals("value",
+                new DomEvent(new Element("div"), "click", eventData)
+                        .getEventData(dataCopy));
     }
 
     @Test

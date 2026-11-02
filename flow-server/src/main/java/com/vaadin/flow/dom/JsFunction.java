@@ -162,17 +162,9 @@ public final class JsFunction implements JsSnippet {
      */
     public static JsFunction ofDeclaredCall(JsCall call) {
         Objects.requireNonNull(call, "call");
-        if (!call.isSnippet()) {
-            throw new IllegalArgumentException("Method " + call.methodName()
-                    + " of " + call.definitionType().getName()
-                    + " does not declare a JsSnippet, so a call of it runs"
-                    + " JavaScript rather than declaring a function");
-        }
-        List<Object> captures = call.flattenArguments();
         // Fail fast at the call that captures an unsupported value, as of does
-        for (Object capture : captures) {
-            JacksonCodec.encodeWithTypeInfo(capture);
-        }
+        call.encodeSnippetCaptures();
+        List<Object> captures = call.flattenArguments();
         List<String> names = call.getCalledWithNames();
         return new JsFunction(null, call, captures,
                 names == null ? List.of() : names);

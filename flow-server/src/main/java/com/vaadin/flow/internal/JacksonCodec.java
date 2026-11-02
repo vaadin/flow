@@ -298,7 +298,7 @@ public class JacksonCodec {
     public static <T> T decodeAs(JsonNode json, JavaType type) {
         assert json != null;
         assert type != null;
-        if (json.getNodeType() == JsonNodeType.NULL && !type.isPrimitive()) {
+        if (json.getNodeType() == JsonNodeType.NULL) {
             return null;
         }
         if (type.isTypeOrSubTypeOf(JsonNode.class)) {

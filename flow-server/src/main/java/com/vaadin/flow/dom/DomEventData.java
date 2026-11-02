@@ -17,8 +17,10 @@ package com.vaadin.flow.dom;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Objects;
 
 import tools.jackson.databind.JavaType;
+import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.js.JsCall;
@@ -79,10 +81,12 @@ import com.vaadin.flow.js.JsSnippets;
 public final class DomEventData<T> implements JsSnippet {
 
     private final JsCall declaredCall;
+    private final ArrayNode captures;
     private final JavaType valueType;
 
     private DomEventData(JsCall declaredCall, JavaType valueType) {
         this.declaredCall = declaredCall;
+        this.captures = declaredCall.encodeSnippetCaptures();
         this.valueType = valueType;
     }
 
@@ -111,7 +115,7 @@ public final class DomEventData<T> implements JsSnippet {
      */
     public static <T> DomEventData<T> ofDeclaredCall(JsCall call,
             Type returnType) {
-        DomEventFilter.checkDeclaredCall(call);
+        Objects.requireNonNull(call, "call");
         // DomEventData<String> is read as a String, while a raw or
         // undetermined type is read as whatever the JSON holds
         Type valueType = returnType instanceof ParameterizedType parameterized
@@ -123,8 +127,7 @@ public final class DomEventData<T> implements JsSnippet {
 
     /**
      * Gets the call of the {@link JsDefinition} method that declared this event
-     * data, which names the function of the bundle it runs and carries the
-     * captured values.
+     * data, which names the function of the bundle it runs.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      *
@@ -132,6 +135,19 @@ public final class DomEventData<T> implements JsSnippet {
      */
     public JsCall getDeclaredCall() {
         return declaredCall;
+    }
+
+    /**
+     * Gets the captured values as they were encoded when this event data was
+     * created, which is what they are sent to the client as, and what the key
+     * its value is read by is derived from. Not to be modified.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @return the encoded captures, not <code>null</code>
+     */
+    public ArrayNode getEncodedCaptures() {
+        return captures;
     }
 
     /**

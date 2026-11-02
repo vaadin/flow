@@ -20,10 +20,12 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
@@ -271,15 +273,32 @@ public final class JsDefinitionProxy {
 
     /**
      * Whether the method returns a snippet type that there is a value to answer
-     * with for: a type that a {@link JsFunction} is, or one of the snippets
-     * that a DOM event listener evaluates.
+     * with for.
      */
     private static boolean returnsSnippet(Method method) {
-        Class<?> returnType = method.getReturnType();
-        return returnType == DomEventFilter.class
-                || returnType == DomEventData.class
-                || (JsSnippet.class.isAssignableFrom(returnType)
-                        && returnType.isAssignableFrom(JsFunction.class));
+        return snippetFactory(method.getReturnType()) != null;
+    }
+
+    /**
+     * Gets what creates the snippet that a method returning the given type
+     * answers with, from the call and the generic return type of the method: a
+     * {@link JsFunction} for a type that it is, or one of the snippets that a
+     * DOM event listener evaluates.
+     *
+     * @return the factory, or <code>null</code> if there is no snippet of the
+     *         type to answer with
+     */
+    private static BiFunction<JsCall, Type, JsSnippet> snippetFactory(
+            Class<?> returnType) {
+        if (returnType == DomEventFilter.class) {
+            return (call, genericType) -> DomEventFilter.ofDeclaredCall(call);
+        } else if (returnType == DomEventData.class) {
+            return DomEventData::ofDeclaredCall;
+        } else if (JsSnippet.class.isAssignableFrom(returnType)
+                && returnType.isAssignableFrom(JsFunction.class)) {
+            return (call, genericType) -> JsFunction.ofDeclaredCall(call);
+        }
+        return null;
     }
 
     /**
@@ -326,16 +345,9 @@ public final class JsDefinitionProxy {
             }
             List<Object> arguments = args == null ? List.of()
                     : Arrays.asList(args);
-            JsCall call = new JsCall(definitionType, method.getName(),
-                    arguments);
-            Class<?> returnType = method.getReturnType();
-            if (returnType == DomEventFilter.class) {
-                return DomEventFilter.ofDeclaredCall(call);
-            } else if (returnType == DomEventData.class) {
-                return DomEventData.ofDeclaredCall(call,
-                        method.getGenericReturnType());
-            }
-            return JsFunction.ofDeclaredCall(call);
+            return snippetFactory(method.getReturnType()).apply(
+                    new JsCall(definitionType, method.getName(), arguments),
+                    method.getGenericReturnType());
         }
     }
 }

@@ -49,14 +49,12 @@ import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.CspViolationReporter;
-import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.ParameterizedConstantPoolKey;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
-import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -164,7 +162,9 @@ public class ElementListenerMap extends NodeMap {
          * reads by its key.
          */
         private static ExpressionEntry forEventData(DomEventData<?> data) {
-            return forCall("d", data.getDeclaredCall());
+            return new ExpressionEntry("d", null,
+                    data.getDeclaredCall().getFunctionId(),
+                    data.getEncodedCaptures());
         }
 
         /**
@@ -177,15 +177,9 @@ public class ElementListenerMap extends NodeMap {
         }
 
         private static ExpressionEntry forFilter(DomEventFilter filter) {
-            return forCall("f", filter.getDeclaredCall());
-        }
-
-        private static ExpressionEntry forCall(String kind, JsCall call) {
-            ArrayNode captures = call.flattenArguments().stream()
-                    .map(JacksonCodec::encodeWithTypeInfo)
-                    .collect(JacksonUtils.asArray());
-            return new ExpressionEntry(kind, null, call.getFunctionId(),
-                    captures);
+            return new ExpressionEntry("f", null,
+                    filter.getDeclaredCall().getFunctionId(),
+                    filter.getEncodedCaptures());
         }
 
         /**

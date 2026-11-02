@@ -28,8 +28,11 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.jspecify.annotations.Nullable;
+import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StringUtil;
 
@@ -315,6 +318,33 @@ public record JsCall(Class<?> definitionType, String methodName,
      */
     public boolean isVariadic() {
         return resolveMethod().method().isVarArgs();
+    }
+
+    /**
+     * Encodes the arguments of this call as the captures that a snippet is sent
+     * to the client with.
+     * <p>
+     * Called when the snippet is created, so that a call of a method that does
+     * not declare a snippet, or an argument that can not be sent to the client,
+     * fails at the call that captures it rather than when the snippet is used.
+     * A snippet keeps what this returns, so that it is sent and identified by
+     * the values as they were when it was created.
+     *
+     * @return the encoded captures, not <code>null</code>
+     * @throws IllegalArgumentException
+     *             if the called method does not declare a {@link JsSnippet}
+     * @throws RuntimeException
+     *             if any argument cannot be encoded to be sent to the client
+     */
+    public ArrayNode encodeSnippetCaptures() {
+        if (!isSnippet()) {
+            throw new IllegalArgumentException("Method " + methodName + " of "
+                    + definitionType.getName()
+                    + " does not declare a JsSnippet, so a call of it runs"
+                    + " JavaScript rather than declaring a snippet");
+        }
+        return flattenArguments().stream().map(JacksonCodec::encodeWithTypeInfo)
+                .collect(JacksonUtils.asArray());
     }
 
     /**

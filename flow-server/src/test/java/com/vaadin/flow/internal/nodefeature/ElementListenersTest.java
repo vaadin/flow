@@ -30,6 +30,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
@@ -384,6 +386,34 @@ public class ElementListenersTest
     }
 
     @Test
+    void declaredEventData_valueOfAnotherType_throws() {
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put(ElementListenerMap.getEventDataKey(JS.points()),
+                "not a list");
+        DomEvent event = new DomEvent(new Element("element"), "foo",
+                fromClient);
+        DomEventData<List<Point>> points = JS.points();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> event.getEventData(points));
+    }
+
+    @Test
+    void declaredEventData_captureDetachedLater_stillReadByItsKey() {
+        Element child = new Element("span");
+        new StateTree(new UI().getInternals(), ElementChildrenList.class)
+                .getUI().getElement().appendChild(child);
+        DomEventData<Object> data = JS.echo(child);
+        String key = ElementListenerMap.getEventDataKey(data);
+
+        child.removeFromParent();
+
+        // Identified by the captures as they were when it was created, which
+        // is what the client keeps reporting the value under
+        assertEquals(key, ElementListenerMap.getEventDataKey(data));
+    }
+
+    @Test
     void addEventDataWithoutCaptures_reportedUnderExpression() {
         AtomicReference<JsonNode> eventDataReference = new AtomicReference<>();
         DomListenerRegistration registration = ns.add("foo",
@@ -481,10 +511,6 @@ public class ElementListenersTest
 
         registration.setFilter((String) null);
         assertNull(ElementListenerMap.getFilterKey(registration));
-
-        // No event data has been added, so there is no key for any expression
-        assertNull(
-                ElementListenerMap.getEventDataKey(registration, "event.key"));
     }
 
     @Test
@@ -495,22 +521,6 @@ public class ElementListenersTest
                 () -> registration.addEventData((DomEventData<?>) null));
         assertThrows(NullPointerException.class,
                 () -> registration.setFilter((DomEventFilter) null));
-    }
-
-    /**
-     * A bean that cannot be encoded since it refers to itself.
-     */
-    public static class SelfReference {
-        public SelfReference getSelf() {
-            return this;
-        }
-    }
-
-    @Test
-    void unencodableCaptureValue_throwsWhenSnippetIsCreated() {
-        SelfReference unencodable = new SelfReference();
-
-        assertThrows(RuntimeException.class, () -> JS.echo(unencodable));
     }
 
     private static ArrayNode encodeSettings(ElementListenerMap listenerMap,
@@ -809,35 +819,37 @@ public class ElementListenersTest
         assertEquals(1, eventCount.get());
     }
 
-    @Test
-    void testPreventDefaultWithFilter() {
-        // Test that preventDefault only applies to filtered events (see issue
-        // #22294)
-
-        // Create a listener with filter for space and enter keys
+    @ParameterizedTest(name = "{0}, filter set first: {1}")
+    @CsvSource({ "preventDefault, true", "preventDefault, false",
+            "stopPropagation, true", "stopPropagation, false" })
+    void sideEffectWithFilter_onlyAppliesWhenFilterPasses(String sideEffect,
+            boolean filterFirst) {
+        // See issue #22294
+        String filter = "event.key === ' ' || event.key === 'Enter'";
         DomListenerRegistration registration = ns.add("keydown", noOp);
-        registration.setFilter("event.key === ' ' || event.key === 'Enter'");
-        registration.preventDefault();
+        Runnable addSideEffect = "preventDefault".equals(sideEffect)
+                ? registration::preventDefault
+                : registration::stopPropagation;
+        if (filterFirst) {
+            registration.setFilter(filter);
+            addSideEffect.run();
+        } else {
+            addSideEffect.run();
+            registration.setFilter(filter);
+        }
 
-        // Check that the event data includes preventDefault
-        Set<String> expressions = getExpressions("keydown");
-
-        // The expressions should include:
-        // 1. The filter expression for debouncing
-        // 2. The conditional preventDefault expression
-        assertTrue(
-                expressions
-                        .contains("event.key === ' ' || event.key === 'Enter'"),
-                "Should have the filter expression");
-
-        // After the fix, preventDefault should be conditional on the filter
-        assertTrue(expressions.contains(
-                "(event.key === ' ' || event.key === 'Enter') && event.preventDefault()"),
-                "Should have conditional preventDefault expression");
-
-        // The unconditional preventDefault should NOT be present
-        assertFalse(expressions.contains("event.preventDefault()"),
-                "Should NOT have unconditional preventDefault");
+        // The filter itself, and an entry that evaluates the filter and calls
+        // the side effect when it passes; nothing that calls it regardless
+        List<JsonNode> settings = sharedSettings("keydown");
+        assertEquals(2, settings.size());
+        settings.forEach(entry -> assertEquals(filter,
+                entry.get(JsonConstants.EVENT_SETTINGS_EXPRESSION).asString()));
+        List<JsonNode> sideEffects = settings.stream().filter(
+                entry -> entry.has(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT))
+                .toList();
+        assertEquals(1, sideEffects.size());
+        assertEquals(sideEffect, sideEffects.get(0)
+                .get(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT).asString());
     }
 
     @Test
@@ -920,77 +932,6 @@ public class ElementListenersTest
     }
 
     @Test
-    void testPreventDefaultThenSetFilter() {
-        // Test that preventDefault becomes conditional even when filter is set
-        // after
-        DomListenerRegistration registration = ns.add("keydown", noOp);
-        registration.preventDefault();
-        registration.setFilter("event.key === 'Escape'");
-
-        Set<String> expressions = getExpressions("keydown");
-
-        // Should have conditional preventDefault based on the filter
-        assertTrue(
-                expressions.contains(
-                        "(event.key === 'Escape') && event.preventDefault()"),
-                "Should have conditional preventDefault expression");
-
-        // The unconditional preventDefault should NOT be present
-        assertFalse(expressions.contains("event.preventDefault()"),
-                "Should NOT have unconditional preventDefault");
-    }
-
-    @Test
-    void testSetFilterThenPreventDefault() {
-        // Test that preventDefault is conditional when filter is set before
-        DomListenerRegistration registration = ns.add("keydown", noOp);
-        registration.setFilter("event.key === 'Delete'");
-        registration.preventDefault();
-
-        Set<String> expressions = getExpressions("keydown");
-
-        // Should have conditional preventDefault based on the filter
-        assertTrue(
-                expressions.contains(
-                        "(event.key === 'Delete') && event.preventDefault()"),
-                "Should have conditional preventDefault expression");
-
-        // The unconditional preventDefault should NOT be present
-        assertFalse(expressions.contains("event.preventDefault()"),
-                "Should NOT have unconditional preventDefault");
-    }
-
-    @Test
-    void testStopPropagationWithFilter() {
-        // Test that stopPropagation only applies to filtered events
-
-        // Create a listener with filter for space and enter keys
-        DomListenerRegistration registration = ns.add("keydown", noOp);
-        registration.setFilter("event.key === ' ' || event.key === 'Enter'");
-        registration.stopPropagation();
-
-        // Check that the event data includes stopPropagation
-        Set<String> expressions = getExpressions("keydown");
-
-        // The expressions should include:
-        // 1. The filter expression for debouncing
-        // 2. The conditional stopPropagation expression
-        assertTrue(
-                expressions
-                        .contains("event.key === ' ' || event.key === 'Enter'"),
-                "Should have the filter expression");
-
-        // After the fix, stopPropagation should be conditional on the filter
-        assertTrue(expressions.contains(
-                "(event.key === ' ' || event.key === 'Enter') && event.stopPropagation()"),
-                "Should have conditional stopPropagation expression");
-
-        // The unconditional stopPropagation should NOT be present
-        assertFalse(expressions.contains("event.stopPropagation()"),
-                "Should NOT have unconditional stopPropagation");
-    }
-
-    @Test
     void testStopPropagationWithoutFilter() {
         // Test stopPropagation without filter - should apply to all events
         DomListenerRegistration registration = ns.add("keydown", noOp);
@@ -1003,47 +944,6 @@ public class ElementListenersTest
                 "Should have stopPropagation expression");
         assertEquals(1, expressions.size(),
                 "Should only have stopPropagation expression");
-    }
-
-    @Test
-    void testStopPropagationThenSetFilter() {
-        // Test that stopPropagation becomes conditional even when filter is
-        // set after
-        DomListenerRegistration registration = ns.add("keydown", noOp);
-        registration.stopPropagation();
-        registration.setFilter("event.key === 'Escape'");
-
-        Set<String> expressions = getExpressions("keydown");
-
-        // Should have conditional stopPropagation based on the filter
-        assertTrue(
-                expressions.contains(
-                        "(event.key === 'Escape') && event.stopPropagation()"),
-                "Should have conditional stopPropagation expression");
-
-        // The unconditional stopPropagation should NOT be present
-        assertFalse(expressions.contains("event.stopPropagation()"),
-                "Should NOT have unconditional stopPropagation");
-    }
-
-    @Test
-    void testSetFilterThenStopPropagation() {
-        // Test that stopPropagation is conditional when filter is set before
-        DomListenerRegistration registration = ns.add("keydown", noOp);
-        registration.setFilter("event.key === 'Delete'");
-        registration.stopPropagation();
-
-        Set<String> expressions = getExpressions("keydown");
-
-        // Should have conditional stopPropagation based on the filter
-        assertTrue(
-                expressions.contains(
-                        "(event.key === 'Delete') && event.stopPropagation()"),
-                "Should have conditional stopPropagation expression");
-
-        // The unconditional stopPropagation should NOT be present
-        assertFalse(expressions.contains("event.stopPropagation()"),
-                "Should NOT have unconditional stopPropagation");
     }
 
     @Test
@@ -1497,6 +1397,18 @@ public class ElementListenersTest
         MapPutChange change = (MapPutChange) changes.get(0);
         assertEquals(eventType, change.getKey());
         return exportSettings(change);
+    }
+
+    private List<JsonNode> sharedSettings(String eventType) {
+        MapPutChange change = (MapPutChange) collectChanges(ns).stream()
+                .filter(MapPutChange.class::isInstance)
+                .filter(c -> eventType.equals(((MapPutChange) c).getKey()))
+                .findFirst().orElseThrow();
+        ObjectNode constantPoolUpdate = JacksonUtils.createObjectNode();
+        ((ConstantPoolKey) change.getValue()).export(constantPoolUpdate);
+        JsonNode shared = constantPoolUpdate
+                .get(JacksonUtils.getKeys(constantPoolUpdate).get(0));
+        return JacksonUtils.getKeys(shared).stream().map(shared::get).toList();
     }
 
     private static ObjectNode exportSettings(MapPutChange change) {
