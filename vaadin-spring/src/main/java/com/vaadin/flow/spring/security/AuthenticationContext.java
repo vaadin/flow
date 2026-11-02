@@ -25,6 +25,7 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -39,6 +40,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
@@ -76,10 +78,34 @@ public class AuthenticationContext {
     private VaadinRolePrefixHolder rolePrefixHolder;
 
     /**
-     * Creates the context. Spring instantiates it as a bean.
+     * The strategy to read the security context from, or {@literal null} to use
+     * the one installed in {@link SecurityContextHolder} at access time.
+     */
+    private final SecurityContextHolderStrategy securityContextHolderStrategy;
+
+    /**
+     * Creates the context that reads the current authentication from the
+     * strategy installed in {@link SecurityContextHolder}.
      */
     public AuthenticationContext() {
-        // Default constructor
+        this.securityContextHolderStrategy = null;
+    }
+
+    /**
+     * Creates the context that reads the current authentication from the given
+     * {@link SecurityContextHolderStrategy} instead of the one installed in
+     * {@link SecurityContextHolder}. Spring instantiates it as a bean with the
+     * application's strategy.
+     *
+     * @param securityContextHolderStrategy
+     *            the strategy to read the current authentication from, not
+     *            {@literal null}
+     */
+    public AuthenticationContext(
+            SecurityContextHolderStrategy securityContextHolderStrategy) {
+        this.securityContextHolderStrategy = Objects.requireNonNull(
+                securityContextHolderStrategy,
+                "securityContextHolderStrategy must not be null");
     }
 
     /**
@@ -179,7 +205,7 @@ public class AuthenticationContext {
                 .ofNullable(VaadinServletResponse.getCurrent())
                 .map(VaadinServletResponse::getHttpServletResponse)
                 .orElse(null);
-        Authentication auth = SecurityContextHolder.getContext()
+        Authentication auth = getSecurityContextHolderStrategy().getContext()
                 .getAuthentication();
 
         logoutHandler.logout(request, response, auth);
@@ -210,7 +236,7 @@ public class AuthenticationContext {
 
     private Stream<String> getGrantedAuthoritiesStream() {
         return getGrantedAuthorities().stream()
-                .map(GrantedAuthority::getAuthority);
+                .map(GrantedAuthority::getAuthority).filter(Objects::nonNull);
     }
 
     /**
@@ -453,10 +479,16 @@ public class AuthenticationContext {
         this.rolePrefixHolder = rolePrefixHolder;
     }
 
-    private static Optional<Authentication> getAuthentication() {
-        return Optional.of(SecurityContextHolder.getContext())
+    private Optional<Authentication> getAuthentication() {
+        return Optional.of(getSecurityContextHolderStrategy().getContext())
                 .map(SecurityContext::getAuthentication)
                 .filter(auth -> !(auth instanceof AnonymousAuthenticationToken));
+    }
+
+    private SecurityContextHolderStrategy getSecurityContextHolderStrategy() {
+        return securityContextHolderStrategy != null
+                ? securityContextHolderStrategy
+                : SecurityContextHolder.getContextHolderStrategy();
     }
 
     /* For testing purposes */

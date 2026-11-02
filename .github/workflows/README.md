@@ -199,7 +199,9 @@ dropped, so `fix/my-thing` on a `25.4-SNAPSHOT` branch publishes
 snapshot builds of the other Vaadin repositories use, so snapshots built from
 equally named branches of two repositories resolve each other. The workflow
 comments the version and a copy-pasteable `flow-bom` import on the pull
-request, editing the same comment on every rebuild.
+request, followed by the matching `vaadin-bom` import (`25.4-SNAPSHOT` for
+the branch above) in the order Maven needs for the snapshot to win, editing
+the same comment on every rebuild.
 
 Dropping the prefix means the version is only as unique as the part of the
 branch name after the last slash: `fix/npe` and `issues/npe` both publish

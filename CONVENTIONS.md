@@ -1,8 +1,36 @@
 # Conventions
 
 The canonical list of checkable conventions for this repository. Read it in
-full when authoring or reviewing code. Design-level reasoning behind several of
-these rules lives in `guidelines/` — see `guidelines/overview.md`.
+full when authoring or reviewing code.
+
+## Conventions and Guidelines
+
+This file decides; the chapters in `guidelines/` explain. Each holds what the
+other does not, so a rule is written down once.
+
+This file holds the rules, one per paragraph: something every change in its
+scope has to follow and that a reviewer can check a diff against. Keep the
+reason short, in the same breath as the rule; reasoning that needs more room
+goes to a chapter. A rule lives here and nowhere else.
+
+A chapter in `guidelines/` holds what does not fit in such a paragraph: the
+reasoning behind a rule and the failure it prevents, how a part of Flow works,
+worked examples, and the judgment calls of a design. It links to the rule it
+explains instead of restating it. Its advice is the default approach and can
+be departed from when the situation calls for it; anything every change in its
+scope has to follow is a rule and belongs here. Read the chapters for the topic at hand, as
+mapped in `guidelines/overview.md`.
+
+When this file and a chapter disagree, this file applies and the chapter is
+corrected.
+
+To add guidance, write the rule here, in the section it belongs to, and end it
+with "See `guidelines/<chapter>.md`." when the reasoning needs more room than a
+sentence. Write that reasoning in the chapter. Build and test commands are in
+`CLAUDE.md`; commit messages and pull request descriptions are covered by the
+skill linked from the Commit & PR Hygiene section below. The guidelines bot in
+`.github/workflows/guidelines-bot.md` follows the same division, and only edits
+the files that workflow lists.
 
 ## Public API
 
@@ -89,6 +117,13 @@ Name a type after what it is, not after what the code around it does with it. A
 type the application writes is named for what it declares, not for the
 machinery that consumes it.
 
+Name a boolean property after its positive state — `isEnabled()`, not
+`isDisabled()` — so that a negated check never reads as a double negative.
+The getter and setter share that polarity, and a wrapper flips it at the
+element boundary when the HTML attribute is negative. New API that joins an
+existing family with a negative name, such as `isInvalid()` from
+`HasValidation`, keeps that polarity. See `guidelines/design.md`.
+
 Name a component that wraps an HTML element after the element itself, and add
 the `Native` prefix only when the plain name is taken or when it invites a
 mistake that goes unnoticed. Do not introduce further `Html…` names. See
@@ -125,6 +160,23 @@ shape at the boundary.
 Put `@Nullable` on the declared type (`ValueSignal<@Nullable X>`). NullAway
 infers it for the constructor, so no repeated type argument or type witness is
 needed.
+
+## `toString()`
+
+Keep `toString()` for people — logs, debugger views, exception messages — and
+never let code, a wire format, a CSS value or a JavaScript name depend on its
+output. A string the program needs gets a named method (`getValue()`,
+`getClientValue()`, `toJson()`), and callers use that method. See
+`guidelines/design.md`.
+
+Make `toString()` cheap, free of side effects and unable to throw. Read a
+signal with `peek()` in it, never `get()`.
+
+Start `toString()` with `getClass().getSimpleName()` rather than a literal
+class name, and follow the `SimpleName[…]` shape. Keep `super.toString()` when
+the identity hash is what tells instances apart.
+
+Never put a password, token or other credential in `toString()`.
 
 ## Client-Side JavaScript
 
@@ -306,6 +358,12 @@ data reads as a contract that the code does not have.
 When changing the setup of an existing test, keep every case it already
 covered. Replacing a mock or a fixture must not drop assertions that still
 apply.
+
+When a test checks an exception or log message, or a `toString()` that is
+only part of what the case is about, assert that it contains the parts that
+matter, such as the class name and the offending value, not the exact wording.
+A test whose subject is the `toString()` itself, like the `toString` cases of
+the signal tests, asserts the exact output.
 
 Do not depend on JVM defaults such as locale, time zone or charset. Set them
 explicitly, or pick a value that differs from the default, so the case cannot
