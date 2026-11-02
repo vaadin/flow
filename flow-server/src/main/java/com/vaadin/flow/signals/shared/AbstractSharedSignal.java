@@ -593,6 +593,7 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
      * @return the converted JSON node, not <code>null</code>
      * @throws InvalidSignalValueTypeException
      *             if the value is not an instance of the given type
+     * @since 25.2.11
      */
     protected static JsonNode toJson(Class<?> valueType,
             @Nullable Object value) {
