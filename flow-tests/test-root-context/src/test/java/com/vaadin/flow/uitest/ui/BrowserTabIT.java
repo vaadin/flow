@@ -22,6 +22,7 @@ import org.openqa.selenium.JavascriptExecutor;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+import static com.vaadin.flow.uitest.ui.BrowserTabView.OTHER_VIEW_ID;
 import static com.vaadin.flow.uitest.ui.BrowserTabView.TOKEN_ID;
 
 public class BrowserTabIT extends ChromeBrowserTest {
@@ -35,9 +36,9 @@ public class BrowserTabIT extends ChromeBrowserTest {
         Assert.assertEquals("Reload should keep the tab attribute", token,
                 getToken());
 
-        getDriver()
-                .get(getRootURL() + "/view/com.vaadin.flow.uitest.ui.PageView");
-        waitForElementPresent(By.id("input"));
+        getDriver().get(getRootURL()
+                + "/view/com.vaadin.flow.uitest.ui.BrowserTabView.OtherView");
+        waitForElementPresent(By.id(OTHER_VIEW_ID));
         open();
         Assert.assertEquals(
                 "Navigating away and back should keep the tab attribute", token,

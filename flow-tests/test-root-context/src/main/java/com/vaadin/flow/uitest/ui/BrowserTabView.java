@@ -25,6 +25,7 @@ import com.vaadin.flow.server.BrowserTab;
 public class BrowserTabView extends Div {
 
     static final String TOKEN_ID = "token";
+    static final String OTHER_VIEW_ID = "other-view";
 
     public BrowserTabView() {
         BrowserTab tab = BrowserTab.getCurrent();
@@ -36,5 +37,12 @@ public class BrowserTabView extends Div {
         Div tokenDiv = new Div(token);
         tokenDiv.setId(TOKEN_ID);
         add(tokenDiv);
+    }
+
+    @Route("com.vaadin.flow.uitest.ui.BrowserTabView.OtherView")
+    public static class OtherView extends Div {
+        public OtherView() {
+            setId(OTHER_VIEW_ID);
+        }
     }
 }
