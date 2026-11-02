@@ -69,8 +69,11 @@ import com.vaadin.flow.js.JsSnippets;
  * <p>
  * The captured values are encoded when the event data is created, so a value
  * that can not be sent to the client fails right away. An element or component
- * captured this way must be attached when the event data is added to a
- * listener, since one that is not is sent as <code>null</code>.
+ * captured this way must already be attached when the event data is created,
+ * since one that is not is sent as <code>null</code>, even if it is attached by
+ * the time the event data is added to a listener. Create the event data after
+ * attaching, for instance in an attach listener, rather than in a field
+ * initializer.
  *
  * @param <T>
  *            the type of the value
