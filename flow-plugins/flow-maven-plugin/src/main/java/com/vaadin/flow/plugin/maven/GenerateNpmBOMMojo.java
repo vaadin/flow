@@ -152,10 +152,12 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
         Invoker invoker = new DefaultInvoker();
         try {
             // Use the same Node.js and npm as the rest of the frontend build,
-            // not whatever happens to be first on the PATH
+            // not whatever happens to be first on the PATH. The CycloneDX tool
+            // reads the dependency tree with npm, whichever package manager
+            // installed it.
             FrontendTools tools = new FrontendTools(
                     BuildFrontendUtil.getFrontendToolsSettings(this));
-            request.setProperties(getProperties(tools.getNpmExecutable()));
+            request.setProperties(getProperties(tools.getNpxExecutable()));
             addNodeToPath(request, tools.getNodeExecutable());
 
             // the execution will fail if the directory does not exist
@@ -181,6 +183,8 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
                         .withFrontendGeneratedFolder(generatedTsFolder())
                         .withNodeVersion(nodeVersion())
                         .withNodeDownloadRoot(nodeDownloadRoot())
+                        .withEnablePnpm(pnpmEnable()).withEnableBun(bunEnable())
+                        .useGlobalPnpm(useGlobalPnpm())
                         .withHomeNodeExecRequired(requireHomeNodeExec())
                         .setJavaResourceFolder(javaResourceFolder())
                         .withProductionMode(productionMode)
@@ -212,7 +216,7 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
      * that the CycloneDX tool, which starts with {@code #!/usr/bin/env node},
      * runs on the same Node.js as npm.
      */
-    private static void addNodeToPath(InvocationRequest request,
+    static void addNodeToPath(InvocationRequest request,
             String nodeExecutable) {
         String nodeDir = new File(nodeExecutable).getParent();
         // The variable is named "Path" on Windows
@@ -223,20 +227,20 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
                 path == null ? nodeDir : nodeDir + File.pathSeparator + path);
     }
 
-    // The npm command can contain paths with spaces, e.g. the user home
+    // The npx command can contain paths with spaces, e.g. the user home
     private static String quote(String arg) {
         return arg.contains(" ") ? "\"" + arg + "\"" : arg;
     }
 
-    private Properties getProperties(List<String> npmCommand) {
+    Properties getProperties(List<String> npxCommand) {
         Properties properties = new Properties();
-        properties.setProperty("exec.executable", npmCommand.get(0));
-        String npmArgs = npmCommand.stream().skip(1)
+        properties.setProperty("exec.executable", npxCommand.get(0));
+        String npxArgs = npxCommand.stream().skip(1)
                 .map(GenerateNpmBOMMojo::quote)
                 .collect(Collectors.joining(" "));
         properties.setProperty("exec.args",
-                npmArgs + (npmArgs.isEmpty() ? "" : " ")
-                        + "exec --yes -- @cyclonedx/cyclonedx-npm"
+                npxArgs + (npxArgs.isEmpty() ? "" : " ")
+                        + "--yes @cyclonedx/cyclonedx-npm"
                         + (ignoreNpmErrors ? " --ignore-npm-errors" : "")
                         + (packageLockOnly ? " --package-lock-only" : "")
                         + (flattenComponents ? " --flatten-components" : "")

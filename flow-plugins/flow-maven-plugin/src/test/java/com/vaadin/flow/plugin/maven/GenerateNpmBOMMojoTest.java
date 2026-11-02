@@ -20,9 +20,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.shared.invoker.DefaultInvocationRequest;
+import org.apache.maven.shared.invoker.InvocationRequest;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +45,7 @@ import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -137,9 +143,42 @@ class GenerateNpmBOMMojoTest {
 
     @Test
     void shouldGenerateSBOM() throws Exception {
+        Path pnpmLock = Files.createFile(tempDir.resolve("pnpm-lock.yaml"));
         assertFalse(Files.exists(Paths.get(bomFilename)));
         mojo.execute();
         assertTrue(Files.exists(Paths.get(bomFilename)));
+        assertTrue(Files.exists(pnpmLock),
+                "pnpm-lock.yaml should not be removed");
+    }
+
+    @Test
+    void getProperties_runsToolWithGivenNpx() {
+        String node = new File("node").getAbsolutePath();
+        String npxCli = new File("dir with space", "npx-cli.js")
+                .getAbsolutePath();
+
+        Properties properties = mojo.getProperties(List.of(node, npxCli));
+
+        assertEquals(node, properties.getProperty("exec.executable"));
+        assertTrue(
+                properties.getProperty("exec.args").startsWith(
+                        "\"" + npxCli + "\" --yes @cyclonedx/cyclonedx-npm "),
+                properties.getProperty("exec.args"));
+    }
+
+    @Test
+    void addNodeToPath_putsNodeDirectoryFirst() {
+        File nodeDir = new File("node-dir").getAbsoluteFile();
+        InvocationRequest request = new DefaultInvocationRequest();
+
+        GenerateNpmBOMMojo.addNodeToPath(request,
+                new File(nodeDir, "node").getPath());
+
+        String path = request.getShellEnvironments().entrySet().stream()
+                .filter(entry -> "PATH".equalsIgnoreCase(entry.getKey()))
+                .map(Map.Entry::getValue).findFirst().orElseThrow();
+        assertEquals(nodeDir.getPath(),
+                path.split(Pattern.quote(File.pathSeparator))[0]);
     }
 
     @Test
