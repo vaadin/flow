@@ -128,7 +128,7 @@
     <!-- Plugins -->
     <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
     <maven.surefire.plugin.version>3.6.1</maven.surefire.plugin.version>
-    <jacoco.plugin.version>0.8.15</jacoco.plugin.version>
+    <jacoco.plugin.version>0.8.16</jacoco.plugin.version>
     <maven.failsafe.plugin.version>3.5.6</maven.failsafe.plugin.version>
     <maven.war.plugin.version>3.5.1</maven.war.plugin.version>
     <maven.jar.plugin.version>3.5.1</maven.jar.plugin.version>

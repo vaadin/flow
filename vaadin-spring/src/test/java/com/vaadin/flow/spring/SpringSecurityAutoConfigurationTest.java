@@ -24,6 +24,8 @@ import java.security.Principal;
 import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -34,10 +36,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
+import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Location;
@@ -50,15 +55,18 @@ import com.vaadin.flow.server.auth.NavigationAccessChecker;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
 import com.vaadin.flow.server.auth.RoutePathAccessChecker;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
 import com.vaadin.flow.spring.security.SpringAccessPathChecker;
 import com.vaadin.flow.spring.security.SpringNavigationAccessControl;
+import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategy;
 import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -195,6 +203,66 @@ class SpringSecurityAutoConfigurationTest {
         }
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void securityBeans_readAuthenticationFromStrategyBean(
+            boolean customStrategyBean) {
+        SecurityContextHolderStrategy installedStrategy = SecurityContextHolder
+                .getContextHolderStrategy();
+        WebInvocationPrivilegeEvaluator evaluator = mock(
+                WebInvocationPrivilegeEvaluator.class);
+        var runner = this.contextRunner.withBean(
+                WebInvocationPrivilegeEvaluator.class, () -> evaluator);
+        if (customStrategyBean) {
+            runner = runner.withBean(SecurityContextHolderStrategy.class,
+                    SimpleSecurityContextHolderStrategy::new);
+        }
+        try {
+            runner.run(context -> assertSecurityBeansReadStrategyBean(context,
+                    evaluator, customStrategyBean));
+        } finally {
+            SecurityContextHolder.clearContext();
+            SecurityContextHolder.setContextHolderStrategy(installedStrategy);
+        }
+    }
+
+    private static void assertSecurityBeansReadStrategyBean(
+            AssertableWebApplicationContext context,
+            WebInvocationPrivilegeEvaluator evaluator,
+            boolean customStrategyBean) {
+        SecurityContextHolderStrategy strategyBean = context
+                .getBean(SecurityContextHolderStrategy.class);
+        assertThat(strategyBean).isInstanceOf(
+                customStrategyBean ? SimpleSecurityContextHolderStrategy.class
+                        : VaadinAwareSecurityContextHolderStrategy.class);
+        assertThat(SecurityContextHolder.getContextHolderStrategy())
+                .isSameAs(strategyBean);
+
+        // Replace the installed strategy with one that sees no
+        // authentication, so the beans only find the user through the
+        // injected strategy bean
+        SecurityContextHolderStrategy otherStrategy = mock(
+                SecurityContextHolderStrategy.class);
+        when(otherStrategy.getContext())
+                .thenReturn(SecurityContextHolder.createEmptyContext());
+        SecurityContextHolder.setContextHolderStrategy(otherStrategy);
+
+        var user = new UsernamePasswordAuthenticationToken("user", "n/a",
+                AuthorityUtils.createAuthorityList("ROLE_USER"));
+        SecurityContext securityContext = strategyBean.createEmptyContext();
+        securityContext.setAuthentication(user);
+        strategyBean.setContext(securityContext);
+        try {
+            assertThat(context.getBean(AuthenticationContext.class)
+                    .getPrincipalName()).contains("user");
+            context.getBean(AccessPathChecker.class).hasAccess("protected",
+                    user, role -> false);
+            verify(evaluator).isAllowed(anyString(), eq(user));
+        } finally {
+            strategyBean.clearContext();
+        }
+    }
+
     @Test
     void securityBeansAreSerializable() {
         this.contextRunner.run((context) -> {
@@ -301,6 +369,32 @@ class SpringSecurityAutoConfigurationTest {
         NavigationAccessControlConfigurer navigationAccessCheckersConfigurer() {
             return new NavigationAccessControlConfigurer()
                     .withNavigationAccessChecker(CUSTOM);
+        }
+    }
+
+    private static class SimpleSecurityContextHolderStrategy
+            implements SecurityContextHolderStrategy {
+
+        private SecurityContext context = createEmptyContext();
+
+        @Override
+        public void clearContext() {
+            context = createEmptyContext();
+        }
+
+        @Override
+        public SecurityContext getContext() {
+            return context;
+        }
+
+        @Override
+        public void setContext(SecurityContext context) {
+            this.context = context;
+        }
+
+        @Override
+        public SecurityContext createEmptyContext() {
+            return new SecurityContextImpl();
         }
     }
 
