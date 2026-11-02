@@ -224,14 +224,14 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
                 .filter("PATH"::equalsIgnoreCase).findFirst().orElse("PATH");
         String path = System.getenv(pathKey);
         request.addShellEnvironment(pathKey,
-                path == null ? nodeDir : nodeDir + File.pathSeparator + path);
+                path == null ? nodeDir : (nodeDir + File.pathSeparator + path));
     }
 
     // The npx command can contain paths with spaces, e.g. the user home.
     // Quotes inside a path are not escaped, as the paths come from the
     // resolved Node.js installation.
     private static String quote(String arg) {
-        return arg.contains(" ") ? "\"" + arg + "\"" : arg;
+        return arg.contains(" ") ? ("\"" + arg + "\"") : arg;
     }
 
     Properties getProperties(List<String> npxCommand) {
