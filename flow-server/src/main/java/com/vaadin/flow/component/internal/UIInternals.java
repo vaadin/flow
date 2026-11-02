@@ -65,6 +65,7 @@ import com.vaadin.flow.component.webshare.WebShareSupport;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
@@ -82,8 +83,10 @@ import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.internal.streams.ActiveTransfer;
 import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
@@ -120,6 +123,8 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * @since 1.0
  */
 public class UIInternals implements Serializable {
+
+    private static final ChunkJs CHUNK_JS = JsSnippets.of(ChunkJs.class);
 
     private static final Pattern APP_ID_REPLACE_PATTERN = Pattern
             .compile("-\\d+$");
@@ -1457,8 +1462,8 @@ public class UIInternals implements Serializable {
         } else {
             chunkIds.add(BundleUtils.getChunkId(componentClass));
         }
-        chunkIds.forEach(chunkId -> ui.getPage().addDynamicImport(
-                "return window.Vaadin.Flow.loadOnDemand('" + chunkId + "');"));
+        chunkIds.forEach(chunkId -> ui.getPage()
+                .addDynamicImport(CHUNK_JS.loadChunk(chunkId)));
     }
 
     private static void collectProductionChunkIds(
@@ -2489,5 +2494,28 @@ public class UIInternals implements Serializable {
         @JsExpression("if(window.Vaadin.Flow.navigation) { window.addEventListener('vaadin-navigated', function(event) {"
                 + SET_TITLE + "}, {once:true}); }  else { " + SET_TITLE + " }")
         PendingJavaScriptResult setTitleAfterNavigation(String title);
+    }
+
+    /**
+     * How the chunk of a component is loaded, as a JavaScript definition for
+     * {@link JsSnippets#of(Class)}, so that loading it compiles nothing in the
+     * browser.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    @JsDefinition
+    public interface ChunkJs extends Serializable {
+
+        /**
+         * Declares the function that loads a chunk, for
+         * {@link Page#addDynamicImport(JsFunction)}.
+         *
+         * @param chunkId
+         *            the id of the chunk to load
+         * @return the function, which returns the promise of the chunk
+         */
+        @JsExpression("return window.Vaadin.Flow.loadOnDemand($0);")
+        @JsCalledWith({})
+        JsFunction loadChunk(String chunkId);
     }
 }

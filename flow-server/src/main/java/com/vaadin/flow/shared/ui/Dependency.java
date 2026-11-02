@@ -19,7 +19,12 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+
+import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
 
 /**
  * Represents an html import, stylesheet or JavaScript to include on the page.
@@ -60,6 +65,7 @@ public class Dependency implements Serializable {
     private final LoadMode loadMode;
     private String id;
     private final String layer;
+    private final JsFunction dynamicImport;
 
     /**
      * Creates a new dependency of the given type, to be loaded from the given
@@ -148,6 +154,7 @@ public class Dependency implements Serializable {
         this.loadMode = loadMode;
         this.id = id;
         this.layer = layer;
+        this.dynamicImport = null;
     }
 
     /**
@@ -169,6 +176,31 @@ public class Dependency implements Serializable {
         // adding an element into the document head right away (no client side
         // processing is involved).
         this(type, expression, LoadMode.LAZY);
+    }
+
+    /**
+     * Creates a new {@link Type#DYNAMIC_IMPORT} dependency, loaded by calling
+     * the given function, which is supposed to return a {@code Promise}.
+     * <p>
+     * The created instance dependency mode is {@link LoadMode#LAZY}. Its URL is
+     * the JSON the function is sent to the browser as, which tells apart
+     * dependencies that load different things.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param dynamicImport
+     *            the function that loads the dependency, not {@code null}
+     */
+    public Dependency(JsFunction dynamicImport) {
+        // LAZY for the same reason as in Dependency(Type, String)
+        this.type = Type.DYNAMIC_IMPORT;
+        this.dynamicImport = Objects.requireNonNull(dynamicImport,
+                "dynamicImport cannot be null");
+        this.url = JacksonUtils.getMapper().writeValueAsString(
+                JacksonCodec.encodeWithTypeInfo(dynamicImport));
+        this.loadMode = LoadMode.LAZY;
+        this.id = null;
+        this.layer = null;
     }
 
     /**
@@ -222,6 +254,20 @@ public class Dependency implements Serializable {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getLayer() {
         return layer;
+    }
+
+    /**
+     * Gets the function that loads a {@link Type#DYNAMIC_IMPORT} dependency
+     * created with {@link #Dependency(JsFunction)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @return the function, or {@code null} for a dependency that is loaded
+     *         from its URL or a JavaScript expression
+     */
+    @JsonIgnore
+    public JsFunction getDynamicImport() {
+        return dynamicImport;
     }
 
     @Override

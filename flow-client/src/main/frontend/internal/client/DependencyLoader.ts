@@ -29,6 +29,7 @@ import {
 import type { ResourceLoadEvent, ResourceLoadListener } from './ResourceRegistry';
 import { Console } from './Console';
 import { getScheduler } from './TrackingScheduler';
+import { decodeWithTypeInfo } from './flow/util/ClientJsonCodec';
 
 // com.vaadin.flow.shared.ui.Dependency
 const KEY_URL = 'url';
@@ -125,7 +126,12 @@ export class DependencyLoader {
       const resourceLoader = this.#getResourceLoader(type, loadMode, dependencyId, layer);
 
       if (type === 'DYNAMIC_IMPORT') {
-        this.#loadDependencyEagerly(dependency[KEY_URL] as string, resourceLoader);
+        const dynamicImport = dependency[KEY_URL];
+        if (typeof dynamicImport === 'string') {
+          this.#loadDependencyEagerly(dynamicImport, resourceLoader);
+        } else {
+          this.#loadDependencyEagerly(JSON.stringify(dynamicImport), this.#getFunctionImportLoader(dynamicImport));
+        }
       } else {
         switch (loadMode) {
           case 'EAGER':
@@ -143,6 +149,14 @@ export class DependencyLoader {
       }
     }
     return lazyDependencies;
+  }
+
+  // A dynamic import sent as a function value (@v-fn) rather than as an
+  // expression, which is decoded instead of compiled from a string
+  #getFunctionImportLoader(dynamicImport: unknown): Loader {
+    const load = decodeWithTypeInfo(this.#registry.getStateTree(), dynamicImport) as () => unknown;
+    const resourceLoader = this.#registry.getResourceLoader();
+    return (description, listener) => resourceLoader.loadDynamicImport(description, listener, load);
   }
 
   #getDependencyUrl(dependency: Dependency): string {

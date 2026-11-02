@@ -252,7 +252,12 @@ public class UidlWriter implements Serializable {
             ResolveContext context) {
         ObjectNode dependencyJson = JacksonUtils.getMapper()
                 .valueToTree(dependency);
-        if (dependency.getLoadMode() == LoadMode.INLINE) {
+        if (dependency.getDynamicImport() != null) {
+            // Sent as the function value rather than the string that keys it,
+            // so the client decodes it instead of compiling an expression
+            dependencyJson.set(Dependency.KEY_URL, JacksonCodec
+                    .encodeWithTypeInfo(dependency.getDynamicImport()));
+        } else if (dependency.getLoadMode() == LoadMode.INLINE) {
             String contents = getDependencyContents(dependency.getUrl(),
                     context);
             if (dependency.getLayer() != null) {

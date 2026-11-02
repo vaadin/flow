@@ -45,7 +45,8 @@ function makeRegistry() {
     completeAll,
     registry: testRegistry({
       URIResolver: { resolveVaadinUri: (uri: string) => `resolved:${uri}` },
-      ResourceLoader: resourceLoader
+      ResourceLoader: resourceLoader,
+      StateTree: {}
     })
   };
   active.push(fixture);
@@ -112,6 +113,27 @@ describe('DependencyLoader (class)', () => {
     // DYNAMIC_IMPORT is always eager, so it loads immediately.
     const call = registry.calls.find((c) => c.method === 'loadDynamicImport');
     expect(call?.args[0]).to.equal('import("x")');
+  });
+
+  it('loads a dynamic import sent as a function by calling the function from the bundle', () => {
+    // Registered as the generated bundle registers a snippet called with no parameters
+    const global = window as unknown as { Vaadin?: { Flow?: { jsSnippets?: Record<string, unknown> } } };
+    global.Vaadin ??= {};
+    global.Vaadin.Flow ??= {};
+    const snippets = (global.Vaadin.Flow.jsSnippets ??= {});
+    snippets['import-fn'] = ($0: unknown) => () => `loaded ${String($0)}`;
+    const dynamicImport = { '@v-fn': { id: 'import-fn', captures: ['chunk-7'] } };
+    const registry = makeRegistry();
+    try {
+      new DependencyLoader(registry.registry).loadDependencies(
+        new Map([['LAZY', [{ type: 'DYNAMIC_IMPORT', url: dynamicImport }]]])
+      );
+    } finally {
+      delete snippets['import-fn'];
+    }
+    const call = registry.calls.find((c) => c.method === 'loadDynamicImport');
+    expect(call?.args[0]).to.equal(JSON.stringify(dynamicImport));
+    expect((call?.args[2] as () => unknown)()).to.equal('loaded chunk-7');
   });
 
   it('defers lazy dependencies until after eager ones complete', async () => {

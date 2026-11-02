@@ -44,6 +44,7 @@ import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.CspMode;
 import com.vaadin.flow.server.CspViolationException;
 import com.vaadin.flow.server.InitParameters;
@@ -424,7 +425,11 @@ public class Page implements Serializable {
      * {@code Promise} of the {@code expression} is completed. It behaves like
      * other dependencies ({@link #addJavaScript(String)},
      * {@link #addJsModule(String)}, etc.)
-     *
+     * <p>
+     * The browser compiles the expression from a string, which a Content
+     * Security Policy without {@code unsafe-eval} blocks. Use
+     * {@link #addDynamicImport(JsFunction)} with a function declared by a
+     * {@link JsDefinition} interface to keep the JavaScript in the bundle.
      *
      * @param expression
      *            the JavaScript expression which return a Promise
@@ -435,6 +440,40 @@ public class Page implements Serializable {
     public void addDynamicImport(String expression) {
         CspViolationReporter.reportStringJavaScript();
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
+    }
+
+    /**
+     * Adds a dynamic import that calls the given function, which is supposed to
+     * return a JavaScript {@code Promise}.
+     * <p>
+     * No change will be applied on the client side until the resulting
+     * {@code Promise} is completed, as with {@link #addDynamicImport(String)}.
+     * Unlike that method, which sends an expression that the browser compiles,
+     * this one sends a function value, so a function declared by a
+     * {@link JsDefinition} interface and obtained from
+     * {@link JsSnippets#of(Class)} loads without anything being compiled in the
+     * browser:
+     *
+     * <pre>
+     * &#64;JsDefinition
+     * public interface ElementsJs extends Serializable {
+     *     &#64;JsExpression("return customElements.whenDefined($0);")
+     *     &#64;JsCalledWith({})
+     *     JsFunction whenDefined(String tagName);
+     * }
+     *
+     * page.addDynamicImport(
+     *         JsSnippets.of(ElementsJs.class).whenDefined("my-chart"));
+     * </pre>
+     *
+     * A function that is added again with the same captured values is loaded
+     * only once.
+     *
+     * @param dynamicImport
+     *            the function that returns a Promise, not {@code null}
+     */
+    public void addDynamicImport(JsFunction dynamicImport) {
+        addDependency(new Dependency(dynamicImport));
     }
 
     /**
