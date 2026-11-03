@@ -80,6 +80,17 @@ public class PushIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void silentlyLostStreamIsReplaced() {
+        waitForServerCounterAbove(0);
+        findElement(By.id("loseStreamSilently")).click();
+        int counter = getServerCounter();
+
+        // The client notices after two keep-alive intervals of silence, 2 s
+        // each in this module, and the held pushes follow on the new stream
+        waitUntil(driver -> getServerCounter() > counter + 1, 15);
+    }
+
+    @Test
     public void pushWorksAfterRefresh() {
         waitForServerCounterAbove(0);
         getDriver().navigate().refresh();

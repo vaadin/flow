@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.uitest.ssepure;
 
+import jakarta.servlet.AsyncContext;
+
+import java.lang.reflect.Method;
+
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
@@ -22,6 +26,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.communication.SsePushConnection;
 
 @Route("")
 public class PushView extends Div {
@@ -54,6 +59,13 @@ public class PushView extends Div {
                                 event.getSource().getUI().orElseThrow())) {
                     {
                         setId("pushLargeMessage");
+                    }
+                },
+                new NativeButton("Lose the stream silently",
+                        event -> loseStreamSilently(
+                                event.getSource().getUI().orElseThrow())) {
+                    {
+                        setId("loseStreamSilently");
                     }
                 }, message);
     }
@@ -98,6 +110,26 @@ public class PushView extends Div {
     private void pushLargeMessage(UI ui) {
         Thread.ofVirtual().start(() -> ui
                 .access(() -> message.setText(createLargeMessage(20_000))));
+    }
+
+    /**
+     * Makes the server give up the stream without ending it, as when writing to
+     * it has failed while the client has not noticed, e.g. after a network
+     * change. The server holds the pushes for the next stream, and the client
+     * sees nothing more on this one.
+     */
+    private static void loseStreamSilently(UI ui) {
+        SsePushConnection connection = (SsePushConnection) ui.getInternals()
+                .getPushConnection();
+        try {
+            Method getAsyncContext = SsePushConnection.class
+                    .getDeclaredMethod("getAsyncContext");
+            getAsyncContext.setAccessible(true);
+            connection.connectionLost(
+                    (AsyncContext) getAsyncContext.invoke(connection));
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private static void increment(Span counter) {

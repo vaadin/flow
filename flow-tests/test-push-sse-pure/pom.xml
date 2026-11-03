@@ -37,6 +37,13 @@
         <groupId>org.eclipse.jetty.ee10</groupId>
         <artifactId>jetty-ee10-maven-plugin</artifactId>
         <version>${jetty.version}</version>
+        <configuration>
+          <systemProperties>
+            <!-- Short, so that the client notices a silently lost stream
+                 within seconds in PushIT -->
+            <vaadin.pushSseKeepAliveInterval>2</vaadin.pushSseKeepAliveInterval>
+          </systemProperties>
+        </configuration>
         <executions>
           <!-- start and stop jetty (running our app) when running
                         integration tests -->
