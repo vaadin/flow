@@ -67,6 +67,11 @@ import com.vaadin.flow.js.JsSnippets;
  * before the filter is set on a listener. So do not create the filter in a
  * field initializer. Create it after attaching, for example in an attach
  * listener.
+ * <p>
+ * The browser also gets <code>null</code> for a captured element or component
+ * that is detached after the filter is created, for as long as it stays
+ * detached. A declared expression that uses such a captured value must handle
+ * <code>null</code>.
  *
  * @see JsSnippets#of(Class)
  * @see DomEventData

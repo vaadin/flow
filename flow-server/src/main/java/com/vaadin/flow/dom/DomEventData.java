@@ -80,6 +80,11 @@ import com.vaadin.flow.js.JsSnippets;
  * before the event data is added to a listener. So do not create the event data
  * in a field initializer. Create it after attaching, for example in an attach
  * listener.
+ * <p>
+ * The browser also gets <code>null</code> for a captured element or component
+ * that is detached after the event data is created, for as long as it stays
+ * detached. A declared expression that uses such a captured value must handle
+ * <code>null</code>.
  *
  * @param <T>
  *            the type of the value

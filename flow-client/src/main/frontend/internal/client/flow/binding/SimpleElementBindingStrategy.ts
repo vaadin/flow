@@ -72,7 +72,7 @@ import type { BindingStrategy } from './BindingStrategy';
 import { Debouncer } from './Debouncer';
 import { bindServerEventHandlerNames } from './ServerEventHandlerBinder';
 import { Console } from '../../Console';
-import { decodeWithTypeInfo, evaluateDeclaredSnippet } from '../util/ClientJsonCodec';
+import { decodeCopyWithTypeInfo, evaluateDeclaredSnippet } from '../util/ClientJsonCodec';
 
 // com.vaadin.client.flow.binding.SimpleElementBindingStrategy.HIDDEN_ATTRIBUTE
 const HIDDEN_ATTRIBUTE = 'hidden';
@@ -1282,9 +1282,10 @@ function handleDomEvent(event: Event, context: BindingContext): void {
     assert(settings !== undefined, 'There must be shared settings for a captured expression');
     entrySettings[key] = debounce;
 
-    const decodedCaptures = captures.map((capture) =>
-      decodeWithTypeInfo(node.getTree(), withoutRemovedNodes(node.getTree(), capture))
-    );
+    // A capture keeps the id of the node it had when the listener was set up.
+    // If the server has removed that node since, the event is still sent, and
+    // the function gets null for the removed node.
+    const decodedCaptures = captures.map((capture) => decodeCopyWithTypeInfo(node.getTree(), capture));
     eventData![key] = evaluateEntry(settings, decodedCaptures, event, element);
   }
 
@@ -1495,29 +1496,6 @@ function updateAttributeValue(
     // text, where a JavaScript array would join its elements with commas.
     setElementAttribute(element, attribute, Array.isArray(value) ? JSON.stringify(value) : String(value));
   }
-}
-
-/**
- * Returns a copy of a capture value where each reference to a state node that
- * is no longer in the tree is replaced by null. A capture keeps the id of the
- * node it had when the listener was set up. If the server removes that node
- * later, the event must still be sent, with null for the removed node.
- *
- * The copy also keeps the stored capture unchanged, because decoding replaces
- * values in the object that it decodes.
- */
-function withoutRemovedNodes(tree: StateTree, value: unknown): unknown {
-  if (Array.isArray(value)) {
-    return value.map((item) => withoutRemovedNodes(tree, item));
-  }
-  if (typeof value !== 'object' || value === null) {
-    return value;
-  }
-  const nodeId = (value as Record<string, unknown>)['@v-node'];
-  if (typeof nodeId === 'number' && tree.getNode(nodeId) === null) {
-    return null;
-  }
-  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, withoutRemovedNodes(tree, item)]));
 }
 
 /**

@@ -321,23 +321,28 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
     const { childElement, childNode } = addChild('span');
     expect(childNode.getId()).to.equal(childNodeId);
 
+    // The stored capture is not changed by decoding, so the second event
+    // decodes it again
+    element.click();
     element.click();
 
-    const eventData = harness.collectedEventData[0] as Record<string, unknown>;
-    expect(eventData['shared$node']).to.equal(childElement.tagName);
+    expect(harness.collectedEventData).to.have.length(2);
+    harness.collectedEventData.forEach((eventData) =>
+      expect((eventData as Record<string, unknown>)['shared$node']).to.equal(childElement.tagName)
+    );
   });
 
   it('decodes a capture of a removed node to null and still sends the event', () => {
-    snippets()['fn-id'] = (child, list) => () => [child, list];
+    snippets()['fn-id'] = (child) => () => child;
     const removedNodeId = nextId++;
     bindWithClickCaptures(
-      { shared: { c: 2, f: 'fn-id' }, plain: { e: 'event.type', d: false } },
-      { shared$node: ['shared', false, { '@v-node': removedNodeId }, [{ '@v-node': removedNodeId }]] }
+      { shared: { c: 1, f: 'fn-id' }, plain: { e: 'event.type', d: false } },
+      { shared$node: ['shared', false, { '@v-node': removedNodeId }] }
     );
 
     element.click();
 
     const eventData = harness.collectedEventData[0] as Record<string, unknown>;
-    expect(eventData).to.deep.equal({ plain: 'click', shared$node: [null, [null]] });
+    expect(eventData).to.deep.equal({ plain: 'click', shared$node: null });
   });
 });

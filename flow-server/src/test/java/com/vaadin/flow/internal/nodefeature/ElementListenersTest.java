@@ -510,15 +510,20 @@ public class ElementListenersTest
         DomListenerRegistration escape = ns.add("keydown", noOp)
                 .setFilter(JS.isKey("Escape"))
                 .debounce(300, DebouncePhase.TRAILING);
+        // Same filter and captures as the previous listener, so the debounce
+        // settings of both are merged
+        ns.add("keydown", noOp).setFilter(JS.isKey("Escape")).debounce(300,
+                DebouncePhase.LEADING);
 
         ConstantPool constantPool = new ConstantPool();
         ArrayNode value = encodeSettings(ns, "keydown", constantPool);
         ObjectNode captures = (ObjectNode) value.get(1);
+        assertEquals(2, JacksonUtils.getKeys(captures).size());
 
         // The Escape debounce does not apply to the Enter filter
         assertEquals("true", captures
                 .get(ElementListenerMap.getFilterKey(enter)).get(1).toString());
-        assertEquals("[[300,\"trailing\"]]",
+        assertEquals("[[300,\"leading\",\"trailing\"]]",
                 captures.get(ElementListenerMap.getFilterKey(escape)).get(1)
                         .toString());
 
