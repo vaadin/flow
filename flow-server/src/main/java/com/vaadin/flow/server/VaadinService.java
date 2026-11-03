@@ -2166,9 +2166,20 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
+     * Gets the push transport added by an add-on that push uses unless the
+     * application chooses a transport: the first added transport.
+     *
+     * @return the transport, or an empty optional if no transport has been
+     *         added
+     */
+    public Optional<PushTransport> getDefaultPushTransport() {
+        return pushTransports.values().stream().findFirst();
+    }
+
+    /**
      * Gets the push transport added by an add-on that push uses instead of the
-     * built-in transports, which need Atmosphere: the first added transport,
-     * when Atmosphere is not on the classpath.
+     * built-in transports when Atmosphere, which they need, is not on the
+     * classpath: the {@linkplain #getDefaultPushTransport() default transport}.
      *
      * @return the transport, or an empty optional if Atmosphere is available or
      *         no transport has been added
@@ -2177,7 +2188,7 @@ public abstract class VaadinService implements Serializable {
         if (isAtmosphereAvailable()) {
             return Optional.empty();
         }
-        return pushTransports.values().stream().findFirst();
+        return getDefaultPushTransport();
     }
 
     /**

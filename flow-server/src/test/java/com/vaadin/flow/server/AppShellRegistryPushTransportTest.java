@@ -21,6 +21,7 @@ import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.shared.ui.Transport;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -33,6 +34,10 @@ class AppShellRegistryPushTransportTest {
 
     @Push(transport = Transport.LONG_POLLING)
     private static class WithTransport {
+    }
+
+    @Push
+    private static class WithDefaults {
     }
 
     @Test
@@ -54,5 +59,17 @@ class AppShellRegistryPushTransportTest {
                 WithTransport.class.getAnnotation(Push.class));
 
         verify(configuration).setTransport(Transport.LONG_POLLING);
+    }
+
+    @Test
+    void setTransport_defaults_leavesDefaultTransport() {
+        // So that a transport added by an add-on can replace it
+        PushConfiguration configuration = mock(PushConfiguration.class);
+
+        AppShellRegistry.setTransport(configuration,
+                WithDefaults.class.getAnnotation(Push.class));
+
+        verify(configuration, never()).setTransport(any());
+        verify(configuration, never()).setTransportName(any());
     }
 }

@@ -47,12 +47,15 @@ import com.vaadin.flow.server.ServiceInitEvent;
  * Messages to the server are sent as regular requests, as with the
  * {@code WEBSOCKET_XHR} transport.
  * <p>
- * The transport is selected with
+ * Unless the application chooses a transport, push uses the first registered
+ * transport instead of the built-in ones, so adding the add-on is enough. A
+ * transport is chosen by name with
  * {@link com.vaadin.flow.component.PushConfiguration#setTransportName(String)}
- * or {@link com.vaadin.flow.component.page.Push#transportName()}. When
- * Atmosphere is not on the classpath, push uses the first registered transport
- * instead of the built-in ones, so an application can leave out the
- * {@code flow-push} module and add the add-on without other changes.
+ * or {@link com.vaadin.flow.component.page.Push#transportName()}, which also
+ * selects a built-in transport, such as {@code websocket-xhr}, next to the
+ * add-on. The built-in transports need Atmosphere, so without it on the
+ * classpath, push uses the registered transport also when a built-in one is
+ * chosen, and an application can leave out the {@code flow-push} module.
  * <p>
  * Vaadin keeps the contract of this interface, but not the code of the
  * transports implementing it: the authors of an add-on are responsible for it.

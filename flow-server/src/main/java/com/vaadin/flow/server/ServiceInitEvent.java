@@ -77,8 +77,8 @@ public class ServiceInitEvent extends EventObject {
     /**
      * Adds a push transport, provided by an add-on, that the UIs of this
      * service can push with. See {@link PushTransport} for what a transport
-     * consists of. When Atmosphere is not on the classpath, push uses the first
-     * added transport instead of the built-in ones.
+     * consists of. Unless the application chooses a transport, push uses the
+     * first added transport instead of the built-in ones.
      *
      * @param pushTransport
      *            the push transport to add, not <code>null</code>

@@ -222,6 +222,9 @@ public interface PushConfiguration extends Serializable {
 class PushConfigurationImpl implements PushConfiguration {
     private UI ui;
     private PushConnectionFactory pushConnectionFactory;
+    // Whether the application has chosen the transport, rather than using the
+    // default one
+    private boolean transportChosen;
 
     PushConfigurationImpl(UI ui) {
         this.ui = ui;
@@ -267,12 +270,16 @@ class PushConfigurationImpl implements PushConfiguration {
         session.checkHasLock();
 
         if (pushMode.isEnabled() && getAddOnTransport() == null) {
-            Optional<PushTransport> fallback = session.getService()
-                    .getFallbackPushTransport();
-            if (fallback.isPresent()) {
-                // The built-in transports need Atmosphere
-                useAddOnTransport(fallback.get());
-            } else if (!session.getService().ensurePushAvailable()) {
+            // A transport added by an add-on replaces the default transport,
+            // and a chosen built-in one when Atmosphere, which it needs, is
+            // missing
+            VaadinService service = session.getService();
+            Optional<PushTransport> addOnTransport = transportChosen
+                    ? service.getFallbackPushTransport()
+                    : service.getDefaultPushTransport();
+            if (addOnTransport.isPresent()) {
+                useAddOnTransport(addOnTransport.get());
+            } else if (!service.ensurePushAvailable()) {
                 throw new IllegalStateException(
                         "Push is not available. See previous log messages for more information.");
             }
@@ -300,6 +307,7 @@ class PushConfigurationImpl implements PushConfiguration {
     @Override
     public void setTransport(Transport transport) {
         checkTransportEnabled(transport);
+        transportChosen = true;
         Optional<PushTransport> fallback = getService()
                 .flatMap(VaadinService::getFallbackPushTransport);
         if (fallback.isPresent()) {
@@ -323,6 +331,7 @@ class PushConfigurationImpl implements PushConfiguration {
     public void setTransportName(String transportName) {
         Objects.requireNonNull(transportName,
                 "Transport name must not be null");
+        transportChosen = true;
         Transport builtIn = Transport.getByIdentifier(transportName);
         if (builtIn != null) {
             setTransport(builtIn);

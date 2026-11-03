@@ -102,6 +102,7 @@ class PushTransportConfigurationTest {
     @Test
     void setTransportName_whenPushEnabled_replacesConnection() {
         UI ui = createUi(true, new TestTransport("test-push"));
+        ui.getPushConfiguration().setTransport(Transport.WEBSOCKET);
         ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
         assertInstanceOf(AtmospherePushConnection.class,
                 ui.getInternals().getPushConnection());
@@ -136,6 +137,44 @@ class PushTransportConfigurationTest {
 
         assertEquals("first", ui.getPushConfiguration().getTransportName());
         assertInstanceOf(TestConnection.class,
+                ui.getInternals().getPushConnection());
+    }
+
+    @Test
+    void setPushMode_defaultTransportWithAtmosphere_usesAddOnTransport() {
+        // E.g. in development mode, where the dev tools keep Atmosphere on
+        // the classpath
+        UI ui = createUi(true, new TestTransport("test-push"));
+
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+
+        assertEquals("test-push", ui.getPushConfiguration().getTransportName());
+        assertInstanceOf(TestConnection.class,
+                ui.getInternals().getPushConnection());
+    }
+
+    @Test
+    void setPushMode_chosenBuiltInTransportWithAtmosphere_isKept() {
+        UI ui = createUi(true, new TestTransport("test-push"));
+        ui.getPushConfiguration().setTransportName("websocket-xhr");
+
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+
+        assertEquals(Transport.WEBSOCKET_XHR,
+                ui.getPushConfiguration().getTransport());
+        assertInstanceOf(AtmospherePushConnection.class,
+                ui.getInternals().getPushConnection());
+    }
+
+    @Test
+    void setPushMode_noAddOnTransports_keepsDefaultTransport() {
+        UI ui = createUi(true);
+
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+
+        assertEquals(Transport.WEBSOCKET_XHR,
+                ui.getPushConfiguration().getTransport());
+        assertInstanceOf(AtmospherePushConnection.class,
                 ui.getInternals().getPushConnection());
     }
 
@@ -176,6 +215,11 @@ class PushTransportConfigurationTest {
                 return added.stream()
                         .filter(transport -> transport.getName().equals(name))
                         .findFirst();
+            }
+
+            @Override
+            public Optional<PushTransport> getDefaultPushTransport() {
+                return added.stream().findFirst();
             }
 
             @Override

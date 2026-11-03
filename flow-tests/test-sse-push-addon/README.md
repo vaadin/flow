@@ -57,7 +57,7 @@ public class Application implements AppShellConfigurator {
 }
 ```
 
-Without Atmosphere, push uses the add-on. Nothing else is needed:
+Push uses the add-on. Nothing else is needed:
 
 - The add-on registers itself through a `VaadinServiceInitListener` found with
   the service loader, so there is no Spring configuration to add.
@@ -107,17 +107,22 @@ dependencies {
 
 The development tools of Vaadin connect to the server through Atmosphere, so
 `vaadin-dev` keeps `flow-push` in development also when the application
-leaves it out. In development, `@Push` alone therefore uses the built-in
-`websocket-xhr` transport. To use the add-on in development too, name it:
+leaves it out. The push of the application uses the add-on anyway, so it
+behaves the same in development and in production.
+
+## Choosing a transport
+
+With the add-on on the classpath, push uses it unless the application chooses
+a transport. To use a built-in transport next to the add-on, name it:
 
 ```java
-@Push(transportName = SsePushTransport.NAME)
+@Push(transportName = "websocket-xhr")
 public class Application implements AppShellConfigurator {
 }
 ```
 
-Naming the transport also selects the add-on when Atmosphere is on the
-classpath in production.
+The built-in transports need Atmosphere, so without it push uses the add-on
+whatever transport is chosen.
 
 ## Configuration
 
@@ -163,8 +168,10 @@ HTTP/3 have no such limit.
 - Spring Boot with embedded Tomcat and Spring Security, Vaadin mapped to
   `/ui/*`: `flow-tests/vaadin-spring-tests/test-spring-boot-sse-addon`
 - Quarkus: `flow-tests/vaadin-quarkus-tests/sse-addon-it`
+- Spring Boot in development mode, with the dev tools and their Atmosphere:
+  `flow-tests/vaadin-spring-tests/test-spring-boot-sse-addon-dev`
 
-Both run in production mode with `flow-push` excluded, also through the
+The first two run in production mode with `flow-push` excluded, also through the
 reverse proxies with `-Dreverse.proxy=<nginx|caddy>
 -Dreverse.proxy.config=<recommended|default>`. They cover pushing, client
 requests while pushing, a large multibyte message, a refresh, a stream lost

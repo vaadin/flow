@@ -53,7 +53,11 @@ public @interface Push {
     /**
      * Transport type used for the push for the annotated root navigation target
      * (or custom UI). The default transport type when this annotation is
-     * present is {@link Transport#WEBSOCKET_XHR}.
+     * present is {@link Transport#WEBSOCKET_XHR}, or the transport of an add-on
+     * when one is registered, see
+     * {@link com.vaadin.flow.server.communication.PushTransport}. To use
+     * {@link Transport#WEBSOCKET_XHR} next to a transport of an add-on, name it
+     * with {@link #transportName()}.
      *
      * @return the transport type to use
      */
