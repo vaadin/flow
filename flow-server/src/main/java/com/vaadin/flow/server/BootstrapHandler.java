@@ -910,9 +910,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 throw new BootstrapException("Unable to append bundle", e);
             }
 
-            if (context.getPushMode().isEnabled()) {
-                head.appendChild(
-                        createJavaScriptElement(getPushScript(context)));
+            String pushScript = context.getPushMode().isEnabled()
+                    ? getPushScript(context)
+                    : null;
+            if (pushScript != null) {
+                head.appendChild(createJavaScriptElement(pushScript));
             }
 
             head.appendChild(getBootstrapScript(initialUIDL, context));
@@ -1547,6 +1549,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
     }
 
+    /**
+     * Gets the URL of the script the client loads for push.
+     *
+     * @param context
+     *            the bootstrap context
+     * @return the URL of the script, or {@code null} if the transport of an
+     *         add-on has its client side in the frontend bundle
+     */
     protected static String getPushScript(BootstrapContext context) {
         Optional<PushTransport> addOnTransport = context.getAddOnTransport();
         if (addOnTransport.isPresent()) {

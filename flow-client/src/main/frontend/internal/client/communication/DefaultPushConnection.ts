@@ -234,7 +234,12 @@ interface AtmosphereResponse {
  * Composes the Atmosphere-wiring helpers above and the FragmentedMessage
  * splitter.
  */
-export class AtmospherePushConnection implements PushConnection {
+/**
+ * The push connection of the client engine. It drives the Atmosphere library
+ * for the built-in transports, and the client side of a push transport added
+ * by an add-on, which has the same API.
+ */
+export class DefaultPushConnection implements PushConnection {
   readonly #registry: Registry;
 
   #state: State = State.CONNECT_PENDING;
@@ -551,23 +556,27 @@ export class AtmospherePushConnection implements PushConnection {
   }
 
   /**
-   * Gets the implementation of the transport: the push transport of an add-on,
-   * or the Atmosphere library for the built-in transports. The connection only
-   * connects or disconnects after the implementation has loaded.
+   * Gets the implementation of the transport: the push transport an add-on
+   * has registered for the configured transport name, or the Atmosphere
+   * library for the built-in transports, whose names add-ons cannot take. The
+   * connection only connects or disconnects after the implementation has
+   * loaded.
    */
   #getTransport(): Atmosphere {
-    return getAddOnPushTransport(this.#getAddOnTransportName()) ?? atmosphere()!;
+    return getAddOnPushTransport(this.#getTransportName()) ?? atmosphere()!;
   }
 
-  /** Gets the name of the transport of an add-on the connection uses, or null. */
-  #getAddOnTransportName(): string | null {
-    if (this.#registry.getPushConfiguration().getTransportScript() === null) {
-      return null;
-    }
-    return this.#config[TRANSPORT_KEY] as string;
+  #getTransportName(): string | null {
+    return (this.#config[TRANSPORT_KEY] as string | undefined) ?? null;
   }
 
   #runWhenAtmosphereLoaded(command: Command): void {
+    if (getAddOnPushTransport(this.#getTransportName())) {
+      // Registered by a module of the frontend bundle, or a script loaded by
+      // the bootstrap
+      command();
+      return;
+    }
     const transportScript = this.#registry.getPushConfiguration().getTransportScript();
     if (transportScript !== null) {
       this.#runWhenAddOnTransportLoaded(transportScript, command);
@@ -600,17 +609,9 @@ export class AtmospherePushConnection implements PushConnection {
     this.#registry.getResourceLoader().loadScript(pushScriptUrl, listener);
   }
 
-  /**
-   * Runs the command once the client script of the transport of an add-on has
-   * registered the transport, loading the script unless the bootstrap already
-   * did.
-   */
+  /** Loads the client script of the transport of an add-on, and runs the command once it has registered the transport. */
   #runWhenAddOnTransportLoaded(transportScript: string, command: Command): void {
-    const name = this.#getAddOnTransportName();
-    if (getAddOnPushTransport(name)) {
-      command();
-      return;
-    }
+    const name = this.#getTransportName();
     const scriptUrl = this.#registry.getApplicationConfiguration().getServiceUrl() + transportScript;
     Console.debug(`Loading ${transportScript}`);
     const listener: ResourceLoadListener = {
@@ -634,6 +635,6 @@ export class AtmospherePushConnection implements PushConnection {
   }
 }
 
-/** The default {@link PushConnectionFactory}: creates an AtmospherePushConnection. */
-export const atmospherePushConnectionFactory: PushConnectionFactory = (registry: unknown): PushConnection =>
-  new AtmospherePushConnection(registry as Registry);
+/** The default {@link PushConnectionFactory}: creates a DefaultPushConnection. */
+export const defaultPushConnectionFactory: PushConnectionFactory = (registry: unknown): PushConnection =>
+  new DefaultPushConnection(registry as Registry);

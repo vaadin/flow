@@ -31,7 +31,7 @@ import { UIDL_REFRESH_TOKEN } from './ConnectionStateHandler';
 import { ReconnectStateMachine } from './ReconnectStateMachine';
 import type { XhrConnectionError } from './XhrConnectionError';
 import { Console } from '../Console';
-import { getAddOnPushTransport } from './AtmospherePushConnection';
+import { getAddOnPushTransport } from './DefaultPushConnection';
 
 const SC_FORBIDDEN = 403;
 const SC_NOT_FOUND = 404;

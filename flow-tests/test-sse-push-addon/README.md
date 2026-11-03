@@ -9,7 +9,8 @@ The add-on is built only against the public push transport API of Flow
 (`PushTransport`, `ServiceInitEvent.addPushTransport`, `@Push(transportName)`),
 to show that the API is enough for a transport. It lives in the Flow test
 suite and is not published, but it is written like a real add-on, and the
-instructions below are the ones an add-on like this would give.
+instructions below are the ones an add-on like this would give. When
+published, its coordinates would change from `com.vaadin:flow-test-sse-push-addon`.
 
 ## What you get
 
@@ -23,31 +24,59 @@ instructions below are the ones an add-on like this would give.
 
 ## Using it with Spring Boot
 
-Leave Atmosphere out of the Vaadin starter, and add the add-on:
+An application created at [start.vaadin.com](https://start.vaadin.com), or
+from the [Spring Boot starter](https://github.com/vaadin/skeleton-starter-flow-spring),
+depends on `vaadin`, `vaadin-spring-boot-starter` and, for development,
+`vaadin-dev`. Exclude Atmosphere from the first two, and add the add-on:
 
 ```xml
-<dependency>
-    <groupId>com.vaadin</groupId>
-    <artifactId>vaadin-spring-boot-starter</artifactId>
-    <exclusions>
-        <!-- Atmosphere, needed only by the built-in push transports -->
-        <exclusion>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-push</artifactId>
-        </exclusion>
-    </exclusions>
-</dependency>
-<dependency>
-    <groupId>com.vaadin</groupId>
-    <artifactId>flow-test-sse-push-addon</artifactId>
-    <version>${vaadin.version}</version>
-</dependency>
+<dependencies>
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin</artifactId>
+        <exclusions>
+            <!-- Atmosphere, needed only by the built-in push transports -->
+            <exclusion>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-push</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-spring-boot-starter</artifactId>
+        <exclusions>
+            <exclusion>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-push</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-test-sse-push-addon</artifactId>
+        <version>${vaadin.version}</version>
+    </dependency>
+
+    <!-- Unchanged: the dev tools connect through Atmosphere, so they keep it -->
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-dev</artifactId>
+        <optional>true</optional>
+    </dependency>
+    ...
+</dependencies>
 ```
 
-A Maven exclusion applies to everything the starter brings, so this one
-exclusion removes `flow-push` also from `vaadin-core` and `vaadin-spring`,
-which depend on it. The starter also brings `spring-boot-starter-websocket`,
-which the add-on does not need either; you can exclude it the same way.
+Both exclusions are needed, as both bring `flow-push`: `vaadin` through
+`vaadin-core`, and the starter through `vaadin-spring`. A Maven exclusion
+applies to everything the dependency brings, so one per dependency is enough.
+Use `vaadin-core` instead of `vaadin` in the same way.
+
+`vaadin-dev` is left as it is. It is optional, so `spring-boot:run` has it,
+but the Spring Boot plugin leaves it out of the production jar, and with it
+Atmosphere. Keep `spring-boot-starter-websocket`, which the starter brings:
+the dev tools use websockets in development.
 
 Enable push as usual:
 
@@ -57,49 +86,87 @@ public class Application implements AppShellConfigurator {
 }
 ```
 
-Push uses the add-on. Nothing else is needed:
+Push uses the add-on, in development and in production. Nothing else is
+needed:
 
 - The add-on registers itself through a `VaadinServiceInitListener` found with
   the service loader, so there is no Spring configuration to add.
 - `VaadinSecurityConfigurer` already lets requests to `/VAADIN/**` through, so
   the event stream passes Spring Security, also with `vaadin.url-mapping`.
 
+To check that Atmosphere is gone, list what still brings it:
+
+```
+mvn dependency:tree -Dincludes=com.vaadin:flow-push
+```
+
+The only path left should go through `vaadin-dev`.
+
 ## Using it with Quarkus
 
-Leave Atmosphere out of the Vaadin extension, and add the add-on:
+An application created from the
+[Quarkus starter](https://github.com/vaadin/base-starter-flow-quarkus) depends
+on `vaadin-quarkus-extension`, `vaadin` and `vaadin-jandex`. Exclude Atmosphere
+from the first two, and add the add-on:
 
 ```xml
-<dependency>
-    <groupId>com.vaadin</groupId>
-    <artifactId>vaadin-quarkus-extension</artifactId>
-    <exclusions>
-        <!-- Atmosphere, needed only by the built-in push transports -->
-        <exclusion>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-push</artifactId>
-        </exclusion>
-    </exclusions>
-</dependency>
-<dependency>
-    <groupId>com.vaadin</groupId>
-    <artifactId>flow-test-sse-push-addon</artifactId>
-    <version>${vaadin.version}</version>
-</dependency>
+<dependencies>
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-quarkus-extension</artifactId>
+        <exclusions>
+            <!-- Atmosphere, needed only by the built-in push transports -->
+            <exclusion>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-push</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin</artifactId>
+        <exclusions>
+            <exclusion>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-push</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-jandex</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-test-sse-push-addon</artifactId>
+        <version>${vaadin.version}</version>
+    </dependency>
+</dependencies>
 ```
 
 Enable push with `@Push` on the `AppShellConfigurator`, as above. The add-on
 is found with the service loader, so it needs no CDI beans or Quarkus
 configuration.
 
+Not checked yet: whether the dev tools keep their Atmosphere connection in
+`quarkus:dev` with these exclusions. If they show their connection as
+unavailable, move the exclusions to a production profile.
+
 ## Using it with Gradle
 
-```groovy
-configurations.all {
-    exclude group: 'com.vaadin', module: 'flow-push'
-}
+Exclude Atmosphere per dependency, not from all configurations, so that the
+dev tools keep it:
 
+```groovy
 dependencies {
+    implementation('com.vaadin:vaadin') {
+        exclude group: 'com.vaadin', module: 'flow-push'
+    }
+    implementation('com.vaadin:vaadin-spring-boot-starter') {
+        exclude group: 'com.vaadin', module: 'flow-push'
+    }
     implementation 'com.vaadin:flow-test-sse-push-addon:<vaadin version>'
+    developmentOnly 'com.vaadin:vaadin-dev'
 }
 ```
 
@@ -154,9 +221,11 @@ HTTP/3 have no such limit.
 
 - `SsePushServiceInitListener` adds the `SsePushTransport` and the
   `SseRequestHandler` to every Vaadin service.
-- The client engine loads `VAADIN/static/sse-push/sse-push.js` from the jar,
-  which registers the client side of the transport in
-  `window.Vaadin.Flow.pushTransports`.
+- The client side of the transport, `sse-push.js` in
+  `META-INF/resources/frontend`, is in the frontend bundle of the application,
+  as `SsePushServiceInitListener` has a `@JsModule` for it. It registers the
+  transport in `window.Vaadin.Flow.pushTransports` when the application
+  loads, so it needs no request of its own.
 - The client opens an `EventSource` to `VAADIN/push?v-r=sse`, and
   `SseRequestHandler` connects it to the `SsePushConnection` of the UI.
 - `SsePushConnection` writes each message as an event. Writes are queued and

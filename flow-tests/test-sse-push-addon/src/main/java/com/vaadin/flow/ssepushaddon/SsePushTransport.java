@@ -43,9 +43,4 @@ public class SsePushTransport implements PushTransport {
     public PushConnection createPushConnection(UI ui) {
         return new SsePushConnection(ui);
     }
-
-    @Override
-    public String getClientScript() {
-        return "VAADIN/static/sse-push/sse-push.js";
-    }
 }

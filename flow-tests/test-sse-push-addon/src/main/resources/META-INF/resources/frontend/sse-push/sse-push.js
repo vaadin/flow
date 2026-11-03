@@ -19,8 +19,8 @@
  * streamed over EventSource, messages to the server are sent by the client
  * engine as regular requests.
  *
- * The client engine loads this script and uses the transport registered under
- * its name in window.Vaadin.Flow.pushTransports. The transport implements the
+ * The frontend bundle includes this module, and the client engine uses the
+ * transport it registers under its name in window.Vaadin.Flow.pushTransports. The transport implements the
  * subset of the Atmosphere API that the push connection of the client engine
  * uses: subscribe(request) and unsubscribeUrl(url).
  */

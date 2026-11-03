@@ -91,12 +91,17 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
      *            the name of the transport
      * @param clientScript
      *            the URL of the script implementing the client side of the
-     *            transport, relative to the service URL
+     *            transport, relative to the service URL, or {@code null} if it
+     *            is in the frontend bundle
      */
     public void setTransportName(String transportName, String clientScript) {
         getParameters().put(TRANSPORT_KEY, transportName);
         remove(ALWAYS_USE_XHR_TO_SERVER);
-        put(TRANSPORT_SCRIPT_KEY, clientScript);
+        if (clientScript == null) {
+            remove(TRANSPORT_SCRIPT_KEY);
+        } else {
+            put(TRANSPORT_SCRIPT_KEY, clientScript);
+        }
     }
 
     @Override

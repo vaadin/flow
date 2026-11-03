@@ -34,12 +34,13 @@ import com.vaadin.flow.server.ServiceInitEvent;
  * {@link com.vaadin.flow.server.RequestHandler} registered from the same
  * listener, which serves requests to {@code VAADIN/push} with a request type of
  * its own,</li>
- * <li>the client side of the transport, a script the client engine loads from
+ * <li>the client side of the transport, a JavaScript module in the frontend
+ * bundle, or a script the client engine loads from
  * {@link #getClientScript()}.</li>
  * </ul>
- * The script registers the transport under its {@linkplain #getName() name} in
- * {@code window.Vaadin.Flow.pushTransports}, as an object with the subset of
- * the Atmosphere JavaScript API that the client engine uses:
+ * The client side registers the transport under its {@linkplain #getName()
+ * name} in {@code window.Vaadin.Flow.pushTransports}, as an object with the
+ * subset of the Atmosphere JavaScript API that the client engine uses:
  * {@code subscribe(request)}, which opens the connection described by the
  * request and calls its {@code onOpen}, {@code onMessage}, {@code onReopen},
  * {@code onReconnect}, {@code onError} and {@code onClose} callbacks, and
@@ -83,13 +84,23 @@ public interface PushTransport extends Serializable {
     PushConnection createPushConnection(UI ui);
 
     /**
-     * Gets the URL of the script implementing the client side of this
+     * Gets the URL of a script the client loads to get the client side of this
      * transport, relative to the service URL, such as
      * {@code VAADIN/static/my-transport/my-transport.js}. Scripts in
      * {@code META-INF/resources/VAADIN/static} of a jar are served by Vaadin in
      * every deployment.
+     * <p>
+     * Not needed, and {@code null} by default, when the client side is part of
+     * the frontend bundle instead: a {@code @JsModule} annotation on the
+     * {@link com.vaadin.flow.server.VaadinServiceInitListener} that registers
+     * the transport puts it there, as the bundle includes the modules of the
+     * listeners. The bundle is minified and cached with the rest of the
+     * application, and needs no request of its own.
      *
-     * @return the URL of the client script, not {@code null}
+     * @return the URL of the client script, or {@code null} if the client side
+     *         is in the frontend bundle
      */
-    String getClientScript();
+    default String getClientScript() {
+        return null;
+    }
 }

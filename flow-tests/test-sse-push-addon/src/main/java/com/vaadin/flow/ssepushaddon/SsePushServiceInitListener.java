@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.ssepushaddon;
 
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 
@@ -22,7 +23,11 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
  * Adds the SSE push transport and the handler of its event streams to every
  * Vaadin service. Found with the service loader, so the add-on works by having
  * it on the classpath, also with Spring Boot and Quarkus.
+ * <p>
+ * The {@link JsModule} puts the client side of the transport in the frontend
+ * bundle, as the bundle includes the modules of service init listeners.
  */
+@JsModule("./sse-push/sse-push.js")
 public class SsePushServiceInitListener implements VaadinServiceInitListener {
 
     @Override

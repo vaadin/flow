@@ -44,7 +44,10 @@ public class PushIT extends ChromeBrowserTest {
         Assert.assertEquals("Atmosphere should not be loaded", Boolean.TRUE,
                 executeScript("return window.vaadinPush === undefined"));
         Assert.assertEquals(List.of(), loadedResources("vaadinPush"));
-        Assert.assertEquals(1, loadedResources("sse-push.js").size());
+        // The client side of the transport is in the frontend bundle
+        Assert.assertEquals(List.of(), loadedResources("sse-push"));
+        Assert.assertEquals(Boolean.TRUE, executeScript(
+                "return !!window.Vaadin.Flow.pushTransports['sse-addon']"));
     }
 
     @Test

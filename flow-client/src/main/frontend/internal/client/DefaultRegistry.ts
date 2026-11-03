@@ -20,12 +20,12 @@
 // earlier services through the Registry getters). This is the cutover-assembly
 // step that takes the build-alongside TS engine into use.
 //
-// Push is wired via the AtmospherePushConnection factory, so setPushEnabled(true)
+// Push is wired via the DefaultPushConnection factory, so setPushEnabled(true)
 // creates a real Atmosphere connection (loading vaadinPush.js on demand).
 
 import type { ApplicationConfiguration } from './ApplicationConfiguration';
 import type { ApplicationConnection } from './ApplicationConnection';
-import { atmospherePushConnectionFactory } from './communication/AtmospherePushConnection';
+import { defaultPushConnectionFactory } from './communication/DefaultPushConnection';
 import { ConstantPool } from './flow/ConstantPool';
 import { DependencyLoader } from './DependencyLoader';
 import { DefaultConnectionStateHandler } from './communication/DefaultConnectionStateHandler';
@@ -77,7 +77,7 @@ export class DefaultRegistry extends Registry {
     this.set(TOKEN.StateTree, new StateTree(this));
     this.set(TOKEN.RequestResponseTracker, new RequestResponseTracker(this));
     this.set(TOKEN.MessageHandler, new MessageHandler(this));
-    this.set(TOKEN.MessageSender, new MessageSender(this, atmospherePushConnectionFactory));
+    this.set(TOKEN.MessageSender, new MessageSender(this, defaultPushConnectionFactory));
     this.set(TOKEN.ServerRpcQueue, new ServerRpcQueue(this));
     this.set(TOKEN.ServerConnector, new ServerConnector(this));
     this.set(TOKEN.ExecuteJavaScriptProcessor, new ExecuteJavaScriptProcessor(this));

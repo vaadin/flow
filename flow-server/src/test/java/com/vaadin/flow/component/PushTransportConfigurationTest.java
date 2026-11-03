@@ -90,6 +90,17 @@ class PushTransportConfigurationTest {
     }
 
     @Test
+    void setTransportName_transportInFrontendBundle_noScriptToLoad() {
+        UI ui = createUi(true, new BundledTransport());
+
+        ui.getPushConfiguration().setTransportName("bundled-push");
+
+        assertEquals("bundled-push",
+                ui.getPushConfiguration().getTransportName());
+        assertNull(getMap(ui).getTransportScript());
+    }
+
+    @Test
     void setTransportName_unknownTransport_throws() {
         UI ui = createUi(true, new TestTransport("test-push"));
 
@@ -252,6 +263,22 @@ class PushTransportConfigurationTest {
         @Override
         public String getClientScript() {
             return SCRIPT;
+        }
+    }
+
+    /**
+     * A transport with its client side in the frontend bundle, so with no
+     * script for the client to load.
+     */
+    private static class BundledTransport implements PushTransport {
+        @Override
+        public String getName() {
+            return "bundled-push";
+        }
+
+        @Override
+        public PushConnection createPushConnection(UI ui) {
+            return mock(TestConnection.class);
         }
     }
 
