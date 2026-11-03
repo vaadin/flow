@@ -188,6 +188,14 @@ public final class JsDefinitionProxy {
                     + " is not annotated with @JsDefinition, so the build does not"
                     + " collect its JavaScript into the bundle");
         }
+        if (definitionType.isAnnotationPresent(JsCalledWith.class)) {
+            // Only the methods and the snippet types they return are read
+            throw new IllegalArgumentException(definitionType.getName()
+                    + " is annotated with @JsCalledWith, which applies to a"
+                    + " method that returns a JsSnippet or to a snippet type,"
+                    + " not to a JavaScript definition. Annotate each method"
+                    + " instead");
+        }
         // One snippet makes it a definition of snippets, so that a method
         // running JavaScript beside it is reported as the odd one out
         boolean snippets = Stream.of(definitionType.getMethods()).anyMatch(

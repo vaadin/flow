@@ -224,8 +224,9 @@ public record JsCall(Class<?> definitionType, String methodName,
      *
      * @param method
      *            a method of a JavaScript definition, not <code>null</code>
-     * @return the parameter names in the order they are passed, empty when the
-     *         method is not annotated with {@link JsCalledWith}
+     * @return the parameter names in the order they are passed, empty when
+     *         neither the method nor the snippet type it returns is annotated
+     *         with {@link JsCalledWith}
      * @throws IllegalArgumentException
      *             if a name is not a JavaScript identifier, is a reserved word,
      *             names a captured argument or is declared twice

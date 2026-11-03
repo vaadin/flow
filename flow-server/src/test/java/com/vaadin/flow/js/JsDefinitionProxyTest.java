@@ -127,6 +127,13 @@ class JsDefinitionProxyTest {
     }
 
     @JsDefinition
+    @JsCalledWith("value")
+    interface CalledWithOnDefinitionJs extends Serializable {
+        @JsExpression("console.log(value);")
+        JsFunction createLogger();
+    }
+
+    @JsDefinition
     interface MixedJs extends Serializable {
         @JsExpression("console.log($0, value);")
         @JsCalledWith("value")
@@ -313,6 +320,18 @@ class JsDefinitionProxyTest {
         // is evaluated and the browser reports a syntax error
         assertThrows(IllegalArgumentException.class, () -> JsDefinitionProxy
                 .createSnippets(CalledWithInvalidNameJs.class));
+    }
+
+    @Test
+    void checkDefinition_calledWithOnTheDefinition_throws() {
+        // The names would otherwise be ignored, and the expression would fail
+        // in the browser on the first call
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> JsDefinitionProxy
+                        .checkDefinition(CalledWithOnDefinitionJs.class));
+
+        assertTrue(exception.getMessage().contains("@JsCalledWith"),
+                exception.getMessage());
     }
 
     @Test
