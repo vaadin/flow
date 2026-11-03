@@ -26,6 +26,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -331,6 +333,46 @@ class SsePushConnectionTest {
     }
 
     @Test
+    void sendKeepAlive_stalledOnVirtualThreads_otherVirtualThreadsRun()
+            throws Exception {
+        // A virtual thread waiting for a slow client, with the connection
+        // locked, must not keep its carrier thread from other virtual threads.
+        // Fails only on Java 21 to 23 if the lock is synchronized, as Java 24
+        // no longer pins virtual threads there (JEP 491).
+        int carriers = Integer.getInteger(
+                "jdk.virtualThreadScheduler.parallelism",
+                Runtime.getRuntime().availableProcessors());
+        CountDownLatch clientReads = new CountDownLatch(1);
+        List<Thread> stalled = new ArrayList<>();
+        try {
+            for (int i = 0; i < carriers; i++) {
+                SsePushConnection slowConnection = new SsePushConnection(ui);
+                SseStream slowStream = new SseStream();
+                slowConnection.connect(slowStream.asyncContext);
+                slowStream.stall = clientReads;
+                stalled.add(Thread.ofVirtual().start(() -> slowConnection
+                        .sendKeepAlive(slowStream.asyncContext)));
+            }
+            for (Thread thread : stalled) {
+                while (thread.getState() != Thread.State.WAITING) {
+                    Thread.sleep(10);
+                }
+            }
+
+            CountDownLatch ran = new CountDownLatch(1);
+            Thread.ofVirtual().start(ran::countDown);
+
+            assertTrue(ran.await(5, TimeUnit.SECONDS),
+                    "Virtual threads should run while streams are stalled");
+        } finally {
+            clientReads.countDown();
+            for (Thread thread : stalled) {
+                thread.join();
+            }
+        }
+    }
+
+    @Test
     void push_concurrentConnectionLoss_neverFails() throws Exception {
         // Streams end on container threads without the session lock, while
         // pushes happen with it
@@ -394,9 +436,24 @@ class SsePushConnectionTest {
         final HttpServletResponse response = mock(HttpServletResponse.class);
         private final StringWriter buffer = new StringWriter();
         boolean failWrites;
+        // Writes wait for this, like for a client that does not read
+        volatile CountDownLatch stall;
 
         SseStream() throws Exception {
             PrintWriter writer = new PrintWriter(buffer) {
+                @Override
+                public void write(String text) {
+                    CountDownLatch latch = stall;
+                    if (latch != null) {
+                        try {
+                            latch.await();
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+                    super.write(text);
+                }
+
                 @Override
                 public boolean checkError() {
                     return failWrites || super.checkError();

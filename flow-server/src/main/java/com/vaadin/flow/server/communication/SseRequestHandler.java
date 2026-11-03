@@ -25,10 +25,12 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -165,9 +167,12 @@ public class SseRequestHandler
             sseConnection.connect(asyncContext);
             int keepAliveInterval = getKeepAliveInterval();
             if (keepAliveInterval > 0) {
+                Executor executor = service.getExecutor();
                 stream.keepAlive = getKeepAliveExecutor()
-                        .scheduleWithFixedDelay(stream, keepAliveInterval,
-                                keepAliveInterval, TimeUnit.SECONDS);
+                        .scheduleWithFixedDelay(
+                                () -> stream.sendKeepAlive(executor),
+                                keepAliveInterval, keepAliveInterval,
+                                TimeUnit.SECONDS);
             }
 
             getLogger().debug("SSE connection established for UI {}",
@@ -189,6 +194,11 @@ public class SseRequestHandler
                         DEFAULT_KEEP_ALIVE_INTERVAL, Integer::parseInt);
     }
 
+    /**
+     * Returns the thread that times the keep-alive comments of all streams. It
+     * only hands the writing to the executor of the service, as a write may
+     * wait for a slow client.
+     */
     synchronized ScheduledExecutorService getKeepAliveExecutor() {
         if (keepAliveExecutor == null) {
             keepAliveExecutor = Executors
@@ -212,6 +222,7 @@ public class SseRequestHandler
         private final SsePushConnection connection;
         private final transient AsyncContext asyncContext;
         private transient volatile ScheduledFuture<?> keepAlive;
+        private final transient AtomicBoolean sending = new AtomicBoolean();
 
         private SseStream(SsePushConnection connection,
                 AsyncContext asyncContext) {
@@ -219,10 +230,27 @@ public class SseRequestHandler
             this.asyncContext = asyncContext;
         }
 
+        private void sendKeepAlive(Executor executor) {
+            // Skipped while the previous comment still waits for the client
+            if (!sending.compareAndSet(false, true)) {
+                return;
+            }
+            try {
+                executor.execute(this);
+            } catch (RuntimeException e) {
+                sending.set(false);
+                getLogger().debug("Could not send a keep-alive comment", e);
+            }
+        }
+
         @Override
         public void run() {
-            if (!connection.sendKeepAlive(asyncContext)) {
-                stopKeepAlive();
+            try {
+                if (!connection.sendKeepAlive(asyncContext)) {
+                    stopKeepAlive();
+                }
+            } finally {
+                sending.set(false);
             }
         }
 

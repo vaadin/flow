@@ -24,6 +24,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -351,6 +354,84 @@ class SseRequestHandlerTest {
         handler.handleRequest(session, request(), response());
 
         verify(handler).getKeepAliveExecutor();
+    }
+
+    @Test
+    void keepAlive_stalledStream_doesNotDelayOtherStreams() throws Exception {
+        handler = handlerWithKeepAliveInterval("1");
+        CountDownLatch clientReads = new CountDownLatch(1);
+        Executor executor = service.getExecutor();
+        AtomicInteger unfinishedTasks = new AtomicInteger();
+        doReturn((Executor) task -> {
+            unfinishedTasks.incrementAndGet();
+            executor.execute(() -> {
+                try {
+                    task.run();
+                } finally {
+                    unfinishedTasks.decrementAndGet();
+                }
+            });
+        }).when(service).getExecutor();
+        // A client that has gone without closing the connection: writes wait
+        // until the container gives up, after the first comment
+        PrintWriter stalling = new PrintWriter(responseBody) {
+            private boolean opened;
+
+            @Override
+            public void write(String text) {
+                if (opened) {
+                    try {
+                        clientReads.await();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+                opened = true;
+                super.write(text);
+            }
+        };
+        when(httpResponse.getWriter()).thenReturn(stalling);
+        try {
+            mockFindUI(ui);
+            handler.handleRequest(session, request(), response());
+
+            session.lock();
+            UI other = new MockUI(session);
+            other.getPushConfiguration().setTransport(Transport.SSE_PURE);
+            other.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+            session.unlock();
+            UI.setCurrent(null);
+            mockFindUI(other);
+            StringWriter otherBody = new StringWriter();
+            HttpServletResponse otherResponse = mock(HttpServletResponse.class);
+            when(otherResponse.getWriter())
+                    .thenReturn(new PrintWriter(otherBody));
+            AsyncContext otherContext = mock(AsyncContext.class);
+            when(otherContext.getResponse()).thenReturn(otherResponse);
+            when(httpRequest.startAsync()).thenReturn(otherContext);
+            handler.handleRequest(session, request(),
+                    new VaadinServletResponse(otherResponse, service));
+
+            String twoKeepAlives = ":\n\n".repeat(3);
+            long deadline = System.currentTimeMillis() + 4000;
+            while (!otherBody.toString().equals(twoKeepAlives)
+                    && System.currentTimeMillis() < deadline) {
+                Thread.sleep(50);
+            }
+            assertEquals(twoKeepAlives, otherBody.toString(),
+                    "Keep-alive should reach the other stream");
+            // Only the write to the stalled stream remains, once the task
+            // that wrote to the other stream has returned
+            deadline = System.currentTimeMillis() + 500;
+            while (unfinishedTasks.get() != 1
+                    && System.currentTimeMillis() < deadline) {
+                Thread.sleep(10);
+            }
+            assertEquals(1, unfinishedTasks.get(),
+                    "Keep-alive comments should not pile up on a stalled stream");
+        } finally {
+            clientReads.countDown();
+        }
     }
 
     private SseRequestHandler handlerWithKeepAliveInterval(String seconds) {

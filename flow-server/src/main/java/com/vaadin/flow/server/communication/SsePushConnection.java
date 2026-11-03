@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,7 +84,11 @@ public class SsePushConnection implements PushConnection, Serializable {
     private transient volatile State state = State.DISCONNECTED;
     private transient AsyncContext asyncContext;
     private transient PrintWriter writer;
-    private transient Object lock = new Object();
+    // Not synchronized: writes may wait for a slow client, and on Java 21 to
+    // 23 a virtual thread waiting inside synchronized pins its carrier thread
+    // (fixed in Java 24 by JEP 491). Can be synchronized again once Java 24 is
+    // the minimum.
+    private transient ReentrantLock lock = new ReentrantLock();
 
     /**
      * Creates an instance connected to the given UI.
@@ -111,7 +116,8 @@ public class SsePushConnection implements PushConnection, Serializable {
      *            false if it is a response to a client request.
      */
     public void push(boolean async) {
-        synchronized (lock) {
+        lock.lock();
+        try {
             if (!isConnected()) {
                 if (async && state != State.RESPONSE_PENDING) {
                     state = State.PUSH_PENDING;
@@ -126,6 +132,8 @@ public class SsePushConnection implements PushConnection, Serializable {
             } catch (Exception e) {
                 throw new RuntimeException("Push failed", e);
             }
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -169,17 +177,21 @@ public class SsePushConnection implements PushConnection, Serializable {
      *         connection, {@code false} if it has ended
      */
     boolean sendKeepAlive(AsyncContext asyncContext) {
-        synchronized (lock) {
+        lock.lock();
+        try {
             if (!isConnected() || this.asyncContext != asyncContext) {
                 return false;
             }
             write(KEEP_ALIVE);
             return isConnected();
+        } finally {
+            lock.unlock();
         }
     }
 
     private void write(String text) {
-        synchronized (lock) {
+        lock.lock();
+        try {
             writer.write(text);
             writer.flush();
             // PrintWriter does not throw, but reports errors here
@@ -187,6 +199,8 @@ public class SsePushConnection implements PushConnection, Serializable {
                 getLogger().debug("Writing to the event stream failed");
                 connectionLost(asyncContext);
             }
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -210,7 +224,8 @@ public class SsePushConnection implements PushConnection, Serializable {
     public void connect(AsyncContext asyncContext) throws IOException {
         assert asyncContext != null;
 
-        synchronized (lock) {
+        lock.lock();
+        try {
             if (isConnected()) {
                 disconnect();
             }
@@ -241,6 +256,8 @@ public class SsePushConnection implements PushConnection, Serializable {
                 // a pending push, but not vice versa
                 push(oldState == State.PUSH_PENDING);
             }
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -265,7 +282,8 @@ public class SsePushConnection implements PushConnection, Serializable {
 
     @Override
     public void disconnect() {
-        synchronized (lock) {
+        lock.lock();
+        try {
             if (!isConnected()) {
                 getLogger().debug(
                         "Disconnection already happened, ignoring request");
@@ -280,6 +298,8 @@ public class SsePushConnection implements PushConnection, Serializable {
             } catch (Exception e) {
                 getLogger().debug("Error when completing async context", e);
             }
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -292,7 +312,8 @@ public class SsePushConnection implements PushConnection, Serializable {
      *            the async context of the stream that ended
      */
     public void connectionLost(AsyncContext asyncContext) {
-        synchronized (lock) {
+        lock.lock();
+        try {
             if (asyncContext != this.asyncContext) {
                 return;
             }
@@ -301,6 +322,8 @@ public class SsePushConnection implements PushConnection, Serializable {
             if (state == State.CONNECTED) {
                 state = State.DISCONNECTED;
             }
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -329,7 +352,7 @@ public class SsePushConnection implements PushConnection, Serializable {
             throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
         state = State.DISCONNECTED;
-        lock = new Object();
+        lock = new ReentrantLock();
     }
 
     private static Logger getLogger() {
