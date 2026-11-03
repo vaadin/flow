@@ -15,12 +15,16 @@
  */
 package com.vaadin.flow.di;
 
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,6 +43,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.di.LookupInitializer.AppShellPredicateImpl;
@@ -52,6 +57,7 @@ import com.vaadin.flow.server.StaticFileHandler;
 import com.vaadin.flow.server.StaticFileHandlerFactory;
 import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.AppShellPredicate;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
@@ -75,6 +81,9 @@ import static org.mockito.Mockito.when;
 class LookupInitializerTest {
 
     private LookupInitializer initializer = new LookupInitializer();
+
+    @TempDir
+    Path applicationFolder;
 
     @Test
     void createLookup_instantiatorsAreProvidedAsAService_lookupThrows()
@@ -314,6 +323,97 @@ class LookupInitializerTest {
     @Test
     void resourceProviderImpl_returnsClassPathResources() throws IOException {
         assertResourceProvider(new ResourceProviderImpl());
+    }
+
+    @Test
+    void resourceProviderImpl_applicationClassLoader_findsApplicationResources()
+            throws IOException {
+        Files.writeString(applicationFolder.resolve("app-resource.txt"), "app");
+        ResourceProviderImpl resourceProvider = new ResourceProviderImpl();
+
+        try (URLClassLoader applicationClassLoader = applicationClassLoader(
+                ResourceProviderImpl.class.getClassLoader())) {
+            assertNull(resourceProvider
+                    .getApplicationResource("app-resource.txt"));
+
+            resourceProvider.setApplicationClassLoader(applicationClassLoader);
+
+            assertNotNull(resourceProvider
+                    .getApplicationResource("app-resource.txt"));
+            assertEquals(1, resourceProvider
+                    .getApplicationResources("app-resource.txt").size());
+            // The application class loader delegates to the class loader of
+            // Flow, which finds the same resource: it is listed once
+            assertResourceProvider(resourceProvider);
+        }
+    }
+
+    @Test
+    void resourceProviderImpl_resourceInBothClassLoaders_applicationResourceFirst()
+            throws IOException {
+        Path resource = applicationFolder
+                .resolve("resource-provider/some-resource.json");
+        Files.createDirectories(resource.getParent());
+        Files.writeString(resource, "{}");
+        ResourceProviderImpl resourceProvider = new ResourceProviderImpl();
+
+        // No parent: the resources of Flow are found only as a fallback
+        try (URLClassLoader applicationClassLoader = applicationClassLoader(
+                null)) {
+            resourceProvider.setApplicationClassLoader(applicationClassLoader);
+
+            URL applicationResource = resourceProvider.getApplicationResource(
+                    "resource-provider/some-resource.json");
+            assertEquals(resource.toUri().toURL().toExternalForm(),
+                    applicationResource.toExternalForm());
+            List<URL> resources = resourceProvider.getApplicationResources(
+                    "resource-provider/some-resource.json");
+            assertEquals(2, resources.size());
+            assertEquals(applicationResource.toExternalForm(),
+                    resources.get(0).toExternalForm());
+            assertNotNull(resourceProvider.getApplicationResource(
+                    "com/vaadin/flow/di/LookupInitializer.class"));
+        }
+    }
+
+    @Test
+    void initialize_servletContext_resourceProviderUsesServletContextClassLoader()
+            throws ServletException, IOException {
+        Files.writeString(applicationFolder.resolve("app-resource.txt"), "app");
+        try (URLClassLoader applicationClassLoader = applicationClassLoader(
+                ResourceProviderImpl.class.getClassLoader())) {
+            ServletContext servletContext = mock(ServletContext.class);
+            when(servletContext.getClassLoader())
+                    .thenReturn(applicationClassLoader);
+            AtomicReference<Lookup> capture = new AtomicReference<>();
+            initializer.initialize(new VaadinServletContext(servletContext),
+                    new HashMap<>(), capture::set);
+
+            ResourceProvider resourceProvider = capture.get()
+                    .lookup(ResourceProvider.class);
+            assertNotNull(resourceProvider
+                    .getApplicationResource("app-resource.txt"));
+            assertResourceProvider(resourceProvider);
+        }
+    }
+
+    @Test
+    void initialize_servletContextClassLoaderNotAvailable_resourceProviderUsesFlowClassLoader()
+            throws ServletException, IOException {
+        ServletContext servletContext = mock(ServletContext.class);
+        when(servletContext.getClassLoader())
+                .thenThrow(new UnsupportedOperationException());
+        AtomicReference<Lookup> capture = new AtomicReference<>();
+        initializer.initialize(new VaadinServletContext(servletContext),
+                new HashMap<>(), capture::set);
+
+        assertResourceProvider(capture.get().lookup(ResourceProvider.class));
+    }
+
+    private URLClassLoader applicationClassLoader(ClassLoader parent)
+            throws IOException {
+        return new URLClassLoader(
+                new URL[] { applicationFolder.toUri().toURL() }, parent);
     }
 
     @SuppressWarnings("unchecked")
