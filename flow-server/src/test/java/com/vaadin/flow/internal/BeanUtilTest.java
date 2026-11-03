@@ -488,4 +488,54 @@ class BeanUtilTest {
         assertEquals(List.of("y", "x"), BeanUtil.getBeanProperties(Point.class)
                 .stream().map(BeanProperty::name).toList());
     }
+
+    public static class Entity {
+        private Long id;
+        private int version;
+
+        public Long getId() {
+            return id;
+        }
+
+        public int getVersion() {
+            return version;
+        }
+    }
+
+    public static class Person extends Entity {
+        private static final String CONSTANT = "";
+        private String lastName;
+        private String firstName;
+        private boolean active;
+        private String notAProperty;
+
+        public String getLastName() {
+            return lastName;
+        }
+
+        public String getFirstName() {
+            return firstName;
+        }
+
+        public boolean isActive() {
+            return active;
+        }
+
+        public String getFullName() {
+            return firstName + " " + lastName;
+        }
+
+        public String getDisplayName() {
+            return getFullName();
+        }
+    }
+
+    @Test
+    void getBeanProperties_inOrderOfFields_superclassFirst_thenOthersByName() {
+        assertEquals(
+                List.of("id", "version", "lastName", "firstName", "active",
+                        "class", "displayName", "fullName"),
+                BeanUtil.getBeanProperties(Person.class).stream()
+                        .map(BeanProperty::name).toList());
+    }
 }

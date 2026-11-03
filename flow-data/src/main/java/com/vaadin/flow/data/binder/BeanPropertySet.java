@@ -20,8 +20,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -392,7 +390,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
     private BeanPropertySet(InstanceKey<T> instanceKey,
             Map<String, PropertyDefinition<T, ?>> definitions) {
         this.instanceKey = instanceKey;
-        this.definitions = new HashMap<>(definitions);
+        this.definitions = new LinkedHashMap<>(definitions);
     }
 
     private BeanPropertySet(InstanceKey<T> instanceKey,
@@ -415,7 +413,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
         if (parentDefinitions == null) {
             return;
         }
-        Map<String, PropertyDefinition<T, ?>> moreProps = new HashMap<>();
+        Map<String, PropertyDefinition<T, ?>> moreProps = new LinkedHashMap<>();
         for (String parentPropertyKey : parentDefinitions.keySet()) {
             PropertyDefinition<T, ?> parentProperty = parentDefinitions
                     .get(parentPropertyKey);
@@ -501,12 +499,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
 
     @Override
     public Stream<PropertyDefinition<T, ?>> getProperties() {
-        if (instanceKey.isRecord) {
-            return definitions.values().stream();
-        } else {
-            return definitions.values().stream()
-                    .sorted(Comparator.comparing(PropertyDefinition::getName));
-        }
+        return definitions.values().stream();
     }
 
     @Override

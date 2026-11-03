@@ -219,7 +219,7 @@ class WithoutJavaDesktopTest {
             Person copy = JacksonSerializer.toObject(Person.class, json);
             check("Ada", copy.getName());
 
-            check(List.of("address.city", "age", "name"),
+            check(List.of("name", "age", "address.city"),
                     BeanUtil.getBeanPropertyPaths(Person.class));
 
             Field name = Person.class.getDeclaredField("name");

@@ -18,6 +18,7 @@ package com.vaadin.flow.internal;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -25,8 +26,10 @@ import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.slf4j.LoggerFactory;
@@ -58,7 +61,13 @@ public final class BeanUtil implements Serializable {
      * interfaces, as {@code java.beans.Introspector} finds them: a getter is a
      * method that {@link ReflectTools#isGetter(Method)} accepts, and a setter
      * is a method that {@link ReflectTools#isSetter(Method)} accepts and that
-     * takes the type of the getter. The properties are sorted by name.
+     * takes the type of the getter.
+     * <p>
+     * The properties are in the order of their fields in the source code, the
+     * fields of a superclass first, as {@link Class#getDeclaredFields()}
+     * returns them in practice, followed by the properties without a field of
+     * the same name, sorted by name. The order of methods is not kept by the
+     * JVM, so a property without a field has no order of its own.
      *
      * @param beanType
      *            the type whose properties to query
@@ -95,8 +104,15 @@ public final class BeanUtil implements Serializable {
             }
         }
 
-        TreeSet<String> names = new TreeSet<>(readMethods.keySet());
-        names.addAll(writeMethods.keySet());
+        TreeSet<String> withoutField = new TreeSet<>(readMethods.keySet());
+        withoutField.addAll(writeMethods.keySet());
+        List<String> names = new ArrayList<>();
+        for (String field : getFieldNames(beanType)) {
+            if (withoutField.remove(field)) {
+                names.add(field);
+            }
+        }
+        names.addAll(withoutField);
         for (String name : names) {
             Method readMethod = readMethods.get(name);
             Method writeMethod = findWriteMethod(writeMethods.get(name),
@@ -212,6 +228,23 @@ public final class BeanUtil implements Serializable {
             BeanProperty property) throws IntrospectionException {
         return new PropertyDescriptor(property.name(), property.readMethod(),
                 property.writeMethod());
+    }
+
+    /**
+     * Gets the names of the instance fields of a class and its superclasses,
+     * the fields of a superclass first.
+     */
+    private static Set<String> getFieldNames(Class<?> type) {
+        Set<String> names = new LinkedHashSet<>();
+        if (type.getSuperclass() != null) {
+            names.addAll(getFieldNames(type.getSuperclass()));
+        }
+        for (Field field : type.getDeclaredFields()) {
+            if (!Modifier.isStatic(field.getModifiers())) {
+                names.add(field.getName());
+            }
+        }
+        return names;
     }
 
     private static String getReadPropertyName(Method method) {
