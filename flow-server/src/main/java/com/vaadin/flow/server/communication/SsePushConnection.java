@@ -224,10 +224,11 @@ public class SsePushConnection implements PushConnection, Serializable {
     public void connect(AsyncContext asyncContext) throws IOException {
         assert asyncContext != null;
 
+        AsyncContext previous = null;
         lock.lock();
         try {
             if (isConnected()) {
-                disconnect();
+                previous = detach();
             }
 
             HttpServletResponse response = (HttpServletResponse) asyncContext
@@ -259,6 +260,7 @@ public class SsePushConnection implements PushConnection, Serializable {
         } finally {
             lock.unlock();
         }
+        complete(previous);
     }
 
     /**
@@ -282,6 +284,7 @@ public class SsePushConnection implements PushConnection, Serializable {
 
     @Override
     public void disconnect() {
+        AsyncContext context;
         lock.lock();
         try {
             if (!isConnected()) {
@@ -289,17 +292,39 @@ public class SsePushConnection implements PushConnection, Serializable {
                         "Disconnection already happened, ignoring request");
                 return;
             }
-            AsyncContext context = asyncContext;
-            // Detached first, so that the end of the stream is not reported
-            // as a lost connection
-            connectionLost(context);
-            try {
-                context.complete();
-            } catch (Exception e) {
-                getLogger().debug("Error when completing async context", e);
-            }
+            context = detach();
         } finally {
             lock.unlock();
+        }
+        complete(context);
+    }
+
+    /**
+     * Detaches the current stream, so that its end is not reported as a lost
+     * connection. Must be called with the lock held.
+     *
+     * @return the detached stream, to complete once the lock is released
+     */
+    private AsyncContext detach() {
+        AsyncContext context = asyncContext;
+        connectionLost(context);
+        return context;
+    }
+
+    /**
+     * Ends the given stream. Called without the lock: the container may need
+     * the HTTP session lock to complete it, while a thread invalidating the
+     * session holds that lock and waits for this connection, see
+     * https://github.com/vaadin/flow/issues/16293
+     */
+    private static void complete(AsyncContext context) {
+        if (context == null) {
+            return;
+        }
+        try {
+            context.complete();
+        } catch (Exception e) {
+            getLogger().debug("Error when completing async context", e);
         }
     }
 

@@ -26,9 +26,11 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -373,6 +376,74 @@ class SsePushConnectionTest {
     }
 
     @Test
+    void disconnect_concurrentRequests_preventDeadlocks() throws Exception {
+        // When the HTTP session is invalidated, the container may hold a lock
+        // on it while the UIs are closed and their push connections
+        // disconnected on that thread. If another thread disconnects at the
+        // same time, completing the stream may need the same HTTP session
+        // lock, as with Jetty in https://github.com/vaadin/flow/issues/16293
+        ReentrantLock httpSessionLock = new ReentrantLock();
+        SseStream stream = streamCompletingWithLock(httpSessionLock);
+        CompletableFuture<Void> otherThread;
+        httpSessionLock.lock();
+        try {
+            otherThread = CompletableFuture.runAsync(connection::disconnect);
+            stream.completing.await(2, TimeUnit.SECONDS);
+
+            connection.disconnect();
+        } finally {
+            httpSessionLock.unlock();
+        }
+
+        otherThread.get(5, TimeUnit.SECONDS);
+        verify(stream.asyncContext, times(1)).complete();
+    }
+
+    @Test
+    void pushWhileDisconnect_preventDeadlocks() throws Exception {
+        // As above, but the thread holding the HTTP session lock pushes,
+        // e.g. when the Vaadin session is unlocked after it has been closed
+        ReentrantLock httpSessionLock = new ReentrantLock();
+        SseStream stream = streamCompletingWithLock(httpSessionLock);
+        CompletableFuture<Void> otherThread;
+        httpSessionLock.lock();
+        try {
+            otherThread = CompletableFuture.runAsync(connection::disconnect);
+            stream.completing.await(2, TimeUnit.SECONDS);
+
+            vaadinSession.runWithLock(() -> {
+                connection.push();
+                return null;
+            });
+        } finally {
+            httpSessionLock.unlock();
+        }
+
+        otherThread.get(5, TimeUnit.SECONDS);
+        assertEquals(State.PUSH_PENDING, connection.getState());
+    }
+
+    /**
+     * Connects a stream whose completion needs the given lock, like a container
+     * that accesses the HTTP session when an async request completes. Fails
+     * instead of waiting forever if the lock is not released.
+     */
+    private SseStream streamCompletingWithLock(ReentrantLock lock)
+            throws Exception {
+        SseStream stream = new SseStream();
+        connection.connect(stream.asyncContext);
+        doAnswer(invocation -> {
+            stream.completing.countDown();
+            if (!lock.tryLock(2, TimeUnit.SECONDS)) {
+                throw new AssertionError("Deadlock on AsyncContext.complete");
+            }
+            lock.unlock();
+            return null;
+        }).when(stream.asyncContext).complete();
+        return stream;
+    }
+
+    @Test
     void push_concurrentConnectionLoss_neverFails() throws Exception {
         // Streams end on container threads without the session lock, while
         // pushes happen with it
@@ -438,6 +509,7 @@ class SsePushConnectionTest {
         boolean failWrites;
         // Writes wait for this, like for a client that does not read
         volatile CountDownLatch stall;
+        final CountDownLatch completing = new CountDownLatch(1);
 
         SseStream() throws Exception {
             PrintWriter writer = new PrintWriter(buffer) {
