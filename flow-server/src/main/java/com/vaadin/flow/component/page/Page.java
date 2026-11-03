@@ -458,7 +458,6 @@ public class Page implements Serializable {
      * &#64;JsDefinition
      * public interface ReportEditorJs extends Serializable {
      *     &#64;JsExpression("return import('Frontend/report-editor/report-editor.js');")
-     *     &#64;JsCalledWith({})
      *     JsFunction loadEditor();
      * }
      *

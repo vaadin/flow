@@ -83,7 +83,6 @@ import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.internal.streams.ActiveTransfer;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippets;
@@ -2523,7 +2522,6 @@ public class UIInternals implements Serializable {
          * @return the function, which returns the promise of the chunk
          */
         @JsExpression("return window.Vaadin.Flow.loadOnDemand($0);")
-        @JsCalledWith({})
         JsFunction loadChunk(String chunkId);
     }
 }
