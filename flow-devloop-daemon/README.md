@@ -162,7 +162,7 @@ disagree about the version. The daemon still provisions on demand through the
 same code and into the same cache, so a project that never ran the goal is
 unaffected and one that did never downloads twice.
 `-Dvaadin.devcli.skipHotswapAgent=true` installs the CLI without it; dropping
-the release asset into `~/.vaadin/devloop/` by hand works too, since what is
+the pinned jar into `~/.vaadin/devloop/` by hand works too, since what is
 there is checksum-verified either way.
 
 ## Outcomes and exit codes
