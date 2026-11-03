@@ -81,19 +81,13 @@ class DependencyTest {
                 .get("captures").get(0).asString());
     }
 
-    @Test
-    void expressionDependency_hasNoEncodedFunction() {
-        assertNull(new Dependency(Dependency.Type.DYNAMIC_IMPORT,
-                "return import('a.js')").getEncodedDynamicImport());
-    }
-
     @ParameterizedTest
-    @ValueSource(strings = {
+    @ValueSource(strings = { "return import('a.js')",
             // A block is a valid function body that starts like JSON
             "{ return import('a.js'); }",
             // JSON, but not an encoded function
             "{\"other\":1}" })
-    void expressionStartingWithBrace_hasNoEncodedFunction(String expression) {
+    void expression_hasNoEncodedFunction(String expression) {
         assertNull(new Dependency(Dependency.Type.DYNAMIC_IMPORT, expression)
                 .getEncodedDynamicImport());
     }
