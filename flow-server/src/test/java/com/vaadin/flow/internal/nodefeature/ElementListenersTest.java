@@ -425,18 +425,40 @@ public class ElementListenersTest
     }
 
     @Test
-    void declaredEventData_captureIdentity() {
-        // Equal plain values: the same key, so any instance can read the value
-        assertEquals(ElementListenerMap.getEventDataKey(JS.closestTag("p")),
-                ElementListenerMap.getEventDataKey(JS.closestTag("p")));
-        assertNotEquals(ElementListenerMap.getEventDataKey(JS.closestTag("p")),
-                ElementListenerMap.getEventDataKey(JS.closestTag("div")));
+    void declaredEventData_elementCapture_ownKeyPerInstance() {
+        Element child = new Element("span");
+        new UI().getElement().appendChild(child);
+        DomEventData<Object> added = JS.echo(child);
+        DomEventData<Object> other = JS.echo(child);
+        assertNotEquals(ElementListenerMap.getEventDataKey(added),
+                ElementListenerMap.getEventDataKey(other));
 
-        // Detached elements are both encoded as null now, but they still get
-        // keys of their own
-        assertNotEquals(
-                ElementListenerMap.getEventDataKey(JS.echo(new Element("a"))),
-                ElementListenerMap.getEventDataKey(JS.echo(new Element("b"))));
+        // Only the instance that was added reads the value
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put(ElementListenerMap.getEventDataKey(added), "value");
+        DomEvent event = new DomEvent(new Element("div"), "click", fromClient);
+        assertEquals("value", event.getEventData(added));
+        assertNull(event.getEventData(other));
+    }
+
+    @Test
+    void declaredEventData_elementAttachedAfterCreation_sentWhileAttached() {
+        Element child = new Element("span");
+        DomEventData<Object> data = JS.echo(child);
+        String key = ElementListenerMap.getEventDataKey(data);
+        ns.add("click", noOp).addEventData(data);
+
+        new UI().getElement().appendChild(child);
+        ObjectNode captures = (ObjectNode) encodeSettings(ns, "click",
+                new ConstantPool()).get(1);
+        assertEquals(child.getNode().getId(),
+                captures.get(key).get(2).get("@v-node").intValue());
+
+        child.removeFromParent();
+        ns.add("click", noOp);
+        captures = (ObjectNode) encodeSettings(ns, "click", new ConstantPool())
+                .get(1);
+        assertTrue(captures.get(key).get(2).isNull());
     }
 
     @Test

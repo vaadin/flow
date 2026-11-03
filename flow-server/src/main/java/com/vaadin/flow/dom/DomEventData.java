@@ -20,7 +20,6 @@ import java.lang.reflect.Type;
 import java.util.Objects;
 
 import tools.jackson.databind.JavaType;
-import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.js.JsCall;
@@ -156,19 +155,6 @@ public final class DomEventData<T> implements JsSnippet {
      */
     public JsCall getDeclaredCall() {
         return declaredCall;
-    }
-
-    /**
-     * Encodes the captured values to send them to the browser. They are encoded
-     * again each time they are sent, so that an element is sent with the id
-     * that it has at that time.
-     * <p>
-     * For internal use only. May be renamed or removed in a future release.
-     *
-     * @return the encoded captures, not <code>null</code>
-     */
-    public ArrayNode encodeCaptures() {
-        return declaredCall.encodeSnippetCaptures();
     }
 
     /**

@@ -20,12 +20,12 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.jspecify.annotations.Nullable;
@@ -375,7 +375,7 @@ public record JsCall(Class<?> definitionType, String methodName,
         if (flattenArguments().stream().allMatch(JsCall::isPlainValue)) {
             return encoded.toString();
         }
-        return "#" + Long.toHexString(new SecureRandom().nextLong());
+        return "#" + UUID.randomUUID();
     }
 
     private static boolean isPlainValue(Object value) {
