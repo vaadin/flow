@@ -59,6 +59,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -162,6 +163,7 @@ public class ResponseWriterTest {
     public void setUp() {
         MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
         deploymentConfiguration.setBrotli(true);
+        deploymentConfiguration.setProductionMode(true);
 
         responseWriter = new OverrideableResponseWriter(
                 deploymentConfiguration);
@@ -364,9 +366,31 @@ public class ResponseWriterTest {
     }
 
     @Test
+    public void writeDataDevelopmentMode_precompressedVariantsNotServed()
+            throws IOException {
+        // A production build leaves .br/.gz next to the plain file, and an
+        // edit copied over the plain file afterwards must still be served.
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setBrotli(true);
+        configuration.setProductionMode(false);
+
+        responseWriter = new OverrideableResponseWriter(configuration);
+
+        responseWriter.overrideAcceptsBrotliResource = Boolean.TRUE;
+        responseWriter.overrideAcceptsGzippedResource = Boolean.TRUE;
+
+        makePathsAvailable(PATH_JS, PATH_GZ, PATH_BR);
+
+        assertResponse(fileJsContents);
+        verify(response, never()).setHeader(eq("Content-Encoding"),
+                anyString());
+    }
+
+    @Test
     public void writeDataBrotliDisabled() throws IOException {
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         configuration.setBrotli(false);
+        configuration.setProductionMode(true);
 
         responseWriter = new OverrideableResponseWriter(configuration);
 

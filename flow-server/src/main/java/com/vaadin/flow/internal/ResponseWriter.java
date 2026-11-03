@@ -82,20 +82,29 @@ public class ResponseWriter implements Serializable {
 
     private final int bufferSize;
     private final boolean brotliEnabled;
+    private final boolean precompressedEnabled;
 
     /**
      * Create a response writer with the given deployment configuration.
+     * <p>
+     * Precompressed variants ({@code .br}/{@code .gz}) are only served in
+     * production mode. They are written by a production build, and nothing
+     * updates them when the plain file changes afterwards, so in development
+     * mode they would hide every later edit of the resource.
      *
      * @param deploymentConfiguration
      *            the deployment configuration to use, not <code>null</code>
      * @since 1.3
      */
     public ResponseWriter(DeploymentConfiguration deploymentConfiguration) {
-        this(DEFAULT_BUFFER_SIZE, deploymentConfiguration.isBrotli());
+        this(DEFAULT_BUFFER_SIZE, deploymentConfiguration.isBrotli(),
+                deploymentConfiguration.isProductionMode());
     }
 
-    private ResponseWriter(int bufferSize, boolean brotliEnabled) {
+    private ResponseWriter(int bufferSize, boolean brotliEnabled,
+            boolean precompressedEnabled) {
         this.brotliEnabled = brotliEnabled;
+        this.precompressedEnabled = precompressedEnabled;
         this.bufferSize = bufferSize;
     }
 
@@ -131,7 +140,8 @@ public class ResponseWriter implements Serializable {
         URLConnection connection = null;
         InputStream dataStream = null;
 
-        if (brotliEnabled && acceptsBrotliResource(request)) {
+        if (precompressedEnabled && brotliEnabled
+                && acceptsBrotliResource(request)) {
             String brotliFilenameWithPath = filenameWithPath + ".br";
             try {
                 url = getPrecompressedResource(request, resourceUrl,
@@ -148,7 +158,8 @@ public class ResponseWriter implements Serializable {
             }
         }
 
-        if (dataStream == null && acceptsGzippedResource(request)) {
+        if (precompressedEnabled && dataStream == null
+                && acceptsGzippedResource(request)) {
             // try to serve a gzipped version if available
             String gzippedFilenameWithPath = filenameWithPath + ".gz";
             try {
@@ -329,9 +340,9 @@ public class ResponseWriter implements Serializable {
             long resourceLength, InputStream dataStream, URL resourceUrl,
             OutputStream outputStream, HttpServletResponse response)
             throws IOException {
-        new ResponseWriter(DEFAULT_BUFFER_SIZE, false).writeRangeContents(
-                ranges, resourceLength, dataStream, resourceUrl, outputStream,
-                response);
+        new ResponseWriter(DEFAULT_BUFFER_SIZE, false, false)
+                .writeRangeContents(ranges, resourceLength, dataStream,
+                        resourceUrl, outputStream, response);
     }
 
     /**
