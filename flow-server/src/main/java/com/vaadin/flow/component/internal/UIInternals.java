@@ -127,7 +127,8 @@ public class UIInternals implements Serializable {
 
     private static final ChunkJs CHUNK_JS = JsSnippets.of(ChunkJs.class);
 
-    // Bounded by the number of chunks, and holds only strings
+    // One entry per chunk id, which is per component class name in development
+    // mode.
     private static final Map<String, Dependency> chunkDependencies = new ConcurrentHashMap<>();
 
     private static final Pattern APP_ID_REPLACE_PATTERN = Pattern
