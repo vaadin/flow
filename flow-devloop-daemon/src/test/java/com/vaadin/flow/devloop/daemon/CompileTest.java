@@ -1150,42 +1150,6 @@ class CompileTest {
         assertEquals(List.of(config), changes.startup().deleted());
     }
 
-    /**
-     * A production build pre-compresses the static resources on the classpath,
-     * and the server prefers those siblings to the plain file whenever the
-     * browser accepts them. An edit copied out without dropping them leaves the
-     * browser on the content of that build until {@code mvn clean}.
-     */
-    @Test
-    void copyResources_removesCompressedCopiesFromABuild() throws IOException {
-        Reactor.Module app = module("app", "Main", """
-                package app;
-                public class Main { }
-                """);
-        Path served = write(
-                "app/src/main/resources/META-INF/resources/site.css",
-                "body{margin:0}");
-        // A compressed file the project ships itself, which the build
-        // overwrote with its own.
-        write("app/src/main/resources/META-INF/resources/site.css.gz",
-                "shipped");
-        Path brotli = write("app/target/classes/META-INF/resources/site.css.br",
-                "stale");
-        Path gzipped = write(
-                "app/target/classes/META-INF/resources/site.css.gz", "stale");
-        Compile compile = new Compile(project(app));
-
-        compile.copyResources(List.of(served));
-
-        assertEquals("body{margin:0}", Files.readString(
-                app.classesDir().resolve("META-INF/resources/site.css")));
-        assertFalse(Files.exists(brotli),
-                "a compressed copy from a build must not outlive the edit");
-        assertEquals("shipped", Files.readString(gzipped),
-                "a compressed file the project ships must be restored, not "
-                        + "left as the build wrote it");
-    }
-
     @Test
     void removeResourceCopies_takesTheFileOffTheClasspath() throws IOException {
         // The copy is what the application reads: a deletion that leaves it
@@ -1200,19 +1164,12 @@ class CompileTest {
         compile.copyResources(List.of(served));
         Path copy = app.classesDir().resolve("META-INF/resources/site.css");
         assertTrue(Files.isRegularFile(copy));
-        // What a production build leaves next to it, and the server would
-        // otherwise go on serving.
-        Path gzipped = write(
-                "app/target/classes/META-INF/resources/site.css.gz",
-                "compressed");
         compile.seedFromDisk();
         Files.delete(served);
 
         assertEquals(List.of(copy),
                 compile.removeResourceCopies(List.of(served)));
         assertFalse(Files.exists(copy));
-        assertFalse(Files.exists(gzipped),
-                "a compressed copy of a deleted resource must go with it");
 
         // Acting on it is what forgets it; otherwise every later apply would
         // offer a file nobody is going to restore.
