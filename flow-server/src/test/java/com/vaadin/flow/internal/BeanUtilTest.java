@@ -407,4 +407,85 @@ class BeanUtilTest {
         assertNotNull(valueDescriptor.getWriteMethod(),
                 "Should have write method from child interface");
     }
+
+    public static class Accessors {
+        public String getURL() {
+            return null;
+        }
+
+        public boolean isActive() {
+            return false;
+        }
+
+        public Boolean isNotABooleanGetter() {
+            return null;
+        }
+
+        public void setWriteOnly(String value) {
+        }
+
+        public int getNumber() {
+            return 0;
+        }
+
+        public void setNumber(long value) {
+        }
+
+        public static String getStatic() {
+            return null;
+        }
+    }
+
+    @Test
+    void getBeanProperties_findsAccessorsAsIntrospectorDoes() {
+        List<BeanProperty> properties = BeanUtil
+                .getBeanProperties(Accessors.class);
+
+        assertEquals(List.of("URL", "active", "class", "number", "writeOnly"),
+                properties.stream().map(BeanProperty::name).toList());
+        BeanProperty number = BeanUtil.getBeanProperty(Accessors.class,
+                "number");
+        assertEquals(int.class, number.type());
+        assertNull(number.writeMethod(),
+                "A setter of another type is not the setter of the property");
+        BeanProperty writeOnly = properties.get(4);
+        assertNull(writeOnly.readMethod());
+        assertEquals(String.class, writeOnly.type());
+        assertNull(BeanUtil.getBeanProperty(Accessors.class, "class"),
+                "Getters of Object are not looked up by name");
+    }
+
+    public interface HasId<T> {
+        T getId();
+
+        void setId(T id);
+    }
+
+    public static class LongId implements HasId<Long> {
+        @Override
+        public Long getId() {
+            return null;
+        }
+
+        @Override
+        public void setId(Long id) {
+        }
+    }
+
+    @Test
+    void getBeanProperties_genericAccessors_bridgeMethodsSkipped() {
+        BeanProperty id = BeanUtil.getBeanProperty(LongId.class, "id");
+
+        assertEquals(Long.class, id.type());
+        assertEquals(Long.class, id.writeMethod().getParameterTypes()[0]);
+    }
+
+    public record Point(int y, int x) {
+    }
+
+    @Test
+    void getBeanProperties_record_componentsInTheirOrder() {
+        assertEquals(List.of("y", "x"), BeanUtil.getBeanProperties(Point.class)
+                .stream().map(BeanProperty::name).toList());
+    }
 }
