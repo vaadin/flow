@@ -447,6 +447,13 @@ final class Compile {
             .of("META-INF/resources/", "static/", "public/", "resources/");
 
     /**
+     * The precompressed variants a production build writes next to a static
+     * resource, and the server serves in its place.
+     */
+    private static final List<String> COMPRESSED_SUFFIXES = List.of(".br",
+            ".gz");
+
+    /**
      * How far ahead of this clock a modification time may be and still be taken
      * at face value; see {@link #isFutureDated}.
      */
@@ -1235,8 +1242,36 @@ final class Compile {
             if (Files.deleteIfExists(target)) {
                 removed.add(target);
             }
+            removeCompressedCopies(source, target);
         }
         return removed;
+    }
+
+    /**
+     * Removes the {@code .br} and {@code .gz} siblings a production build left
+     * next to a resource's classpath copy.
+     * <p>
+     * {@code build-frontend} pre-compresses the static resources in
+     * {@code target/classes/META-INF/resources}, and the server prefers those
+     * siblings over the plain file whenever the browser accepts them - in
+     * development mode too. Copying the edited file alone would leave the
+     * browser served the content from that build until {@code mvn clean}. The
+     * server falls back to the plain file once the sibling is gone, and the
+     * next production build compresses it again.
+     * <p>
+     * A sibling that has a source of its own is a resource the project ships on
+     * purpose, not build output, and is left alone.
+     */
+    private static void removeCompressedCopies(Path source, Path target)
+            throws IOException {
+        for (String suffix : COMPRESSED_SUFFIXES) {
+            Path sourceSibling = source
+                    .resolveSibling(source.getFileName() + suffix);
+            if (!Files.exists(sourceSibling)) {
+                Files.deleteIfExists(
+                        target.resolveSibling(target.getFileName() + suffix));
+            }
+        }
     }
 
     /**
@@ -1266,6 +1301,7 @@ final class Compile {
             Files.createDirectories(target.getParent());
             Files.copy(source, target,
                     java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            removeCompressedCopies(source, target);
             copied.add(target);
         }
         return copied;
