@@ -39,6 +39,16 @@ import com.vaadin.flow.signals.Signal;
  * use this for posting to an endpoint outside of Vaadin, such as the login
  * processing URL of Spring Security, rather than for editing data with a
  * {@code Binder}.
+ * <p>
+ * The browser only submits native <code>&lt;input&gt;</code>,
+ * <code>&lt;select&gt;</code> and <code>&lt;textarea&gt;</code> elements with a
+ * form, so use the HTML components of this package, such as {@link Input} and
+ * {@link NativeButton}, for the fields and the submit button. Vaadin field
+ * components are not form-associated custom elements: depending on the
+ * component they submit nothing, a formatted or internal value instead of the
+ * field value, or only work by chance because of their internal markup, and a
+ * Vaadin {@code Button} does not submit the form. None of this is reported as
+ * an error.
  *
  * <pre>
  * Input username = new Input();
