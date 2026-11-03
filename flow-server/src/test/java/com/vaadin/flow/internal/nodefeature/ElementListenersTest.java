@@ -38,6 +38,7 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventData;
@@ -493,12 +494,41 @@ public class ElementListenersTest
         assertFalse(
                 filterSettings.has(JsonConstants.EVENT_SETTINGS_EXPRESSION));
 
-        // The captures are sent as [sharedKey, capture...] for each key
+        // The captures are sent as [sharedKey, debounce, capture...] for each
+        // key
         ObjectNode captures = (ObjectNode) firstValue.get(1);
         assertEquals(1, JacksonUtils.getKeys(captures).size());
         ArrayNode capture = (ArrayNode) captures
                 .get(JacksonUtils.getKeys(captures).get(0));
-        assertEquals("Enter", capture.get(1).asString());
+        assertEquals("Enter", capture.get(2).asString());
+    }
+
+    @Test
+    void sameDeclaredFilterDifferentCaptures_ownDebounceSettings() {
+        DomListenerRegistration enter = ns.add("keydown", noOp)
+                .setFilter(JS.isKey("Enter"));
+        DomListenerRegistration escape = ns.add("keydown", noOp)
+                .setFilter(JS.isKey("Escape"))
+                .debounce(300, DebouncePhase.TRAILING);
+
+        ConstantPool constantPool = new ConstantPool();
+        ArrayNode value = encodeSettings(ns, "keydown", constantPool);
+        ObjectNode captures = (ObjectNode) value.get(1);
+
+        // The Escape debounce does not apply to the Enter filter
+        assertEquals("true", captures
+                .get(ElementListenerMap.getFilterKey(enter)).get(1).toString());
+        assertEquals("[[300,\"trailing\"]]",
+                captures.get(ElementListenerMap.getFilterKey(escape)).get(1)
+                        .toString());
+
+        // The debounce settings are not in the shared settings, which stay
+        // the same for every set of captures and debounce settings
+        JsonNode shared = constantPool.dumpConstants()
+                .get(value.get(0).stringValue());
+        assertEquals(1, JacksonUtils.getKeys(shared).size());
+        shared.forEach(settings -> assertFalse(
+                settings.has(JsonConstants.EVENT_SETTINGS_DEBOUNCE)));
     }
 
     @Test
@@ -865,11 +895,11 @@ public class ElementListenersTest
         ArrayNode value = encodeSettings(ns, "keydown", constantPool);
 
         // Both the filter and the side effect evaluate the declared function
-        // with the capture of the filter
+        // with the capture of the filter, sent after the debounce settings
         ObjectNode captures = (ObjectNode) value.get(1);
         assertEquals(2, JacksonUtils.getKeys(captures).size());
         JacksonUtils.getKeys(captures).forEach(key -> assertEquals("Enter",
-                ((ArrayNode) captures.get(key)).get(1).asString()));
+                ((ArrayNode) captures.get(key)).get(2).asString()));
 
         // The side effect is called by the client when the filter passes
         JsonNode shared = constantPool.dumpConstants()

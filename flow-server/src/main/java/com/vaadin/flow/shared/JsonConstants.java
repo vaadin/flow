@@ -358,38 +358,39 @@ public class JsonConstants implements Serializable {
     public static final String MAP_STATE_NODE_EVENT_DATA = "]";
 
     /**
-     * Key of the JavaScript expression in the settings that are sent to the
-     * client for one entry that is evaluated when an event occurs.
+     * Key in the settings of one entry that the client runs when an event
+     * occurs. The value is the JavaScript expression to run.
      */
     public static final String EVENT_SETTINGS_EXPRESSION = "e";
 
     /**
-     * Key of the identifier of the declared function in the settings that are
-     * sent to the client for one entry that is evaluated when an event occurs.
-     * An entry has either this or {@link #EVENT_SETTINGS_EXPRESSION}.
+     * Key in the settings of one entry that the client runs when an event
+     * occurs. The value is the id of the declared function to run. An entry has
+     * either this key or {@link #EVENT_SETTINGS_EXPRESSION}.
      */
     public static final String EVENT_SETTINGS_FUNCTION = "f";
 
     /**
-     * Key of the debounce settings in the settings that are sent to the client
-     * for one entry that is evaluated when an event occurs.
+     * Key in the settings of one entry that the client runs when an event
+     * occurs. The value is the debounce settings. An entry with captures does
+     * not have this key. Its debounce settings are sent with its captures, for
+     * each element.
      */
     public static final String EVENT_SETTINGS_DEBOUNCE = "d";
 
     /**
-     * Key of the number of captures in the settings that are sent to the client
-     * for one entry that is evaluated when an event occurs. Entries with
-     * captures are only evaluated for the capture values that are sent
-     * separately for each element.
+     * Key in the settings of one entry that the client runs when an event
+     * occurs. The value is the number of captures. The client runs an entry
+     * with captures only with the captured values that are sent for each
+     * element.
      */
     public static final String EVENT_SETTINGS_CAPTURE_COUNT = "c";
 
     /**
-     * Key of the side effect in the settings that are sent to the client for
-     * one entry that is evaluated when an event occurs: the name of the method
-     * of the event, <code>preventDefault</code> or
-     * <code>stopPropagation</code>, that is called when the entry evaluates to
-     * a truthy value.
+     * Key in the settings of one entry that the client runs when an event
+     * occurs. The value is the name of a method of the event:
+     * <code>preventDefault</code> or <code>stopPropagation</code>. The client
+     * calls the method when the entry returns a truthy value.
      */
     public static final String EVENT_SETTINGS_SIDE_EFFECT = "s";
 

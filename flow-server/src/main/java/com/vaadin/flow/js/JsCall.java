@@ -216,8 +216,9 @@ public record JsCall(Class<?> definitionType, String methodName,
 
     /**
      * Gets the names of the parameters that the function a snippet evaluates to
-     * is called with, as declared by {@link JsCalledWith} on the given method,
-     * or else on the snippet type it returns.
+     * is called with. They come from {@link JsCalledWith} on the given method.
+     * If the method has no such annotation, they come from the annotation on
+     * the snippet type that the method returns.
      * <p>
      * The names become parameters of the generated function, so each of them is
      * checked to be one that a function in a JavaScript module can declare and
@@ -235,8 +236,8 @@ public record JsCall(Class<?> definitionType, String methodName,
     public static @Nullable List<String> getCalledWithNames(Method method) {
         JsCalledWith annotation = method.getAnnotation(JsCalledWith.class);
         if (annotation == null) {
-            // A snippet type that is always invoked the same way declares
-            // the names for every method that returns it
+            // A snippet type that is always called in the same way declares
+            // the names once, for all methods that return it
             annotation = method.getReturnType()
                     .getAnnotation(JsCalledWith.class);
         }
@@ -321,14 +322,17 @@ public record JsCall(Class<?> definitionType, String methodName,
     }
 
     /**
-     * Encodes the arguments of this call as the captures that a snippet is sent
-     * to the client with.
+     * Encodes the arguments of this call as the captures of a snippet. The
+     * captures are sent to the client together with the snippet.
      * <p>
-     * Called when the snippet is created, so that a call of a method that does
-     * not declare a snippet, or an argument that can not be sent to the client,
-     * fails at the call that captures it rather than when the snippet is used.
-     * A snippet keeps what this returns, so that it is sent and identified by
-     * the values as they were when it was created.
+     * This is called when the snippet is created. So an error is thrown right
+     * away, not later when the snippet is used, in these cases:
+     * <ul>
+     * <li>the method does not declare a snippet, or</li>
+     * <li>an argument cannot be sent to the client.</li>
+     * </ul>
+     * The snippet keeps the returned captures. So the snippet is sent and
+     * identified by the values that it had when it was created.
      *
      * @return the encoded captures, not <code>null</code>
      * @throws IllegalArgumentException

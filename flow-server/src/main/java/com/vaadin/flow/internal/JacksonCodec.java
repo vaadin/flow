@@ -282,8 +282,8 @@ public class JacksonCodec {
     }
 
     /**
-     * Decodes a JSON value as an instance of the given type, which may be a
-     * generic type such as {@code List<MyBean>}.
+     * Decodes a JSON value as an instance of the given type. The type can be a
+     * generic type, for example {@code List<MyBean>}.
      *
      * @param <T>
      *            the type to decode as

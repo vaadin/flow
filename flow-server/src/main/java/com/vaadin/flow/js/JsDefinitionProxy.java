@@ -272,21 +272,25 @@ public final class JsDefinitionProxy {
     }
 
     /**
-     * Whether the method returns a snippet type that there is a value to answer
-     * with for.
+     * Checks whether the method returns a snippet type that this class can
+     * create.
      */
     private static boolean returnsSnippet(Method method) {
         return snippetFactory(method.getReturnType()) != null;
     }
 
     /**
-     * Gets what creates the snippet that a method returning the given type
-     * answers with, from the call and the generic return type of the method: a
-     * {@link JsFunction} for a type that it is, or one of the snippets that a
-     * DOM event listener evaluates.
+     * Gets the factory that creates a snippet for a method with the given
+     * return type. The factory gets the call and the generic return type of the
+     * method. It creates one of these:
+     * <ul>
+     * <li>a {@link JsFunction}, if the return type allows it, or</li>
+     * <li>a {@link DomEventFilter} or a {@link DomEventData}, which a DOM event
+     * listener runs.</li>
+     * </ul>
      *
-     * @return the factory, or <code>null</code> if there is no snippet of the
-     *         type to answer with
+     * @return the factory, or <code>null</code> if the type is not a snippet
+     *         type that this class can create
      */
     private static BiFunction<JsCall, Type, JsSnippet> snippetFactory(
             Class<?> returnType) {
@@ -330,7 +334,7 @@ public final class JsDefinitionProxy {
 
     /**
      * Answers a call of a JavaScript definition with the snippet that the call
-     * declares, which runs nothing on the server.
+     * declares. Nothing runs on the server.
      */
     private record JsSnippetHandler(Class<?> definitionType)
             implements

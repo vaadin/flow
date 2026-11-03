@@ -77,14 +77,15 @@ public class ElementListenerMap extends NodeMap {
             .of(DebouncePhase.LEADING);
 
     /**
-     * Separator between the shared part and the capture specific part of the
-     * key identifying an evaluated expression.
+     * Separator in the key of an entry with captures. The part before it is the
+     * shared key. The part after it is a hash of the captured values.
      */
     private static final char CAPTURE_KEY_SEPARATOR = '$';
 
     /**
-     * Filter entry that always passes, used for making the client send events
-     * also to listeners that have no filter of their own.
+     * A filter entry that always passes. The client sends an event only if at
+     * least one filter passes. This entry makes sure that listeners without a
+     * filter also get the event.
      */
     private static final ExpressionEntry ALWAYS_TRUE_ENTRY = ExpressionEntry
             .forFilter(ALWAYS_TRUE_FILTER);
@@ -98,11 +99,13 @@ public class ElementListenerMap extends NodeMap {
     private Map<String, List<DomEventListenerWrapper>> listeners;
 
     /*
-     * Server-side only mapping from the keys that the client reports event data
-     * under to the expressions that the server knows the values by, per event
-     * type. Derived lazily when the first event of a type arrives, so that the
-     * keys are hashed once rather than for every event, and cleared when the
-     * listeners of that type change.
+     * Server-side only. For each event type, maps the key that the client uses
+     * for a value of event data to the expression that the value belongs to.
+     * Example: the key "xoM6bmSszJY=" maps to "event.clientX".
+     *
+     * Created when the first event of a type arrives, so that the keys are
+     * computed once and not for every event. Cleared when the listeners of the
+     * type change.
      */
     private Map<String, Map<String, String>> eventDataNames;
 
@@ -116,23 +119,39 @@ public class ElementListenerMap extends NodeMap {
     }
 
     /**
-     * One piece of JavaScript that the client evaluates when the event occurs:
-     * either an expression given as a string, or a function declared by a
-     * {@link DomEventFilter} or a {@link DomEventData} together with the values
-     * captured for it.
+     * One piece of JavaScript that the client runs when the event occurs. It is
+     * one of these:
+     * <ul>
+     * <li>an expression given as a string, or</li>
+     * <li>a function declared by a {@link DomEventFilter} or a
+     * {@link DomEventData}, together with its captured values.</li>
+     * </ul>
      * <p>
-     * An entry is identified towards the client by a {@link #getKey() key}
-     * derived from its contents rather than by its expression, so that two
-     * entries that share a declared function but use different captures stay
-     * apart, and so that no JavaScript is sent back to the server when the
-     * event occurs.
+     * The client and the server identify an entry by its {@link #getKey() key}.
+     * The key is a hash of the contents of the entry, not the expression
+     * itself. This has two benefits:
+     * <ul>
+     * <li>Two entries with the same declared function and different captured
+     * values get different keys.</li>
+     * <li>The client does not send JavaScript back to the server when the event
+     * occurs.</li>
+     * </ul>
      */
     private static final class ExpressionEntry implements Serializable {
         /**
-         * What the entry is for: <code>d</code> for event data, <code>f</code>
-         * for a filter, and for a side effect made conditional on a filter,
-         * <code>s</code> followed by the method of the event that the side
-         * effect calls.
+         * What the entry is for:
+         * <ul>
+         * <li><code>d</code>: event data.</li>
+         * <li><code>f</code>: a filter.</li>
+         * <li><code>s</code> followed by the name of a method of the event: a
+         * side effect. The client runs the filter of the listener and calls the
+         * method only if the filter passes.</li>
+         * </ul>
+         * Example of a side effect: for
+         * <code>setFilter("event.key === 'Enter'").preventDefault()</code>, the
+         * kind is <code>spreventDefault</code>. The client calls
+         * <code>event.preventDefault()</code> only when Enter is pressed, so
+         * other keys still work as usual.
          */
         private final String kind;
         private final String expression;
@@ -151,8 +170,7 @@ public class ElementListenerMap extends NodeMap {
         }
 
         /**
-         * Creates an entry for an expression whose value is passed to the
-         * server under the expression.
+         * Creates an entry for event data given as an expression.
          */
         private static ExpressionEntry forEventData(String expression) {
             return new ExpressionEntry("d", expression, null,
@@ -160,8 +178,8 @@ public class ElementListenerMap extends NodeMap {
         }
 
         /**
-         * Creates an entry for declared event data, whose value the server
-         * reads by its key.
+         * Creates an entry for declared event data. The server reads the value
+         * by the key of the entry.
          */
         private static ExpressionEntry forEventData(DomEventData<?> data) {
             return new ExpressionEntry("d", null,
@@ -170,8 +188,7 @@ public class ElementListenerMap extends NodeMap {
         }
 
         /**
-         * Creates an entry for a filter expression. Filter values are only used
-         * internally, so they are passed to the server under the derived key.
+         * Creates an entry for a filter given as an expression.
          */
         private static ExpressionEntry forFilter(String expression) {
             return new ExpressionEntry("f", expression, null,
@@ -185,8 +202,9 @@ public class ElementListenerMap extends NodeMap {
         }
 
         /**
-         * Creates an entry that evaluates the given filter and calls the given
-         * method of the event when the filter passes.
+         * Creates an entry that runs the given filter. When the filter passes,
+         * the client calls the given method of the event, for example
+         * <code>preventDefault</code>.
          */
         private static ExpressionEntry forSideEffect(ExpressionEntry filter,
                 String sideEffect) {
@@ -203,9 +221,10 @@ public class ElementListenerMap extends NodeMap {
         }
 
         /**
-         * Checks whether this is one of the pseudo expressions that the client
-         * interprets based on the key instead of evaluating it as JavaScript.
-         * Those keep using the pseudo expression as their key.
+         * Checks whether this is a special expression that the client does not
+         * run as JavaScript, for example <code>}value</code> for synchronizing
+         * the <code>value</code> property. The client recognizes such an
+         * expression by its key, so the key is the expression itself.
          */
         private boolean isPseudoExpression() {
             return isEventData() && expression != null
@@ -216,10 +235,11 @@ public class ElementListenerMap extends NodeMap {
         }
 
         /**
-         * Gets the key of the shared settings entry that this entry uses. All
-         * entries that differ only by capture values share the same shared key,
-         * which is what keeps the shared settings identical for e.g. two
-         * elements that use the same declared function with different captures.
+         * Gets the key of the shared settings of this entry. Entries that
+         * differ only by their captured values have the same shared key. For
+         * example, <code>isKey("Enter")</code> and <code>isKey("Escape")</code>
+         * have the same shared key. Because of this, the shared settings are
+         * the same for both, and the client gets them only once.
          */
         private String getSharedKey() {
             if (sharedKey == null) {
@@ -235,7 +255,8 @@ public class ElementListenerMap extends NodeMap {
         }
 
         /**
-         * Gets the key under which the client reports the value of this entry.
+         * Gets the key that the client uses when it sends the value of this
+         * entry to the server.
          */
         private String getKey() {
             if (key == null) {
@@ -258,18 +279,7 @@ public class ElementListenerMap extends NodeMap {
         }
 
         /**
-         * Encodes the capture values of this entry for the client as
-         * <code>[sharedKey, capture0, capture1, ...]</code>.
-         */
-        private ArrayNode toCaptureJson() {
-            ArrayNode json = JacksonUtils.createArrayNode();
-            json.add(getSharedKey());
-            json.addAll(captures);
-            return json;
-        }
-
-        /**
-         * Creates a short key for the given content, using the same approach as
+         * Creates a short key for the given content. Works the same way as
          * {@link ConstantPoolKey}.
          */
         private static String hash(String content) {
@@ -284,23 +294,15 @@ public class ElementListenerMap extends NodeMap {
         }
     }
 
-    private static final class ExpressionSettings implements Serializable {
-        private final String expression;
-        private final String functionId;
-        private final int captureCount;
-        private final String sideEffect;
-
-        private final Map<Integer, Set<DebouncePhase>> debounceSettings = new HashMap<>();
-
-        private ExpressionSettings(ExpressionEntry entry) {
-            this.expression = entry.expression;
-            this.functionId = entry.functionId;
-            this.captureCount = entry.captures.size();
-            this.sideEffect = entry.getSideEffect();
-        }
+    /**
+     * The debounce settings of one entry: for each timeout, the phases that the
+     * client sends an event for.
+     */
+    private static final class DebounceSettings implements Serializable {
+        private final Map<Integer, Set<DebouncePhase>> phasesByTimeout = new HashMap<>();
 
         public void addDebouncePhases(int timeout, Set<DebouncePhase> phases) {
-            debounceSettings.merge(Integer.valueOf(timeout), phases,
+            phasesByTimeout.merge(Integer.valueOf(timeout), phases,
                     (phases1, phases2) -> {
                         EnumSet<DebouncePhase> merge = EnumSet.copyOf(phases1);
                         merge.addAll(phases2);
@@ -309,46 +311,15 @@ public class ElementListenerMap extends NodeMap {
         }
 
         public JsonNode toJson() {
-            ObjectNode json = JacksonUtils.createObjectNode();
-            if (functionId == null) {
-                json.put(JsonConstants.EVENT_SETTINGS_EXPRESSION, expression);
-            } else {
-                json.put(JsonConstants.EVENT_SETTINGS_FUNCTION, functionId);
-            }
-            json.set(JsonConstants.EVENT_SETTINGS_DEBOUNCE, debounceToJson());
-            if (captureCount > 0) {
-                json.put(JsonConstants.EVENT_SETTINGS_CAPTURE_COUNT,
-                        captureCount);
-            }
-            if (sideEffect != null) {
-                json.put(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT, sideEffect);
-            }
-            return json;
-        }
-
-        /**
-         * Describes what the client evaluates for an expression, which for a
-         * side effect is the expression of the filter followed by the side
-         * effect. Gives <code>null</code> for a declared function, which has no
-         * expression.
-         */
-        private String describe() {
-            if (expression == null || sideEffect == null) {
-                return expression;
-            }
-            return "(" + expression + ") && event." + sideEffect + "()";
-        }
-
-        private JsonNode debounceToJson() {
-            if (debounceSettings.isEmpty()) {
+            if (phasesByTimeout.isEmpty()) {
                 return JacksonUtils.createNode(false);
-            } else if (debounceSettings.size() == 1
-                    && debounceSettings.containsKey(Integer.valueOf(0))) {
+            } else if (phasesByTimeout.size() == 1
+                    && phasesByTimeout.containsKey(Integer.valueOf(0))) {
                 // Shorthand if only debounce is a dummy filter debounce
                 return JacksonUtils.createNode(true);
             } else {
                 // [[timeout1, phase1, phase2, ...], [timeout2, phase1, ...]]
-                return debounceSettings.entrySet().stream()
+                return phasesByTimeout.entrySet().stream()
                         .map(entry -> Stream.concat(
                                 Stream.of(JacksonUtils
                                         .createNode(entry.getKey().intValue())),
@@ -362,45 +333,148 @@ public class ElementListenerMap extends NodeMap {
     }
 
     /**
-     * The settings for one event type, i.e. everything that the client needs to
-     * know for evaluating the expressions of all listeners for that type.
+     * The settings of one entry that are shared through the constant pool. For
+     * an entry with captures, the debounce settings are not shared. They are
+     * sent together with the captures, see {@link CapturedEntry}.
+     */
+    private static final class ExpressionSettings implements Serializable {
+        private final String expression;
+        private final String functionId;
+        private final int captureCount;
+        private final String sideEffect;
+
+        private final DebounceSettings debounceSettings = new DebounceSettings();
+
+        private ExpressionSettings(ExpressionEntry entry) {
+            this.expression = entry.expression;
+            this.functionId = entry.functionId;
+            this.captureCount = entry.captures.size();
+            this.sideEffect = entry.getSideEffect();
+        }
+
+        public JsonNode toJson() {
+            ObjectNode json = JacksonUtils.createObjectNode();
+            if (functionId == null) {
+                json.put(JsonConstants.EVENT_SETTINGS_EXPRESSION, expression);
+            } else {
+                json.put(JsonConstants.EVENT_SETTINGS_FUNCTION, functionId);
+            }
+            if (captureCount == 0) {
+                json.set(JsonConstants.EVENT_SETTINGS_DEBOUNCE,
+                        debounceSettings.toJson());
+            } else {
+                json.put(JsonConstants.EVENT_SETTINGS_CAPTURE_COUNT,
+                        captureCount);
+            }
+            if (sideEffect != null) {
+                json.put(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT, sideEffect);
+            }
+            return json;
+        }
+
+        /**
+         * Describes what the client runs for this entry. For a side effect,
+         * this is the filter followed by the method call, for example
+         * <code>(event.key === 'Enter') &amp;&amp; event.preventDefault()</code>.
+         * Returns <code>null</code> for a declared function, because it has no
+         * expression.
+         */
+        private String describe() {
+            if (expression == null || sideEffect == null) {
+                return expression;
+            }
+            return "(" + expression + ") && event." + sideEffect + "()";
+        }
+
+    }
+
+    /**
+     * An entry with captures, together with its own debounce settings. These
+     * are sent for one element only, not through the constant pool.
+     * <p>
+     * The debounce settings belong here and not in the shared settings, because
+     * entries with different captures share the same shared settings. For
+     * example, a listener with the filter <code>isKey("Enter")</code> and no
+     * debounce, and another listener with the filter
+     * <code>isKey("Escape")</code> and a debounce of 300 ms, use the same
+     * shared settings. Only the Escape filter must be debounced.
+     */
+    private static final class CapturedEntry implements Serializable {
+        private final ExpressionEntry entry;
+        private final DebounceSettings debounceSettings = new DebounceSettings();
+
+        private CapturedEntry(ExpressionEntry entry) {
+            this.entry = entry;
+        }
+
+        /**
+         * Encodes this entry for the client as
+         * <code>[sharedKey, debounce, capture0, capture1, ...]</code>.
+         */
+        private ArrayNode toJson() {
+            ArrayNode json = JacksonUtils.createArrayNode();
+            json.add(entry.getSharedKey());
+            json.add(debounceSettings.toJson());
+            json.addAll(entry.captures);
+            return json;
+        }
+    }
+
+    /**
+     * The settings for one event type. They contain everything that the client
+     * needs to run the entries of all listeners of that type.
      */
     private static final class EventSettings implements Serializable {
         /**
-         * Settings that are shared through the constant pool, keyed by
+         * Settings that are sent through the constant pool, so that elements
+         * with the same settings share them. The key is
          * {@link ExpressionEntry#getSharedKey()}.
          */
         private final Map<String, ExpressionSettings> shared = new HashMap<>();
 
         /**
-         * Capture values that are sent for this element only, keyed by
+         * Entries with captures, which are sent for this element only, keyed by
          * {@link ExpressionEntry#getKey()}.
          */
-        private final Map<String, ExpressionEntry> captured = new LinkedHashMap<>();
+        private final Map<String, CapturedEntry> captured = new LinkedHashMap<>();
 
         /**
-         * The expression that the server knows the value that the client
-         * reports for an entry by, keyed by {@link ExpressionEntry#getKey()}.
-         * Only contains event data entries for which the key and the expression
-         * differ. Declared event data is read by its key, see
-         * {@link #getEventDataKey(DomEventData)}.
+         * Maps the key that the client uses for a value to the expression of
+         * that value. For example, the key <code>"xoM6bmSszJY="</code> maps to
+         * <code>"event.clientX"</code>. The server uses this map to show the
+         * values by their expressions in {@link DomEvent#getEventData()}.
+         * <p>
+         * The map only contains event data given as an expression. It does not
+         * contain:
+         * <ul>
+         * <li>special expressions such as <code>}value</code>, because their
+         * key is already the expression, or</li>
+         * <li>declared event data, because the server reads it by its key, see
+         * {@link #getEventDataKey(DomEventData)}.</li>
+         * </ul>
          */
         private final Map<String, String> names = new HashMap<>();
 
-        private ExpressionSettings add(ExpressionEntry entry) {
+        /**
+         * Adds an entry and returns the debounce settings for it. An entry with
+         * captured values has its own debounce settings. Other entries use the
+         * debounce settings in the shared settings.
+         */
+        private DebounceSettings add(ExpressionEntry entry) {
             ExpressionSettings settings = shared.computeIfAbsent(
                     entry.getSharedKey(), key -> new ExpressionSettings(entry));
 
             String key = entry.getKey();
-            if (!entry.captures.isEmpty()) {
-                captured.putIfAbsent(key, entry);
-            }
             if (entry.isEventData() && entry.expression != null
                     && !key.equals(entry.expression)) {
                 names.put(key, entry.expression);
             }
 
-            return settings;
+            if (entry.captures.isEmpty()) {
+                return settings.debounceSettings;
+            }
+            return captured.computeIfAbsent(key,
+                    k -> new CapturedEntry(entry)).debounceSettings;
         }
     }
 
@@ -412,15 +486,16 @@ public class ElementListenerMap extends NodeMap {
 
         private DisabledUpdateMode mode = DisabledUpdateMode.ONLY_WHEN_ENABLED;
         /*
-         * Exactly sized unmodifiable list rather than a set: listeners hold a
-         * handful of expressions, so a hash set would cost several times more
-         * memory for each one. The list may be shared with other listeners, see
-         * addEventData(List), and is replaced with a copy when adding.
+         * An unmodifiable list of the exact size, not a set. A listener has
+         * only a few expressions, and a hash set would use several times more
+         * memory for each of them. Other listeners may use the same list, see
+         * addEventData(List). Adding an expression replaces the list with a new
+         * one.
          */
         private List<String> eventDataExpressions;
         /*
-         * Declared event data, kept apart from the plain expressions so that
-         * those can still be shared.
+         * Declared event data. Kept in a separate list, so that the list of
+         * expressions can still be shared with other listeners.
          */
         private List<ExpressionEntry> eventDataEntries;
         private ExpressionEntry filter;
@@ -639,8 +714,9 @@ public class ElementListenerMap extends NodeMap {
             return this;
         }
 
-        // The client reads a synchronized property, or the state node closest
-        // to the event target, without compiling anything
+        // The client does not compile these as JavaScript: it reads a
+        // synchronized property, or finds the state node closest to the event
+        // target
         private static boolean isCompiledByClient(String eventData) {
             return !eventData
                     .startsWith(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN)
@@ -782,14 +858,15 @@ public class ElementListenerMap extends NodeMap {
     }
 
     /**
-     * Makes the side effect of a <code>preventDefault</code> or
-     * <code>stopPropagation</code> entry conditional on the filter of the same
-     * listener, so that the side effect only happens for events that the
-     * listener is actually interested in.
+     * Makes a <code>preventDefault</code> or <code>stopPropagation</code> entry
+     * depend on the filter of the same listener. The method of the event is
+     * then called only for events that pass the filter.
      * <p>
-     * The conditional entry evaluates the filter, with its captures, and the
-     * client calls the method of the event when the filter passes. Nothing is
-     * composed from strings, so this works for a declared filter as well.
+     * For example, with
+     * <code>setFilter(JS.isKey("Enter")).preventDefault()</code>, the client
+     * calls <code>event.preventDefault()</code> only when Enter is pressed. The
+     * new entry runs the filter with its captured values. The expressions are
+     * not joined as strings, so this also works for a declared filter.
      *
      * @param entry
      *            the event data entry to make conditional
@@ -838,8 +915,8 @@ public class ElementListenerMap extends NodeMap {
         }
 
         ObjectNode captures = JacksonUtils.createObjectNode();
-        settings.captured.forEach(
-                (key, entry) -> captures.set(key, entry.toCaptureJson()));
+        settings.captured
+                .forEach((key, entry) -> captures.set(key, entry.toJson()));
 
         return new ParameterizedConstantPoolKey(constantPoolKey, captures);
     }
@@ -859,9 +936,9 @@ public class ElementListenerMap extends NodeMap {
     }
 
     /**
-     * Maps the keys that the client uses for reporting event data values to the
-     * names that are used on the server. Values that the server has no name
-     * for, such as filter results, are passed through as-is.
+     * Replaces the keys that the client uses for event data values with the
+     * expressions that the server uses for them. A value that has no expression
+     * on the server, such as the result of a filter, keeps its key.
      *
      * @param eventType
      *            the type of the event, not <code>null</code>
@@ -1037,9 +1114,9 @@ public class ElementListenerMap extends NodeMap {
     }
 
     /**
-     * Gets the key that the client reports the value of the given declared
-     * event data under, which is derived from the declared function and the
-     * captured values.
+     * Gets the key that the client uses when it sends the value of the given
+     * declared event data. The key is computed from the declared function and
+     * the captured values.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      *

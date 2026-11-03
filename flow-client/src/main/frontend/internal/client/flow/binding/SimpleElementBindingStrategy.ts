@@ -104,28 +104,31 @@ type Command = () => void;
 type EventExpression = (event: Event, element: Element) => unknown;
 
 /**
- * The settings that the server sends for one entry that the client should
- * evaluate when an event occurs: either an expression or a function declared
- * in the bundle. Shared between all elements that use the same entry with the
- * same debounce settings, so the capture values of a declared function are
- * sent separately for each element.
+ * The settings of one entry that the client runs when an event occurs. The
+ * entry is either an expression or a function declared in the bundle. All
+ * elements that use the same entry share these settings. For an entry with
+ * captures, the server sends the captured values and the debounce settings
+ * separately for each element.
  */
 type ExpressionSettings = {
-  /** The JavaScript expression to evaluate; EVENT_SETTINGS_EXPRESSION. */
+  /** The JavaScript expression to run; EVENT_SETTINGS_EXPRESSION. */
   [JsonConstants.EVENT_SETTINGS_EXPRESSION]?: string;
-  /** The id of the declared function to evaluate; EVENT_SETTINGS_FUNCTION. */
+  /** The id of the declared function to run; EVENT_SETTINGS_FUNCTION. */
   [JsonConstants.EVENT_SETTINGS_FUNCTION]?: string;
-  /** Debounce settings: `false`, `true` or `[[timeout, phase, ...], ...]`; EVENT_SETTINGS_DEBOUNCE. */
-  [JsonConstants.EVENT_SETTINGS_DEBOUNCE]: unknown;
+  /**
+   * Debounce settings: `false`, `true` or `[[timeout, phase, ...], ...]`;
+   * EVENT_SETTINGS_DEBOUNCE. Left out for an entry with captures.
+   */
+  [JsonConstants.EVENT_SETTINGS_DEBOUNCE]?: unknown;
   /** The number of captures of a declared function; EVENT_SETTINGS_CAPTURE_COUNT. */
   [JsonConstants.EVENT_SETTINGS_CAPTURE_COUNT]?: number;
-  /** The method of the event to call when the entry is truthy; EVENT_SETTINGS_SIDE_EFFECT. */
+  /** The method of the event to call when the value is truthy; EVENT_SETTINGS_SIDE_EFFECT. */
   [JsonConstants.EVENT_SETTINGS_SIDE_EFFECT]?: string;
 };
 
 /**
- * Capture values for one declared function, as
- * `[sharedKey, capture0, capture1, ...]`.
+ * Debounce settings and capture values for one declared function, as
+ * `[sharedKey, debounce, capture0, capture1, ...]`.
  */
 type CaptureValues = unknown[];
 
@@ -1230,8 +1233,9 @@ function handleDomEvent(event: Event, context: BindingContext): void {
   const listenerMap = getDomEventListenerMap(node);
   const constantPool = node.getTree().getRegistry().getConstantPool();
 
-  // The value is either the constant pool key of the shared settings, or a
-  // pair of that key and the capture values that are specific to this element
+  // The value is one of these:
+  // - the constant pool key of the shared settings, or
+  // - a pair of that key and the captured values of this element
   const settingsValue = listenerMap.getProperty(type).getValue() as [string, Record<string, CaptureValues>] | string;
   const [expressionConstantKey, capturedExpressions] =
     typeof settingsValue === 'string' ? [settingsValue, {}] : settingsValue;
@@ -1242,8 +1246,8 @@ function handleDomEvent(event: Event, context: BindingContext): void {
   const sharedKeys = Object.keys(sharedSettings);
   const capturedKeys = Object.keys(capturedExpressions);
 
-  // Debounce settings by the key that the value is reported under, i.e.
-  // including one entry per set of captures for parameterized expressions
+  // Debounce settings for each key that a value is sent with. An entry with
+  // captures has one key for each set of captured values
   const entrySettings: Record<string, unknown> = {};
 
   const eventData: Record<string, unknown> | null = sharedKeys.length === 0 && capturedKeys.length === 0 ? null : {};
@@ -1252,7 +1256,7 @@ function handleDomEvent(event: Event, context: BindingContext): void {
   for (const key of sharedKeys) {
     const settings = sharedSettings[key];
     if (settings[JsonConstants.EVENT_SETTINGS_CAPTURE_COUNT]) {
-      // Only evaluated through the capture values sent for this element
+      // Runs only with the captured values that are sent for this element
       continue;
     }
     entrySettings[key] = settings[JsonConstants.EVENT_SETTINGS_DEBOUNCE];
@@ -1273,12 +1277,14 @@ function handleDomEvent(event: Event, context: BindingContext): void {
   }
 
   for (const key of capturedKeys) {
-    const [sharedKey, ...captures] = capturedExpressions[key];
+    const [sharedKey, debounce, ...captures] = capturedExpressions[key];
     const settings = sharedSettings[sharedKey as string];
     assert(settings !== undefined, 'There must be shared settings for a captured expression');
-    entrySettings[key] = settings[JsonConstants.EVENT_SETTINGS_DEBOUNCE];
+    entrySettings[key] = debounce;
 
-    const decodedCaptures = captures.map((capture) => decodeWithTypeInfo(node.getTree(), capture));
+    const decodedCaptures = captures.map((capture) =>
+      decodeWithTypeInfo(node.getTree(), withoutRemovedNodes(node.getTree(), capture))
+    );
     eventData![key] = evaluateEntry(settings, decodedCaptures, event, element);
   }
 
@@ -1492,12 +1498,38 @@ function updateAttributeValue(
 }
 
 /**
- * Evaluates one entry of the event settings: a function declared in the bundle,
- * evaluated with its captures and then called with the event and the element,
- * or else an expression. When the entry has a side effect, the method of the
- * event it names is called if the value is truthy, which makes a
- * `preventDefault` or `stopPropagation` conditional on the filter of the
- * listener.
+ * Returns a copy of a capture value where each reference to a state node that
+ * is no longer in the tree is replaced by null. A capture keeps the id of the
+ * node it had when the listener was set up. If the server removes that node
+ * later, the event must still be sent, with null for the removed node.
+ *
+ * The copy also keeps the stored capture unchanged, because decoding replaces
+ * values in the object that it decodes.
+ */
+function withoutRemovedNodes(tree: StateTree, value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map((item) => withoutRemovedNodes(tree, item));
+  }
+  if (typeof value !== 'object' || value === null) {
+    return value;
+  }
+  const nodeId = (value as Record<string, unknown>)['@v-node'];
+  if (typeof nodeId === 'number' && tree.getNode(nodeId) === null) {
+    return null;
+  }
+  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, withoutRemovedNodes(tree, item)]));
+}
+
+/**
+ * Runs one entry of the event settings and returns its value. The entry is one
+ * of these:
+ * - a function declared in the bundle: it is called with the captures, and the
+ *   result is called with the event and the element, or
+ * - an expression.
+ *
+ * An entry can have a side effect, `preventDefault` or `stopPropagation`. Then
+ * the method of the event is called only if the value is truthy. This way, the
+ * method is called only when the filter of the listener passes.
  */
 function evaluateEntry(settings: ExpressionSettings, captures: unknown[], event: Event, element: Element): unknown {
   const functionId = settings[JsonConstants.EVENT_SETTINGS_FUNCTION];

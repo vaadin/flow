@@ -95,10 +95,10 @@ public interface DomListenerRegistration extends Registration {
     }
 
     /**
-     * Adds declared JavaScript for extracting event data. When an event is
-     * fired in the browser, the declared expression is evaluated with the DOM
-     * <code>event</code> and this <code>element</code>, and its value is sent
-     * back to the server together with the event. The value is read with
+     * Adds declared JavaScript that gets data from the event. When the event
+     * occurs in the browser, the browser runs the declared expression with the
+     * DOM <code>event</code> and this <code>element</code>. It sends the value
+     * to the server together with the event. Read the value with
      * {@link DomEvent#getEventData(DomEventData)}:
      *
      * <pre>
@@ -109,11 +109,11 @@ public interface DomListenerRegistration extends Registration {
      *         .addEventData(label);
      * </pre>
      * <p>
-     * Unlike {@link #addEventData(String)}, nothing is compiled from a string
-     * in the browser, so this works under a Content Security Policy that does
-     * not allow <code>unsafe-eval</code>. The values captured by the event data
-     * are sent separately from the expression, so all event data declared by
-     * the same method shares one function in the browser.
+     * The browser does not compile any JavaScript from a string, unlike with
+     * {@link #addEventData(String)}. So this also works with a Content Security
+     * Policy that does not allow <code>unsafe-eval</code>. The captured values
+     * are sent separately from the expression. Because of this, all event data
+     * from the same method uses one function in the browser.
      *
      * @param eventData
      *            the event data to send, not <code>null</code>
@@ -151,24 +151,23 @@ public interface DomListenerRegistration extends Registration {
     DomListenerRegistration setFilter(String filter);
 
     /**
-     * Sets declared JavaScript that is used for filtering events to this
-     * listener. When an event is fired in the browser, the declared expression
-     * is evaluated with the DOM <code>event</code> and this
-     * <code>element</code>, and the event is sent to the server only if it
-     * returns a truthy value:
+     * Sets declared JavaScript that filters the events for this listener. When
+     * the event occurs in the browser, the browser runs the declared expression
+     * with the DOM <code>event</code> and this <code>element</code>. It sends
+     * the event to the server only if the expression returns a truthy value:
      *
      * <pre>
      * field.getElement().addEventListener("keydown", event -&gt; submit())
      *         .setFilter(JS.isKey("Enter"));
      * </pre>
      * <p>
-     * Unlike {@link #setFilter(String)}, nothing is compiled from a string in
-     * the browser, so this works under a Content Security Policy that does not
-     * allow <code>unsafe-eval</code>. The values captured by the filter are
-     * sent separately from the expression, so all filters declared by the same
-     * method share one function in the browser.
+     * The browser does not compile any JavaScript from a string, unlike with
+     * {@link #setFilter(String)}. So this also works with a Content Security
+     * Policy that does not allow <code>unsafe-eval</code>. The captured values
+     * are sent separately from the expression. Because of this, all filters
+     * from the same method use one function in the browser.
      * <p>
-     * Any previous filter for this registration is discarded. To clear the
+     * This replaces any previous filter of this registration. To remove the
      * filter, pass <code>(String) null</code> to {@link #setFilter(String)}.
      *
      * @param filter
@@ -187,8 +186,9 @@ public interface DomListenerRegistration extends Registration {
     /**
      * Gets the currently set filter expression.
      * <p>
-     * A filter set with {@link #setFilter(DomEventFilter)} has no expression to
-     * return, so this returns <code>null</code> for it.
+     * Returns <code>null</code> for a filter set with
+     * {@link #setFilter(DomEventFilter)}, because such a filter has no
+     * expression.
      *
      * @see #setFilter(String)
      *

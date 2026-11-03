@@ -30,19 +30,23 @@ import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
 
 /**
- * A declared JavaScript expression whose value is sent to the server together
- * with a DOM event, for
- * {@link DomListenerRegistration#addEventData(DomEventData)}.
+ * A declared JavaScript expression. When a DOM event occurs, the browser runs
+ * the expression and sends its value to the server together with the event. Use
+ * it with {@link DomListenerRegistration#addEventData(DomEventData)}.
  * <p>
- * Event data is declared by a method of a {@link JsDefinition} interface that
- * returns this type, and created by calling that method on the implementation
- * that {@link JsSnippets#of(Class)} hands out. The expression is the body of a
- * function that is called with the DOM <code>event</code> and the
- * <code>element</code> the listener is registered on, and returns the value to
- * send. The arguments of the call are captured and referenced as
- * <code>$0</code>, <code>$1</code>, &hellip;. The value is read in the listener
- * with {@link DomEvent#getEventData(DomEventData)}, as the type that the method
- * declares:
+ * To declare event data, add a method that returns this type to a
+ * {@link JsDefinition} interface. To create event data, call that method on the
+ * object that {@link JsSnippets#of(Class)} returns.
+ * <p>
+ * The expression is the body of a function. The function gets two parameters:
+ * the DOM <code>event</code>, and the <code>element</code> that the listener is
+ * added to. It returns the value to send. The arguments of the method call are
+ * captured, and the expression uses them as <code>$0</code>, <code>$1</code>,
+ * and so on.
+ * <p>
+ * In the listener, read the value with
+ * {@link DomEvent#getEventData(DomEventData)}. The value has the type that the
+ * method declares:
  *
  * <pre>
  * &#64;JsDefinition
@@ -61,19 +65,21 @@ import com.vaadin.flow.js.JsSnippets;
  *         .addEventData(pasted);
  * </pre>
  * <p>
- * The build collects the expression into the bundle, so nothing is compiled
- * from a string in the browser, and all event data declared by the same method
- * shares one function regardless of the captured values. The value is told
- * apart by what is captured, so the same method can be used several times on
- * one listener with different values.
+ * The build adds the expression to the bundle. Because of this, the browser
+ * does not compile any JavaScript from a string. All event data from the same
+ * method uses the same function, also when the captured values are different.
+ * You can use the same method several times on one listener with different
+ * values. Each value is read separately.
  * <p>
- * The captured values are encoded when the event data is created, so a value
- * that can not be sent to the client fails right away. An element or component
- * captured this way must already be attached when the event data is created,
- * since one that is not is sent as <code>null</code>, even if it is attached by
- * the time the event data is added to a listener. Create the event data after
- * attaching, for instance in an attach listener, rather than in a field
- * initializer.
+ * The captured values are encoded when the event data is created. If a value
+ * cannot be sent to the browser, creating the event data fails.
+ * <p>
+ * If you capture an element or a component, it must be attached when you create
+ * the event data. If it is not attached at that time, the browser gets
+ * <code>null</code> for it. This is also the case if it is attached later,
+ * before the event data is added to a listener. So do not create the event data
+ * in a field initializer. Create it after attaching, for example in an attach
+ * listener.
  *
  * @param <T>
  *            the type of the value
@@ -94,8 +100,8 @@ public final class DomEventData<T> implements JsSnippet {
     }
 
     /**
-     * Creates event data for the given call of a {@link JsDefinition} method
-     * that returns event data.
+     * Creates event data for the given call of a {@link JsDefinition} method.
+     * The method must return event data.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      * Create event data by calling the relevant method on the implementation
@@ -107,8 +113,8 @@ public final class DomEventData<T> implements JsSnippet {
      *            the call of a method that returns event data, not
      *            <code>null</code>
      * @param returnType
-     *            the generic return type of the called method, which tells the
-     *            type to read the value as, not <code>null</code>
+     *            the generic return type of the called method. The value is
+     *            read as this type. Not <code>null</code>
      * @return new event data, not <code>null</code>
      * @throws IllegalArgumentException
      *             if the called method does not declare a {@link JsSnippet}
@@ -119,8 +125,8 @@ public final class DomEventData<T> implements JsSnippet {
     public static <T> DomEventData<T> ofDeclaredCall(JsCall call,
             Type returnType) {
         Objects.requireNonNull(call, "call");
-        // DomEventData<String> is read as a String, while a raw or
-        // undetermined type is read as whatever the JSON holds
+        // DomEventData<String> is read as a String. A raw or unknown type is
+        // read as the JSON value as such
         Type valueType = returnType instanceof ParameterizedType parameterized
                 ? parameterized.getActualTypeArguments()[0]
                 : Object.class;
@@ -130,7 +136,7 @@ public final class DomEventData<T> implements JsSnippet {
 
     /**
      * Gets the call of the {@link JsDefinition} method that declared this event
-     * data, which names the function of the bundle it runs.
+     * data. The call tells which function of the bundle to run.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      *
@@ -141,9 +147,9 @@ public final class DomEventData<T> implements JsSnippet {
     }
 
     /**
-     * Gets the captured values as they were encoded when this event data was
-     * created, which is what they are sent to the client as, and what the key
-     * its value is read by is derived from. Not to be modified.
+     * Gets the captured values, encoded when this event data was created. They
+     * are sent to the browser in this form. The key for reading the value is
+     * also computed from them. Do not modify the returned array.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      *
@@ -154,8 +160,8 @@ public final class DomEventData<T> implements JsSnippet {
     }
 
     /**
-     * Gets the type that the value is read as, as declared by the method that
-     * declared this event data.
+     * Gets the type to read the value as. The method that declared this event
+     * data defines the type.
      *
      * @return the value type, not <code>null</code>
      */

@@ -26,16 +26,19 @@ import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
 
 /**
- * A declared JavaScript expression that decides whether a DOM event is sent to
- * a listener, for {@link DomListenerRegistration#setFilter(DomEventFilter)}.
+ * A declared JavaScript expression that decides if a DOM event is sent to a
+ * listener. Use it with
+ * {@link DomListenerRegistration#setFilter(DomEventFilter)}.
  * <p>
- * A filter is declared by a method of a {@link JsDefinition} interface that
- * returns this type, and created by calling that method on the implementation
- * that {@link JsSnippets#of(Class)} hands out. The expression is the body of a
- * function that is called with the DOM <code>event</code> and the
- * <code>element</code> the listener is registered on, and returns whether the
- * event should be sent. The arguments of the call are captured and referenced
- * as <code>$0</code>, <code>$1</code>, &hellip;:
+ * To declare a filter, add a method that returns this type to a
+ * {@link JsDefinition} interface. To create a filter, call that method on the
+ * object that {@link JsSnippets#of(Class)} returns.
+ * <p>
+ * The expression is the body of a function. The function gets two parameters:
+ * the DOM <code>event</code>, and the <code>element</code> that the listener is
+ * added to. It returns <code>true</code> if the event should be sent. The
+ * arguments of the method call are captured, and the expression uses them as
+ * <code>$0</code>, <code>$1</code>, and so on:
  *
  * <pre>
  * &#64;JsDefinition
@@ -51,16 +54,19 @@ import com.vaadin.flow.js.JsSnippets;
  *         .setFilter(FILTERS.isKey("Enter"));
  * </pre>
  * <p>
- * The build collects the expression into the bundle, so nothing is compiled
- * from a string in the browser, and all filters declared by the same method
- * share one function regardless of the captured values.
+ * The build adds the expression to the bundle. Because of this, the browser
+ * does not compile any JavaScript from a string. All filters from the same
+ * method use the same function, also when the captured values are different.
  * <p>
- * The captured values are encoded when the filter is created, so a value that
- * can not be sent to the client fails right away. An element or component
- * captured this way must already be attached when the filter is created, since
- * one that is not is sent as <code>null</code>, even if it is attached by the
- * time the filter is set on a listener. Create the filter after attaching, for
- * instance in an attach listener, rather than in a field initializer.
+ * The captured values are encoded when the filter is created. If a value cannot
+ * be sent to the browser, creating the filter fails.
+ * <p>
+ * If you capture an element or a component, it must be attached when you create
+ * the filter. If it is not attached at that time, the browser gets
+ * <code>null</code> for it. This is also the case if it is attached later,
+ * before the filter is set on a listener. So do not create the filter in a
+ * field initializer. Create it after attaching, for example in an attach
+ * listener.
  *
  * @see JsSnippets#of(Class)
  * @see DomEventData
@@ -77,8 +83,8 @@ public final class DomEventFilter implements JsSnippet {
     }
 
     /**
-     * Creates a filter for the given call of a {@link JsDefinition} method that
-     * returns a filter.
+     * Creates a filter for the given call of a {@link JsDefinition} method. The
+     * method must return a filter.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      * Create a filter by calling the relevant method on the implementation
@@ -100,7 +106,7 @@ public final class DomEventFilter implements JsSnippet {
 
     /**
      * Gets the call of the {@link JsDefinition} method that declared this
-     * filter, which names the function of the bundle it runs.
+     * filter. The call tells which function of the bundle to run.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      *
@@ -111,9 +117,8 @@ public final class DomEventFilter implements JsSnippet {
     }
 
     /**
-     * Gets the captured values as they were encoded when this filter was
-     * created, which is what they are sent to the client as. Not to be
-     * modified.
+     * Gets the captured values, encoded when this filter was created. They are
+     * sent to the browser in this form. Do not modify the returned array.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      *

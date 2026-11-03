@@ -250,9 +250,11 @@ public class DomEvent extends EventObject {
     }
 
     /**
-     * Gets the value of the given event data, as sent by the browser together
-     * with this event, read as the type that the method declaring the event
-     * data returns.
+     * Gets the value of the given event data. The browser sends the value
+     * together with this event. The value has the type that the declaring
+     * method defines. For example, for a method that returns
+     * <code>DomEventData&lt;String&gt;</code>, the value is a
+     * <code>String</code>.
      *
      * @param <T>
      *            the type of the value
@@ -263,7 +265,7 @@ public class DomEvent extends EventObject {
      * @return the value, or <code>null</code> if the browser sent no value for
      *         the event data
      * @throws IllegalArgumentException
-     *             if the value can not be read as the declared type
+     *             if the value cannot be read as the declared type
      */
     public <T> T getEventData(DomEventData<T> eventData) {
         Objects.requireNonNull(eventData, "Event data cannot be null");

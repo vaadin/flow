@@ -22,18 +22,20 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 /**
- * A value that is sent to the client as a reference to a shared constant
- * together with data that is specific to this instance.
+ * A value that has two parts: a shared part, and a part that is specific to
+ * this instance.
  * <p>
- * The shared part is deduplicated through the constant pool in the usual way,
- * while the instance specific part is sent as-is. This is used for values that
- * are mostly identical between instances but where a small part varies, since
- * putting the varying part in the constant pool would defeat its purpose of
- * sending shared data only once.
+ * The shared part is sent through the constant pool, so the client gets it only
+ * once. The instance specific part is sent as it is. Use this for values that
+ * are almost the same for all instances, with only a small part that changes.
+ * If the changing part were in the constant pool, every instance would add a
+ * new constant, and nothing would be shared.
  * <p>
- * The value is encoded as a two element array where the first item is the
- * constant pool id of the shared value and the second item is the instance
- * specific data.
+ * The value is encoded as an array with two items:
+ * <ol>
+ * <li>the constant pool id of the shared part, and</li>
+ * <li>the instance specific part.</li>
+ * </ol>
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -61,8 +63,8 @@ public class ParameterizedConstantPoolKey implements Serializable {
     }
 
     /**
-     * Encodes this value for the client, registering the shared value with the
-     * given constant pool.
+     * Encodes this value for the client. Adds the shared value to the given
+     * constant pool.
      *
      * @param constantPool
      *            the constant pool to use for the shared value, not

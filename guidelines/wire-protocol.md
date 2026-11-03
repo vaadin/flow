@@ -100,7 +100,8 @@ with:
   event is sent at all, in one of exactly three forms: `false` for a
   plain entry whose value is sent as event data, `true` for a filter
   with no debounce, and `[[timeout, phase…], …]` for a filter with
-  debounce settings.
+  debounce settings. Left out for an entry with captures, whose
+  debounce settings are sent with its captures (see below).
 - `c` — the number of captures the declared function takes, left out
   when it takes none.
 - `s` — `preventDefault` or `stopPropagation`, for an entry that
@@ -121,10 +122,9 @@ with:
     "lwSJXpBlXYA=": { "e": "event.key === 'Enter'", "d": false, "s": "preventDefault" },
     "8C6cje1CtfY=": { "e": "event.key === 'Enter'", "d": true }
   },
-  "ozqaDF3m2Ac=": {
+  "tehWE2VI/H8=": {
     "auM90ILrj9s=": {
       "f": "8f66cb4332fd351e5ef6176714fb9a2f227abbb5a6d13458db0e290f4899a044",
-      "d": false,
       "c": 1
     }
   }
@@ -166,11 +166,19 @@ the same object, which is what `ConstantPoolPerformanceView` in
 Capture values vary per element, so they are not pooled. When an event
 type has entries with captures, the `put` value is a
 `ParameterizedConstantPoolKey` encoded as `[poolId, captures]`, where
-`captures` maps a per-element key to `[entryKey, capture0, …]`:
+`captures` maps a per-element key to
+`[entryKey, debounce, capture0, …]`:
 
 ```json
-["ozqaDF3m2Ac=", { "auM90ILrj9s=$MzHQvFPe5sA=": ["auM90ILrj9s=", "data-row-id"] }]
+["tehWE2VI/H8=", { "auM90ILrj9s=$MzHQvFPe5sA=": ["auM90ILrj9s=", false, "data-row-id"] }]
 ```
+
+`debounce` takes the same three forms as `d`. It is sent here and not in
+the pooled entry because entries that differ only by their captures share
+one pooled entry. For example, `setFilter(JS.isKey("Enter"))` without a
+debounce and `setFilter(JS.isKey("Escape")).debounce(300)` on the same
+element use the same pooled entry, and only the Escape filter must be
+debounced.
 
 The per-element key is the entry key plus `$` and a hash of the capture
 values, and it is the key the client reports that value under, so two

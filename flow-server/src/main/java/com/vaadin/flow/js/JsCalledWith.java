@@ -80,11 +80,11 @@ import com.vaadin.flow.dom.JsFunction;
  * invoker gets is a function that forwards to the returned one, so its
  * <code>length</code> is 0.
  * <p>
- * A snippet type that is always invoked the same way declares the names once,
- * on the type, and they apply to every method that returns it. A method can
- * still declare names of its own, which take precedence. For instance
- * {@link com.vaadin.flow.dom.DomEventFilter} is called with the DOM
- * <code>event</code> and the <code>element</code> of the listener.
+ * A snippet type that is always called in the same way can declare the names
+ * once, on the type. The names then apply to all methods that return the type.
+ * A method can still declare its own names, and they are used instead. For
+ * example, {@link com.vaadin.flow.dom.DomEventFilter} is always called with the
+ * DOM <code>event</code> and the <code>element</code> of the listener.
  * <p>
  * The names are part of the generated JavaScript, so a change to them is a
  * change to the function the client runs, as a change to the expression is.

@@ -68,7 +68,7 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
   // declared functions, where the capture values are sent for this element
   // instead of being shared through the constant pool.
   function bindWithClickCaptures(
-    shared: Record<string, { c?: number; d: unknown; e?: string; f?: string; s?: string }>,
+    shared: Record<string, { c?: number; d?: unknown; e?: string; f?: string; s?: string }>,
     captured: Record<string, unknown[]>
   ): void {
     bind(node, element);
@@ -179,7 +179,7 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
   it('evaluates a declared function with its captures, the event and the element', () => {
     snippets()['fn-id'] = (a, b) => (event, target) =>
       `${(a as number) + (b as number)} ${event.type} ${target === element}`;
-    bindWithClickCaptures({ shared: { c: 2, d: false, f: 'fn-id' } }, { shared$captures: ['shared', 3, 4] });
+    bindWithClickCaptures({ shared: { c: 2, f: 'fn-id' } }, { shared$captures: ['shared', false, 3, 4] });
 
     element.click();
 
@@ -201,8 +201,8 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
   it('reports one value per set of captures for the same declared function', () => {
     snippets()['fn-id'] = (name) => (_event, target) => target.hasAttribute(name as string);
     bindWithClickCaptures(
-      { shared: { c: 1, d: false, f: 'fn-id' } },
-      { shared$first: ['shared', 'id'], shared$second: ['shared', 'title'] }
+      { shared: { c: 1, f: 'fn-id' } },
+      { shared$first: ['shared', false, 'id'], shared$second: ['shared', false, 'title'] }
     );
     element.setAttribute('id', 'set');
 
@@ -215,8 +215,8 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
   it('debounces a declared filter per set of captures', () => {
     snippets()['fn-id'] = (name) => (_event, target) => target.hasAttribute(name as string);
     bindWithClickCaptures(
-      { shared: { c: 1, d: [[200, 'leading']], f: 'fn-id' } },
-      { shared$first: ['shared', 'id'], shared$second: ['shared', 'title'] }
+      { shared: { c: 1, f: 'fn-id' } },
+      { shared$first: ['shared', [[200, 'leading']], 'id'], shared$second: ['shared', [[200, 'leading']], 'title'] }
     );
 
     // Only the first filter matches, which starts its debounce period.
@@ -231,18 +231,40 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
     expect(harness.collectedNodes).to.have.length(2);
   });
 
+  it('uses the debounce settings sent with each set of captures', () => {
+    snippets()['fn-id'] = (name) => (_event, target) => target.hasAttribute(name as string);
+    bindWithClickCaptures(
+      { shared: { c: 1, f: 'fn-id' } },
+      { shared$first: ['shared', [[200, 'leading']], 'id'], shared$second: ['shared', true, 'title'] }
+    );
+
+    element.setAttribute('id', 'set');
+    element.click();
+    element.click();
+    // The first filter is debounced, so its second match is swallowed.
+    expect(harness.collectedNodes).to.have.length(1);
+
+    element.removeAttribute('id');
+    element.setAttribute('title', 'set');
+    element.click();
+    element.click();
+    // The second filter is not debounced, even though it uses the same
+    // declared function as the first one.
+    expect(harness.collectedNodes).to.have.length(3);
+  });
+
   // An entry with a side effect evaluates the filter of its listener, declared
   // with captures or as an expression without, and calls the method of the
   // event it names only when that passes.
   const sideEffectCases: Array<{
     name: string;
-    shared: Record<string, { c?: number; d: unknown; e?: string; f?: string; s: string }>;
+    shared: Record<string, { c?: number; d?: unknown; e?: string; f?: string; s: string }>;
     captured: Record<string, unknown[]>;
   }> = [
     {
       name: 'preventDefault of a declared function with captures',
-      shared: { shared: { c: 1, d: false, f: 'fn-id', s: 'preventDefault' } },
-      captured: { shared$match: ['shared', 'id'] }
+      shared: { shared: { c: 1, f: 'fn-id', s: 'preventDefault' } },
+      captured: { shared$match: ['shared', false, 'id'] }
     },
     {
       name: 'preventDefault of an expression',
@@ -293,8 +315,8 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
     // The child is added after binding, so its state node id is reserved here
     const childNodeId = nextId;
     bindWithClickCaptures(
-      { shared: { c: 1, d: false, f: 'fn-id' } },
-      { shared$node: ['shared', { '@v-node': childNodeId }] }
+      { shared: { c: 1, f: 'fn-id' } },
+      { shared$node: ['shared', false, { '@v-node': childNodeId }] }
     );
     const { childElement, childNode } = addChild('span');
     expect(childNode.getId()).to.equal(childNodeId);
@@ -303,5 +325,19 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
 
     const eventData = harness.collectedEventData[0] as Record<string, unknown>;
     expect(eventData['shared$node']).to.equal(childElement.tagName);
+  });
+
+  it('decodes a capture of a removed node to null and still sends the event', () => {
+    snippets()['fn-id'] = (child, list) => () => [child, list];
+    const removedNodeId = nextId++;
+    bindWithClickCaptures(
+      { shared: { c: 2, f: 'fn-id' }, plain: { e: 'event.type', d: false } },
+      { shared$node: ['shared', false, { '@v-node': removedNodeId }, [{ '@v-node': removedNodeId }]] }
+    );
+
+    element.click();
+
+    const eventData = harness.collectedEventData[0] as Record<string, unknown>;
+    expect(eventData).to.deep.equal({ plain: 'click', shared$node: [null, [null]] });
   });
 });
