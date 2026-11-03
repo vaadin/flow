@@ -112,8 +112,8 @@ public record JsCall(Class<?> definitionType, String methodName,
     /**
      * A method of a JavaScript definition, the identifier of the function it
      * declares, or <code>null</code> for a method that declares no JavaScript,
-     * and the names the function of a snippet is called with, or
-     * <code>null</code> when it declares none.
+     * and the names the function of a snippet is called with, empty when it
+     * declares none.
      */
     private record DeclaredMethod(Method method, @Nullable String functionId,
             List<String> calledWithNames) {
