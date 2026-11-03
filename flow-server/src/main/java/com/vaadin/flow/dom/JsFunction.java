@@ -159,6 +159,7 @@ public final class JsFunction implements JsSnippet {
      * @throws RuntimeException
      *             if any argument of the call cannot be encoded to be sent to
      *             the client
+     * @since 25.4
      */
     public static JsFunction ofDeclaredCall(JsCall call) {
         Objects.requireNonNull(call, "call");
@@ -173,9 +174,7 @@ public final class JsFunction implements JsSnippet {
         for (Object capture : captures) {
             JacksonCodec.encodeWithTypeInfo(capture);
         }
-        List<String> names = call.getCalledWithNames();
-        return new JsFunction(null, call, captures,
-                names == null ? List.of() : names);
+        return new JsFunction(null, call, captures, call.getCalledWithNames());
     }
 
     /**
@@ -186,6 +185,7 @@ public final class JsFunction implements JsSnippet {
      *
      * @return the declaring call, or <code>null</code> for a function created
      *         from a body with {@link #of(String, Object...)}
+     * @since 25.4
      */
     public @Nullable JsCall getDeclaredCall() {
         return declaredCall;
