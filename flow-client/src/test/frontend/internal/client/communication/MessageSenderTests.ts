@@ -346,7 +346,7 @@ describe('MessageSender (class)', () => {
       };
       const sender = new MessageSender(context.registry, () => push);
       sender.setPushEnabled(true);
-      const { events } = recordRequests(context.clientEvents);
+      const { requests, events } = recordRequests(context.clientEvents);
       sender.send({ rpc: [] });
 
       // The pushed payload is sent again, so the server may still run it.
@@ -370,12 +370,16 @@ describe('MessageSender (class)', () => {
       expect(events).to.deep.equal(['1 sent 1', '1 end discarded', '2 sent 1']);
       events.length = 0;
 
-      // Sent again over XHR once push only receives, it is no longer tracked.
+      // Sent again over XHR once push only receives, the XHR reply settles it,
+      // and giving up on the connection discards it.
       sender.setClientToServerMessageId(9, true);
       bidirectional = false;
       context.setActiveRequest(false);
       sender.sendInvocationsToServer();
-      expect(events).to.deep.equal(['2 end discarded']);
+      expect(events).to.deep.equal(['2 sent 2']);
+      expect(sender.getRequest(context.log.xhrSends.at(-1)!)).to.equal(requests[2]);
+      sender.discardSentRequests();
+      expect(events).to.deep.equal(['2 sent 2', '2 end discarded']);
     });
 
     it('discards the open requests when the UI lifecycle that replaced the first one stops', () => {

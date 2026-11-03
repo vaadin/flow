@@ -76,6 +76,10 @@ export class MessageSender {
   #resynchronizationState: ResynchronizationState = ResynchronizationState.NOT_ACTIVE;
 
   #pushPendingMessage: Payload | null = null;
+  // A payload kept pending over push that went out over XHR instead, once push
+  // only receives. It is in no queue; the XHR reply settles its request, and
+  // giving up on the connection discards it.
+  #unqueuedXhrMessage: Payload | null = null;
 
   #messageQueue: Payload[] = [];
 
@@ -301,7 +305,7 @@ export class MessageSender {
       this.#transmit(payload, true);
     } else {
       Console.debug('send XHR');
-      this.#discardIfUntracked(payload);
+      this.#unqueuedXhrMessage = this.#messageQueue.includes(payload) ? null : payload;
       this.#resetTimer();
       this.#transmit(payload, false);
       this.#scheduleResend(payload);
@@ -584,6 +588,9 @@ export class MessageSender {
     if (this.#pushPendingMessage !== null) {
       this.settleRequest(this.#pushPendingMessage, 'discarded');
     }
+    if (this.#unqueuedXhrMessage !== null) {
+      this.settleRequest(this.#unqueuedXhrMessage, 'discarded');
+    }
     this.#messageQueue.forEach((payload) => this.settleRequest(payload, 'discarded'));
   }
 
@@ -598,8 +605,7 @@ export class MessageSender {
 
   // A payload kept pending over push after the queue was cleared is tracked
   // only as the pending push message. Once another payload replaces it there,
-  // or it goes out over XHR, nothing confirms it any more, so its request is
-  // dropped.
+  // nothing confirms it any more, so its request is dropped.
   #discardIfUntracked(payload: Payload): void {
     if (!this.#messageQueue.includes(payload)) {
       this.settleRequest(payload, 'discarded');
