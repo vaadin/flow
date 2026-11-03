@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
@@ -65,7 +66,8 @@ class SsePushConnectionTest {
         vaadinSession.lock();
         ui = new MockUI(vaadinSession);
         vaadinSession.unlock();
-        connection = new SsePushConnection(ui);
+        // Writes right away, unless a test needs the executor of the service
+        connection = new SsePushConnection(ui, Runnable::run);
     }
 
     @Test
@@ -90,14 +92,24 @@ class SsePushConnectionTest {
     }
 
     @Test
-    void connect_sendsCommentToOpenStream() throws Exception {
+    void connect_sendsKeepAliveToOpenStream() throws Exception {
+        SseStream stream = new SseStream();
+
+        connection.connect(stream.asyncContext, 30);
+
+        // Writing it sends the headers, and tells the client how often to
+        // expect one
+        assertEquals(keepAlive(30), stream.raw());
+        assertTrue(stream.events().isEmpty());
+    }
+
+    @Test
+    void connect_withoutKeepAlive_tellsClientNotToExpectOne() throws Exception {
         SseStream stream = new SseStream();
 
         connection.connect(stream.asyncContext);
 
-        // The client ignores comments, but writing one sends the headers
-        assertEquals(":\n\n", stream.raw());
-        assertTrue(stream.events().isEmpty());
+        assertEquals(keepAlive(0), stream.raw());
     }
 
     @Test
@@ -308,7 +320,7 @@ class SsePushConnectionTest {
 
         assertTrue(connection.sendKeepAlive(stream.asyncContext));
 
-        assertEquals(":\n\n:\n\n", stream.raw());
+        assertEquals(keepAlive(0).repeat(2), stream.raw());
         assertTrue(connection.isConnected());
     }
 
@@ -321,7 +333,7 @@ class SsePushConnectionTest {
 
         assertFalse(connection.sendKeepAlive(previous.asyncContext));
 
-        assertEquals(":\n\n", current.raw());
+        assertEquals(keepAlive(0), current.raw());
     }
 
     @Test
@@ -336,30 +348,25 @@ class SsePushConnectionTest {
     }
 
     @Test
-    void sendKeepAlive_stalledOnVirtualThreads_otherVirtualThreadsRun()
+    void sendKeepAlive_stalledStreams_otherVirtualThreadsRun()
             throws Exception {
-        // A virtual thread waiting for a slow client, with the connection
-        // locked, must not keep its carrier thread from other virtual threads.
-        // Fails only on Java 21 to 23 if the lock is synchronized, as Java 24
-        // no longer pins virtual threads there (JEP 491).
+        // Writes waiting for slow clients run on the virtual threads of the
+        // service executor, and must not keep their carrier threads from other
+        // virtual threads. Fails only on Java 21 to 23 if a write waits inside
+        // synchronized, as Java 24 no longer pins virtual threads there (JEP
+        // 491).
         int carriers = Integer.getInteger(
                 "jdk.virtualThreadScheduler.parallelism",
                 Runtime.getRuntime().availableProcessors());
         CountDownLatch clientReads = new CountDownLatch(1);
-        List<Thread> stalled = new ArrayList<>();
         try {
             for (int i = 0; i < carriers; i++) {
                 SsePushConnection slowConnection = new SsePushConnection(ui);
                 SseStream slowStream = new SseStream();
                 slowConnection.connect(slowStream.asyncContext);
                 slowStream.stall = clientReads;
-                stalled.add(Thread.ofVirtual().start(() -> slowConnection
-                        .sendKeepAlive(slowStream.asyncContext)));
-            }
-            for (Thread thread : stalled) {
-                while (thread.getState() != Thread.State.WAITING) {
-                    Thread.sleep(10);
-                }
+                slowConnection.sendKeepAlive(slowStream.asyncContext);
+                assertTrue(slowStream.stalled.await(5, TimeUnit.SECONDS));
             }
 
             CountDownLatch ran = new CountDownLatch(1);
@@ -369,10 +376,38 @@ class SsePushConnectionTest {
                     "Virtual threads should run while streams are stalled");
         } finally {
             clientReads.countDown();
-            for (Thread thread : stalled) {
-                thread.join();
-            }
         }
+    }
+
+    @Test
+    void push_stalledClient_doesNotHoldSessionLock() throws Exception {
+        // A client that stops reading must not keep the session locked until
+        // the container gives up on the write, as everything else in the
+        // session, including expiring it, waits for the lock, see
+        // https://github.com/vaadin/flow/issues/12316
+        SsePushConnection writingOnService = new SsePushConnection(ui);
+        SseStream stream = new SseStream();
+        writingOnService.connect(stream.asyncContext);
+        CountDownLatch clientReads = new CountDownLatch(1);
+        stream.stall = clientReads;
+        Thread pusher = Thread.ofVirtual().start(
+                () -> vaadinSession.access(() -> writingOnService.push()));
+        try {
+            pusher.join(2000);
+            Future<Void> other = vaadinSession.access(() -> {
+            });
+            other.get(2, TimeUnit.SECONDS);
+        } finally {
+            clientReads.countDown();
+            pusher.join();
+        }
+        long deadline = System.currentTimeMillis() + 2000;
+        while (stream.events().isEmpty()
+                && System.currentTimeMillis() < deadline) {
+            Thread.sleep(10);
+        }
+        assertEquals(1, stream.events().size(),
+                "The message should be written once the client reads");
     }
 
     @Test
@@ -494,6 +529,14 @@ class SsePushConnectionTest {
     }
 
     /**
+     * Returns the keep-alive event with the given interval as written to the
+     * stream.
+     */
+    static String keepAlive(int interval) {
+        return "event: keep-alive\ndata: " + interval + "\n\n";
+    }
+
+    /**
      * An event parsed from the written event stream.
      */
     record SseEvent(String event, String id, String data) {
@@ -509,6 +552,8 @@ class SsePushConnectionTest {
         boolean failWrites;
         // Writes wait for this, like for a client that does not read
         volatile CountDownLatch stall;
+        // Counted down when a write starts to wait for the stall
+        final CountDownLatch stalled = new CountDownLatch(1);
         final CountDownLatch completing = new CountDownLatch(1);
 
         SseStream() throws Exception {
@@ -517,6 +562,7 @@ class SsePushConnectionTest {
                 public void write(String text) {
                     CountDownLatch latch = stall;
                     if (latch != null) {
+                        stalled.countDown();
                         try {
                             latch.await();
                         } catch (InterruptedException e) {
@@ -542,7 +588,7 @@ class SsePushConnectionTest {
         /**
          * Parses the written stream according to the event stream format:
          * events are separated by empty lines, multiple data fields are joined
-         * with newlines.
+         * with newlines. Keep-alive events are left out.
          */
         List<SseEvent> events() {
             return parse(raw());
@@ -555,7 +601,10 @@ class SsePushConnectionTest {
             List<String> data = new ArrayList<>();
             for (String line : stream.split("\n", -1)) {
                 if (line.isEmpty()) {
-                    if (event != null || !data.isEmpty()) {
+                    if ("keep-alive".equals(event)) {
+                        event = null;
+                        data.clear();
+                    } else if (event != null || !data.isEmpty()) {
                         events.add(new SseEvent(event, id,
                                 String.join("\n", data)));
                     }

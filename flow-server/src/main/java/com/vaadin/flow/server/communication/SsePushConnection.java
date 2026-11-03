@@ -21,6 +21,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
@@ -28,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.server.VaadinSession;
 
 /**
  * A {@link PushConnection} implementation using Server-Sent Events (SSE)
@@ -74,19 +79,25 @@ public class SsePushConnection implements PushConnection {
     private static final String SSE_VERSION = "1.0";
 
     /**
-     * A comment line, which the client ignores. It commits the response headers
-     * when the stream opens and keeps the stream from being closed as idle.
+     * An event that tells the client how many seconds to expect between keep
+     * alive events, 0 if none are sent. It commits the response headers when
+     * the stream opens and keeps the stream from being closed as idle. Not a
+     * comment, as EventSource does not pass those on, and the client needs to
+     * notice a stream that has died silently.
      */
-    private static final String KEEP_ALIVE = ":\n\n";
+    private static final String KEEP_ALIVE = "event: keep-alive\ndata: %d\n\n";
 
     private final UI ui;
     private transient volatile State state = State.DISCONNECTED;
-    private transient AsyncContext asyncContext;
-    private transient PrintWriter writer;
-    // Not synchronized: writes may wait for a slow client, and on Java 21 to
+    private transient EventStream stream;
+    private transient int keepAliveInterval;
+    // The executor of the service, unless given for tests
+    private final transient Executor executor;
+    // Not synchronized: writes are queued and carried out without this lock,
+    // but when the service has no executor they are carried out right away,
+    // and may then wait for a slow client with this lock held. On Java 21 to
     // 23 a virtual thread waiting inside synchronized pins its carrier thread
-    // (fixed in Java 24 by JEP 491). Can be synchronized again once Java 24 is
-    // the minimum.
+    // (fixed in Java 24 by JEP 491).
     private transient ReentrantLock lock = new ReentrantLock();
 
     /**
@@ -96,7 +107,21 @@ public class SsePushConnection implements PushConnection {
      *            the UI to which this connection belongs
      */
     public SsePushConnection(UI ui) {
+        this(ui, null);
+    }
+
+    /**
+     * Creates an instance that writes to the client with the given executor.
+     *
+     * @param ui
+     *            the UI to which this connection belongs
+     * @param executor
+     *            the executor to write with, or {@code null} for the executor
+     *            of the service
+     */
+    SsePushConnection(UI ui, Executor executor) {
         this.ui = ui;
+        this.executor = executor;
         UsageStatistics.markAsUsed("flow/SsePushConnection", SSE_VERSION);
     }
 
@@ -165,9 +190,9 @@ public class SsePushConnection implements PushConnection {
     }
 
     /**
-     * Sends a comment to the client through the given stream, unless the
-     * connection uses another stream by now. Proxies and load balancers close
-     * connections that stay idle, and writing to a stream is also how the
+     * Sends a keep-alive event to the client through the given stream, unless
+     * the connection uses another stream by now. Proxies and load balancers
+     * close connections that stay idle, and writing to a stream is also how the
      * server notices that the client has gone.
      *
      * @param asyncContext
@@ -178,29 +203,24 @@ public class SsePushConnection implements PushConnection {
     boolean sendKeepAlive(AsyncContext asyncContext) {
         lock.lock();
         try {
-            if (!isConnected() || this.asyncContext != asyncContext) {
+            if (!isConnected() || stream.context != asyncContext) {
                 return false;
             }
-            write(KEEP_ALIVE);
+            write(keepAliveEvent());
+            // A failed write is noticed here when written right away,
+            // otherwise at the next keep-alive
             return isConnected();
         } finally {
             lock.unlock();
         }
     }
 
+    private String keepAliveEvent() {
+        return KEEP_ALIVE.formatted(keepAliveInterval);
+    }
+
     private void write(String text) {
-        lock.lock();
-        try {
-            writer.write(text);
-            writer.flush();
-            // PrintWriter does not throw, but reports errors here
-            if (writer.checkError()) {
-                getLogger().debug("Writing to the event stream failed");
-                connectionLost(asyncContext);
-            }
-        } finally {
-            lock.unlock();
-        }
+        stream.write(text);
     }
 
     @Override
@@ -220,9 +240,30 @@ public class SsePushConnection implements PushConnection {
      *             if setting up the SSE connection fails
      */
     public void connect(AsyncContext asyncContext) throws IOException {
+        EventStream previous = connect(asyncContext, 0);
+        if (previous != null) {
+            previous.complete();
+        }
+    }
+
+    /**
+     * Associates this connection with the given stream, telling the client to
+     * expect keep-alive events at the given interval.
+     *
+     * @param asyncContext
+     *            the async context to associate this connection with
+     * @param keepAliveInterval
+     *            the seconds between keep-alive events, 0 if none are sent
+     * @return the stream this connection used before, or {@code null}. The
+     *         caller completes it once it no longer holds the session lock.
+     * @throws IOException
+     *             if setting up the SSE connection fails
+     */
+    EventStream connect(AsyncContext asyncContext, int keepAliveInterval)
+            throws IOException {
         assert asyncContext != null;
 
-        AsyncContext previous = null;
+        EventStream previous = null;
         lock.lock();
         try {
             if (isConnected()) {
@@ -240,14 +281,15 @@ public class SsePushConnection implements PushConnection {
             // Stops nginx from buffering the stream
             response.setHeader("X-Accel-Buffering", "no");
 
-            this.asyncContext = asyncContext;
-            this.writer = response.getWriter();
+            stream = new EventStream(asyncContext, response.getWriter());
 
             State oldState = state;
             state = State.CONNECTED;
 
-            // Sends the headers, which opens the stream on the client
-            write(KEEP_ALIVE);
+            this.keepAliveInterval = keepAliveInterval;
+            // Sends the headers, which opens the stream on the client. Written
+            // right away, as nothing else is written to a new stream yet.
+            stream.writeNow(keepAliveEvent());
 
             if (oldState == State.PUSH_PENDING
                     || oldState == State.RESPONSE_PENDING) {
@@ -258,7 +300,7 @@ public class SsePushConnection implements PushConnection {
         } finally {
             lock.unlock();
         }
-        complete(previous);
+        return previous;
     }
 
     /**
@@ -277,12 +319,13 @@ public class SsePushConnection implements PushConnection {
      *         connection not open.
      */
     protected AsyncContext getAsyncContext() {
-        return asyncContext;
+        EventStream current = stream;
+        return current != null ? current.context : null;
     }
 
     @Override
     public void disconnect() {
-        AsyncContext context;
+        EventStream ended;
         lock.lock();
         try {
             if (!isConnected()) {
@@ -290,11 +333,11 @@ public class SsePushConnection implements PushConnection {
                         "Disconnection already happened, ignoring request");
                 return;
             }
-            context = detach();
+            ended = detach();
         } finally {
             lock.unlock();
         }
-        complete(context);
+        ended.complete();
     }
 
     /**
@@ -303,27 +346,10 @@ public class SsePushConnection implements PushConnection {
      *
      * @return the detached stream, to complete once the lock is released
      */
-    private AsyncContext detach() {
-        AsyncContext context = asyncContext;
-        connectionLost(context);
-        return context;
-    }
-
-    /**
-     * Ends the given stream. Called without the lock: the container may need
-     * the HTTP session lock to complete it, while a thread invalidating the
-     * session holds that lock and waits for this connection, see
-     * https://github.com/vaadin/flow/issues/16293
-     */
-    private static void complete(AsyncContext context) {
-        if (context == null) {
-            return;
-        }
-        try {
-            context.complete();
-        } catch (Exception e) {
-            getLogger().debug("Error when completing async context", e);
-        }
+    private EventStream detach() {
+        EventStream detached = stream;
+        connectionLost(detached.context);
+        return detached;
     }
 
     /**
@@ -337,11 +363,10 @@ public class SsePushConnection implements PushConnection {
     public void connectionLost(AsyncContext asyncContext) {
         lock.lock();
         try {
-            if (asyncContext != this.asyncContext) {
+            if (stream == null || asyncContext != stream.context) {
                 return;
             }
-            this.asyncContext = null;
-            writer = null;
+            stream = null;
             if (state == State.CONNECTED) {
                 state = State.DISCONNECTED;
             }
@@ -378,7 +403,99 @@ public class SsePushConnection implements PushConnection {
         lock = new ReentrantLock();
     }
 
+    private Executor getExecutor() {
+        if (executor != null) {
+            return executor;
+        }
+        VaadinSession session = ui.getSession();
+        Executor serviceExecutor = session != null
+                ? session.getService().getExecutor()
+                : null;
+        return serviceExecutor != null ? serviceExecutor : Runnable::run;
+    }
+
     private static Logger getLogger() {
         return LoggerFactory.getLogger(SsePushConnection.class.getName());
+    }
+
+    /**
+     * An open event stream. Writes and completing the stream are queued and
+     * carried out in order on the executor of the service, so that a push, made
+     * with the session locked, never waits for a slow client: the session would
+     * stay locked until the container gives up on the write, see
+     * https://github.com/vaadin/flow/issues/12316
+     */
+    final class EventStream {
+        private final AsyncContext context;
+        private final PrintWriter writer;
+        private final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
+        private final AtomicBoolean draining = new AtomicBoolean();
+
+        private EventStream(AsyncContext context, PrintWriter writer) {
+            this.context = context;
+            this.writer = writer;
+        }
+
+        private void write(String text) {
+            submit(() -> writeNow(text));
+        }
+
+        /**
+         * Ends this stream once the writes queued before have been carried out.
+         * Called without the lock of the connection, and when possible without
+         * the session lock: the container may need the HTTP session lock to
+         * complete the stream, while a thread invalidating the session holds
+         * that lock and waits for this connection or for the session, see
+         * https://github.com/vaadin/flow/issues/16293
+         */
+        void complete() {
+            submit(() -> {
+                try {
+                    context.complete();
+                } catch (Exception e) {
+                    getLogger().debug("Error when completing async context", e);
+                }
+            });
+        }
+
+        private void writeNow(String text) {
+            writer.write(text);
+            writer.flush();
+            // PrintWriter does not throw, but reports errors here
+            if (writer.checkError()) {
+                getLogger().debug("Writing to the event stream failed");
+                connectionLost(context);
+            }
+        }
+
+        private void submit(Runnable action) {
+            queue.add(action);
+            if (draining.compareAndSet(false, true)) {
+                try {
+                    getExecutor().execute(this::drain);
+                } catch (RuntimeException e) {
+                    // E.g. an executor that is shutting down
+                    drain();
+                }
+            }
+        }
+
+        private void drain() {
+            do {
+                Runnable action;
+                while ((action = queue.poll()) != null) {
+                    try {
+                        action.run();
+                    } catch (RuntimeException e) {
+                        getLogger().debug("Writing to the event stream failed",
+                                e);
+                        connectionLost(context);
+                    }
+                }
+                draining.set(false);
+                // Another thread may have queued an action after the queue
+                // was found empty, but before draining was set to false
+            } while (!queue.isEmpty() && draining.compareAndSet(false, true));
+        }
     }
 }

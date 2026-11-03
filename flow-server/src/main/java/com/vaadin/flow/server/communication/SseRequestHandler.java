@@ -25,12 +25,10 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
@@ -118,6 +116,7 @@ public class SseRequestHandler implements SessionExpiredHandler {
 
         // Find UI
         UI ui;
+        SsePushConnection.EventStream previousStream = null;
         session.lock();
         try {
             ui = service.findUI(request);
@@ -163,15 +162,13 @@ public class SseRequestHandler implements SessionExpiredHandler {
 
             SseStream stream = new SseStream(sseConnection, asyncContext);
             asyncContext.addListener(stream);
-            sseConnection.connect(asyncContext);
             int keepAliveInterval = getKeepAliveInterval();
+            previousStream = sseConnection.connect(asyncContext,
+                    keepAliveInterval);
             if (keepAliveInterval > 0) {
-                Executor executor = service.getExecutor();
-                stream.keepAlive
-                        .set(getKeepAliveExecutor().scheduleWithFixedDelay(
-                                () -> stream.sendKeepAlive(executor),
-                                keepAliveInterval, keepAliveInterval,
-                                TimeUnit.SECONDS));
+                stream.keepAlive.set(getKeepAliveExecutor()
+                        .scheduleWithFixedDelay(stream, keepAliveInterval,
+                                keepAliveInterval, TimeUnit.SECONDS));
             }
 
             getLogger().debug("SSE connection established for UI {}",
@@ -179,6 +176,11 @@ public class SseRequestHandler implements SessionExpiredHandler {
 
         } finally {
             session.unlock();
+        }
+        // Completed without the session lock, as the container may need the
+        // HTTP session lock for it
+        if (previousStream != null) {
+            previousStream.complete();
         }
 
         return true;
@@ -194,9 +196,9 @@ public class SseRequestHandler implements SessionExpiredHandler {
     }
 
     /**
-     * Returns the thread that times the keep-alive comments of all streams. It
-     * only hands the writing to the executor of the service, as a write may
-     * wait for a slow client.
+     * Returns the thread that times the keep-alive events of all streams. It
+     * only queues them, the push connection writes them on the executor of the
+     * service.
      */
     synchronized ScheduledExecutorService getKeepAliveExecutor() {
         if (keepAliveExecutor == null) {
@@ -221,7 +223,6 @@ public class SseRequestHandler implements SessionExpiredHandler {
         private final SsePushConnection connection;
         private final transient AsyncContext asyncContext;
         private final transient AtomicReference<ScheduledFuture<?>> keepAlive = new AtomicReference<>();
-        private final transient AtomicBoolean sending = new AtomicBoolean();
 
         private SseStream(SsePushConnection connection,
                 AsyncContext asyncContext) {
@@ -229,27 +230,10 @@ public class SseRequestHandler implements SessionExpiredHandler {
             this.asyncContext = asyncContext;
         }
 
-        private void sendKeepAlive(Executor executor) {
-            // Skipped while the previous comment still waits for the client
-            if (!sending.compareAndSet(false, true)) {
-                return;
-            }
-            try {
-                executor.execute(this);
-            } catch (RuntimeException e) {
-                sending.set(false);
-                getLogger().debug("Could not send a keep-alive comment", e);
-            }
-        }
-
         @Override
         public void run() {
-            try {
-                if (!connection.sendKeepAlive(asyncContext)) {
-                    stopKeepAlive();
-                }
-            } finally {
-                sending.set(false);
+            if (!connection.sendKeepAlive(asyncContext)) {
+                stopKeepAlive();
             }
         }
 

@@ -129,7 +129,7 @@ describe('SsePush', () => {
       expect(FakeEventSource.instances).to.have.length(5);
     });
 
-    it('resets the reconnect attempts when the stream opens again', () => {
+    it('resets the reconnect attempts when the stream has stayed open', () => {
       const { request, calls } = recordingRequest();
       request.maxReconnectOnClose = 2;
       new SseConnection(request);
@@ -138,10 +138,83 @@ describe('SsePush', () => {
         FakeEventSource.latest().fail();
         clock.tick(1000);
         FakeEventSource.latest().open();
+        clock.tick(10000);
       }
 
       expect(callbacks(calls)).not.to.include('onError');
       expect(FakeEventSource.instances).to.have.length(6);
+    });
+
+    it('keeps counting reconnect attempts of streams that end right after opening', () => {
+      // E.g. a proxy that closes the stream right away
+      const { request, calls } = recordingRequest();
+      request.maxReconnectOnClose = 2;
+      new SseConnection(request);
+
+      for (let i = 0; i < 5; i++) {
+        FakeEventSource.latest().open();
+        FakeEventSource.latest().fail();
+        clock.tick(1000);
+      }
+
+      expect(callbacks(calls)).to.include('onError');
+      expect(FakeEventSource.instances).to.have.length(3);
+    });
+
+    it('reconnects when nothing arrives for two keep-alive intervals', () => {
+      // A stream can die without an error, e.g. when the network changes
+      const { request, calls } = recordingRequest();
+      new SseConnection(request);
+      const first = FakeEventSource.latest();
+      first.open();
+      first.emit('keep-alive', '30');
+
+      clock.tick(59999);
+      expect(first.closed).to.be.false;
+      clock.tick(1);
+
+      expect(first.closed).to.be.true;
+      expect(callbacks(calls)).to.deep.equal(['onOpen', 'onReconnect']);
+      clock.tick(1000);
+      expect(FakeEventSource.instances).to.have.length(2);
+    });
+
+    it('keeps the stream while keep-alives and messages arrive', () => {
+      new SseConnection(recordingRequest().request);
+      const stream = FakeEventSource.latest();
+      stream.open();
+      stream.emit('keep-alive', '30');
+
+      clock.tick(50000);
+      stream.emit('message', '{"syncId":1}');
+      clock.tick(50000);
+      stream.emit('keep-alive', '30');
+      clock.tick(50000);
+
+      expect(stream.closed).to.be.false;
+      expect(FakeEventSource.instances).to.have.length(1);
+    });
+
+    it('does not watch the stream when keep-alives are disabled', () => {
+      new SseConnection(recordingRequest().request);
+      const stream = FakeEventSource.latest();
+      stream.open();
+      stream.emit('keep-alive', '0');
+
+      clock.tick(600000);
+
+      expect(stream.closed).to.be.false;
+    });
+
+    it('stops watching the stream when it is closed', () => {
+      const connection = new SseConnection(recordingRequest().request);
+      FakeEventSource.latest().open();
+      FakeEventSource.latest().emit('keep-alive', '30');
+
+      connection.close();
+      clock.tick(600000);
+
+      expect(FakeEventSource.instances).to.have.length(1);
     });
 
     it('gives up after the maximum number of reconnect attempts', () => {

@@ -26,6 +26,7 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.AfterEach;
@@ -51,6 +52,7 @@ import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
+import static com.vaadin.flow.server.communication.SsePushConnectionTest.keepAlive;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -58,6 +60,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.startsWith;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -68,6 +72,7 @@ import static org.mockito.Mockito.when;
 class SseRequestHandlerTest {
 
     private MockVaadinServletService service;
+    private Executor serviceExecutor;
     private MockVaadinSession session;
     private UI ui;
     private SseRequestHandler handler;
@@ -80,6 +85,10 @@ class SseRequestHandlerTest {
     @BeforeEach
     void setup() throws Exception {
         service = spy(new MockVaadinServletService());
+        // Writes to the streams right away, unless a test needs the executor
+        // of the service
+        serviceExecutor = service.getExecutor();
+        doReturn((Executor) Runnable::run).when(service).getExecutor();
         session = new MockVaadinSession(service);
         session.lock();
         ui = new MockUI(session);
@@ -160,7 +169,7 @@ class SseRequestHandlerTest {
         assertTrue(connection.isConnected());
         assertEquals(asyncContext, connection.getAsyncContext());
         verify(httpResponse).setContentType("text/event-stream");
-        assertEquals(":\n\n", responseBody.toString());
+        assertEquals(keepAlive(30), responseBody.toString());
     }
 
     @Test
@@ -300,13 +309,13 @@ class SseRequestHandlerTest {
     }
 
     @Test
-    void keepAlive_openStream_sendsComment() throws Exception {
+    void keepAlive_openStream_sendsKeepAliveEvent() throws Exception {
         mockFindUI(ui);
         handler.handleRequest(session, request(), response());
 
         ((Runnable) listener()).run();
 
-        assertEquals(":\n\n:\n\n", responseBody.toString());
+        assertEquals(keepAlive(30).repeat(2), responseBody.toString());
     }
 
     @Test
@@ -318,7 +327,7 @@ class SseRequestHandlerTest {
 
         ((Runnable) stream).run();
 
-        assertEquals(":\n\n", responseBody.toString());
+        assertEquals(keepAlive(30), responseBody.toString());
     }
 
     @Test
@@ -329,11 +338,11 @@ class SseRequestHandlerTest {
         handler.handleRequest(session, request(), response());
 
         long deadline = System.currentTimeMillis() + 5000;
-        while (!responseBody.toString().equals(":\n\n:\n\n")
+        while (!responseBody.toString().equals(keepAlive(1).repeat(2))
                 && System.currentTimeMillis() < deadline) {
             Thread.sleep(50);
         }
-        assertEquals(":\n\n:\n\n", responseBody.toString());
+        assertEquals(keepAlive(1).repeat(2), responseBody.toString());
     }
 
     @Test
@@ -360,11 +369,10 @@ class SseRequestHandlerTest {
     void keepAlive_stalledStream_doesNotDelayOtherStreams() throws Exception {
         handler = handlerWithKeepAliveInterval("1");
         CountDownLatch clientReads = new CountDownLatch(1);
-        Executor executor = service.getExecutor();
         AtomicInteger unfinishedTasks = new AtomicInteger();
         doReturn((Executor) task -> {
             unfinishedTasks.incrementAndGet();
-            executor.execute(() -> {
+            serviceExecutor.execute(() -> {
                 try {
                     task.run();
                 } finally {
@@ -412,7 +420,7 @@ class SseRequestHandlerTest {
             handler.handleRequest(session, request(),
                     new VaadinServletResponse(otherResponse, service));
 
-            String twoKeepAlives = ":\n\n".repeat(3);
+            String twoKeepAlives = keepAlive(1).repeat(3);
             long deadline = System.currentTimeMillis() + 4000;
             while (!otherBody.toString().equals(twoKeepAlives)
                     && System.currentTimeMillis() < deadline) {
@@ -440,6 +448,44 @@ class SseRequestHandlerTest {
                         InitParameters.SERVLET_PARAMETER_PUSH_SSE_KEEP_ALIVE_INTERVAL,
                         seconds);
         return new SseRequestHandler(service);
+    }
+
+    @Test
+    void handleRequest_reconnect_completesPreviousStreamWithoutSessionLock()
+            throws Exception {
+        // Completing a stream may need the HTTP session lock, which a thread
+        // invalidating the session holds while it waits for the Vaadin session
+        // lock, see https://github.com/vaadin/flow/issues/16293
+        mockFindUI(ui);
+        handler.handleRequest(session, request(), response());
+        AtomicBoolean completedWithSessionLock = new AtomicBoolean();
+        doAnswer(invocation -> {
+            completedWithSessionLock.set(session.hasLock());
+            return null;
+        }).when(asyncContext).complete();
+        AsyncContext reconnected = mock(AsyncContext.class);
+        when(reconnected.getResponse()).thenReturn(httpResponse);
+        when(httpRequest.startAsync()).thenReturn(reconnected);
+
+        handler.handleRequest(session, request(), response());
+
+        verify(asyncContext).complete();
+        assertFalse(completedWithSessionLock.get());
+    }
+
+    @Test
+    void handleRequest_setsNoCorsHeaders() throws Exception {
+        // The stream is same origin, unlike the Atmosphere endpoint that
+        // reflected any origin, see https://github.com/vaadin/flow/issues/26214
+        when(httpRequest.getHeader("Origin")).thenReturn("https://evil.test");
+        mockFindUI(ui);
+
+        handler.handleRequest(session, request(), response());
+
+        verify(httpResponse, never()).setHeader(startsWith("Access-Control"),
+                anyString());
+        verify(httpResponse, never()).addHeader(startsWith("Access-Control"),
+                anyString());
     }
 
     @Test

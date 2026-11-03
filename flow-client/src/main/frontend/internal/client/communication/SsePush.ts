@@ -27,6 +27,22 @@
 /** The transport name the connection reports to the client engine. */
 export const SSE_PURE_TRANSPORT = 'sse-pure';
 
+/**
+ * How long a stream must stay open before its reconnect attempts start over,
+ * so that a stream that ends right after opening, e.g. closed by a proxy, does
+ * not reconnect forever.
+ */
+const STABLE_CONNECTION_MS = 10000;
+
+type Timer = ReturnType<typeof setTimeout> | null;
+
+function clearTimer(timer: Timer): null {
+  if (timer) {
+    clearTimeout(timer);
+  }
+  return null;
+}
+
 export interface SseAtmosphereResponse {
   request: SseAtmosphereRequest;
   transport: string;
@@ -58,7 +74,11 @@ export class SseConnection {
   private reconnectAttempts = 0;
   private maxReconnectAttempts: number;
   private reconnectInterval: number;
-  private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private reconnectTimeoutId: Timer = null;
+  private stableTimeoutId: Timer = null;
+  private watchdogTimeoutId: Timer = null;
+  // Seconds between keep-alive events of the server, 0 if not sent
+  private keepAliveInterval = 0;
   private url: string;
 
   constructor(options: SseAtmosphereRequest) {
@@ -71,44 +91,75 @@ export class SseConnection {
   }
 
   private connect(): void {
-    if (this.eventSource) {
-      this.eventSource.close();
-      this.eventSource = null;
-    }
+    this.stopStream();
     try {
       this.state = 'connecting';
       this.eventSource = new EventSource(this.url, { withCredentials: true });
 
       this.eventSource.onopen = () => {
         this.state = 'connected';
-        this.reconnectAttempts = 0;
+        this.stableTimeoutId = setTimeout(() => {
+          this.stableTimeoutId = null;
+          this.reconnectAttempts = 0;
+        }, STABLE_CONNECTION_MS);
         this.options.onOpen?.(this.createResponse('opening'));
       };
 
       this.eventSource.onmessage = (event) => {
+        this.watchStream();
         const response = this.createResponse('messageReceived');
         response.responseBody = event.data;
         this.options.onMessage?.(response);
       };
 
-      this.eventSource.onerror = () => {
-        if (this.state === 'closed') return;
+      // EventSource does not pass comments on, so the server keeps the
+      // stream alive with events that carry the interval in seconds
+      this.eventSource.addEventListener('keep-alive', (event) => {
+        this.keepAliveInterval = Number((event as MessageEvent).data) || 0;
+        this.watchStream();
+      });
 
-        // Don't rely on browser's auto-reconnection - it's inconsistent across
-        // browsers (Safari, Chrome, Firefox behave differently). Take full
-        // control of reconnection by closing the EventSource and managing
-        // reconnection ourselves.
-        if (this.eventSource) {
-          this.eventSource.close();
-          this.eventSource = null;
-        }
-        this.state = 'closed';
-        this.scheduleReconnect();
-      };
+      this.eventSource.onerror = () => this.streamFailed();
     } catch (e) {
       const response = this.createResponse('error');
       response.error = e instanceof Error ? e.message : String(e);
       this.options.onTransportFailure?.(response.error, response);
+    }
+  }
+
+  private streamFailed(): void {
+    if (this.state === 'closed') return;
+
+    // Don't rely on browser's auto-reconnection - it's inconsistent across
+    // browsers (Safari, Chrome, Firefox behave differently). Take full
+    // control of reconnection by closing the EventSource and managing
+    // reconnection ourselves.
+    this.stopStream();
+    this.state = 'closed';
+    this.scheduleReconnect();
+  }
+
+  /**
+   * Reconnects if neither an event nor a keep-alive arrives for two keep-alive
+   * intervals. A stream can die without an error, e.g. when the network
+   * changes or a proxy drops the connection silently.
+   */
+  private watchStream(): void {
+    this.watchdogTimeoutId = clearTimer(this.watchdogTimeoutId);
+    if (this.keepAliveInterval > 0) {
+      this.watchdogTimeoutId = setTimeout(() => {
+        this.watchdogTimeoutId = null;
+        this.streamFailed();
+      }, this.keepAliveInterval * 2000);
+    }
+  }
+
+  private stopStream(): void {
+    this.stableTimeoutId = clearTimer(this.stableTimeoutId);
+    this.watchdogTimeoutId = clearTimer(this.watchdogTimeoutId);
+    if (this.eventSource) {
+      this.eventSource.close();
+      this.eventSource = null;
     }
   }
 
@@ -151,14 +202,8 @@ export class SseConnection {
 
   close(): void {
     this.state = 'closed';
-    if (this.reconnectTimeoutId) {
-      clearTimeout(this.reconnectTimeoutId);
-      this.reconnectTimeoutId = null;
-    }
-    if (this.eventSource) {
-      this.eventSource.close();
-      this.eventSource = null;
-    }
+    this.reconnectTimeoutId = clearTimer(this.reconnectTimeoutId);
+    this.stopStream();
     this.options.onClose?.(this.createResponse('closed'));
   }
 }
