@@ -1259,17 +1259,23 @@ final class Compile {
      * server falls back to the plain file once the sibling is gone, and the
      * next production build compresses it again.
      * <p>
-     * A sibling that has a source of its own is a resource the project ships on
-     * purpose, not build output, and is left alone.
+     * A compressed file the project ships in its sources is no exception: the
+     * compression runs after the resources are copied and overwrites it. So
+     * that one is copied across again instead, which is what the classpath
+     * holds before any production build.
      */
     private static void removeCompressedCopies(Path source, Path target)
             throws IOException {
         for (String suffix : COMPRESSED_SUFFIXES) {
             Path sourceSibling = source
                     .resolveSibling(source.getFileName() + suffix);
-            if (!Files.exists(sourceSibling)) {
-                Files.deleteIfExists(
-                        target.resolveSibling(target.getFileName() + suffix));
+            Path targetSibling = target
+                    .resolveSibling(target.getFileName() + suffix);
+            if (Files.isRegularFile(sourceSibling)) {
+                Files.copy(sourceSibling, targetSibling,
+                        java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            } else {
+                Files.deleteIfExists(targetSibling);
             }
         }
     }

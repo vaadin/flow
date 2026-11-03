@@ -1165,14 +1165,14 @@ class CompileTest {
         Path served = write(
                 "app/src/main/resources/META-INF/resources/site.css",
                 "body{margin:0}");
-        // A compressed file the project ships itself is a resource, not
-        // build output.
+        // A compressed file the project ships itself, which the build
+        // overwrote with its own.
         write("app/src/main/resources/META-INF/resources/site.css.gz",
                 "shipped");
         Path brotli = write("app/target/classes/META-INF/resources/site.css.br",
                 "stale");
         Path gzipped = write(
-                "app/target/classes/META-INF/resources/site.css.gz", "shipped");
+                "app/target/classes/META-INF/resources/site.css.gz", "stale");
         Compile compile = new Compile(project(app));
 
         compile.copyResources(List.of(served));
@@ -1181,8 +1181,9 @@ class CompileTest {
                 app.classesDir().resolve("META-INF/resources/site.css")));
         assertFalse(Files.exists(brotli),
                 "a compressed copy from a build must not outlive the edit");
-        assertTrue(Files.exists(gzipped),
-                "a compressed file with a source of its own must be kept");
+        assertEquals("shipped", Files.readString(gzipped),
+                "a compressed file the project ships must be restored, not "
+                        + "left as the build wrote it");
     }
 
     @Test

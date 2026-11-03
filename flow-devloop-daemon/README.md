@@ -1092,8 +1092,9 @@ configuration.
   the classpath per request, so the copy into `target/classes` plus a
   `RESOURCES` push is the whole of the work — once the `.br` and `.gz`
   siblings a production build wrote next to the copy are gone too, because
-  the server prefers them to the plain file. A sibling with a source of its
-  own is shipped by the project and kept. Everything else —
+  the server prefers them to the plain file. A sibling the project ships in
+  its sources is copied across again, since the build overwrote it. Everything
+  else —
   `application.properties` first among them — was read while the app was
   starting and is never re-read, so `apply` copies it, to keep the classpath
   honest, and then escalates.
