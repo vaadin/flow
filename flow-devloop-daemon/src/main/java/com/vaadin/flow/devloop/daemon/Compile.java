@@ -1242,14 +1242,15 @@ final class Compile {
             if (Files.deleteIfExists(target)) {
                 removed.add(target);
             }
-            removeCompressedCopies(source, target);
+            syncCompressedCopies(source, target);
         }
         return removed;
     }
 
     /**
-     * Removes the {@code .br} and {@code .gz} siblings a production build left
-     * next to a resource's classpath copy.
+     * Brings the {@code .br} and {@code .gz} siblings a production build left
+     * next to a resource's classpath copy back in line with the sources:
+     * removed, or restored from the project's own compressed file.
      * <p>
      * {@code build-frontend} pre-compresses the static resources in
      * {@code target/classes/META-INF/resources}, and the server prefers those
@@ -1264,14 +1265,15 @@ final class Compile {
      * that one is copied across again instead, which is what the classpath
      * holds before any production build.
      */
-    private static void removeCompressedCopies(Path source, Path target)
+    private static void syncCompressedCopies(Path source, Path target)
             throws IOException {
         for (String suffix : COMPRESSED_SUFFIXES) {
             Path sourceSibling = source
                     .resolveSibling(source.getFileName() + suffix);
             Path targetSibling = target
                     .resolveSibling(target.getFileName() + suffix);
-            if (Files.isRegularFile(sourceSibling)) {
+            if (Files.isRegularFile(sourceSibling)
+                    && Files.isDirectory(targetSibling.getParent())) {
                 Files.copy(sourceSibling, targetSibling,
                         java.nio.file.StandardCopyOption.REPLACE_EXISTING);
             } else {
@@ -1307,7 +1309,7 @@ final class Compile {
             Files.createDirectories(target.getParent());
             Files.copy(source, target,
                     java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            removeCompressedCopies(source, target);
+            syncCompressedCopies(source, target);
             copied.add(target);
         }
         return copied;
