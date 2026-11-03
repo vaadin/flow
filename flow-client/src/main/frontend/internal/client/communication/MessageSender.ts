@@ -78,7 +78,8 @@ export class MessageSender {
   #pushPendingMessage: Payload | null = null;
   // A payload kept pending over push that went out over XHR instead, once push
   // only receives. It is in no queue; the XHR reply settles its request, and
-  // giving up on the connection discards it.
+  // giving up on the connection or sending another payload over XHR discards
+  // it.
   #unqueuedXhrMessage: Payload | null = null;
 
   #messageQueue: Payload[] = [];
@@ -305,6 +306,10 @@ export class MessageSender {
       this.#transmit(payload, true);
     } else {
       Console.debug('send XHR');
+      if (this.#unqueuedXhrMessage !== null && this.#unqueuedXhrMessage !== payload) {
+        // Nothing resends it, so no reply can settle it any more.
+        this.settleRequest(this.#unqueuedXhrMessage, 'discarded');
+      }
       this.#unqueuedXhrMessage = this.#messageQueue.includes(payload) ? null : payload;
       this.#resetTimer();
       this.#transmit(payload, false);
