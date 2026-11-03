@@ -66,8 +66,6 @@ public class SseRequestHandler
 
     private final VaadinServletService service;
 
-    private final int keepAliveInterval;
-
     private transient ScheduledExecutorService keepAliveExecutor;
 
     /**
@@ -78,10 +76,6 @@ public class SseRequestHandler
      */
     public SseRequestHandler(VaadinServletService service) {
         this.service = service;
-        keepAliveInterval = service.getDeploymentConfiguration()
-                .getApplicationOrSystemProperty(
-                        InitParameters.SERVLET_PARAMETER_PUSH_SSE_KEEP_ALIVE_INTERVAL,
-                        DEFAULT_KEEP_ALIVE_INTERVAL, Integer::parseInt);
         service.addServiceDestroyListener(event -> destroy());
     }
 
@@ -169,6 +163,7 @@ public class SseRequestHandler
             SseStream stream = new SseStream(sseConnection, asyncContext);
             asyncContext.addListener(stream);
             sseConnection.connect(asyncContext);
+            int keepAliveInterval = getKeepAliveInterval();
             if (keepAliveInterval > 0) {
                 stream.keepAlive = getKeepAliveExecutor()
                         .scheduleWithFixedDelay(stream, keepAliveInterval,
@@ -183,6 +178,15 @@ public class SseRequestHandler
         }
 
         return true;
+    }
+
+    // Read per stream rather than in the constructor, so that creating the
+    // service does not depend on the configuration, e.g. a mocked one in tests
+    private int getKeepAliveInterval() {
+        return service.getDeploymentConfiguration()
+                .getApplicationOrSystemProperty(
+                        InitParameters.SERVLET_PARAMETER_PUSH_SSE_KEEP_ALIVE_INTERVAL,
+                        DEFAULT_KEEP_ALIVE_INTERVAL, Integer::parseInt);
     }
 
     synchronized ScheduledExecutorService getKeepAliveExecutor() {
