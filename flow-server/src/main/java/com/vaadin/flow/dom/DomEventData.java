@@ -71,20 +71,27 @@ import com.vaadin.flow.js.JsSnippets;
  * You can use the same method several times on one listener with different
  * values. Each value is read separately.
  * <p>
- * The captured values are encoded when the event data is created. If a value
+ * The captured values are checked when the event data is created. If a value
  * cannot be sent to the browser, creating the event data fails.
  * <p>
- * If you capture an element or a component, it must be attached when you create
- * the event data. If it is not attached at that time, the browser gets
- * <code>null</code> for it. This is also the case if it is attached later,
- * before the event data is added to a listener. So do not create the event data
- * in a field initializer. Create it after attaching, for example in an attach
- * listener.
+ * The captured values are encoded each time the settings of the listener are
+ * sent to the browser. This happens when the listeners of the element change,
+ * and when the whole UI is sent again, for example after a page refresh with
+ * <code>@PreserveOnRefresh</code>. A captured element or component is sent with
+ * the id that it has at that time.
  * <p>
- * The browser also gets <code>null</code> for a captured element or component
- * that is detached after the event data is created, for as long as it stays
+ * So a captured element or component must be attached before the settings are
+ * sent: in the same round trip in which the event data is added to a listener,
+ * or earlier. If it is not attached at that time, the browser gets
+ * <code>null</code> for it until the settings are sent again. The browser also
+ * gets <code>null</code> for a captured element or component while it is
  * detached. A declared expression that uses such a captured value must handle
  * <code>null</code>.
+ * <p>
+ * If all captured values are plain values, such as strings, numbers, booleans
+ * or enums, you can read the value with any event data created with the same
+ * method and equal values. Otherwise, for example when an element is captured,
+ * read the value with the same instance that you added to the listener.
  *
  * @param <T>
  *            the type of the value
@@ -95,12 +102,12 @@ import com.vaadin.flow.js.JsSnippets;
 public final class DomEventData<T> implements JsSnippet {
 
     private final JsCall declaredCall;
-    private final ArrayNode captures;
+    private final String captureIdentity;
     private final JavaType valueType;
 
     private DomEventData(JsCall declaredCall, JavaType valueType) {
         this.declaredCall = declaredCall;
-        this.captures = declaredCall.encodeSnippetCaptures();
+        this.captureIdentity = declaredCall.createSnippetCaptureIdentity();
         this.valueType = valueType;
     }
 
@@ -152,16 +159,40 @@ public final class DomEventData<T> implements JsSnippet {
     }
 
     /**
-     * Gets the captured values, encoded when this event data was created. They
-     * are sent to the browser in this form. The key for reading the value is
-     * also computed from them. Do not modify the returned array.
+     * Encodes the captured values to send them to the browser. They are encoded
+     * again each time they are sent, so that an element is sent with the id
+     * that it has at that time.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      *
      * @return the encoded captures, not <code>null</code>
      */
-    public ArrayNode getEncodedCaptures() {
-        return captures;
+    public ArrayNode encodeCaptures() {
+        return declaredCall.encodeSnippetCaptures();
+    }
+
+    /**
+     * Gets the number of captured values.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @return the number of captures
+     */
+    public int getCaptureCount() {
+        return declaredCall.flattenArguments().size();
+    }
+
+    /**
+     * Gets a string that identifies the captured values of this event data. It
+     * does not change after the event data is created. See
+     * {@link JsCall#createSnippetCaptureIdentity()}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @return the identity of the captures, not <code>null</code>
+     */
+    public String getCaptureIdentity() {
+        return captureIdentity;
     }
 
     /**

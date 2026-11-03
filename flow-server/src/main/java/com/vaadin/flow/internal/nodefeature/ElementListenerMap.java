@@ -55,6 +55,7 @@ import com.vaadin.flow.internal.ParameterizedConstantPoolKey;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -156,25 +157,40 @@ public class ElementListenerMap extends NodeMap {
         private final String kind;
         private final String expression;
         private final String functionId;
-        private final ArrayNode captures;
+        /**
+         * The call that declared the function, which has the captured values,
+         * or <code>null</code> for an expression.
+         */
+        private final JsCall call;
+        private final int captureCount;
+        /**
+         * Identifies the captured values, see
+         * {@link JsCall#createSnippetCaptureIdentity()}. The key of the entry
+         * is computed from it, not from the encoded values, because the encoded
+         * values can change. For example, an element gets a new id when it
+         * moves to another UI.
+         */
+        private final String captureIdentity;
 
         private String sharedKey;
         private String key;
 
         private ExpressionEntry(String kind, String expression,
-                String functionId, ArrayNode captures) {
+                String functionId, JsCall call, int captureCount,
+                String captureIdentity) {
             this.kind = kind;
             this.expression = expression;
             this.functionId = functionId;
-            this.captures = captures;
+            this.call = call;
+            this.captureCount = captureCount;
+            this.captureIdentity = captureIdentity;
         }
 
         /**
          * Creates an entry for event data given as an expression.
          */
         private static ExpressionEntry forEventData(String expression) {
-            return new ExpressionEntry("d", expression, null,
-                    JacksonUtils.createArrayNode());
+            return new ExpressionEntry("d", expression, null, null, 0, null);
         }
 
         /**
@@ -182,23 +198,22 @@ public class ElementListenerMap extends NodeMap {
          * by the key of the entry.
          */
         private static ExpressionEntry forEventData(DomEventData<?> data) {
-            return new ExpressionEntry("d", null,
-                    data.getDeclaredCall().getFunctionId(),
-                    data.getEncodedCaptures());
+            JsCall call = data.getDeclaredCall();
+            return new ExpressionEntry("d", null, call.getFunctionId(), call,
+                    data.getCaptureCount(), data.getCaptureIdentity());
         }
 
         /**
          * Creates an entry for a filter given as an expression.
          */
         private static ExpressionEntry forFilter(String expression) {
-            return new ExpressionEntry("f", expression, null,
-                    JacksonUtils.createArrayNode());
+            return new ExpressionEntry("f", expression, null, null, 0, null);
         }
 
         private static ExpressionEntry forFilter(DomEventFilter filter) {
-            return new ExpressionEntry("f", null,
-                    filter.getDeclaredCall().getFunctionId(),
-                    filter.getEncodedCaptures());
+            JsCall call = filter.getDeclaredCall();
+            return new ExpressionEntry("f", null, call.getFunctionId(), call,
+                    filter.getCaptureCount(), filter.getCaptureIdentity());
         }
 
         /**
@@ -209,7 +224,12 @@ public class ElementListenerMap extends NodeMap {
         private static ExpressionEntry forSideEffect(ExpressionEntry filter,
                 String sideEffect) {
             return new ExpressionEntry("s" + sideEffect, filter.expression,
-                    filter.functionId, filter.captures);
+                    filter.functionId, filter.call, filter.captureCount,
+                    filter.captureIdentity);
+        }
+
+        private boolean hasCaptures() {
+            return captureCount > 0;
         }
 
         private boolean isEventData() {
@@ -248,7 +268,7 @@ public class ElementListenerMap extends NodeMap {
                 } else {
                     String source = functionId == null ? ("e" + expression)
                             : ("f" + functionId);
-                    sharedKey = hash(kind + captures.size() + '|' + source);
+                    sharedKey = hash(kind + captureCount + '|' + source);
                 }
             }
             return sharedKey;
@@ -260,9 +280,9 @@ public class ElementListenerMap extends NodeMap {
          */
         private String getKey() {
             if (key == null) {
-                key = captures.isEmpty() ? getSharedKey()
+                key = !hasCaptures() ? getSharedKey()
                         : (getSharedKey() + CAPTURE_KEY_SEPARATOR
-                                + hash(captures.toString()));
+                                + hash(captureIdentity));
             }
             return key;
         }
@@ -348,7 +368,7 @@ public class ElementListenerMap extends NodeMap {
         private ExpressionSettings(ExpressionEntry entry) {
             this.expression = entry.expression;
             this.functionId = entry.functionId;
-            this.captureCount = entry.captures.size();
+            this.captureCount = entry.captureCount;
             this.sideEffect = entry.getSideEffect();
         }
 
@@ -415,7 +435,8 @@ public class ElementListenerMap extends NodeMap {
             ArrayNode json = JacksonUtils.createArrayNode();
             json.add(entry.getSharedKey());
             json.add(debounceSettings.toJson());
-            json.addAll(entry.captures);
+            // Encoded now, so that an element is sent with its current id
+            json.addAll(entry.call.encodeSnippetCaptures());
             return json;
         }
     }
@@ -470,7 +491,7 @@ public class ElementListenerMap extends NodeMap {
                 names.put(key, entry.expression);
             }
 
-            if (entry.captures.isEmpty()) {
+            if (!entry.hasCaptures()) {
                 return settings.debounceSettings;
             }
             return captured.computeIfAbsent(key,

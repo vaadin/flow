@@ -280,8 +280,9 @@ class JsDefinitionProxyTest {
         DomEventData<String> dataCopy = SerializationUtils.roundtrip(data);
 
         assertEquals(filter.getDeclaredCall(), filterCopy.getDeclaredCall());
-        assertEquals(filter.getEncodedCaptures(),
-                filterCopy.getEncodedCaptures());
+        assertEquals(filter.getCaptureIdentity(),
+                filterCopy.getCaptureIdentity());
+        assertEquals(filter.encodeCaptures(), filterCopy.encodeCaptures());
         // Still read by the same key, as the type the method declares
         assertEquals(ElementListenerMap.getEventDataKey(data),
                 ElementListenerMap.getEventDataKey(dataCopy));

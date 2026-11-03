@@ -400,18 +400,43 @@ public class ElementListenersTest
     }
 
     @Test
-    void declaredEventData_captureDetachedLater_stillReadByItsKey() {
+    void declaredEventData_elementCaptureMovedToAnotherUi_sentWithNewNodeId() {
         Element child = new Element("span");
-        new StateTree(new UI().getInternals(), ElementChildrenList.class)
-                .getUI().getElement().appendChild(child);
+        new UI().getElement().appendChild(child);
+        int oldId = child.getNode().getId();
         DomEventData<Object> data = JS.echo(child);
         String key = ElementListenerMap.getEventDataKey(data);
+        ns.add("click", noOp).addEventData(data);
 
+        // As with @PreserveOnRefresh, the element moves to a new UI, where it
+        // gets a new node id
         child.removeFromParent();
+        child.getNode().removeFromTree();
+        new UI().getElement().appendChild(new Element("div"), child);
+        int newId = child.getNode().getId();
+        assertNotEquals(oldId, newId);
 
-        // Identified by the captures as they were when it was created, which
-        // is what the client keeps reporting the value under
+        // The value is still read by the same key, and the settings that are
+        // sent again have the new id
         assertEquals(key, ElementListenerMap.getEventDataKey(data));
+        ObjectNode captures = (ObjectNode) encodeSettings(ns, "click",
+                new ConstantPool()).get(1);
+        assertEquals(newId, captures.get(key).get(2).get("@v-node").intValue());
+    }
+
+    @Test
+    void declaredEventData_captureIdentity() {
+        // Equal plain values: the same key, so any instance can read the value
+        assertEquals(ElementListenerMap.getEventDataKey(JS.closestTag("p")),
+                ElementListenerMap.getEventDataKey(JS.closestTag("p")));
+        assertNotEquals(ElementListenerMap.getEventDataKey(JS.closestTag("p")),
+                ElementListenerMap.getEventDataKey(JS.closestTag("div")));
+
+        // Detached elements are both encoded as null now, but they still get
+        // keys of their own
+        assertNotEquals(
+                ElementListenerMap.getEventDataKey(JS.echo(new Element("a"))),
+                ElementListenerMap.getEventDataKey(JS.echo(new Element("b"))));
     }
 
     @Test
