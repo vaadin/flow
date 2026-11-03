@@ -175,8 +175,9 @@ public final class JsDefinitionProxy {
      * @return what the definition declares, not <code>null</code>
      * @throws IllegalArgumentException
      *             if the type is not an interface, is not annotated with
-     *             {@link JsDefinition}, or has a method that does not fit what
-     *             the definition declares
+     *             {@link JsDefinition}, is annotated with {@link JsCalledWith},
+     *             or has a method that does not fit what the definition
+     *             declares
      */
     public static Kind checkDefinition(Class<?> definitionType) {
         if (!definitionType.isInterface()) {
