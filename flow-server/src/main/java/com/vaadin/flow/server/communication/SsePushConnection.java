@@ -21,6 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
@@ -425,11 +426,11 @@ public class SsePushConnection implements PushConnection {
      * stay locked until the container gives up on the write, see
      * https://github.com/vaadin/flow/issues/12316
      */
-    final class EventStream {
-        private final AsyncContext context;
-        private final PrintWriter writer;
-        private final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
-        private final AtomicBoolean draining = new AtomicBoolean();
+    final class EventStream implements Serializable {
+        private final transient AsyncContext context;
+        private final transient PrintWriter writer;
+        private final transient Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
+        private final transient AtomicBoolean draining = new AtomicBoolean();
 
         private EventStream(AsyncContext context, PrintWriter writer) {
             this.context = context;
