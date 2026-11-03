@@ -280,9 +280,10 @@ public class ElementListenerMap extends NodeMap {
          */
         private String getKey() {
             if (key == null) {
-                key = !hasCaptures() ? getSharedKey()
-                        : (getSharedKey() + CAPTURE_KEY_SEPARATOR
-                                + hash(captureIdentity));
+                key = hasCaptures()
+                        ? (getSharedKey() + CAPTURE_KEY_SEPARATOR
+                                + hash(captureIdentity))
+                        : getSharedKey();
             }
             return key;
         }
