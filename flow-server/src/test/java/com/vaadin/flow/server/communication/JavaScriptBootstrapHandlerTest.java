@@ -72,7 +72,7 @@ class JavaScriptBootstrapHandlerTest {
     }
 
     @Push(transport = Transport.SSE_PURE)
-    static public class SsePurePushAppShell implements AppShellConfigurator {
+    public static class SsePurePushAppShell implements AppShellConfigurator {
     }
 
     @BeforeEach

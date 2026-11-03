@@ -31,6 +31,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.SessionExpiredHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -61,8 +61,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  *
  * @author Vaadin Ltd
  */
-public class SseRequestHandler
-        implements RequestHandler, SessionExpiredHandler {
+public class SseRequestHandler implements SessionExpiredHandler {
 
     private static final int DEFAULT_KEEP_ALIVE_INTERVAL = 30;
 
@@ -168,11 +167,11 @@ public class SseRequestHandler
             int keepAliveInterval = getKeepAliveInterval();
             if (keepAliveInterval > 0) {
                 Executor executor = service.getExecutor();
-                stream.keepAlive = getKeepAliveExecutor()
-                        .scheduleWithFixedDelay(
+                stream.keepAlive
+                        .set(getKeepAliveExecutor().scheduleWithFixedDelay(
                                 () -> stream.sendKeepAlive(executor),
                                 keepAliveInterval, keepAliveInterval,
-                                TimeUnit.SECONDS);
+                                TimeUnit.SECONDS));
             }
 
             getLogger().debug("SSE connection established for UI {}",
@@ -216,12 +215,12 @@ public class SseRequestHandler
      * An open event stream of a push connection. Keeps the stream alive while
      * it is open, and marks the push connection lost when it ends.
      */
-    private static class SseStream
+    private static final class SseStream
             implements AsyncListener, Runnable, Serializable {
 
         private final SsePushConnection connection;
         private final transient AsyncContext asyncContext;
-        private transient volatile ScheduledFuture<?> keepAlive;
+        private final transient AtomicReference<ScheduledFuture<?>> keepAlive = new AtomicReference<>();
         private final transient AtomicBoolean sending = new AtomicBoolean();
 
         private SseStream(SsePushConnection connection,
@@ -260,7 +259,7 @@ public class SseRequestHandler
         }
 
         private void stopKeepAlive() {
-            ScheduledFuture<?> future = keepAlive;
+            ScheduledFuture<?> future = keepAlive.get();
             if (future != null) {
                 future.cancel(false);
             }
@@ -305,12 +304,9 @@ public class SseRequestHandler
     private static boolean isPushIdValid(VaadinSession session,
             String requestPushId) {
         String sessionPushId = session.getPushId();
-        if (requestPushId == null || !MessageDigest.isEqual(
+        return requestPushId != null && MessageDigest.isEqual(
                 requestPushId.getBytes(StandardCharsets.UTF_8),
-                sessionPushId.getBytes(StandardCharsets.UTF_8))) {
-            return false;
-        }
-        return true;
+                sessionPushId.getBytes(StandardCharsets.UTF_8));
     }
 
     /**

@@ -52,7 +52,7 @@ jobs:
           TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
           mkdir -p ~/.vaadin/
-          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
+          echo '{"username":"'"$(echo "$TB_LICENSE" | cut -d / -f1)"'","proKey":"'"$(echo "$TB_LICENSE" | cut -d / -f2)"'"}' > ~/.vaadin/proKey
       - name: Build
         run: >-
           mvn -B -ntp -T 1C install -DskipTests -Pit-shared-modules,it-test-modules

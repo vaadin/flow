@@ -21,7 +21,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
@@ -41,7 +40,7 @@ import com.vaadin.flow.internal.UsageStatistics;
  *
  * @author Vaadin Ltd
  */
-public class SsePushConnection implements PushConnection, Serializable {
+public class SsePushConnection implements PushConnection {
 
     /**
      * Connection states for SSE push.
@@ -80,7 +79,7 @@ public class SsePushConnection implements PushConnection, Serializable {
      */
     private static final String KEEP_ALIVE = ":\n\n";
 
-    private UI ui;
+    private final UI ui;
     private transient volatile State state = State.DISCONNECTED;
     private transient AsyncContext asyncContext;
     private transient PrintWriter writer;
@@ -206,7 +205,6 @@ public class SsePushConnection implements PushConnection, Serializable {
 
     @Override
     public boolean isConnected() {
-        assert state != null;
         return state == State.CONNECTED;
     }
 
