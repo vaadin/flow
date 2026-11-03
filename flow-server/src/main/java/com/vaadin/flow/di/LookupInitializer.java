@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,6 +47,7 @@ import com.vaadin.flow.server.StaticFileHandlerFactory;
 import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.AppShellPredicate;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
@@ -166,23 +168,70 @@ public class LookupInitializer implements AbstractLookupInitializer {
 
         private Map<String, CachedStreamData> cache = new ConcurrentHashMap<>();
 
+        private volatile ClassLoader applicationClassLoader;
+
         /**
          * Creates a new instance.
          */
         public ResourceProviderImpl() {
         }
 
+        /**
+         * Sets the class loader of the application, which is searched for
+         * resources before the class loader of Flow.
+         * <p>
+         * The two differ when Flow is loaded by a parent of the application
+         * class loader, for example from the {@code lib} folder of an EAR or
+         * from a module layer of its own, and the application resources, such
+         * as the frontend bundle, are not visible to the class loader of Flow.
+         *
+         * @param applicationClassLoader
+         *            the class loader of the application, or {@code null} to
+         *            search the class loader of Flow only
+         */
+        protected void setApplicationClassLoader(
+                ClassLoader applicationClassLoader) {
+            this.applicationClassLoader = applicationClassLoader;
+        }
+
+        private List<ClassLoader> getClassLoaders() {
+            ClassLoader flowClassLoader = ResourceProviderImpl.class
+                    .getClassLoader();
+            ClassLoader application = applicationClassLoader;
+            if (application == null || application == flowClassLoader) {
+                return List.of(flowClassLoader);
+            }
+            return List.of(application, flowClassLoader);
+        }
+
         @Override
         public URL getApplicationResource(String path) {
-            return ResourceProviderImpl.class.getClassLoader()
-                    .getResource(path);
+            for (ClassLoader classLoader : getClassLoaders()) {
+                URL resource = classLoader.getResource(path);
+                if (resource != null) {
+                    return resource;
+                }
+            }
+            return null;
         }
 
         @Override
         public List<URL> getApplicationResources(String path)
                 throws IOException {
-            return Collections.list(ResourceProviderImpl.class.getClassLoader()
-                    .getResources(path));
+            List<ClassLoader> classLoaders = getClassLoaders();
+            if (classLoaders.size() == 1) {
+                return Collections.list(classLoaders.get(0).getResources(path));
+            }
+            // The application class loader usually delegates to the class
+            // loader of Flow, so the same resources are found twice
+            Map<String, URL> resources = new LinkedHashMap<>();
+            for (ClassLoader classLoader : classLoaders) {
+                for (URL resource : Collections
+                        .list(classLoader.getResources(path))) {
+                    resources.putIfAbsent(resource.toExternalForm(), resource);
+                }
+            }
+            return new ArrayList<>(resources.values());
         }
 
         @Override
@@ -283,7 +332,45 @@ public class LookupInitializer implements AbstractLookupInitializer {
                 StaticFileHandlerFactoryImpl.class);
         ensureService(services, RoutePathProvider.class,
                 DefaultRoutePathProvider.class);
-        bootstrap.bootstrap(createLookup(context, services));
+        Lookup lookup = createLookup(context, services);
+        setApplicationClassLoader(lookup, context);
+        bootstrap.bootstrap(lookup);
+    }
+
+    /**
+     * Lets the default resource provider find the resources of the application
+     * when Flow is not loaded by the class loader of the application, see
+     * {@link ResourceProviderImpl#setApplicationClassLoader(ClassLoader)}.
+     * <p>
+     * The class loader of the servlet context is used rather than the context
+     * class loader of the thread, which is not the application class loader in
+     * threads Flow does not control, such as those of the common fork-join
+     * pool.
+     */
+    private static void setApplicationClassLoader(Lookup lookup,
+            VaadinContext context) {
+        if (!(lookup instanceof LookupImpl lookupImpl)
+                || !(context instanceof VaadinServletContext servletContext)) {
+            return;
+        }
+        Collection<Object> providers = lookupImpl.serviceMap
+                .get(ResourceProvider.class);
+        if (providers == null) {
+            return;
+        }
+        ClassLoader classLoader;
+        try {
+            classLoader = servletContext.getContext().getClassLoader();
+        } catch (UnsupportedOperationException | SecurityException e) {
+            // Not available, for example in a listener declared by a tag
+            // library: keep the class loader of Flow
+            return;
+        }
+        for (Object provider : providers) {
+            if (provider instanceof ResourceProviderImpl impl) {
+                impl.setApplicationClassLoader(classLoader);
+            }
+        }
     }
 
     /**
