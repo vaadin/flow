@@ -47,6 +47,11 @@ public class PushIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void testSsePure() throws InterruptedException {
+        doTest("", Transport.SSE_PURE, true);
+    }
+
+    @Test
     public void testSubContextWebsocket() throws InterruptedException {
         doTest("sub-context", Transport.WEBSOCKET, true);
     }
@@ -62,6 +67,11 @@ public class PushIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void testSubContextSsePure() throws InterruptedException {
+        doTest("sub-context", Transport.SSE_PURE, true);
+    }
+
+    @Test
     public void testRoutedWebsocketXhr() throws InterruptedException {
         doTest("routed", Transport.WEBSOCKET_XHR, true);
     }
@@ -69,6 +79,11 @@ public class PushIT extends ChromeBrowserTest {
     @Test
     public void testRoutedLongPolling() throws InterruptedException {
         doTest("routed", Transport.LONG_POLLING, true);
+    }
+
+    @Test
+    public void testRoutedSsePure() throws InterruptedException {
+        doTest("routed", Transport.SSE_PURE, true);
     }
 
     @Test
@@ -84,6 +99,11 @@ public class PushIT extends ChromeBrowserTest {
     @Test
     public void testRoutedSubContextLongPolling() throws InterruptedException {
         doTest("routed/sub-context", Transport.LONG_POLLING, true);
+    }
+
+    @Test
+    public void testRoutedSubContextSsePure() throws InterruptedException {
+        doTest("routed/sub-context", Transport.SSE_PURE, true);
     }
 
     private void doTest(final String subContext, Transport transport,
