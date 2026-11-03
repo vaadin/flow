@@ -79,6 +79,7 @@ import com.vaadin.flow.dom.Element;
  *
  * @see JsSnippet
  * @see JsCalledWith
+ * @since 25.4
  */
 public final class JsSnippets {
 

@@ -648,6 +648,7 @@ public abstract class VaadinService implements Serializable {
      * @throws ServiceException
      *             if a problem occurs when creating the request handlers
      * @see SessionlessRequestHandler
+     * @since 25.4
      */
     protected List<SessionlessRequestHandler> createSessionlessRequestHandlers()
             throws ServiceException {
@@ -2136,6 +2137,7 @@ public abstract class VaadinService implements Serializable {
      * @return a collection of sessionless request handlers in the order they
      *         are invoked
      * @see #createSessionlessRequestHandlers()
+     * @since 25.4
      */
     public Iterable<SessionlessRequestHandler> getSessionlessRequestHandlers() {
         return sessionlessRequestHandlers;

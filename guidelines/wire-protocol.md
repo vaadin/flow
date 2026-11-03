@@ -316,15 +316,13 @@ travels as a single-key wrapper object whose key is reserved:
   `JsSnippet` by a `@JsDefinition` method. The client looks the id up in
   `window.Vaadin.Flow.jsSnippets` and calls that function with the
   captures; what it returns is the decoded value, so nothing is compiled
-  from a string. For a snippet with `@JsCalledWith` that is a function
-  whose body is the declared expression. One without it is marked `lazy`
-  in the bundle, because its expression returns the function: the client
-  hands out a wrapper that runs it on the first call, so no declared
-  JavaScript runs while decoding. The registry is separate from
-  `jsDefinitions` because a snippet function is not `async`: whatever it
-  is passed to may need its value synchronously. A missing id decodes to
-  a function that throws when it is called rather than failing the
-  decoding of the whole invocation. Where the error ends up depends on
+  from a string. That is a function whose body is the declared expression
+  and whose parameters are the names of `@JsCalledWith`, or none without
+  it, so no declared JavaScript runs while decoding. The registry is
+  separate from `jsDefinitions` because a snippet function is not
+  `async`: whatever it is passed to may need its value synchronously. A
+  missing id decodes to a function that throws when it is called rather
+  than failing the decoding of the whole invocation. Where the error ends up depends on
   the caller: an invocation that calls it reports it through its error
   channel, while a call from an event listener only reaches the browser
   console.

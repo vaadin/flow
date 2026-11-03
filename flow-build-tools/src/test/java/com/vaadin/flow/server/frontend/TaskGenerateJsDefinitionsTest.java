@@ -57,8 +57,6 @@ class TaskGenerateJsDefinitionsTest {
 
     private static final String LOG_EXPRESSION = "console.log($0, value);";
 
-    private static final String FORMAT_EXPRESSION = "return (point) => point.y + $0;";
-
     private static final String TICK_EXPRESSION = "console.log($0, Date.now());";
 
     private static final String KEY_EXPRESSION = "return event.key === $0;";
@@ -82,11 +80,7 @@ class TaskGenerateJsDefinitionsTest {
         @JsCalledWith("value")
         JsFunction createLogger(String prefix);
 
-        @JsExpression(FORMAT_EXPRESSION)
-        JsFunction createFormatter(String unit);
-
         @JsExpression(TICK_EXPRESSION)
-        @JsCalledWith({})
         JsFunction createTicker(String label);
     }
 
@@ -195,17 +189,6 @@ class TaskGenerateJsDefinitionsTest {
                         "};")),
                 "the expression should be the body of a function of the declared parameters, returned by one of the captures: "
                         + content);
-        String formatterId = JsCall.functionId(
-                LoggerJs.class.getMethod("createFormatter", String.class));
-        assertTrue(
-                content.contains(String.join(separator,
-                        "window.Vaadin.Flow.jsSnippets[\"" + formatterId
-                                + "\"] = function ($0) {",
-                        FORMAT_EXPRESSION, "};",
-                        "window.Vaadin.Flow.jsSnippets[\"" + formatterId
-                                + "\"].lazy = true;")),
-                "without declared parameters the expression should return the function itself, marked for the client to run it on the first call rather than when decoding: "
-                        + content);
         String tickerId = JsCall.functionId(
                 LoggerJs.class.getMethod("createTicker", String.class));
         assertTrue(
@@ -214,10 +197,7 @@ class TaskGenerateJsDefinitionsTest {
                                 + "\"] = function ($0) {",
                         "  return function () {", TICK_EXPRESSION, "  };",
                         "};")),
-                "an empty list of parameters should still wrap a function around the expression: "
-                        + content);
-        assertFalse(content.contains(tickerId + "\"].lazy"),
-                "and the expression of that function only runs when it is called: "
+                "without declared parameters the expression should be the body of a function without parameters: "
                         + content);
         assertFalse(content.contains("jsDefinitions[\""),
                 "a snippet is not run by a call: " + content);
