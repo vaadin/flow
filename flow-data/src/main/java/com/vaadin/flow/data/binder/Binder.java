@@ -1301,7 +1301,7 @@ public class Binder<BEAN> implements Serializable {
             }
 
             boolean isPrimitive = definition instanceof AbstractBeanPropertyDefinition<?, ?> abpd
-                    && abpd.getDescriptor().getPropertyType().isPrimitive();
+                    && abpd.getReadMethod().getReturnType().isPrimitive();
             BindingBuilder<BEAN, ?> finalBinding = withConverter(isPrimitive
                     ? createConverterForPrimitive(definition.getType())
                     : createConverter(definition.getType()), false);

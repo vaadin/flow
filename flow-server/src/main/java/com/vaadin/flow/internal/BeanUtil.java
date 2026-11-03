@@ -15,22 +15,28 @@
  */
 package com.vaadin.flow.internal;
 
-import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
-import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
 
 import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for Java Beans information access.
+ * <p>
+ * Properties are found by their accessor methods with plain reflection, as
+ * {@code java.beans.Introspector} does, so that Flow does not need the
+ * {@code java.desktop} module.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -44,100 +50,116 @@ public final class BeanUtil implements Serializable {
     }
 
     /**
-     * Returns the property descriptors of a class, a record, or an interface.
+     * Returns the properties of a class, a record, or an interface.
+     * <p>
+     * The properties of a record are its components, in their order. The
+     * properties of a class or an interface are found by their public getters
+     * and setters, including the inherited ones and the default methods of
+     * interfaces, as {@code java.beans.Introspector} finds them: a getter is a
+     * method that {@link ReflectTools#isGetter(Method)} accepts, and a setter
+     * is a method that {@link ReflectTools#isSetter(Method)} accepts and that
+     * takes the type of the getter. The properties are sorted by name.
      *
-     * For an interface, superinterfaces are also iterated as Introspector does
-     * not take them into account (Oracle Java bug 4275879), but in that case,
-     * both the setter and the getter for a property must be in the same
-     * interface and should not be overridden in subinterfaces for the discovery
-     * to work correctly.
-     * <p>
-     * NOTE : This utility method relies on introspection (and returns
-     * PropertyDescriptor) which is a part of java.beans package. The latter
-     * package could require bigger JDK in the future (with Java 9+). So it may
-     * be changed in the future.
-     * <p>
-     * For interfaces, the iteration is depth first and the properties of
-     * superinterfaces are returned before those of their subinterfaces.
+     * @param beanType
+     *            the type whose properties to query
+     * @return a list of the properties of the given type
+     */
+    public static List<BeanProperty> getBeanProperties(
+            final Class<?> beanType) {
+        List<BeanProperty> properties = new ArrayList<>();
+        if (beanType == null) {
+            return properties;
+        }
+        if (beanType.isRecord()) {
+            for (RecordComponent component : beanType.getRecordComponents()) {
+                properties.add(new BeanProperty(component.getName(),
+                        component.getAccessor(), null));
+            }
+            return properties;
+        }
+
+        Map<String, Method> readMethods = new HashMap<>();
+        Map<String, List<Method>> writeMethods = new HashMap<>();
+        for (Method method : beanType.getMethods()) {
+            if (Modifier.isStatic(method.getModifiers())) {
+                continue;
+            }
+            String readName = getReadPropertyName(method);
+            if (readName != null) {
+                readMethods.merge(readName, method, BeanUtil::preferReadMethod);
+            }
+            String writeName = getWritePropertyName(method);
+            if (writeName != null) {
+                writeMethods.computeIfAbsent(writeName, k -> new ArrayList<>())
+                        .add(method);
+            }
+        }
+
+        TreeSet<String> names = new TreeSet<>(readMethods.keySet());
+        names.addAll(writeMethods.keySet());
+        for (String name : names) {
+            Method readMethod = readMethods.get(name);
+            Method writeMethod = findWriteMethod(writeMethods.get(name),
+                    readMethod);
+            if (readMethod != null || writeMethod != null) {
+                properties.add(new BeanProperty(name, readMethod, writeMethod));
+            }
+        }
+        return properties;
+    }
+
+    /**
+     * Returns the property with the given name of a class, a record, or an
+     * interface. The property name may refer to a nested property, e.g.
+     * "property.subProperty" or "property.subProperty1.subProperty2". The
+     * property must have a public read method (or a chain of read methods in
+     * case of a nested property), which is not declared by {@link Object}.
+     *
+     * @param beanType
+     *            the type declaring the property
+     * @param propertyName
+     *            the name of the property
+     * @return the property, or {@code null} if there is no such property
+     */
+    public static BeanProperty getBeanProperty(Class<?> beanType,
+            String propertyName) {
+        if (propertyName.contains(".")) {
+            String[] parts = propertyName.split("\\.", 2);
+            // Get the type of the field in the bean class
+            BeanProperty parent = getBeanProperty(beanType, parts[0]);
+            // Find the rest from the sub type
+            return getBeanProperty(parent == null ? null : parent.type(),
+                    parts[1]);
+        }
+        for (BeanProperty property : getBeanProperties(beanType)) {
+            Method readMethod = property.readMethod();
+            if (property.name().equals(propertyName) && readMethod != null
+                    && readMethod.getDeclaringClass() != Object.class) {
+                return property;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the property descriptors of a class, a record, or an interface.
      *
      * @param beanType
      *            the type whose properties to query
      * @return a list of property descriptors of the given type
      * @throws IntrospectionException
-     *             if the introspection fails
+     *             if a descriptor cannot be created
+     * @deprecated Use {@link #getBeanProperties(Class)}, which needs no
+     *             {@code java.desktop} module
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public static List<PropertyDescriptor> getBeanPropertyDescriptors(
             final Class<?> beanType) throws IntrospectionException {
-        if (beanType == null) {
-            return new ArrayList<>();
+        List<PropertyDescriptor> descriptors = new ArrayList<>();
+        for (BeanProperty property : getBeanProperties(beanType)) {
+            descriptors.add(toPropertyDescriptor(property));
         }
-        List<PropertyDescriptor> descriptorsWithDuplicates = internalGetBeanPropertyDescriptors(
-                beanType);
-
-        // As we scan for default methods, we might get duplicates
-        // for the same property, so we need to remove them.
-        // We prefer to keep a class property over an interface
-        // property.
-        LinkedHashMap<String, PropertyDescriptor> descriptors = new LinkedHashMap<>();
-        for (PropertyDescriptor descriptor : descriptorsWithDuplicates) {
-            String name = descriptor.getName();
-            if (descriptors.containsKey(name)) {
-                PropertyDescriptor existing = descriptors.get(name);
-                // If the existing descriptor is from a class, keep it
-                // otherwise replace it with the new one.
-                if (existing.getReadMethod() != null && !existing
-                        .getReadMethod().getDeclaringClass().isInterface()) {
-                    continue;
-                }
-                // Merge read/write methods from separate descriptors
-                descriptor = mergeDescriptors(existing, descriptor);
-            }
-            descriptors.put(name, descriptor);
-        }
-
-        return new ArrayList<>(descriptors.values());
-    }
-
-    private static PropertyDescriptor mergeDescriptors(
-            PropertyDescriptor existing, PropertyDescriptor incoming) {
-        Method read = incoming.getReadMethod() != null
-                ? incoming.getReadMethod()
-                : existing.getReadMethod();
-        Method write = incoming.getWriteMethod() != null
-                ? incoming.getWriteMethod()
-                : existing.getWriteMethod();
-        try {
-            return new PropertyDescriptor(incoming.getName(), read, write);
-        } catch (IntrospectionException e) {
-            // Fall back to incoming if merge fails
-            return incoming;
-        }
-    }
-
-    private static List<PropertyDescriptor> internalGetBeanPropertyDescriptors(
-            Class<?> beanType) throws IntrospectionException {
-
-        if (beanType.isRecord()) {
-            List<PropertyDescriptor> propertyDescriptors = new ArrayList<>();
-
-            for (RecordComponent component : beanType.getRecordComponents()) {
-                propertyDescriptors.add(new PropertyDescriptor(
-                        component.getName(), component.getAccessor(), null));
-            }
-            return propertyDescriptors;
-        }
-        // Introspector does not consider superinterfaces of
-        // an interface nor does it consider default methods of interfaces.
-        List<PropertyDescriptor> propertyDescriptors = new ArrayList<>();
-
-        for (Class<?> cls : beanType.getInterfaces()) {
-            propertyDescriptors.addAll(internalGetBeanPropertyDescriptors(cls));
-        }
-
-        BeanInfo info = Introspector.getBeanInfo(beanType);
-        propertyDescriptors.addAll(getPropertyDescriptors(info));
-
-        return propertyDescriptors;
+        return descriptors;
     }
 
     /**
@@ -151,19 +173,12 @@ public final class BeanUtil implements Serializable {
      *            the type declaring the property
      * @param propertyName
      *            the name of the property
-     * @return the property type
-     * @throws IntrospectionException
-     *             if the introspection fails
+     * @return the property type, or {@code null} if there is no such property
      */
     public static Class<?> getPropertyType(Class<?> beanType,
-            String propertyName) throws IntrospectionException {
-        PropertyDescriptor descriptor = getPropertyDescriptor(beanType,
-                propertyName);
-        if (descriptor != null) {
-            return descriptor.getPropertyType();
-        } else {
-            return null;
-        }
+            String propertyName) {
+        BeanProperty property = getBeanProperty(beanType, propertyName);
+        return property == null ? null : property.type();
     }
 
     /**
@@ -179,30 +194,88 @@ public final class BeanUtil implements Serializable {
      *            the name of the property
      * @return the corresponding descriptor
      * @throws IntrospectionException
-     *             if the introspection fails
+     *             if a descriptor cannot be created
+     * @deprecated Use {@link #getBeanProperty(Class, String)}, which needs no
+     *             {@code java.desktop} module
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public static PropertyDescriptor getPropertyDescriptor(Class<?> beanType,
             String propertyName) throws IntrospectionException {
-        if (propertyName.contains(".")) {
-            String[] parts = propertyName.split("\\.", 2);
-            // Get the type of the field in the bean class
-            Class<?> propertyBean = getPropertyType(beanType, parts[0]);
-            // Find the rest from the sub type
-            return getPropertyDescriptor(propertyBean, parts[1]);
-        } else {
-            List<PropertyDescriptor> descriptors = getBeanPropertyDescriptors(
-                    beanType);
+        BeanProperty property = getBeanProperty(beanType, propertyName);
+        return property == null ? null : toPropertyDescriptor(property);
+    }
 
-            for (PropertyDescriptor descriptor : descriptors) {
-                final Method getMethod = descriptor.getReadMethod();
-                if (descriptor.getName().equals(propertyName)
-                        && getMethod != null
-                        && getMethod.getDeclaringClass() != Object.class) {
-                    return descriptor;
-                }
-            }
+    // No catch clause for IntrospectionException in this class: the JVM loads
+    // the type of a catch clause when it verifies the class, so this class
+    // could not be used without the java.desktop module
+    private static PropertyDescriptor toPropertyDescriptor(
+            BeanProperty property) throws IntrospectionException {
+        return new PropertyDescriptor(property.name(), property.readMethod(),
+                property.writeMethod());
+    }
+
+    private static String getReadPropertyName(Method method) {
+        if (!ReflectTools.isGetter(method)) {
             return null;
         }
+        String name = method.getName();
+        return decapitalize(name.substring(name.startsWith("is") ? 2 : 3));
+    }
+
+    private static String getWritePropertyName(Method method) {
+        if (!ReflectTools.isSetter(method)) {
+            return null;
+        }
+        return decapitalize(method.getName().substring(3));
+    }
+
+    /**
+     * Chooses between two getters of the same property: {@code isX} over
+     * {@code getX}, as {@code Introspector} does, and the one with the most
+     * specific return type, which is not the bridge method of a covariant
+     * return type.
+     */
+    private static Method preferReadMethod(Method method1, Method method2) {
+        boolean is1 = method1.getName().startsWith("is");
+        boolean is2 = method2.getName().startsWith("is");
+        if (is1 != is2) {
+            return is1 ? method1 : method2;
+        }
+        Class<?> type1 = method1.getReturnType();
+        Class<?> type2 = method2.getReturnType();
+        if (type1 != type2) {
+            return type2.isAssignableFrom(type1) ? method1 : method2;
+        }
+        return method2.isBridge() ? method1 : method2;
+    }
+
+    /**
+     * Chooses the setter of a property from its candidates: the one that takes
+     * the type of the getter, if there is a getter.
+     */
+    private static Method findWriteMethod(List<Method> candidates,
+            Method readMethod) {
+        if (candidates == null) {
+            return null;
+        }
+        return candidates.stream().filter(method -> readMethod == null
+                || method.getParameterTypes()[0] == readMethod.getReturnType())
+                .min(Comparator.comparing(Method::isBridge).thenComparing(
+                        method -> method.getParameterTypes()[0].getName()))
+                .orElse(null);
+    }
+
+    /**
+     * Converts the part of an accessor name after its prefix to a property
+     * name, as {@code Introspector.decapitalize} does: "FooBar" becomes
+     * "fooBar", "X" becomes "x", but "URL" stays "URL".
+     */
+    private static String decapitalize(String name) {
+        if (name.length() > 1 && Character.isUpperCase(name.charAt(1))
+                && Character.isUpperCase(name.charAt(0))) {
+            return name;
+        }
+        return Character.toLowerCase(name.charAt(0)) + name.substring(1);
     }
 
     /**
@@ -218,13 +291,10 @@ public final class BeanUtil implements Serializable {
      * @param type
      *            the class to introspect
      * @return a list of property paths (e.g., ["event.button", "event.clientX",
-     *         "element.tagName"])
-     * @throws IntrospectionException
-     *             if bean introspection fails
+     *         "type"])
      * @since 25.0
      */
-    public static List<String> getBeanPropertyPaths(Class<?> type)
-            throws IntrospectionException {
+    public static List<String> getBeanPropertyPaths(Class<?> type) {
         List<String> paths = new ArrayList<>();
         collectPropertyPaths("", type, paths);
         return paths;
@@ -239,23 +309,19 @@ public final class BeanUtil implements Serializable {
      *            the class to inspect
      * @param paths
      *            the list to accumulate paths into
-     * @throws IntrospectionException
-     *             if bean introspection fails
      */
     private static void collectPropertyPaths(String prefix, Class<?> type,
-            List<String> paths) throws IntrospectionException {
-        List<PropertyDescriptor> properties = getBeanPropertyDescriptors(type);
-
-        for (PropertyDescriptor property : properties) {
+            List<String> paths) {
+        for (BeanProperty property : getBeanProperties(type)) {
             // Skip "class" property
-            if ("class".equals(property.getName())) {
+            if ("class".equals(property.name())) {
                 continue;
             }
 
-            String propertyName = property.getName();
+            String propertyName = property.name();
             String fieldPath = prefix.isEmpty() ? propertyName
                     : prefix + "." + propertyName;
-            Class<?> propertyType = property.getPropertyType();
+            Class<?> propertyType = property.type();
 
             if (isSimpleType(propertyType)) {
                 // Leaf node - add path
@@ -265,22 +331,12 @@ public final class BeanUtil implements Serializable {
                     || java.util.Map.class.isAssignableFrom(propertyType)) {
                 // Collection/array/map - add as-is, don't recurse
                 paths.add(fieldPath);
+            } else if (!getBeanProperties(propertyType).isEmpty()) {
+                // Complex bean/record type with properties, recurse
+                collectPropertyPaths(fieldPath, propertyType, paths);
             } else {
-                // Complex bean/record type - try to recurse
-                try {
-                    List<PropertyDescriptor> nestedProps = getBeanPropertyDescriptors(
-                            propertyType);
-                    if (!nestedProps.isEmpty()) {
-                        // Has properties, recurse
-                        collectPropertyPaths(fieldPath, propertyType, paths);
-                    } else {
-                        // No properties, add as-is
-                        paths.add(fieldPath);
-                    }
-                } catch (IntrospectionException e) {
-                    // If introspection fails, just add the field as-is
-                    paths.add(fieldPath);
-                }
+                // No properties, add as-is
+                paths.add(fieldPath);
             }
         }
     }
@@ -313,73 +369,6 @@ public final class BeanUtil implements Serializable {
      */
     public static boolean checkBeanValidationAvailable() {
         return LazyValidationAvailability.BEAN_VALIDATION_AVAILABLE;
-    }
-
-    // Workaround for Java6 bug JDK-6788525. Do nothing for JDK7+.
-    private static List<PropertyDescriptor> getPropertyDescriptors(
-            BeanInfo beanInfo) {
-        PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
-        List<PropertyDescriptor> result = new ArrayList<>(descriptors.length);
-        for (PropertyDescriptor descriptor : descriptors) {
-            try {
-                result.add(fixPropertyDescriptor(descriptor));
-            } catch (SecurityException exception) {
-                LoggerFactory.getLogger(BeanUtil.class.getName()).info(null,
-                        exception);
-                // handle next descriptor
-            } catch (IntrospectionException e) {
-                LoggerFactory.getLogger(BeanUtil.class.getName()).info(null, e);
-                result.add(descriptor);
-            }
-        }
-        return result;
-    }
-
-    private static PropertyDescriptor fixPropertyDescriptor(
-            PropertyDescriptor descriptor) throws IntrospectionException {
-        Method readMethod = getMethodFromBridge(descriptor.getReadMethod());
-        if (readMethod != null) {
-            Method writeMethod = getMethodFromBridge(
-                    descriptor.getWriteMethod(), readMethod.getReturnType());
-            if (writeMethod == null) {
-                writeMethod = descriptor.getWriteMethod();
-            }
-            return new PropertyDescriptor(descriptor.getName(), readMethod,
-                    writeMethod);
-        } else {
-            return descriptor;
-        }
-    }
-
-    /**
-     * Return declared method for which {@code bridgeMethod} is generated. If
-     * {@code bridgeMethod} is not a bridge method then return null.
-     */
-    private static Method getMethodFromBridge(Method bridgeMethod)
-            throws SecurityException {
-        if (bridgeMethod == null) {
-            return null;
-        }
-        return getMethodFromBridge(bridgeMethod,
-                bridgeMethod.getParameterTypes());
-    }
-
-    /**
-     * Return declared method for which {@code bridgeMethod} is generated using
-     * its {@code paramTypes}. If {@code bridgeMethod} is not a bridge method
-     * then return null.
-     */
-    private static Method getMethodFromBridge(Method bridgeMethod,
-            Class<?>... paramTypes) throws SecurityException {
-        if (bridgeMethod == null || !bridgeMethod.isBridge()) {
-            return null;
-        }
-        try {
-            return bridgeMethod.getDeclaringClass()
-                    .getMethod(bridgeMethod.getName(), paramTypes);
-        } catch (NoSuchMethodException e) {
-            return null;
-        }
     }
 
     private static class LazyValidationAvailability implements Serializable {

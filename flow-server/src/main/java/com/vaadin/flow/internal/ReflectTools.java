@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.internal;
 
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -191,15 +189,10 @@ public class ReflectTools implements Serializable {
     public static Object getJavaFieldValue(Object object,
             java.lang.reflect.Field field) throws IllegalArgumentException,
             IllegalAccessException, InvocationTargetException {
-        PropertyDescriptor pd;
-        try {
-            pd = new PropertyDescriptor(field.getName(), object.getClass());
-            Method getter = pd.getReadMethod();
-            if (getter != null) {
-                return getter.invoke(object, (Object[]) null);
-            }
-        } catch (IntrospectionException e1) {
-            // Ignore this and try to get directly using the field
+        Method getter = findGetterWithSetter(object.getClass(),
+                field.getName());
+        if (getter != null) {
+            return getter.invoke(object, (Object[]) null);
         }
 
         // Try to get the value or throw an exception
@@ -236,17 +229,11 @@ public class ReflectTools implements Serializable {
             java.lang.reflect.Field field, Class<?> propertyType)
             throws IllegalArgumentException, IllegalAccessException,
             InvocationTargetException {
-        PropertyDescriptor pd;
-        try {
-            pd = new PropertyDescriptor(field.getName(), object.getClass());
-            if (propertyType.isAssignableFrom(pd.getPropertyType())) {
-                Method getter = pd.getReadMethod();
-                if (getter != null) {
-                    return getter.invoke(object, (Object[]) null);
-                }
-            }
-        } catch (IntrospectionException e1) {
-            // Ignore this and try to get directly using the field
+        Method getter = findGetterWithSetter(object.getClass(),
+                field.getName());
+        if (getter != null
+                && propertyType.isAssignableFrom(getter.getReturnType())) {
+            return getter.invoke(object, (Object[]) null);
         }
         // If the field's type cannot be casted in to the requested type
         if (!propertyType.isAssignableFrom(field.getType())) {
@@ -258,6 +245,37 @@ public class ReflectTools implements Serializable {
             field.setAccessible(true);
         }
         return field.get(object);
+    }
+
+    /**
+     * Finds the public getter of a field, {@code isName} or {@code getName},
+     * when there is also a public setter, {@code setName}, of the same type:
+     * the getter that {@code new PropertyDescriptor(name, type)} finds.
+     */
+    private static Method findGetterWithSetter(Class<?> type,
+            String fieldName) {
+        String capitalized = Character.toUpperCase(fieldName.charAt(0))
+                + fieldName.substring(1);
+        Method getter = findPublicMethod(type, "is" + capitalized);
+        if (getter == null) {
+            getter = findPublicMethod(type, "get" + capitalized);
+        }
+        if (getter == null || getter.getReturnType() == void.class) {
+            return null;
+        }
+        Method setter = findPublicMethod(type, "set" + capitalized,
+                getter.getReturnType());
+        return setter == null ? null : getter;
+    }
+
+    private static Method findPublicMethod(Class<?> type, String name,
+            Class<?>... parameterTypes) {
+        try {
+            Method method = type.getMethod(name, parameterTypes);
+            return Modifier.isStatic(method.getModifiers()) ? null : method;
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
     }
 
     /**
