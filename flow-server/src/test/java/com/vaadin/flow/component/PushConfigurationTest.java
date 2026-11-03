@@ -52,6 +52,7 @@ class PushConfigurationTest {
         session = new MockVaadinSession(service);
         session.lock();
         ui = new MockUI(session);
+        enable(CoreFeatureFlagProvider.SSE_PURE_PUSH_TRANSPORT, service);
     }
 
     @AfterEach
@@ -86,7 +87,7 @@ class PushConfigurationTest {
 
     @Test
     void setTransport_serverSentEventsWithFeatureFlag_transportIsUsed() {
-        enableServerSentEvents();
+        enable(CoreFeatureFlagProvider.SSE_PUSH_TRANSPORT, service);
 
         ui.getPushConfiguration().setTransport(Transport.SERVER_SENT_EVENTS);
         ui.getPushConfiguration()
@@ -119,6 +120,33 @@ class PushConfigurationTest {
                 ui.getPushConfiguration().getTransport());
         assertEquals(Transport.LONG_POLLING,
                 ui.getPushConfiguration().getFallbackTransport());
+    }
+
+    @Test
+    void setTransport_ssePureWithoutFeatureFlag_throws() {
+        disable(CoreFeatureFlagProvider.SSE_PURE_PUSH_TRANSPORT, service);
+
+        DisabledFeatureException exception = assertThrows(
+                DisabledFeatureException.class, () -> ui.getPushConfiguration()
+                        .setTransport(Transport.SSE_PURE));
+        assertTrue(
+                exception.getMessage().contains(
+                        "com.vaadin.experimental.ssePurePushTransport=true"),
+                "The exception should tell how to enable the feature, but was: "
+                        + exception.getMessage());
+        assertEquals(Transport.WEBSOCKET_XHR,
+                ui.getPushConfiguration().getTransport());
+    }
+
+    @Test
+    void setPushMode_withoutAtmosphereOrFeatureFlag_throws() {
+        UI uiWithoutAtmosphere = createUiWithoutAtmosphere(false);
+
+        // As before SSE_PURE, push is not available without Atmosphere
+        assertThrows(IllegalStateException.class, () -> uiWithoutAtmosphere
+                .getPushConfiguration().setPushMode(PushMode.AUTOMATIC));
+        assertEquals(PushMode.DISABLED,
+                uiWithoutAtmosphere.getPushConfiguration().getPushMode());
     }
 
     @Test
@@ -271,12 +299,20 @@ class PushConfigurationTest {
     }
 
     private UI createUiWithoutAtmosphere() {
+        return createUiWithoutAtmosphere(true);
+    }
+
+    private UI createUiWithoutAtmosphere(boolean ssePureEnabled) {
         MockVaadinServletService serviceWithoutAtmosphere = new MockVaadinServletService() {
             @Override
             public boolean ensurePushAvailable() {
                 return false;
             }
         };
+        if (ssePureEnabled) {
+            enable(CoreFeatureFlagProvider.SSE_PURE_PUSH_TRANSPORT,
+                    serviceWithoutAtmosphere);
+        }
         VaadinSession sessionWithoutAtmosphere = new MockVaadinSession(
                 serviceWithoutAtmosphere);
         // The test thread already holds the lock of the default session, the
@@ -285,11 +321,20 @@ class PushConfigurationTest {
         return new MockUI(sessionWithoutAtmosphere);
     }
 
-    private void enableServerSentEvents() {
-        FeatureFlags featureFlags = FeatureFlags.get(service.getContext());
-        for (Feature feature : featureFlags.getFeatures()) {
-            if (feature.equals(CoreFeatureFlagProvider.SSE_PUSH_TRANSPORT)) {
-                feature.setEnabled(true);
+    private static void enable(Feature feature, VaadinService service) {
+        setEnabled(feature, service, true);
+    }
+
+    private static void disable(Feature feature, VaadinService service) {
+        setEnabled(feature, service, false);
+    }
+
+    private static void setEnabled(Feature feature, VaadinService service,
+            boolean enabled) {
+        for (Feature flag : FeatureFlags.get(service.getContext())
+                .getFeatures()) {
+            if (flag.equals(feature)) {
+                flag.setEnabled(enabled);
             }
         }
     }

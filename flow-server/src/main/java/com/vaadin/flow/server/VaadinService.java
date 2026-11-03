@@ -123,13 +123,14 @@ public abstract class VaadinService implements Serializable {
             + SEPARATOR;
 
     public static final String ATMOSPHERE_MISSING_ERROR = SEPARATOR
-            + "\nAtmosphere could not be loaded, so push uses the "
-            + Transport.class.getSimpleName() + "." + Transport.SSE_PURE.name()
-            + "\ntransport, which does not need Atmosphere.\n"
-            + "To use the other push transports, add a dependency to\n"
-            + "vaadin-push or make sure Atmosphere "
+            + "\nAtmosphere could not be loaded. When using push with Vaadin,\n"
+            + "add a dependency to vaadin-push or make sure Atmosphere "
             + Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION
-            + "\nis included on the classpath." + SEPARATOR;
+            + "\nis included on the classpath.\n"
+            + "If the experimental com.vaadin.experimental.ssePurePushTransport\n"
+            + "feature flag is enabled, push uses the "
+            + Transport.class.getSimpleName() + ".SSE_PURE transport\n"
+            + "instead, which does not need Atmosphere." + SEPARATOR;
 
     /**
      * Attribute name for telling

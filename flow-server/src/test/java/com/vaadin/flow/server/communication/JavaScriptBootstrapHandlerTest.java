@@ -24,6 +24,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import tools.jackson.databind.JsonNode;
 
+import com.vaadin.experimental.CoreFeatureFlagProvider;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UI.BrowserNavigateEvent;
@@ -75,6 +77,9 @@ class JavaScriptBootstrapHandlerTest {
     public static class SsePurePushAppShell implements AppShellConfigurator {
     }
 
+    private static final String SSE_PURE_FLAG = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
+            + CoreFeatureFlagProvider.SSE_PURE_PUSH_TRANSPORT.getId();
+
     @BeforeEach
     void setup() throws Exception {
         mocks = new MockServletServiceSessionSetup();
@@ -85,6 +90,7 @@ class JavaScriptBootstrapHandlerTest {
 
     @AfterEach
     void tearDown() {
+        System.clearProperty(SSE_PURE_FLAG);
         mocks.cleanup();
     }
 
@@ -241,6 +247,7 @@ class JavaScriptBootstrapHandlerTest {
 
     @Test
     void should_notRespondPushScript_when_ssePureTransport() throws Exception {
+        enableSsePure();
         VaadinServletContext context = new VaadinServletContext(
                 mocks.getServletContext());
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
@@ -265,6 +272,7 @@ class JavaScriptBootstrapHandlerTest {
     @Test
     void should_useSsePure_when_pushAnnotatedInAppShellWithoutAtmosphere()
             throws Exception {
+        enableSsePure();
         mocks.getService().setAtmosphereAvailable(false);
         VaadinServletContext context = new VaadinServletContext(
                 mocks.getServletContext());
@@ -287,6 +295,7 @@ class JavaScriptBootstrapHandlerTest {
     @Test
     void should_useSsePure_when_pushEnabledInDeploymentConfigurationWithoutAtmosphere()
             throws Exception {
+        enableSsePure();
         mocks.getService().setAtmosphereAvailable(false);
         mocks.getDeploymentConfiguration().setPushMode(PushMode.AUTOMATIC);
 
@@ -401,4 +410,9 @@ class JavaScriptBootstrapHandlerTest {
         });
     }
 
+    private void enableSsePure() {
+        // The mocked context keeps no attributes, so the feature flags are
+        // read again, from the system properties, whenever they are needed
+        System.setProperty(SSE_PURE_FLAG, "true");
+    }
 }

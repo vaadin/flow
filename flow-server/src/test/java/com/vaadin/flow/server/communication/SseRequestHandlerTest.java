@@ -36,6 +36,9 @@ import org.mockito.ArgumentCaptor;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import com.vaadin.experimental.CoreFeatureFlagProvider;
+import com.vaadin.experimental.Feature;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -89,6 +92,13 @@ class SseRequestHandlerTest {
         // of the service
         serviceExecutor = service.getExecutor();
         doReturn((Executor) Runnable::run).when(service).getExecutor();
+        for (Feature feature : FeatureFlags.get(service.getContext())
+                .getFeatures()) {
+            if (feature
+                    .equals(CoreFeatureFlagProvider.SSE_PURE_PUSH_TRANSPORT)) {
+                feature.setEnabled(true);
+            }
+        }
         session = new MockVaadinSession(service);
         session.lock();
         ui = new MockUI(session);
