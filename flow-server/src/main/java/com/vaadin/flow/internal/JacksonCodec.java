@@ -61,6 +61,11 @@ import com.vaadin.flow.js.JsCall;
  */
 public class JacksonCodec {
 
+    /**
+     * The key of the JSON object that a {@link JsFunction} is encoded as.
+     */
+    public static final String FUNCTION_KEY = "@v-fn";
+
     private JacksonCodec() {
         // Don't create instances
     }
@@ -133,7 +138,7 @@ public class JacksonCodec {
             }
             payload.set("args", args);
         }
-        obj.set("@v-fn", payload);
+        obj.set(FUNCTION_KEY, payload);
         return obj;
     }
 

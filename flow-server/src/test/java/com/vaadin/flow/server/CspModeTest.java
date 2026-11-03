@@ -49,6 +49,7 @@ import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.tests.util.MockUI;
 
@@ -83,6 +84,11 @@ class CspModeTest {
     @Tag("div")
     private static class Clickable extends Component
             implements ClickNotifier<Clickable> {
+    }
+
+    @Route("csp")
+    @Tag("div")
+    private static class RouteView extends Component {
     }
 
     private MockServletServiceSessionSetup setup;
@@ -174,6 +180,8 @@ class CspModeTest {
             EventJs eventJs = JsSnippets.of(EventJs.class);
             registration.setFilter(eventJs.isX(2))
                     .addEventData(eventJs.scaledX(2));
+            // Loads the chunk of the route with a function from the bundle
+            ui.getInternals().addComponentDependencies(RouteView.class);
         });
     }
 
