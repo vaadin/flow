@@ -1,9 +1,10 @@
 name: Reverse Proxy Tests
 
 # Runs the push tests and a selection of general integration tests of
-# flow-tests/test-root-context, and the push tests without Atmosphere on Jetty,
-# Spring Boot (Tomcat) and Quarkus, through reverse proxies that terminate
-# HTTPS, like the proxies applications are deployed behind. Each proxy runs with a configuration tuned for Vaadin
+# flow-tests/test-root-context, the push tests without Atmosphere on Jetty,
+# Spring Boot (Tomcat) and Quarkus, and the CDI tests on Payara, through
+# reverse proxies that terminate HTTPS, like the proxies applications are
+# deployed behind. Each proxy runs with a configuration tuned for Vaadin
 # (recommended) and with a minimal one that leaves the defaults of the proxy in
 # place (default), see ReverseProxy in flow-test-util. The proxies run in Docker
 # containers started by Testcontainers.
@@ -56,7 +57,7 @@ jobs:
       - name: Build
         run: >-
           mvn -B -ntp -T 1C install -DskipTests -Pit-shared-modules,it-test-modules
-          -pl flow-tests/test-root-context,flow-tests/test-push-sse-pure,flow-tests/test-lumo,flow-tests/test-lumo-theme,vaadin-spring,vaadin-quarkus/deployment
+          -pl flow-tests/test-root-context,flow-tests/test-push-sse-pure,flow-tests/test-lumo,flow-tests/test-lumo-theme,vaadin-spring,vaadin-quarkus/deployment,vaadin-cdi
           -am
       - name: Run the tests through ${{ matrix.proxy }}
         run: >-
@@ -71,6 +72,17 @@ jobs:
           -pl push-sse-pure-it -am
           -Dreverse.proxy=${{ matrix.proxy }}
           -Dreverse.proxy.config=${{ matrix.config }}
+      # nginx does not pass the Upgrade header on by default, so the websocket
+      # push tests are left out with that configuration, as in
+      # flow-tests/test-root-context/reverse-proxy/nginx-default-excludes.txt
+      - name: Run the Payara CDI tests through ${{ matrix.proxy }}
+        if: ${{ !cancelled() }}
+        run: >-
+          mvn -B -ntp verify -pl flow-tests/vaadin-cdi-tests -Ppayara
+          -Dcom.vaadin.testbench.Parameters.maxAttempts=2
+          -Dreverse.proxy=${{ matrix.proxy }}
+          -Dreverse.proxy.config=${{ matrix.config }}
+          ${{ matrix.proxy == 'nginx' && matrix.config == 'default' && '-Dtest=!PushTest#ws*,!PushWithoutManagedExecutorTest#ws*' || '' }}
       - name: Upload test reports
         if: ${{ failure() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -84,3 +96,4 @@ jobs:
             flow-tests/vaadin-spring-tests/test-spring-boot-sse-pure/target/failsafe-reports/
             flow-tests/vaadin-quarkus-tests/push-sse-pure-it/target/failsafe-reports/
             flow-tests/vaadin-quarkus-tests/push-sse-pure-it/target/quarkus.log
+            flow-tests/vaadin-cdi-tests/target/surefire-reports/

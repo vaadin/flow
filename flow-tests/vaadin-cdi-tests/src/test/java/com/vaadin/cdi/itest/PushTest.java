@@ -35,6 +35,7 @@ import com.vaadin.cdi.annotation.VaadinServiceScoped;
 import com.vaadin.cdi.annotation.VaadinSessionScoped;
 import com.vaadin.cdi.itest.push.ManagedExecutorPushComponent;
 import com.vaadin.cdi.itest.push.PushComponent;
+import com.vaadin.cdi.itest.push.SsePurePushView;
 import com.vaadin.cdi.itest.push.WebsocketPushView;
 import com.vaadin.cdi.itest.push.WebsocketXhrPushView;
 
@@ -45,11 +46,14 @@ public class PushTest extends AbstractCdiTest {
     @Deployment(testable = false)
     public static WebArchive deployment() {
         return ArchiveProvider.createWebArchive("push-managed",
-                webArchive -> webArchive
-                        .addClasses(WebsocketPushView.class,
-                                WebsocketXhrPushView.class, PushComponent.class,
-                                ManagedExecutorPushComponent.class)
-                        .addAsResource(new File("target/classes/META-INF")));
+                webArchive -> webArchive.addClasses(WebsocketPushView.class,
+                        WebsocketXhrPushView.class, SsePurePushView.class,
+                        PushComponent.class, ManagedExecutorPushComponent.class)
+                        .addAsResource(new File("target/classes/META-INF"))
+                        // Enables the experimental SSE_PURE transport
+                        .addAsResource(
+                                "sse-pure/vaadin-featureflags.properties",
+                                "vaadin-featureflags.properties"));
     }
 
     @Test
@@ -83,6 +87,25 @@ public class PushTest extends AbstractCdiTest {
         getDriver().get(getTestURL() + "websocket");
         click(PushComponent.RUN_FOREGROUND);
         assertAllExceptRequestAndSessionActive();
+    }
+
+    @Test
+    public void ssePureBackgroundRequestAndSessionDoesNotActive() {
+        getDriver().get(getTestURL() + "sse-pure");
+        click(PushComponent.RUN_BACKGROUND);
+        waitForPush();
+        assertAllExceptRequestAndSessionActive();
+    }
+
+    @Test
+    public void ssePureForegroundAllContextsActive() {
+        // Messages to the server are regular requests, as with websocket-xhr
+        getDriver().get(getTestURL() + "sse-pure");
+        click(PushComponent.RUN_FOREGROUND);
+        assertContextActive(RequestScoped.class, true);
+        assertContextActive(SessionScoped.class, true);
+        assertContextActive(ApplicationScoped.class, true);
+        assertVaadinContextsActive();
     }
 
     private void assertAllExceptRequestAndSessionActive() {
