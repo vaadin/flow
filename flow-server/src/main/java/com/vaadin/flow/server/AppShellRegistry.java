@@ -423,8 +423,27 @@ public class AppShellRegistry implements Serializable {
                             Push.class.getSimpleName()));
         } else if (!pushAnnotations.isEmpty()) {
             Push push = pushAnnotations.get(0);
+            // The transport first, as enabling push creates the connection of
+            // the transport
+            setTransport(pushConfiguration, push);
             pushConfiguration.setPushMode(push.value());
+        }
+    }
+
+    /**
+     * Sets the transport the given {@link Push} annotation names to the given
+     * push configuration.
+     *
+     * @param pushConfiguration
+     *            the push configuration to modify
+     * @param push
+     *            the annotation
+     */
+    static void setTransport(PushConfiguration pushConfiguration, Push push) {
+        if (push.transportName().isEmpty()) {
             pushConfiguration.setTransport(push.transport());
+        } else {
+            pushConfiguration.setTransportName(push.transportName());
         }
     }
 

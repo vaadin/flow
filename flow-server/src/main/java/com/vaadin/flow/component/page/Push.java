@@ -59,4 +59,15 @@ public @interface Push {
      */
     Transport transport() default Transport.WEBSOCKET_XHR;
 
+    /**
+     * Name of the transport used for the push, the name of a
+     * {@link com.vaadin.flow.server.communication.PushTransport} added by an
+     * add-on, or the identifier of a built-in {@link Transport}. Takes
+     * precedence over {@link #transport()} when set.
+     *
+     * @return the name of the transport to use, or an empty string to use
+     *         {@link #transport()}
+     */
+    String transportName() default "";
+
 }

@@ -79,6 +79,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
+import com.vaadin.flow.server.communication.PushTransport;
 import com.vaadin.flow.server.communication.UidlWriter;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -324,7 +325,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             .getPushMode();
                 }
 
-                if (pushMode.isEnabled()
+                if (pushMode.isEnabled() && getAddOnTransport().isEmpty()
+                        && getService().getFallbackPushTransport().isEmpty()
                         && !getService().ensurePushAvailable()) {
                     /*
                      * Fall back if not supported (ensurePushAvailable will log
@@ -334,6 +336,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 }
             }
             return pushMode;
+        }
+
+        /**
+         * Gets the push transport added by an add-on that the UI uses.
+         *
+         * @return the transport, or an empty optional if the UI uses a built-in
+         *         transport
+         */
+        public Optional<PushTransport> getAddOnTransport() {
+            String name = getUI().getPushConfiguration().getTransportName();
+            return name == null ? Optional.empty()
+                    : getService().getPushTransport(name);
         }
 
         /**
@@ -1307,11 +1321,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         PushMode pushMode = push.map(Push::value)
                 .orElseGet(deploymentConfiguration::getPushMode);
         setupPushConnectionFactory(pushConfiguration, context);
+        // The transport first, as enabling push creates the connection of the
+        // transport
+        push.ifPresent(annotation -> AppShellRegistry
+                .setTransport(pushConfiguration, annotation));
         pushConfiguration.setPushMode(pushMode);
         pushConfiguration.setPushServletMapping(
                 BootstrapHandlerHelper.determinePushServletMapping(session));
-
-        push.map(Push::transport).ifPresent(pushConfiguration::setTransport);
 
         // Let the handler contribute its own push defaults while they can
         // still be overridden by a UIInitListener
@@ -1532,6 +1548,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     protected static String getPushScript(BootstrapContext context) {
+        Optional<PushTransport> addOnTransport = context.getAddOnTransport();
+        if (addOnTransport.isPresent()) {
+            return addOnTransport.get().getClientScript();
+        }
         VaadinRequest request = context.getRequest();
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getBuildHash();

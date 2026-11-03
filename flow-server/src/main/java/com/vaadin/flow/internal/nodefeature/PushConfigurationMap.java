@@ -59,6 +59,7 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
     public static final String PUSHMODE_KEY = "pushMode";
     public static final String ALWAYS_USE_XHR_TO_SERVER = "alwaysXhrToServer";
     public static final String PARAMETERS_KEY = "parameters";
+    public static final String TRANSPORT_SCRIPT_KEY = "transportScript";
 
     /**
      * Creates a new map for the given node.
@@ -80,6 +81,43 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
             getParameters().put(TRANSPORT_KEY, transport.getIdentifier());
             remove(ALWAYS_USE_XHR_TO_SERVER);
         }
+        remove(TRANSPORT_SCRIPT_KEY);
+    }
+
+    /**
+     * Sets a transport added by an add-on as the primary transport.
+     *
+     * @param transportName
+     *            the name of the transport
+     * @param clientScript
+     *            the URL of the script implementing the client side of the
+     *            transport, relative to the service URL
+     */
+    public void setTransportName(String transportName, String clientScript) {
+        getParameters().put(TRANSPORT_KEY, transportName);
+        remove(ALWAYS_USE_XHR_TO_SERVER);
+        put(TRANSPORT_SCRIPT_KEY, clientScript);
+    }
+
+    @Override
+    public String getTransportName() {
+        if (!getParameters().contains(TRANSPORT_KEY)) {
+            return null;
+        }
+        Transport transport = getTransport();
+        return transport != null ? transport.getIdentifier()
+                : getParameters().get(TRANSPORT_KEY).toString();
+    }
+
+    /**
+     * Gets the URL of the client script of the primary transport, when it is
+     * added by an add-on.
+     *
+     * @return the URL of the script, relative to the service URL, or
+     *         {@code null} for a built-in transport
+     */
+    public String getTransportScript() {
+        return getOrDefault(TRANSPORT_SCRIPT_KEY, null);
     }
 
     private NodeMap getParameters() {

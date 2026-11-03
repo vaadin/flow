@@ -263,9 +263,10 @@ public class HandlerHelper implements Serializable {
                 requestedPathWithoutServletMapping.get(),
                 requestTypeParameter)) {
             return true;
-        } else if (RequestType.PUSH.getIdentifier().equals(requestTypeParameter)
-                && "VAADIN/push"
-                        .equals(requestedPathWithoutServletMapping.get())) {
+        } else if (requestTypeParameter != null && "VAADIN/push"
+                .equals(requestedPathWithoutServletMapping.get())) {
+            // Atmosphere push, or the request type of a push transport added
+            // by an add-on
             return true;
         } else if (isUploadRequest(requestedPathWithoutServletMapping.get())) {
             return true;

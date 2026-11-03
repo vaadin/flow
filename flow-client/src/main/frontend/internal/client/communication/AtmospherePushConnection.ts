@@ -134,6 +134,24 @@ function atmosphere(): Atmosphere | undefined {
   return (window as unknown as { vaadinPush?: { atmosphere?: Atmosphere } }).vaadinPush?.atmosphere;
 }
 
+/**
+ * Gets the push transport an add-on has registered with the given name. The
+ * client script of the transport registers it in
+ * window.Vaadin.Flow.pushTransports, with the subset of the Atmosphere API
+ * that the push connection uses.
+ *
+ * @param name - the name of the transport
+ * @returns the transport, or undefined if no transport has that name
+ */
+export function getAddOnPushTransport(name: string | null): Atmosphere | undefined {
+  if (name === null) {
+    return undefined;
+  }
+  const flow = (window as unknown as { Vaadin?: { Flow?: { pushTransports?: Record<string, Atmosphere> } } }).Vaadin
+    ?.Flow;
+  return flow?.pushTransports?.[name];
+}
+
 /** Whether the Atmosphere push library is loaded. */
 function isAtmosphereLoaded(): boolean {
   return !!atmosphere();
@@ -158,10 +176,8 @@ function resetWebsocketErrorRetries(socket: unknown): void {
 }
 
 /** Unsubscribes the Atmosphere connection for the given url. */
-function doDisconnect(url: string): void {
-  // Java dereferences $wnd.vaadinPush.atmosphere unconditionally here: the
-  // connection only reaches a disconnect after the library has loaded.
-  atmosphere()!.unsubscribeUrl(url);
+function doDisconnect(transport: Atmosphere, url: string): void {
+  transport.unsubscribeUrl(url);
 }
 
 /**
@@ -170,7 +186,12 @@ function doDisconnect(url: string): void {
  * read on every request, so it is wrapped in a function rather than assigned
  * once.
  */
-function doConnect(uri: string, config: Record<string, unknown>, callbacks: AtmosphereCallbacks): unknown {
+function doConnect(
+  transport: Atmosphere,
+  uri: string,
+  config: Record<string, unknown>,
+  callbacks: AtmosphereCallbacks
+): unknown {
   config.url = uri;
   config.onOpen = callbacks.onOpen;
   config.onReopen = callbacks.onReopen;
@@ -183,7 +204,7 @@ function doConnect(uri: string, config: Record<string, unknown>, callbacks: Atmo
   config.headers = {
     'X-Vaadin-LastSeenServerSyncId': (): unknown => callbacks.getLastSeenServerSyncId()
   };
-  return atmosphere()!.subscribe(config);
+  return transport.subscribe(config);
 }
 
 // Connection states; mirrors AtmospherePushConnection.State.
@@ -279,7 +300,7 @@ export class AtmospherePushConnection implements PushConnection {
 
     Console.debug('Establishing push connection');
     this.#pushUri = pushUrl;
-    this.#socket = doConnect(pushUrl, this.#config, {
+    this.#socket = doConnect(this.#getTransport(), pushUrl, this.#config, {
       onOpen: (response) => this.onOpen(response as AtmosphereResponse),
       onReopen: (response) => this.onReopen(response as AtmosphereResponse),
       onMessage: (response) => this.onMessage(response as AtmosphereResponse),
@@ -416,7 +437,7 @@ export class AtmospherePushConnection implements PushConnection {
       case State.CONNECTED:
         // Normal disconnect
         Console.debug('Closing push connection');
-        doDisconnect(this.#pushUri!);
+        doDisconnect(this.#getTransport(), this.#pushUri!);
         this.#state = State.DISCONNECTED;
         command();
         break;
@@ -529,7 +550,29 @@ export class AtmospherePushConnection implements PushConnection {
     };
   }
 
+  /**
+   * Gets the implementation of the transport: the push transport of an add-on,
+   * or the Atmosphere library for the built-in transports. The connection only
+   * connects or disconnects after the implementation has loaded.
+   */
+  #getTransport(): Atmosphere {
+    return getAddOnPushTransport(this.#getAddOnTransportName()) ?? atmosphere()!;
+  }
+
+  /** Gets the name of the transport of an add-on the connection uses, or null. */
+  #getAddOnTransportName(): string | null {
+    if (this.#registry.getPushConfiguration().getTransportScript() === null) {
+      return null;
+    }
+    return this.#config[TRANSPORT_KEY] as string;
+  }
+
   #runWhenAtmosphereLoaded(command: Command): void {
+    const transportScript = this.#registry.getPushConfiguration().getTransportScript();
+    if (transportScript !== null) {
+      this.#runWhenAddOnTransportLoaded(transportScript, command);
+      return;
+    }
     if (isAtmosphereLoaded()) {
       command();
       return;
@@ -555,6 +598,35 @@ export class AtmospherePushConnection implements PushConnection {
       }
     };
     this.#registry.getResourceLoader().loadScript(pushScriptUrl, listener);
+  }
+
+  /**
+   * Runs the command once the client script of the transport of an add-on has
+   * registered the transport, loading the script unless the bootstrap already
+   * did.
+   */
+  #runWhenAddOnTransportLoaded(transportScript: string, command: Command): void {
+    const name = this.#getAddOnTransportName();
+    if (getAddOnPushTransport(name)) {
+      command();
+      return;
+    }
+    const scriptUrl = this.#registry.getApplicationConfiguration().getServiceUrl() + transportScript;
+    Console.debug(`Loading ${transportScript}`);
+    const listener: ResourceLoadListener = {
+      onLoad: (event: ResourceLoadEvent) => {
+        if (getAddOnPushTransport(name)) {
+          command();
+        } else {
+          Console.error(`${transportScript} did not register the push transport ${name}`);
+          listener.onError(event);
+        }
+      },
+      onError: (event: ResourceLoadEvent) => {
+        this.#getConnectionStateHandler().pushScriptLoadError(event.getResourceData());
+      }
+    };
+    this.#registry.getResourceLoader().loadScript(scriptUrl, listener);
   }
 
   getTransportType(): string | null {

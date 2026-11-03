@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -83,6 +84,7 @@ import com.vaadin.flow.server.communication.HeartbeatHandler;
 import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
+import com.vaadin.flow.server.communication.PushTransport;
 import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.communication.RpcInvocationEndedEvent;
 import com.vaadin.flow.server.communication.RpcInvocationEvent;
@@ -101,6 +103,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.signals.SignalEnvironment;
 import com.vaadin.flow.signals.impl.Transaction;
 
@@ -180,6 +183,8 @@ public abstract class VaadinService implements Serializable {
     private Iterable<RequestHandler> requestHandlers;
 
     private Collection<SessionlessRequestHandler> sessionlessRequestHandlers;
+
+    private Map<String, PushTransport> pushTransports = Collections.emptyMap();
 
     private transient Iterable<IndexHtmlRequestListener> indexHtmlRequestListeners;
 
@@ -340,6 +345,8 @@ public abstract class VaadinService implements Serializable {
                     .orElseGet(this::createDefaultExecutor);
 
             event.getAddedRequestHandlers().forEach(handlers::add);
+
+            pushTransports = collectPushTransports(event);
 
             Collections.reverse(handlers);
 
@@ -2114,6 +2121,63 @@ public abstract class VaadinService implements Serializable {
         } finally {
             CurrentInstance.clearAll();
         }
+    }
+
+    static Map<String, PushTransport> collectPushTransports(
+            ServiceInitEvent event) {
+        Map<String, PushTransport> transports = new LinkedHashMap<>();
+        event.getAddedPushTransports().forEach(transport -> {
+            String name = transport.getName();
+            if (Transport.getByIdentifier(name) != null) {
+                throw new IllegalStateException("The push transport "
+                        + transport.getClass().getName()
+                        + " cannot use the name of the built-in transport '"
+                        + name + "'");
+            }
+            if (transports.putIfAbsent(name, transport) != null) {
+                throw new IllegalStateException(
+                        "More than one push transport is named '" + name + "'");
+            }
+        });
+        return Collections.unmodifiableMap(transports);
+    }
+
+    /**
+     * Gets the push transports added by add-ons, see
+     * {@link ServiceInitEvent#addPushTransport(PushTransport)}.
+     *
+     * @return the added push transports in the order they were added, not
+     *         {@code null}
+     */
+    public Collection<PushTransport> getPushTransports() {
+        return pushTransports.values();
+    }
+
+    /**
+     * Gets the push transport an add-on has added with the given name.
+     *
+     * @param name
+     *            the name of the transport
+     * @return the transport, or an empty optional if there is no transport with
+     *         the name
+     */
+    public Optional<PushTransport> getPushTransport(String name) {
+        return Optional.ofNullable(pushTransports.get(name));
+    }
+
+    /**
+     * Gets the push transport added by an add-on that push uses instead of the
+     * built-in transports, which need Atmosphere: the first added transport,
+     * when Atmosphere is not on the classpath.
+     *
+     * @return the transport, or an empty optional if Atmosphere is available or
+     *         no transport has been added
+     */
+    public Optional<PushTransport> getFallbackPushTransport() {
+        if (isAtmosphereAvailable()) {
+            return Optional.empty();
+        }
+        return pushTransports.values().stream().findFirst();
     }
 
     /**
