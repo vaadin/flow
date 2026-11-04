@@ -308,6 +308,9 @@ export const BREAKING_BODY = /^BREAKING[ -]CHANGE:/mu;
 /**
  * Authors whose pull requests can be green. Other authors need at least one
  * human approval. Private members of the organization show up as CONTRIBUTOR,
- * so the workflow also checks the membership.
+ * so the workflow also checks the membership. Bot accounts (GitHub Apps such
+ * as the agents that open most pull requests) are trusted too: they can only
+ * push to this repository when installed on it, and a bot pull request from a
+ * fork still needs a human approval by the head branch rule.
  */
 export const TRUSTED_ASSOCIATIONS = ['OWNER', 'MEMBER', 'COLLABORATOR'];

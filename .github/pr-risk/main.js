@@ -136,6 +136,7 @@ export async function run({
   const authorTrusted = isTrustedAuthor({
     authorAssociation: pr.author_association,
     isMember: await isMember(pr.user.login),
+    isBot: pr.user.type === 'Bot',
   });
   const policyFindings = evaluatePolicy({
     repository,
