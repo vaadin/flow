@@ -23,7 +23,7 @@
     <server.port>8080</server.port>
     <!-- Pinned rather than left to the plugin, so a Payara release cannot
          silently change the server this fixture runs on. -->
-    <payara.version>7.2026.9</payara.version>
+    <payara.version>7.2026.10</payara.version>
     <!-- Run the ITs on the JUnit Platform (JUnit 6), like the other fixtures. -->
     <failsafe.provider.artifactId>surefire-junit-platform</failsafe.provider.artifactId>
     <!-- The parent's groups/excludedGroups are JUnit 4 @Category class names,

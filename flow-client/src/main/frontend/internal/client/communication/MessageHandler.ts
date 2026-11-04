@@ -23,7 +23,8 @@
 // session-expired/error handling). It composes the ported MessageOrdering
 // (PendingMessageQueue), TreeChangeProcessor, Reactive,
 // EagerDependencyTracker, and the helpers above; everything else is a
-// Registry contract.
+// Registry contract. Beyond the Java version, it tells the VaadinRequest a reply
+// answers that the reply has arrived.
 
 import type { ConstantPool } from '../flow/ConstantPool';
 import type { StateNode } from '../flow/StateNode';
@@ -48,6 +49,7 @@ import { Reactive } from '../flow/reactive/Reactive';
 import { processChanges as applyTreeChanges } from '../flow/TreeChangeProcessor';
 import { UIState } from '../UILifecycle';
 import { Console } from '../Console';
+import { dispatchResponse } from './VaadinRequest';
 
 /** Removes the link and style elements with the given dependency id. */
 function removeStylesheetByIdFromDom(dependencyId: string): void {
@@ -96,6 +98,7 @@ const UIDL_KEY_EXECUTE = 'execute';
 const META_SESSION_EXPIRED = 'sessionExpired';
 const META_ASYNC = 'async';
 const META_VIEW_TRANSITION = 'viewTransition';
+const META_APP_ERROR = 'appError';
 
 const SESSION_EXPIRED_HANDLING_DELAY = 250;
 
@@ -153,8 +156,12 @@ export class MessageHandler {
    * appropriate handlers, while logging timing information.
    *
    * @param json - The JSON to handle
+   * @param payload - the payload whose XHR the JSON replies to, or `null` if the
+   *          JSON arrived over push or was not received at all
    */
-  handleMessage(json: ValueMap): void {
+  handleMessage(json: ValueMap, payload: Record<string, unknown> | null = null): void {
+    this.#settleRepliedRequest(json, payload);
+
     if (getServerId(json) === -1) {
       const meta = json.meta as ValueMap | undefined;
       // Log the error only if session didn't expire.
@@ -176,6 +183,27 @@ export class MessageHandler {
       this.handleJSON(json);
     } else {
       Console.warn('Ignored received message because application has already been stopped');
+    }
+  }
+
+  // Tells the request a reply answers that the reply has arrived. A message the
+  // server pushes on its own answers no request.
+  #settleRepliedRequest(json: ValueMap, payload: Record<string, unknown> | null): void {
+    if (!this.#isResponse(json)) {
+      return;
+    }
+    const messageSender = this.#registry.getMessageSender();
+    const request =
+      payload !== null
+        ? messageSender.getRequest(payload)
+        : messageSender.findRequest(json[CLIENT_TO_SERVER_ID] as number | undefined);
+    if (request) {
+      // A reply with an application error is what the server sends when it
+      // refuses the request, e.g. for a bad security key or a message id out
+      // of sync, or fails to process it.
+      const meta = json.meta as ValueMap | undefined;
+      const refused = meta && (META_SESSION_EXPIRED in meta || META_APP_ERROR in meta);
+      dispatchResponse(request, refused ? 'rejected' : 'acknowledged');
     }
   }
 
@@ -406,8 +434,8 @@ export class MessageHandler {
               SESSION_EXPIRED_HANDLING_DELAY
             );
           }
-        } else if ('appError' in meta && this.#registry.getUILifecycle().getState() !== UIState.TERMINATED) {
-          const error = meta.appError as ValueMap;
+        } else if (META_APP_ERROR in meta && this.#registry.getUILifecycle().getState() !== UIState.TERMINATED) {
+          const error = meta[META_APP_ERROR] as ValueMap;
           this.#registry
             .getSystemErrorHandler()
             .handleUnrecoverableError(

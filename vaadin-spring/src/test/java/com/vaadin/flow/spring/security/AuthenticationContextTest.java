@@ -21,19 +21,24 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.configuration.ObjectPostProcessorConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.AuthenticatedPrincipal;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
+import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -149,6 +154,20 @@ class AuthenticationContextTest {
         Optional<String> maybePrincipalName = authContext.getPrincipalName();
         assertTrue(maybePrincipalName.isPresent());
         assertEquals("the-username", maybePrincipalName.get());
+    }
+
+    @Test
+    void getPrincipalName_strategyGiven_readsAuthenticationFromStrategy() {
+        SecurityContextHolderStrategy strategy = mock(
+                SecurityContextHolderStrategy.class);
+        when(strategy.getContext()).thenReturn(
+                new SecurityContextImpl(new UsernamePasswordAuthenticationToken(
+                        "strategy-user", null, List.of())));
+        var strategyAuthContext = new AuthenticationContext(strategy);
+
+        assertTrue(strategyAuthContext.isAuthenticated());
+        assertEquals(Optional.of("strategy-user"),
+                strategyAuthContext.getPrincipalName());
     }
 
     @Test
@@ -415,6 +434,28 @@ class AuthenticationContextTest {
     }
 
     @Test
+    void grantedRolesAndAuthorities_nullAuthority_ignored() {
+        GrantedAuthority nullAuthority = () -> null;
+        SecurityContextHolder.getContext().setAuthentication(
+                UsernamePasswordAuthenticationToken.authenticated("user", null,
+                        List.of(nullAuthority,
+                                new SimpleGrantedAuthority("ROLE_USER"),
+                                new SimpleGrantedAuthority("AUTH_READ"))));
+        try {
+            assertEquals(Set.of("USER"), authContext.getGrantedRoles());
+            assertTrue(authContext.hasRole("USER"));
+            assertTrue(authContext.hasAnyRole("USER", "ADMIN"));
+            assertTrue(authContext.hasAllRoles("USER"));
+            assertTrue(authContext.hasAuthority("AUTH_READ"));
+            assertTrue(authContext.hasAnyAuthority("AUTH_READ", "AUTH_WRITE"));
+            assertFalse(authContext.hasAnyAuthority(Set.of("AUTH_WRITE")));
+            assertTrue(authContext.hasAllAuthorities("ROLE_USER", "AUTH_READ"));
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
+    }
+
+    @Test
     @WithMockUser()
     void logout_allowNullResponse() {
         authContext.setLogoutHandlers(mock(LogoutSuccessHandler.class),
@@ -457,6 +498,41 @@ class AuthenticationContextTest {
                     setup.authentication());
             verify(setup.handler1()).logout(setup.request(), setup.response(),
                     setup.authentication());
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    @Test
+    void logout_strategyGiven_handlersReceiveAuthenticationFromStrategy()
+            throws Exception {
+        SetupForLogoutTest setup = getSetupForLogoutTest();
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                "strategy-user", null, List.of());
+        SecurityContextHolderStrategy strategy = mock(
+                SecurityContextHolderStrategy.class);
+        when(strategy.getContext())
+                .thenReturn(new SecurityContextImpl(authentication));
+        var strategyAuthContext = new AuthenticationContext(strategy);
+        strategyAuthContext.setLogoutHandlers(setup.successHandler(),
+                List.of(setup.handler1(), setup.handler2()));
+
+        UI ui = mock(UI.class);
+        doAnswer(i -> {
+            i.<Command> getArgument(0).execute();
+            return null;
+        }).when(ui).accessSynchronously(any());
+        mockPush(ui);
+        try {
+            CurrentInstance.set(VaadinRequest.class, setup.vaadinRequest());
+            CurrentInstance.set(VaadinResponse.class, setup.vaadinResponse());
+            UI.setCurrent(ui);
+            strategyAuthContext.logout();
+
+            verify(setup.successHandler()).onLogoutSuccess(setup.request(),
+                    setup.response(), authentication);
+            verify(setup.handler1()).logout(setup.request(), setup.response(),
+                    authentication);
         } finally {
             CurrentInstance.clearAll();
         }

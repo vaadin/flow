@@ -86,7 +86,7 @@ public class UidlWriter implements Serializable {
      * Provides context information for the resolve operations.
      */
     public static class ResolveContext implements Serializable {
-        private VaadinService service;
+        private final VaadinService service;
 
         /**
          * Creates a new context.
@@ -256,7 +256,12 @@ public class UidlWriter implements Serializable {
             ResolveContext context) {
         ObjectNode dependencyJson = JacksonUtils.getMapper()
                 .valueToTree(dependency);
-        if (dependency.getLoadMode() == LoadMode.INLINE) {
+        JsonNode encodedDynamicImport = dependency.getEncodedDynamicImport();
+        if (encodedDynamicImport != null) {
+            // Sent as the function value rather than the string that keys it,
+            // so the client decodes it instead of compiling an expression
+            dependencyJson.set(Dependency.KEY_URL, encodedDynamicImport);
+        } else if (dependency.getLoadMode() == LoadMode.INLINE) {
             String contents = getDependencyContents(dependency.getUrl(),
                     context);
             if (dependency.getLayer() != null) {

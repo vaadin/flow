@@ -57,7 +57,7 @@ class ScannerThemeTest {
 
         assertEquals(0, deps.getPackages().size());
 
-        DepsTests.assertImports(deps.getScripts(), "frontend://theme-0.js");
+        DepsTests.assertImports(deps.getScripts(), "theme-0.js");
     }
 
     @Test
