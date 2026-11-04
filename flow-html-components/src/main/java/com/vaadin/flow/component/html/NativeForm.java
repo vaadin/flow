@@ -26,6 +26,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -48,6 +50,29 @@ import com.vaadin.flow.signals.Signal;
  * instead of the field value, or only work by chance because of their internal
  * markup, and a Vaadin {@code Button} does not submit the form. None of this is
  * reported as an error.
+ * <p>
+ * Submitting the form makes the browser leave the current page, unless
+ * {@link #setTarget(AnchorTargetValue) a target} sends the response to another
+ * window or frame. The state of the Vaadin UI on the page is then lost. Keep in
+ * mind what triggers a submit:
+ * <ul>
+ * <li>A {@link NativeButton} submits the form unless its type is set to
+ * {@link NativeButton.Type#BUTTON}, because {@code submit} is the HTML default.
+ * Set that type on every button in the form that should only run its click
+ * listeners.
+ * <li>Pressing Enter in an {@link Input} submits the form, even when the form
+ * has no submit button but only a single text field.
+ * <li>A click listener on a submit button races with the navigation: the
+ * browser may leave the page before the server has handled the click, so do not
+ * rely on it.
+ * </ul>
+ * <p>
+ * The form is submitted with {@link Method#POST} unless another method is set,
+ * so that field values such as passwords do not end up in the URL, the browser
+ * history and server logs. A POST to an endpoint protected by Spring Security
+ * needs a CSRF token as a hidden {@link Input} named after the token parameter.
+ * The login processing URL of a view configured with
+ * {@code VaadinSecurityConfigurer#loginView} is exempt from this.
  *
  * <pre>
  * Input username = new Input();
@@ -60,7 +85,6 @@ import com.vaadin.flow.signals.Signal;
  *
  * NativeForm form = new NativeForm(username, password, submit);
  * form.setAction("login");
- * form.setMethod(NativeForm.Method.POST);
  * </pre>
  * <p>
  * Forms can not be nested in HTML; the browser drops the inner
@@ -80,6 +104,7 @@ public class NativeForm extends HtmlContainer {
     private static final String ATTRIBUTE_ACTION = "action";
     private static final String ATTRIBUTE_METHOD = "method";
     private static final String ATTRIBUTE_ENCTYPE = "enctype";
+    private static final String ATTRIBUTE_TARGET = "target";
 
     /**
      * The HTTP method the browser uses to submit the form.
@@ -87,11 +112,14 @@ public class NativeForm extends HtmlContainer {
     public enum Method {
         /**
          * Appends the form data to the action URL as a query string. This is
-         * what the browser does when no method is set.
+         * what the browser does when the method attribute is removed. Do not
+         * use it for sensitive values such as passwords, which then end up in
+         * the URL.
          */
         GET("get"),
         /**
-         * Sends the form data in the request body.
+         * Sends the form data in the request body. This is the method of a new
+         * {@code NativeForm}.
          */
         POST("post"),
         /**
@@ -178,14 +206,16 @@ public class NativeForm extends HtmlContainer {
     }
 
     /**
-     * Creates a new empty form.
+     * Creates a new empty form that is submitted with {@link Method#POST}.
      */
     public NativeForm() {
         super();
+        setMethod(Method.POST);
     }
 
     /**
-     * Creates a new form with the given children.
+     * Creates a new form with the given children that is submitted with
+     * {@link Method#POST}.
      *
      * @param components
      *            the children components
@@ -194,19 +224,57 @@ public class NativeForm extends HtmlContainer {
      */
     public NativeForm(Component... components) {
         super(components);
+        setMethod(Method.POST);
     }
 
     /**
      * Sets the URL the browser submits the form to. A relative URL is resolved
-     * against the base URL of the page, so {@code "login"} targets the
-     * {@code login} path of the application.
+     * against the {@code <base href>} that Vaadin sets to the root of the
+     * application, so {@code "login"} targets the {@code login} path of the
+     * application, while {@code "/login"} ignores its context path.
      *
      * @param action
      *            the URL to submit to, or {@code null} to remove the attribute,
      *            in which case the browser submits to the URL of the current
      *            page
+     * @throws IllegalArgumentException
+     *             if the URL uses a scheme that is not considered safe, such as
+     *             {@code javascript:}. The
+     *             {@value InitParameters#URL_SAFE_SCHEMES} configuration is
+     *             read from the application that this form is attached to, so
+     *             for a form that isn't attached yet the exception is instead
+     *             thrown when it is attached. See
+     *             {@link #setUnsafeAction(String)} for setting a URL that
+     *             shouldn't be checked at all.
      */
     public void setAction(@Nullable String action) {
+        if (action == null) {
+            UrlUtil.cancelUrlValidation(this, ATTRIBUTE_ACTION);
+        } else {
+            UrlUtil.validateUrl(this, ATTRIBUTE_ACTION, action,
+                    "setUnsafeAction(String)",
+                    () -> getElement().removeAttribute(ATTRIBUTE_ACTION));
+        }
+        getElement().setAttribute(ATTRIBUTE_ACTION, action);
+    }
+
+    /**
+     * Sets the URL the browser submits the form to without validating its
+     * scheme.
+     * <p>
+     * Unlike {@link #setAction(String)}, this method does not reject URLs based
+     * on the {@value InitParameters#URL_SAFE_SCHEMES} configuration. Use it
+     * only for URLs that are fully under your control and known to be safe.
+     * Passing untrusted input here can expose the application to cross-site
+     * scripting (XSS) attacks, because a {@code javascript:} action runs when
+     * the form is submitted.
+     *
+     * @param action
+     *            the URL to submit to, or {@code null} to remove the attribute
+     * @see #setAction(String)
+     */
+    public void setUnsafeAction(@Nullable String action) {
+        UrlUtil.cancelUrlValidation(this, ATTRIBUTE_ACTION);
         getElement().setAttribute(ATTRIBUTE_ACTION, action);
     }
 
@@ -221,7 +289,8 @@ public class NativeForm extends HtmlContainer {
     }
 
     /**
-     * Sets the HTTP method the browser uses to submit the form.
+     * Sets the HTTP method the browser uses to submit the form. A new form uses
+     * {@link Method#POST}.
      *
      * @param method
      *            the method, or {@code null} to remove the attribute, in which
@@ -263,6 +332,36 @@ public class NativeForm extends HtmlContainer {
      */
     public @Nullable Enctype getEnctype() {
         return Enctype.fromValue(getElement().getAttribute(ATTRIBUTE_ENCTYPE));
+    }
+
+    /**
+     * Sets the window, tab or frame that shows the response when the form is
+     * submitted. Use {@link AnchorTarget#BLANK} to keep the Vaadin UI open
+     * while the response opens in a new tab, or
+     * {@link AnchorTargetValue#forString(String)} with the name of an
+     * {@link IFrame} to show it there.
+     *
+     * @param target
+     *            the target, or {@code null} or {@link AnchorTarget#DEFAULT} to
+     *            remove the attribute, in which case the response replaces the
+     *            current page
+     */
+    public void setTarget(@Nullable AnchorTargetValue target) {
+        String value = target == null ? null : target.getValue();
+        getElement().setAttribute(ATTRIBUTE_TARGET,
+                value == null || value.isEmpty() ? null : value);
+    }
+
+    /**
+     * Gets the window, tab or frame that shows the response when the form is
+     * submitted.
+     *
+     * @return the target, or {@code null} if not set
+     * @see #setTarget(AnchorTargetValue)
+     */
+    public @Nullable AnchorTargetValue getTarget() {
+        String value = getElement().getAttribute(ATTRIBUTE_TARGET);
+        return value == null ? null : AnchorTargetValue.forString(value);
     }
 
     /**

@@ -18,6 +18,7 @@ package com.vaadin.flow.component.html;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
@@ -26,11 +27,14 @@ import com.vaadin.flow.component.html.NativeForm.Method;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.signals.local.ListSignal;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -43,6 +47,12 @@ class NativeFormTest extends ComponentTest {
         whitelistProperty("action");
         whitelistProperty("method");
         whitelistProperty("enctype");
+        whitelistProperty("target");
+    }
+
+    @AfterEach
+    void clearCurrentUi() {
+        UI.setCurrent(null);
     }
 
     @Test
@@ -60,9 +70,16 @@ class NativeFormTest extends ComponentTest {
     }
 
     @Test
+    void newForm_usesPost() {
+        assertEquals(Method.POST, new NativeForm().getMethod());
+        assertEquals(Method.POST, new NativeForm(new Input()).getMethod());
+        assertEquals("post",
+                new NativeForm().getElement().getAttribute("method"));
+    }
+
+    @Test
     void setMethodAndEnctype_writeAttributeValues() {
         NativeForm form = new NativeForm();
-        assertNull(form.getMethod());
         assertNull(form.getEnctype());
 
         form.setMethod(Method.POST);
@@ -92,6 +109,67 @@ class NativeFormTest extends ComponentTest {
         form.getElement().setAttribute("enctype", "application/json");
         assertNull(form.getMethod());
         assertNull(form.getEnctype());
+    }
+
+    @Test
+    void setAction_attached_unsafeScheme_throws() {
+        NativeForm form = new NativeForm();
+        createUi().add(form);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> form.setAction("javascript:alert(1)"));
+    }
+
+    @Test
+    void setAction_detached_unsafeScheme_throwsOnAttachAndClearsAction() {
+        NativeForm form = new NativeForm();
+        form.setAction("javascript:alert(1)");
+
+        UI ui = createUi();
+        assertThrows(IllegalArgumentException.class, () -> ui.add(form));
+        assertFalse(form.getElement().hasAttribute("action"));
+    }
+
+    @Test
+    void setAction_null_cancelsValidationOnAttach() {
+        NativeForm form = new NativeForm();
+        form.setAction("javascript:alert(1)");
+        form.setAction(null);
+
+        createUi().add(form);
+
+        assertNull(form.getAction());
+    }
+
+    @Test
+    void setUnsafeAction_skipsValidation() {
+        NativeForm form = new NativeForm();
+        form.setAction("javascript:alert(1)");
+        form.setUnsafeAction("javascript:void(0)");
+
+        createUi().add(form);
+
+        assertEquals("javascript:void(0)", form.getAction());
+    }
+
+    @Test
+    void setTarget_writesAttribute() {
+        NativeForm form = new NativeForm();
+        assertNull(form.getTarget());
+
+        form.setTarget(AnchorTarget.BLANK);
+        assertEquals("_blank", form.getElement().getAttribute("target"));
+        assertEquals(AnchorTarget.BLANK, form.getTarget());
+
+        form.setTarget(AnchorTargetValue.forString("result-frame"));
+        assertEquals("result-frame", form.getTarget().getValue());
+
+        form.setTarget(AnchorTarget.DEFAULT);
+        assertNull(form.getElement().getAttribute("target"));
+
+        form.setTarget(AnchorTarget.SELF);
+        form.setTarget(null);
+        assertNull(form.getTarget());
     }
 
     @Test
@@ -151,5 +229,15 @@ class NativeFormTest extends ComponentTest {
         } finally {
             CurrentInstance.clearAll();
         }
+    }
+
+    private static UI createUi() {
+        VaadinSession session = new AlwaysLockedVaadinSession(
+                new MockVaadinServletService(
+                        new MockDeploymentConfiguration()));
+        UI ui = new MockUI(session);
+        // Make the configuration be found through the UI only
+        CurrentInstance.clearAll();
+        return ui;
     }
 }

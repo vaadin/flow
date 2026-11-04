@@ -307,6 +307,15 @@ class HtmlComponentSmokeTest {
             return true;
         }
 
+        // NativeForm.setUnsafeAction has no getter of its own and
+        // setTarget(AnchorTargetValue) has no test value; NativeFormTest
+        // covers both
+        if (method.getDeclaringClass() == NativeForm.class
+                && (method.getName().equals("setUnsafeAction")
+                        || method.getName().equals("setTarget"))) {
+            return true;
+        }
+
         if (method.getDeclaringClass() == Image.class
                 && method.getName().startsWith("setSrc")
                 && method.getParameterTypes()[0] == DownloadHandler.class) {
