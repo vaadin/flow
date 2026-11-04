@@ -10,10 +10,12 @@ name: PR Risk
 # OPENAI_API_KEY secret is set, which answers in seconds, else Claude when the
 # ANTHROPIC_API_KEY secret is set, else a model on OpenRouter when the
 # OPENROUTER_API_KEY secret is set (the OPENROUTER_MODEL variable picks it).
-# Claude and OpenRouter also explain each rating. The repository policy in
-# .github/pr-risk/policy.js sets a minimum category from the changed paths,
-# the added code, the title and the author, which the suggestion cannot go
-# below. One comment on the pull request explains the label.
+# Claude and OpenRouter also explain each rating. Pull requests of authors
+# outside the organization are rated by the rules alone, so that a fork cannot
+# run up the bill of the agent by pushing again and again. The repository
+# policy in .github/pr-risk/policy.js sets a minimum category from the changed
+# paths, the added code, the title and the author, which the suggestion cannot
+# go below. One comment on the pull request explains the label.
 #
 # The category is also reported as the "PR risk" check run on the head commit:
 # `success` for green, `neutral` for amber and red. Anyone with triage access

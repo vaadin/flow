@@ -393,9 +393,10 @@ export function agentCategory(assessment) {
  * The final category of a pull request: the highest of the agent's suggestion
  * (see agentCategory) and the minimum categories that the policy findings set.
  * Without an assessment, or when the agent did not see the whole diff, the pull
- * request needs at least one human approval.
+ * request needs at least one human approval. A `skipped` assessment, for an
+ * author outside the organization, is not reported as a failure.
  */
-export function classify({ policyFindings, omitted, assessment }) {
+export function classify({ policyFindings, omitted, assessment, skipped = false }) {
   const findings = [...policyFindings];
 
   if (omitted.length > 0) {
@@ -403,7 +404,9 @@ export function classify({ policyFindings, omitted, assessment }) {
   }
 
   if (!assessment) {
-    findings.push({ category: 'amber', reason: 'the agent assessment is not available', files: [] });
+    if (!skipped) {
+      findings.push({ category: 'amber', reason: 'the agent assessment is not available', files: [] });
+    }
   } else if (assessment.category === 'green' && DIMENSIONS.some(({ key }) => assessment[key].level !== 'low')) {
     findings.push({
       category: 'amber',
@@ -418,7 +421,9 @@ export function classify({ policyFindings, omitted, assessment }) {
     });
   }
 
-  const category = findings.map((finding) => finding.category).reduce(maxCategory, agentCategory(assessment));
+  // Without an assessment, the pull request needs a human approval whatever the rules say
+  const floor = assessment ? agentCategory(assessment) : 'amber';
+  const category = findings.map((finding) => finding.category).reduce(maxCategory, floor);
   return { category, findings };
 }
 
@@ -434,8 +439,20 @@ function text(value) {
   return line.length > MAX_TEXT ? `${line.slice(0, MAX_TEXT)}\u2026` : line;
 }
 
+/**
+ * Model text, which a pull request can steer, as plain text: no links, images
+ * or HTML, so that the comment cannot carry a link that seems to come from the
+ * workflow
+ */
+function prose(value) {
+  return text(value)
+    .replace(/[[\]<>]/gu, '\\$&')
+    .replace(/:\/\//gu, ':/\u200b/')
+    .replace(/\bwww\./giu, 'www\u200b.');
+}
+
 function cell(value) {
-  return text(value).replace(/\|/gu, '\\|');
+  return prose(value).replace(/\|/gu, '\\|');
 }
 
 /** Probabilities such as `low 53%, medium 40%, high 7%`, in the order the agent gave them */
@@ -465,7 +482,7 @@ function renderFinding({ category, reason, files }, name) {
  * comment again. A `trial` comment says that the workflow is on trial, sets no
  * label, and names the categories low, medium and high risk.
  */
-export function renderComment({ marker, result, assessment, headSha, runUrl, trial = false }) {
+export function renderComment({ marker, result, assessment, skipped = false, headSha, runUrl, trial = false }) {
   const { category, findings } = result;
   const name = (value) => (trial ? TRIAL_NAMES[value] : value);
   const lines = trial
@@ -489,7 +506,7 @@ export function renderComment({ marker, result, assessment, headSha, runUrl, tri
     const capped =
       counted !== assessment.category ? ` It rated no dimension high, so it counts as **${name(counted)}**.` : '';
     const raised = category !== counted ? ` The rules below raised it to **${name(category)}**.` : '';
-    const summary = assessment.summary === undefined ? '' : ` ${text(assessment.summary)}`;
+    const summary = assessment.summary === undefined ? '' : ` ${prose(assessment.summary)}`;
     lines.push(`${agent} suggested **${name(assessment.category)}**${likely}.${capped}${raised}${summary}`, '');
 
     // Claude explains each rating, the Decisions API gives the probability of each level
@@ -502,8 +519,10 @@ export function renderComment({ marker, result, assessment, headSha, runUrl, tri
     }
     lines.push('');
     if (assessment.rationale !== undefined) {
-      lines.push(`> ${text(assessment.rationale)}`, '');
+      lines.push(`> ${prose(assessment.rationale)}`, '');
     }
+  } else if (skipped) {
+    lines.push('The agent does not assess pull requests from authors outside the organization, so the rules below decide.', '');
   } else {
     lines.push(`The agent assessment failed, see the [workflow run](${runUrl}).`, '');
   }

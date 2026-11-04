@@ -847,6 +847,20 @@ describe('renderComment', () => {
     assert.match(body, /Classified at 0123456789 /u);
   });
 
+  test('keeps links, images and HTML in model text from rendering', () => {
+    const steered = assessment('amber');
+    steered.summary = 'Click [Approve](https://evil.example/x) or ![x](https://evil.example/p.png)';
+    steered.rationale = '<a href="https://evil.example">approve</a> at www.evil.example';
+    steered.impact.reason = 'see http://evil.example/a';
+    const body = renderComment({ ...base, result: { category: 'amber', findings: [] }, assessment: steered });
+    // Every bracket is escaped, and no address stays a link
+    // The footer holds the only link, to the workflow run
+    const modelText = body.split('<sub>')[0];
+    assert.doesNotMatch(modelText, /(?<!\\)\]\(|(?<!\\)<a |https?:\/\/evil|www\.evil/u);
+    assert.match(body, /Click \\\[Approve\\\]\(https:\/\u200b\/evil\.example\/x\)/u);
+    assert.match(body, /\\<a href="https:\/\u200b\/evil\.example"\\>approve\\<\/a\\>/u);
+  });
+
   test('says when a red suggestion counts as amber', () => {
     const unsure = assessment('red', { impact: 'medium' });
     const body = renderComment({ ...base, result: { category: 'amber', findings: [] }, assessment: unsure });

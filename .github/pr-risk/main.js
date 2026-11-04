@@ -164,16 +164,22 @@ export async function run({
   const repository = pr.base.repo.full_name;
   const diff = buildDiff(files, { repository });
   const linkedIssues = await readLinkedIssues(github, repo, pr);
-  const assessing = assess({ pr, files, diff, linkedIssues, env }).then(
-    (assessment) => ({ assessment, failure: null }),
-    (error) => ({ assessment: null, failure: `The agent assessment failed: ${error.message}` }),
-  );
-
   const authorTrusted = isTrustedAuthor({
     authorAssociation: pr.author_association,
     isMember: await isMember(pr.user.login),
     isBot: pr.user.type === 'Bot',
   });
+
+  // Anyone can open a pull request from a fork and push to it again and again,
+  // and each assessment is paid for. Pull requests of authors outside the
+  // organization need a human approval anyway, so the rules alone decide.
+  const skipped = !authorTrusted;
+  const assessing = skipped
+    ? Promise.resolve({ assessment: null, failure: null })
+    : assess({ pr, files, diff, linkedIssues, env }).then(
+        (assessment) => ({ assessment, failure: null }),
+        (error) => ({ assessment: null, failure: `The agent assessment failed: ${error.message}` }),
+      );
   const policyFindings = evaluatePolicy({
     repository,
     author: pr.user.login,
@@ -187,8 +193,8 @@ export async function run({
 
   const [{ assessment, failure }] = await Promise.all([assessing, greenRemoved]);
 
-  const result = classify({ policyFindings, omitted: diff.omitted, assessment });
-  const body = renderComment({ marker: MARKER, result, assessment, headSha: pr.head.sha, runUrl, trial });
+  const result = classify({ policyFindings, omitted: diff.omitted, assessment, skipped });
+  const body = renderComment({ marker: MARKER, result, assessment, skipped, headSha: pr.head.sha, runUrl, trial });
 
   if (!trial) {
     await reportCategory(github, repo, pr, labels, result.category, { body, runId: context.runId, runUrl });

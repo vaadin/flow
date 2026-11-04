@@ -241,6 +241,33 @@ describe('run', () => {
     assert.equal(core.outputs.category, 'amber');
   });
 
+  test('does not pay for an assessment of an author outside the organization', async () => {
+    const files = [{ filename: 'README.md', status: 'modified', changes: 2, patch: '@@\n-teh\n+the' }];
+    const outsider = { ...pr, author_association: 'CONTRIBUTOR' };
+    let assessed = false;
+    const github = createGithub({ pr: outsider, files });
+    const core = createCore();
+    await run({
+      github,
+      context,
+      core,
+      env,
+      assess: () => {
+        assessed = true;
+        return Promise.resolve(GREEN);
+      },
+      isMember: () => Promise.resolve(false),
+    });
+
+    assert.equal(assessed, false);
+    assert.equal(core.outputs.category, 'amber');
+    // Not a failure: the run stays green
+    assert.ok(!core.failed);
+    const [, comment] = github.calls.find(([name]) => name === 'createComment');
+    assert.match(comment.body, /does not assess pull requests from authors outside the organization/u);
+    assert.doesNotMatch(comment.body, /assessment failed|not available/u);
+  });
+
   test('reports the category as a check run on the head commit', async () => {
     const files = [{ filename: 'README.md', status: 'modified', changes: 2, patch: '@@\n-teh\n+the' }];
     const green = createGithub({ pr, files });
