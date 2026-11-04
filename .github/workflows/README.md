@@ -318,12 +318,10 @@ Configuration:
 
 ## PR risk
 
-`pr-risk.yml` classifies every non-draft pull request against `main` by risk:
-green, amber or red. It is on trial: it only posts one comment that gives the
-risk as low, medium or high and explains it. Without `PR_RISK_TRIAL` in the
-workflow, it also labels the pull request `risk: green`, `risk: amber` or
-`risk: red` and reports the category as the `PR risk` check run on the head
-commit: `success` for green, `neutral` for amber and red.
+`pr-risk.yml` classifies every non-draft pull request against `main` by risk
+and labels it `risk: green`, `risk: amber` or `risk: red`. It also posts one
+comment that explains the label and reports the category as the `PR risk`
+check run on the head commit: `success` for green, `neutral` for amber and red.
 The scripts in `.github/pr-risk` are the same as in vaadin/web-components; only
 the `vaadin/flow` entries in `policy.js` and `criteria.js` are specific to
 Flow.
@@ -338,8 +336,8 @@ The category is the higher of two:
   least red, core framework code, build plugins, dependencies and agent
   instructions are at least amber, and tests and docs set no minimum.
 
-Nothing acts on the category: the auto-approval in `validation.yml` does not
-read it. A future merge gate must use the check run rather than the label,
+Nothing acts on the category yet: the auto-approval in `validation.yml` does
+not read it. A future merge gate must use the check run rather than the label,
 which anyone with triage access can change.
 
 The workflow runs on `pull_request_target`, so pull requests from forks are

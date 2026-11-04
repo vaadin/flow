@@ -3,8 +3,7 @@
  * its authenticated `github` client, `context` and `core`. Classifies the pull
  * request of the event, reports the category as a check run on its head
  * commit, sets one of the risk labels and posts or updates one comment that
- * explains it. With PR_RISK_TRIAL=true, it only posts the comment, which says
- * that the workflow is on trial.
+ * explains it.
  */
 import { assess as defaultAssess } from './assess.js';
 import { buildDiff, classify, evaluatePolicy, isTrustedAuthor, isTrustedHead, renderComment } from './classify.js';
@@ -114,14 +113,11 @@ export async function run({
     return;
   }
 
-  // On trial, the run only posts the comment: no label and no check run
-  const trial = env.PR_RISK_TRIAL === 'true';
-
   // A green label must not stay on code that this run has not assessed yet.
   // The removal starts before the assessment and ends before the labels are set.
   let labels = pr.labels.map(({ name }) => name);
   let greenRemoved = Promise.resolve();
-  if (!trial && labels.includes(LABELS.green.name)) {
+  if (labels.includes(LABELS.green.name)) {
     greenRemoved = removeLabel(github, repo, pr, LABELS.green.name);
     labels = labels.filter((name) => name !== LABELS.green.name);
   }
@@ -149,11 +145,19 @@ export async function run({
   const [{ assessment, failure }] = await Promise.all([assessing, greenRemoved]);
 
   const result = classify({ policyFindings, omitted: diff.omitted, assessment });
-  const body = renderComment({ marker: MARKER, result, assessment, headSha: pr.head.sha, runUrl, trial });
+  const body = renderComment({ marker: MARKER, result, assessment, headSha: pr.head.sha, runUrl });
 
-  if (!trial) {
-    await reportCategory(github, repo, pr, labels, result.category, { body, runId: context.runId, runUrl });
-  }
+  await github.rest.checks.create({
+    ...repo,
+    name: CHECK_NAME,
+    head_sha: pr.head.sha,
+    status: 'completed',
+    conclusion: CHECK_CONCLUSIONS[result.category],
+    external_id: String(context.runId),
+    details_url: runUrl,
+    output: { title: `${result.category[0].toUpperCase()}${result.category.slice(1)}`, summary: body },
+  });
+  await setLabel(github, repo, pr, labels, result.category);
   await upsertComment(github, repo, pr, body);
   await core.summary.addRaw(body).write();
   core.setOutput('category', result.category);
@@ -163,19 +167,4 @@ export async function run({
   if (failure) {
     core.setFailed(failure);
   }
-}
-
-/** Reports the category as the check run on the head commit and as the risk label */
-async function reportCategory(github, repo, pr, labels, category, { body, runId, runUrl }) {
-  await github.rest.checks.create({
-    ...repo,
-    name: CHECK_NAME,
-    head_sha: pr.head.sha,
-    status: 'completed',
-    conclusion: CHECK_CONCLUSIONS[category],
-    external_id: String(runId),
-    details_url: runUrl,
-    output: { title: `${category[0].toUpperCase()}${category.slice(1)}`, summary: body },
-  });
-  await setLabel(github, repo, pr, labels, category);
 }

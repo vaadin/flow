@@ -24,11 +24,9 @@ name: PR Risk
 # against members with write access should also verify the workflow run that
 # `external_id` names.
 #
-# In vaadin/flow the workflow is on trial (PR_RISK_TRIAL below): it only posts
-# the comment, which names the categories low, medium and high risk, and sets
-# no label and no check run. Nothing acts on the category: the auto-approval in
-# validation.yml does not read it. Remove PR_RISK_TRIAL to set labels and
-# report the check run.
+# In vaadin/flow nothing acts on the category yet: the auto-approval in
+# validation.yml does not read it, so the label, the check run and the comment
+# only inform the reviewers.
 #
 # To see how a pull request would be classified, without changing it, run
 # `node .github/pr-risk/cli.js <pull request URL>`.
@@ -104,7 +102,6 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENROUTER_MODEL: ${{ vars.OPENROUTER_MODEL }}
           AUTHOR_IS_MEMBER: ${{ steps.author.outputs.member }}
-          PR_RISK_TRIAL: 'true'
         with:
           script: |
             const { run } = await import(`${process.env.GITHUB_WORKSPACE}/.github/pr-risk/main.js`);
