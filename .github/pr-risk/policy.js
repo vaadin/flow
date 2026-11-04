@@ -1,0 +1,313 @@
+/**
+ * The repository policy of the PR risk workflow (.github/workflows/pr-risk.yml).
+ * Every rule that matches a pull request sets a minimum category for it. The
+ * agent can suggest a higher category than the policy, never a lower one.
+ *
+ * The generic part applies to every repository. The part of a repository adds
+ * rules that only make sense there, and says which of its files are shipped
+ * code and which are screenshots. The workflow runs in vaadin/web-components
+ * and vaadin/flow; the command line also classifies pull requests of other
+ * repositories, with the generic part alone.
+ *
+ * The workflow runs the policy of the base branch, so a pull request that edits
+ * this file is classified by the policy it replaces.
+ */
+
+/**
+ * Path rules match when one of their globs matches the path of a changed file,
+ * or the previous path of a renamed file. Wildcards also match names that
+ * start with a dot. A rule with `codeOnly` skips files whose changes are only
+ * comments and blank lines, so that a JSDoc fix does not need a reviewer.
+ *
+ * Content rules match lines that a pull request adds to shipped code: the
+ * files that match `contentPaths` but not `testPaths`.
+ */
+const GENERIC = {
+  pathRules: [
+    {
+      category: 'red',
+      reason: 'CI, release and repository automation, or config that runs code',
+      paths: ['.github/**', '.husky/**', '**/.yarnrc*', '**/.npmrc', '**/.gitattributes'],
+    },
+    {
+      category: 'amber',
+      reason: 'dependencies',
+      paths: [
+        '**/package.json',
+        '**/yarn.lock',
+        '**/package-lock.json',
+        '**/pnpm-lock.yaml',
+        '**/pom.xml',
+        '**/build.gradle*',
+        '**/settings.gradle*',
+      ],
+    },
+    {
+      category: 'amber',
+      reason: 'instructions that agents follow, including the agent review',
+      paths: ['**/CLAUDE.md', '**/CLAUDE.local.md', '**/AGENTS.md', '**/.claude/**', '.mcp.json'],
+    },
+    {
+      category: 'amber',
+      reason: 'test, lint and build tooling that CI relies on',
+      paths: ['*.config.{js,mjs,cjs,ts}', '**/tsconfig*.json', '.prettier*', '.stylelintrc*', '.eslintrc*'],
+    },
+  ],
+  // Without more knowledge of a repository, all of it but its tests is shipped code
+  contentPaths: ['**'],
+  testPaths: ['**/test/**', '**/tests/**', '**/__tests__/**', '**/*.{test,spec}.*'],
+  screenshotPaths: [],
+};
+
+/**
+ * The parts of the repositories. Path rules with the category and reason of a
+ * generic rule add their paths to it.
+ */
+const REPOSITORIES = {
+  'vaadin/web-components': {
+    pathRules: [
+      {
+        category: 'red',
+        reason: 'CI, release and repository automation, or config that runs code',
+        paths: ['scripts/**', 'lerna.json', 'patches/**'],
+      },
+      {
+        category: 'red',
+        reason: 'HTML sanitization',
+        paths: ['packages/markdown/src/**', 'packages/rich-text-editor/src/**', 'packages/rich-text-editor/vendor/**'],
+      },
+      {
+        category: 'red',
+        reason: 'authentication UI',
+        paths: ['packages/login/src/**'],
+      },
+      {
+        category: 'red',
+        reason: 'file uploads to the server',
+        paths: ['packages/upload/src/vaadin-upload-mixin.js', 'packages/upload/src/vaadin-upload-*manager.js'],
+      },
+      {
+        category: 'red',
+        reason: 'usage statistics',
+        paths: ['packages/component-base/src/element-mixin.js'],
+      },
+      {
+        category: 'amber',
+        reason: 'instructions that agents follow, including the agent review',
+        paths: ['CONVENTIONS.md', 'guidelines/**'],
+      },
+      {
+        category: 'amber',
+        reason: 'test, lint and build tooling that CI relies on',
+        paths: ['wtr-utils.js', 'wds-utils.js', 'custom-rules/**', 'manifest/**', 'react/scripts/**'],
+      },
+      {
+        category: 'amber',
+        reason: 'shared base packages that most components build on',
+        paths: [
+          'packages/component-base/src/**',
+          'packages/a11y-base/src/**',
+          'packages/field-base/src/**',
+          'packages/overlay/src/**',
+          'packages/vaadin-themable-mixin/*.js',
+          'packages/vaadin-themable-mixin/src/**',
+        ],
+      },
+      {
+        category: 'amber',
+        reason: 'themes that every application loads',
+        paths: [
+          'packages/aura/*.css',
+          'packages/aura/src/**',
+          'packages/vaadin-lumo-styles/*.{css,js}',
+          'packages/vaadin-lumo-styles/!(test)/**',
+        ],
+      },
+      {
+        category: 'amber',
+        reason: 'visual test screenshots, so the rendering changed',
+        paths: ['packages/*/test/visual/**/screenshots/**'],
+      },
+      {
+        category: 'amber',
+        reason: 'public TypeScript API',
+        paths: ['packages/*/*.d.ts', 'packages/*/src/**/*.d.ts'],
+        codeOnly: true,
+      },
+    ],
+    contentPaths: ['packages/*/src/**', 'packages/*/*.js'],
+    testPaths: [],
+    screenshotPaths: ['packages/*/test/visual/**/screenshots/**'],
+  },
+  'vaadin/flow': {
+    pathRules: [
+      {
+        category: 'red',
+        reason: 'CI, release and repository automation, or config that runs code',
+        paths: ['scripts/**', 'build-tools/**', 'release-check/**', 'flow-bom/**', '.mvn/**'],
+      },
+      {
+        category: 'red',
+        reason: 'access control, authentication and CSRF protection',
+        paths: [
+          'flow-server/src/main/java/com/vaadin/flow/server/auth/**',
+          'flow-server/src/main/java/com/vaadin/flow/internal/springcsrf/**',
+          'vaadin-spring/src/main/java/com/vaadin/flow/spring/security/**',
+        ],
+      },
+      {
+        category: 'red',
+        reason: 'handling of client requests and RPC input',
+        paths: [
+          'flow-server/src/main/java/com/vaadin/flow/server/HandlerHelper.java',
+          'flow-server/src/main/java/com/vaadin/flow/server/StaticFileServer.java',
+          'flow-server/src/main/java/com/vaadin/flow/server/communication/ServerRpcHandler.java',
+          'flow-server/src/main/java/com/vaadin/flow/server/communication/UidlRequestHandler.java',
+          'flow-server/src/main/java/com/vaadin/flow/server/communication/rpc/**',
+        ],
+      },
+      {
+        category: 'red',
+        reason: 'file uploads to the server',
+        paths: [
+          'flow-server/src/main/java/com/vaadin/flow/server/communication/StreamReceiverHandler.java',
+          'flow-server/src/main/java/com/vaadin/flow/server/communication/TransferUtil.java',
+          'flow-server/src/main/java/com/vaadin/flow/server/streams/*Upload*.java',
+        ],
+      },
+      {
+        category: 'red',
+        reason: 'usage statistics',
+        paths: [
+          'flow-server/src/main/java/com/vaadin/flow/internal/UsageStatistics*.java',
+          'flow-server/src/main/java/com/vaadin/flow/server/UsageStatisticsCollector.java',
+          'vaadin-dev-server/src/main/java/com/vaadin/base/devserver/stats/**',
+        ],
+      },
+      {
+        category: 'red',
+        reason: 'licensing',
+        paths: ['**/src/main/**/*LicenseChecker*'],
+      },
+      {
+        category: 'amber',
+        reason: 'instructions that agents follow, including the agent review',
+        paths: ['CONVENTIONS.md', 'guidelines/**'],
+      },
+      {
+        category: 'amber',
+        reason: 'test, lint and build tooling that CI relies on',
+        paths: ['checkstyle/**', 'eclipse/**', 'flow-test-generic/**', 'flow-test-util/**', '.prettierrc*'],
+      },
+      {
+        category: 'amber',
+        reason: 'core framework code that every application runs',
+        paths: [
+          'flow-server/src/main/**',
+          'flow-client/src/main/**',
+          'flow-data/src/main/**',
+          'signals/src/main/**',
+          'flow-push/src/main/**',
+        ],
+        codeOnly: true,
+      },
+      {
+        category: 'amber',
+        reason: 'build plugins and dev tooling that every application build runs',
+        paths: [
+          'flow-plugins/*/src/main/**',
+          'flow-build-tools/src/main/**',
+          'vaadin-dev-server/src/main/**',
+          'flow-server-production-mode/src/main/**',
+        ],
+        codeOnly: true,
+      },
+    ],
+    contentPaths: ['**/src/main/**'],
+    testPaths: [
+      'flow-tests/**',
+      '**/src/test/**',
+      '**/src/it/**',
+      'flow-test-generic/**',
+      'flow-test-util/**',
+      'flow-html-components-testbench/**',
+    ],
+    screenshotPaths: [],
+  },
+};
+
+/**
+ * The policy of a repository, `owner/name`: the generic path rules together
+ * with its own, and its own shipped code and screenshot paths when it has a part.
+ */
+export function policyFor(repository) {
+  const own = REPOSITORIES[repository];
+  if (!own) {
+    return GENERIC;
+  }
+  const pathRules = GENERIC.pathRules.map((rule) => ({ ...rule, paths: [...rule.paths] }));
+  for (const rule of own.pathRules) {
+    const generic = pathRules.find(({ category, reason }) => category === rule.category && reason === rule.reason);
+    if (generic) {
+      generic.paths.push(...rule.paths);
+    } else {
+      pathRules.push(rule);
+    }
+  }
+  return { ...own, pathRules };
+}
+
+/**
+ * Rules on the lines that a pull request adds to shipped code. Comment lines
+ * count too, as code can follow a comment on the same line.
+ */
+export const CONTENT_RULES = [
+  {
+    category: 'red',
+    reason: 'adds an HTML or script injection sink',
+    // Comparing the content, or clearing it with `innerHTML = ''`, is common and safe
+    pattern: new RegExp(
+      [
+        String.raw`\b(?:inner|outer)HTML\b(?!\s*(?:[!=]==?|=\s*(?:''|""|${'``'})\s*;?\s*$))`,
+        String.raw`insertAdjacentHTML|setHTMLUnsafe|parseHTMLUnsafe|createContextualFragment|\bsrcdoc\b`,
+        String.raw`\bunsafe(?:HTML|SVG|MathML|Static)\b|dangerouslySetInnerHTML|DOMPurify`,
+        String.raw`\beval\s*\(|\bFunction\s*\(|document\.write`,
+        // Event handler attributes and script URLs in HTML or SVG markup
+        String.raw`<[^>]*\son[a-z]+\s*=|javascript:`,
+      ].join('|'),
+      'u',
+    ),
+  },
+  {
+    category: 'red',
+    reason: 'adds network requests',
+    // A bare `fetch()`, not a `fetch` method such as `dataProvider.fetch()`
+    pattern: new RegExp(
+      [
+        String.raw`(?:^|[^\w.]|\b(?:window|globalThis|self)\.)fetch\s*\(`,
+        String.raw`XMLHttpRequest|withCredentials|sendBeacon|new\s+(?:WebSocket|EventSource)\b`,
+        // A dynamic import of anything but a string literal
+        String.raw`\bimport\s*\(\s*(?!['"])`,
+      ].join('|'),
+      'u',
+    ),
+  },
+  {
+    category: 'red',
+    reason: 'adds browser storage or cookies',
+    pattern: /\b(?:localStorage|sessionStorage|indexedDB|cookieStore)\b|document\.cookie/u,
+  },
+];
+
+/** A breaking change, marked with `!` in the conventional commit title */
+export const BREAKING_TITLE = /^\w+(?:\([^)]*\))?!:/u;
+
+/** A breaking change, marked with a conventional commit footer in the description */
+export const BREAKING_BODY = /^BREAKING[ -]CHANGE:/mu;
+
+/**
+ * Authors whose pull requests can be green. Other authors need at least one
+ * human approval. Private members of the organization show up as CONTRIBUTOR,
+ * so the workflow also checks the membership.
+ */
+export const TRUSTED_ASSOCIATIONS = ['OWNER', 'MEMBER', 'COLLABORATOR'];
