@@ -234,6 +234,7 @@ public class ServerRpcHandler implements Serializable {
          *
          * @param message
          *            the description of the invalid key
+         * @since 25.4
          */
         public InvalidUIDLSecurityKeyException(String message) {
             super(message);

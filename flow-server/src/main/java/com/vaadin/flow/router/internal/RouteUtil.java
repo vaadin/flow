@@ -632,6 +632,7 @@ public class RouteUtil {
      *            the path the route target was resolved from, not {@code null}
      * @return the parent layouts, starting from the one closest to the route
      *         target, or an empty list if there are none
+     * @since 25.3.6
      */
     public static List<Class<? extends RouterLayout>> getTargetParentLayouts(
             RouteTarget routeTarget, RouteRegistry registry, String path) {
@@ -662,6 +663,7 @@ public class RouteUtil {
      *            the path to resolve, not {@code null}
      * @return the parent layouts, starting from the one closest to the
      *         navigation target, or an empty list if there are none
+     * @since 25.3.6
      */
     public static List<Class<? extends RouterLayout>> resolveTargetParentLayouts(
             RouteRegistry registry, Class<?> navigationTarget, String path) {
