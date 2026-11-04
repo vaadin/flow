@@ -63,11 +63,18 @@ function fileLine(file) {
   return `${status} ${name} (+${file.additions} -${file.deletions})`;
 }
 
-export function buildUserMessage({ pr, files, diff }) {
+function issueLine({ ref, title, state, labels }) {
+  return `${ref} (${state}): ${title} [labels: ${labels.length > 0 ? labels.join(', ') : 'none'}]`;
+}
+
+export function buildUserMessage({ pr, files, diff, linkedIssues = [] }) {
   const description = (pr.body ?? '').slice(0, DESCRIPTION_BUDGET);
   const sections = [
     `<title>${pr.title}</title>`,
     `<description>\n${description}\n</description>`,
+    ...(linkedIssues.length > 0
+      ? [`<linked_issues>\n${linkedIssues.map(issueLine).join('\n')}\n</linked_issues>`]
+      : []),
     `<changed_files>\n${files.map(fileLine).join('\n')}\n</changed_files>`,
     `<diff>\n${diff.text}\n</diff>`,
   ];
@@ -177,8 +184,8 @@ export function systemPrompt(context) {
     '## Dimensions',
     'Rate each dimension low, medium or high, where high is the riskier end, with one sentence of reason that names the code behind the rating:',
     DIMENSIONS.map(({ key }) => {
-      const { question, low, high } = DIMENSION_CRITERIA[key];
-      return `- **${key}**: ${question} Low: ${low} High: ${high}`;
+      const { question, low, medium, high } = DIMENSION_CRITERIA[key];
+      return `- **${key}**: ${question} Low: ${low}${medium ? ` Medium: ${medium}` : ''} High: ${high}`;
     }).join('\n'),
     '## Output',
     'Respond with a summary of one sentence on what the pull request changes, the four ratings, the category, and a rationale of at most three sentences that a reviewer can check against the diff.',
@@ -217,8 +224,8 @@ export function chatToAssessment(response) {
 // that the policy and its tests run without them
 
 /** The untrusted input of a pull request and the context of its repository */
-function promptParts({ pr, files, diff }) {
-  return { content: buildUserMessage({ pr, files, diff }), context: repositoryContext(pr.base.repo) };
+function promptParts({ pr, files, diff, linkedIssues }) {
+  return { content: buildUserMessage({ pr, files, diff, linkedIssues }), context: repositoryContext(pr.base.repo) };
 }
 
 async function assessWithDecisions(pullRequest, apiKey) {
@@ -294,16 +301,17 @@ async function assessWithOpenRouter(pullRequest, apiKey, model) {
  * or the call fails or ends without a valid assessment, so that a lost
  * assessment is never mistaken for one.
  */
-export function assess({ pr, files, diff, env = process.env }) {
+export function assess({ pr, files, diff, linkedIssues = [], env = process.env }) {
+  const pullRequest = { pr, files, diff, linkedIssues };
   if (env.OPENAI_API_KEY) {
-    return assessWithDecisions({ pr, files, diff }, env.OPENAI_API_KEY);
+    return assessWithDecisions(pullRequest, env.OPENAI_API_KEY);
   }
   if (env.ANTHROPIC_API_KEY) {
-    return assessWithClaude({ pr, files, diff }, env.ANTHROPIC_API_KEY);
+    return assessWithClaude(pullRequest, env.ANTHROPIC_API_KEY);
   }
   if (env.OPENROUTER_API_KEY) {
     const model = env.OPENROUTER_MODEL || OPENROUTER_MODEL;
-    return assessWithOpenRouter({ pr, files, diff }, env.OPENROUTER_API_KEY, model);
+    return assessWithOpenRouter(pullRequest, env.OPENROUTER_API_KEY, model);
   }
   return Promise.reject(new Error('None of OPENAI_API_KEY, ANTHROPIC_API_KEY and OPENROUTER_API_KEY is set'));
 }
