@@ -357,7 +357,9 @@ describe('evaluatePolicy for vaadin/flow, misfires the first run found', () => {
     assert.deepEqual(flow([file('.github/workflows/README.md', change)]), []);
     assert.deepEqual(flow([file('.github/ISSUE_TEMPLATE/feature_request.md', change)]), []);
     assert.deepEqual(flow([file('.github/workflows/doc-bot.md', change)]), [AUTOMATION]);
-    assert.deepEqual(flow([file('.github/workflows/validation.yml', change)]), [AUTOMATION]);
+    assert.deepEqual(flow([file('.github/workflows/validation.yml', change)]), [
+      'amber: CI checks that change no secrets, permissions, triggers or actions',
+    ]);
   });
 
   const arguments_ = (linkedIssues) => ({
@@ -482,7 +484,8 @@ describe('evaluatePolicy for vaadin/flow, misfires of the dry run', () => {
     const removed = file('.github/workflows/claude.yml', '@@ -1 +0,0 @@\n-a', { status: 'removed' });
     assert.deepEqual(flow([removed]), ['amber: removes CI workflows']);
     const change = '@@ -1 +1 @@\n-a\n+b';
-    assert.deepEqual(flow([removed, file('.github/workflows/validation.yml', change)]), [
+    const secret = '@@ -1 +1 @@\n-a\n+          GH_TOKEN: ${{ secrets.VAADIN_BOT_TOKEN }}';
+    assert.deepEqual(flow([removed, file('.github/workflows/validation.yml', secret)]), [
       'red: CI, release and repository automation, or config that runs code',
       'amber: removes CI workflows',
     ]);
@@ -490,9 +493,37 @@ describe('evaluatePolicy for vaadin/flow, misfires of the dry run', () => {
     assert.deepEqual(flow([file('.github/CODEOWNERS', '@@ -1 +0,0 @@\n-a', { status: 'removed' })]), [
       'red: CI, release and repository automation, or config that runs code',
     ]);
+    // A removed script runs nothing, unless it is one of the merge gates
     assert.deepEqual(flow([file('scripts/release.sh', '@@ -1 +0,0 @@\n-a', { status: 'removed' })]), [
+      'amber: CI checks that change no secrets, permissions, triggers or actions',
+    ]);
+    assert.deepEqual(flow([file('scripts/autoMerge.js', '@@ -1 +0,0 @@\n-a', { status: 'removed' })]), [
       'red: CI, release and repository automation, or config that runs code',
     ]);
+  });
+
+  test('sets amber for CI checks that change no secrets, permissions, triggers or actions', () => {
+    const CHECKS = 'amber: CI checks that change no secrets, permissions, triggers or actions';
+    const edit = (line) => `@@ -1 +1 @@\n-      run: ./old.sh\n+${line}`;
+    assert.deepEqual(flow([file('.github/workflows/validation.yml', edit('      run: node scripts/apiDiff.js'))]), [CHECKS]);
+    assert.deepEqual(flow([file('scripts/apiDiff.js', added('const report = compare(base, head);'))]), [CHECKS]);
+    for (const line of [
+      '          GH_TOKEN: ${{ secrets.VAADIN_BOT_TOKEN }}',
+      '    permissions:',
+      '      pull-requests: write',
+      'on:',
+      '      - uses: some/action@v1',
+      '      run: echo "${{ github.event.pull_request.title }}"',
+      'const token = process.env.GITHUB_TOKEN;',
+    ]) {
+      assert.deepEqual(flow([file('.github/workflows/validation.yml', edit(line))]), [AUTOMATION], line);
+    }
+    // The merge gates and the agent workflows stay red
+    for (const path of ['.github/workflows/pr-risk.yml', '.github/workflows/doc-bot.md', 'scripts/autoMerge.js']) {
+      assert.deepEqual(flow([file(path, edit('      run: ./new.sh'))]), [AUTOMATION], path);
+    }
+    // A file without a diff cannot be checked
+    assert.deepEqual(flow([file('scripts/apiDiff.js', undefined)]), [AUTOMATION]);
   });
 
   test('skips the storage rule for the dev server, but not the network rule', () => {
