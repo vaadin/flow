@@ -27,10 +27,16 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.AtmospherePushConnection;
+import com.vaadin.flow.server.communication.PushConnection;
+import com.vaadin.flow.server.communication.SsePushConnection;
+import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -46,6 +52,7 @@ class PushConfigurationTest {
         session = new MockVaadinSession(service);
         session.lock();
         ui = new MockUI(session);
+        enable(CoreFeatureFlagProvider.SSE_PURE_PUSH_TRANSPORT, service);
     }
 
     @AfterEach
@@ -80,7 +87,7 @@ class PushConfigurationTest {
 
     @Test
     void setTransport_serverSentEventsWithFeatureFlag_transportIsUsed() {
-        enableServerSentEvents();
+        enable(CoreFeatureFlagProvider.SSE_PUSH_TRANSPORT, service);
 
         ui.getPushConfiguration().setTransport(Transport.SERVER_SENT_EVENTS);
         ui.getPushConfiguration()
@@ -115,11 +122,219 @@ class PushConfigurationTest {
                 ui.getPushConfiguration().getFallbackTransport());
     }
 
-    private void enableServerSentEvents() {
-        FeatureFlags featureFlags = FeatureFlags.get(service.getContext());
-        for (Feature feature : featureFlags.getFeatures()) {
-            if (feature.equals(CoreFeatureFlagProvider.SSE_PUSH_TRANSPORT)) {
-                feature.setEnabled(true);
+    @Test
+    void setTransport_ssePureWithoutFeatureFlag_throws() {
+        disable(CoreFeatureFlagProvider.SSE_PURE_PUSH_TRANSPORT, service);
+
+        DisabledFeatureException exception = assertThrows(
+                DisabledFeatureException.class, () -> ui.getPushConfiguration()
+                        .setTransport(Transport.SSE_PURE));
+        assertTrue(
+                exception.getMessage().contains(
+                        "com.vaadin.experimental.ssePurePushTransport=true"),
+                "The exception should tell how to enable the feature, but was: "
+                        + exception.getMessage());
+        assertEquals(Transport.WEBSOCKET_XHR,
+                ui.getPushConfiguration().getTransport());
+    }
+
+    @Test
+    void setPushMode_withoutAtmosphereOrFeatureFlag_throws() {
+        UI uiWithoutAtmosphere = createUiWithoutAtmosphere(false);
+
+        // As before SSE_PURE, push is not available without Atmosphere
+        assertThrows(IllegalStateException.class, () -> uiWithoutAtmosphere
+                .getPushConfiguration().setPushMode(PushMode.AUTOMATIC));
+        assertEquals(PushMode.DISABLED,
+                uiWithoutAtmosphere.getPushConfiguration().getPushMode());
+    }
+
+    @Test
+    void setPushMode_ssePure_usesSsePushConnection() {
+        ui.getPushConfiguration().setTransport(Transport.SSE_PURE);
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+
+        assertInstanceOf(SsePushConnection.class,
+                ui.getInternals().getPushConnection());
+    }
+
+    @Test
+    void setPushMode_otherTransport_usesAtmospherePushConnection() {
+        ui.getPushConfiguration().setTransport(Transport.WEBSOCKET);
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+
+        assertInstanceOf(AtmospherePushConnection.class,
+                ui.getInternals().getPushConnection());
+    }
+
+    @Test
+    void setPushMode_ssePureWithoutAtmosphere_pushIsEnabled() {
+        UI uiWithoutAtmosphere = createUiWithoutAtmosphere();
+
+        uiWithoutAtmosphere.getPushConfiguration()
+                .setTransport(Transport.SSE_PURE);
+        uiWithoutAtmosphere.getPushConfiguration()
+                .setPushMode(PushMode.AUTOMATIC);
+
+        assertEquals(PushMode.AUTOMATIC,
+                uiWithoutAtmosphere.getPushConfiguration().getPushMode());
+        assertInstanceOf(SsePushConnection.class,
+                uiWithoutAtmosphere.getInternals().getPushConnection());
+    }
+
+    @Test
+    void setPushMode_otherTransportWithoutAtmosphere_usesSsePure() {
+        UI uiWithoutAtmosphere = createUiWithoutAtmosphere();
+        uiWithoutAtmosphere.getPushConfiguration()
+                .setTransport(Transport.WEBSOCKET);
+
+        uiWithoutAtmosphere.getPushConfiguration()
+                .setPushMode(PushMode.AUTOMATIC);
+
+        // The Atmosphere based transports cannot work without Atmosphere, so
+        // push uses the transport that does not need it
+        assertEquals(PushMode.AUTOMATIC,
+                uiWithoutAtmosphere.getPushConfiguration().getPushMode());
+        assertEquals(Transport.SSE_PURE,
+                uiWithoutAtmosphere.getPushConfiguration().getTransport());
+        assertInstanceOf(SsePushConnection.class,
+                uiWithoutAtmosphere.getInternals().getPushConnection());
+    }
+
+    @Test
+    void setPushMode_defaultTransportWithoutAtmosphere_usesSsePure() {
+        UI uiWithoutAtmosphere = createUiWithoutAtmosphere();
+
+        uiWithoutAtmosphere.getPushConfiguration()
+                .setPushMode(PushMode.AUTOMATIC);
+
+        assertEquals(Transport.SSE_PURE,
+                uiWithoutAtmosphere.getPushConfiguration().getTransport());
+        assertInstanceOf(SsePushConnection.class,
+                uiWithoutAtmosphere.getInternals().getPushConnection());
+    }
+
+    @Test
+    void setTransport_otherTransportWhenPushEnabledWithoutAtmosphere_keepsSsePure() {
+        // An @Push annotation on the app shell sets the transport after the
+        // deployment configuration has enabled push
+        UI uiWithoutAtmosphere = createUiWithoutAtmosphere();
+        uiWithoutAtmosphere.getPushConfiguration()
+                .setPushMode(PushMode.AUTOMATIC);
+
+        uiWithoutAtmosphere.getPushConfiguration()
+                .setTransport(Transport.WEBSOCKET_XHR);
+
+        assertEquals(Transport.SSE_PURE,
+                uiWithoutAtmosphere.getPushConfiguration().getTransport());
+        assertInstanceOf(SsePushConnection.class,
+                uiWithoutAtmosphere.getInternals().getPushConnection());
+    }
+
+    @Test
+    void setTransport_otherTransportWhenPushDisabledWithoutAtmosphere_isKept() {
+        // The transport is only replaced when push is enabled
+        UI uiWithoutAtmosphere = createUiWithoutAtmosphere();
+
+        uiWithoutAtmosphere.getPushConfiguration()
+                .setTransport(Transport.WEBSOCKET);
+
+        assertEquals(Transport.WEBSOCKET,
+                uiWithoutAtmosphere.getPushConfiguration().getTransport());
+        assertNull(uiWithoutAtmosphere.getInternals().getPushConnection());
+    }
+
+    @Test
+    void setPushMode_withAtmosphere_keepsTransport() {
+        ui.getPushConfiguration().setTransport(Transport.WEBSOCKET);
+
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+
+        assertEquals(Transport.WEBSOCKET,
+                ui.getPushConfiguration().getTransport());
+    }
+
+    @Test
+    void setTransport_ssePureWhenPushEnabled_replacesConnection() {
+        // Push may be enabled, e.g. by the deployment configuration, before an
+        // @Push annotation on the app shell sets the transport
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+        PushConnection atmosphereConnection = ui.getInternals()
+                .getPushConnection();
+        assertInstanceOf(AtmospherePushConnection.class, atmosphereConnection);
+
+        ui.getPushConfiguration().setTransport(Transport.SSE_PURE);
+
+        assertInstanceOf(SsePushConnection.class,
+                ui.getInternals().getPushConnection());
+    }
+
+    @Test
+    void setTransport_fromSsePureWhenPushEnabled_replacesConnection() {
+        ui.getPushConfiguration().setTransport(Transport.SSE_PURE);
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+
+        ui.getPushConfiguration().setTransport(Transport.WEBSOCKET);
+
+        assertInstanceOf(AtmospherePushConnection.class,
+                ui.getInternals().getPushConnection());
+    }
+
+    @Test
+    void setTransport_ssePureWhenPushDisabled_noConnection() {
+        ui.getPushConfiguration().setTransport(Transport.SSE_PURE);
+
+        assertNull(ui.getInternals().getPushConnection());
+    }
+
+    @Test
+    void setTransport_sameKindWhenPushEnabled_keepsConnection() {
+        ui.getPushConfiguration().setTransport(Transport.SSE_PURE);
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+        PushConnection connection = ui.getInternals().getPushConnection();
+
+        ui.getPushConfiguration().setTransport(Transport.SSE_PURE);
+
+        assertEquals(connection, ui.getInternals().getPushConnection());
+    }
+
+    private UI createUiWithoutAtmosphere() {
+        return createUiWithoutAtmosphere(true);
+    }
+
+    private UI createUiWithoutAtmosphere(boolean ssePureEnabled) {
+        MockVaadinServletService serviceWithoutAtmosphere = new MockVaadinServletService() {
+            @Override
+            public boolean ensurePushAvailable() {
+                return false;
+            }
+        };
+        if (ssePureEnabled) {
+            enable(CoreFeatureFlagProvider.SSE_PURE_PUSH_TRANSPORT,
+                    serviceWithoutAtmosphere);
+        }
+        VaadinSession sessionWithoutAtmosphere = new MockVaadinSession(
+                serviceWithoutAtmosphere);
+        // The test thread already holds the lock of the default session, the
+        // lock of this session is released when the test ends
+        sessionWithoutAtmosphere.lock();
+        return new MockUI(sessionWithoutAtmosphere);
+    }
+
+    private static void enable(Feature feature, VaadinService service) {
+        setEnabled(feature, service, true);
+    }
+
+    private static void disable(Feature feature, VaadinService service) {
+        setEnabled(feature, service, false);
+    }
+
+    private static void setEnabled(Feature feature, VaadinService service,
+            boolean enabled) {
+        for (Feature flag : FeatureFlags.get(service.getContext())
+                .getFeatures()) {
+            if (flag.equals(feature)) {
+                flag.setEnabled(enabled);
             }
         }
     }

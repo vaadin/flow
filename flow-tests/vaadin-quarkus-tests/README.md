@@ -21,6 +21,9 @@ The modules are:
   the native image build uses
 - `push-dispatch-it` — a deadlock regression test for the Push dispatch
   default the extension sets
+- `push-sse-pure-it` — an application in production mode with `flow-push`
+  excluded, so `@Push` falls back to the `SSE_PURE` transport; also runs
+  through reverse proxies, see `flow-tests/README.md`
 - `custom-servlet-it` — an application whose only Vaadin servlet is a
   user-defined one mapped to `/app/*`, checked in a browser under that prefix
 - `codestarts` — generates a project from the extension's codestart and

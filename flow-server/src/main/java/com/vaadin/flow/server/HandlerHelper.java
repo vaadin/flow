@@ -125,6 +125,11 @@ public class HandlerHelper implements Serializable {
         PUSH(ApplicationConstants.REQUEST_TYPE_PUSH),
 
         /**
+         * SSE push requests.
+         */
+        SSE(ApplicationConstants.REQUEST_TYPE_SSE),
+
+        /**
          * Page showing that the browser is unsupported.
          * 
          * @since 23.4
@@ -263,7 +268,9 @@ public class HandlerHelper implements Serializable {
                 requestedPathWithoutServletMapping.get(),
                 requestTypeParameter)) {
             return true;
-        } else if (RequestType.PUSH.getIdentifier().equals(requestTypeParameter)
+        } else if ((RequestType.PUSH.getIdentifier()
+                .equals(requestTypeParameter)
+                || RequestType.SSE.getIdentifier().equals(requestTypeParameter))
                 && "VAADIN/push"
                         .equals(requestedPathWithoutServletMapping.get())) {
             return true;

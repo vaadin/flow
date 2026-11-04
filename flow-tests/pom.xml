@@ -382,6 +382,7 @@
         <module>test-ccdm-flow-navigation/pom-production.xml</module>
 
         <module>test-root-context</module>
+        <module>test-push-sse-pure</module>
 
         <module>test-eager-bootstrap</module>
 

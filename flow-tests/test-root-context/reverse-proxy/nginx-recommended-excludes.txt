@@ -1,0 +1,2 @@
+# Tests not run through nginx-recommended, see the reverse-proxy profile in pom.xml.
+# No known issues.

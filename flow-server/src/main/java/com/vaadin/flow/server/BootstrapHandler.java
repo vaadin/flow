@@ -86,6 +86,7 @@ import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.flow.shared.ui.Transport;
 
 import static com.vaadin.flow.internal.FrontendUtils.EXPORT_CHUNK;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
@@ -324,7 +325,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             .getPushMode();
                 }
 
-                if (pushMode.isEnabled()
+                // SSE transport doesn't require Atmosphere
+                Transport transport = getUI().getPushConfiguration()
+                        .getTransport();
+                if (pushMode.isEnabled() && transport != Transport.SSE_PURE
                         && !getService().ensurePushAvailable()) {
                     /*
                      * Fall back if not supported (ensurePushAvailable will log
@@ -896,7 +900,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 throw new BootstrapException("Unable to append bundle", e);
             }
 
-            if (context.getPushMode().isEnabled()) {
+            if (isPushScriptNeeded(context)) {
                 head.appendChild(
                         createJavaScriptElement(getPushScript(context)));
             }
@@ -1307,11 +1311,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         PushMode pushMode = push.map(Push::value)
                 .orElseGet(deploymentConfiguration::getPushMode);
         setupPushConnectionFactory(pushConfiguration, context);
-        pushConfiguration.setPushMode(pushMode);
         pushConfiguration.setPushServletMapping(
                 BootstrapHandlerHelper.determinePushServletMapping(session));
 
+        // Set transport BEFORE push mode, because setPushMode creates the
+        // connection based on the configured transport (e.g., SSE needs
+        // SsePushConnection instead of AtmospherePushConnection)
         push.map(Push::transport).ifPresent(pushConfiguration::setTransport);
+        pushConfiguration.setPushMode(pushMode);
 
         // Let the handler contribute its own push defaults while they can
         // still be overridden by a UIInitListener
@@ -1529,6 +1536,22 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static void writeSecurityKeyUIDL(ObjectNode response, UI ui) {
         String seckey = ui.getCsrfToken();
         response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
+    }
+
+    /**
+     * Checks whether the Atmosphere based push script needs to be loaded for
+     * the given context. The {@link Transport#SSE_PURE} transport is
+     * implemented by the client engine without Atmosphere, so the script is not
+     * needed for it.
+     *
+     * @param context
+     *            the bootstrap context
+     * @return {@code true} if push is enabled and uses Atmosphere,
+     *         {@code false} otherwise
+     */
+    protected static boolean isPushScriptNeeded(BootstrapContext context) {
+        return context.getPushMode().isEnabled() && context.getUI()
+                .getPushConfiguration().getTransport() != Transport.SSE_PURE;
     }
 
     protected static String getPushScript(BootstrapContext context) {

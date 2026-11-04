@@ -78,10 +78,26 @@ public class MockServletServiceSessionSetup {
         private List<RequestHandler> handlers;
         private List<SessionlessRequestHandler> sessionlessHandlers;
         private Instantiator overriddenInstantiator;
+        private boolean atmosphereAvailable = true;
 
         public TestVaadinServletService(TestVaadinServlet testVaadinServlet,
                 DeploymentConfiguration deploymentConfiguration) {
             super(testVaadinServlet, deploymentConfiguration);
+        }
+
+        /**
+         * Simulates an application with or without Atmosphere on the classpath.
+         *
+         * @param atmosphereAvailable
+         *            whether Atmosphere is available
+         */
+        public void setAtmosphereAvailable(boolean atmosphereAvailable) {
+            this.atmosphereAvailable = atmosphereAvailable;
+        }
+
+        @Override
+        public boolean ensurePushAvailable() {
+            return atmosphereAvailable && super.ensurePushAvailable();
         }
 
         @Override

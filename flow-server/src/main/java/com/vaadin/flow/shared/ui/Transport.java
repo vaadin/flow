@@ -50,7 +50,35 @@ public enum Transport {
      * 
      * @since 25.3
      */
-    SERVER_SENT_EVENTS("sse");
+    SERVER_SENT_EVENTS("sse"),
+    /**
+     * Server-sent events for server-to-client messages, XHR for
+     * client-to-server messages, implemented directly in Flow without the
+     * Atmosphere framework.
+     * <p>
+     * Unlike {@link #SERVER_SENT_EVENTS}, this transport does not need the
+     * {@code flow-push} module or Atmosphere on the client or the server.
+     * <p>
+     * This is an experimental transport and using it requires the
+     * {@code com.vaadin.experimental.ssePurePushTransport} feature flag to be
+     * enabled. Selecting it while the feature flag is disabled throws a
+     * {@code DisabledFeatureException}. With the feature flag enabled, push
+     * uses this transport also when Atmosphere is not on the classpath.
+     * <p>
+     * Over HTTP/1.1, each open event stream takes one of the few connections
+     * (six in current browsers) a browser opens to the same server, so the
+     * application stops responding in a browser that has more tabs open to it.
+     * Over HTTP/2 and HTTP/3, which browsers use with servers and reverse
+     * proxies that support them, the streams share one connection and there is
+     * no such limit.
+     *
+     * @deprecated not going to be removed: this is a new, experimental feature
+     *             that has not yet been proven in production. It also requires
+     *             the {@code com.vaadin.experimental.ssePurePushTransport}
+     *             feature flag.
+     */
+    @Deprecated(forRemoval = false)
+    SSE_PURE("sse-pure");
 
     private String identifier;
 

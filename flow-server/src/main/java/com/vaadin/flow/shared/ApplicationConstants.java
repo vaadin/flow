@@ -224,6 +224,11 @@ public class ApplicationConstants implements Serializable {
     public static final String REQUEST_TYPE_PUSH = "push";
 
     /**
+     * Request type parameter value indicating an SSE push request.
+     */
+    public static final String REQUEST_TYPE_SSE = "sse";
+
+    /**
      * Request type parameter value indicating a WebComponent resynchronization
      * request.
      * 

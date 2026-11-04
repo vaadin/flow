@@ -21,6 +21,7 @@ import java.util.Objects;
 
 import com.vaadin.experimental.CoreFeatureFlagProvider;
 import com.vaadin.experimental.DisabledFeatureException;
+import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.server.VaadinService;
@@ -28,6 +29,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
+import com.vaadin.flow.server.communication.SsePushConnection;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
@@ -229,10 +231,10 @@ class PushConfigurationImpl implements PushConfiguration {
 
         session.checkHasLock();
 
-        if (pushMode.isEnabled()
-                && !session.getService().ensurePushAvailable()) {
-            throw new IllegalStateException(
-                    "Push is not available. See previous log messages for more information.");
+        Transport transport = getTransport();
+        if (pushMode.isEnabled()) {
+            transport = resolveTransport(transport, session);
+            getPushConfigurationMap().setTransport(transport);
         }
 
         PushMode oldMode = getPushConfigurationMap().getPushMode();
@@ -243,7 +245,7 @@ class PushConfigurationImpl implements PushConfiguration {
                 // The push connection is initially in a disconnected state;
                 // the client will establish the connection
                 ui.getInternals()
-                        .setPushConnection(pushConnectionFactory.apply(ui));
+                        .setPushConnection(createPushConnection(transport));
             }
             // Nothing to do here if disabling push;
             // the client will close the connection
@@ -258,7 +260,50 @@ class PushConfigurationImpl implements PushConfiguration {
     @Override
     public void setTransport(Transport transport) {
         checkTransportEnabled(transport);
+        boolean wasSsePure = getTransport() == Transport.SSE_PURE;
+        VaadinSession session = ui.getSession();
+        if (session != null && getPushMode().isEnabled()) {
+            transport = resolveTransport(transport, session);
+        }
         getPushConfigurationMap().setTransport(transport);
+
+        // SSE_PURE is served by a different kind of connection than the
+        // Atmosphere based transports, so an existing connection is replaced
+        // when push is already enabled, e.g. by the deployment configuration
+        // before the @Push annotation of the app shell sets the transport
+        boolean isSsePure = transport == Transport.SSE_PURE;
+        if (wasSsePure != isSsePure && getPushMode().isEnabled()) {
+            ui.getInternals()
+                    .setPushConnection(createPushConnection(transport));
+        }
+    }
+
+    /**
+     * Gets the transport to use for enabled push. The Atmosphere based
+     * transports cannot work when Atmosphere is not on the classpath, so
+     * {@link Transport#SSE_PURE} is used instead of them, if its feature flag
+     * is enabled.
+     */
+    private static Transport resolveTransport(Transport transport,
+            VaadinSession session) {
+        if (transport != Transport.SSE_PURE
+                && !session.getService().ensurePushAvailable()) {
+            if (!isEnabled(CoreFeatureFlagProvider.SSE_PURE_PUSH_TRANSPORT,
+                    session.getService())) {
+                throw new IllegalStateException(
+                        "Push is not available. See previous log messages for more information.");
+            }
+            return Transport.SSE_PURE;
+        }
+        return transport;
+    }
+
+    private PushConnection createPushConnection(Transport transport) {
+        if (transport == Transport.SSE_PURE) {
+            // SSE_PURE does not use Atmosphere
+            return new SsePushConnection(ui);
+        }
+        return pushConnectionFactory.apply(ui);
     }
 
     @Override
@@ -282,17 +327,25 @@ class PushConfigurationImpl implements PushConfiguration {
      *            the transport to check
      */
     private void checkTransportEnabled(Transport transport) {
-        if (transport != Transport.SERVER_SENT_EVENTS) {
+        Feature feature;
+        if (transport == Transport.SERVER_SENT_EVENTS) {
+            feature = CoreFeatureFlagProvider.SSE_PUSH_TRANSPORT;
+        } else if (transport == Transport.SSE_PURE) {
+            feature = CoreFeatureFlagProvider.SSE_PURE_PUSH_TRANSPORT;
+        } else {
             return;
         }
         VaadinSession session = ui.getSession();
         VaadinService service = session == null ? VaadinService.getCurrent()
                 : session.getService();
-        if (service == null || !FeatureFlags.get(service.getContext())
-                .isEnabled(CoreFeatureFlagProvider.SSE_PUSH_TRANSPORT)) {
-            throw new DisabledFeatureException(
-                    CoreFeatureFlagProvider.SSE_PUSH_TRANSPORT);
+        if (!isEnabled(feature, service)) {
+            throw new DisabledFeatureException(feature);
         }
+    }
+
+    private static boolean isEnabled(Feature feature, VaadinService service) {
+        return service != null
+                && FeatureFlags.get(service.getContext()).isEnabled(feature);
     }
 
     @Override

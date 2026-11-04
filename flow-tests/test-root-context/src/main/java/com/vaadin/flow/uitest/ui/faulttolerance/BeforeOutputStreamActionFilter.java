@@ -29,7 +29,7 @@ import java.io.IOException;
 
 import com.vaadin.flow.server.VaadinServletResponse;
 
-@WebFilter(urlPatterns = "/*")
+@WebFilter(urlPatterns = "/*", asyncSupported = true)
 public class BeforeOutputStreamActionFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response,

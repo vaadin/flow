@@ -28,6 +28,13 @@
       <artifactId>flow-server</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!-- The dev tools connect to the server through Atmosphere, also when
+         the application leaves it out and push uses SSE_PURE -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-push</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>flow-build-tools</artifactId>

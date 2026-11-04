@@ -187,6 +187,22 @@ describe('DefaultConnectionStateHandler', () => {
     expect(registry.log.heartbeatSends).to.equal(1);
   });
 
+  it('reconnects a pending push reconnect for the sse-pure transport', () => {
+    // The sse-pure transport is receive-only, but its event stream reports
+    // when it is open again, like a bidirectional transport does.
+    const registry = makeRegistry(3);
+    const handler = new DefaultConnectionStateHandler(registry.registry);
+    const ssePure: Partial<PushConnection> = {
+      isBidirectional: () => false,
+      getTransportType: () => 'sse-pure'
+    };
+
+    handler.pushReconnectPending(ssePure as PushConnection);
+
+    expect(getState()).to.equal(RECONNECTING);
+    expect(registry.log.heartbeatSends).to.equal(1);
+  });
+
   it('checks the connection with a heartbeat when reopening a receive-only websocket fails', () => {
     // Beyond the Java suite: No Java case covers pushReconnectPending.
     const registry = makeRegistry(3);

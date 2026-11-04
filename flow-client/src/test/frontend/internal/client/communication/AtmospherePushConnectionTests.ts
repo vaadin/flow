@@ -6,6 +6,7 @@ import {
   FragmentedMessage
 } from '../../../../../main/frontend/internal/client/communication/AtmospherePushConnection';
 import { URIResolver } from '../../../../../main/frontend/internal/client/URIResolver';
+import { FakeEventSource } from './fakeEventSource';
 
 const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -13,7 +14,7 @@ interface AtmosphereConfigCapture {
   config: Record<string, (...args: unknown[]) => unknown> | null;
 }
 
-function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
+function setupPush(serviceUrl = '/app/', contextRootUrl = '/', parameters = new Map<string, string>()) {
   const log = {
     pushOk: 0,
     pushError: 0,
@@ -22,7 +23,8 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
     pushNotConnected: 0,
     handled: [] as unknown[],
     pushed: [] as string[],
-    disconnected: [] as string[]
+    disconnected: [] as string[],
+    loadedScripts: [] as string[]
   };
   const capture: AtmosphereConfigCapture = { config: null };
   const fakeSocket = {
@@ -43,7 +45,7 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
   const registry = testRegistry({
     UILifecycle: { addHandler: () => ({ remove: () => {} }) },
     PushConfiguration: {
-      getParameters: () => new Map<string, string>(),
+      getParameters: () => parameters,
       getPushServletMapping: () => null,
       isAlwaysXhrToServer: () => false
     },
@@ -73,7 +75,7 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
       getLastSeenServerSyncId: () => 5,
       handleMessage: (json: unknown) => log.handled.push(json)
     },
-    ResourceLoader: { loadScript: () => {} }
+    ResourceLoader: { loadScript: (url: string) => log.loadedScripts.push(url) }
   });
   return { registry, log, capture, fakeSocket };
 }
@@ -275,6 +277,83 @@ describe('AtmospherePushConnection', () => {
       expect(log.disconnected).to.have.length(1);
       expect(log.disconnected[0].startsWith('bar/')).to.be.true;
       expect(log.disconnected[0]).to.equal(pushUri);
+    });
+  });
+  describe('sse-pure transport', () => {
+    const ssePure = (): Map<string, string> => new Map([['transport', 'sse-pure']]);
+    let originalEventSource: typeof EventSource;
+
+    beforeEach(() => {
+      originalEventSource = window.EventSource;
+      (window as unknown as { EventSource: unknown }).EventSource = FakeEventSource;
+      FakeEventSource.instances = [];
+    });
+
+    afterEach(() => {
+      window.EventSource = originalEventSource;
+    });
+
+    it('connects over an event stream without loading Atmosphere', async () => {
+      const { registry, log } = setupPush('/app/', '/', ssePure());
+      win.vaadinPush = undefined;
+
+      new AtmospherePushConnection(registry);
+      await tick();
+
+      expect(log.loadedScripts).to.be.empty;
+      expect(win.vaadinPush).to.be.undefined;
+      expect(FakeEventSource.instances).to.have.length(1);
+      expect(FakeEventSource.latest().url).to.equal('/app/VAADIN/push?v-r=sse&v-uiId=1');
+    });
+
+    it('does not use a loaded Atmosphere library', async () => {
+      const { registry, capture } = setupPush('/app/', '/', ssePure());
+
+      new AtmospherePushConnection(registry);
+      await tick();
+
+      expect(capture.config).to.equal(null);
+      expect(FakeEventSource.instances).to.have.length(1);
+    });
+
+    it('is connected but not bidirectional once the stream opens', async () => {
+      const { registry, log } = setupPush('/app/', '/', ssePure());
+      const connection = new AtmospherePushConnection(registry);
+      await tick();
+
+      FakeEventSource.latest().open();
+
+      expect(log.pushOk).to.equal(1);
+      expect(connection.getTransportType()).to.equal('sse-pure');
+      // Messages to the server are sent as regular requests
+      expect(connection.isBidirectional()).to.be.false;
+    });
+
+    it('handles messages from the event stream', async () => {
+      const { registry, log } = setupPush('/app/', '/', ssePure());
+      new AtmospherePushConnection(registry);
+      await tick();
+      FakeEventSource.latest().open();
+
+      FakeEventSource.latest().emit('message', '{"syncId":3}');
+
+      expect(log.handled).to.deep.equal([{ syncId: 3 }]);
+    });
+
+    it('closes the event stream on disconnect', async () => {
+      const { registry } = setupPush('/app/', '/', ssePure());
+      const connection = new AtmospherePushConnection(registry);
+      await tick();
+      FakeEventSource.latest().open();
+
+      let disconnected = false;
+      connection.disconnect(() => {
+        disconnected = true;
+      });
+
+      expect(disconnected).to.be.true;
+      expect(FakeEventSource.latest().closed).to.be.true;
+      expect(connection.isActive()).to.be.false;
     });
   });
 });

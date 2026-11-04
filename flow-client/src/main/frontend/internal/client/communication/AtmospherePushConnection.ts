@@ -32,6 +32,7 @@ import type { Command } from '../Command';
 import type { PushConnection } from './PushConnection';
 import type { PushConnectionFactory } from './PushConnectionFactory';
 import { Console } from '../Console';
+import { createSsePushAtmosphere, SSE_PURE_TRANSPORT } from './SsePush';
 
 // com.vaadin.flow.shared.communication.PushConstants
 const WEBSOCKET_FRAGMENT_SIZE = 16384 / 4 - 1; // 4095
@@ -158,10 +159,8 @@ function resetWebsocketErrorRetries(socket: unknown): void {
 }
 
 /** Unsubscribes the Atmosphere connection for the given url. */
-function doDisconnect(url: string): void {
-  // Java dereferences $wnd.vaadinPush.atmosphere unconditionally here: the
-  // connection only reaches a disconnect after the library has loaded.
-  atmosphere()!.unsubscribeUrl(url);
+function doDisconnect(atmosphere: Atmosphere, url: string): void {
+  atmosphere.unsubscribeUrl(url);
 }
 
 /**
@@ -170,7 +169,12 @@ function doDisconnect(url: string): void {
  * read on every request, so it is wrapped in a function rather than assigned
  * once.
  */
-function doConnect(uri: string, config: Record<string, unknown>, callbacks: AtmosphereCallbacks): unknown {
+function doConnect(
+  atmosphere: Atmosphere,
+  uri: string,
+  config: Record<string, unknown>,
+  callbacks: AtmosphereCallbacks
+): unknown {
   config.url = uri;
   config.onOpen = callbacks.onOpen;
   config.onReopen = callbacks.onReopen;
@@ -183,7 +187,7 @@ function doConnect(uri: string, config: Record<string, unknown>, callbacks: Atmo
   config.headers = {
     'X-Vaadin-LastSeenServerSyncId': (): unknown => callbacks.getLastSeenServerSyncId()
   };
-  return atmosphere()!.subscribe(config);
+  return atmosphere.subscribe(config);
 }
 
 // Connection states; mirrors AtmospherePushConnection.State.
@@ -229,6 +233,8 @@ export class AtmospherePushConnection implements PushConnection {
   #url = '';
 
   #pendingDisconnectCommand: Command | null = null;
+
+  #ssePushAtmosphere: Atmosphere | null = null;
 
   #connectedAt: number | null = null;
 
@@ -279,7 +285,7 @@ export class AtmospherePushConnection implements PushConnection {
 
     Console.debug('Establishing push connection');
     this.#pushUri = pushUrl;
-    this.#socket = doConnect(pushUrl, this.#config, {
+    this.#socket = doConnect(this.#getAtmosphere(), pushUrl, this.#config, {
       onOpen: (response) => this.onOpen(response as AtmosphereResponse),
       onReopen: (response) => this.onReopen(response as AtmosphereResponse),
       onMessage: (response) => this.onMessage(response as AtmosphereResponse),
@@ -416,7 +422,7 @@ export class AtmospherePushConnection implements PushConnection {
       case State.CONNECTED:
         // Normal disconnect
         Console.debug('Closing push connection');
-        doDisconnect(this.#pushUri!);
+        doDisconnect(this.#getAtmosphere(), this.#pushUri!);
         this.#state = State.DISCONNECTED;
         command();
         break;
@@ -529,8 +535,27 @@ export class AtmospherePushConnection implements PushConnection {
     };
   }
 
+  /**
+   * Gets the Atmosphere implementation the connection uses: the loaded
+   * Atmosphere library, or the built-in SSE_PURE transport that works without
+   * it.
+   */
+  #getAtmosphere(): Atmosphere {
+    if (this.#isSsePure()) {
+      this.#ssePushAtmosphere ??= createSsePushAtmosphere();
+      return this.#ssePushAtmosphere;
+    }
+    // The connection only connects or disconnects after the library has
+    // loaded.
+    return atmosphere()!;
+  }
+
+  #isSsePure(): boolean {
+    return this.#config[TRANSPORT_KEY] === SSE_PURE_TRANSPORT;
+  }
+
   #runWhenAtmosphereLoaded(command: Command): void {
-    if (isAtmosphereLoaded()) {
+    if (this.#isSsePure() || isAtmosphereLoaded()) {
       command();
       return;
     }

@@ -24,6 +24,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import tools.jackson.databind.JsonNode;
 
+import com.vaadin.experimental.CoreFeatureFlagProvider;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UI.BrowserNavigateEvent;
@@ -71,6 +73,13 @@ class JavaScriptBootstrapHandlerTest {
     static public class WebSocketPushAppShell implements AppShellConfigurator {
     }
 
+    @Push(transport = Transport.SSE_PURE)
+    public static class SsePurePushAppShell implements AppShellConfigurator {
+    }
+
+    private static final String SSE_PURE_FLAG = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
+            + CoreFeatureFlagProvider.SSE_PURE_PUSH_TRANSPORT.getId();
+
     @BeforeEach
     void setup() throws Exception {
         mocks = new MockServletServiceSessionSetup();
@@ -81,6 +90,7 @@ class JavaScriptBootstrapHandlerTest {
 
     @AfterEach
     void tearDown() {
+        System.clearProperty(SSE_PURE_FLAG);
         mocks.cleanup();
     }
 
@@ -236,6 +246,72 @@ class JavaScriptBootstrapHandlerTest {
     }
 
     @Test
+    void should_notRespondPushScript_when_ssePureTransport() throws Exception {
+        enableSsePure();
+        VaadinServletContext context = new VaadinServletContext(
+                mocks.getServletContext());
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(SsePurePushAppShell.class);
+        mocks.setAppShellRegistry(registry);
+
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location");
+        jsInitHandler.handleRequest(session, request, response);
+
+        assertEquals(200, response.getErrorCode());
+        JsonNode json = JacksonUtils.readTree(response.getPayload());
+
+        // The client engine implements SSE_PURE itself, so the Atmosphere
+        // based push script is not loaded
+        assertFalse(json.has("pushScript"));
+        assertFalse(json.has("useSsePush"));
+        assertEquals(PushMode.AUTOMATIC,
+                UI.getCurrent().getPushConfiguration().getPushMode());
+    }
+
+    @Test
+    void should_useSsePure_when_pushAnnotatedInAppShellWithoutAtmosphere()
+            throws Exception {
+        enableSsePure();
+        mocks.getService().setAtmosphereAvailable(false);
+        VaadinServletContext context = new VaadinServletContext(
+                mocks.getServletContext());
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(PushAppShell.class);
+        mocks.setAppShellRegistry(registry);
+
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location");
+        jsInitHandler.handleRequest(session, request, response);
+
+        assertEquals(200, response.getErrorCode());
+        JsonNode json = JacksonUtils.readTree(response.getPayload());
+        assertFalse(json.has("pushScript"));
+        PushConfiguration push = UI.getCurrent().getPushConfiguration();
+        assertEquals(PushMode.AUTOMATIC, push.getPushMode());
+        assertEquals(Transport.SSE_PURE, push.getTransport());
+    }
+
+    @Test
+    void should_useSsePure_when_pushEnabledInDeploymentConfigurationWithoutAtmosphere()
+            throws Exception {
+        enableSsePure();
+        mocks.getService().setAtmosphereAvailable(false);
+        mocks.getDeploymentConfiguration().setPushMode(PushMode.AUTOMATIC);
+
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location");
+        jsInitHandler.handleRequest(session, request, response);
+
+        assertEquals(200, response.getErrorCode());
+        JsonNode json = JacksonUtils.readTree(response.getPayload());
+        assertFalse(json.has("pushScript"));
+        PushConfiguration push = UI.getCurrent().getPushConfiguration();
+        assertEquals(PushMode.AUTOMATIC, push.getPushMode());
+        assertEquals(Transport.SSE_PURE, push.getTransport());
+    }
+
+    @Test
     void uiInitListener_shouldOverridePushConfigFromAppShellAnnotation()
             throws Exception {
         VaadinServletContext context = new VaadinServletContext(
@@ -334,4 +410,9 @@ class JavaScriptBootstrapHandlerTest {
         });
     }
 
+    private void enableSsePure() {
+        // The mocked context keeps no attributes, so the feature flags are
+        // read again, from the system properties, whenever they are needed
+        System.setProperty(SSE_PURE_FLAG, "true");
+    }
 }

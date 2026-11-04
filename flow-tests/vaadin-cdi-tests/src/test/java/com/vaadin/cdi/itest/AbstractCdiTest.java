@@ -249,7 +249,10 @@ abstract public class AbstractCdiTest extends ChromeBrowserTest {
     }
 
     private String slurp(String uri) throws IOException {
-        URL url = new URL(getRootURL() + uri);
+        // Straight to the server, also when the browser goes through a reverse
+        // proxy: the counters belong to the tests, and the certificate of the
+        // proxy is not trusted here
+        URL url = new URL(deploymentUrl.toExternalForm() + uri);
         InputStream is = url.openConnection().getInputStream();
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         String line = reader.readLine();

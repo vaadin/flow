@@ -45,10 +45,15 @@ public class CoreFeatureFlagProvider implements FeatureFlagProvider {
             "Server-sent events as a push transport", "ssePushTransport",
             "https://github.com/vaadin/flow/issues/23048", true, null);
 
+    public static final Feature SSE_PURE_PUSH_TRANSPORT = new Feature(
+            "Server-sent events as a push transport without Atmosphere",
+            "ssePurePushTransport", "https://github.com/vaadin/flow/pull/26785",
+            true, null);
+
     @Override
     public List<Feature> getFeatures() {
         return List.of(COLLABORATION_ENGINE_BACKEND,
                 ACCESSIBLE_DISABLED_BUTTONS, COMPONENT_STYLE_INJECTION,
-                TAILWIND_CSS, SSE_PUSH_TRANSPORT);
+                TAILWIND_CSS, SSE_PUSH_TRANSPORT, SSE_PURE_PUSH_TRANSPORT);
     }
 }
