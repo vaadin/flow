@@ -208,7 +208,9 @@ async function main() {
   for (const note of notes) {
     console.error(`Note: ${note}`);
   }
-  if (outputs.category) {
+  if (outputs.category && process.env.PR_RISK_TRIAL === 'true') {
+    console.log(`Category: ${outputs.category} (on trial, the workflow sets no label)`);
+  } else if (outputs.category) {
     console.log(`Label: ${LABELS[outputs.category].name}`);
   }
 }
