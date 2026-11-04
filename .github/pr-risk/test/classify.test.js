@@ -460,6 +460,29 @@ describe('evaluatePolicy for vaadin/flow, patch updates by Dependabot', () => {
   });
 });
 
+describe('evaluatePolicy for vaadin/flow, misfires of the dry run', () => {
+  const flow = (files) => policy(files, { repository: 'vaadin/flow' });
+
+  test('skips the security rules for Javadoc changes', () => {
+    const since = '@@ -1,2 +1,3 @@\n      *\n+     * @since 25.4\n      */';
+    const auth = 'flow-server/src/main/java/com/vaadin/flow/server/auth/NavigationContext.java';
+    const rpc = 'flow-server/src/main/java/com/vaadin/flow/server/communication/ServerRpcHandler.java';
+    const security = 'vaadin-spring/src/main/java/com/vaadin/flow/spring/security/AuthenticationContext.java';
+    assert.deepEqual(flow([file(auth, since), file(rpc, since), file(security, since)]), []);
+    assert.deepEqual(flow([file(security, '@@ -1 +1 @@\n-a\n+b')]), [
+      'red: access control, authentication and CSRF protection',
+    ]);
+  });
+
+  test('skips the dependency rule for integration test modules', () => {
+    const change = '@@ -1 +1 @@\n-a\n+b';
+    assert.deepEqual(flow([file('flow-tests/pom.xml', change), file('flow-tests/test-csp-strict/pom.xml', change)]), []);
+    assert.deepEqual(flow([file('flow-tests/pom.xml', change), file('flow-server/pom.xml', change)]), [
+      'amber: dependencies',
+    ]);
+  });
+});
+
 describe('linkedIssueRefs', () => {
   const repo = { owner: 'vaadin', repo: 'flow' };
 
@@ -625,7 +648,19 @@ describe('classify', () => {
 
   test('keeps a suggestion above the findings', () => {
     const policyFindings = [{ category: 'amber', reason: 'dependencies', files: ['package.json'] }];
-    assert.equal(classify({ policyFindings, omitted: [], assessment: assessment('red') }).category, 'red');
+    const red = assessment('red', { impact: 'high' });
+    assert.equal(classify({ policyFindings, omitted: [], assessment: red }).category, 'red');
+  });
+
+  test('counts a red suggestion without a high dimension as amber', () => {
+    const unsure = assessment('red', { impact: 'medium', blast_radius: 'medium', uncertainty: 'medium' });
+    assert.deepEqual(classify({ policyFindings: [], omitted: [], assessment: unsure }), {
+      category: 'amber',
+      findings: [],
+    });
+    // The rules can still set red
+    const policyFindings = [{ category: 'red', reason: 'CI', files: ['.github/x.yml'] }];
+    assert.equal(classify({ policyFindings, omitted: [], assessment: unsure }).category, 'red');
   });
 
   test('sets amber without an assessment', () => {
@@ -715,6 +750,14 @@ describe('renderComment', () => {
     assert.match(body, /\| Blast radius \| 🟢 low \| rated low \|/u);
     assert.match(body, /- 🔴 \*\*red\*\*: CI\n {2}- `\.github\/x\.yml`/u);
     assert.match(body, /Classified at 0123456789 /u);
+  });
+
+  test('says when a red suggestion counts as amber', () => {
+    const unsure = assessment('red', { impact: 'medium' });
+    const body = renderComment({ ...base, result: { category: 'amber', findings: [] }, assessment: unsure });
+    assert.match(body, /suggested \*\*red\*\*\. It rated no dimension high, so it counts as \*\*amber\*\*\. Changes/u);
+    const raised = renderComment({ ...base, result: { category: 'red', findings: [] }, assessment: unsure });
+    assert.match(raised, /counts as \*\*amber\*\*\. The rules below raised it to \*\*red\*\*\./u);
   });
 
   test('shows the probabilities when the agent gives no reasons', () => {
