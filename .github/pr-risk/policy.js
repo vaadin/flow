@@ -15,7 +15,8 @@
 
 /**
  * Path rules match when one of their globs matches the path of a changed file,
- * or the previous path of a renamed file. Wildcards also match names that
+ * or the previous path of a renamed file, unless `exceptPaths` matches all of
+ * its paths. Wildcards also match names that
  * start with a dot. A rule with `codeOnly` skips files whose changes are only
  * comments and blank lines, so that a JSDoc fix does not need a reviewer.
  *
@@ -57,6 +58,7 @@ const GENERIC = {
   contentPaths: ['**'],
   testPaths: ['**/test/**', '**/tests/**', '**/__tests__/**', '**/*.{test,spec}.*'],
   screenshotPaths: [],
+  issueLabelRules: [],
 };
 
 /**
@@ -145,6 +147,13 @@ const REPOSITORIES = {
         category: 'red',
         reason: 'CI, release and repository automation, or config that runs code',
         paths: ['scripts/**', 'build-tools/**', 'release-check/**', 'flow-bom/**', '.mvn/**'],
+        // Documentation that no workflow reads
+        exceptPaths: [
+          '.github/workflows/README.md',
+          '.github/RELEASE_DIGEST.md',
+          '.github/ISSUE_TEMPLATE.md',
+          '.github/ISSUE_TEMPLATE/**',
+        ],
       },
       {
         category: 'red',
@@ -233,6 +242,13 @@ const REPOSITORIES = {
       'flow-html-components-testbench/**',
     ],
     screenshotPaths: [],
+    issueLabelRules: [
+      {
+        label: 'Impact: High',
+        category: 'amber',
+        reason: 'a linked issue is labelled `Impact: High`: the problem reaches many applications',
+      },
+    ],
   },
 };
 
@@ -250,16 +266,21 @@ export function policyFor(repository) {
     const generic = pathRules.find(({ category, reason }) => category === rule.category && reason === rule.reason);
     if (generic) {
       generic.paths.push(...rule.paths);
+      generic.exceptPaths = [...(generic.exceptPaths ?? []), ...(rule.exceptPaths ?? [])];
     } else {
       pathRules.push(rule);
     }
   }
-  return { ...own, pathRules };
+  return { ...own, pathRules, issueLabelRules: own.issueLabelRules ?? [] };
 }
 
 /**
  * Rules on the lines that a pull request adds to shipped code. Comment lines
- * count too, as code can follow a comment on the same line.
+ * count too, as code can follow a comment on the same line, apart from Java,
+ * where a comment-only line holds no code. Lines that match `except` are
+ * skipped. With `javaStringsOnly`, Java lines are only checked in their string
+ * literals: Java has no such API of its own, so it only matters in JavaScript
+ * that Java code sends to the browser, such as `executeJs("fetch(...)")`.
  */
 export const CONTENT_RULES = [
   {
@@ -277,6 +298,8 @@ export const CONTENT_RULES = [
       ].join('|'),
       'u',
     ),
+    // Reading or removing the property of an element in Java, such as `getProperty("innerHTML")`
+    except: /\b(?:get|has|remove)Property\s*\(\s*"(?:inner|outer)HTML"\s*\)/u,
   },
   {
     category: 'red',
@@ -291,11 +314,13 @@ export const CONTENT_RULES = [
       ].join('|'),
       'u',
     ),
+    javaStringsOnly: true,
   },
   {
     category: 'red',
     reason: 'adds browser storage or cookies',
     pattern: /\b(?:localStorage|sessionStorage|indexedDB|cookieStore)\b|document\.cookie/u,
+    javaStringsOnly: true,
   },
 ];
 
