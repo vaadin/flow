@@ -485,6 +485,25 @@ describe('maxCategory', () => {
 });
 
 describe('renderComment', () => {
+  test('names the categories low, medium and high risk on trial', () => {
+    const findings = [{ category: 'red', reason: 'CI', files: ['.github/x.yml'] }];
+    const assessed = { ...assessment('amber'), probabilities: { green: 0.1, amber: 0.7, red: 0.2 } };
+    const body = renderComment({
+      marker: '<!-- m -->',
+      result: { category: 'red', findings },
+      assessment: assessed,
+      headSha: 'abcdef0123456789',
+      runUrl: 'https://example.com/run',
+      trial: true,
+    });
+    assert.match(body, /### 🧪 Risk evaluation \(trial\): 🔴 high risk/u);
+    assert.match(body, /If it were live: Needs expert review\./u);
+    assert.match(body, /suggested \*\*medium\*\* \(low 10%, medium 70%, high 20%\)\. The rules below raised it to \*\*high\*\*\./u);
+    assert.match(body, /\*\*Minimum risk rules\*\*/u);
+    assert.match(body, /- 🔴 \*\*high\*\*: CI/u);
+    assert.doesNotMatch(body, /\b(?:green|amber|red)\b/u);
+  });
+
   const base = { marker: '<!-- m -->', headSha: '0123456789abcdef', runUrl: 'https://example.com/run' };
 
   test('explains the category, the ratings and the findings', () => {
