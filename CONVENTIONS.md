@@ -281,6 +281,70 @@ Follow the existing implementations when you add one to an extension point,
 including one that is in review at the same time, instead of introducing a
 second shape for the same thing.
 
+## Dev Loop
+
+These cover `flow-devloop-daemon`, the in-app connector in `vaadin-dev-server`
+and the `vaadin-dev` CLI under
+`flow-plugins/flow-plugin-base/src/main/resources/vaadin-dev-cli/`. See
+`guidelines/dev-loop.md` for the reasoning, and
+`flow-devloop-daemon/README.md` for how each part is implemented.
+
+Keep the daemon on the JDK alone and never load an application class in the
+daemon JVM. Read class files, compile sources and redefine through the in-app
+connector instead, so the daemon starts in milliseconds and the application's
+classpath cannot leak into it. See `guidelines/dev-loop.md`.
+
+Keep state that has to outlive `mvn clean` — the handshake and its lock — in
+`<app>/.vaadin/`, not under `target/`, and list every per-run file there in the
+`.gitignore` that `install-dev-cli` installs, since the handshake carries the
+token that authorizes commands.
+
+Start the daemon in a session of its own (`setsid`), not with only SIGHUP
+ignored, so that a runner killing the process group of the command that spawned
+it does not take the daemon and the application with it. Report a handshake left
+behind by a dead daemon instead of reaping it silently. See
+`guidelines/dev-loop.md`.
+
+Answer every daemon verb with zero or more `> ` progress lines and exactly one
+`EXIT <code>`, and derive the code from `TransactionEngine.Outcome`, never from
+parsed text. The exit codes are the contract agents act on — `0`, `1` and `4`
+for outcomes, `64`, `70` and `77` from the CLI — so do not change the meaning
+of one.
+
+Keep at most one transaction in flight. A new `apply` supersedes the running one
+rather than queueing behind it, and the superseded caller still gets a terminal
+answer.
+
+Read a setting that steers the daemon or the application from the daemon's own
+system properties or environment, which are fixed when the daemon is spawned,
+and say wherever the setting is documented that changing it takes a `shutdown`
+first. A value that has to change between launches of a running daemon is a
+command option, like `start --jvm-args`. See `guidelines/dev-loop.md`.
+
+Make the loop the only thing that restarts, redeploys or reloads the
+application. When adding or changing a runtime, switch off its own watcher,
+scanner or auto-redeploy for the loop's run, and never run a plugin's `dev`
+goal. See `guidelines/dev-loop.md`.
+
+Do not work out from the poms what Maven decides — active profiles, what a
+module inherits from a parent outside the checkout, a plugin's effective
+configuration. Read it from what the build recorded, such as the
+`model.properties` that `DevLoopBuildExtension` writes.
+
+Report a change as live only when it is. When the running JVM cannot take a
+change, escalate to a restart or fail the apply with the phase and the reason,
+and when the loop cannot tell, restart rather than claim success. See
+`guidelines/dev-loop.md`.
+
+Change user-facing CLI behavior in the bash and PowerShell launchers and in the
+`vaadin-devloop` skill in the same pull request, and keep the usage text of the
+two launchers the same word for word.
+
+Verify a change to a forked server runtime (WildFly, TomEE, Payara, Liberty,
+Cargo) by hand against a multi-module reactor, since no fixture covers them and
+a single module hides the reactor-wide failures. The procedure is in the Tests
+section of `flow-devloop-daemon/README.md`.
+
 ## Javadoc
 
 Do not add `@since` tags. What to write in Javadoc, and how to document a

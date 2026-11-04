@@ -11,27 +11,21 @@ in a future release.
 
 The user-facing documentation is the `vaadin-devloop` skill installed by
 `mvn vaadin:install-dev-cli` (its resources live in
-`flow-plugins/flow-plugin-base/src/main/resources/vaadin-dev-cli/`). This file is
-for someone who has to change the code here.
+`flow-plugins/flow-plugin-base/src/main/resources/vaadin-dev-cli/`). The
+decisions every change here has to keep — zero dependencies, the handshake and
+its lock, the daemon's own session, the command contract and exit codes, when
+settings are read — are rules in the Dev Loop section of
+[`CONVENTIONS.md`](../CONVENTIONS.md), explained in
+[`guidelines/dev-loop.md`](../guidelines/dev-loop.md). This file is for someone
+who has to change the code here: how each part is implemented.
 
-## The one rule
+## The jar
 
-**Zero dependencies.** Not SLF4J, not Jackson, nothing. That is why this is its
-own module rather than a package inside `vaadin-dev-server`: a module boundary
-can be enforced, and a `maven-enforcer-plugin` `RestrictImports` execution in
-`pom.xml` does enforce it.
-
-Two consequences follow, and both are deliberate:
-
-- The daemon starts in tens of milliseconds, which is what makes
-  `vaadin-dev status` cost milliseconds rather than a JVM boot.
-- It can never drag the application's classpath into the daemon JVM. The daemon
-  reads the app's class files (`MainClass`), compiles its sources (`Compile`) and
-  redefines its classes through the in-app connector — but never loads one.
-
-So `Json` hand-rolls 40 lines of JSON escaping, `Reactor` reads poms with the
-JDK's own XML parser, and `MainClass` walks a class file's constant pool instead
-of calling `Class.forName`. None of those is an oversight.
+The daemon depends on the JDK alone, which a `maven-enforcer-plugin`
+`RestrictImports` execution in `pom.xml` enforces. That is why `Json`
+hand-rolls its JSON escaping, `Reactor` reads poms with the JDK's own XML
+parser, and `MainClass` walks a class file's constant pool instead of calling
+`Class.forName`.
 
 The jar is also the javaagent: the manifest carries `Premain-Class` /
 `Agent-Class` for `com.vaadin.flow.devloop.agent.DevLoopAgent` alongside its own
@@ -51,40 +45,17 @@ nothing else.
 ### CLI ↔ daemon
 
 `<app>/.vaadin/daemon.properties` (`Handshake`) records the daemon's pid, process
-start time, port and auth token. It is **outside `target/`** on purpose: `mvn
-clean` must not orphan a running daemon and leave the next command spawning a
-second one to fight for port 8080. The recorded start time is what stops a
-recycled pid from passing for a live daemon.
+start time, port and auth token, and `.vaadin/daemon.lock` beside it is held as
+an OS file lock for as long as the daemon runs. `install-dev-cli` puts the
+`vaadin-dev` scripts in that same directory, together with a `.vaadin/.gitignore`
+naming the per-run files. The CLI spawns the daemon with `setsid`, or perl's
+`POSIX::setsid` where no `setsid` binary ships. Why the handshake is outside
+`target/`, what the lock prevents and why the daemon needs a session of its own
+is in [`guidelines/dev-loop.md`](../guidelines/dev-loop.md).
 
-Beside it, `.vaadin/daemon.lock` is held as an OS file lock for as long as the
-daemon runs. Reading the record, binding a port and writing the record back is
-three steps, and two simultaneous first invocations would otherwise each get
-through them and each start an application on the same port. The lock makes it
-one step, and the kernel releases it if the daemon dies, so there is nothing to
-reap.
-
-`install-dev-cli` puts the `vaadin-dev` scripts in that same directory, so
-`.vaadin/` holds both committed tooling and per-run state. The token in the
-handshake authorizes commands to the daemon, so the goal also installs
-`.vaadin/.gitignore` naming `daemon.properties` — the one file there that must
-not be shared.
-
-The CLI spawns the daemon into a **session of its own** — `setsid`, or perl's
-`POSIX::setsid` where no `setsid` binary ships — and not merely with SIGHUP
-ignored. A `nohup`'d child stays in the process group of the shell that spawned
-it, and the runners this CLI is driven from (agent sandboxes, CI steps, `timeout
---kill-after`) end a command by killing that group: the daemon, and the app it
-owns as its child, would die with the very command that started them. The next
-command would then find a handshake naming a dead pid, spawn a second daemon and
-report the app as stopped — the loop failing to hold across two commands, which
-is the one thing the daemon exists to do. A handshake left behind by a dead pid
-is evidence of exactly that, because a daemon that shuts down deletes its own
-record, so the CLI reports it rather than quietly reaping it.
-
-A request is one line, `<token> <verb> <args...>`. The reply is zero or more
-`> text` progress lines followed by exactly one `EXIT <code>`, which becomes the
-CLI's exit status. Progress-then-code is the shape `apply` needs, so every verb
-uses it.
+A request is one line, `<token> <verb> <args...>`, and the reply is progress
+lines followed by one `EXIT <code>` (see
+[the command contract](../guidelines/dev-loop.md#the-command-contract)).
 
 Verbs: `ping`, `status [--json]`, `start`, `stop`, `restart`, `shutdown`,
 `apply [--json] [--no-restart]`, `redefine <a.b.C,...>` (diagnostic — pushes
@@ -167,24 +138,10 @@ there is checksum-verified either way.
 
 ## Outcomes and exit codes
 
-`TransactionEngine.Outcome` is the whole vocabulary, and the exit code is derived
-from it rather than parsed out of text:
-
-| Outcome | Exit | Means |
-|---|---|---|
-| `STABLE` | 0 | the change is live and the app is consistent |
-| `COMPILED` | 0 | compiled, but nothing is running to apply it to |
-| `NO_CHANGES` | 0 | nothing changed on disk since the last apply |
-| `FAILED` | 1 | could not complete; the reason names the phase |
-| `SUPERSEDED` | 4 | cancelled by a newer apply |
-
-The CLI adds `64` (usage), `70` (internal / daemon unreachable) and `77`
-(unauthorized) of its own.
-
-Two rules make the question answerable at all: **at most one transaction in
-flight**, and **supersede rather than queue** — a new `apply` cancels the
-in-flight one and proceeds with the accumulated change-set, because only the
-latest bytes on disk matter. The superseded caller still gets a terminal answer.
+`TransactionEngine.Outcome` is the whole vocabulary, and the exit code is
+derived from it. The table of outcomes and codes, and the rules for
+superseding a transaction, are in
+[the command contract](../guidelines/dev-loop.md#the-command-contract).
 
 ## Knobs
 
@@ -200,10 +157,9 @@ way to hand it one:
 VAADIN_DEV_DAEMON_OPTS="-Dspring.profiles.active=dev" .vaadin/vaadin-dev start
 ```
 
-The `shutdown` is not optional. `VAADIN_DEV_DAEMON_OPTS` is read by the CLI only
-when it *spawns* a daemon; every later command reuses the daemon that is already
-running and ignores the variable, so setting it in front of `restart` changes
-nothing. That applies to every property in this table, not only these.
+The `shutdown` is not optional: every property in this table is read only when
+a daemon is spawned (see
+[Settings are fixed when the daemon is spawned](../guidelines/dev-loop.md#settings-are-fixed-when-the-daemon-is-spawned)).
 
 Three are held back because the loop sets them itself, and a forwarded copy
 would override rather than repeat them (a later `-D` wins):
@@ -213,10 +169,7 @@ restarting the application on their own schedules is what the transaction model
 exists to prevent. `vaadin.dev.jvmArgs` is held back too: the app gets its
 flags, not the property.
 
-Anything set this way lives as long as the daemon and appears in no file, so it
-is for steering one local run. What the project always needs belongs in its own
-properties files, where the rest of the team can see it (see
-`Launch.forwardedToApp`).
+The forwarding is `Launch.forwardedToApp`.
 
 | Property | Default | Effect |
 |---|---|---|
