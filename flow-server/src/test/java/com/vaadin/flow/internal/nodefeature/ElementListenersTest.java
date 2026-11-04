@@ -592,13 +592,28 @@ public class ElementListenersTest
     }
 
     @Test
-    void nullSnippet_throws() {
+    void nullEventData_throws() {
         DomListenerRegistration registration = ns.add("foo", noOp);
 
         assertThrows(NullPointerException.class,
                 () -> registration.addEventData((DomEventData<?>) null));
-        assertThrows(NullPointerException.class,
-                () -> registration.setFilter((DomEventFilter) null));
+    }
+
+    @Test
+    void setNullDeclaredFilter_filterCleared() {
+        AtomicInteger count = new AtomicInteger();
+        DomListenerRegistration registration = ns.add("keydown",
+                e -> count.incrementAndGet());
+        registration.setFilter(JS.isKey("Enter"));
+
+        DomEventFilter noFilter = null;
+        registration.setFilter(noFilter);
+
+        assertTrue(JacksonUtils.getKeys(eventSettings(ns, "keydown")).stream()
+                .noneMatch(key -> key.startsWith("@")));
+        ns.fireEvent(new DomEvent(new Element("element"), "keydown",
+                JacksonUtils.createObjectNode()));
+        assertEquals(1, count.get());
     }
 
     @Test

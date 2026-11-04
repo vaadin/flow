@@ -58,6 +58,12 @@ public interface DomListenerRegistration extends Registration {
      * <li><code>event.button === 0</code> to get true for click events
      * triggered by the primary mouse button.
      * </ul>
+     * <p>
+     * The browser compiles the expression from a string, so it does not work
+     * with a Content Security Policy that does not allow
+     * <code>unsafe-eval</code>. To get event data without that, declare it in a
+     * {@link com.vaadin.flow.js.JsDefinition} interface and use
+     * {@link #addEventData(DomEventData)}.
      *
      * @param eventData
      *            definition for data that should be passed back to the server
@@ -74,6 +80,11 @@ public interface DomListenerRegistration extends Registration {
     /**
      * Adds JavaScript expressions for extracting event data, like calling
      * {@link #addEventData(String)} for each of them.
+     * <p>
+     * Like with {@link #addEventData(String)}, the browser compiles the
+     * expressions from strings. See {@link #addEventData(DomEventData)} for
+     * event data that works with a Content Security Policy that does not allow
+     * <code>unsafe-eval</code>.
      *
      * @param eventData
      *            definitions for data that should be passed back to the server
@@ -139,7 +150,18 @@ public interface DomListenerRegistration extends Registration {
      * An expression might be e.g. <code>event.button === 0</code> to only
      * forward events triggered by the primary mouse button.
      * <p>
-     * Any previous filter for this registration is discarded.
+     * Any previous filter for this registration is discarded, also one set with
+     * {@link #setFilter(DomEventFilter)}.
+     * <p>
+     * The browser compiles the expression from a string, so it does not work
+     * with a Content Security Policy that does not allow
+     * <code>unsafe-eval</code>. To filter events without that, declare the
+     * filter in a {@link com.vaadin.flow.js.JsDefinition} interface and use
+     * {@link #setFilter(DomEventFilter)}.
+     * <p>
+     * Both versions take <code>null</code> to clear the filter. Because of
+     * this, a plain <code>setFilter(null)</code> does not compile. Write
+     * <code>setFilter((String) null)</code> instead.
      *
      * @param filter
      *            the JavaScript filter expression, or <code>null</code> to
@@ -167,11 +189,11 @@ public interface DomListenerRegistration extends Registration {
      * are sent separately from the expression. Because of this, all filters
      * from the same method use one function in the browser.
      * <p>
-     * This replaces any previous filter of this registration. To remove the
-     * filter, pass <code>(String) null</code> to {@link #setFilter(String)}.
+     * Any previous filter for this registration is discarded, also one set with
+     * {@link #setFilter(String)}.
      *
      * @param filter
-     *            the filter, not <code>null</code>
+     *            the filter, or <code>null</code> to clear the filter
      * @return this registration, for chaining
      * @see DomEventFilter
      */
