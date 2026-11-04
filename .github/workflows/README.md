@@ -226,6 +226,34 @@ Configuration:
 The `snapshot build` label has to exist in the repository for it to be
 selectable.
 
+## Formatter suggestions
+
+`formatter.yml` runs `mvn spotless:apply` on every pull request and fails
+when it changes anything. `formatter-suggestions.yml` then reports the
+result on the pull request with the
+[`formatter-suggestions`](https://github.com/vaadin/github-actions/tree/main/formatter-suggestions)
+action of `vaadin/github-actions`: a comment listing the files that are not
+formatted, and a review that suggests the changes on the lines they apply
+to, so the author can accept them with **Commit suggestions** instead of
+running the formatter locally. At most 12 changes are suggested per review;
+the comment counts the rest, along with changes outside the lines of the
+pull request diff, and points at `mvn spotless:apply`. Suggestions a later
+run no longer makes are deleted, unless someone replied to them, and the
+comment is deleted once the format is fixed.
+
+The two are split so that pull requests from forks get the report too. The
+formatter runs code of the pull request — its build files and Maven plugins
+— so it runs without write access and only uploads the diff.
+`formatter-suggestions.yml` is triggered by `workflow_run`, which runs it
+from the default branch with `pull-requests` and `issues` write access. It
+does not check out the pull request: the action reads the diff as text and
+suggests changes only in files the pull request changes. Being a
+`workflow_run` workflow, a change to `formatter-suggestions.yml` takes
+effect only once it is on the default branch. It is triggered by the
+`Formatter` runs of maintenance branches too, which post their own comment;
+those upload a differently named artifact, so the report is skipped for
+them.
+
 ## Memory footprint
 
 `memory-footprint.yml` reports how a pull request changes the memory a UI

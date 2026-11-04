@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -42,6 +43,11 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.js.JsCalledWith;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.tests.util.MockUI;
 
@@ -57,9 +63,21 @@ import static org.mockito.Mockito.verify;
 
 class CspModeTest {
 
+    @JsDefinition
+    interface LoggerJs extends Serializable {
+        @JsExpression("console.log($0, value);")
+        @JsCalledWith("value")
+        JsFunction createLogger(String prefix);
+    }
+
     @Tag("div")
     private static class Clickable extends Component
             implements ClickNotifier<Clickable> {
+    }
+
+    @Route("csp")
+    @Tag("div")
+    private static class RouteView extends Component {
     }
 
     private MockServletServiceSessionSetup setup;
@@ -146,6 +164,10 @@ class CspModeTest {
                             JsonConstants.MAP_STATE_NODE_EVENT_DATA));
             registration.synchronizeProperty("value");
             registration.mapEventTargetElement();
+            // Its JavaScript is in the bundle rather than in a string
+            JsSnippets.of(LoggerJs.class).createLogger("Greeting:");
+            // Loads the chunk of the route with a function from the bundle
+            ui.getInternals().addComponentDependencies(RouteView.class);
         });
     }
 
