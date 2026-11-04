@@ -15,8 +15,10 @@
  */
 package com.vaadin.flow.spring.security;
 
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.io.Serializable;
 import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
@@ -34,6 +36,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AuthorizationManagerWebInvocationPrivilegeEvaluator.HttpServletRequestTransformer;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
+import org.springframework.web.context.ServletContextAware;
 
 import com.vaadin.flow.server.auth.AccessPathChecker;
 
@@ -65,9 +68,12 @@ import com.vaadin.flow.server.auth.AccessPathChecker;
  * authentication is replaced by a default {@code ROLE_ANONYMOUS} one.
  * <p>
  * The filter chain proxy is resolved on the first check and the anonymous
- * authentication of each chain is computed once. The proxy is not serialized
- * with the checker: after deserialization the default anonymous authentication
- * is used.
+ * authentication of each chain is computed once. The chains are matched against
+ * a request bound to the {@link ServletContext} set with
+ * {@link #setServletContext(ServletContext)}, which Spring calls when the
+ * checker is a bean of a web application context. The proxy and the servlet
+ * context are not serialized with the checker: after deserialization the
+ * default anonymous authentication is used.
  *
  * <pre>
  * {@code
@@ -81,7 +87,8 @@ import com.vaadin.flow.server.auth.AccessPathChecker;
  * 
  * @since 24.3
  */
-public class SpringAccessPathChecker implements AccessPathChecker {
+public class SpringAccessPathChecker
+        implements AccessPathChecker, ServletContextAware {
 
     private static final Authentication ANONYMOUS_AUTHENTICATION = new AnonymousAuthenticationToken(
             "anonymous", "anonymousUser",
@@ -110,6 +117,11 @@ public class SpringAccessPathChecker implements AccessPathChecker {
      * computed on first use.
      */
     private transient volatile List<ChainAnonymousAuthentication> chainAnonymousAuthentications;
+    /**
+     * The servlet context of the request built for the path, or {@literal null}
+     * if not set.
+     */
+    private transient ServletContext servletContext;
 
     /**
      * Creates a new instance that uses the given
@@ -224,6 +236,22 @@ public class SpringAccessPathChecker implements AccessPathChecker {
                 "requestTransformer must not be null");
     }
 
+    /**
+     * Sets the servlet context of the request built for the path, as the
+     * privilege evaluator does. Spring calls this method when the checker is a
+     * bean of a web application context. Set it when creating the checker by
+     * hand if a filter chain uses a request matcher that reads the servlet
+     * context, like Spring Boot's {@code EndpointRequest} and
+     * {@code PathRequest} matchers.
+     *
+     * @param servletContext
+     *            the servlet context
+     */
+    @Override
+    public void setServletContext(ServletContext servletContext) {
+        this.servletContext = servletContext;
+    }
+
     @Override
     public boolean hasAccess(String path, Principal principal,
             Predicate<String> roleChecker) {
@@ -255,9 +283,10 @@ public class SpringAccessPathChecker implements AccessPathChecker {
             return fallback;
         }
         // The chains are matched against the same kind of request the
-        // privilege evaluator builds, except for the servlet context
+        // privilege evaluator builds
         HttpServletRequest request = requestTransformer.transform(
-                new FilterInvocation(null, path, null).getHttpRequest());
+                new FilterInvocation(null, path, null, servletContext)
+                        .getHttpRequest());
         return getChainAnonymousAuthentications().stream()
                 .filter(entry -> entry.chain().matches(request)).findFirst()
                 .map(ChainAnonymousAuthentication::authentication)
@@ -298,7 +327,7 @@ public class SpringAccessPathChecker implements AccessPathChecker {
     }
 
     private record ChainAnonymousAuthentication(SecurityFilterChain chain,
-            Authentication authentication) {
+            Authentication authentication) implements Serializable {
     }
 
     private SecurityContextHolderStrategy getSecurityContextHolderStrategy() {

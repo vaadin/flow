@@ -16,16 +16,21 @@
 package com.vaadin.flow.spring.security;
 
 import jakarta.servlet.Filter;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 
 import java.security.Principal;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.security.web.servlet.ApplicationContextRequestMatcher;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -53,6 +58,7 @@ import com.vaadin.flow.spring.AuthenticationUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -70,6 +76,9 @@ class SpringAccessPathCheckerTest {
     @Autowired
     @Qualifier(AbstractSecurityWebApplicationInitializer.DEFAULT_FILTER_NAME)
     private Filter springSecurityFilterChain;
+
+    @Autowired
+    private ServletContext servletContext;
 
     @Test
     @WithAnonymousUser
@@ -256,6 +265,7 @@ class SpringAccessPathCheckerTest {
                     lookups.incrementAndGet();
                     return (FilterChainProxy) springSecurityFilterChain;
                 }, new PathPatternRequestTransformer());
+        checker.setServletContext(servletContext);
 
         assertTrue(checker.hasAccess("guest", null, role -> false));
         assertTrue(checker.hasAccess("api", null, role -> false));
@@ -263,12 +273,53 @@ class SpringAccessPathCheckerTest {
                 "The filter chain proxy should be resolved once");
     }
 
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void checkAccess_nullPrincipalWithFilterChainProxy_servletContextBoundToRequest() {
+        var checker = createCheckerWithFilterChainProxy(
+                new PathPatternRequestTransformer());
+
+        assertTrue(checker.hasAccess("context", null, role -> false),
+                "Access to context path should be allowed when principal is null and the filter chain selected by a matcher reading the servlet context gives CONTEXT to anonymous users");
+
+        var withoutServletContext = new SpringAccessPathChecker(evaluator, null,
+                SecurityContextHolder.getContextHolderStrategy(),
+                () -> (FilterChainProxy) springSecurityFilterChain,
+                new PathPatternRequestTransformer());
+        assertThrows(IllegalArgumentException.class,
+                () -> withoutServletContext.hasAccess("context", null,
+                        role -> false),
+                "A matcher reading the servlet context should fail when the checker has none");
+    }
+
     private SpringAccessPathChecker createCheckerWithFilterChainProxy(
             HttpServletRequestTransformer requestTransformer) {
-        return new SpringAccessPathChecker(evaluator, null,
+        var checker = new SpringAccessPathChecker(evaluator, null,
                 SecurityContextHolder.getContextHolderStrategy(),
                 () -> (FilterChainProxy) springSecurityFilterChain,
                 requestTransformer);
+        checker.setServletContext(servletContext);
+        return checker;
+    }
+
+    /**
+     * Reads the web application context from the servlet context of the
+     * request, like Spring Boot's {@code EndpointRequest} and
+     * {@code PathRequest} matchers.
+     */
+    private static class ContextPathRequestMatcher
+            extends ApplicationContextRequestMatcher<ApplicationContext> {
+
+        ContextPathRequestMatcher() {
+            super(ApplicationContext.class);
+        }
+
+        @Override
+        protected boolean matches(HttpServletRequest request,
+                Supplier<ApplicationContext> context) {
+            return context.get() != null
+                    && request.getServletPath().startsWith("/context");
+        }
     }
 
     @Test
@@ -303,6 +354,20 @@ class SpringAccessPathCheckerTest {
         SpringAccessPathChecker rootPathAccessChecker(
                 WebInvocationPrivilegeEvaluator evaluator) {
             return new SpringAccessPathChecker(evaluator);
+        }
+
+        @Bean
+        @Order(0)
+        public SecurityFilterChain contextFilterChain(HttpSecurity http) {
+            var matcherBuilder = PathPatternRequestMatcher.withDefaults();
+            http.securityMatcher(new ContextPathRequestMatcher())
+                    .anonymous(
+                            anonymous -> anonymous.authorities("ROLE_CONTEXT"))
+                    .authorizeHttpRequests(cfg -> cfg
+                            .requestMatchers(
+                                    matcherBuilder.matcher("/context/**"))
+                            .hasRole("CONTEXT"));
+            return http.build();
         }
 
         @Bean
