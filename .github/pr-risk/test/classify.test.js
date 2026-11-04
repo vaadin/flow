@@ -267,10 +267,7 @@ describe('evaluatePolicy for vaadin/flow', () => {
     ]);
     assert.deepEqual(
       flow([file('vaadin-spring/src/main/java/com/vaadin/flow/spring/security/VaadinSecurityConfigurer.java', change)]),
-      [
-        'red: access control, authentication and CSRF protection',
-        'amber: Spring, CDI and Quarkus integration that every application on that stack runs',
-      ],
+      ['red: access control, authentication and CSRF protection'],
     );
     assert.deepEqual(flow([file(`${SERVER}/server/communication/rpc/MapSyncRpcHandler.java`, change)]), [
       'red: handling of client requests and RPC input',
@@ -474,57 +471,6 @@ describe('evaluatePolicy for vaadin/flow, misfires of the dry run', () => {
     assert.deepEqual(flow([file(auth, since), file(rpc, since), file(security, since)]), []);
     assert.deepEqual(flow([file(security, '@@ -1 +1 @@\n-a\n+b')]), [
       'red: access control, authentication and CSRF protection',
-      'amber: Spring, CDI and Quarkus integration that every application on that stack runs',
-    ]);
-  });
-
-  test('sets amber for a removed workflow, but red for other changes to CI', () => {
-    const removed = file('.github/workflows/claude.yml', '@@ -1 +0,0 @@\n-a', { status: 'removed' });
-    assert.deepEqual(flow([removed]), ['amber: removes CI workflows']);
-    const change = '@@ -1 +1 @@\n-a\n+b';
-    assert.deepEqual(flow([removed, file('.github/workflows/validation.yml', change)]), [
-      'red: CI, release and repository automation, or config that runs code',
-      'amber: removes CI workflows',
-    ]);
-    // Removing a file outside the workflows, such as CODEOWNERS, can weaken the review
-    assert.deepEqual(flow([file('.github/CODEOWNERS', '@@ -1 +0,0 @@\n-a', { status: 'removed' })]), [
-      'red: CI, release and repository automation, or config that runs code',
-    ]);
-    assert.deepEqual(flow([file('scripts/release.sh', '@@ -1 +0,0 @@\n-a', { status: 'removed' })]), [
-      'red: CI, release and repository automation, or config that runs code',
-    ]);
-  });
-
-  test('skips the storage rule for the dev server, but not the network rule', () => {
-    const dev = 'vaadin-dev-server/src/main/frontend/hotswap-scroll.ts';
-    assert.deepEqual(flow([file(dev, added('window.sessionStorage.setItem(KEY, value);'))]), [
-      'amber: build plugins and dev tooling that every application build runs',
-    ]);
-    assert.deepEqual(flow([file(dev, added('await fetch(url);'))]), [
-      'amber: build plugins and dev tooling that every application build runs',
-      NETWORK,
-    ]);
-    assert.deepEqual(flow([file('flow-client/src/main/frontend/Flow.ts', added('localStorage.setItem(KEY, value);'))]), [
-      'amber: core framework code that every application runs',
-      'red: adds browser storage or cookies',
-    ]);
-  });
-
-  test('sets amber for the Spring, CDI and Quarkus integrations and the dev loop daemon', () => {
-    const change = '@@ -1 +1 @@\n-a\n+b';
-    const INTEGRATION = 'amber: Spring, CDI and Quarkus integration that every application on that stack runs';
-    assert.deepEqual(flow([file('vaadin-spring/src/main/java/com/vaadin/flow/spring/SpringServlet.java', change)]), [
-      INTEGRATION,
-    ]);
-    assert.deepEqual(flow([file('vaadin-cdi/src/main/java/com/vaadin/cdi/CdiVaadinServlet.java', change)]), [
-      INTEGRATION,
-    ]);
-    assert.deepEqual(flow([file('vaadin-quarkus/runtime/src/main/java/com/vaadin/quarkus/A.java', change)]), [
-      INTEGRATION,
-    ]);
-    assert.deepEqual(flow([file('vaadin-spring/src/test/java/com/vaadin/flow/spring/A.java', change)]), []);
-    assert.deepEqual(flow([file('flow-devloop-daemon/src/main/java/com/vaadin/flow/devloop/daemon/Launch.java', change)]), [
-      'amber: build plugins and dev tooling that every application build runs',
     ]);
   });
 

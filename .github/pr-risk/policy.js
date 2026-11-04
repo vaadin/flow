@@ -18,9 +18,7 @@
  * or the previous path of a renamed file, unless `exceptPaths` matches all of
  * its paths. Wildcards also match names that
  * start with a dot. A rule with `codeOnly` skips files whose changes are only
- * comments and blank lines, so that a JSDoc fix does not need a reviewer. A
- * rule with `removed` sets its lower category for files that the pull request
- * removes and that match its paths.
+ * comments and blank lines, so that a JSDoc fix does not need a reviewer.
  *
  * Content rules match lines that a pull request adds to shipped code: the
  * files that match `contentPaths` but not `testPaths`.
@@ -30,12 +28,6 @@ const GENERIC = {
     {
       category: 'red',
       reason: 'CI, release and repository automation, or config that runs code',
-      // A removed workflow runs nothing, but CI may rely on it, so it still needs one approval
-      removed: {
-        category: 'amber',
-        reason: 'removes CI workflows',
-        paths: ['.github/workflows/**'],
-      },
       paths: ['.github/**', '.husky/**', '**/.yarnrc*', '**/.npmrc', '**/.gitattributes'],
     },
     {
@@ -246,18 +238,11 @@ const REPOSITORIES = {
       },
       {
         category: 'amber',
-        reason: 'Spring, CDI and Quarkus integration that every application on that stack runs',
-        paths: ['vaadin-spring/src/main/**', 'vaadin-cdi/src/main/**', 'vaadin-quarkus/*/src/main/**'],
-        codeOnly: true,
-      },
-      {
-        category: 'amber',
         reason: 'build plugins and dev tooling that every application build runs',
         paths: [
           'flow-plugins/*/src/main/**',
           'flow-build-tools/src/main/**',
           'vaadin-dev-server/src/main/**',
-          'flow-devloop-daemon/src/main/**',
           'flow-server-production-mode/src/main/**',
         ],
         codeOnly: true,
@@ -320,8 +305,7 @@ export function policyFor(repository) {
  * Rules on the lines that a pull request adds to shipped code. Comment lines
  * count too, as code can follow a comment on the same line, apart from Java,
  * where a comment-only line holds no code. Lines that match `except` are
- * skipped, and so are files that match `exceptPaths`. With `javaStringsOnly`,
- * Java lines are only checked in their string
+ * skipped. With `javaStringsOnly`, Java lines are only checked in their string
  * literals: Java has no such API of its own, so it only matters in JavaScript
  * that Java code sends to the browser, such as `executeJs("fetch(...)")`.
  */
@@ -364,8 +348,6 @@ export const CONTENT_RULES = [
     reason: 'adds browser storage or cookies',
     pattern: /\b(?:localStorage|sessionStorage|indexedDB|cookieStore)\b|document\.cookie/u,
     javaStringsOnly: true,
-    // Flow's dev server only runs in development mode, on the developer's machine
-    exceptPaths: ['vaadin-dev-server/**'],
   },
 ];
 

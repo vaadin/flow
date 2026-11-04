@@ -197,24 +197,14 @@ export function evaluatePolicy({
       continue;
     }
     const matched = files.filter((file) => matchesRule(file, rule) && (!rule.codeOnly || changesCode(file)));
-    const removed = rule.removed
-      ? matched.filter((file) => file.status === 'removed' && matchesAny(file, rule.removed.paths))
-      : [];
-    const changed = matched.filter((file) => !removed.includes(file));
-    if (changed.length > 0) {
-      findings.push({ category: rule.category, reason: rule.reason, files: changed.map((file) => file.filename) });
-    }
-    if (removed.length > 0) {
-      const { category, reason } = rule.removed;
-      findings.push({ category, reason, files: removed.map((file) => file.filename) });
+    if (matched.length > 0) {
+      findings.push({ category: rule.category, reason: rule.reason, files: matched.map((file) => file.filename) });
     }
   }
 
   for (const rule of CONTENT_RULES) {
-    const matched = shipped.filter(
-      (file) =>
-        !matchesAny(file, rule.exceptPaths ?? []) &&
-        changedLines(file.patch).added.some((line) => matchesContent(rule, file, line)),
+    const matched = shipped.filter((file) =>
+      changedLines(file.patch).added.some((line) => matchesContent(rule, file, line)),
     );
     if (matched.length > 0) {
       findings.push({ category: rule.category, reason: rule.reason, files: matched.map((file) => file.filename) });
