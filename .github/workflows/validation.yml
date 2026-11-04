@@ -956,6 +956,7 @@ jobs:
   test-results:
     permissions:
       actions: write
+      contents: read
       issues: read
       checks: write
       pull-requests: write
