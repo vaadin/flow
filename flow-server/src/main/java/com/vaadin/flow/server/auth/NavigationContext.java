@@ -60,6 +60,8 @@ public final class NavigationContext {
 
     /**
      * The reason why an access check is run.
+     * 
+     * @since 25.4
      */
     public enum Phase {
         /**
@@ -156,6 +158,7 @@ public final class NavigationContext {
      *            the reason why the access check is run, not {@literal null}
      * @throws IllegalArgumentException
      *             if the phase is {@link Phase#PUBLIC_ROUTE_CHECK}
+     * @since 25.4
      */
     public NavigationContext(Router router, Class<?> navigationTarget,
             Location location, RouteParameters parameters, Principal principal,
@@ -253,6 +256,7 @@ public final class NavigationContext {
      * @param parameters
      *            route parameters, not {@literal null}
      * @return a navigation context for the public route check
+     * @since 25.4
      */
     public static NavigationContext forPublicRouteCheck(Router router,
             Class<?> navigationTarget, Location location,
@@ -334,6 +338,7 @@ public final class NavigationContext {
      * Gets the reason why the access check is run.
      *
      * @return the phase of the access check, not {@code null}
+     * @since 25.4
      */
     public Phase getPhase() {
         return phase;
@@ -384,6 +389,7 @@ public final class NavigationContext {
      *
      * @return an unmodifiable list of the layouts of the navigation target, or
      *         an empty list if there are none, not {@code null}
+     * @since 25.4
      */
     public List<Class<? extends RouterLayout>> getLayouts() {
         if (layouts == null) {
