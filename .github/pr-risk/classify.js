@@ -161,8 +161,8 @@ export function evaluatePolicy({ repository, title, body, authorTrusted, headTru
   return findings;
 }
 
-export function isTrustedAuthor({ authorAssociation, isMember }) {
-  return isMember || TRUSTED_ASSOCIATIONS.includes(authorAssociation);
+export function isTrustedAuthor({ authorAssociation, isMember, isBot = false }) {
+  return isMember || isBot || TRUSTED_ASSOCIATIONS.includes(authorAssociation);
 }
 
 /**

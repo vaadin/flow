@@ -345,6 +345,10 @@ describe('isTrustedAuthor', () => {
     assert.equal(isTrustedAuthor({ authorAssociation: 'CONTRIBUTOR', isMember: true }), true);
     assert.equal(isTrustedAuthor({ authorAssociation: 'CONTRIBUTOR', isMember: false }), false);
   });
+
+  test('trusts bot accounts', () => {
+    assert.equal(isTrustedAuthor({ authorAssociation: 'NONE', isMember: false, isBot: true }), true);
+  });
 });
 
 describe('isTrustedHead', () => {
