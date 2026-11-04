@@ -176,6 +176,7 @@ export async function run({
   });
   const policyFindings = evaluatePolicy({
     repository,
+    author: pr.user.login,
     title: pr.title,
     body: pr.body,
     authorTrusted,
