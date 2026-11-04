@@ -6,7 +6,10 @@ import { testRegistry } from '../testRegistry';
 import { ClientEvents } from '../../../../../main/frontend/internal/client/ClientEvents';
 import { MessageSender } from '../../../../../main/frontend/internal/client/communication/MessageSender';
 import { ResynchronizationState } from '../../../../../main/frontend/internal/client/communication/MessageSender';
-import type { VaadinRequest } from '../../../../../main/frontend/internal/client/communication/VaadinRequest';
+import {
+  dispatchResponse,
+  type VaadinRequest
+} from '../../../../../main/frontend/internal/client/communication/VaadinRequest';
 import { UILifecycle, UIState } from '../../../../../main/frontend/internal/client/UILifecycle';
 
 function makeRegistry(opts: { pushEnabled?: boolean } = {}) {
@@ -370,12 +373,28 @@ describe('MessageSender (class)', () => {
       expect(events).to.deep.equal(['1 sent 1', '1 end discarded', '2 sent 1']);
       events.length = 0;
 
-      // Sent again over XHR once push only receives, it is no longer tracked.
+      // Sent again over XHR once push only receives, the XHR reply settles it.
       sender.setClientToServerMessageId(9, true);
       bidirectional = false;
       context.setActiveRequest(false);
       sender.sendInvocationsToServer();
-      expect(events).to.deep.equal(['2 end discarded']);
+      // The message handler looks up the request the XHR reply answers.
+      dispatchResponse(sender.getRequest(context.log.xhrSends.at(-1)!)!, 'acknowledged');
+      sender.discardSentRequests();
+      expect(events).to.deep.equal(['2 sent 2', '2 end acknowledged']);
+      events.length = 0;
+
+      // Unanswered over XHR, nothing resends it, so the next XHR send drops it.
+      bidirectional = true;
+      context.setActiveRequest(false);
+      sender.send({ rpc: [] });
+      sender.setClientToServerMessageId(11, true);
+      bidirectional = false;
+      context.setActiveRequest(false);
+      sender.sendInvocationsToServer();
+      context.setActiveRequest(false);
+      sender.send({ rpc: [] });
+      expect(events).to.deep.equal(['3 sent 1', '3 sent 2', '3 end discarded', '4 sent 1']);
     });
 
     it('discards the open requests when the UI lifecycle that replaced the first one stops', () => {
