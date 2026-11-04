@@ -57,9 +57,16 @@ public class EventRpcHandler extends AbstractRpcInvocationHandler {
             eventData = JacksonUtils.createObjectNode();
         }
 
-        DomEvent event = new DomEvent(Element.get(node), eventType, eventData);
+        ElementListenerMap listenerMap = node
+                .getFeature(ElementListenerMap.class);
 
-        node.getFeature(ElementListenerMap.class).fireEvent(event);
+        // The client sends event data with hashed keys, not with the
+        // expressions. Replace the keys with the expressions before the
+        // listeners get the event
+        DomEvent event = new DomEvent(Element.get(node), eventType,
+                listenerMap.translateEventData(eventType, eventData));
+
+        listenerMap.fireEvent(event);
 
         return Optional.empty();
     }

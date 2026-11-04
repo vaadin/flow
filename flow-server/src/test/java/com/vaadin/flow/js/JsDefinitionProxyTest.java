@@ -19,10 +19,18 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.dom.DomEvent;
+import com.vaadin.flow.dom.DomEventData;
+import com.vaadin.flow.dom.DomEventFilter;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -84,6 +92,30 @@ class JsDefinitionProxyTest {
     }
 
     @JsDefinition
+    interface EventJs extends Serializable {
+        @JsExpression("return event.key === $0;")
+        DomEventFilter isKey(String key);
+
+        @JsExpression("return element.getAttribute($0);")
+        DomEventData<String> attribute(String name);
+
+        @JsExpression("return event.detail === $0;")
+        DomEventFilter isDetail(Object detail);
+
+        @JsExpression("return $0;")
+        DomEventData<Object> echo(Object value);
+    }
+
+    /**
+     * A bean that cannot be encoded since it refers to itself.
+     */
+    public static class SelfReference {
+        public SelfReference getSelf() {
+            return this;
+        }
+    }
+
+    @JsDefinition
     interface CalledWithInvalidNameJs extends Serializable {
         @JsExpression("console.log(value);")
         @JsCalledWith("not-a-name")
@@ -92,6 +124,13 @@ class JsDefinitionProxyTest {
 
     @JsDefinition
     interface EmptyJs extends Serializable {
+    }
+
+    @JsDefinition
+    @JsCalledWith("value")
+    interface CalledWithOnDefinitionJs extends Serializable {
+        @JsExpression("console.log(value);")
+        JsFunction createLogger();
     }
 
     @JsDefinition
@@ -212,6 +251,54 @@ class JsDefinitionProxyTest {
     }
 
     @Test
+    void createSnippets_domEventSnippets_answerWithTheTypeTheyDeclare() {
+        EventJs events = JsDefinitionProxy.createSnippets(EventJs.class);
+
+        assertEquals(new JsCall(EventJs.class, "isKey", List.of("Enter")),
+                events.isKey("Enter").getDeclaredCall());
+        assertEquals(new JsCall(EventJs.class, "attribute", List.of("id")),
+                events.attribute("id").getDeclaredCall());
+    }
+
+    @Test
+    void createSnippets_domEventSnippetCaptureTheClientCanNotReceive_throwsWhenDeclared() {
+        EventJs events = JsDefinitionProxy.createSnippets(EventJs.class);
+        SelfReference unencodable = new SelfReference();
+
+        assertThrows(RuntimeException.class,
+                () -> events.isDetail(unencodable));
+        assertThrows(RuntimeException.class, () -> events.echo(unencodable));
+    }
+
+    @Test
+    void createSnippets_domEventSnippets_surviveSerialization() {
+        EventJs events = JsDefinitionProxy.createSnippets(EventJs.class);
+        DomEventFilter filter = events.isKey("Enter");
+        DomEventData<String> data = events.attribute("id");
+        // An element capture has a random identity, which must be kept
+        DomEventData<Object> elementData = events.echo(new Element("span"));
+
+        DomEventFilter filterCopy = SerializationUtils.roundtrip(filter);
+        DomEventData<String> dataCopy = SerializationUtils.roundtrip(data);
+        DomEventData<Object> elementDataCopy = SerializationUtils
+                .roundtrip(elementData);
+
+        assertEquals(filter.getDeclaredCall(), filterCopy.getDeclaredCall());
+        assertEquals(filter.getCaptureIdentity(),
+                filterCopy.getCaptureIdentity());
+        assertEquals(ElementListenerMap.getEventDataKey(elementData),
+                ElementListenerMap.getEventDataKey(elementDataCopy));
+        // Still read by the same key, as the type the method declares
+        assertEquals(ElementListenerMap.getEventDataKey(data),
+                ElementListenerMap.getEventDataKey(dataCopy));
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put(ElementListenerMap.getEventDataKey(data), "value");
+        assertEquals("value",
+                new DomEvent(new Element("div"), "click", eventData)
+                        .getEventData(dataCopy));
+    }
+
+    @Test
     void createSnippets_methodRunningJavaScript_throws() {
         // Nothing to run it on, since a snippet is not bound to an element
         IllegalArgumentException exception = assertThrows(
@@ -239,6 +326,18 @@ class JsDefinitionProxyTest {
         // is evaluated and the browser reports a syntax error
         assertThrows(IllegalArgumentException.class, () -> JsDefinitionProxy
                 .createSnippets(CalledWithInvalidNameJs.class));
+    }
+
+    @Test
+    void checkDefinition_calledWithOnTheDefinition_throws() {
+        // The names would otherwise be ignored, and the expression would fail
+        // in the browser on the first call
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> JsDefinitionProxy
+                        .checkDefinition(CalledWithOnDefinitionJs.class));
+
+        assertTrue(exception.getMessage().contains("@JsCalledWith"),
+                exception.getMessage());
     }
 
     @Test

@@ -358,6 +358,43 @@ public class JsonConstants implements Serializable {
     public static final String MAP_STATE_NODE_EVENT_DATA = "]";
 
     /**
+     * Key in the settings of one entry that the client runs when an event
+     * occurs. The value is the JavaScript expression to run.
+     */
+    public static final String EVENT_SETTINGS_EXPRESSION = "e";
+
+    /**
+     * Key in the settings of one entry that the client runs when an event
+     * occurs. The value is the id of the declared function to run. An entry has
+     * either this key or {@link #EVENT_SETTINGS_EXPRESSION}.
+     */
+    public static final String EVENT_SETTINGS_FUNCTION = "f";
+
+    /**
+     * Key in the settings of one entry that the client runs when an event
+     * occurs. The value is the debounce settings. An entry with captures does
+     * not have this key. Its debounce settings are sent with its captures, for
+     * each element.
+     */
+    public static final String EVENT_SETTINGS_DEBOUNCE = "d";
+
+    /**
+     * Key in the settings of one entry that the client runs when an event
+     * occurs. The value is the number of captures. The client runs an entry
+     * with captures only with the captured values that are sent for each
+     * element.
+     */
+    public static final String EVENT_SETTINGS_CAPTURE_COUNT = "c";
+
+    /**
+     * Key in the settings of one entry that the client runs when an event
+     * occurs. The value is the name of a method of the event:
+     * <code>preventDefault</code> or <code>stopPropagation</code>. The client
+     * calls the method when the entry returns a truthy value.
+     */
+    public static final String EVENT_SETTINGS_SIDE_EFFECT = "s";
+
+    /**
      * RPC type value used for return channel messages.
      * 
      * @since 2.0

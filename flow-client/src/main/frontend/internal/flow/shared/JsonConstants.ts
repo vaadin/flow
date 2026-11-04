@@ -317,6 +317,43 @@ export const JsonConstants = {
   MAP_STATE_NODE_EVENT_DATA: ']',
 
   /**
+   * Key in the settings of one entry that the client runs when an event occurs.
+   * The value is the JavaScript expression to run.
+   */
+  EVENT_SETTINGS_EXPRESSION: 'e',
+
+  /**
+   * Key in the settings of one entry that the client runs when an event occurs.
+   * The value is the id of the declared function to run. An entry has
+   * either this key or EVENT_SETTINGS_EXPRESSION.
+   */
+  EVENT_SETTINGS_FUNCTION: 'f',
+
+  /**
+   * Key in the settings of one entry that the client runs when an event occurs.
+   * The value is the debounce settings. An entry with captures does not
+   * have this key. Its debounce settings are sent with its captures,
+   * for each element.
+   */
+  EVENT_SETTINGS_DEBOUNCE: 'd',
+
+  /**
+   * Key in the settings of one entry that the client runs when an event occurs.
+   * The value is the number of captures. The client runs an entry with
+   * captures only with the captured values that are sent for each
+   * element.
+   */
+  EVENT_SETTINGS_CAPTURE_COUNT: 'c',
+
+  /**
+   * Key in the settings of one entry that the client runs when an event occurs.
+   * The value is the name of a method of the event:
+   * `preventDefault` or `stopPropagation`. The
+   * client calls the method when the entry returns a truthy value.
+   */
+  EVENT_SETTINGS_SIDE_EFFECT: 's',
+
+  /**
    * RPC type value used for return channel messages.
    */
   RPC_TYPE_CHANNEL: 'channel',

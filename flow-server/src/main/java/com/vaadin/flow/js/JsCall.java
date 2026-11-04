@@ -25,11 +25,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.jspecify.annotations.Nullable;
+import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StringUtil;
 
@@ -211,7 +215,9 @@ public record JsCall(Class<?> definitionType, String methodName,
 
     /**
      * Gets the names of the parameters that the function a snippet evaluates to
-     * is called with, as declared by {@link JsCalledWith} on the given method.
+     * is called with. They come from {@link JsCalledWith} on the given method.
+     * If the method has no such annotation, they come from the annotation on
+     * the snippet type that the method returns.
      * <p>
      * The names become parameters of the generated function, so each of them is
      * checked to be one that a function in a JavaScript module can declare and
@@ -219,14 +225,21 @@ public record JsCall(Class<?> definitionType, String methodName,
      *
      * @param method
      *            a method of a JavaScript definition, not <code>null</code>
-     * @return the parameter names in the order they are passed, empty when the
-     *         method is not annotated with {@link JsCalledWith}
+     * @return the parameter names in the order they are passed, empty when
+     *         neither the method nor the snippet type it returns is annotated
+     *         with {@link JsCalledWith}
      * @throws IllegalArgumentException
      *             if a name is not a JavaScript identifier, is a reserved word,
      *             names a captured argument or is declared twice
      */
     public static List<String> getCalledWithNames(Method method) {
         JsCalledWith annotation = method.getAnnotation(JsCalledWith.class);
+        if (annotation == null) {
+            // A snippet type that is always called in the same way declares
+            // the names once, for all methods that return it
+            annotation = method.getReturnType()
+                    .getAnnotation(JsCalledWith.class);
+        }
         if (annotation == null) {
             return List.of();
         }
@@ -304,6 +317,71 @@ public record JsCall(Class<?> definitionType, String methodName,
      */
     public boolean isVariadic() {
         return resolveMethod().method().isVarArgs();
+    }
+
+    /**
+     * Encodes the arguments of this call as the captures of a snippet. The
+     * captures are sent to the client together with the snippet.
+     * <p>
+     * A snippet calls this when it is created. So an error is thrown right
+     * away, not later when the snippet is used, in these cases:
+     * <ul>
+     * <li>the method does not declare a snippet, or</li>
+     * <li>an argument cannot be sent to the client.</li>
+     * </ul>
+     * A snippet that is sent more than once, such as one that an event listener
+     * uses, calls this again each time it is sent. An element is then sent with
+     * the id that it has at that time.
+     *
+     * @return the encoded captures, not <code>null</code>
+     * @throws IllegalArgumentException
+     *             if the called method does not declare a {@link JsSnippet}
+     * @throws RuntimeException
+     *             if any argument cannot be encoded to be sent to the client
+     */
+    public ArrayNode encodeSnippetCaptures() {
+        if (!isSnippet()) {
+            throw new IllegalArgumentException("Method " + methodName + " of "
+                    + definitionType.getName()
+                    + " does not declare a JsSnippet, so a call of it runs"
+                    + " JavaScript rather than declaring a snippet");
+        }
+        return flattenArguments().stream().map(JacksonCodec::encodeWithTypeInfo)
+                .collect(JacksonUtils.asArray());
+    }
+
+    /**
+     * Creates a string that identifies the captures of a snippet for this call.
+     * Two snippets with the same identity are treated as the same.
+     * <p>
+     * If every argument is a plain value, such as a string, a number, a
+     * boolean, an enum or <code>null</code>, the identity is made from the
+     * values. Two calls with equal plain values then have the same identity.
+     * <p>
+     * Any other argument, for example an element, may be encoded differently
+     * each time the snippet is sent: an element gets a new id when it moves to
+     * another UI. So for such arguments, the identity is a random value that is
+     * unique for each call of this method.
+     *
+     * @return the identity of the captures, not <code>null</code>
+     * @throws IllegalArgumentException
+     *             if the called method does not declare a {@link JsSnippet}
+     * @throws RuntimeException
+     *             if any argument cannot be encoded to be sent to the client
+     */
+    public String createSnippetCaptureIdentity() {
+        // Also checks that the captures can be sent
+        ArrayNode encoded = encodeSnippetCaptures();
+        if (flattenArguments().stream().allMatch(JsCall::isPlainValue)) {
+            return encoded.toString();
+        }
+        return "#" + UUID.randomUUID();
+    }
+
+    private static boolean isPlainValue(Object value) {
+        return value == null || value instanceof String
+                || value instanceof Number || value instanceof Boolean
+                || value instanceof Character || value instanceof Enum<?>;
     }
 
     /**

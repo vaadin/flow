@@ -17,6 +17,19 @@ import { NodeFeatures } from '../../../../../main/frontend/internal/flow/interna
 // CollectingStateTree.existingElementRpcArgs in GwtPropertyElementBinderTest.
 export type ExistingElementRpcArg = StateNode | number | string | null;
 
+/**
+ * Builds the shared event settings that the server sends through the constant
+ * pool from a map of expression to debounce settings. The server keys the
+ * entries by a key derived from the expression and its captures; using the
+ * expression itself as the key keeps the tests readable, since that is also
+ * the key that the values are reported under.
+ */
+export function sharedEventSettings(expressions: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(expressions).map(([expression, debounce]) => [expression, { e: expression, d: debounce }])
+  );
+}
+
 /** A client-callable invocation forwarded to the server. */
 export interface TemplateEvent {
   node: StateNode;

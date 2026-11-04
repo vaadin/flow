@@ -95,6 +95,40 @@ public interface DomListenerRegistration extends Registration {
     }
 
     /**
+     * Adds declared JavaScript that gets data from the event. When the event
+     * occurs in the browser, the browser runs the declared expression with the
+     * DOM <code>event</code> and this <code>element</code>. It sends the value
+     * to the server together with the event. Read the value with
+     * {@link DomEvent#getEventData(DomEventData)}:
+     *
+     * <pre>
+     * DomEventData&lt;String&gt; label = JS.attribute("data-label");
+     * button.getElement()
+     *         .addEventListener("click",
+     *                 event -&gt; show(event.getEventData(label)))
+     *         .addEventData(label);
+     * </pre>
+     * <p>
+     * The browser does not compile any JavaScript from a string, unlike with
+     * {@link #addEventData(String)}. So this also works with a Content Security
+     * Policy that does not allow <code>unsafe-eval</code>. The captured values
+     * are sent separately from the expression. Because of this, all event data
+     * from the same method uses one function in the browser.
+     *
+     * @param eventData
+     *            the event data to send, not <code>null</code>
+     * @return this registration, for chaining
+     * @see DomEventData
+     */
+    default DomListenerRegistration addEventData(DomEventData<?> eventData) {
+        /*
+         * Dummy backwards compatibility implementation to keep old custom code
+         * compiling.
+         */
+        throw new UnsupportedOperationException();
+    }
+
+    /**
      * Sets a JavaScript expression that is used for filtering events to this
      * listener. When an event is fired in the browser, the expression is
      * evaluated and an event is sent to the server only if the expression value
@@ -117,7 +151,44 @@ public interface DomListenerRegistration extends Registration {
     DomListenerRegistration setFilter(String filter);
 
     /**
+     * Sets declared JavaScript that filters the events for this listener. When
+     * the event occurs in the browser, the browser runs the declared expression
+     * with the DOM <code>event</code> and this <code>element</code>. It sends
+     * the event to the server only if the expression returns a truthy value:
+     *
+     * <pre>
+     * field.getElement().addEventListener("keydown", event -&gt; submit())
+     *         .setFilter(JS.isKey("Enter"));
+     * </pre>
+     * <p>
+     * The browser does not compile any JavaScript from a string, unlike with
+     * {@link #setFilter(String)}. So this also works with a Content Security
+     * Policy that does not allow <code>unsafe-eval</code>. The captured values
+     * are sent separately from the expression. Because of this, all filters
+     * from the same method use one function in the browser.
+     * <p>
+     * This replaces any previous filter of this registration. To remove the
+     * filter, pass <code>(String) null</code> to {@link #setFilter(String)}.
+     *
+     * @param filter
+     *            the filter, not <code>null</code>
+     * @return this registration, for chaining
+     * @see DomEventFilter
+     */
+    default DomListenerRegistration setFilter(DomEventFilter filter) {
+        /*
+         * Dummy backwards compatibility implementation to keep old custom code
+         * compiling.
+         */
+        throw new UnsupportedOperationException();
+    }
+
+    /**
      * Gets the currently set filter expression.
+     * <p>
+     * Returns <code>null</code> for a filter set with
+     * {@link #setFilter(DomEventFilter)}, because such a filter has no
+     * expression.
      *
      * @see #setFilter(String)
      *
