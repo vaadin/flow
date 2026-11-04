@@ -275,7 +275,7 @@ class JsDefinitionProxyTest {
         EventJs events = JsDefinitionProxy.createSnippets(EventJs.class);
         DomEventFilter filter = events.isKey("Enter");
         DomEventData<String> data = events.attribute("id");
-        // An element capture has a random identity, which must be kept
+        // An element capture has a random key, which must be kept
         DomEventData<Object> elementData = events.echo(new Element("span"));
 
         DomEventFilter filterCopy = SerializationUtils.roundtrip(filter);
@@ -284,8 +284,7 @@ class JsDefinitionProxyTest {
                 .roundtrip(elementData);
 
         assertEquals(filter.getDeclaredCall(), filterCopy.getDeclaredCall());
-        assertEquals(filter.getCaptureIdentity(),
-                filterCopy.getCaptureIdentity());
+        assertEquals(filter.getSnippetKey(), filterCopy.getSnippetKey());
         assertEquals(ElementListenerMap.getEventDataKey(elementData),
                 ElementListenerMap.getEventDataKey(elementDataCopy));
         // Still read by the same key, as the type the method declares

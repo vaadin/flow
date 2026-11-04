@@ -80,11 +80,11 @@ import com.vaadin.flow.js.JsSnippets;
 public final class DomEventFilter implements JsSnippet {
 
     private final JsCall declaredCall;
-    private final String captureIdentity;
+    private final String snippetKey;
 
     private DomEventFilter(JsCall declaredCall) {
         this.declaredCall = declaredCall;
-        this.captureIdentity = declaredCall.createSnippetCaptureIdentity();
+        this.snippetKey = declaredCall.createSnippetKey();
     }
 
     /**
@@ -122,26 +122,15 @@ public final class DomEventFilter implements JsSnippet {
     }
 
     /**
-     * Gets the number of captured values.
+     * Gets the key that identifies this snippet: its function and its captured
+     * values. It does not change after the snippet is created. See
+     * {@link JsCall#createSnippetKey()}.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      *
-     * @return the number of captures
+     * @return the key of the snippet, not <code>null</code>
      */
-    public int getCaptureCount() {
-        return declaredCall.flattenArguments().size();
-    }
-
-    /**
-     * Gets a string that identifies the captured values of this filter. It does
-     * not change after the filter is created. See
-     * {@link JsCall#createSnippetCaptureIdentity()}.
-     * <p>
-     * For internal use only. May be renamed or removed in a future release.
-     *
-     * @return the identity of the captures, not <code>null</code>
-     */
-    public String getCaptureIdentity() {
-        return captureIdentity;
+    public String getSnippetKey() {
+        return snippetKey;
     }
 }

@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
-import { type CollectingTree, makeCollectingTree, sharedEventSettings } from '../bindingTestHelpers';
+import { type CollectingTree, makeCollectingTree } from '../bindingTestHelpers';
 import { NodeFeatures } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
 import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
@@ -42,7 +42,7 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
   // Binds the node and registers a "click" listener with the given expressions.
   function bindWithClickExpressions(expressions: Record<string, unknown>): void {
     bind(node, element);
-    harness.constantPool.importFromJson({ expressionsKey: sharedEventSettings(expressions) });
+    harness.constantPool.importFromJson({ expressionsKey: expressions });
     node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty('click').setValue('expressionsKey');
     Reactive.flush();
   }
@@ -64,19 +64,17 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
     delete snippets()['fn-id'];
   });
 
-  // Binds the node and registers a "click" listener whose entries evaluate
-  // declared functions, where the capture values are sent for this element
-  // instead of being shared through the constant pool.
-  function bindWithClickCaptures(
-    shared: Record<string, { c?: number; d?: unknown; e?: string; f?: string; s?: string }>,
-    captured: Record<string, unknown[]>
-  ): void {
+  // Binds the node and registers a "click" listener. The shared settings are
+  // sent through the constant pool. The settings of this element only, for
+  // example a snippet that captures an element, are sent with the key.
+  function bindWithClickSettings(shared: Record<string, unknown>, own: Record<string, unknown> = {}): void {
     bind(node, element);
     harness.constantPool.importFromJson({ expressionsKey: shared });
+    const value = Object.keys(own).length === 0 ? 'expressionsKey' : ['expressionsKey', own];
     node
       .getMap(NodeFeatures.ELEMENT_LISTENERS)
       .getProperty('click')
-      .setValue(['expressionsKey', captured] as unknown as string);
+      .setValue(value as unknown as string);
     Reactive.flush();
   }
 
@@ -176,48 +174,53 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
     expect(eventData[expression]).to.equal(-1);
   });
 
-  it('evaluates a declared function with its captures, the event and the element', () => {
+  it('runs a declared snippet with its captures, the event and the element', () => {
     snippets()['fn-id'] = (a, b) => (event, target) =>
       `${(a as number) + (b as number)} ${event.type} ${target === element}`;
-    bindWithClickCaptures({ shared: { c: 2, f: 'fn-id' } }, { shared$captures: ['shared', false, 3, 4] });
+    bindWithClickSettings({ '@sum': { f: 'fn-id', d: false, c: [3, 4] } });
 
     element.click();
 
-    const eventData = harness.collectedEventData[0] as Record<string, unknown>;
-    // The captures are only reported under the key of the captured entry;
-    // the shared entry itself is not evaluated without captures.
-    expect(eventData).to.deep.equal({ shared$captures: '7 click true' });
+    expect(harness.collectedEventData[0]).to.deep.equal({ '@sum': '7 click true' });
   });
 
-  it('evaluates a declared function without captures from the shared settings', () => {
+  it('runs a declared snippet without captures', () => {
     snippets()['fn-id'] = () => (event) => event.type;
-    bindWithClickCaptures({ shared: { d: false, f: 'fn-id' } }, {});
+    bindWithClickSettings({ '@type': { f: 'fn-id', d: false } });
 
     element.click();
 
-    expect(harness.collectedEventData[0]).to.deep.equal({ shared: 'click' });
+    expect(harness.collectedEventData[0]).to.deep.equal({ '@type': 'click' });
   });
 
-  it('reports one value per set of captures for the same declared function', () => {
+  it('sends a value for each set of captures of the same function', () => {
     snippets()['fn-id'] = (name) => (_event, target) => target.hasAttribute(name as string);
-    bindWithClickCaptures(
-      { shared: { c: 1, f: 'fn-id' } },
-      { shared$first: ['shared', false, 'id'], shared$second: ['shared', false, 'title'] }
-    );
+    bindWithClickSettings({
+      '@first': { f: 'fn-id', d: false, c: ['id'] },
+      '@second': { f: 'fn-id', d: false, c: ['title'] }
+    });
     element.setAttribute('id', 'set');
 
     element.click();
 
-    const eventData = harness.collectedEventData[0] as Record<string, unknown>;
-    expect(eventData).to.deep.equal({ shared$first: true, shared$second: false });
+    expect(harness.collectedEventData[0]).to.deep.equal({ '@first': true, '@second': false });
   });
 
-  it('debounces a declared filter per set of captures', () => {
+  it('runs expressions and declared snippets of the same listener', () => {
+    snippets()['fn-id'] = () => (event) => event.type;
+    bindWithClickSettings({ 'event.type': false, '@type': { f: 'fn-id', d: false } });
+
+    element.click();
+
+    expect(harness.collectedEventData[0]).to.deep.equal({ 'event.type': 'click', '@type': 'click' });
+  });
+
+  it('debounces each declared filter on its own', () => {
     snippets()['fn-id'] = (name) => (_event, target) => target.hasAttribute(name as string);
-    bindWithClickCaptures(
-      { shared: { c: 1, f: 'fn-id' } },
-      { shared$first: ['shared', [[200, 'leading']], 'id'], shared$second: ['shared', [[200, 'leading']], 'title'] }
-    );
+    bindWithClickSettings({
+      '@first': { f: 'fn-id', d: [[200, 'leading']], c: ['id'] },
+      '@second': { f: 'fn-id', d: [[200, 'leading']], c: ['title'] }
+    });
 
     // Only the first filter matches, which starts its debounce period.
     element.setAttribute('id', 'set');
@@ -231,12 +234,12 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
     expect(harness.collectedNodes).to.have.length(2);
   });
 
-  it('uses the debounce settings sent with each set of captures', () => {
+  it('uses the debounce settings of each declared filter', () => {
     snippets()['fn-id'] = (name) => (_event, target) => target.hasAttribute(name as string);
-    bindWithClickCaptures(
-      { shared: { c: 1, f: 'fn-id' } },
-      { shared$first: ['shared', [[200, 'leading']], 'id'], shared$second: ['shared', true, 'title'] }
-    );
+    bindWithClickSettings({
+      '@first': { f: 'fn-id', d: [[200, 'leading']], c: ['id'] },
+      '@second': { f: 'fn-id', d: true, c: ['title'] }
+    });
 
     element.setAttribute('id', 'set');
     element.click();
@@ -253,42 +256,16 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
     expect(harness.collectedNodes).to.have.length(3);
   });
 
-  // An entry with a side effect evaluates the filter of its listener, declared
-  // with captures or as an expression without, and calls the method of the
-  // event it names only when that passes.
-  const sideEffectCases: Array<{
-    name: string;
-    shared: Record<string, { c?: number; d?: unknown; e?: string; f?: string; s: string }>;
-    captured: Record<string, unknown[]>;
-  }> = [
-    {
-      name: 'preventDefault of a declared function with captures',
-      shared: { shared: { c: 1, f: 'fn-id', s: 'preventDefault' } },
-      captured: { shared$match: ['shared', false, 'id'] }
-    },
-    {
-      name: 'preventDefault of an expression',
-      shared: { shared: { e: "element.hasAttribute('id')", d: false, s: 'preventDefault' } },
-      captured: {}
-    },
-    {
-      name: 'stopPropagation of an expression',
-      shared: { shared: { e: "element.hasAttribute('id')", d: false, s: 'stopPropagation' } },
-      captured: {}
-    }
-  ];
-
-  sideEffectCases.forEach(({ name, shared, captured }) => {
-    it(`calls ${name} only when the entry is truthy`, () => {
+  ['preventDefault', 'stopPropagation'].forEach((sideEffect) => {
+    it(`calls ${sideEffect} only when the declared filter passes`, () => {
       snippets()['fn-id'] = (attribute) => (_event, target) => target.hasAttribute(attribute as string);
-      const sideEffect = Object.values(shared)[0].s;
       let parentCalls = 0;
       const countParentCall = (): void => {
         parentCalls += 1;
       };
       document.body.addEventListener('click', countParentCall);
       try {
-        bindWithClickCaptures(shared, captured);
+        bindWithClickSettings({ [`@filter.${sideEffect}`]: { f: 'fn-id', d: false, s: sideEffect, c: ['id'] } });
 
         const notMatching = new MouseEvent('click', { bubbles: true, cancelable: true });
         element.dispatchEvent(notMatching);
@@ -310,14 +287,11 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
     });
   });
 
-  it('decodes an element capture into a DOM node', () => {
+  it('decodes a captured element sent for this element only', () => {
     snippets()['fn-id'] = (child) => () => (child as Element).tagName;
     // The child is added after binding, so its state node id is reserved here
     const childNodeId = nextId;
-    bindWithClickCaptures(
-      { shared: { c: 1, f: 'fn-id' } },
-      { shared$node: ['shared', false, { '@v-node': childNodeId }] }
-    );
+    bindWithClickSettings({}, { '@node': { f: 'fn-id', d: false, c: [{ '@v-node': childNodeId }] } });
     const { childElement, childNode } = addChild('span');
     expect(childNode.getId()).to.equal(childNodeId);
 
@@ -328,21 +302,20 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
 
     expect(harness.collectedEventData).to.have.length(2);
     harness.collectedEventData.forEach((eventData) =>
-      expect((eventData as Record<string, unknown>)['shared$node']).to.equal(childElement.tagName)
+      expect((eventData as Record<string, unknown>)['@node']).to.equal(childElement.tagName)
     );
   });
 
   it('decodes a capture of a removed node to null and still sends the event', () => {
     snippets()['fn-id'] = (child) => () => child;
     const removedNodeId = nextId++;
-    bindWithClickCaptures(
-      { shared: { c: 1, f: 'fn-id' }, plain: { e: 'event.type', d: false } },
-      { shared$node: ['shared', false, { '@v-node': removedNodeId }] }
+    bindWithClickSettings(
+      { 'event.type': false },
+      { '@node': { f: 'fn-id', d: false, c: [{ '@v-node': removedNodeId }] } }
     );
 
     element.click();
 
-    const eventData = harness.collectedEventData[0] as Record<string, unknown>;
-    expect(eventData).to.deep.equal({ plain: 'click', shared$node: null });
+    expect(harness.collectedEventData[0]).to.deep.equal({ 'event.type': 'click', '@node': null });
   });
 });

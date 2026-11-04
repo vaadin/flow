@@ -358,39 +358,32 @@ public class JsonConstants implements Serializable {
     public static final String MAP_STATE_NODE_EVENT_DATA = "]";
 
     /**
-     * Key in the settings of one entry that the client runs when an event
-     * occurs. The value is the JavaScript expression to run.
-     */
-    public static final String EVENT_SETTINGS_EXPRESSION = "e";
-
-    /**
-     * Key in the settings of one entry that the client runs when an event
-     * occurs. The value is the id of the declared function to run. An entry has
-     * either this key or {@link #EVENT_SETTINGS_EXPRESSION}.
+     * Key in the settings of a declared snippet that the client runs when an
+     * event occurs. The value is the id of the declared function. The settings
+     * of a JavaScript expression are only its debounce settings, so they are
+     * not an object and have no such key.
      */
     public static final String EVENT_SETTINGS_FUNCTION = "f";
 
     /**
-     * Key in the settings of one entry that the client runs when an event
-     * occurs. The value is the debounce settings. An entry with captures does
-     * not have this key. Its debounce settings are sent with its captures, for
-     * each element.
+     * Key in the settings of a declared snippet that the client runs when an
+     * event occurs. The value is the debounce settings: <code>false</code>,
+     * <code>true</code> or <code>[[timeout, phase, ...], ...]</code>.
      */
     public static final String EVENT_SETTINGS_DEBOUNCE = "d";
 
     /**
-     * Key in the settings of one entry that the client runs when an event
-     * occurs. The value is the number of captures. The client runs an entry
-     * with captures only with the captured values that are sent for each
-     * element.
+     * Key in the settings of a declared snippet that the client runs when an
+     * event occurs. The value is the array of captured values that the function
+     * is called with. A snippet without captures does not have this key.
      */
-    public static final String EVENT_SETTINGS_CAPTURE_COUNT = "c";
+    public static final String EVENT_SETTINGS_CAPTURES = "c";
 
     /**
-     * Key in the settings of one entry that the client runs when an event
-     * occurs. The value is the name of a method of the event:
+     * Key in the settings of a declared snippet that the client runs when an
+     * event occurs. The value is the name of a method of the event:
      * <code>preventDefault</code> or <code>stopPropagation</code>. The client
-     * calls the method when the entry returns a truthy value.
+     * calls the method when the snippet returns a truthy value.
      */
     public static final String EVENT_SETTINGS_SIDE_EFFECT = "s";
 

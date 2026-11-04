@@ -317,39 +317,32 @@ export const JsonConstants = {
   MAP_STATE_NODE_EVENT_DATA: ']',
 
   /**
-   * Key in the settings of one entry that the client runs when an event occurs.
-   * The value is the JavaScript expression to run.
-   */
-  EVENT_SETTINGS_EXPRESSION: 'e',
-
-  /**
-   * Key in the settings of one entry that the client runs when an event occurs.
-   * The value is the id of the declared function to run. An entry has
-   * either this key or EVENT_SETTINGS_EXPRESSION.
+   * Key in the settings of a declared snippet that the client runs when an
+   * event occurs. The value is the id of the declared function. The settings
+   * of a JavaScript expression are only its debounce settings, so they are
+   * not an object and have no such key.
    */
   EVENT_SETTINGS_FUNCTION: 'f',
 
   /**
-   * Key in the settings of one entry that the client runs when an event occurs.
-   * The value is the debounce settings. An entry with captures does not
-   * have this key. Its debounce settings are sent with its captures,
-   * for each element.
+   * Key in the settings of a declared snippet that the client runs when an
+   * event occurs. The value is the debounce settings: `false`, `true` or
+   * `[[timeout, phase, ...], ...]`.
    */
   EVENT_SETTINGS_DEBOUNCE: 'd',
 
   /**
-   * Key in the settings of one entry that the client runs when an event occurs.
-   * The value is the number of captures. The client runs an entry with
-   * captures only with the captured values that are sent for each
-   * element.
+   * Key in the settings of a declared snippet that the client runs when an
+   * event occurs. The value is the array of captured values that the function
+   * is called with. A snippet without captures does not have this key.
    */
-  EVENT_SETTINGS_CAPTURE_COUNT: 'c',
+  EVENT_SETTINGS_CAPTURES: 'c',
 
   /**
-   * Key in the settings of one entry that the client runs when an event occurs.
-   * The value is the name of a method of the event:
-   * `preventDefault` or `stopPropagation`. The
-   * client calls the method when the entry returns a truthy value.
+   * Key in the settings of a declared snippet that the client runs when an
+   * event occurs. The value is the name of a method of the event:
+   * `preventDefault` or `stopPropagation`. The client calls the method when
+   * the snippet returns a truthy value.
    */
   EVENT_SETTINGS_SIDE_EFFECT: 's',
 

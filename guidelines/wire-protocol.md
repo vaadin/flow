@@ -82,52 +82,22 @@ memory between responses. `PolymerEventListenerMap` stores the event data
 expressions of a Polymer template listener. The third kind is what an
 `executeJs` invocation runs, covered [below](#wire-shape).
 
-An `ElementListenerMap` value is an object with one entry per thing the
-client evaluates when the event fires. Entries are keyed by a short hash
-derived from the entry (its kind, its expression or declared function,
-and its number of captures), not by the JavaScript itself, so the event
-data the client sends back carries no JavaScript. Each entry is an object
-with:
+An `ElementListenerMap` value is an object keyed by the JavaScript
+expressions the client evaluates when the event fires. The value of each
+key says whether that expression is also a filter that decides whether
+the event is sent at all, and takes one of exactly three forms:
 
-- `e` — the JavaScript expression to evaluate, for an expression given
-  as a string.
-- `f` — instead of `e`, the id of a function declared by a `@JsDefinition`
-  method returning `DomEventFilter` or `DomEventData`. The client calls
-  `window.Vaadin.Flow.jsSnippets[id]` with the captures and calls what it
-  returns with the event and the element, so nothing is compiled from a
-  string.
-- `d` — whether the entry is also a filter that decides whether the
-  event is sent at all, in one of exactly three forms: `false` for a
-  plain entry whose value is sent as event data, `true` for a filter
-  with no debounce, and `[[timeout, phase…], …]` for a filter with
-  debounce settings. Left out for an entry with captures, whose
-  debounce settings are sent with its captures (see below).
-- `c` — the number of captures the declared function takes, left out
-  when it takes none.
-- `s` — `preventDefault` or `stopPropagation`, for an entry that
-  evaluates the filter of a listener and calls that method of the event
-  when the filter passes. Left out for any other entry.
+- `false` — a plain expression, evaluated and sent as event data.
+- `true` — a filter with no debounce.
+- `[[timeout, phase…], …]` — a filter with debounce settings.
 
 ```json
 "constants": {
-  "vIpODLLAUDo=": {},
-  "TRZZD0DW5Aw=": {
-    "xoM6bmSszJY=": { "e": "event.clientX", "d": false },
-    "RBFpNc35HTA=": { "e": "event.clientY", "d": false }
-  },
-  "hqKON6EQdGk=": { "/CaiUf64JDc=": { "e": "event.button === 0", "d": true } },
-  "PAUkDZoOfaE=": { "wW58xsBj7Fg=": { "e": "1", "d": [[250, "trailing"]] } },
-  "xMogqm1nZ4U=": { "}value": { "e": "}value", "d": false } },
-  "+j6ZbbVBQ2k=": {
-    "lwSJXpBlXYA=": { "e": "event.key === 'Enter'", "d": false, "s": "preventDefault" },
-    "8C6cje1CtfY=": { "e": "event.key === 'Enter'", "d": true }
-  },
-  "tehWE2VI/H8=": {
-    "auM90ILrj9s=": {
-      "f": "8f66cb4332fd351e5ef6176714fb9a2f227abbb5a6d13458db0e290f4899a044",
-      "c": 1
-    }
-  }
+  "RBNvo1WzZ4o=": {},
+  "J4r/ss0KY+c=": { "event.clientX": false, "event.clientY": false },
+  "24b7yiAh6SA=": { "event.button === 0": true },
+  "vdAdQQWwVaQ=": { "1": [[250, "trailing"]] },
+  "gKEp5ocBgAc=": { "}value": false }
 }
 ```
 
@@ -135,63 +105,77 @@ Where each of those comes from:
 
 - `{}` — a plain listener with no event data: nothing for the client to
   evaluate, it just sends the event.
-- `event.clientX` and `event.clientY` — two `addEventData(…)` calls.
-- `event.button === 0` — `setFilter("event.button === 0")`.
-- `1` with `[[250, "trailing"]]` — `debounce(250)`. There is no real
+- `{ "event.clientX": …, "event.clientY": … }` — two `addEventData(…)`
+  calls.
+- `{ "event.button === 0": true }` — `setFilter("event.button === 0")`.
+- `{ "1": [[250, "trailing"]] }` — `debounce(250)`. There is no real
   filter, so the always-true filter expression `1` carries the debounce
-  settings. `1` also shows up with `"d": true` when an element has both
+  settings. `1` also shows up as `"1": true` when an element has both
   filtered and unfiltered listeners for one event type, so that the
   unfiltered ones are still notified when no filter matches.
-- `}value` — `synchronizeProperty("value")`. The `}` prefix
+- `{ "}value": false }` — `synchronizeProperty("value")`. The `}` prefix
   (`JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN`) marks a property to read
   off the element and send back, rather than an expression to evaluate.
-  These pseudo expressions, and the `]` state node mappings, keep the
-  expression as their key.
-- `event.key === 'Enter'` twice —
-  `setFilter("event.key === 'Enter'").preventDefault()`: the filter, and
-  the side effect that calls `event.preventDefault()` only when the
-  filter passes.
-- `"f"` with `"c": 1` — `addEventData(JS.attribute("data-row-id"))`,
-  where `attribute` is a `@JsDefinition` method declared as
-  `@JsExpression("return element.getAttribute($0);")
-  DomEventData<String> attribute(String name)`.
 
 The change that uses one carries only the id — a `put` on the element's
-listener feature with `"key": "click"` and `"value": "TRZZD0DW5Aw="`.
+listener feature with `"key": "click"` and `"value": "J4r/ss0KY+c="`.
 That is where the saving is: two thousand buttons sharing one click
 listener configuration cost one entry instead of two thousand copies of
 the same object, which is what `ConstantPoolPerformanceView` in
 `flow-tests` makes visible.
 
-Capture values vary per element, so they are not pooled. When an event
-type has entries with captures, the `put` value is a
-`ParameterizedConstantPoolKey` encoded as `[poolId, captures]`, where
-`captures` maps a per-element key to
-`[entryKey, debounce, capture0, …]`:
-
-```json
-["tehWE2VI/H8=", { "auM90ILrj9s=$MzHQvFPe5sA=": ["auM90ILrj9s=", false, "data-row-id"] }]
-```
-
-`debounce` takes the same three forms as `d`. It is sent here and not in
-the pooled entry because entries that differ only by their captures share
-one pooled entry. For example, `setFilter(JS.isKey("Enter"))` without a
-debounce and `setFilter(JS.isKey("Escape")).debounce(300)` on the same
-element use the same pooled entry, and only the Escape filter must be
-debounced.
-
-The per-element key is the entry key plus `$` and a hash of the capture
-values, and it is the key the client reports that value under, so two
-listeners sharing a declared function with different captures stay
-apart. The server maps the reported keys of expressions back to the
-expressions that `DomEvent.getEventData()` exposes before any listener
-runs, and `DomEvent.getEventData(DomEventData)` reads the value of
-declared event data by deriving the same key from the snippet.
-
 The ids above are the real hashes of those values, but the hash is taken
 over `json.toString()` — the compact form, without the spaces the
 snippet is pretty-printed with. Anything that changes the serialized
 form, key order included, changes the id.
+
+#### Declared event data and filters
+
+`addEventData(DomEventData)` and `setFilter(DomEventFilter)` use a
+function that a `@JsDefinition` method declares, so the client compiles
+nothing from a string. Such an entry is keyed by `@` followed by a short
+hash of the function and its captured values (`JsCall.createSnippetKey()`).
+No JavaScript expression starts with `@`, so this key never equals the
+key of an expression. Its value is an object, not one of the three
+debounce forms above, which is how the client tells the two apart:
+
+- `f` — the id of the declared function. The client calls
+  `window.Vaadin.Flow.jsSnippets[id]` with the captures, and calls what
+  that returns with the event and the element.
+- `d` — the debounce settings, in the same three forms as above.
+- `c` — the captured values, left out when there are none.
+- `s` — `preventDefault` or `stopPropagation`, for
+  `preventDefault()` or `stopPropagation()` on a listener with a declared
+  filter. The entry runs the filter, and the client calls that method of
+  the event only when the filter passes. Its key is the key of the filter
+  followed by `.` and the method name.
+
+```json
+{
+  "event.clientX": false,
+  "@<key of the filter>": { "f": "8f66…a044", "d": true, "c": ["Enter"] }
+}
+```
+
+Here `<key of the filter>` stands for the 11 characters of the hash, and
+`8f66…a044` for the 64 characters of the function id.
+
+When all captured values are plain (strings, numbers, booleans, enums or
+`null`), the entry is the same for every element, so it is pooled with the
+other entries. A snippet that captures anything else, such as an element,
+is sent for this element only, because an element is encoded with its
+node id at the time the settings are sent. The `put` value is then a
+`ParameterizedConstantPoolKey`, encoded as `[poolId, settings]`, where
+`settings` holds the entries of this element in the same form:
+
+```json
+["RBNvo1WzZ4o=", { "@<key>": { "f": "…", "d": false, "c": [{ "@v-node": 12 }] } }]
+```
+
+The client merges the two before it runs the entries. The value of a
+declared entry is sent back under its key, and
+`DomEvent.getEventData(DomEventData)` reads it with
+`ElementListenerMap.getEventDataKey(DomEventData)`.
 
 ### Constraints this puts on new code
 

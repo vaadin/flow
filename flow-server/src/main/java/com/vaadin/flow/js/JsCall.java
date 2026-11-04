@@ -32,6 +32,7 @@ import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectionCache;
@@ -351,31 +352,44 @@ public record JsCall(Class<?> definitionType, String methodName,
     }
 
     /**
-     * Creates a string that identifies the captures of a snippet for this call.
-     * Two snippets with the same identity are treated as the same.
+     * Creates a short key that identifies a snippet created by this call: its
+     * function and its captures. Two snippets with the same key are treated as
+     * the same.
      * <p>
-     * If every argument is a plain value, such as a string, a number, a
-     * boolean, an enum or <code>null</code>, the identity is made from the
-     * values. Two calls with equal plain values then have the same identity.
+     * If all captures are plain values (see
+     * {@link #hasOnlyPlainSnippetCaptures()}), the key is made from the
+     * function and the values. Two calls of the same method with equal plain
+     * values then have the same key.
      * <p>
-     * Any other argument, for example an element, may be encoded differently
+     * Any other capture, for example an element, may be encoded differently
      * each time the snippet is sent: an element gets a new id when it moves to
-     * another UI. So for such arguments, the identity is a random value that is
-     * unique for each call of this method.
+     * another UI. So for such captures, the key is made from a random value,
+     * and it is different for each call of this method.
      *
-     * @return the identity of the captures, not <code>null</code>
+     * @return the key of the snippet, not <code>null</code>
      * @throws IllegalArgumentException
      *             if the called method does not declare a {@link JsSnippet}
      * @throws RuntimeException
      *             if any argument cannot be encoded to be sent to the client
      */
-    public String createSnippetCaptureIdentity() {
+    public String createSnippetKey() {
         // Also checks that the captures can be sent
         ArrayNode encoded = encodeSnippetCaptures();
-        if (flattenArguments().stream().allMatch(JsCall::isPlainValue)) {
-            return encoded.toString();
-        }
-        return "#" + UUID.randomUUID();
+        String captures = hasOnlyPlainSnippetCaptures() ? encoded.toString()
+                : UUID.randomUUID().toString();
+        return ConstantPoolKey.calculateHash(getFunctionId() + captures);
+    }
+
+    /**
+     * Checks whether all captures of a snippet created by this call are plain
+     * values: strings, numbers, booleans, characters, enums or
+     * <code>null</code>. Plain values are encoded in the same way each time the
+     * snippet is sent. It is also <code>true</code> when there are no captures.
+     *
+     * @return <code>true</code> if all captures are plain values
+     */
+    public boolean hasOnlyPlainSnippetCaptures() {
+        return flattenArguments().stream().allMatch(JsCall::isPlainValue);
     }
 
     private static boolean isPlainValue(Object value) {
