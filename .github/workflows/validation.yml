@@ -872,11 +872,6 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-26.04
     env:
-      # A run whose secret store has no SONAR_TOKEN, such as one triggered by
-      # Dependabot, has nothing to authenticate with. The secrets context
-      # cannot be read from an if: condition, but env can, so the token is
-      # bound here and every step is guarded on it, like the auto-merge job
-      # does with its bot token.
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
       - name: Skip Sonar analysis without a token
