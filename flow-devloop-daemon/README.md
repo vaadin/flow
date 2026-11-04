@@ -1060,14 +1060,14 @@ configuration.
 `AppProcess`, `Launch.membership`, `Compile`'s per-module grouping (with a real
 javac), `Frontend` in both frontend modes, `Jvm`, `HotswapAgentJar`,
 `MainClass`, and the verdicts `TransactionEngine` reaches without an app. The
-loop itself is tested in `flow-tests/test-devloop`: `test-devloop-spring` for
-an entry point and `test-devloop-jetty` for a WAR under its own build plugin,
-over the shared ITs in `test-devloop-support`.
+loop itself is tested in `flow-tests/test-devloop`, one fixture per runtime
+over the shared ITs in `test-devloop-support` (see
+[Verifying a change](../guidelines/dev-loop.md#verifying-a-change)).
 
-**WildFly, TomEE, both Payaras and Liberty have no fixture**, only the table's
-own unit tests. What those cannot answer is the one question that matters for a
-forked container — did the agents reach the server's JVM — so that is verified
-by hand against a WAR whose pom runs the plugin in question:
+For a forked container the one question that matters is whether the agents
+reached the server's JVM. When a project's own setup is not one the fixtures
+cover, or a fixture fails without saying why, check that by hand against a WAR
+whose pom runs the plugin in question:
 
 ```bash
 .vaadin/vaadin-dev start

@@ -326,10 +326,12 @@ application. When adding or changing a runtime, switch off its own watcher,
 scanner or auto-redeploy for the loop's run, and never run a plugin's `dev`
 goal. See `guidelines/dev-loop.md`.
 
-Do not work out from the poms what Maven decides — active profiles, what a
-module inherits from a parent outside the checkout, a plugin's effective
-configuration. Read it from what the build recorded, such as the
-`model.properties` that `DevLoopBuildExtension` writes.
+Do not work out from the poms what only Maven can decide — whether a profile is
+active, what a module inherits from a parent outside the checkout, a plugin's
+effective configuration. Read it from what the build recorded, such as the
+`model.properties` that `DevLoopBuildExtension` writes. A value read from a pom
+needs a fallback for when it is inherited instead. See
+`guidelines/dev-loop.md`.
 
 Report a change as live only when it is. When the running JVM cannot take a
 change, escalate to a restart or fail the apply with the phase and the reason,
@@ -340,10 +342,10 @@ Change user-facing CLI behavior in the bash and PowerShell launchers and in the
 `vaadin-devloop` skill in the same pull request, and keep the usage text of the
 two launchers the same word for word.
 
-Verify a change to a forked server runtime (WildFly, TomEE, Payara, Liberty,
-Cargo) by hand against a multi-module reactor, since no fixture covers them and
-a single module hides the reactor-wide failures. The procedure is in the Tests
-section of `flow-devloop-daemon/README.md`.
+Write an end-to-end test of the loop once, in
+`flow-tests/test-devloop/test-devloop-support`, so that every fixture runs it,
+and put a test in a single fixture only when it is about that fixture's
+runtime. See `guidelines/dev-loop.md`.
 
 ## Javadoc
 
