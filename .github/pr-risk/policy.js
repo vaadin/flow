@@ -161,6 +161,8 @@ const REPOSITORIES = {
       {
         category: 'red',
         reason: 'access control, authentication and CSRF protection',
+        // The security rules skip Javadoc changes, such as a new `@since` tag
+        codeOnly: true,
         paths: [
           'flow-server/src/main/java/com/vaadin/flow/server/auth/**',
           'flow-server/src/main/java/com/vaadin/flow/internal/springcsrf/**',
@@ -170,6 +172,7 @@ const REPOSITORIES = {
       {
         category: 'red',
         reason: 'handling of client requests and RPC input',
+        codeOnly: true,
         paths: [
           'flow-server/src/main/java/com/vaadin/flow/server/HandlerHelper.java',
           'flow-server/src/main/java/com/vaadin/flow/server/StaticFileServer.java',
@@ -181,6 +184,7 @@ const REPOSITORIES = {
       {
         category: 'red',
         reason: 'file uploads to the server',
+        codeOnly: true,
         paths: [
           'flow-server/src/main/java/com/vaadin/flow/server/communication/StreamReceiverHandler.java',
           'flow-server/src/main/java/com/vaadin/flow/server/communication/TransferUtil.java',
@@ -190,6 +194,7 @@ const REPOSITORIES = {
       {
         category: 'red',
         reason: 'usage statistics',
+        codeOnly: true,
         paths: [
           'flow-server/src/main/java/com/vaadin/flow/internal/UsageStatistics*.java',
           'flow-server/src/main/java/com/vaadin/flow/server/UsageStatisticsCollector.java',
@@ -199,7 +204,15 @@ const REPOSITORIES = {
       {
         category: 'red',
         reason: 'licensing',
+        codeOnly: true,
         paths: ['**/src/main/**/*LicenseChecker*'],
+      },
+      {
+        category: 'amber',
+        reason: 'dependencies',
+        // Integration test modules, which no published artifact contains
+        paths: [],
+        exceptPaths: ['flow-tests/**'],
       },
       {
         category: 'amber',
