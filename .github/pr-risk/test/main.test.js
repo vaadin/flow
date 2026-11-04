@@ -91,6 +91,24 @@ describe('run', () => {
     };
   });
 
+  test('on trial, only posts the comment and keeps the labels', async () => {
+    pr.labels = [{ name: 'risk: green' }];
+    const files = [{ filename: 'README.md', status: 'modified', changes: 2, patch: '@@\n-teh\n+the' }];
+    const github = createGithub({ pr, files });
+    const core = createCore();
+    await run({ github, context, core, env: { ...env, PR_RISK_TRIAL: 'true' }, assess: () => Promise.resolve(GREEN) });
+
+    assert.deepEqual(
+      github.calls.map(([name]) => name),
+      ['createComment'],
+    );
+    const { body } = github.calls[0][1];
+    assert.ok(body.startsWith(MARKER));
+    assert.match(body, /### 🧪 Risk evaluation \(trial\): 🟢 low risk/u);
+    assert.match(body, /sets no label and no check/u);
+    assert.equal(core.outputs.category, 'green');
+  });
+
   test('replaces the risk label and creates the comment', async () => {
     const files = [{ filename: 'README.md', status: 'modified', changes: 2, patch: '@@\n-teh\n+the' }];
     const github = createGithub({ pr, files });

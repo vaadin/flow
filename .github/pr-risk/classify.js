@@ -27,6 +27,9 @@ const CATEGORY_TEXT = {
 
 const LEVEL_ICONS = { low: '🟢', medium: '🟡', high: '🔴' };
 
+/** The names of the categories in a trial comment, which sets no label */
+const TRIAL_NAMES = { green: 'low', amber: 'medium', red: 'high' };
+
 /** Characters of diff that the agent reads, about 100k tokens */
 export const DIFF_BUDGET = 400_000;
 
@@ -281,8 +284,8 @@ function code(value) {
   return `\`${text(value).replace(/`/gu, "'")}\``;
 }
 
-function renderFinding({ category, reason, files }) {
-  const lines = [`- ${CATEGORY_TEXT[category].icon} **${category}**: ${reason}`];
+function renderFinding({ category, reason, files }, name) {
+  const lines = [`- ${CATEGORY_TEXT[category].icon} **${name(category)}**: ${reason}`];
   for (const file of files.slice(0, MAX_LISTED_FINDING_FILES)) {
     lines.push(`  - ${code(file)}`);
   }
@@ -292,23 +295,34 @@ function renderFinding({ category, reason, files }) {
   return lines;
 }
 
-/** The PR comment that explains the label. Starts with `marker`, which finds the comment again. */
-export function renderComment({ marker, result, assessment, headSha, runUrl }) {
+/**
+ * The PR comment that explains the label. Starts with `marker`, which finds the
+ * comment again. A `trial` comment says that the workflow is on trial, sets no
+ * label, and names the categories low, medium and high risk.
+ */
+export function renderComment({ marker, result, assessment, headSha, runUrl, trial = false }) {
   const { category, findings } = result;
-  const lines = [
-    marker,
-    `### ${CATEGORY_TEXT[category].icon} PR risk: ${category}`,
-    '',
-    CATEGORY_TEXT[category].requirement,
-    '',
-  ];
+  const name = (value) => (trial ? TRIAL_NAMES[value] : value);
+  const lines = trial
+    ? [
+        marker,
+        `### 🧪 Risk evaluation (trial): ${CATEGORY_TEXT[category].icon} ${name(category)} risk`,
+        '',
+        '> This workflow is on trial. It only posts this comment: it sets no label and no check, and nothing in the review or merge process depends on it. Is the rating wrong? Say so in a reply.',
+        '',
+        `If it were live: ${CATEGORY_TEXT[category].requirement}`,
+        '',
+      ]
+    : [marker, `### ${CATEGORY_TEXT[category].icon} PR risk: ${category}`, '', CATEGORY_TEXT[category].requirement, ''];
 
   if (assessment) {
     const agent = `The agent (${code(assessment.model)})`;
-    const likely = assessment.probabilities ? ` (${percentages(assessment.probabilities)})` : '';
-    const raised = category !== assessment.category ? ` The rules below raised it to **${category}**.` : '';
+    const named = (probabilities) =>
+      Object.fromEntries(Object.entries(probabilities).map(([value, probability]) => [name(value), probability]));
+    const likely = assessment.probabilities ? ` (${percentages(named(assessment.probabilities))})` : '';
+    const raised = category !== assessment.category ? ` The rules below raised it to **${name(category)}**.` : '';
     const summary = assessment.summary === undefined ? '' : ` ${text(assessment.summary)}`;
-    lines.push(`${agent} suggested **${assessment.category}**${likely}.${raised}${summary}`, '');
+    lines.push(`${agent} suggested **${name(assessment.category)}**${likely}.${raised}${summary}`, '');
 
     // Claude explains each rating, the Decisions API gives the probability of each level
     const explained = DIMENSIONS.every(({ key }) => assessment[key].reason !== undefined);
@@ -327,11 +341,11 @@ export function renderComment({ marker, result, assessment, headSha, runUrl }) {
   }
 
   if (findings.length > 0) {
-    lines.push('**Minimum category rules**', '');
+    lines.push(trial ? '**Minimum risk rules**' : '**Minimum category rules**', '');
     for (const finding of [...findings].sort(
       (a, b) => CATEGORIES.indexOf(b.category) - CATEGORIES.indexOf(a.category),
     )) {
-      lines.push(...renderFinding(finding));
+      lines.push(...renderFinding(finding, name));
     }
     lines.push('');
   }
