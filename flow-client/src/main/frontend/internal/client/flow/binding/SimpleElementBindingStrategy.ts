@@ -1510,10 +1510,28 @@ function evaluateSnippet(settings: SnippetSettings, tree: StateTree, event: Even
 }
 
 /**
+ * Expressions that Flow itself sends, and that the client runs without
+ * compiling them. They work under a Content Security Policy without
+ * `unsafe-eval`. Each function returns the same value as the compiled
+ * expression would.
+ */
+const BUILT_IN_EXPRESSIONS = new Map<string, EventExpression>([
+  [JsonConstants.EVENT_FILTER_ALWAYS_TRUE, () => 1],
+  [JsonConstants.EVENT_DATA_PREVENT_DEFAULT, (event) => event.preventDefault()],
+  [JsonConstants.EVENT_DATA_STOP_PROPAGATION, (event) => event.stopPropagation()]
+]);
+
+/**
  * Parses an event-data expression into a function `(event, element) => value`,
  * caching the result per expression string; mirrors getOrCreateExpression.
+ * The expressions that Flow itself sends are not compiled, see
+ * BUILT_IN_EXPRESSIONS.
  */
 function getOrCreateExpression(expressionString: string): EventExpression {
+  const builtIn = BUILT_IN_EXPRESSIONS.get(expressionString);
+  if (builtIn !== undefined) {
+    return builtIn;
+  }
   if (expressionCache === null) {
     expressionCache = new Map();
   }

@@ -175,6 +175,11 @@ class CspModeTest {
                             JsonConstants.MAP_STATE_NODE_EVENT_DATA));
             registration.synchronizeProperty("value");
             registration.mapEventTargetElement();
+            // The client runs these without compiling them, also when Flow
+            // adds the always-true filter for the debounce
+            registration.preventDefault();
+            registration.stopPropagation();
+            registration.debounce(300);
             // Its JavaScript is in the bundle rather than in a string
             JsSnippets.of(LoggerJs.class).createLogger("Greeting:");
             EventJs eventJs = JsSnippets.of(EventJs.class);

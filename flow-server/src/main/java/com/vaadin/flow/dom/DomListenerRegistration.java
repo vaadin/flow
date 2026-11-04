@@ -473,9 +473,15 @@ public interface DomListenerRegistration extends Registration {
     /**
      * Stops propagation of the event to upper level DOM elements.
      * <p>
-     * When used with {@link #setFilter(String)}, stopPropagation will only be
-     * called when the filter condition is met. For example, if you set a filter
-     * for specific keys, stopPropagation will only apply to those keys.
+     * When used with {@link #setFilter(String)} or
+     * {@link #setFilter(DomEventFilter)}, stopPropagation will only be called
+     * when the filter condition is met. For example, if you set a filter for
+     * specific keys, stopPropagation will only apply to those keys.
+     * <p>
+     * Nothing is compiled from a string in the browser, unless the filter is
+     * set with {@link #setFilter(String)}. So without a filter, or with a
+     * {@link DomEventFilter}, this works under a Content Security Policy
+     * without <code>unsafe-eval</code>.
      *
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation">MDN
@@ -485,7 +491,7 @@ public interface DomListenerRegistration extends Registration {
      * @since 24.2
      */
     default public DomListenerRegistration stopPropagation() {
-        addEventData("event.stopPropagation()");
+        addEventData(JsonConstants.EVENT_DATA_STOP_PROPAGATION);
         return this;
     };
 
@@ -494,9 +500,15 @@ public interface DomListenerRegistration extends Registration {
      * as shortcut action on key press or context menu on "right click". This
      * might not be possible for some events.
      * <p>
-     * When used with {@link #setFilter(String)}, preventDefault will only be
-     * called when the filter condition is met. For example, if you set a filter
-     * for specific keys, preventDefault will only apply to those keys.
+     * When used with {@link #setFilter(String)} or
+     * {@link #setFilter(DomEventFilter)}, preventDefault will only be called
+     * when the filter condition is met. For example, if you set a filter for
+     * specific keys, preventDefault will only apply to those keys.
+     * <p>
+     * Nothing is compiled from a string in the browser, unless the filter is
+     * set with {@link #setFilter(String)}. So without a filter, or with a
+     * {@link DomEventFilter}, this works under a Content Security Policy
+     * without <code>unsafe-eval</code>.
      *
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault">MDN
@@ -506,7 +518,7 @@ public interface DomListenerRegistration extends Registration {
      * @since 24.2
      */
     default public DomListenerRegistration preventDefault() {
-        addEventData("event.preventDefault()");
+        addEventData(JsonConstants.EVENT_DATA_PREVENT_DEFAULT);
         return this;
     }
 

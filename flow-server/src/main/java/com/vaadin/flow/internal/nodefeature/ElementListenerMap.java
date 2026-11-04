@@ -66,9 +66,10 @@ import com.vaadin.flow.shared.JsonConstants;
  */
 public class ElementListenerMap extends NodeMap {
     /**
-     * Dummy filter string that always passes.
+     * Dummy filter string that always passes. The client runs it without
+     * compiling it.
      */
-    public static final String ALWAYS_TRUE_FILTER = "1";
+    public static final String ALWAYS_TRUE_FILTER = JsonConstants.EVENT_FILTER_ALWAYS_TRUE;
 
     private static final EnumSet<DebouncePhase> NO_TIMEOUT_PHASES = EnumSet
             .of(DebouncePhase.LEADING);
@@ -455,13 +456,18 @@ public class ElementListenerMap extends NodeMap {
             return this;
         }
 
-        // The client reads a synchronized property, or the state node closest
-        // to the event target, without compiling anything
+        // The client reads a synchronized property or the state node closest
+        // to the event target, and calls preventDefault() or stopPropagation(),
+        // without compiling anything
         private static boolean isCompiledByClient(String eventData) {
             return !eventData
                     .startsWith(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN)
                     && !eventData
-                            .equals(JsonConstants.MAP_STATE_NODE_EVENT_DATA);
+                            .equals(JsonConstants.MAP_STATE_NODE_EVENT_DATA)
+                    && !eventData
+                            .equals(JsonConstants.EVENT_DATA_PREVENT_DEFAULT)
+                    && !eventData
+                            .equals(JsonConstants.EVENT_DATA_STOP_PROPAGATION);
         }
 
         private boolean isPropertySynchronized(String propertyName) {
@@ -620,8 +626,8 @@ public class ElementListenerMap extends NodeMap {
      */
     private static Entry makeConditional(String expression, Entry filter) {
         String method = switch (expression) {
-        case "event.preventDefault()" -> "preventDefault";
-        case "event.stopPropagation()" -> "stopPropagation";
+        case JsonConstants.EVENT_DATA_PREVENT_DEFAULT -> "preventDefault";
+        case JsonConstants.EVENT_DATA_STOP_PROPAGATION -> "stopPropagation";
         default -> null;
         };
         if (method == null || filter == null) {

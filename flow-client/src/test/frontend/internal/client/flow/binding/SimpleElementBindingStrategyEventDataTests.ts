@@ -5,6 +5,7 @@ import { NodeFeatures } from '../../../../../../main/frontend/internal/flow/inte
 import { NodeProperties } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeProperties';
 import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
 import { bind } from '../../../../../../main/frontend/internal/client/flow/binding/Binder';
+import { JsonConstants } from '../../../../../../main/frontend/internal/flow/shared/JsonConstants';
 
 // com.vaadin.flow.shared.JsonConstants.MAP_STATE_NODE_EVENT_DATA
 const MAP_STATE_NODE_EVENT_DATA = ']';
@@ -172,6 +173,58 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
 
     const eventData = harness.collectedEventData[0] as Record<string, unknown>;
     expect(eventData[expression]).to.equal(-1);
+  });
+
+  describe('without unsafe-eval', () => {
+    const originalFunction = globalThis.Function;
+
+    // As under a Content Security Policy without unsafe-eval, where the
+    // browser refuses to compile a string
+    beforeEach(() => {
+      globalThis.Function = function blocked(): never {
+        throw new EvalError('blocked by the test');
+      } as unknown as FunctionConstructor;
+    });
+
+    afterEach(() => {
+      globalThis.Function = originalFunction;
+    });
+
+    it('runs the always-true filter that carries a debounce', () => {
+      bindWithClickExpressions({ [JsonConstants.EVENT_FILTER_ALWAYS_TRUE]: [[200, 'leading']] });
+
+      element.click();
+
+      expect(harness.collectedEventData[0]).to.deep.equal({ [JsonConstants.EVENT_FILTER_ALWAYS_TRUE]: 1 });
+    });
+
+    it('calls preventDefault without compiling it', () => {
+      bindWithClickExpressions({ [JsonConstants.EVENT_DATA_PREVENT_DEFAULT]: false });
+
+      const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+      element.dispatchEvent(event);
+
+      expect(event.defaultPrevented).to.be.true;
+      expect(harness.collectedNodes).to.have.length(1);
+    });
+
+    it('calls stopPropagation without compiling it', () => {
+      let parentCalls = 0;
+      const countParentCall = (): void => {
+        parentCalls += 1;
+      };
+      document.body.addEventListener('click', countParentCall);
+      try {
+        bindWithClickExpressions({ [JsonConstants.EVENT_DATA_STOP_PROPAGATION]: false });
+
+        element.click();
+
+        expect(parentCalls).to.equal(0);
+        expect(harness.collectedNodes).to.have.length(1);
+      } finally {
+        document.body.removeEventListener('click', countParentCall);
+      }
+    });
   });
 
   it('runs a declared snippet with its captures, the event and the element', () => {
