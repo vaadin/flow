@@ -122,13 +122,6 @@ function createDryRunGithub(writes, seen) {
         create: record('createCheck'),
       },
       issues: {
-        get: async ({ owner, repo, issue_number }) => {
-          const { status, body } = await request(`repos/${owner}/${repo}/issues/${issue_number}`);
-          if (status === 404) {
-            throw new Error(`${owner}/${repo}#${issue_number} not found`);
-          }
-          return { data: body };
-        },
         // An existing comment only decides between creating and updating it
         listComments: () => [],
         createLabel: record('createLabel'),

@@ -7,15 +7,7 @@
  * that the workflow is on trial.
  */
 import { assess as defaultAssess } from './assess.js';
-import {
-  buildDiff,
-  classify,
-  evaluatePolicy,
-  isTrustedAuthor,
-  isTrustedHead,
-  linkedIssueRefs,
-  renderComment,
-} from './classify.js';
+import { buildDiff, classify, evaluatePolicy, isTrustedAuthor, isTrustedHead, renderComment } from './classify.js';
 
 export const MARKER = '<!-- pr-risk -->';
 
@@ -78,33 +70,6 @@ async function setLabel(github, repo, pr, current, category) {
   }
 }
 
-/**
- * The issues that the pull request links, as `{ ref, title, state, labels }`.
- * An issue that cannot be read, or a reference to a pull request, is skipped:
- * the linked issues only add information and never decide alone.
- */
-async function readLinkedIssues(github, repo, pr) {
-  const issues = await Promise.all(
-    linkedIssueRefs(pr.body, repo).map(async ({ owner, repo: name, number }) => {
-      try {
-        const { data } = await github.rest.issues.get({ owner, repo: name, issue_number: number });
-        if (data.pull_request) {
-          return null;
-        }
-        return {
-          ref: `${owner}/${name}#${number}`,
-          title: data.title,
-          state: data.state,
-          labels: data.labels.map((label) => (typeof label === 'string' ? label : label.name)),
-        };
-      } catch {
-        return null;
-      }
-    }),
-  );
-  return issues.filter(Boolean);
-}
-
 async function upsertComment(github, repo, pr, body) {
   const comments = await github.paginate(github.rest.issues.listComments, {
     ...repo,
@@ -163,8 +128,7 @@ export async function run({
 
   const repository = pr.base.repo.full_name;
   const diff = buildDiff(files, { repository });
-  const linkedIssues = await readLinkedIssues(github, repo, pr);
-  const assessing = assess({ pr, files, diff, linkedIssues, env }).then(
+  const assessing = assess({ pr, files, diff, env }).then(
     (assessment) => ({ assessment, failure: null }),
     (error) => ({ assessment: null, failure: `The agent assessment failed: ${error.message}` }),
   );
@@ -181,7 +145,6 @@ export async function run({
     authorTrusted,
     headTrusted: isTrustedHead(pr),
     files,
-    linkedIssues,
   });
 
   const [{ assessment, failure }] = await Promise.all([assessing, greenRemoved]);

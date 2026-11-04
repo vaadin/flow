@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import {
   assess,
-  buildUserMessage,
   chatToAssessment,
   decisionQuestions,
   decisionToAssessment,
@@ -149,17 +148,6 @@ describe('assess', () => {
 });
 
 describe('repositoryContext', () => {
-  test('lists the linked issues with their labels', () => {
-    const pr = { title: 'fix: x', body: 'Fixes #1' };
-    const diff = { text: '', omitted: [] };
-    const linkedIssues = [{ ref: 'vaadin/flow#1', title: 'Broken', state: 'open', labels: ['Impact: High'] }];
-    assert.match(
-      buildUserMessage({ pr, files: [], diff, linkedIssues }),
-      /<linked_issues>\nvaadin\/flow#1 \(open\): Broken \[labels: Impact: High\]\n<\/linked_issues>/u,
-    );
-    assert.doesNotMatch(buildUserMessage({ pr, files: [], diff }), /linked_issues/u);
-  });
-
   test('describes this repository in its own words', () => {
     const context = repositoryContext({ full_name: 'vaadin/web-components', description: 'Web components' });
     assert.match(context, /^The pull request is to the Vaadin web components repository, a monorepo/u);

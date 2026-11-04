@@ -333,16 +333,10 @@ The category is the higher of two:
 - a model's suggestion, from its ratings of the impact, blast radius,
   uncertainty and reversibility of the change,
 - the minimum that the repository policy in `.github/pr-risk/policy.js` sets
-  from the changed paths, the added code, the title, the author and the labels
-  of the linked issues. For example, CI, release, security, usage statistics
-  and licensing code is at least red; core framework code, build plugins,
-  dependencies, agent instructions and a linked issue labelled
-  `Impact: High` are at least amber; tests and docs set no minimum.
-
-The issues that the description links with `Fixes`, `Closes`, `Resolves` or
-`Part of` are read too, at most five and only in the vaadin organization. The
-model sees their titles and labels, such as `Impact: High` and
-`Severity: Major`.
+  from the changed paths, the added code, the title and the author. For
+  example, CI, release, security, usage statistics and licensing code is at
+  least red, core framework code, build plugins, dependencies and agent
+  instructions are at least amber, and tests and docs set no minimum.
 
 Nothing acts on the category: the auto-approval in `validation.yml` does not
 read it. A future merge gate must use the check run rather than the label,

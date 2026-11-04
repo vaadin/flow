@@ -17,7 +17,7 @@ const GREEN = {
 };
 
 /** A fake GitHub client that records the calls that change the pull request */
-function createGithub({ pr, files, comments = [], issues = {} }) {
+function createGithub({ pr, files, comments = [] }) {
   const calls = [];
   const record = (name) => (params) => {
     calls.push([name, params]);
@@ -34,12 +34,6 @@ function createGithub({ pr, files, comments = [], issues = {} }) {
         create: record('createCheck'),
       },
       issues: {
-        get: ({ owner, repo, issue_number }) => {
-          const issue = issues[`${owner}/${repo}#${issue_number}`];
-          return issue
-            ? Promise.resolve({ data: issue })
-            : Promise.reject(Object.assign(new Error('Not Found'), { status: 404 }));
-        },
         listComments: 'listComments',
         createLabel: record('createLabel'),
         addLabels: record('addLabels'),
@@ -113,26 +107,6 @@ describe('run', () => {
     assert.match(body, /### 🧪 Risk evaluation \(trial\): 🟢 low risk/u);
     assert.match(body, /sets no label and no check/u);
     assert.equal(core.outputs.category, 'green');
-  });
-
-  test('reads the linked issues, but not pull requests or issues it cannot read', async () => {
-    pr.body = 'Fixes #1\nPart of vaadin/platform#2\nFixes #3\nFixes #4';
-    const issues = {
-      'vaadin/web-components#1': { title: 'Broken', state: 'open', labels: [{ name: 'Impact: High' }] },
-      'vaadin/platform#2': { title: 'Epic', state: 'open', labels: ['Severity: Major'] },
-      'vaadin/web-components#3': { title: 'A PR', state: 'open', labels: [], pull_request: {} },
-    };
-    const github = createGithub({ pr, files: [], issues });
-    let seen;
-    const assess = ({ linkedIssues }) => {
-      seen = linkedIssues;
-      return Promise.resolve(GREEN);
-    };
-    await run({ github, context, core: createCore(), env, assess });
-    assert.deepEqual(seen, [
-      { ref: 'vaadin/web-components#1', title: 'Broken', state: 'open', labels: ['Impact: High'] },
-      { ref: 'vaadin/platform#2', title: 'Epic', state: 'open', labels: ['Severity: Major'] },
-    ]);
   });
 
   test('replaces the risk label and creates the comment', async () => {

@@ -42,14 +42,6 @@ const LOCKFILE = /(?:^|\/)(?:yarn\.lock|package-lock\.json)$/u;
 // A blank line, or a line that only holds a comment: a line comment, a block
 // comment that ends on the line, a JSDoc ` * …` line, or the end of a block
 // comment, with no code after the comment
-const JAVA_FILE = /\.java$/u;
-
-/** A Java string literal on one line */
-const JAVA_STRING = /"(?:[^"\\]|\\.)*"/gu;
-
-/** The blob of an empty file, which the API sends without a patch */
-const EMPTY_BLOB = 'e69de29bb2d1d6434b8b29ae775ad8c2e48c5391';
-
 const COMMENT_LINE = /^\s*(?:$|\/\/|\*\/\s*$|(?:\/\*|\*(?!\/))(?:(?!\*\/).)*(?:\*\/\s*)?$)/u;
 
 const MAX_LISTED_FINDING_FILES = 10;
@@ -101,29 +93,6 @@ function matchesAny(file, globs) {
   return paths(file).some((path) => matchesGlobs(path, globs));
 }
 
-function matchesRule(file, rule) {
-  return matchesAny(file, rule.paths) && !paths(file).every((path) => matchesGlobs(path, rule.exceptPaths ?? []));
-}
-
-/** Whether an added `line` of `file` matches a content rule, see CONTENT_RULES */
-function matchesContent(rule, file, line) {
-  let text = line;
-  if (JAVA_FILE.test(file.filename)) {
-    if (COMMENT_LINE.test(line)) {
-      return false;
-    }
-    if (rule.javaStringsOnly) {
-      text = (line.match(JAVA_STRING) ?? []).join(' ');
-    }
-  }
-  return rule.pattern.test(text) && !rule.except?.test(line);
-}
-
-/** The references of linked issues that a rule matched, such as `vaadin/flow#123` */
-function issuesWithLabel(linkedIssues, label) {
-  return linkedIssues.filter((issue) => issue.labels.includes(label)).map((issue) => issue.ref);
-}
-
 /** Whether the file changes more than comments and blank lines. A file without a patch counts as code. */
 function changesCode(file) {
   if (!file.patch) {
@@ -142,22 +111,20 @@ function isShipped(path, policy) {
  * request, each with the minimum category it sets and the files that made it
  * match.
  */
-export function evaluatePolicy({ repository, title, body, authorTrusted, headTrusted, files, linkedIssues = [] }) {
+export function evaluatePolicy({ repository, title, body, authorTrusted, headTrusted, files }) {
   const policy = policyFor(repository);
   const findings = [];
   const shipped = files.filter((file) => isShipped(file.filename, policy));
 
   for (const rule of policy.pathRules) {
-    const matched = files.filter((file) => matchesRule(file, rule) && (!rule.codeOnly || changesCode(file)));
+    const matched = files.filter((file) => matchesAny(file, rule.paths) && (!rule.codeOnly || changesCode(file)));
     if (matched.length > 0) {
       findings.push({ category: rule.category, reason: rule.reason, files: matched.map((file) => file.filename) });
     }
   }
 
   for (const rule of CONTENT_RULES) {
-    const matched = shipped.filter((file) =>
-      changedLines(file.patch).added.some((line) => matchesContent(rule, file, line)),
-    );
+    const matched = shipped.filter((file) => changedLines(file.patch).added.some((line) => rule.pattern.test(line)));
     if (matched.length > 0) {
       findings.push({ category: rule.category, reason: rule.reason, files: matched.map((file) => file.filename) });
     }
@@ -171,13 +138,6 @@ export function evaluatePolicy({ repository, title, body, authorTrusted, headTru
       reason: 'moves files into shipped code, so the rules did not check all of their content',
       files: movedIn.map((file) => file.filename),
     });
-  }
-
-  for (const rule of policy.issueLabelRules) {
-    const matched = issuesWithLabel(linkedIssues, rule.label);
-    if (matched.length > 0) {
-      findings.push({ category: rule.category, reason: rule.reason, files: matched });
-    }
   }
 
   if (BREAKING_TITLE.test(title)) {
@@ -199,42 +159,6 @@ export function evaluatePolicy({ repository, title, body, authorTrusted, headTru
   }
 
   return findings;
-}
-
-/** Linked issues that the workflow reads at most */
-const MAX_LINKED_ISSUES = 5;
-
-const ISSUE_REF = String.raw`(?:https:\/\/github\.com\/([\w.-]+)\/([\w.-]+)\/issues\/(\d+)|(?:([\w.-]+)\/([\w.-]+))?#(\d+))`;
-
-/** A reference that a closing keyword or `Part of` links, as in the PR template */
-const LINKED_ISSUE = new RegExp(
-  String.raw`\b(?:fix(?:es|ed)?|close[sd]?|resolve[sd]?|part of)\b:?\s+${ISSUE_REF}`,
-  'giu',
-);
-
-/**
- * The issues that the description links with `Fixes`, `Closes`, `Resolves` or
- * `Part of`, as `{ owner, repo, number }`, at most MAX_LINKED_ISSUES. A bare
- * `#123` is in the base repository `{ owner, repo }`. Only issues of the same
- * owner count, so a description cannot make the workflow read other accounts.
- * A reference can also be to a pull request; the workflow skips those.
- */
-export function linkedIssueRefs(body, { owner, repo }) {
-  const refs = [];
-  for (const match of (body ?? '').matchAll(LINKED_ISSUE)) {
-    const ref = {
-      owner: match[1] ?? match[4] ?? owner,
-      repo: match[2] ?? match[5] ?? repo,
-      number: Number(match[3] ?? match[6]),
-    };
-    const known = refs.some(
-      (other) => other.owner === ref.owner && other.repo === ref.repo && other.number === ref.number,
-    );
-    if (ref.owner.toLowerCase() === owner.toLowerCase() && !known) {
-      refs.push(ref);
-    }
-  }
-  return refs.slice(0, MAX_LINKED_ISSUES);
 }
 
 export function isTrustedAuthor({ authorAssociation, isMember, isBot = false }) {
@@ -260,8 +184,8 @@ function diffHeader(file) {
  * The unified diff that the agent reads, within the character budget. `omitted`
  * lists the changed files whose diff is not in `text`, because the API sent no
  * patch for them (binary files, files that git treats as binary, very large
- * diffs) or the budget ran out. Deleted files, pure renames, empty files and
- * the screenshots of the `repository` do not count as omitted.
+ * diffs) or the budget ran out. Deleted files, pure renames and the
+ * screenshots of the `repository` do not count as omitted.
  */
 export function buildDiff(files, { repository, budget = DIFF_BUDGET } = {}) {
   const { screenshotPaths } = policyFor(repository);
@@ -278,7 +202,6 @@ export function buildDiff(files, { repository, budget = DIFF_BUDGET } = {}) {
       const seen =
         file.status === 'removed' ||
         (file.status === 'renamed' && file.changes === 0) ||
-        file.sha === EMPTY_BLOB ||
         matchesGlobs(file.filename, screenshotPaths);
       if (!seen) {
         omitted.push(file.filename);

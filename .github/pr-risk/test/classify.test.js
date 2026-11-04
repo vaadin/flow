@@ -6,7 +6,6 @@ import {
   evaluatePolicy,
   isTrustedAuthor,
   isTrustedHead,
-  linkedIssueRefs,
   maxCategory,
   renderComment,
 } from '../classify.js';
@@ -249,13 +248,8 @@ describe('evaluatePolicy for vaadin/flow', () => {
 
   test('leaves tests, integration tests and docs alone', () => {
     assert.deepEqual(flow([file(`flow-server/src/test/java/com/vaadin/flow/dom/ElementTest.java`, change)]), []);
-    assert.deepEqual(
-      flow([file('flow-tests/test-root-context/src/main/java/com/vaadin/flow/uitest/ui/A.java', change)]),
-      [],
-    );
-    assert.deepEqual(flow([file('flow-plugins/flow-maven-plugin/src/it/simple/pom.xml', change)]), [
-      'amber: dependencies',
-    ]);
+    assert.deepEqual(flow([file('flow-tests/test-root-context/src/main/java/com/vaadin/flow/uitest/ui/A.java', change)]), []);
+    assert.deepEqual(flow([file('flow-plugins/flow-maven-plugin/src/it/simple/pom.xml', change)]), ['amber: dependencies']);
     assert.deepEqual(flow([file('README.md', change)]), []);
   });
 
@@ -317,111 +311,6 @@ describe('evaluatePolicy for vaadin/flow', () => {
   });
 });
 
-describe('evaluatePolicy for vaadin/flow, misfires the first run found', () => {
-  const flow = (files, options = {}) => policy(files, { repository: 'vaadin/flow', ...options });
-  const element = 'flow-server/src/main/java/com/vaadin/flow/dom/Element.java';
-  const CORE = 'amber: core framework code that every application runs';
-
-  test('does not count reading innerHTML or a Javadoc line about it as a sink', () => {
-    const patch = added(
-      '     * HTML set through the "innerHTML" property counts as children',
-      '        return Optional.ofNullable(getProperty("innerHTML"))',
-    );
-    assert.deepEqual(flow([file(element, patch)]), [CORE]);
-    assert.deepEqual(flow([file(element, added('getElement().setProperty("innerHTML", html);'))]), [CORE, SINK]);
-  });
-
-  test('checks network and storage only in the strings of Java code', () => {
-    const provider = 'flow-data/src/main/java/com/vaadin/flow/data/provider/ListDataProvider.java';
-    const declaration = added(
-      '    public Stream<T> fetch(Query<T, SerializablePredicate<T>> query) {',
-      '        return fetch(query);',
-    );
-    assert.deepEqual(flow([file(provider, declaration)]), [CORE]);
-    assert.deepEqual(flow([file(element, added('ui.getPage().executeJs("return fetch($0)", url);'))]), [CORE, NETWORK]);
-    assert.deepEqual(flow([file(element, added('executeJs("localStorage.setItem($0, $1)", key, value);'))]), [
-      CORE,
-      'red: adds browser storage or cookies',
-    ]);
-    assert.deepEqual(flow([file('flow-client/src/main/frontend/Flow.ts', added('await fetch(url);'))]), [
-      CORE,
-      NETWORK,
-    ]);
-  });
-
-  test('leaves documentation under .github alone, but not workflows or their prompts', () => {
-    const change = '@@ -1 +1 @@\n-a\n+b';
-    assert.deepEqual(flow([file('.github/workflows/README.md', change)]), []);
-    assert.deepEqual(flow([file('.github/ISSUE_TEMPLATE/feature_request.md', change)]), []);
-    assert.deepEqual(flow([file('.github/workflows/doc-bot.md', change)]), [AUTOMATION]);
-    assert.deepEqual(flow([file('.github/workflows/validation.yml', change)]), [AUTOMATION]);
-  });
-
-  const arguments_ = (linkedIssues) => ({
-    title: 'fix: x',
-    body: '',
-    authorTrusted: true,
-    headTrusted: true,
-    files: [],
-    linkedIssues,
-  });
-
-  test('sets amber when a linked issue has high impact', () => {
-    const linkedIssues = [
-      { ref: 'vaadin/flow#1', title: 'a', state: 'open', labels: ['Impact: High', 'Severity: Major'] },
-      { ref: 'vaadin/flow#2', title: 'b', state: 'open', labels: ['Impact: Low'] },
-    ];
-    const findings = evaluatePolicy({
-      repository: 'vaadin/flow',
-      title: 'fix: x',
-      body: '',
-      authorTrusted: true,
-      headTrusted: true,
-      files: [],
-      linkedIssues,
-    });
-    assert.deepEqual(findings, [
-      {
-        category: 'amber',
-        reason: 'a linked issue is labelled `Impact: High`: the problem reaches many applications',
-        files: ['vaadin/flow#1'],
-      },
-    ]);
-    // Repositories without issue label rules ignore the labels
-    assert.deepEqual(evaluatePolicy({ ...arguments_(linkedIssues), repository: 'vaadin/web-components' }), []);
-  });
-});
-
-describe('linkedIssueRefs', () => {
-  const repo = { owner: 'vaadin', repo: 'flow' };
-
-  test('finds issues that the description fixes or is part of', () => {
-    const body = [
-      'Fixes #951',
-      'Part of https://github.com/vaadin/platform/issues/9488',
-      'closes vaadin/flow-components#12, Related to #7',
-      'Follow-up to #26617',
-    ].join('\n');
-    assert.deepEqual(linkedIssueRefs(body, repo), [
-      { owner: 'vaadin', repo: 'flow', number: 951 },
-      { owner: 'vaadin', repo: 'platform', number: 9488 },
-      { owner: 'vaadin', repo: 'flow-components', number: 12 },
-    ]);
-  });
-
-  test('ignores other owners, duplicates and an empty description', () => {
-    assert.deepEqual(linkedIssueRefs('Fixes other/repo#1\nFixes #2\nfixes #2', repo), [
-      { owner: 'vaadin', repo: 'flow', number: 2 },
-    ]);
-    assert.deepEqual(linkedIssueRefs(null, repo), []);
-  });
-
-  test('reads at most five issues', () => {
-    const body = Array.from({ length: 8 }, (_, i) => `Fixes #${i + 1}`).join('\n');
-    assert.equal(linkedIssueRefs(body, repo).length, 5);
-  });
-});
-
 describe('evaluatePolicy for other repositories', () => {
   const FLOW = 'vaadin/flow-components';
   const JAVA = 'vaadin-grid-flow-parent/vaadin-grid-flow/src/main/java/com/vaadin/flow/component/grid/Grid.java';
@@ -474,18 +363,6 @@ describe('isTrustedHead', () => {
   test('does not trust a fork of someone else or a deleted fork', () => {
     assert.equal(isTrustedHead({ base, head: head('other/web-components'), user: { login: 'dev' } }), false);
     assert.equal(isTrustedHead({ base, head: { repo: null }, user: { login: 'dev' } }), false);
-  });
-});
-
-describe('buildDiff of empty files', () => {
-  test('does not omit an empty file, but a binary one', () => {
-    const empty = file('flow-tests/x/.mvn/.gitkeep', undefined, {
-      status: 'added',
-      changes: 0,
-      sha: 'e69de29bb2d1d6434b8b29ae775ad8c2e48c5391',
-    });
-    const binary = file('flow-tests/x/icon.png', undefined, { status: 'added', changes: 0, sha: '0123' });
-    assert.deepEqual(buildDiff([empty, binary]).omitted, ['flow-tests/x/icon.png']);
   });
 });
 
@@ -625,10 +502,7 @@ describe('renderComment', () => {
     });
     assert.match(body, /### 🧪 Risk evaluation \(trial\): 🔴 high risk/u);
     assert.match(body, /If it were live: Needs expert review\./u);
-    assert.match(
-      body,
-      /suggested \*\*medium\*\* \(low 10%, medium 70%, high 20%\)\. The rules below raised it to \*\*high\*\*\./u,
-    );
+    assert.match(body, /suggested \*\*medium\*\* \(low 10%, medium 70%, high 20%\)\. The rules below raised it to \*\*high\*\*\./u);
     assert.match(body, /\*\*Minimum risk rules\*\*/u);
     assert.match(body, /- 🔴 \*\*high\*\*: CI/u);
     assert.doesNotMatch(body, /\b(?:green|amber|red)\b/u);
