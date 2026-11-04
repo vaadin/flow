@@ -34,7 +34,6 @@ import com.vaadin.flow.dom.JsFunction;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -97,10 +96,6 @@ class JsCallTest {
         void log(String prefix);
 
         @JsExpression("console.log($0, value)")
-        JsFunction createUnwrapped(String prefix);
-
-        @JsExpression("console.log($0, value)")
-        @JsCalledWith({})
         JsFunction createWithoutParameters(String prefix);
 
         @JsExpression("console.log($0, value)")
@@ -110,6 +105,12 @@ class JsCallTest {
         @JsExpression("console.log($0, value)")
         @JsCalledWith("other")
         JsFunction createOtherLogger(String prefix);
+    }
+
+    interface EmptyCalledWithJs extends Serializable {
+        @JsExpression("console.log($0, value)")
+        @JsCalledWith({})
+        JsFunction createWithoutParameters(String prefix);
     }
 
     interface InvalidNamesJs extends Serializable {
@@ -263,9 +264,9 @@ class JsCallTest {
     @Test
     void functionId_snippetGeneratedDifferentlyFromTheSameJavaScript_isAnotherFunction() {
         // A call runs an async function, a snippet a synchronous one, which
-        // wraps the expression in a function taking the declared parameters
-        // when there are any: each of them is generated differently, so none
-        // of them may be registered under the identifier of another
+        // wraps the expression in a function taking the declared parameters:
+        // each of them is generated differently, so none of them may be
+        // registered under the identifier of another
         Set<String> ids = Stream.of(LoggerJs.class.getMethods())
                 .map(JsCall::functionId).collect(Collectors.toSet());
 
@@ -274,13 +275,24 @@ class JsCallTest {
     }
 
     @Test
+    void functionId_snippetWithoutCalledWith_isTheFunctionOfAnEmptyList()
+            throws Exception {
+        // Both declare a function without parameters around the expression
+        assertEquals(
+                JsCall.functionId(LoggerJs.class
+                        .getMethod("createWithoutParameters", String.class)),
+                JsCall.functionId(EmptyCalledWithJs.class
+                        .getMethod("createWithoutParameters", String.class)));
+    }
+
+    @Test
     void getCalledWithNames_answersWhatTheMethodDeclares() throws Exception {
         assertEquals(List.of("value"), JsCall.getCalledWithNames(
                 LoggerJs.class.getMethod("createLogger", String.class)));
-        assertNull(
+        assertEquals(List.of(),
                 JsCall.getCalledWithNames(LoggerJs.class
-                        .getMethod("createUnwrapped", String.class)),
-                "a method without the annotation wraps no function around its expression");
+                        .getMethod("createWithoutParameters", String.class)),
+                "a method without the annotation calls its function without parameters");
         // A call reads them off the method it calls, and only a snippet has
         // a function around its expression to name parameters of
         assertEquals(List.of("value"),
@@ -288,9 +300,7 @@ class JsCallTest {
                         .getCalledWithNames());
         assertEquals(List.of(), new JsCall(LoggerJs.class,
                 "createWithoutParameters", List.of("a")).getCalledWithNames());
-        assertNull(new JsCall(LoggerJs.class, "createUnwrapped", List.of("a"))
-                .getCalledWithNames());
-        assertNull(new JsCall(LoggerJs.class, "log", List.of("a"))
+        assertEquals(List.of(), new JsCall(LoggerJs.class, "log", List.of("a"))
                 .getCalledWithNames());
     }
 

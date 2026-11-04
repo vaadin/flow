@@ -49,6 +49,7 @@ import com.vaadin.flow.dom.JsFunction;
  *
  * @see JsSnippets#of(Class)
  * @see JsCalledWith
+ * @since 25.4
  */
 public interface JsSnippet extends Serializable {
 }
