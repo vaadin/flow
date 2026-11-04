@@ -350,24 +350,10 @@ export function buildDiff(files, { repository, budget = DIFF_BUDGET } = {}) {
 }
 
 /**
- * The agent's suggestion as it counts: red needs at least one dimension rated
- * high, else it counts as amber. Rules can still set red.
- */
-export function agentCategory(assessment) {
-  if (!assessment) {
-    return 'green';
-  }
-  if (assessment.category === 'red' && DIMENSIONS.every(({ key }) => assessment[key].level !== 'high')) {
-    return 'amber';
-  }
-  return assessment.category;
-}
-
-/**
  * The final category of a pull request: the highest of the agent's suggestion
- * (see agentCategory) and the minimum categories that the policy findings set.
- * Without an assessment, or when the agent did not see the whole diff, the pull
- * request needs at least one human approval.
+ * and the minimum categories that the policy findings set. Without an
+ * assessment, or when the agent did not see the whole diff, the pull request
+ * needs at least one human approval.
  */
 export function classify({ policyFindings, omitted, assessment }) {
   const findings = [...policyFindings];
@@ -392,7 +378,7 @@ export function classify({ policyFindings, omitted, assessment }) {
     });
   }
 
-  const category = findings.map((finding) => finding.category).reduce(maxCategory, agentCategory(assessment));
+  const category = findings.map((finding) => finding.category).reduce(maxCategory, assessment?.category ?? 'green');
   return { category, findings };
 }
 
@@ -459,12 +445,9 @@ export function renderComment({ marker, result, assessment, headSha, runUrl, tri
     const named = (probabilities) =>
       Object.fromEntries(Object.entries(probabilities).map(([value, probability]) => [name(value), probability]));
     const likely = assessment.probabilities ? ` (${percentages(named(assessment.probabilities))})` : '';
-    const counted = agentCategory(assessment);
-    const capped =
-      counted !== assessment.category ? ` It rated no dimension high, so it counts as **${name(counted)}**.` : '';
-    const raised = category !== counted ? ` The rules below raised it to **${name(category)}**.` : '';
+    const raised = category !== assessment.category ? ` The rules below raised it to **${name(category)}**.` : '';
     const summary = assessment.summary === undefined ? '' : ` ${text(assessment.summary)}`;
-    lines.push(`${agent} suggested **${name(assessment.category)}**${likely}.${capped}${raised}${summary}`, '');
+    lines.push(`${agent} suggested **${name(assessment.category)}**${likely}.${raised}${summary}`, '');
 
     // Claude explains each rating, the Decisions API gives the probability of each level
     const explained = DIMENSIONS.every(({ key }) => assessment[key].reason !== undefined);
