@@ -211,6 +211,18 @@ public class UsageTracker {
 
         track(task, usages::add);
 
+        return combine(usages);
+    }
+
+    /**
+     * Combines the given usages into a single usage.
+     *
+     * @param usages
+     *            the usages to combine, not <code>null</code>
+     * @return {@link #NO_USAGE} if there are no usages, the only usage if there
+     *         is one, or a usage that combines all of them
+     */
+    static Usage combine(Collection<Usage> usages) {
         int usageSize = usages.size();
         if (usageSize == 0) {
             return NO_USAGE;
