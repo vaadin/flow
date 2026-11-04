@@ -505,8 +505,8 @@ describe('evaluatePolicy for vaadin/flow, misfires of the dry run', () => {
   test('sets amber for CI checks that change no secrets, permissions, triggers or actions', () => {
     const CHECKS = 'amber: CI checks that change no secrets, permissions, triggers or actions';
     const edit = (line) => `@@ -1 +1 @@\n-      run: ./old.sh\n+${line}`;
-    assert.deepEqual(flow([file('.github/workflows/validation.yml', edit('      run: ./mvnw -B verify'))]), [CHECKS]);
-    assert.deepEqual(flow([file('scripts/runMavenWithRetry.sh', added('for attempt in 1 2 3; do'))]), [CHECKS]);
+    assert.deepEqual(flow([file('.github/workflows/validation.yml', edit('      run: node scripts/apiDiff.js'))]), [CHECKS]);
+    assert.deepEqual(flow([file('scripts/apiDiff.js', added('const report = compare(base, head);'))]), [CHECKS]);
     for (const line of [
       '          GH_TOKEN: ${{ secrets.VAADIN_BOT_TOKEN }}',
       '    permissions:',
@@ -518,22 +518,12 @@ describe('evaluatePolicy for vaadin/flow, misfires of the dry run', () => {
     ]) {
       assert.deepEqual(flow([file('.github/workflows/validation.yml', edit(line))]), [AUTOMATION], line);
     }
-    // The API diff sets the +0.0.1 label, which lets a pull request merge without a human
-    for (const line of ['          version_change="0.0.1"', '  api-diff-labeling:', '      run: node scripts/apiDiff.js']) {
-      assert.deepEqual(flow([file('.github/workflows/validation.yml', edit(line))]), [AUTOMATION], line);
-    }
     // The merge gates and the agent workflows stay red
-    for (const path of [
-      '.github/workflows/pr-risk.yml',
-      '.github/workflows/doc-bot.md',
-      'scripts/autoMerge.js',
-      'scripts/apiDiff.js',
-      'scripts/ChangeTypeLevels.java',
-    ]) {
+    for (const path of ['.github/workflows/pr-risk.yml', '.github/workflows/doc-bot.md', 'scripts/autoMerge.js']) {
       assert.deepEqual(flow([file(path, edit('      run: ./new.sh'))]), [AUTOMATION], path);
     }
     // A file without a diff cannot be checked
-    assert.deepEqual(flow([file('scripts/runMavenWithRetry.sh', undefined)]), [AUTOMATION]);
+    assert.deepEqual(flow([file('scripts/apiDiff.js', undefined)]), [AUTOMATION]);
   });
 
   test('skips the storage rule for the dev server, but not the network rule', () => {

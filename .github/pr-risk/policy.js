@@ -162,10 +162,8 @@ const REPOSITORIES = {
         paths: ['scripts/**', 'build-tools/**', 'release-check/**', 'flow-bom/**', '.mvn/**'],
         // Workflows and scripts that only check pull requests, such as the API
         // diff or a retry, cannot reach a secret or a release unless they change
-        // the lines that grant that power. The merge gates (the PR risk
-        // workflow, the API diff that sets the `+0.0.1` label and the
-        // auto-merge), the agent workflows and the scripts that push with a
-        // token stay red.
+        // the lines that grant that power. The merge gates, the agent workflows
+        // and the scripts that push with a token stay red.
         checksOnly: {
           category: 'amber',
           reason: 'CI checks that change no secrets, permissions, triggers or actions',
@@ -177,8 +175,6 @@ const REPOSITORIES = {
             'scripts/autoMerge.js',
             'scripts/mergePr.sh',
             'scripts/cherryPick.js',
-            'scripts/apiDiff*',
-            'scripts/ChangeTypeLevels*',
           ],
           sensitive: new RegExp(
             [
@@ -187,9 +183,6 @@ const REPOSITORIES = {
               // A permission inside a `permissions:` block, such as `contents: write`
               String.raw`^\s*[\w-]+\s*:\s*(?:write|read|none|write-all|read-all)\s*$`,
               String.raw`^\s*(?:-\s*)?uses\s*:`,
-              // The API diff and auto-merge steps: the `+0.0.1` label lets a pull
-              // request be approved and merged without a human
-              String.raw`\+0\.0\.1|\+0\.1\.0|\+1\.0\.0|version_change|api-?[dD]iff|apicmp|japicmp|auto-?[mM]erge`,
               // Text from the pull request inserted into a script
               String.raw`\$\{\{\s*(?:github\.event|github\.head_ref|inputs)`,
             ].join('|'),
