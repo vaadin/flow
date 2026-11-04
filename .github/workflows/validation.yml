@@ -864,8 +864,11 @@ jobs:
     name: Sonar Analysis
     # Runs after the unit tests so the analysis can reuse their JaCoCo
     # coverage reports instead of running the tests a second time.
+    # Only in vaadin/flow: a copy of this repository that has the organization
+    # secrets would otherwise upload its analysis to the flow SonarCloud
+    # project.
     needs: unit-tests
-    if: ${{ (github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'push') && !github.event.pull_request.head.repo.fork }}
+    if: ${{ github.repository == 'vaadin/flow' && (github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'push') && !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 60
     runs-on: ubuntu-26.04
     env:
