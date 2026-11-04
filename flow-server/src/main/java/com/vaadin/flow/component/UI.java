@@ -1599,10 +1599,11 @@ public class UI extends Component
      * <p>
      * Components with modality, such as open dialogs in either
      * {@link ModalityMode#STRICT strict} or {@link ModalityMode#VISUAL visual}
-     * mode, are removed from the UI as part of the refresh, since they would
-     * otherwise keep showing outdated contents. If such components are present,
-     * the whole route chain is refreshed regardless of
-     * {@code refreshRouteChain}.
+     * mode, and other overlays that were added to the UI when they opened, such
+     * as modeless dialogs and notifications, are removed from the UI as part of
+     * the refresh, since they would otherwise keep showing outdated contents.
+     * If such components are present, the whole route chain is refreshed
+     * regardless of {@code refreshRouteChain}.
      * <p>
      * In development mode, local signal field values are automatically
      * transferred from the old component instance to the new one, preserving UI
@@ -1997,6 +1998,12 @@ public class UI extends Component
                             + "attached or just use addModal(component) when using ModalityMode.STRICT.");
         }
         getInternals().setChildModal(childComponent, mode);
+        // Overlays such as Dialog and Notification add themselves to the UI
+        // and set their modality when they open, in any mode. A component
+        // inside a route target or a layout is refreshed with it instead.
+        if (childComponent.getParent().orElse(null) == this) {
+            getInternals().setChildOverlay(childComponent);
+        }
     }
 
     /**
