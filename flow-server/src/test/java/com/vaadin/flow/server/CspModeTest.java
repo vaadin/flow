@@ -168,7 +168,7 @@ class CspModeTest {
             DomListenerRegistration registration = ui.getElement()
                     .addEventListener("click", e -> {
                     });
-            registration.setFilter((String) null);
+            registration.setFilter(null);
             registration.addEventData(List.of());
             registration.addEventData(
                     List.of(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + "value",
@@ -183,7 +183,7 @@ class CspModeTest {
             // Its JavaScript is in the bundle rather than in a string
             JsSnippets.of(LoggerJs.class).createLogger("Greeting:");
             EventJs eventJs = JsSnippets.of(EventJs.class);
-            registration.setFilter(eventJs.isX(2))
+            registration.setFilterExpression(eventJs.isX(2))
                     .addEventData(eventJs.scaledX(2));
             // Loads the chunk of the route with a function from the bundle
             ui.getInternals().addComponentDependencies(RouteView.class);

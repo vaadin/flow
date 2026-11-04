@@ -26,7 +26,7 @@ import com.vaadin.flow.js.JsSnippets;
 /**
  * A declared JavaScript expression that decides if a DOM event is sent to a
  * listener. Use it with
- * {@link DomListenerRegistration#setFilter(DomEventFilter)}.
+ * {@link DomListenerRegistration#setFilterExpression(DomEventFilter)}.
  * <p>
  * To declare a filter, add a method that returns this type to a
  * {@link JsDefinition} interface. To create a filter, call that method on the
@@ -49,7 +49,7 @@ import com.vaadin.flow.js.JsSnippets;
  * static final KeyFilters FILTERS = JsSnippets.of(KeyFilters.class);
  *
  * field.getElement().addEventListener("keydown", event -&gt; submit())
- *         .setFilter(FILTERS.isKey("Enter"));
+ *         .setFilterExpression(FILTERS.isKey("Enter"));
  * </pre>
  * <p>
  * The build adds the expression to the bundle. Because of this, the browser

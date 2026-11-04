@@ -66,11 +66,11 @@ public class EventDataCapturesView extends Div {
         filterButton.getElement().addEventListener("mousedown", event -> {
             primaryCount++;
             showCounts(filterResult);
-        }).setFilter(JS.isButton(0));
+        }).setFilterExpression(JS.isButton(0));
         filterButton.getElement().addEventListener("mousedown", event -> {
             secondaryCount++;
             showCounts(filterResult);
-        }).setFilter(JS.isButton(2));
+        }).setFilterExpression(JS.isButton(2));
 
         add(dataButton, filterButton, dataResult, filterResult);
     }

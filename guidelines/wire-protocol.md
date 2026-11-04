@@ -131,7 +131,7 @@ form, key order included, changes the id.
 
 #### Declared event data and filters
 
-`addEventData(DomEventData)` and `setFilter(DomEventFilter)` use a
+`addEventData(DomEventData)` and `setFilterExpression(DomEventFilter)` use a
 function that a `@JsDefinition` method declares, so the client compiles
 nothing from a string. Such an entry is keyed by `@` followed by a short
 hash of the function and its captured values (`JsCall.createSnippetKey()`).

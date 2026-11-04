@@ -371,7 +371,8 @@ public class ElementListenerMap extends NodeMap {
         }
 
         @Override
-        public DomListenerRegistration setFilter(DomEventFilter filter) {
+        public DomListenerRegistration setFilterExpression(
+                DomEventFilter filter) {
             return updateFilter(
                     filter == null ? null : SnippetEntry.of(filter));
         }

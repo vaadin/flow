@@ -426,11 +426,11 @@ public class ElementListenersTest
     @Test
     void declaredFilterWithPlainCaptures_sharedThroughConstantPool() {
         ElementListenerMap enter1 = createFeature();
-        enter1.add("keydown", noOp).setFilter(JS.isKey("Enter"));
+        enter1.add("keydown", noOp).setFilterExpression(JS.isKey("Enter"));
         ElementListenerMap enter2 = createFeature();
-        enter2.add("keydown", noOp).setFilter(JS.isKey("Enter"));
+        enter2.add("keydown", noOp).setFilterExpression(JS.isKey("Enter"));
         ElementListenerMap escape = createFeature();
-        escape.add("keydown", noOp).setFilter(JS.isKey("Escape"));
+        escape.add("keydown", noOp).setFilterExpression(JS.isKey("Escape"));
 
         // Equal plain captures give equal settings, so they are sent once
         Serializable value1 = settingsValue(enter1, "keydown");
@@ -447,9 +447,9 @@ public class ElementListenersTest
         AtomicInteger enterCount = new AtomicInteger();
         AtomicInteger escapeCount = new AtomicInteger();
         ns.add("keydown", e -> enterCount.incrementAndGet())
-                .setFilter(JS.isKey("Enter"));
+                .setFilterExpression(JS.isKey("Enter"));
         ns.add("keydown", e -> escapeCount.incrementAndGet())
-                .setFilter(JS.isKey("Escape"));
+                .setFilterExpression(JS.isKey("Escape"));
 
         ObjectNode settings = eventSettings(ns, "keydown");
         ObjectNode fromClient = JacksonUtils.createObjectNode();
@@ -464,13 +464,13 @@ public class ElementListenersTest
 
     @Test
     void sameDeclaredFilterDifferentCaptures_ownDebounceSettings() {
-        ns.add("keydown", noOp).setFilter(JS.isKey("Enter"));
-        ns.add("keydown", noOp).setFilter(JS.isKey("Escape")).debounce(300,
-                DebouncePhase.TRAILING);
+        ns.add("keydown", noOp).setFilterExpression(JS.isKey("Enter"));
+        ns.add("keydown", noOp).setFilterExpression(JS.isKey("Escape"))
+                .debounce(300, DebouncePhase.TRAILING);
         // Same filter and captures as the previous listener, so the debounce
         // settings of both are merged
-        ns.add("keydown", noOp).setFilter(JS.isKey("Escape")).debounce(300,
-                DebouncePhase.LEADING);
+        ns.add("keydown", noOp).setFilterExpression(JS.isKey("Escape"))
+                .debounce(300, DebouncePhase.LEADING);
 
         ObjectNode settings = eventSettings(ns, "keydown");
         assertEquals(2, JacksonUtils.getKeys(settings).size());
@@ -486,7 +486,7 @@ public class ElementListenersTest
     @Test
     void preventDefaultWithDeclaredFilter_conditionalOnFilter() {
         DomListenerRegistration registration = ns.add("keydown", noOp);
-        registration.setFilter(JS.isKey("Enter"));
+        registration.setFilterExpression(JS.isKey("Enter"));
         registration.preventDefault();
 
         // Nothing is made from strings for a declared filter
@@ -586,7 +586,7 @@ public class ElementListenersTest
     @Test
     void setDeclaredFilter_getFilterReturnsNull() {
         DomListenerRegistration registration = ns.add("foo", noOp);
-        registration.setFilter(JS.isKey("Enter"));
+        registration.setFilterExpression(JS.isKey("Enter"));
 
         assertNull(registration.getFilter());
     }
@@ -604,10 +604,10 @@ public class ElementListenersTest
         AtomicInteger count = new AtomicInteger();
         DomListenerRegistration registration = ns.add("keydown",
                 e -> count.incrementAndGet());
-        registration.setFilter(JS.isKey("Enter"));
+        registration.setFilterExpression(JS.isKey("Enter"));
 
         DomEventFilter noFilter = null;
-        registration.setFilter(noFilter);
+        registration.setFilterExpression(noFilter);
 
         assertTrue(JacksonUtils.getKeys(eventSettings(ns, "keydown")).stream()
                 .noneMatch(key -> key.startsWith("@")));
@@ -618,7 +618,7 @@ public class ElementListenersTest
 
     @Test
     void serializable_withDeclaredSnippets() {
-        ns.add("click", noOp).setFilter(JS.isKey("Enter"))
+        ns.add("click", noOp).setFilterExpression(JS.isKey("Enter"))
                 .addEventData(JS.closestTag(".container"));
 
         ElementListenerMap roundtrip = SerializationUtils.roundtrip(ns);

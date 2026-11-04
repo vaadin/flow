@@ -151,17 +151,13 @@ public interface DomListenerRegistration extends Registration {
      * forward events triggered by the primary mouse button.
      * <p>
      * Any previous filter for this registration is discarded, also one set with
-     * {@link #setFilter(DomEventFilter)}.
+     * {@link #setFilterExpression(DomEventFilter)}.
      * <p>
      * The browser compiles the expression from a string, so it does not work
      * with a Content Security Policy that does not allow
      * <code>unsafe-eval</code>. To filter events without that, declare the
      * filter in a {@link com.vaadin.flow.js.JsDefinition} interface and use
-     * {@link #setFilter(DomEventFilter)}.
-     * <p>
-     * Both versions take <code>null</code> to clear the filter. Because of
-     * this, a plain <code>setFilter(null)</code> does not compile. Write
-     * <code>setFilter((String) null)</code> instead.
+     * {@link #setFilterExpression(DomEventFilter)}.
      *
      * @param filter
      *            the JavaScript filter expression, or <code>null</code> to
@@ -180,7 +176,7 @@ public interface DomListenerRegistration extends Registration {
      *
      * <pre>
      * field.getElement().addEventListener("keydown", event -&gt; submit())
-     *         .setFilter(JS.isKey("Enter"));
+     *         .setFilterExpression(JS.isKey("Enter"));
      * </pre>
      * <p>
      * The browser does not compile any JavaScript from a string, unlike with
@@ -197,7 +193,7 @@ public interface DomListenerRegistration extends Registration {
      * @return this registration, for chaining
      * @see DomEventFilter
      */
-    default DomListenerRegistration setFilter(DomEventFilter filter) {
+    default DomListenerRegistration setFilterExpression(DomEventFilter filter) {
         /*
          * Dummy backwards compatibility implementation to keep old custom code
          * compiling.
@@ -209,8 +205,8 @@ public interface DomListenerRegistration extends Registration {
      * Gets the currently set filter expression.
      * <p>
      * Returns <code>null</code> for a filter set with
-     * {@link #setFilter(DomEventFilter)}, because such a filter has no
-     * expression.
+     * {@link #setFilterExpression(DomEventFilter)}, because such a filter has
+     * no expression.
      *
      * @see #setFilter(String)
      *
@@ -496,9 +492,9 @@ public interface DomListenerRegistration extends Registration {
      * Stops propagation of the event to upper level DOM elements.
      * <p>
      * When used with {@link #setFilter(String)} or
-     * {@link #setFilter(DomEventFilter)}, stopPropagation will only be called
-     * when the filter condition is met. For example, if you set a filter for
-     * specific keys, stopPropagation will only apply to those keys.
+     * {@link #setFilterExpression(DomEventFilter)}, stopPropagation will only
+     * be called when the filter condition is met. For example, if you set a
+     * filter for specific keys, stopPropagation will only apply to those keys.
      * <p>
      * Nothing is compiled from a string in the browser, unless the filter is
      * set with {@link #setFilter(String)}. So without a filter, or with a
@@ -523,9 +519,9 @@ public interface DomListenerRegistration extends Registration {
      * might not be possible for some events.
      * <p>
      * When used with {@link #setFilter(String)} or
-     * {@link #setFilter(DomEventFilter)}, preventDefault will only be called
-     * when the filter condition is met. For example, if you set a filter for
-     * specific keys, preventDefault will only apply to those keys.
+     * {@link #setFilterExpression(DomEventFilter)}, preventDefault will only be
+     * called when the filter condition is met. For example, if you set a filter
+     * for specific keys, preventDefault will only apply to those keys.
      * <p>
      * Nothing is compiled from a string in the browser, unless the filter is
      * set with {@link #setFilter(String)}. So without a filter, or with a
