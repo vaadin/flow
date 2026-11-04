@@ -200,29 +200,13 @@ export function evaluatePolicy({
     const removed = rule.removed
       ? matched.filter((file) => file.status === 'removed' && matchesAny(file, rule.removed.paths))
       : [];
-    const checks = rule.checksOnly;
-    const checksOnly = checks
-      ? matched.filter(
-          (file) =>
-            !removed.includes(file) &&
-            file.patch &&
-            matchesAny(file, checks.paths) &&
-            !matchesAny(file, checks.exceptPaths ?? []) &&
-            !Object.values(changedLines(file.patch))
-              .flat()
-              .some((line) => checks.sensitive.test(line)),
-        )
-      : [];
-    const changed = matched.filter((file) => !removed.includes(file) && !checksOnly.includes(file));
+    const changed = matched.filter((file) => !removed.includes(file));
     if (changed.length > 0) {
       findings.push({ category: rule.category, reason: rule.reason, files: changed.map((file) => file.filename) });
     }
     if (removed.length > 0) {
       const { category, reason } = rule.removed;
       findings.push({ category, reason, files: removed.map((file) => file.filename) });
-    }
-    if (checksOnly.length > 0) {
-      findings.push({ category: checks.category, reason: checks.reason, files: checksOnly.map((file) => file.filename) });
     }
   }
 

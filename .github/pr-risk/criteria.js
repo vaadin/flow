@@ -31,7 +31,7 @@ export function repositoryContext(repo) {
 
 export const CATEGORY_CRITERIA = {
   question:
-    'Which review does the pull request need before it is merged? Do not decide by the type of task alone: a bug fix can be green when it is trivial and well specified, and red when it changes a code path that every application depends on. Green fits only when the impact, blast radius, uncertainty and reversibility are all low, and red only when at least one of them is high. Code that is moved or copied unchanged from another file, module or repository keeps the risk it already had, as it already ran in applications: rate the move by what changes around it, such as how the code is loaded, packaged or built, not by the number of moved lines. When the diff cannot show that the code is unchanged, count that as uncertainty, not as impact.',
+    'Which review does the pull request need before it is merged? Do not decide by the type of task alone: a bug fix can be green when it is trivial and well specified, and red when it changes a code path that every application depends on. Green fits only when the impact, blast radius, uncertainty and reversibility are all low, and red only when at least one of them is high.',
   choices: [
     {
       value: 'green',
@@ -41,12 +41,12 @@ export const CATEGORY_CRITERIA = {
     {
       value: 'amber',
       description:
-        'Needs approval from one human code owner. Changes that affect behavior within a bounded scope: features, new public API that only adds to what exists and is covered by tests, bug fixes that involve a behavioral decision, UI and interaction changes, non-trivial refactoring, backward-compatible changes to existing APIs, and CI checks or build scripts that only check pull requests: no application runs them, so rate their impact by what a wrong check lets through.',
+        'Needs approval from one human code owner. Changes that affect behavior within a bounded scope: features, new public API that only adds to what exists and is covered by tests, bug fixes that involve a behavioral decision, UI and interaction changes, non-trivial refactoring, and backward-compatible changes to existing APIs.',
     },
     {
       value: 'red',
       description:
-        'A human owns the design decision, an expert reviews it, and someone is accountable for the release. High-risk or hard-to-reverse changes: security-sensitive functionality (HTML sanitization, injection sinks, authentication UI, network requests), privacy, usage statistics, licensing, data loss, breaking changes, changes to the behavior or contract of existing public API, architectural changes, changes to code paths that every application runs whose correctness the tests do not settle, release and publishing infrastructure, and CI changes that touch secrets, permissions, triggers or third-party actions.',
+        'A human owns the design decision, an expert reviews it, and someone is accountable for the release. High-risk or hard-to-reverse changes: security-sensitive functionality (HTML sanitization, injection sinks, authentication UI, network requests), privacy, usage statistics, licensing, data loss, breaking changes, changes to the behavior or contract of existing public API, architectural changes, changes to code paths that every application runs whose correctness the tests do not settle, and CI, release and publishing infrastructure.',
     },
   ],
 };
@@ -54,8 +54,7 @@ export const CATEGORY_CRITERIA = {
 /** Each dimension is rated low, medium or high, where high is the riskier end */
 export const DIMENSION_CRITERIA = {
   impact: {
-    question:
-      'What happens if the implementation is wrong, in a way the tests do not notice? A failure that breaks every build or every page load at once is caught by CI and the integration tests; a wrong value or a broken edge case that no test covers is what reaches applications.',
+    question: 'What happens if the implementation is wrong?',
     low: 'A cosmetic glitch or a wrong sentence in the docs.',
     high: 'A broken core interaction, lost user input, or an accessibility or security regression.',
   },
