@@ -70,6 +70,14 @@ import com.vaadin.flow.js.JsSnippets;
  * You can use the same method several times on one listener with different
  * values. Each value is read separately.
  * <p>
+ * When all captured values are plain values, such as strings, numbers, booleans
+ * or enums, the settings of the listener are stored in a cache that the server
+ * and the browser keep for the lifetime of the UI. Each different value adds
+ * one entry to this cache, and entries are never removed. So avoid a captured
+ * value that is different for each element, such as a row id on every row of a
+ * long list. Read such a value from the element instead, for example from an
+ * attribute.
+ * <p>
  * The captured values are checked when the event data is created. If a value
  * cannot be sent to the browser, creating the event data fails.
  * <p>

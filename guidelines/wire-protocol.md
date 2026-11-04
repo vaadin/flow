@@ -166,7 +166,10 @@ other entries. A snippet that captures anything else, such as an element,
 is sent for this element only, because an element is encoded with its
 node id at the time the settings are sent. The `put` value is then a
 `ParameterizedConstantPoolKey`, encoded as `[poolId, settings]`, where
-`settings` holds the entries of this element in the same form:
+`settings` holds the entries of this element in the same form. Pooled
+captures are part of the pooled value, so each distinct captured value
+adds one pool entry, like a value concatenated into an expression (see
+the constraints below). Captures sent for one element only do not:
 
 ```json
 ["RBNvo1WzZ4o=", { "@<key>": { "f": "…", "d": false, "c": [{ "@v-node": 12 }] } }]
@@ -183,7 +186,9 @@ declared entry is sent back under its key, and
   lifetime of the UI. A constant pool key is right for a value with few
   distinct shapes repeated over many nodes, and wrong for anything that
   varies per node or per interaction — that just leaks a JSON value per
-  interaction into a map that is never cleaned.
+  interaction into a map that is never cleaned. Declared event data and
+  filters with plain captures are pooled too, so a capture that varies
+  per node, such as a row id, adds one entry per value.
 - **An id names one value, forever.** The client's
   `ConstantPool.importFromJson` accepts a key it already holds only with
   the value it already holds — the same message can legitimately be read

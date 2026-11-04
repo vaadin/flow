@@ -56,6 +56,14 @@ import com.vaadin.flow.js.JsSnippets;
  * does not compile any JavaScript from a string. All filters from the same
  * method use the same function, also when the captured values are different.
  * <p>
+ * When all captured values are plain values, such as strings, numbers, booleans
+ * or enums, the settings of the listener are stored in a cache that the server
+ * and the browser keep for the lifetime of the UI. Each different value adds
+ * one entry to this cache, and entries are never removed. So avoid a captured
+ * value that is different for each element, such as a row id on every row of a
+ * long list. Read such a value from the element instead, for example from an
+ * attribute.
+ * <p>
  * The captured values are checked when the filter is created. If a value cannot
  * be sent to the browser, creating the filter fails.
  * <p>
