@@ -318,52 +318,11 @@ Configuration:
 
 ## PR risk
 
-`pr-risk.yml` classifies every non-draft pull request against `main` by risk:
-green, amber or red. It is on trial: it only posts one comment that gives the
-risk as low, medium or high and explains it. Without `PR_RISK_TRIAL` in the
-workflow, it also labels the pull request `risk: green`, `risk: amber` or
-`risk: red` and reports the category as the `PR risk` check run on the head
-commit: `success` for green, `neutral` for amber and red.
-The scripts in `.github/pr-risk` are the same as in vaadin/web-components; only
-the `vaadin/flow` entries in `policy.js` and `criteria.js` are specific to
-Flow.
-
-The category is the higher of two:
-
-- a model's suggestion, from its ratings of the impact, blast radius,
-  uncertainty and reversibility of the change,
-- the minimum that the repository policy in `.github/pr-risk/policy.js` sets
-  from the changed paths, the added code, the title, the author and the labels
-  of the linked issues. For example, CI, release, security, usage statistics
-  and licensing code is at least red; core framework code, build plugins,
-  dependencies, agent instructions and a linked issue labelled
-  `Impact: High` are at least amber; tests and docs set no minimum.
-
-The issues that the description links with `Fixes`, `Closes`, `Resolves` or
-`Part of` are read too, at most five and only in the vaadin organization. The
-model sees their titles and labels, such as `Impact: High` and
-`Severity: Major`.
-
-Nothing acts on the category: the auto-approval in `validation.yml` does not
-read it. A future merge gate must use the check run rather than the label,
-which anyone with triage access can change.
-
-The workflow runs on `pull_request_target`, so pull requests from forks are
-classified too. It checks out only `.github/pr-risk` from the base branch and
-never runs the code of the pull request; the model reads the diff from the API
-as untrusted text and gets no tools. `pr-risk-test.yml` runs the tests of the
-scripts when they change.
-
-To see how a pull request would be classified, without changing it, run
-`node .github/pr-risk/cli.js <pull request URL>`. Without an API key it shows
-the policy part alone; `npm ci` in `.github/pr-risk` installs the SDKs that a
-model needs.
-
-Configuration:
-
-| Name | Kind | Purpose |
-|---|---|---|
-| `OPENAI_API_KEY` | secret | The OpenAI Decisions API rates the pull request. Used first when set. |
-| `ANTHROPIC_API_KEY` | secret | Claude rates the pull request when `OPENAI_API_KEY` is not set. |
-| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL` | secret, variable (optional) | A model on OpenRouter, when neither key above is set. |
-| `VAADIN_BOT_TOKEN` | secret | Checks whether the author is a member of the organization, which private members' author association does not show. Falls back to the workflow token. |
+`pr-risk.yml` is on trial: it rates every ready pull request to `main` as low,
+medium or high risk and posts one comment that explains why. Nothing reads the
+result. Its header explains how the level is decided, and
+`node .github/pr-risk/cli.js <pull request URL>` shows it for a pull request
+without changing it. It needs the `ANTHROPIC_API_KEY` secret, and uses
+`VAADIN_BOT_TOKEN` to check whether the author is a member of the
+organization. `pr-risk-test.yml` runs the tests of the scripts when they
+change.

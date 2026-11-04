@@ -1,13 +1,23 @@
 /**
- * Pure functions of the PR risk workflow: evaluate the repository policy,
- * build the diff that the agent reads, combine the policy with the agent's
- * assessment into the final category, and render the PR comment.
+ * Pure functions of the PR risk workflow: evaluate the policy, build the diff
+ * that the agent reads, combine the policy with the agent's assessment into the
+ * final level, and render the PR comment.
  */
 import { matchesGlob } from 'node:path';
-import { BREAKING_BODY, BREAKING_TITLE, CONTENT_RULES, policyFor, TRUSTED_ASSOCIATIONS } from './policy.js';
+import {
+  BREAKING_BODY,
+  BREAKING_TITLE,
+  CONTENT_RULES,
+  ISSUE_LABEL_RULES,
+  PATCH_BUMPS,
+  PATH_RULES,
+  SHIPPED_PATHS,
+  TEST_PATHS,
+  TRUSTED_ASSOCIATIONS,
+} from './policy.js';
 
 /** From lowest to highest risk */
-export const CATEGORIES = ['green', 'amber', 'red'];
+export const LEVELS = ['low', 'medium', 'high'];
 
 export const DIMENSIONS = [
   { key: 'impact', title: 'Impact' },
@@ -16,19 +26,13 @@ export const DIMENSIONS = [
   { key: 'reversibility', title: 'Reversibility' },
 ];
 
-const CATEGORY_TEXT = {
-  green: { icon: '🟢', requirement: 'Can merge without human approval once CI and the agent review pass.' },
-  amber: { icon: '🟡', requirement: 'Needs approval from one human code owner.' },
-  red: {
-    icon: '🔴',
-    requirement: 'Needs expert review. A human owns the design decision and is accountable for the release.',
-  },
+const ICONS = { low: '🟢', medium: '🟡', high: '🔴' };
+
+const REQUIREMENTS = {
+  low: 'Could merge without human approval once CI and the agent review pass.',
+  medium: 'Needs approval from one human code owner.',
+  high: 'Needs expert review. A human owns the design decision and is accountable for the release.',
 };
-
-const LEVEL_ICONS = { low: '🟢', medium: '🟡', high: '🔴' };
-
-/** The names of the categories in a trial comment, which sets no label */
-const TRIAL_NAMES = { green: 'low', amber: 'medium', red: 'high' };
 
 /** Characters of diff that the agent reads, about 100k tokens */
 export const DIFF_BUDGET = 400_000;
@@ -37,11 +41,8 @@ export const DIFF_BUDGET = 400_000;
 const MAX_LISTED_FILES = 3000;
 
 /** Lockfiles go last in the diff, so that their size does not crowd out the code */
-const LOCKFILE = /(?:^|\/)(?:yarn\.lock|package-lock\.json)$/u;
+const LOCKFILE = /(?:^|\/)(?:pnpm-lock\.yaml|package-lock\.json)$/u;
 
-// A blank line, or a line that only holds a comment: a line comment, a block
-// comment that ends on the line, a JSDoc ` * …` line, or the end of a block
-// comment, with no code after the comment
 const JAVA_FILE = /\.java$/u;
 
 /** A Java string literal on one line */
@@ -50,6 +51,9 @@ const JAVA_STRING = /"(?:[^"\\]|\\.)*"/gu;
 /** The blob of an empty file, which the API sends without a patch */
 const EMPTY_BLOB = 'e69de29bb2d1d6434b8b29ae775ad8c2e48c5391';
 
+// A blank line, or a line that only holds a comment: a line comment, a block
+// comment that ends on the line, a JSDoc ` * …` line, or the end of a block
+// comment, with no code after the comment
 const COMMENT_LINE = /^\s*(?:$|\/\/|\*\/\s*$|(?:\/\*|\*(?!\/))(?:(?!\*\/).)*(?:\*\/\s*)?$)/u;
 
 const MAX_LISTED_FINDING_FILES = 10;
@@ -57,22 +61,15 @@ const MAX_LISTED_FINDING_FILES = 10;
 /** Characters of each model text in the comment */
 const MAX_TEXT = 1000;
 
-/** The probability that a green suggestion needs, when the agent reports one */
-export const GREEN_PROBABILITY = 0.8;
-
-export function maxCategory(a, b) {
-  return CATEGORIES.indexOf(a) >= CATEGORIES.indexOf(b) ? a : b;
-}
-
-function percent(value) {
-  return `${Math.round(value * 100)}%`;
+export function maxLevel(a, b) {
+  return LEVELS.indexOf(a) >= LEVELS.indexOf(b) ? a : b;
 }
 
 /** The added and removed lines of a unified diff patch, without the hunk headers */
-export function changedLines(patch = '') {
+export function changedLines(patch) {
   const added = [];
   const removed = [];
-  for (const line of patch.split('\n')) {
+  for (const line of (patch ?? '').split('\n')) {
     if (line.startsWith('+')) {
       added.push(line.slice(1));
     } else if (line.startsWith('-')) {
@@ -83,10 +80,10 @@ export function changedLines(patch = '') {
 }
 
 // `matchesGlob` has no option to let wildcards match names that start with a
-// dot, such as `.lib` in `src/.lib/x.js`. A leading dot is swapped for a
-// character that globs treat as plain, in the path and in the glob alike.
+// dot. A leading dot is swapped for a character that globs treat as plain, in
+// the path and in the glob alike.
 function hideDots(value) {
-  return value.replace(/(^|\/)\./gu, '$1\u2024');
+  return value.replace(/(^|\/)\./gu, '$1․');
 }
 
 function matchesGlobs(path, globs) {
@@ -97,7 +94,7 @@ function paths(file) {
   return file.previous_filename ? [file.filename, file.previous_filename] : [file.filename];
 }
 
-function matchesAny(file, globs) {
+function matchesAny(file, globs = []) {
   return paths(file).some((path) => matchesGlobs(path, globs));
 }
 
@@ -119,11 +116,6 @@ function matchesContent(rule, file, line) {
   return rule.pattern.test(text) && !rule.except?.test(line);
 }
 
-/** The references of linked issues that a rule matched, such as `vaadin/flow#123` */
-function issuesWithLabel(linkedIssues, label) {
-  return linkedIssues.filter((issue) => issue.labels.includes(label)).map((issue) => issue.ref);
-}
-
 /** Whether the file changes more than comments and blank lines. A file without a patch counts as code. */
 function changesCode(file) {
   if (!file.patch) {
@@ -133,18 +125,17 @@ function changesCode(file) {
   return [...added, ...removed].some((line) => !COMMENT_LINE.test(line));
 }
 
-function isShipped(path, policy) {
-  return matchesGlobs(path, policy.contentPaths) && !matchesGlobs(path, policy.testPaths);
+function isShipped(path) {
+  return matchesGlobs(path, SHIPPED_PATHS) && !matchesGlobs(path, TEST_PATHS);
 }
 
 /**
- * Whether a pull request is a patch update that `policy.patchBumps` allows: an
- * allowed author, a title that bumps x.y.z to x.y.(z+1) or later, and a diff
- * whose every change swaps the old version for the new one.
+ * Whether a pull request is a PATCH_BUMPS update: an allowed author, a title
+ * that bumps x.y.z to x.y.(z+1) or later, and a diff whose every change swaps
+ * the old version for the new one.
  */
-function isPatchBump({ policy, author, title, files }) {
-  const bumps = policy.patchBumps;
-  const match = bumps?.authors.includes(author) && bumps.title.exec(title);
+function isPatchBump({ author, title, files }) {
+  const match = PATCH_BUMPS.authors.includes(author) && PATCH_BUMPS.title.exec(title);
   if (!match) {
     return false;
   }
@@ -168,110 +159,97 @@ function isPatchBump({ policy, author, title, files }) {
   );
 }
 
-/**
- * The rules of the policy of the `repository` (`owner/name`) that match a pull
- * request, each with the minimum category it sets and the files that made it
- * match. `author` is the login of the author of the pull request.
- */
-export function evaluatePolicy({
-  repository,
-  author,
-  title,
-  body,
-  authorTrusted,
-  headTrusted,
-  files,
-  linkedIssues = [],
-}) {
-  const policy = policyFor(repository);
-  const findings = [];
-  const shipped = files.filter((file) => isShipped(file.filename, policy));
+/** Splits the files that match a path rule by the level they get: the rule's own, `removed` or `checksOnly` */
+function* pathFindings(rule, files) {
+  const matched = files.filter((file) => matchesRule(file, rule) && (!rule.codeOnly || changesCode(file)));
+  const removed = rule.removed
+    ? matched.filter((file) => file.status === 'removed' && matchesAny(file, rule.removed.paths))
+    : [];
+  const checks = rule.checksOnly;
+  const checksOnly = checks
+    ? matched.filter(
+        (file) =>
+          !removed.includes(file) &&
+          file.patch &&
+          matchesAny(file, checks.paths) &&
+          !matchesAny(file, checks.exceptPaths) &&
+          !Object.values(changedLines(file.patch))
+            .flat()
+            .some((line) => checks.sensitive.test(line)),
+      )
+    : [];
+  const changed = matched.filter((file) => !removed.includes(file) && !checksOnly.includes(file));
+  for (const [source, group] of [
+    [rule, changed],
+    [rule.removed, removed],
+    [checks, checksOnly],
+  ]) {
+    if (group.length > 0) {
+      yield { level: source.level, reason: source.reason, files: group.map((file) => file.filename) };
+    }
+  }
+}
 
-  const patchBump = isPatchBump({ policy, author, title, files });
+/**
+ * The rules of the policy that match a pull request, each with the minimum
+ * level it sets and the files that made it match. `author` is the login of the
+ * author of the pull request.
+ */
+export function evaluatePolicy({ author, title, body, authorTrusted, headTrusted, files, linkedIssues = [] }) {
+  const findings = [];
+  const shipped = files.filter((file) => isShipped(file.filename));
+
+  const patchBump = isPatchBump({ author, title, files });
   if (patchBump) {
-    findings.push({ category: 'green', reason: policy.patchBumps.reason, files: files.map((file) => file.filename) });
+    findings.push({ level: 'low', reason: PATCH_BUMPS.reason, files: files.map((file) => file.filename) });
   }
 
-  for (const rule of policy.pathRules) {
-    if (patchBump && rule.exceptPatchBumps) {
-      continue;
-    }
-    const matched = files.filter((file) => matchesRule(file, rule) && (!rule.codeOnly || changesCode(file)));
-    const removed = rule.removed
-      ? matched.filter((file) => file.status === 'removed' && matchesAny(file, rule.removed.paths))
-      : [];
-    const checks = rule.checksOnly;
-    const checksOnly = checks
-      ? matched.filter(
-          (file) =>
-            !removed.includes(file) &&
-            file.patch &&
-            matchesAny(file, checks.paths) &&
-            !matchesAny(file, checks.exceptPaths ?? []) &&
-            !Object.values(changedLines(file.patch))
-              .flat()
-              .some((line) => checks.sensitive.test(line)),
-        )
-      : [];
-    const changed = matched.filter((file) => !removed.includes(file) && !checksOnly.includes(file));
-    if (changed.length > 0) {
-      findings.push({ category: rule.category, reason: rule.reason, files: changed.map((file) => file.filename) });
-    }
-    if (removed.length > 0) {
-      const { category, reason } = rule.removed;
-      findings.push({ category, reason, files: removed.map((file) => file.filename) });
-    }
-    if (checksOnly.length > 0) {
-      findings.push({ category: checks.category, reason: checks.reason, files: checksOnly.map((file) => file.filename) });
+  for (const rule of PATH_RULES) {
+    if (!(patchBump && rule.exceptPatchBumps)) {
+      findings.push(...pathFindings(rule, files));
     }
   }
 
   for (const rule of CONTENT_RULES) {
     const matched = shipped.filter(
       (file) =>
-        !matchesAny(file, rule.exceptPaths ?? []) &&
+        !matchesAny(file, rule.exceptPaths) &&
         changedLines(file.patch).added.some((line) => matchesContent(rule, file, line)),
     );
     if (matched.length > 0) {
-      findings.push({ category: rule.category, reason: rule.reason, files: matched.map((file) => file.filename) });
+      findings.push({ level: rule.level, reason: rule.reason, files: matched.map((file) => file.filename) });
     }
   }
 
   // The content rules only see the changed lines, not the rest of a file that moves in
-  const movedIn = shipped.filter((file) => file.previous_filename && !isShipped(file.previous_filename, policy));
+  const movedIn = shipped.filter((file) => file.previous_filename && !isShipped(file.previous_filename));
   if (movedIn.length > 0) {
     findings.push({
-      category: 'amber',
+      level: 'medium',
       reason: 'moves files into shipped code, so the rules did not check all of their content',
       files: movedIn.map((file) => file.filename),
     });
   }
 
-  for (const rule of policy.issueLabelRules) {
-    const matched = issuesWithLabel(linkedIssues, rule.label);
+  for (const rule of ISSUE_LABEL_RULES) {
+    const matched = linkedIssues.filter((issue) => issue.labels.includes(rule.label)).map((issue) => issue.ref);
     if (matched.length > 0) {
-      findings.push({ category: rule.category, reason: rule.reason, files: matched });
+      findings.push({ level: rule.level, reason: rule.reason, files: matched });
     }
   }
 
   if (BREAKING_TITLE.test(title)) {
-    findings.push({ category: 'red', reason: 'breaking change (`!` in the title)', files: [] });
+    findings.push({ level: 'high', reason: 'breaking change (`!` in the title)', files: [] });
   }
   if (BREAKING_BODY.test(body ?? '')) {
-    findings.push({ category: 'red', reason: 'breaking change (`BREAKING CHANGE:` in the description)', files: [] });
+    findings.push({ level: 'high', reason: 'breaking change (`BREAKING CHANGE:` in the description)', files: [] });
   }
-
   if (!authorTrusted) {
-    findings.push({ category: 'amber', reason: 'the author is not a member of the organization', files: [] });
+    findings.push({ level: 'medium', reason: 'the author is not a member of the organization', files: [] });
   }
   if (!headTrusted) {
-    findings.push({
-      category: 'amber',
-      reason: 'the head branch is in a fork that the author does not own',
-      files: [],
-    });
+    findings.push({ level: 'medium', reason: 'the head branch is in a fork that the author does not own', files: [] });
   }
-
   return findings;
 }
 
@@ -291,7 +269,6 @@ const LINKED_ISSUE = new RegExp(
  * `Part of`, as `{ owner, repo, number }`, at most MAX_LINKED_ISSUES. A bare
  * `#123` is in the base repository `{ owner, repo }`. Only issues of the same
  * owner count, so a description cannot make the workflow read other accounts.
- * A reference can also be to a pull request; the workflow skips those.
  */
 export function linkedIssueRefs(body, { owner, repo }) {
   const refs = [];
@@ -333,12 +310,10 @@ function diffHeader(file) {
 /**
  * The unified diff that the agent reads, within the character budget. `omitted`
  * lists the changed files whose diff is not in `text`, because the API sent no
- * patch for them (binary files, files that git treats as binary, very large
- * diffs) or the budget ran out. Deleted files, pure renames, empty files and
- * the screenshots of the `repository` do not count as omitted.
+ * patch for them (binary files, very large diffs) or the budget ran out.
+ * Deleted files, pure renames and empty files do not count as omitted.
  */
-export function buildDiff(files, { repository, budget = DIFF_BUDGET } = {}) {
-  const { screenshotPaths } = policyFor(repository);
+export function buildDiff(files, budget = DIFF_BUDGET) {
   const ordered = [
     ...files.filter((file) => !LOCKFILE.test(file.filename)),
     ...files.filter((file) => LOCKFILE.test(file.filename)),
@@ -350,10 +325,7 @@ export function buildDiff(files, { repository, budget = DIFF_BUDGET } = {}) {
   for (const file of ordered) {
     if (!file.patch) {
       const seen =
-        file.status === 'removed' ||
-        (file.status === 'renamed' && file.changes === 0) ||
-        file.sha === EMPTY_BLOB ||
-        matchesGlobs(file.filename, screenshotPaths);
+        file.status === 'removed' || (file.status === 'renamed' && file.changes === 0) || file.sha === EMPTY_BLOB;
       if (!seen) {
         omitted.push(file.filename);
       }
@@ -371,60 +343,37 @@ export function buildDiff(files, { repository, budget = DIFF_BUDGET } = {}) {
   if (files.length >= MAX_LISTED_FILES) {
     omitted.push(`files after the first ${MAX_LISTED_FILES}`);
   }
-
   return { text: parts.join('\n'), omitted };
 }
 
-/**
- * The agent's suggestion as it counts: red needs at least one dimension rated
- * high, else it counts as amber. Rules can still set red.
- */
-export function agentCategory(assessment) {
-  if (!assessment) {
-    return 'green';
+/** The agent's suggestion as it counts: high needs at least one dimension rated high, else it counts as medium */
+export function agentLevel(assessment) {
+  if (assessment.level === 'high' && DIMENSIONS.every(({ key }) => assessment[key].level !== 'high')) {
+    return 'medium';
   }
-  if (assessment.category === 'red' && DIMENSIONS.every(({ key }) => assessment[key].level !== 'high')) {
-    return 'amber';
-  }
-  return assessment.category;
+  return assessment.level;
 }
 
 /**
- * The final category of a pull request: the highest of the agent's suggestion
- * (see agentCategory) and the minimum categories that the policy findings set.
- * Without an assessment, or when the agent did not see the whole diff, the pull
- * request needs at least one human approval. A `skipped` assessment, for an
- * author outside the organization, is not reported as a failure.
+ * The final level of a pull request: the highest of the agent's suggestion
+ * (see agentLevel) and the minimum levels that the policy findings set.
+ * Without an assessment, or when the agent did not see the whole diff, the
+ * pull request is at least medium. A `skipped` assessment, for an author
+ * outside the organization, is not reported as a failure.
  */
 export function classify({ policyFindings, omitted, assessment, skipped = false }) {
   const findings = [...policyFindings];
-
   if (omitted.length > 0) {
-    findings.push({ category: 'amber', reason: 'the agent did not see the whole diff', files: omitted });
+    findings.push({ level: 'medium', reason: 'the agent did not see the whole diff', files: omitted });
   }
-
-  if (!assessment) {
-    if (!skipped) {
-      findings.push({ category: 'amber', reason: 'the agent assessment is not available', files: [] });
-    }
-  } else if (assessment.category === 'green' && DIMENSIONS.some(({ key }) => assessment[key].level !== 'low')) {
-    findings.push({
-      category: 'amber',
-      reason: 'the agent suggested green but rated a dimension above low',
-      files: [],
-    });
-  } else if (assessment.category === 'green' && assessment.probabilities?.green < GREEN_PROBABILITY) {
-    findings.push({
-      category: 'amber',
-      reason: `the agent gives green a probability of only ${percent(assessment.probabilities.green)}`,
-      files: [],
-    });
+  if (!assessment && !skipped) {
+    findings.push({ level: 'medium', reason: 'the agent assessment is not available', files: [] });
   }
-
-  // Without an assessment, the pull request needs a human approval whatever the rules say
-  const floor = assessment ? agentCategory(assessment) : 'amber';
-  const category = findings.map((finding) => finding.category).reduce(maxCategory, floor);
-  return { category, findings };
+  if (assessment?.level === 'low' && DIMENSIONS.some(({ key }) => assessment[key].level !== 'low')) {
+    findings.push({ level: 'medium', reason: 'the agent suggested low but rated a dimension above low', files: [] });
+  }
+  const floor = assessment ? agentLevel(assessment) : 'medium';
+  return { level: findings.map((finding) => finding.level).reduce(maxLevel, floor), findings };
 }
 
 /**
@@ -434,9 +383,9 @@ export function classify({ policyFindings, omitted, assessment, skipped = false 
 function text(value) {
   const line = String(value)
     .replace(/\s*\n\s*/gu, ' ')
-    .replace(/@(?=[\w-])/gu, '@\u200b')
+    .replace(/@(?=[\w-])/gu, '@​')
     .trim();
-  return line.length > MAX_TEXT ? `${line.slice(0, MAX_TEXT)}\u2026` : line;
+  return line.length > MAX_TEXT ? `${line.slice(0, MAX_TEXT)}…` : line;
 }
 
 /**
@@ -447,27 +396,16 @@ function text(value) {
 function prose(value) {
   return text(value)
     .replace(/[[\]<>]/gu, '\\$&')
-    .replace(/:\/\//gu, ':/\u200b/')
-    .replace(/\bwww\./giu, 'www\u200b.');
-}
-
-function cell(value) {
-  return prose(value).replace(/\|/gu, '\\|');
-}
-
-/** Probabilities such as `low 53%, medium 40%, high 7%`, in the order the agent gave them */
-function percentages(probabilities = {}) {
-  return Object.entries(probabilities)
-    .map(([value, probability]) => `${cell(value)} ${percent(probability)}`)
-    .join(', ');
+    .replace(/:\/\//gu, ':/​/')
+    .replace(/\bwww\./giu, 'www​.');
 }
 
 function code(value) {
   return `\`${text(value).replace(/`/gu, "'")}\``;
 }
 
-function renderFinding({ category, reason, files }, name) {
-  const lines = [`- ${CATEGORY_TEXT[category].icon} **${name(category)}**: ${reason}`];
+function renderFinding({ level, reason, files }) {
+  const lines = [`- ${ICONS[level]} **${level}**: ${reason}`];
   for (const file of files.slice(0, MAX_LISTED_FINDING_FILES)) {
     lines.push(`  - ${code(file)}`);
   }
@@ -477,50 +415,36 @@ function renderFinding({ category, reason, files }, name) {
   return lines;
 }
 
-/**
- * The PR comment that explains the label. Starts with `marker`, which finds the
- * comment again. A `trial` comment says that the workflow is on trial, sets no
- * label, and names the categories low, medium and high risk.
- */
-export function renderComment({ marker, result, assessment, skipped = false, headSha, runUrl, trial = false }) {
-  const { category, findings } = result;
-  const name = (value) => (trial ? TRIAL_NAMES[value] : value);
-  const lines = trial
-    ? [
-        marker,
-        `### 🧪 Risk evaluation (trial): ${CATEGORY_TEXT[category].icon} ${name(category)} risk`,
-        '',
-        '> This workflow is on trial. It only posts this comment: it sets no label and no check, and nothing in the review or merge process depends on it. Is the rating wrong? Say so in a reply.',
-        '',
-        `If it were live: ${CATEGORY_TEXT[category].requirement}`,
-        '',
-      ]
-    : [marker, `### ${CATEGORY_TEXT[category].icon} PR risk: ${category}`, '', CATEGORY_TEXT[category].requirement, ''];
+/** The PR comment that explains the level. Starts with `marker`, which finds the comment again. */
+export function renderComment({ marker, result, assessment, skipped = false, headSha, runUrl }) {
+  const { level, findings } = result;
+  const lines = [
+    marker,
+    `### 🧪 Risk evaluation (trial): ${ICONS[level]} ${level} risk`,
+    '',
+    '> This workflow is on trial. It only posts this comment, and nothing in the review or merge process depends on it. Is the rating wrong? Say so in a reply.',
+    '',
+    `If it were live: ${REQUIREMENTS[level]}`,
+    '',
+  ];
 
   if (assessment) {
-    const agent = `The agent (${code(assessment.model)})`;
-    const named = (probabilities) =>
-      Object.fromEntries(Object.entries(probabilities).map(([value, probability]) => [name(value), probability]));
-    const likely = assessment.probabilities ? ` (${percentages(named(assessment.probabilities))})` : '';
-    const counted = agentCategory(assessment);
-    const capped =
-      counted !== assessment.category ? ` It rated no dimension high, so it counts as **${name(counted)}**.` : '';
-    const raised = category !== counted ? ` The rules below raised it to **${name(category)}**.` : '';
-    const summary = assessment.summary === undefined ? '' : ` ${prose(assessment.summary)}`;
-    lines.push(`${agent} suggested **${name(assessment.category)}**${likely}.${capped}${raised}${summary}`, '');
-
-    // Claude explains each rating, the Decisions API gives the probability of each level
-    const explained = DIMENSIONS.every(({ key }) => assessment[key].reason !== undefined);
-    lines.push(`| Dimension | Risk | ${explained ? 'Reason' : 'Probabilities'} |`, '| --- | --- | --- |');
-    for (const { key, title } of DIMENSIONS) {
-      const { level, reason, probabilities } = assessment[key];
-      const note = explained ? cell(reason) : percentages(probabilities);
-      lines.push(`| ${title} | ${LEVEL_ICONS[level]} ${level} | ${note} |`);
-    }
-    lines.push('');
-    if (assessment.rationale !== undefined) {
-      lines.push(`> ${prose(assessment.rationale)}`, '');
-    }
+    const counted = agentLevel(assessment);
+    const capped = counted !== assessment.level ? ` It rated no dimension high, so it counts as **${counted}**.` : '';
+    const raised = level !== counted ? ` The rules below raised it to **${level}**.` : '';
+    lines.push(
+      `The agent (${code(assessment.model)}) suggested **${assessment.level}**.${capped}${raised} ${prose(assessment.summary)}`,
+      '',
+      '| Dimension | Risk | Reason |',
+      '| --- | --- | --- |',
+      ...DIMENSIONS.map(({ key, title }) => {
+        const rating = assessment[key];
+        return `| ${title} | ${ICONS[rating.level]} ${rating.level} | ${prose(rating.reason).replace(/\|/gu, '\\|')} |`;
+      }),
+      '',
+      `> ${prose(assessment.rationale)}`,
+      '',
+    );
   } else if (skipped) {
     lines.push('The agent does not assess pull requests from authors outside the organization, so the rules below decide.', '');
   } else {
@@ -528,11 +452,9 @@ export function renderComment({ marker, result, assessment, skipped = false, hea
   }
 
   if (findings.length > 0) {
-    lines.push(trial ? '**Minimum risk rules**' : '**Minimum category rules**', '');
-    for (const finding of [...findings].sort(
-      (a, b) => CATEGORIES.indexOf(b.category) - CATEGORIES.indexOf(a.category),
-    )) {
-      lines.push(...renderFinding(finding, name));
+    lines.push('**Minimum risk rules**', '');
+    for (const finding of [...findings].sort((a, b) => LEVELS.indexOf(b.level) - LEVELS.indexOf(a.level))) {
+      lines.push(...renderFinding(finding));
     }
     lines.push('');
   }

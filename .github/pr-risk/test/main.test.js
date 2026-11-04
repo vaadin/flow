@@ -2,55 +2,43 @@ import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
 import { MARKER, run } from '../main.js';
 
-function rating(level) {
-  return { level, reason: `rated ${level}` };
-}
-
-const GREEN = {
+const rating = (level) => ({ level, reason: `rated ${level}` });
+const LOW = {
   summary: 'Fixes a typo.',
   impact: rating('low'),
   blast_radius: rating('low'),
   uncertainty: rating('low'),
   reversibility: rating('low'),
-  category: 'green',
+  level: 'low',
   rationale: 'A documentation fix.',
+  model: 'claude-test',
 };
 
-/** A fake GitHub client that records the calls that change the pull request */
-function createGithub({ pr, files, comments = [], issues = {} }) {
+const README = [{ filename: 'README.md', status: 'modified', changes: 2, patch: '@@\n-teh\n+the' }];
+
+/** A fake GitHub client that records the comments it writes */
+function createGithub({ pr, files = README, comments = [], issues = {} }) {
   const calls = [];
   const record = (name) => (params) => {
     calls.push([name, params]);
     return Promise.resolve({ data: {} });
   };
-  const github = {
+  return {
     calls,
     rest: {
-      pulls: {
-        get: () => Promise.resolve({ data: pr }),
-        listFiles: 'listFiles',
-      },
-      checks: {
-        create: record('createCheck'),
-      },
+      pulls: { get: () => Promise.resolve({ data: pr }), listFiles: 'listFiles' },
       issues: {
         get: ({ owner, repo, issue_number }) => {
           const issue = issues[`${owner}/${repo}#${issue_number}`];
-          return issue
-            ? Promise.resolve({ data: issue })
-            : Promise.reject(Object.assign(new Error('Not Found'), { status: 404 }));
+          return issue ? Promise.resolve({ data: issue }) : Promise.reject(Object.assign(new Error('Not Found')));
         },
         listComments: 'listComments',
-        createLabel: record('createLabel'),
-        addLabels: record('addLabels'),
-        removeLabel: record('removeLabel'),
         createComment: record('createComment'),
         updateComment: record('updateComment'),
       },
     },
     paginate: (endpoint) => Promise.resolve(endpoint === 'listFiles' ? files : comments),
   };
-  return github;
 }
 
 function createCore() {
@@ -71,13 +59,13 @@ function createCore() {
 }
 
 const context = {
-  repo: { owner: 'vaadin', repo: 'web-components' },
+  repo: { owner: 'vaadin', repo: 'flow' },
   payload: { pull_request: { number: 42 } },
   serverUrl: 'https://github.com',
   runId: 7,
 };
 
-const env = { ANTHROPIC_API_KEY: 'key', AUTHOR_IS_MEMBER: 'true' };
+const env = { AUTHOR_IS_MEMBER: 'true' };
 
 describe('run', () => {
   let pr;
@@ -91,219 +79,99 @@ describe('run', () => {
       body: '',
       author_association: 'CONTRIBUTOR',
       user: { login: 'dev' },
-      head: { sha: 'abcdef0123456789', repo: { full_name: 'vaadin/web-components', owner: { login: 'vaadin' } } },
-      base: { repo: { full_name: 'vaadin/web-components' } },
-      labels: [{ name: 'risk: red' }, { name: 'a11y' }],
+      head: { sha: 'abcdef0123456789', repo: { full_name: 'vaadin/flow', owner: { login: 'vaadin' } } },
+      base: { repo: { full_name: 'vaadin/flow' } },
     };
   });
 
-  test('on trial, only posts the comment and keeps the labels', async () => {
-    pr.labels = [{ name: 'risk: green' }];
-    const files = [{ filename: 'README.md', status: 'modified', changes: 2, patch: '@@\n-teh\n+the' }];
-    const github = createGithub({ pr, files });
+  test('posts one comment with the level', async () => {
+    const github = createGithub({ pr });
     const core = createCore();
-    await run({ github, context, core, env: { ...env, PR_RISK_TRIAL: 'true' }, assess: () => Promise.resolve(GREEN) });
+    await run({ github, context, core, env, assess: () => Promise.resolve(LOW) });
 
     assert.deepEqual(
       github.calls.map(([name]) => name),
       ['createComment'],
     );
-    const { body } = github.calls[0][1];
-    assert.ok(body.startsWith(MARKER));
-    assert.match(body, /### 🧪 Risk evaluation \(trial\): 🟢 low risk/u);
-    assert.match(body, /sets no label and no check/u);
-    assert.equal(core.outputs.category, 'green');
-  });
-
-  test('reads the linked issues, but not pull requests or issues it cannot read', async () => {
-    pr.body = 'Fixes #1\nPart of vaadin/platform#2\nFixes #3\nFixes #4';
-    const issues = {
-      'vaadin/web-components#1': { title: 'Broken', state: 'open', labels: [{ name: 'Impact: High' }] },
-      'vaadin/platform#2': { title: 'Epic', state: 'open', labels: ['Severity: Major'] },
-      'vaadin/web-components#3': { title: 'A PR', state: 'open', labels: [], pull_request: {} },
-    };
-    const github = createGithub({ pr, files: [], issues });
-    let seen;
-    const assess = ({ linkedIssues }) => {
-      seen = linkedIssues;
-      return Promise.resolve(GREEN);
-    };
-    await run({ github, context, core: createCore(), env, assess });
-    assert.deepEqual(seen, [
-      { ref: 'vaadin/web-components#1', title: 'Broken', state: 'open', labels: ['Impact: High'] },
-      { ref: 'vaadin/platform#2', title: 'Epic', state: 'open', labels: ['Severity: Major'] },
-    ]);
-  });
-
-  test('replaces the risk label and creates the comment', async () => {
-    const files = [{ filename: 'README.md', status: 'modified', changes: 2, patch: '@@\n-teh\n+the' }];
-    const github = createGithub({ pr, files });
-    const core = createCore();
-    await run({ github, context, core, env, assess: () => Promise.resolve(GREEN) });
-
-    // The old label goes first, so that a run that stops halfway leaves no label
-    assert.deepEqual(
-      github.calls.map(([name]) => name),
-      ['createCheck', 'removeLabel', 'createLabel', 'addLabels', 'createComment'],
-    );
-    assert.equal(github.calls[1][1].name, 'risk: red');
-    assert.deepEqual(github.calls[3][1].labels, ['risk: green']);
-    assert.ok(github.calls[4][1].body.startsWith(MARKER));
-    assert.equal(core.outputs.category, 'green');
+    const [, comment] = github.calls[0];
+    assert.equal(comment.issue_number, 42);
+    assert.ok(comment.body.startsWith(MARKER));
+    assert.match(comment.body, /🟢 low risk/u);
+    assert.equal(core.outputs.level, 'low');
     assert.equal(core.failed, null);
   });
 
-  test('updates the comment of an earlier run and keeps a label that is still right', async () => {
-    pr.labels = [{ name: 'risk: red' }];
-    const files = [{ filename: '.github/workflows/verify.yml', status: 'modified', changes: 2, patch: '@@\n-a\n+b' }];
+  test('updates its own comment of an earlier run, not one of someone else', async () => {
     const comments = [
       { id: 1, user: { login: 'someone' }, body: MARKER },
       { id: 2, user: { login: 'github-actions[bot]' }, body: `${MARKER}\nold` },
     ];
-    const github = createGithub({ pr, files, comments });
-    await run({ github, context, core: createCore(), env, assess: () => Promise.resolve(GREEN) });
-
+    const github = createGithub({ pr, comments });
+    await run({ github, context, core: createCore(), env, assess: () => Promise.resolve(LOW) });
     assert.deepEqual(
-      github.calls.map(([name]) => name),
-      ['createCheck', 'updateComment'],
+      github.calls.map(([name, params]) => [name, params.comment_id]),
+      [['updateComment', 2]],
     );
-    assert.equal(github.calls[1][1].comment_id, 2);
   });
 
-  test('labels by the policy alone and fails the run when the assessment fails', async () => {
-    const files = [{ filename: 'README.md', status: 'modified', changes: 2, patch: '@@\n-teh\n+the' }];
-    const github = createGithub({ pr, files });
-    const core = createCore();
-    await run({
-      github,
-      context,
-      core,
-      env,
-      assess: () => Promise.reject(new Error('overloaded')),
-    });
+  test('skips draft and closed pull requests', async () => {
+    for (const changed of [{ draft: true }, { state: 'closed' }]) {
+      const github = createGithub({ pr: { ...pr, ...changed } });
+      const core = createCore();
+      await run({ github, context, core, env, assess: () => assert.fail('assessed') });
+      assert.deepEqual(github.calls, []);
+      assert.match(core.notices[0], /closed or a draft/u);
+    }
+  });
 
-    assert.deepEqual(github.calls.find(([name]) => name === 'addLabels')[1].labels, ['risk: amber']);
+  test('rates by the rules and fails the run when the assessment fails', async () => {
+    const github = createGithub({ pr });
+    const core = createCore();
+    await run({ github, context, core, env, assess: () => Promise.reject(new Error('overloaded')) });
+    assert.equal(core.outputs.level, 'medium');
     assert.equal(core.failed, 'The agent assessment failed: overloaded');
-  });
-
-  test('removes a green label before the assessment', async () => {
-    pr.labels = [{ name: 'risk: green' }];
-    const files = [{ filename: 'README.md', status: 'modified', changes: 2, patch: '@@\n-teh\n+the' }];
-    const github = createGithub({ pr, files });
-    let callsBeforeAssessment;
-    const assess = () => {
-      callsBeforeAssessment = github.calls.map(([name, params]) => `${name} ${params.name}`);
-      return Promise.resolve(GREEN);
-    };
-    await run({ github, context, core: createCore(), env, assess });
-
-    assert.deepEqual(callsBeforeAssessment, ['removeLabel risk: green']);
-    assert.deepEqual(github.calls.find(([name]) => name === 'addLabels')[1].labels, ['risk: green']);
-  });
-
-  test('finishes removing a green label before it sets the label again', async () => {
-    pr.labels = [{ name: 'risk: green' }];
-    const files = [{ filename: 'README.md', status: 'modified', changes: 2, patch: '@@\n-teh\n+the' }];
-    const github = createGithub({ pr, files });
-    github.rest.issues.removeLabel = (params) => {
-      github.calls.push(['removeLabel', params]);
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          github.calls.push(['removeLabel done', params]);
-          resolve({ data: {} });
-        }, 20);
-      });
-    };
-    await run({ github, context, core: createCore(), env, assess: () => Promise.resolve(GREEN) });
-
-    const labelCalls = github.calls.map(([name]) => name).filter((name) => /Label/u.test(name));
-    assert.deepEqual(labelCalls, ['removeLabel', 'removeLabel done', 'createLabel', 'addLabels']);
-  });
-
-  test('asks whether the author is a member', async () => {
-    const files = [{ filename: 'README.md', status: 'modified', changes: 2, patch: '@@\n-teh\n+the' }];
-    const asked = [];
-    const isMember = (login) => {
-      asked.push(login);
-      return Promise.resolve(false);
-    };
-    const core = createCore();
-    await run({
-      github: createGithub({ pr, files }),
-      context,
-      core,
-      env,
-      assess: () => Promise.resolve(GREEN),
-      isMember,
-    });
-
-    assert.deepEqual(asked, ['dev']);
-    assert.equal(core.outputs.category, 'amber');
+    assert.match(github.calls[0][1].body, /The agent assessment failed, see the \[workflow run\]/u);
   });
 
   test('does not pay for an assessment of an author outside the organization', async () => {
-    const files = [{ filename: 'README.md', status: 'modified', changes: 2, patch: '@@\n-teh\n+the' }];
-    const outsider = { ...pr, author_association: 'CONTRIBUTOR' };
-    let assessed = false;
-    const github = createGithub({ pr: outsider, files });
+    const github = createGithub({ pr });
     const core = createCore();
+    const asked = [];
     await run({
       github,
       context,
       core,
       env,
-      assess: () => {
-        assessed = true;
-        return Promise.resolve(GREEN);
+      assess: () => assert.fail('assessed'),
+      isMember: (login) => {
+        asked.push(login);
+        return Promise.resolve(false);
       },
-      isMember: () => Promise.resolve(false),
     });
-
-    assert.equal(assessed, false);
-    assert.equal(core.outputs.category, 'amber');
-    // Not a failure: the run stays green
-    assert.ok(!core.failed);
-    const [, comment] = github.calls.find(([name]) => name === 'createComment');
-    assert.match(comment.body, /does not assess pull requests from authors outside the organization/u);
-    assert.doesNotMatch(comment.body, /assessment failed|not available/u);
+    assert.deepEqual(asked, ['dev']);
+    assert.equal(core.outputs.level, 'medium');
+    assert.equal(core.failed, null);
+    assert.match(github.calls[0][1].body, /does not assess pull requests from authors outside the organization/u);
   });
 
-  test('reports the category as a check run on the head commit', async () => {
-    const files = [{ filename: 'README.md', status: 'modified', changes: 2, patch: '@@\n-teh\n+the' }];
-    const green = createGithub({ pr, files });
-    await run({ github: green, context, core: createCore(), env, assess: () => Promise.resolve(GREEN) });
-    const [, check] = green.calls.find(([name]) => name === 'createCheck');
-    assert.deepEqual(
-      { ...check, output: check.output.title },
-      {
-        owner: 'vaadin',
-        repo: 'web-components',
-        name: 'PR risk',
-        head_sha: 'abcdef0123456789',
-        status: 'completed',
-        conclusion: 'success',
-        external_id: '7',
-        details_url: 'https://github.com/vaadin/web-components/actions/runs/7',
-        output: 'Green',
+  test('gives the agent the linked issues it can read, and skips pull requests', async () => {
+    const issues = {
+      'vaadin/flow#1': { title: 'Bug', state: 'open', labels: [{ name: 'Impact: High' }] },
+      'vaadin/flow#2': { title: 'A pull request', state: 'open', labels: [], pull_request: {} },
+    };
+    const github = createGithub({ pr: { ...pr, body: 'Fixes #1, fixes #2, fixes #3' }, issues });
+    let seen;
+    await run({
+      github,
+      context,
+      core: createCore(),
+      env,
+      assess: ({ linkedIssues }) => {
+        seen = linkedIssues;
+        return Promise.resolve(LOW);
       },
-    );
-    assert.ok(check.output.summary.startsWith(MARKER));
-
-    pr.title = 'feat!: remove the API';
-    const red = createGithub({ pr, files });
-    await run({ github: red, context, core: createCore(), env, assess: () => Promise.resolve(GREEN) });
-    const [, redCheck] = red.calls.find(([name]) => name === 'createCheck');
-    assert.equal(redCheck.conclusion, 'neutral');
-    assert.equal(redCheck.output.title, 'Red');
-  });
-
-  test('skips draft pull requests', async () => {
-    pr.draft = true;
-    const github = createGithub({ pr, files: [] });
-    const core = createCore();
-    await run({ github, context, core, env, assess: () => Promise.resolve(GREEN) });
-
-    assert.deepEqual(github.calls, []);
-    assert.equal(core.notices.length, 1);
+    });
+    assert.deepEqual(seen, [{ ref: 'vaadin/flow#1', title: 'Bug', state: 'open', labels: ['Impact: High'] }]);
+    assert.match(github.calls[0][1].body, /Impact: High/u);
   });
 });

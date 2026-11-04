@@ -1,10 +1,8 @@
 /**
  * Entry point of the PR risk workflow, called by actions/github-script with
  * its authenticated `github` client, `context` and `core`. Classifies the pull
- * request of the event, reports the category as a check run on its head
- * commit, sets one of the risk labels and posts or updates one comment that
- * explains it. With PR_RISK_TRIAL=true, it only posts the comment, which says
- * that the workflow is on trial.
+ * request of the event and posts or updates one comment that explains its
+ * risk level.
  */
 import { assess as defaultAssess } from './assess.js';
 import {
@@ -19,64 +17,7 @@ import {
 
 export const MARKER = '<!-- pr-risk -->';
 
-export const LABELS = {
-  green: {
-    name: 'risk: green',
-    color: '0e8a16',
-    description: 'Low risk: can merge after CI and the agent review pass',
-  },
-  amber: { name: 'risk: amber', color: 'fbca04', description: 'Bounded risk: needs one human approval' },
-  red: { name: 'risk: red', color: 'b60205', description: 'High risk: needs expert review' },
-};
-
 const COMMENT_AUTHOR = 'github-actions[bot]';
-
-/**
- * The check run that binds the category to the commit it was made for. Unlike
- * a label, only a GitHub App can create one. A required check passes on
- * `neutral` too, so amber and red pull requests can still merge after review.
- */
-export const CHECK_NAME = 'PR risk';
-const CHECK_CONCLUSIONS = { green: 'success', amber: 'neutral', red: 'neutral' };
-
-async function ensureLabel(github, repo, label) {
-  try {
-    await github.rest.issues.createLabel({ ...repo, ...label });
-  } catch (error) {
-    // 422: the label exists already
-    if (error.status !== 422) {
-      throw error;
-    }
-  }
-}
-
-async function removeLabel(github, repo, pr, name) {
-  try {
-    await github.rest.issues.removeLabel({ ...repo, issue_number: pr.number, name });
-  } catch (error) {
-    // 404: someone removed the label meanwhile
-    if (error.status !== 404) {
-      throw error;
-    }
-  }
-}
-
-/** Replaces the risk label among the `current` label names */
-async function setLabel(github, repo, pr, current, category) {
-  const label = LABELS[category];
-
-  // Remove before adding, so that a run that stops halfway leaves no label
-  // rather than green next to the label that replaces it
-  for (const { name } of Object.values(LABELS)) {
-    if (name !== label.name && current.includes(name)) {
-      await removeLabel(github, repo, pr, name);
-    }
-  }
-  if (!current.includes(label.name)) {
-    await ensureLabel(github, repo, label);
-    await github.rest.issues.addLabels({ ...repo, issue_number: pr.number, labels: [label.name] });
-  }
-}
 
 /**
  * The issues that the pull request links, as `{ ref, title, state, labels }`.
@@ -122,10 +63,9 @@ async function upsertComment(github, repo, pr, body) {
 }
 
 /**
- * Classifies the pull request of the event. The steps that do not depend on
- * each other run at the same time, as each one waits on a network call.
- * `isMember` tells whether the author is a member of the organization; the
- * workflow checks it in an earlier step.
+ * Classifies the pull request of the event. `isMember` tells whether the
+ * author is a member of the organization; the workflow checks it in an
+ * earlier step.
  */
 export async function run({
   github,
@@ -149,20 +89,7 @@ export async function run({
     return;
   }
 
-  // On trial, the run only posts the comment: no label and no check run
-  const trial = env.PR_RISK_TRIAL === 'true';
-
-  // A green label must not stay on code that this run has not assessed yet.
-  // The removal starts before the assessment and ends before the labels are set.
-  let labels = pr.labels.map(({ name }) => name);
-  let greenRemoved = Promise.resolve();
-  if (!trial && labels.includes(LABELS.green.name)) {
-    greenRemoved = removeLabel(github, repo, pr, LABELS.green.name);
-    labels = labels.filter((name) => name !== LABELS.green.name);
-  }
-
-  const repository = pr.base.repo.full_name;
-  const diff = buildDiff(files, { repository });
+  const diff = buildDiff(files);
   const linkedIssues = await readLinkedIssues(github, repo, pr);
   const authorTrusted = isTrustedAuthor({
     authorAssociation: pr.author_association,
@@ -174,14 +101,17 @@ export async function run({
   // and each assessment is paid for. Pull requests of authors outside the
   // organization need a human approval anyway, so the rules alone decide.
   const skipped = !authorTrusted;
-  const assessing = skipped
-    ? Promise.resolve({ assessment: null, failure: null })
-    : assess({ pr, files, diff, linkedIssues, env }).then(
-        (assessment) => ({ assessment, failure: null }),
-        (error) => ({ assessment: null, failure: `The agent assessment failed: ${error.message}` }),
-      );
+  let assessment = null;
+  let failure = null;
+  if (!skipped) {
+    try {
+      assessment = await assess({ pr, files, diff, linkedIssues, env });
+    } catch (error) {
+      failure = `The agent assessment failed: ${error.message}`;
+    }
+  }
+
   const policyFindings = evaluatePolicy({
-    repository,
     author: pr.user.login,
     title: pr.title,
     body: pr.body,
@@ -190,37 +120,16 @@ export async function run({
     files,
     linkedIssues,
   });
-
-  const [{ assessment, failure }] = await Promise.all([assessing, greenRemoved]);
-
   const result = classify({ policyFindings, omitted: diff.omitted, assessment, skipped });
-  const body = renderComment({ marker: MARKER, result, assessment, skipped, headSha: pr.head.sha, runUrl, trial });
+  const body = renderComment({ marker: MARKER, result, assessment, skipped, headSha: pr.head.sha, runUrl });
 
-  if (!trial) {
-    await reportCategory(github, repo, pr, labels, result.category, { body, runId: context.runId, runUrl });
-  }
   await upsertComment(github, repo, pr, body);
   await core.summary.addRaw(body).write();
-  core.setOutput('category', result.category);
+  core.setOutput('level', result.level);
 
-  // The label is still set from the policy alone, which is never green, but
-  // the run fails so that a lost assessment does not go unnoticed
+  // The comment still gives the level from the rules, but the run fails so
+  // that a lost assessment does not go unnoticed
   if (failure) {
     core.setFailed(failure);
   }
-}
-
-/** Reports the category as the check run on the head commit and as the risk label */
-async function reportCategory(github, repo, pr, labels, category, { body, runId, runUrl }) {
-  await github.rest.checks.create({
-    ...repo,
-    name: CHECK_NAME,
-    head_sha: pr.head.sha,
-    status: 'completed',
-    conclusion: CHECK_CONCLUSIONS[category],
-    external_id: String(runId),
-    details_url: runUrl,
-    output: { title: `${category[0].toUpperCase()}${category.slice(1)}`, summary: body },
-  });
-  await setLabel(github, repo, pr, labels, category);
 }

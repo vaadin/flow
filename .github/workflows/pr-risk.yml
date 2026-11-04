@@ -1,44 +1,21 @@
 name: PR Risk
 
-# Classifies a pull request against main by risk and labels it:
-# - `risk: green`: can merge without human approval once CI and the agent
-#   review pass,
-# - `risk: amber`: needs one human approval,
-# - `risk: red`: needs expert review and a human owner for the decision.
-# An agent rates the impact, blast radius, uncertainty and reversibility of
-# the change and suggests a category: the OpenAI Decisions API when the
-# OPENAI_API_KEY secret is set, which answers in seconds, else Claude when the
-# ANTHROPIC_API_KEY secret is set, else a model on OpenRouter when the
-# OPENROUTER_API_KEY secret is set (the OPENROUTER_MODEL variable picks it).
-# Claude and OpenRouter also explain each rating. Pull requests of authors
+# On trial: rates every ready pull request to main as low, medium or high
+# risk and posts one comment that explains why. It sets no label or check,
+# and nothing in the review or merge process reads it.
+#
+# Rules in .github/pr-risk/policy.js set a minimum level from the changed
+# paths, the added code, the title, the author and linked issues. Claude rates
+# the impact, blast radius, uncertainty and reversibility and suggests a level,
+# which can raise the minimum but not lower it. Pull requests of authors
 # outside the organization are rated by the rules alone, so that a fork cannot
-# run up the bill of the agent by pushing again and again. The repository
-# policy in .github/pr-risk/policy.js sets a minimum category from the changed
-# paths, the added code, the title and the author, which the suggestion cannot
-# go below. One comment on the pull request explains the label.
+# run up the bill by pushing again and again. To rate a pull request locally,
+# run `node .github/pr-risk/cli.js <pull request URL>`.
 #
-# The category is also reported as the "PR risk" check run on the head commit:
-# `success` for green, `neutral` for amber and red. Anyone with triage access
-# can change a label, and a label stays when new commits arrive, so a merge
-# gate must use the check run: the latest "PR risk" check run of the
-# github-actions app on the current head SHA must be `success`. Workflows run
-# from branches of this repository share that app, so a gate that must hold
-# against members with write access should also verify the workflow run that
-# `external_id` names.
-#
-# In vaadin/flow the workflow is on trial (PR_RISK_TRIAL below): it only posts
-# the comment, which names the categories low, medium and high risk, and sets
-# no label and no check run. Nothing acts on the category: the auto-approval in
-# validation.yml does not read it. Remove PR_RISK_TRIAL to set labels and
-# report the check run.
-#
-# To see how a pull request would be classified, without changing it, run
-# `node .github/pr-risk/cli.js <pull request URL>`.
-#
-# Runs on pull_request_target, so that pull requests from forks get a label
-# too. The job never checks out or runs the code of the pull request: the
-# policy and the scripts come from the base branch, and the diff is only read
-# from the API, as untrusted text for the agent, which gets no tools.
+# Runs on pull_request_target, so that pull requests from forks are rated too.
+# It never checks out or runs the code of the pull request: the scripts come
+# from the base branch, and the diff is read from the API as untrusted text for
+# the agent, which gets no tools.
 on:
   pull_request_target:
     types: [opened, reopened, synchronize, ready_for_review, edited]
@@ -48,14 +25,14 @@ permissions: {}
 
 jobs:
   classify:
-    # Drafts are classified once they are ready for review. Of the edits, a new
-    # title or description can change the category, and a pull request whose
+    # Drafts are rated once they are ready for review. Of the edits, a new
+    # title or description can change the level, and a pull request whose
     # base changes back to main may have new commits that no run classified.
     if: |
       github.event.pull_request.draft == false &&
       (github.event.action != 'edited' || github.event.changes.title || github.event.changes.body || github.event.changes.base)
     # One run per pull request at a time; a new push queues instead of
-    # aborting a run that may be mid-labeling. Group is enforced on the job
+    # aborting a run that may be mid-comment. Group is enforced on the job
     # level, so that a skipped run does not cancel a queued run.
     concurrency:
       group: pr-risk-${{ github.event.pull_request.number }}
@@ -63,7 +40,6 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 15
     permissions:
-      checks: write
       contents: read
       issues: write
       pull-requests: write
@@ -102,11 +78,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          OPENROUTER_MODEL: ${{ vars.OPENROUTER_MODEL }}
           AUTHOR_IS_MEMBER: ${{ steps.author.outputs.member }}
-          PR_RISK_TRIAL: 'true'
         with:
           script: |
             const { run } = await import(`${process.env.GITHUB_WORKSPACE}/.github/pr-risk/main.js`);
