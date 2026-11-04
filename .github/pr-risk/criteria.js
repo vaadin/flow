@@ -36,7 +36,7 @@ export const CATEGORY_CRITERIA = {
     {
       value: 'green',
       description:
-        'Can merge without human approval, after CI and an independent agent review pass. Low-risk, well-defined, reversible changes: documentation corrections, formatting and mechanical changes, generated code updates, patch updates of build and test tools that no published artifact contains, straightforward refactoring whose behavioral equivalence the tests verify, and other changes with clear acceptance criteria and comprehensive automated verification.',
+        'Can merge without human approval, after CI and an independent agent review pass. Low-risk, well-defined, reversible changes: documentation corrections, formatting and mechanical changes, generated code updates, straightforward refactoring whose behavioral equivalence the tests verify, and other changes with clear acceptance criteria and comprehensive automated verification.',
     },
     {
       value: 'amber',

@@ -138,64 +138,16 @@ function isShipped(path, policy) {
 }
 
 /**
- * Whether a pull request is a patch update that `policy.patchBumps` allows: an
- * allowed author, a title that bumps x.y.z to x.y.(z+1) or later, and a diff
- * whose every change swaps the old version for the new one.
- */
-function isPatchBump({ policy, author, title, files }) {
-  const bumps = policy.patchBumps;
-  const match = bumps?.authors.includes(author) && bumps.title.exec(title);
-  if (!match) {
-    return false;
-  }
-  const [from, to] = [match.slice(1, 4).join('.'), match.slice(4, 7).join('.')];
-  const [major, minor, patch, toMajor, toMinor, toPatch] = match.slice(1, 7).map(Number);
-  if (major !== toMajor || minor !== toMinor || toPatch <= patch) {
-    return false;
-  }
-  return (
-    files.length > 0 &&
-    files.every((file) => {
-      const { added, removed } = changedLines(file.patch);
-      return (
-        file.status === 'modified' &&
-        !file.previous_filename &&
-        removed.length > 0 &&
-        added.length === removed.length &&
-        removed.every((line, index) => line.includes(from) && line.replaceAll(from, to) === added[index])
-      );
-    })
-  );
-}
-
-/**
  * The rules of the policy of the `repository` (`owner/name`) that match a pull
  * request, each with the minimum category it sets and the files that made it
- * match. `author` is the login of the author of the pull request.
+ * match.
  */
-export function evaluatePolicy({
-  repository,
-  author,
-  title,
-  body,
-  authorTrusted,
-  headTrusted,
-  files,
-  linkedIssues = [],
-}) {
+export function evaluatePolicy({ repository, title, body, authorTrusted, headTrusted, files, linkedIssues = [] }) {
   const policy = policyFor(repository);
   const findings = [];
   const shipped = files.filter((file) => isShipped(file.filename, policy));
 
-  const patchBump = isPatchBump({ policy, author, title, files });
-  if (patchBump) {
-    findings.push({ category: 'green', reason: policy.patchBumps.reason, files: files.map((file) => file.filename) });
-  }
-
   for (const rule of policy.pathRules) {
-    if (patchBump && rule.exceptPatchBumps) {
-      continue;
-    }
     const matched = files.filter((file) => matchesRule(file, rule) && (!rule.codeOnly || changesCode(file)));
     if (matched.length > 0) {
       findings.push({ category: rule.category, reason: rule.reason, files: matched.map((file) => file.filename) });

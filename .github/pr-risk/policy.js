@@ -33,8 +33,6 @@ const GENERIC = {
     {
       category: 'amber',
       reason: 'dependencies',
-      // A patch update of a build or test tool, see `patchBumps`
-      exceptPatchBumps: true,
       paths: [
         '**/package.json',
         '**/yarn.lock',
@@ -61,7 +59,6 @@ const GENERIC = {
   testPaths: ['**/test/**', '**/tests/**', '**/__tests__/**', '**/*.{test,spec}.*'],
   screenshotPaths: [],
   issueLabelRules: [],
-  patchBumps: null,
 };
 
 /**
@@ -252,17 +249,6 @@ const REPOSITORIES = {
         reason: 'a linked issue is labelled `Impact: High`: the problem reaches many applications',
       },
     ],
-    // Dependabot names a dependency `deps-dev` when no shipped artifact uses
-    // it, such as a test or build plugin. A patch update of one is safe to
-    // merge once CI passes, so the dependency rules (those with
-    // `exceptPatchBumps`) skip it. Updates of shipped dependencies, minor and
-    // major updates, and pull requests that change more than the version
-    // still need a human approval.
-    patchBumps: {
-      reason: 'a patch update of a build or test tool by Dependabot',
-      authors: ['dependabot[bot]'],
-      title: /^chore\(deps-dev\): bump \S+ from (\d+)\.(\d+)\.(\d+) to (\d+)\.(\d+)\.(\d+)$/u,
-    },
   },
 };
 
@@ -285,7 +271,7 @@ export function policyFor(repository) {
       pathRules.push(rule);
     }
   }
-  return { ...own, pathRules, issueLabelRules: own.issueLabelRules ?? [], patchBumps: own.patchBumps ?? null };
+  return { ...own, pathRules, issueLabelRules: own.issueLabelRules ?? [] };
 }
 
 /**
