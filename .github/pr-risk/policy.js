@@ -20,7 +20,9 @@
  * start with a dot. A rule with `codeOnly` skips files whose changes are only
  * comments and blank lines, so that a JSDoc fix does not need a reviewer. A
  * rule with `removed` sets its lower category for files that the pull request
- * removes and that match its paths.
+ * removes and that match its paths. A rule with `checksOnly` sets its lower
+ * category for files that match its paths, but not its `exceptPaths`, when no
+ * added or removed line matches `sensitive`.
  *
  * Content rules match lines that a pull request adds to shipped code: the
  * files that match `contentPaths` but not `testPaths`.
@@ -158,6 +160,35 @@ const REPOSITORIES = {
         category: 'red',
         reason: 'CI, release and repository automation, or config that runs code',
         paths: ['scripts/**', 'build-tools/**', 'release-check/**', 'flow-bom/**', '.mvn/**'],
+        // Workflows and scripts that only check pull requests, such as the API
+        // diff or a retry, cannot reach a secret or a release unless they change
+        // the lines that grant that power. The merge gates, the agent workflows
+        // and the scripts that push with a token stay red.
+        checksOnly: {
+          category: 'amber',
+          reason: 'CI checks that change no secrets, permissions, triggers or actions',
+          paths: ['.github/workflows/**', 'scripts/**'],
+          exceptPaths: [
+            '.github/workflows/pr-risk*.yml',
+            '.github/workflows/*.md',
+            '.github/workflows/*.lock.yml',
+            'scripts/autoMerge.js',
+            'scripts/mergePr.sh',
+            'scripts/cherryPick.js',
+          ],
+          sensitive: new RegExp(
+            [
+              String.raw`secrets\.|\b\w*(?:TOKEN|PASSWORD|API_KEY)\b`,
+              String.raw`^\s*(?:permissions|on|pull_request_target|workflow_run|issue_comment)\s*:`,
+              // A permission inside a `permissions:` block, such as `contents: write`
+              String.raw`^\s*[\w-]+\s*:\s*(?:write|read|none|write-all|read-all)\s*$`,
+              String.raw`^\s*(?:-\s*)?uses\s*:`,
+              // Text from the pull request inserted into a script
+              String.raw`\$\{\{\s*(?:github\.event|github\.head_ref|inputs)`,
+            ].join('|'),
+            'mu',
+          ),
+        },
         // Documentation that no workflow reads
         exceptPaths: [
           '.github/workflows/README.md',
@@ -309,6 +340,7 @@ export function policyFor(repository) {
     if (generic) {
       generic.paths.push(...rule.paths);
       generic.exceptPaths = [...(generic.exceptPaths ?? []), ...(rule.exceptPaths ?? [])];
+      generic.checksOnly = rule.checksOnly ?? generic.checksOnly;
     } else {
       pathRules.push(rule);
     }
