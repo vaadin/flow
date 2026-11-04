@@ -4,6 +4,7 @@
 
 import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
+import { ClientEvents } from '../../../../main/frontend/internal/client/ClientEvents';
 import { publishClient } from '../../../../main/frontend/internal/client/publishClient';
 import type {
   ApplicationConfiguration,
@@ -11,6 +12,8 @@ import type {
 } from '../../../../main/frontend/internal/client/clientApi';
 
 const $wnd = window as any;
+
+const events = new ClientEvents();
 
 function fakeConnectionStubs() {
   return {
@@ -28,6 +31,7 @@ function fakeConnectionStubs() {
     isHiddenByServer: sinon.stub().returns(false),
     getElementStyleProperties: sinon.stub().returns({ color: 'red' }),
     getProfilingData: sinon.stub().returns([1, 2]),
+    getClientEvents: sinon.stub().returns(events),
     start: sinon.stub()
   };
 }
@@ -74,6 +78,13 @@ describe('publishClient', () => {
 
     client.sendEventMessage(2, 'click', null);
     expect(stubs.sendEventMessage.calledWith(2, 'click', null)).to.be.true;
+  });
+
+  it('publishes the client events, typed so only the listed events can be dispatched', () => {
+    publishClient(asConnection(fakeConnectionStubs()), fakeConfig());
+    expect($wnd.Vaadin.Flow.clients.ROOT.events).to.equal(events);
+    // @ts-expect-error -- only the events listed for the client can be dispatched on it
+    expect(() => events.dispatchEvent(new Event('vaadin-request'))).to.not.throw();
   });
 
   it('omits dev-only and profiling methods in production without request timing', () => {
