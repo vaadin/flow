@@ -398,11 +398,20 @@ export class MessageHandler {
         // snapshot of the current DOM. Applying the changes and ending the
         // request both wait for it, so the response lock stays held and the
         // client stays active until the DOM has actually been updated.
-        document.startViewTransition(() => this.#applyChanges(valueMap, lock, start));
+        const transition = document.startViewTransition(() => this.#applyChanges(valueMap, lock, start));
+        finishDelegated = true;
+        // ready rejects when the browser skips the animation (e.g. hidden
+        // tab, or another transition starting); the changes are still
+        // applied, so that is not an error. finished only rejects when
+        // applying the changes failed.
+        transition.ready.catch(() => {});
+        transition.updateCallbackDone.catch(() => {});
+        transition.finished.catch((e: unknown) => Console.error(e));
       } else {
+        // #applyChanges finishes processing itself, also when it throws
+        finishDelegated = true;
         this.#applyChanges(valueMap, lock, start);
       }
-      finishDelegated = true;
     } finally {
       if (!finishDelegated) {
         this.#finishProcessing(valueMap, lock, start);

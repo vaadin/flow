@@ -500,6 +500,7 @@ describe('MessageHandler', () => {
       });
 
       afterEach(() => {
+        Reactive.reset();
         if (original) {
           Object.defineProperty(document, 'startViewTransition', original);
         } else {
@@ -509,13 +510,24 @@ describe('MessageHandler', () => {
 
       // Like the real API, the stub returns before running the update callback;
       // the test runs it through pendingUpdate once the snapshot would be taken.
+      // By default the returned transition is one the browser skips, so its
+      // ready promise rejects.
       function stubStartViewTransition(supported: boolean): void {
         const value = supported
           ? (callback: () => void) => {
               pendingUpdate = callback;
+              return {
+                ready: Promise.reject(new DOMException('Transition was skipped', 'AbortError')),
+                updateCallbackDone: Promise.resolve(),
+                finished: Promise.resolve()
+              };
             }
           : undefined;
         Object.defineProperty(document, 'startViewTransition', { configurable: true, writable: true, value });
+      }
+
+      function runPendingUpdate(): void {
+        pendingUpdate!();
       }
 
       function handle(handler: MessageHandler, message: Record<string, unknown>): void {
@@ -558,6 +570,56 @@ describe('MessageHandler', () => {
 
         expect(handler.getLastSeenServerSyncId()).to.equal(1);
       });
+
+      it('does not report a skipped view transition as an unhandled rejection', async () => {
+        stubStartViewTransition(true);
+        const unhandled: unknown[] = [];
+        const listener = (e: PromiseRejectionEvent) => {
+          unhandled.push(e.reason);
+          e.preventDefault();
+        };
+        window.addEventListener('unhandledrejection', listener);
+        try {
+          handle(new MessageHandler(makeRegistry().registry), { syncId: 0, meta: { viewTransition: true } });
+          pendingUpdate!();
+          await new Promise((resolve) => setTimeout(resolve, 10));
+        } finally {
+          window.removeEventListener('unhandledrejection', listener);
+        }
+
+        expect(unhandled).to.deep.equal([]);
+      });
+
+      for (const supported of [true, false]) {
+        it(`ends the request once when applying the changes throws (view transitions ${supported ? 'supported' : 'unsupported'})`, () => {
+          stubStartViewTransition(supported);
+          const registry = makeRegistry();
+          const handler = new MessageHandler(registry.registry);
+
+          // Reactive keeps a listener that throws, so only throw for the first message
+          let thrown = false;
+          Reactive.addFlushListener(() => {
+            if (!thrown) {
+              thrown = true;
+              throw new Error('boom');
+            }
+          });
+
+          const first = () => handle(handler, { syncId: 0, meta: { viewTransition: true } });
+          if (supported) {
+            first();
+            handle(handler, { syncId: 1, meta: { async: true } });
+            expect(runPendingUpdate).to.throw('boom');
+          } else {
+            expect(first).to.throw('boom');
+            handle(handler, { syncId: 1, meta: { async: true } });
+          }
+
+          expect(registry.log.endRequests).to.equal(1);
+          expect(registry.log.stopLoadings).to.equal(1);
+          expect(handler.getLastSeenServerSyncId()).to.equal(1);
+        });
+      }
 
       it('applies the changes directly when no view transition is requested', () => {
         stubStartViewTransition(true);
