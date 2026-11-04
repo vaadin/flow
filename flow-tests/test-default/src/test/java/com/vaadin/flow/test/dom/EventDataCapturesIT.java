@@ -16,6 +16,8 @@
 package com.vaadin.flow.test.dom;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 
 import com.vaadin.flow.test.AbstractDefaultIT;
 import com.vaadin.flow.test.TestFor;
@@ -37,11 +39,16 @@ public class EventDataCapturesIT extends AbstractDefaultIT {
     @BrowserTest
     public void declaredFilterOnlyMatchesItsOwnListener() {
         open();
+        WebElement button = findElement(By.id("filterButton"));
 
-        findElement(By.id("filterButton")).click();
+        // Only the listener whose capture matches the button fires. Actions
+        // fire mousedown, unlike click(), which only fires a click event
+        new Actions(getDriver()).click(button).perform();
+        waitUntil(driver -> "primary=1 secondary=0"
+                .equals(findElement(By.id("filterResult")).getText()));
 
-        // Only the listener whose capture matches the primary button fires
-        waitUntil(driver -> "primary"
+        new Actions(getDriver()).contextClick(button).perform();
+        waitUntil(driver -> "primary=1 secondary=1"
                 .equals(findElement(By.id("filterResult")).getText()));
     }
 }

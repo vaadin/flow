@@ -40,6 +40,9 @@ public class EventDataCapturesView extends Div {
 
     private static final EventJs JS = JsSnippets.of(EventJs.class);
 
+    private int primaryCount;
+    private int secondaryCount;
+
     public EventDataCapturesView() {
         Div dataResult = new Div();
         dataResult.setId("dataResult");
@@ -56,18 +59,24 @@ public class EventDataCapturesView extends Div {
                 .addEventData(label);
 
         // Two listeners using the same declared filter with different
-        // captures, to show that their filters stay apart
+        // captures, to show that their filters stay apart. A right click
+        // fires no click event, so the listeners use mousedown.
         NativeButton filterButton = new NativeButton("Filtered by capture");
         filterButton.setId("filterButton");
-        filterButton.getElement()
-                .addEventListener("click",
-                        event -> filterResult.setText("primary"))
-                .setFilter(JS.isButton(0));
-        filterButton.getElement()
-                .addEventListener("click",
-                        event -> filterResult.setText("secondary"))
-                .setFilter(JS.isButton(2));
+        filterButton.getElement().addEventListener("mousedown", event -> {
+            primaryCount++;
+            showCounts(filterResult);
+        }).setFilter(JS.isButton(0));
+        filterButton.getElement().addEventListener("mousedown", event -> {
+            secondaryCount++;
+            showCounts(filterResult);
+        }).setFilter(JS.isButton(2));
 
         add(dataButton, filterButton, dataResult, filterResult);
+    }
+
+    private void showCounts(Div filterResult) {
+        filterResult.setText(
+                "primary=" + primaryCount + " secondary=" + secondaryCount);
     }
 }
