@@ -82,29 +82,20 @@ public class ResponseWriter implements Serializable {
 
     private final int bufferSize;
     private final boolean brotliEnabled;
-    private final boolean precompressedEnabled;
 
     /**
      * Create a response writer with the given deployment configuration.
-     * <p>
-     * Precompressed variants ({@code .br}/{@code .gz}) are only served in
-     * production mode. They are written by a production build, and nothing
-     * updates them when the plain file changes afterwards, so in development
-     * mode they would hide every later edit of the resource.
      *
      * @param deploymentConfiguration
      *            the deployment configuration to use, not <code>null</code>
      * @since 1.3
      */
     public ResponseWriter(DeploymentConfiguration deploymentConfiguration) {
-        this(DEFAULT_BUFFER_SIZE, deploymentConfiguration.isBrotli(),
-                deploymentConfiguration.isProductionMode());
+        this(DEFAULT_BUFFER_SIZE, deploymentConfiguration.isBrotli());
     }
 
-    private ResponseWriter(int bufferSize, boolean brotliEnabled,
-            boolean precompressedEnabled) {
+    private ResponseWriter(int bufferSize, boolean brotliEnabled) {
         this.brotliEnabled = brotliEnabled;
-        this.precompressedEnabled = precompressedEnabled;
         this.bufferSize = bufferSize;
     }
 
@@ -140,14 +131,13 @@ public class ResponseWriter implements Serializable {
         URLConnection connection = null;
         InputStream dataStream = null;
 
-        if (precompressedEnabled && brotliEnabled
-                && acceptsBrotliResource(request)) {
+        if (brotliEnabled && acceptsBrotliResource(request)) {
             String brotliFilenameWithPath = filenameWithPath + ".br";
             try {
                 url = getPrecompressedResource(request, resourceUrl,
                         brotliFilenameWithPath, ".br");
-                if (url != null) {
-                    connection = url.openConnection();
+                connection = openIfUpToDate(url, resourceUrl);
+                if (connection != null) {
                     dataStream = connection.getInputStream();
                     response.setHeader("Content-Encoding", "br");
                 }
@@ -158,15 +148,14 @@ public class ResponseWriter implements Serializable {
             }
         }
 
-        if (precompressedEnabled && dataStream == null
-                && acceptsGzippedResource(request)) {
+        if (dataStream == null && acceptsGzippedResource(request)) {
             // try to serve a gzipped version if available
             String gzippedFilenameWithPath = filenameWithPath + ".gz";
             try {
                 url = getPrecompressedResource(request, resourceUrl,
                         gzippedFilenameWithPath, ".gz");
-                if (url != null) {
-                    connection = url.openConnection();
+                connection = openIfUpToDate(url, resourceUrl);
+                if (connection != null) {
                     dataStream = connection.getInputStream();
                     response.setHeader("Content-Encoding", "gzip");
                 }
@@ -340,9 +329,9 @@ public class ResponseWriter implements Serializable {
             long resourceLength, InputStream dataStream, URL resourceUrl,
             OutputStream outputStream, HttpServletResponse response)
             throws IOException {
-        new ResponseWriter(DEFAULT_BUFFER_SIZE, false, false)
-                .writeRangeContents(ranges, resourceLength, dataStream,
-                        resourceUrl, outputStream, response);
+        new ResponseWriter(DEFAULT_BUFFER_SIZE, false).writeRangeContents(
+                ranges, resourceLength, dataStream, resourceUrl, outputStream,
+                response);
     }
 
     /**
@@ -544,6 +533,49 @@ public class ResponseWriter implements Serializable {
             return sibling;
         }
         return getResource(request, compressedFilenameWithPath);
+    }
+
+    /**
+     * Opens a precompressed variant unless it is older than the resource
+     * itself. A production build writes the variants after the resource, but
+     * nothing updates them when the resource is replaced later (an IDE build, a
+     * copied hotfix, a redeploy into the same directory), so an older variant
+     * holds outdated content. Variants with an unknown timestamp are served.
+     */
+    private static URLConnection openIfUpToDate(URL compressedUrl,
+            URL resourceUrl) throws IOException {
+        if (compressedUrl == null) {
+            return null;
+        }
+        URLConnection connection = compressedUrl.openConnection();
+        long compressedLastModified = connection.getLastModified();
+        if (compressedLastModified > 0
+                && compressedLastModified < getLastModified(resourceUrl)) {
+            getLogger().debug("Not serving {} because it is older than {}",
+                    compressedUrl, resourceUrl);
+            closeConnection(connection);
+            return null;
+        }
+        return connection;
+    }
+
+    private static long getLastModified(URL url) throws IOException {
+        URLConnection connection = url.openConnection();
+        try {
+            return connection.getLastModified();
+        } finally {
+            closeConnection(connection);
+        }
+    }
+
+    private static void closeConnection(URLConnection connection) {
+        // getLastModified() connects, which opens the stream of a file URL
+        try {
+            connection.getInputStream().close();
+        } catch (IOException e) {
+            getLogger().debug("Error closing connection to {}",
+                    connection.getURL(), e);
+        }
     }
 
     private URL getCompressedSibling(URL resourceUrl, String suffix) {

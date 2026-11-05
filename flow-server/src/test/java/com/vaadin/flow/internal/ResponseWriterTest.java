@@ -163,7 +163,6 @@ public class ResponseWriterTest {
     public void setUp() {
         MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
         deploymentConfiguration.setBrotli(true);
-        deploymentConfiguration.setProductionMode(true);
 
         responseWriter = new OverrideableResponseWriter(
                 deploymentConfiguration);
@@ -347,6 +346,48 @@ public class ResponseWriterTest {
         verify(response).setHeader("Content-Encoding", "br");
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    public void writeDataBrotliAndGzip_onlyServedWhenNotOlderThanResource(
+            boolean resourceReplacedAfterCompression) throws IOException {
+        // A production build writes the .br/.gz variants after the resource.
+        // When the resource is replaced afterwards (e.g. by an IDE build),
+        // the variants hold the old content and must not be served.
+        responseWriter.overrideAcceptsBrotliResource = Boolean.TRUE;
+        responseWriter.overrideAcceptsGzippedResource = Boolean.TRUE;
+
+        File dir = Files.createTempDirectory("response-writer-test").toFile();
+        dir.deleteOnExit();
+        File jsFile = new File(dir, "file.js");
+        Files.write(jsFile.toPath(), fileJsContents);
+        File brotliFile = new File(dir, "file.js.br");
+        Files.write(brotliFile.toPath(), fileJsBrotliContents);
+        File gzipFile = new File(dir, "file.js.gz");
+        Files.write(gzipFile.toPath(), fileJsGzippedContents);
+
+        long compressedAt = 1_700_000_000_000L;
+        brotliFile.setLastModified(compressedAt);
+        gzipFile.setLastModified(compressedAt);
+        jsFile.setLastModified(
+                resourceReplacedAfterCompression ? compressedAt + 2000
+                        : compressedAt);
+
+        CapturingServletOutputStream out = new CapturingServletOutputStream();
+        when(response.getOutputStream()).thenReturn(out);
+
+        responseWriter.writeResponseContents("/static/file.js",
+                jsFile.toURI().toURL(), request, response);
+
+        if (resourceReplacedAfterCompression) {
+            assertArrayEquals(fileJsContents, out.getOutput());
+            verify(response, never()).setHeader(eq("Content-Encoding"),
+                    anyString());
+        } else {
+            assertArrayEquals(fileJsBrotliContents, out.getOutput());
+            verify(response).setHeader("Content-Encoding", "br");
+        }
+    }
+
     @Test
     public void writeDataNoBrotliVersion() throws IOException {
         responseWriter.overrideAcceptsBrotliResource = Boolean.TRUE;
@@ -366,31 +407,9 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeDataDevelopmentMode_precompressedVariantsNotServed()
-            throws IOException {
-        // A production build leaves .br/.gz next to the plain file, and an
-        // edit copied over the plain file afterwards must still be served.
-        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
-        configuration.setBrotli(true);
-        configuration.setProductionMode(false);
-
-        responseWriter = new OverrideableResponseWriter(configuration);
-
-        responseWriter.overrideAcceptsBrotliResource = Boolean.TRUE;
-        responseWriter.overrideAcceptsGzippedResource = Boolean.TRUE;
-
-        makePathsAvailable(PATH_JS, PATH_GZ, PATH_BR);
-
-        assertResponse(fileJsContents);
-        verify(response, never()).setHeader(eq("Content-Encoding"),
-                anyString());
-    }
-
-    @Test
     public void writeDataBrotliDisabled() throws IOException {
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         configuration.setBrotli(false);
-        configuration.setProductionMode(true);
 
         responseWriter = new OverrideableResponseWriter(configuration);
 
