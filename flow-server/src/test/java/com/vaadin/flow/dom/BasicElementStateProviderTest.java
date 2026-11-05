@@ -15,26 +15,33 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.NodeVisitor.ElementType;
+import com.vaadin.flow.dom.impl.AbstractNodeStateProvider.AttachExistingElementJs;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.ShadowRootData;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BasicElementStateProviderTest {
@@ -89,6 +96,41 @@ class BasicElementStateProviderTest {
         parent.appendChild(child);
         assertEquals(parent,
                 BasicElementStateProvider.get().getParent(child.getNode()));
+    }
+
+    @Test
+    void attachExistingElement_asksTheClientWithTheProposedNode() {
+        MockUI ui = new MockUI();
+        Element parent = ElementFactory.createDiv();
+        Element previousSibling = ElementFactory.createSpan();
+        parent.appendChild(previousSibling);
+        ui.getElement().appendChild(parent);
+        ChildElementConsumer callback = child -> {
+        };
+
+        BasicElementStateProvider.get().attachExistingElement(parent.getNode(),
+                "label", previousSibling, callback);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<JsCall> calls = ui.getInternals()
+                .dumpPendingJavaScriptInvocations().stream()
+                .map(invocation -> invocation.getInvocation().getJsCall())
+                .toList();
+        assertEquals(1, calls.size());
+        JsCall call = calls.get(0);
+        assertEquals(AttachExistingElementJs.class, call.definitionType());
+        assertEquals("attachExistingElement", call.methodName());
+        assertEquals(List.of(parent, previousSibling, "label"),
+                call.arguments().subList(0, 3));
+        // The client reports back for the node that was registered to stand
+        // for the element it finds
+        AttachExistingElementFeature feature = parent.getNode()
+                .getFeature(AttachExistingElementFeature.class);
+        List<StateNode> registered = new ArrayList<>();
+        feature.forEachChild(registered::add);
+        assertEquals(1, registered.size());
+        assertEquals(registered.get(0).getId(), call.arguments().get(3));
+        assertSame(callback, feature.getCallback(registered.get(0)));
     }
 
     @Test

@@ -2566,6 +2566,21 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
+    void flashClass_runsTheDeclaredJavaScriptOnTheElement() {
+        MockUI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        element.flashClass("highlight");
+
+        JavaScriptInvocation invocation = ui.onlyScheduledInvocation();
+        assertEquals(new JsCall(Element.ElementJs.class, "flashClass",
+                List.of("highlight")), invocation.getJsCall());
+        assertEquals(List.of("highlight", element), invocation.getParameters(),
+                "the class name should be followed by the element to flash");
+    }
+
+    @Test
     void callFunctionBeforeAttach() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();

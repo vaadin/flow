@@ -38,6 +38,7 @@ import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsDefinitionProxy.Kind;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
@@ -47,7 +48,9 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
  * Generates {@link FrontendUtils#JS_DEFINITIONS_FILE_NAME}, which registers the
  * JavaScript of every {@link JsDefinition} interface on the class path as an
  * ordinary function of the bundle: in one registry for the methods that run
- * their JavaScript when called, and in another for the methods that declare a
+ * their JavaScript when called, in another for those of them that are annotated
+ * with {@link JsWithExecutionContext} and take the execution context as their
+ * first parameter, and in a third for the methods that declare a
  * {@link JsSnippet}, which the client turns into a function when it decodes the
  * snippet. A definition that does not pass
  * {@link JsDefinitionProxy#checkDefinition(Class)} is left out, with an error
@@ -75,11 +78,20 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     // functions a call runs
     private static final String SNIPPETS = "window.Vaadin.Flow.jsSnippets = window.Vaadin.Flow.jsSnippets || {};";
 
+    // What the declared JavaScript of a function that gets the execution
+    // context calls it by
+    private static final String EXECUTION_CONTEXT = "$executionContext";
+
+    // A function that gets the execution context is kept apart from the
+    // others, so that being found here is what tells the client to pass it:
+    // nothing in a message can ask for the context to be given to a function
+    private static final String WITH_EXECUTION_CONTEXT = "window.Vaadin.Flow.jsDefinitionsWithExecutionContext = window.Vaadin.Flow.jsDefinitionsWithExecutionContext || {};";
+
     private static final List<String> HEADER = List.of("// @ts-nocheck",
             "window.Vaadin = window.Vaadin || {};",
             "window.Vaadin.Flow = window.Vaadin.Flow || {};",
             "window.Vaadin.Flow.jsDefinitions = window.Vaadin.Flow.jsDefinitions || {};",
-            SNIPPETS);
+            SNIPPETS, WITH_EXECUTION_CONTEXT);
 
     // What a message about a call names it by, which is of no use to a browser
     // running the application and is left out of a production bundle
@@ -251,17 +263,11 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         }
         String separator = System.lineSeparator();
         String footer = String.join(separator, FOOTER);
-        List<String> added = new ArrayList<>();
-        if (!generated.contains(SNIPPETS)) {
-            // Written before snippets were generated, and a snippet is
-            // assigned into a registry that has to be there
-            added.add(SNIPPETS);
-        }
-        if (!generated.contains(NAMES)) {
-            // Written before names were registered at all, and a name is
-            // assigned into an object that has to be there
-            added.add(NAMES);
-        }
+        // A file written before a registry was generated, such as the one of
+        // snippets or of names, does not create it, and what is added may be
+        // assigned into it
+        List<String> added = new ArrayList<>(renderHeader(true).stream()
+                .filter(line -> !generated.contains(line)).toList());
         added.addAll(missing);
         if (generated.contains(footer)) {
             return generated.replace(footer,
@@ -392,10 +398,21 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                 function.add("};");
             } else {
                 // The element the definition was obtained from is the `this`
-                // of a call - the same contract as an executeJs expression has
+                // of a call - the same contract as an executeJs expression
+                // has. The execution context, for a function that gets it,
+                // leads the parameters, so `this` stays the element and $0,
+                // $1, ... stay the arguments of the call
+                boolean withContext = method
+                        .isAnnotationPresent(JsWithExecutionContext.class);
                 function.add(String.format(
-                        "window.Vaadin.Flow.jsDefinitions[%s] = async function (%s) {",
-                        functionId, parameters));
+                        "window.Vaadin.Flow.%s[%s] = async function (%s) {",
+                        withContext ? "jsDefinitionsWithExecutionContext"
+                                : "jsDefinitions",
+                        functionId,
+                        withContext
+                                ? (parameters.isEmpty() ? EXECUTION_CONTEXT
+                                        : EXECUTION_CONTEXT + ", " + parameters)
+                                : parameters));
                 function.add(expression);
                 function.add("};");
             }

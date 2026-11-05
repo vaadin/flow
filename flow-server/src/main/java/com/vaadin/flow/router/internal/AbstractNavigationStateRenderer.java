@@ -60,7 +60,6 @@ import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteParameters;
@@ -495,23 +494,17 @@ public abstract class AbstractNavigationStateRenderer
         boolean reactEnabled = ui.getInternals().getSession().getService()
                 .getDeploymentConfiguration().isReactEnabled();
         Location currentLocation = ui.getInternals().getActiveViewLocation();
-        if (event instanceof ErrorNavigationEvent errorEvent) {
-            if (isRouterLinkNotFoundNavigationError(errorEvent)) {
-                // #8544
-                event.getState().ifPresent(s -> ui.getPage().executeJs(
-                        "this.scrollPositionHandlerAfterServerNavigation($0);",
-                        s));
-            }
-        } else if (!event.isForwardTo() && (currentLocation == null
-                || !event.getLocation().getPathWithQueryParameters().equals(
-                        currentLocation.getPathWithQueryParameters()))) {
-            if (shouldPushHistoryState(event)) {
-                pushHistoryState(event);
-            }
-        } else if (reactEnabled) {
-            if (shouldPushHistoryState(event)) {
-                pushHistoryState(event);
-            }
+        if (event instanceof ErrorNavigationEvent) {
+            // The history is left as it is for an error view
+            return;
+        }
+        boolean locationChanged = !event.isForwardTo()
+                && (currentLocation == null || !event.getLocation()
+                        .getPathWithQueryParameters()
+                        .equals(currentLocation.getPathWithQueryParameters()));
+        if ((locationChanged || reactEnabled)
+                && shouldPushHistoryState(event)) {
+            pushHistoryState(event);
         }
     }
 
@@ -523,14 +516,6 @@ public abstract class AbstractNavigationStateRenderer
 
     protected boolean shouldPushHistoryState(NavigationEvent event) {
         return event.getTrigger() == NavigationTrigger.UI_NAVIGATE;
-    }
-
-    private boolean isRouterLinkNotFoundNavigationError(
-            ErrorNavigationEvent event) {
-        return NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())
-                && event.getErrorParameter() != null
-                && event.getErrorParameter()
-                        .getCaughtException() instanceof NotFoundException;
     }
 
     /**
