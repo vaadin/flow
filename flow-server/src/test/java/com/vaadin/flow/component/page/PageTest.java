@@ -482,9 +482,9 @@ class PageTest {
         VaadinSession session = mock(VaadinSession.class);
         when(session.getService()).thenReturn(service);
 
-        UI ui = new UI();
-        ui.getInternals().setSession(session);
-        return ui;
+        UI configuredUI = new UI();
+        configuredUI.getInternals().setSession(session);
+        return configuredUI;
     }
 
     @Test
