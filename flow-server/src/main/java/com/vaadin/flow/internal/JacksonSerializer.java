@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.internal;
 
-import java.beans.BeanInfo;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -94,14 +91,13 @@ public final class JacksonSerializer {
                             toJson(rc.getAccessor().invoke(bean)));
                 }
             } else {
-                BeanInfo info = Introspector.getBeanInfo(type);
-                for (PropertyDescriptor pd : info.getPropertyDescriptors()) {
-                    if ("class".equals(pd.getName())) {
+                for (BeanProperty property : BeanUtil.getBeanProperties(type)) {
+                    if ("class".equals(property.name())) {
                         continue;
                     }
-                    Method reader = pd.getReadMethod();
+                    Method reader = property.readMethod();
                     if (reader != null) {
-                        json.set(pd.getName(), toJson(reader.invoke(bean)));
+                        json.set(property.name(), toJson(reader.invoke(bean)));
                     }
                 }
             }
@@ -236,13 +232,12 @@ public final class JacksonSerializer {
                 return instance;
             }
 
-            BeanInfo info = Introspector.getBeanInfo(type);
             Map<String, Method> writers = new HashMap<>();
 
-            for (PropertyDescriptor pd : info.getPropertyDescriptors()) {
-                Method writer = pd.getWriteMethod();
+            for (BeanProperty property : BeanUtil.getBeanProperties(type)) {
+                Method writer = property.writeMethod();
                 if (writer != null) {
-                    writers.put(pd.getName(), writer);
+                    writers.put(property.name(), writer);
                 }
             }
             for (String key : keys) {

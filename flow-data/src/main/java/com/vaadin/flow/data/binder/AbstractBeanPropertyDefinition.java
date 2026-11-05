@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.binder;
 
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
 
 import com.vaadin.flow.internal.ReflectTools;
@@ -37,9 +38,42 @@ import com.vaadin.flow.shared.util.SharedUtil;
 public abstract class AbstractBeanPropertyDefinition<T, V>
         implements PropertyDefinition<T, V> {
 
-    private final PropertyDescriptor descriptor;
+    private final String name;
+    private final Method readMethod;
+    private final Method writeMethod;
     private final BeanPropertySet<T> propertySet;
     private final Class<?> propertyHolderType;
+
+    /**
+     * Constructor for setting the immutable property, property set and property
+     * holder type used by this instance.
+     *
+     * @param propertySet
+     *            property set this property belongs to
+     * @param propertyHolderType
+     *            property holder type
+     * @param name
+     *            the name of the property
+     * @param readMethod
+     *            the getter of the property, not {@code null}
+     * @param writeMethod
+     *            the setter of the property, or {@code null} for a read-only
+     *            property
+     */
+    public AbstractBeanPropertyDefinition(BeanPropertySet<T> propertySet,
+            Class<?> propertyHolderType, String name, Method readMethod,
+            Method writeMethod) {
+        this.propertySet = propertySet;
+        this.propertyHolderType = propertyHolderType;
+        this.name = name;
+        this.readMethod = readMethod;
+        this.writeMethod = writeMethod;
+        if (readMethod == null) {
+            throw new IllegalArgumentException(
+                    "Bean property has no accessible getter: "
+                            + propertySet.getBeanType() + "." + name);
+        }
+    }
 
     /**
      * Constructor for setting the immutable descriptor, property set and
@@ -51,36 +85,32 @@ public abstract class AbstractBeanPropertyDefinition<T, V>
      *            property holder type
      * @param descriptor
      *            property descriptor
+     * @deprecated Use
+     *             {@link #AbstractBeanPropertyDefinition(BeanPropertySet, Class, String, Method, Method)},
+     *             which needs no {@code java.desktop} module
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public AbstractBeanPropertyDefinition(BeanPropertySet<T> propertySet,
             Class<?> propertyHolderType, PropertyDescriptor descriptor) {
-        this.propertySet = propertySet;
-        this.propertyHolderType = propertyHolderType;
-        this.descriptor = descriptor;
-        if (descriptor.getReadMethod() == null) {
-            throw new IllegalArgumentException(
-                    "Bean property has no accessible getter: "
-                            + propertySet.getBeanType() + "."
-                            + descriptor.getName());
-        }
+        this(propertySet, propertyHolderType, descriptor.getName(),
+                descriptor.getReadMethod(), descriptor.getWriteMethod());
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public Class<V> getType() {
         return (Class<V>) ReflectTools
-                .convertPrimitiveType(descriptor.getPropertyType());
+                .convertPrimitiveType(readMethod.getReturnType());
     }
 
     @Override
     public boolean isGenericType() {
-        return descriptor.getReadMethod()
-                .getGenericReturnType() instanceof TypeVariable<?>;
+        return readMethod.getGenericReturnType() instanceof TypeVariable<?>;
     }
 
     @Override
     public String getName() {
-        return descriptor.getName();
+        return name;
     }
 
     @Override
@@ -94,12 +124,40 @@ public abstract class AbstractBeanPropertyDefinition<T, V>
     }
 
     /**
+     * Gets the getter of this property.
+     *
+     * @return the getter, not {@code null}
+     */
+    protected Method getReadMethod() {
+        return readMethod;
+    }
+
+    /**
+     * Gets the setter of this property.
+     *
+     * @return the setter, or {@code null} for a read-only property
+     */
+    protected Method getWriteMethod() {
+        return writeMethod;
+    }
+
+    /**
      * Gets the property descriptor of this instance.
      *
      * @return the property descriptor
+     * @deprecated Use {@link #getName()}, {@link #getReadMethod()} and
+     *             {@link #getWriteMethod()}, which need no {@code java.desktop}
+     *             module
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     protected PropertyDescriptor getDescriptor() {
-        return descriptor;
+        // A catch clause of IntrospectionException would make the JVM load
+        // java.desktop when it verifies this class
+        try {
+            return new PropertyDescriptor(name, readMethod, writeMethod);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
