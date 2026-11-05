@@ -40,6 +40,7 @@ import com.vaadin.flow.router.internal.RouteUtil;
 public final class MenuConfiguration {
 
     private static final String STATISTICS_DYNAMIC_MENU_ENTRIES = "flow/dynamic-menu-entries";
+    private static final String STATISTICS_DYNAMIC_MENU_ENTRIES_TREE = "flow/dynamic-menu-entries-tree";
 
     /**
      * Collect ordered list of menu entries for menu population. All client
@@ -66,6 +67,48 @@ public final class MenuConfiguration {
         UsageStatistics.markAsUsed(STATISTICS_DYNAMIC_MENU_ENTRIES, null);
         return MenuRegistry.collectMenuItemsList(locale).stream()
                 .map(MenuConfiguration::createMenuEntry).toList();
+    }
+
+    /**
+     * Collect the menu entries as a hierarchy for menu population, nested
+     * according to the route hierarchy.
+     * <p>
+     * The same views as {@link #getMenuEntries()} are returned, but as a tree:
+     * server views are nested under
+     * {@link com.vaadin.flow.router.Menu#parent() @Menu(parent)} when it is
+     * defined, and otherwise according to
+     * {@link com.vaadin.flow.router.RouteParent @RouteParent} (with URL-prefix
+     * walking as fallback, which does not nest views under the index route of
+     * the application or of a {@link com.vaadin.flow.router.RoutePrefix}
+     * layout). Only root entries are returned; the descendants are reachable
+     * via {@link MenuEntry#children()}.
+     * <p>
+     * Hilla/TypeScript client views have no server-side route hierarchy and are
+     * always returned as root entries without children.
+     *
+     * @return ordered list of root {@link MenuEntry} instances with nested
+     *         children
+     */
+    public static List<MenuEntry> getMenuEntriesTree() {
+        UsageStatistics.markAsUsed(STATISTICS_DYNAMIC_MENU_ENTRIES_TREE, null);
+        return MenuRegistry.collectMenuItemsTree().stream()
+                .map(MenuConfiguration::createMenuTreeEntry).toList();
+    }
+
+    /**
+     * Collect the menu entries as a hierarchy for menu population, nested
+     * according to the route hierarchy.
+     *
+     * @param locale
+     *            locale to use for ordering. null for default locale.
+     * @return ordered list of root {@link MenuEntry} instances with nested
+     *         children
+     * @see #getMenuEntriesTree()
+     */
+    public static List<MenuEntry> getMenuEntriesTree(Locale locale) {
+        UsageStatistics.markAsUsed(STATISTICS_DYNAMIC_MENU_ENTRIES_TREE, null);
+        return MenuRegistry.collectMenuItemsTree(locale).stream()
+                .map(MenuConfiguration::createMenuTreeEntry).toList();
     }
 
     /**
@@ -183,5 +226,13 @@ public final class MenuConfiguration {
                                 : viewInfo.title()),
                 viewInfo.menu().order(), viewInfo.menu().icon(),
                 viewInfo.menu().menuClass());
+    }
+
+    private static MenuEntry createMenuTreeEntry(AvailableViewInfo viewInfo) {
+        MenuEntry entry = createMenuEntry(viewInfo);
+        List<MenuEntry> children = viewInfo.children().stream()
+                .map(MenuConfiguration::createMenuTreeEntry).toList();
+        return new MenuEntry(entry.path(), entry.title(), entry.order(),
+                entry.icon(), entry.menuClass(), children);
     }
 }

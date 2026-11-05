@@ -269,6 +269,8 @@ list drifts the moment someone adds a module and forgets it. Read the
 `validation.run` property, so a new module is picked up without being listed
 anywhere else. See `scripts/computeMatrix.js` and `scripts/previewModule.js`.
 
+A workflow job with effects outside the repository (uploading an analysis, deploying a preview or a snapshot, posting to Slack, opening pull requests, spending shared API credits) carries `github.repository == 'vaadin/flow'` in its `if:` condition, so a copy of the repository never publishes to the shared targets. When the secret such a job needs can be missing from the run's own secret store, as in Dependabot-triggered runs, bind the secret to the job `env` and skip the steps with a notice instead of failing, because a job-level `if:` cannot read the `secrets` context.
+
 Extract a shared utility instead of copying a class or method between modules.
 When two modules need the same logic, move it to the module they both depend
 on.

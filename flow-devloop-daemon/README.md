@@ -162,7 +162,7 @@ disagree about the version. The daemon still provisions on demand through the
 same code and into the same cache, so a project that never ran the goal is
 unaffected and one that did never downloads twice.
 `-Dvaadin.devcli.skipHotswapAgent=true` installs the CLI without it; dropping
-the release asset into `~/.vaadin/devloop/` by hand works too, since what is
+the pinned jar into `~/.vaadin/devloop/` by hand works too, since what is
 there is checksum-verified either way.
 
 ## Outcomes and exit codes
@@ -932,9 +932,10 @@ container's own copy of Jackson while the JVM holds that container loader's
 lock, and on Payara Micro that lock-order inversion with Hazelcast's bootstrap
 left the odd start hanging until the start timeout. That one is a stopgap: the
 cause is HotswapAgent resolving a plugin's types through the thread context
-class loader (`ClassPool.appendSystemPath()`), and the entry should go once the
-pinned HotswapAgent no longer does
-([HotswapAgent#681](https://github.com/HotswapProjects/HotswapAgent/pull/681)). The names are the `@Plugin` names, which is
+class loader (`ClassPool.appendSystemPath()`), fixed in
+[HotswapAgent#681](https://github.com/HotswapProjects/HotswapAgent/pull/681)
+and released in 2.0.4, the pinned version; the entry should go once the Payara
+Micro boot is measured again without it. The names are the `@Plugin` names, which is
 why Jackson's is `JacksonPlugin`; a wrong one is accepted silently.
 
 **Disabling has to reach every class loader**, because HotswapAgent builds a
