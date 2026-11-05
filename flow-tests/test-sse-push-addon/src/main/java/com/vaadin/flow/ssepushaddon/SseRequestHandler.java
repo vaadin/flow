@@ -52,7 +52,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * <p>
  * This handler does not use the Atmosphere framework.
  * <p>
- * Part of the SSE push transport add-on, see {@link SsePushTransport}.
+ * Part of the SSE push transport add-on, see {@link SsePushConnectionFactory}.
  *
  * @author Vaadin Ltd
  */

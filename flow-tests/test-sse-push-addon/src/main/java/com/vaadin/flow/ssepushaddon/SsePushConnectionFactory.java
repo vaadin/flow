@@ -17,30 +17,25 @@ package com.vaadin.flow.ssepushaddon;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.communication.PushConnection;
-import com.vaadin.flow.server.communication.PushTransport;
+import com.vaadin.flow.server.communication.PushConnectionFactory;
 
 /**
- * A push transport that streams messages from the server with server-sent
- * events, without Atmosphere. Messages to the server are regular requests.
+ * Creates the push connections of the SSE push transport, which streams
+ * messages from the server with server-sent events, without Atmosphere.
+ * Messages to the server are regular requests.
  * <p>
- * Registered by {@link SsePushServiceInitListener}, which also adds the
+ * Found with the service loader. {@link SsePushServiceInitListener} adds the
  * {@link SseRequestHandler} that serves the event streams.
  */
-public class SsePushTransport implements PushTransport {
-
-    /**
-     * The name of the transport, to select it with
-     * {@code @Push(transportName = SsePushTransport.NAME)}.
-     */
-    public static final String NAME = "sse-addon";
+public class SsePushConnectionFactory implements PushConnectionFactory {
 
     @Override
-    public String getName() {
-        return NAME;
+    public PushConnection apply(UI ui) {
+        return new SsePushConnection(ui);
     }
 
     @Override
-    public PushConnection createPushConnection(UI ui) {
-        return new SsePushConnection(ui);
+    public boolean isAtmosphereRequired() {
+        return false;
     }
 }

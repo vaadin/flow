@@ -18,7 +18,6 @@ package com.vaadin.flow.component;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.Optional;
 
 import com.vaadin.experimental.CoreFeatureFlagProvider;
 import com.vaadin.experimental.DisabledFeatureException;
@@ -29,7 +28,6 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
-import com.vaadin.flow.server.communication.PushTransport;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
@@ -113,41 +111,6 @@ public interface PushConfiguration extends Serializable {
     void setTransport(Transport transport);
 
     /**
-     * Returns the name of the primary transport for push: the identifier of a
-     * built-in {@link Transport}, such as {@code websocket-xhr}, or the name of
-     * a {@link PushTransport} added by an add-on.
-     *
-     * @return the name of the primary transport
-     */
-    default String getTransportName() {
-        Transport transport = getTransport();
-        return transport == null ? null : transport.getIdentifier();
-    }
-
-    /**
-     * Sets the primary transport for push by name: the identifier of a built-in
-     * {@link Transport}, such as {@code websocket-xhr}, or the name of a
-     * {@link PushTransport} added by an add-on with
-     * {@link com.vaadin.flow.server.ServiceInitEvent#addPushTransport(PushTransport)}.
-     * <p>
-     * Note that the new transport will not be used until the push channel is
-     * disconnected and reconnected if already active.
-     *
-     * @param transportName
-     *            the name of the primary transport
-     * @throws IllegalArgumentException
-     *             if there is no transport with the name
-     */
-    default void setTransportName(String transportName) {
-        Transport transport = Transport.getByIdentifier(transportName);
-        if (transport == null) {
-            throw new IllegalArgumentException(
-                    "No push transport named '" + transportName + "'");
-        }
-        setTransport(transport);
-    }
-
-    /**
      * Returns the fallback transport type for push.
      * <p>
      * Note that if you set the transport type using
@@ -222,9 +185,6 @@ public interface PushConfiguration extends Serializable {
 class PushConfigurationImpl implements PushConfiguration {
     private UI ui;
     private PushConnectionFactory pushConnectionFactory;
-    // Whether the application has chosen the transport, rather than using the
-    // default one
-    private boolean transportChosen;
 
     PushConfigurationImpl(UI ui) {
         this.ui = ui;
@@ -269,20 +229,10 @@ class PushConfigurationImpl implements PushConfiguration {
 
         session.checkHasLock();
 
-        if (pushMode.isEnabled() && getAddOnTransport() == null) {
-            // A transport added by an add-on replaces the default transport,
-            // and a chosen built-in one when Atmosphere, which it needs, is
-            // missing
-            VaadinService service = session.getService();
-            Optional<PushTransport> addOnTransport = transportChosen
-                    ? service.getFallbackPushTransport()
-                    : service.getDefaultPushTransport();
-            if (addOnTransport.isPresent()) {
-                useAddOnTransport(addOnTransport.get());
-            } else if (!service.ensurePushAvailable()) {
-                throw new IllegalStateException(
-                        "Push is not available. See previous log messages for more information.");
-            }
+        if (pushMode.isEnabled() && pushConnectionFactory.isAtmosphereRequired()
+                && !session.getService().ensurePushAvailable()) {
+            throw new IllegalStateException(
+                    "Push is not available. See previous log messages for more information.");
         }
 
         PushMode oldMode = getPushConfigurationMap().getPushMode();
@@ -292,7 +242,8 @@ class PushConfigurationImpl implements PushConfiguration {
             if (!oldMode.isEnabled() && pushMode.isEnabled()) {
                 // The push connection is initially in a disconnected state;
                 // the client will establish the connection
-                ui.getInternals().setPushConnection(createPushConnection());
+                ui.getInternals()
+                        .setPushConnection(pushConnectionFactory.apply(ui));
             }
             // Nothing to do here if disabling push;
             // the client will close the connection
@@ -307,91 +258,7 @@ class PushConfigurationImpl implements PushConfiguration {
     @Override
     public void setTransport(Transport transport) {
         checkTransportEnabled(transport);
-        transportChosen = true;
-        Optional<PushTransport> fallback = getService()
-                .flatMap(VaadinService::getFallbackPushTransport);
-        if (fallback.isPresent()) {
-            // The built-in transports need Atmosphere
-            useAddOnTransport(fallback.get());
-            return;
-        }
-        PushTransport previous = getAddOnTransport();
         getPushConfigurationMap().setTransport(transport);
-        if (previous != null) {
-            replacePushConnection();
-        }
-    }
-
-    @Override
-    public String getTransportName() {
-        return getPushConfigurationMap().getTransportName();
-    }
-
-    @Override
-    public void setTransportName(String transportName) {
-        Objects.requireNonNull(transportName,
-                "Transport name must not be null");
-        transportChosen = true;
-        Transport builtIn = Transport.getByIdentifier(transportName);
-        if (builtIn != null) {
-            setTransport(builtIn);
-            return;
-        }
-        PushTransport transport = getService()
-                .flatMap(service -> service.getPushTransport(transportName))
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "No push transport named '" + transportName
-                                + "' has been added, see "
-                                + "ServiceInitEvent.addPushTransport"));
-        useAddOnTransport(transport);
-    }
-
-    /**
-     * Switches to the given transport added by an add-on, and to a push
-     * connection of the transport if push is enabled.
-     */
-    private void useAddOnTransport(PushTransport transport) {
-        if (transport == getAddOnTransport()) {
-            return;
-        }
-        getPushConfigurationMap().setTransportName(transport.getName(),
-                transport.getClientScript());
-        replacePushConnection();
-    }
-
-    /**
-     * Replaces the push connection of the UI with one of the current transport,
-     * as the transports of add-ons use connections of their own.
-     */
-    private void replacePushConnection() {
-        if (getPushMode().isEnabled()) {
-            ui.getInternals().setPushConnection(createPushConnection());
-        }
-    }
-
-    private PushConnection createPushConnection() {
-        PushTransport transport = getAddOnTransport();
-        return transport != null ? transport.createPushConnection(ui)
-                : pushConnectionFactory.apply(ui);
-    }
-
-    /**
-     * Gets the transport added by an add-on that is the current transport, or
-     * {@code null} if a built-in transport is used.
-     */
-    private PushTransport getAddOnTransport() {
-        String name = getTransportName();
-        if (name == null || Transport.getByIdentifier(name) != null) {
-            return null;
-        }
-        return getService().flatMap(service -> service.getPushTransport(name))
-                .orElse(null);
-    }
-
-    private Optional<VaadinService> getService() {
-        VaadinSession session = ui.getSession();
-        return Optional.ofNullable(session == null ? VaadinService.getCurrent()
-                : session.getService());
     }
 
     @Override

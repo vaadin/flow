@@ -79,7 +79,6 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
-import com.vaadin.flow.server.communication.PushTransport;
 import com.vaadin.flow.server.communication.UidlWriter;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -325,8 +324,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             .getPushMode();
                 }
 
-                if (pushMode.isEnabled() && getAddOnTransport().isEmpty()
-                        && getService().getFallbackPushTransport().isEmpty()
+                if (pushMode.isEnabled() && isAtmosphereRequired(getService())
                         && !getService().ensurePushAvailable()) {
                     /*
                      * Fall back if not supported (ensurePushAvailable will log
@@ -336,18 +334,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 }
             }
             return pushMode;
-        }
-
-        /**
-         * Gets the push transport added by an add-on that the UI uses.
-         *
-         * @return the transport, or an empty optional if the UI uses a built-in
-         *         transport
-         */
-        public Optional<PushTransport> getAddOnTransport() {
-            String name = getUI().getPushConfiguration().getTransportName();
-            return name == null ? Optional.empty()
-                    : getService().getPushTransport(name);
         }
 
         /**
@@ -1323,13 +1309,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         PushMode pushMode = push.map(Push::value)
                 .orElseGet(deploymentConfiguration::getPushMode);
         setupPushConnectionFactory(pushConfiguration, context);
-        // The transport first, as enabling push creates the connection of the
-        // transport
-        push.ifPresent(annotation -> AppShellRegistry
-                .setTransport(pushConfiguration, annotation));
         pushConfiguration.setPushMode(pushMode);
         pushConfiguration.setPushServletMapping(
                 BootstrapHandlerHelper.determinePushServletMapping(session));
+
+        push.map(Push::transport).ifPresent(pushConfiguration::setTransport);
 
         // Let the handler contribute its own push defaults while they can
         // still be overridden by a UIInitListener
@@ -1438,18 +1422,34 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     protected void setupPushConnectionFactory(
             PushConfiguration pushConfiguration, BootstrapContext context) {
-        VaadinService service = context.getSession().getService();
+        findPushConnectionFactory(context.getSession().getService())
+                .ifPresent(pushConfiguration::setPushConnectionFactory);
+    }
+
+    private static Optional<PushConnectionFactory> findPushConnectionFactory(
+            VaadinService service) {
         Iterator<PushConnectionFactory> iter = ServiceLoader
                 .load(PushConnectionFactory.class, service.getClassLoader())
                 .iterator();
-        if (iter.hasNext()) {
-            pushConfiguration.setPushConnectionFactory(iter.next());
-            if (iter.hasNext()) {
-                throw new BootstrapException(
-                        "Multiple " + PushConnectionFactory.class.getName()
-                                + " implementations found");
-            }
+        if (!iter.hasNext()) {
+            return Optional.empty();
         }
+        PushConnectionFactory factory = iter.next();
+        if (iter.hasNext()) {
+            throw new BootstrapException(
+                    "Multiple " + PushConnectionFactory.class.getName()
+                            + " implementations found");
+        }
+        return Optional.of(factory);
+    }
+
+    /**
+     * Checks whether push needs Atmosphere, which it does unless an add-on
+     * provides the push connections without it.
+     */
+    private static boolean isAtmosphereRequired(VaadinService service) {
+        return findPushConnectionFactory(service)
+                .map(PushConnectionFactory::isAtmosphereRequired).orElse(true);
     }
 
     /**
@@ -1554,13 +1554,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *
      * @param context
      *            the bootstrap context
-     * @return the URL of the script, or {@code null} if the transport of an
-     *         add-on has its client side in the frontend bundle
+     * @return the URL of the Atmosphere script, or {@code null} if an add-on
+     *         provides push without Atmosphere, with its client side in the
+     *         frontend bundle
      */
     protected static String getPushScript(BootstrapContext context) {
-        Optional<PushTransport> addOnTransport = context.getAddOnTransport();
-        if (addOnTransport.isPresent()) {
-            return addOnTransport.get().getClientScript();
+        if (!isAtmosphereRequired(context.getService())) {
+            return null;
         }
         VaadinRequest request = context.getRequest();
         // Parameter appended to JS to bypass caches after version upgrade.

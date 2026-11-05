@@ -41,15 +41,18 @@ public class DevModePushIT extends ChromeBrowserTest {
 
     @Test
     public void pushUsesAddOnTransportNextToDevTools() {
-        Assert.assertEquals("sse-addon",
+        Assert.assertEquals("SsePushConnection",
                 findElement(By.id("transport")).getText());
         Assert.assertFalse("Dev tools should be loaded",
                 findElements(By.tagName("vaadin-dev-tools")).isEmpty());
-        Assert.assertEquals(Boolean.TRUE, executeScript(
-                "return !!window.Vaadin.Flow.pushTransports['sse-addon']"));
-        // The dev tools load Atmosphere for their own connection
         Assert.assertEquals(Boolean.TRUE,
-                executeScript("return !!window.vaadinPush"));
+                executeScript("return !!window.Vaadin.Flow.pushTransport"));
+        // The dev tools load Atmosphere for their own connection, with a
+        // script of their own that may still be loading
+        waitUntil(
+                driver -> Boolean.TRUE
+                        .equals(executeScript("return !!window.vaadinPush")),
+                10);
     }
 
     @Test

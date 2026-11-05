@@ -14,9 +14,7 @@ interface AtmosphereConfigCapture {
 }
 
 interface AddOnTransportOptions {
-  transportScript?: string;
-  parameters?: Map<string, string>;
-  loadScript?: (url: string, listener: { onLoad: (e: unknown) => void; onError: (e: unknown) => void }) => void;
+  loadScript?: (url: string) => void;
 }
 
 function setupPush(serviceUrl = '/app/', contextRootUrl = '/', addOn: AddOnTransportOptions = {}) {
@@ -26,7 +24,6 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/', addOn: AddOnTrans
     pushClosed: 0,
     pushInvalidContent: [] as string[],
     pushNotConnected: 0,
-    pushScriptLoadError: [] as string[],
     handled: [] as unknown[],
     pushed: [] as string[],
     disconnected: [] as string[]
@@ -50,9 +47,8 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/', addOn: AddOnTrans
   const registry = testRegistry({
     UILifecycle: { addHandler: () => ({ remove: () => {} }) },
     PushConfiguration: {
-      getParameters: () => addOn.parameters ?? new Map<string, string>(),
+      getParameters: () => new Map<string, string>(),
       getPushServletMapping: () => null,
-      getTransportScript: () => addOn.transportScript ?? null,
       isAlwaysXhrToServer: () => false
     },
     ConnectionStateHandler: {
@@ -63,7 +59,7 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/', addOn: AddOnTrans
       pushReconnectPending: () => {},
       pushInvalidContent: (_c: unknown, message: string) => log.pushInvalidContent.push(message),
       pushNotConnected: () => log.pushNotConnected++,
-      pushScriptLoadError: (url: string) => log.pushScriptLoadError.push(url)
+      pushScriptLoadError: () => {}
     },
     ApplicationConfiguration: {
       getServiceUrl: () => serviceUrl,
@@ -123,49 +119,27 @@ describe('DefaultPushConnection', () => {
   });
 
   describe('push transport of an add-on', () => {
-    const flowWindow = window as unknown as { Vaadin?: { Flow?: { pushTransports?: Record<string, unknown> } } };
-    const addOn = {
-      transportScript: 'VAADIN/static/add-on/push.js',
-      parameters: new Map([['transport', 'add-on-push']])
-    };
+    const flowWindow = window as unknown as { Vaadin?: { Flow?: { pushTransport?: unknown } } };
 
     function registerTransport(capture: AtmosphereConfigCapture): void {
       flowWindow.Vaadin ??= {};
       flowWindow.Vaadin.Flow ??= {};
-      flowWindow.Vaadin.Flow.pushTransports = {
-        'add-on-push': {
-          subscribe: (config: Record<string, (...args: unknown[]) => unknown>) => {
-            capture.config = config;
-            return {};
-          },
-          unsubscribeUrl: () => {}
-        }
+      flowWindow.Vaadin.Flow.pushTransport = {
+        subscribe: (config: Record<string, (...args: unknown[]) => unknown>) => {
+          capture.config = config;
+          return {};
+        },
+        unsubscribeUrl: () => {}
       };
     }
 
     afterEach(() => {
-      delete flowWindow.Vaadin?.Flow?.pushTransports;
+      delete flowWindow.Vaadin?.Flow?.pushTransport;
     });
 
-    it('connects with the registered transport instead of Atmosphere', async () => {
-      const { registry, capture } = setupPush('/app/', '/', addOn);
-      const addOnCapture: AtmosphereConfigCapture = { config: null };
-      registerTransport(addOnCapture);
-
-      new DefaultPushConnection(registry);
-      await tick();
-
-      expect(addOnCapture.config).to.not.equal(null);
-      expect(addOnCapture.config!.transport).to.equal('add-on-push');
-      expect(capture.config).to.equal(null);
-    });
-
-    it('uses a transport registered by the frontend bundle without loading a script', async () => {
+    it('connects with the registered transport without loading Atmosphere', async () => {
       const loaded: string[] = [];
-      const { registry, capture } = setupPush('/app/', '/', {
-        parameters: addOn.parameters,
-        loadScript: (url) => loaded.push(url)
-      });
+      const { registry, capture } = setupPush('/app/', '/', { loadScript: (url) => loaded.push(url) });
       const addOnCapture: AtmosphereConfigCapture = { config: null };
       registerTransport(addOnCapture);
 
@@ -175,38 +149,6 @@ describe('DefaultPushConnection', () => {
       expect(addOnCapture.config).to.not.equal(null);
       expect(capture.config).to.equal(null);
       expect(loaded).to.deep.equal([]);
-    });
-
-    it('loads the client script of the transport before connecting', async () => {
-      const loaded: string[] = [];
-      const addOnCapture: AtmosphereConfigCapture = { config: null };
-      const { registry } = setupPush('/app/', '/', {
-        ...addOn,
-        loadScript: (url, listener) => {
-          loaded.push(url);
-          // The script registers the transport when it runs
-          registerTransport(addOnCapture);
-          listener.onLoad({});
-        }
-      });
-
-      new DefaultPushConnection(registry);
-      await tick();
-
-      expect(loaded).to.deep.equal(['/app/VAADIN/static/add-on/push.js']);
-      expect(addOnCapture.config).to.not.equal(null);
-    });
-
-    it('reports a client script that does not register the transport', async () => {
-      const { registry, log } = setupPush('/app/', '/', {
-        ...addOn,
-        loadScript: (_url, listener) => listener.onLoad({ getResourceData: () => 'push.js' })
-      });
-
-      new DefaultPushConnection(registry);
-      await tick();
-
-      expect(log.pushScriptLoadError).to.deep.equal(['push.js']);
     });
   });
 

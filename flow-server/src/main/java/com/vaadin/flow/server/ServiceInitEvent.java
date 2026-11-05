@@ -24,7 +24,6 @@ import java.util.concurrent.Executor;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
-import com.vaadin.flow.server.communication.PushTransport;
 
 /**
  * Event fired to {@link VaadinServiceInitListener} when a {@link VaadinService}
@@ -43,7 +42,6 @@ public class ServiceInitEvent extends EventObject {
     private List<IndexHtmlRequestListener> addedIndexHtmlRequestListeners = new ArrayList<>();
     private List<DependencyFilter> addedDependencyFilters = new ArrayList<>();
     private List<VaadinRequestInterceptor> addedVaadinRequestInterceptors = new ArrayList<>();
-    private List<PushTransport> addedPushTransports = new ArrayList<>();
     private Executor executor;
 
     /**
@@ -72,21 +70,6 @@ public class ServiceInitEvent extends EventObject {
                 "Request handler cannot be null");
 
         addedRequestHandlers.add(requestHandler);
-    }
-
-    /**
-     * Adds a push transport, provided by an add-on, that the UIs of this
-     * service can push with. See {@link PushTransport} for what a transport
-     * consists of. Unless the application chooses a transport, push uses the
-     * first added transport instead of the built-in ones.
-     *
-     * @param pushTransport
-     *            the push transport to add, not <code>null</code>
-     */
-    public void addPushTransport(PushTransport pushTransport) {
-        Objects.requireNonNull(pushTransport, "Push transport cannot be null");
-
-        addedPushTransports.add(pushTransport);
     }
 
     /**
@@ -182,16 +165,6 @@ public class ServiceInitEvent extends EventObject {
      */
     public Stream<RequestHandler> getAddedRequestHandlers() {
         return addedRequestHandlers.stream();
-    }
-
-    /**
-     * Gets a stream of all push transports that have been added for the
-     * service, in the order they were added.
-     *
-     * @return the stream of added push transports
-     */
-    public Stream<PushTransport> getAddedPushTransports() {
-        return addedPushTransports.stream();
     }
 
     /**

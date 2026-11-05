@@ -43,7 +43,7 @@ import com.vaadin.flow.server.communication.UidlWriter;
  * SSE is used for server-to-client communication while XHR is used for
  * client-to-server messages (similar to the WEBSOCKET_XHR transport pattern).
  * <p>
- * Part of the SSE push transport add-on, see {@link SsePushTransport}.
+ * Part of the SSE push transport add-on, see {@link SsePushConnectionFactory}.
  *
  * @author Vaadin Ltd
  */

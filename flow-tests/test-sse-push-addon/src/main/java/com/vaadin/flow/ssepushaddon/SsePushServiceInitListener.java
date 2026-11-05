@@ -20,7 +20,7 @@ import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 
 /**
- * Adds the SSE push transport and the handler of its event streams to every
+ * Adds the handler of the event streams of the SSE push transport to every
  * Vaadin service. Found with the service loader, so the add-on works by having
  * it on the classpath, also with Spring Boot and Quarkus.
  * <p>
@@ -32,7 +32,6 @@ public class SsePushServiceInitListener implements VaadinServiceInitListener {
 
     @Override
     public void serviceInit(ServiceInitEvent event) {
-        event.addPushTransport(new SsePushTransport());
         event.addRequestHandler(new SseRequestHandler(event.getSource()));
     }
 }

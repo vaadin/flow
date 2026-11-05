@@ -56,7 +56,6 @@ import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.getClassAnnotations;
@@ -424,30 +423,9 @@ public class AppShellRegistry implements Serializable {
                             Push.class.getSimpleName()));
         } else if (!pushAnnotations.isEmpty()) {
             Push push = pushAnnotations.get(0);
-            // The transport first, as enabling push creates the connection of
-            // the transport
-            setTransport(pushConfiguration, push);
             pushConfiguration.setPushMode(push.value());
-        }
-    }
-
-    /**
-     * Sets the transport the given {@link Push} annotation names to the given
-     * push configuration.
-     *
-     * @param pushConfiguration
-     *            the push configuration to modify
-     * @param push
-     *            the annotation
-     */
-    static void setTransport(PushConfiguration pushConfiguration, Push push) {
-        if (!push.transportName().isEmpty()) {
-            pushConfiguration.setTransportName(push.transportName());
-        } else if (push.transport() != Transport.WEBSOCKET_XHR) {
             pushConfiguration.setTransport(push.transport());
         }
-        // The default of the annotation is the default of the configuration,
-        // which a transport added by an add-on replaces when push is enabled
     }
 
     private void insertElement(Element elm, Consumer<Element> action) {

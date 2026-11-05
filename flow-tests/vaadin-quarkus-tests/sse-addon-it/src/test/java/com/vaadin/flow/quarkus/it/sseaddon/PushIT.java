@@ -41,7 +41,7 @@ public class PushIT extends AbstractChromeIT {
 
     @Test
     public void pushUsesAddOnTransportWithoutAtmosphere() {
-        Assertions.assertEquals("sse-addon",
+        Assertions.assertEquals("SsePushConnection",
                 findElement(By.id("transport")).getText());
         Assertions.assertEquals(Boolean.TRUE,
                 executeScript("return window.vaadinPush === undefined"),
@@ -49,8 +49,8 @@ public class PushIT extends AbstractChromeIT {
         Assertions.assertEquals(List.of(), loadedResources("vaadinPush"));
         // The client side of the transport is in the frontend bundle
         Assertions.assertEquals(List.of(), loadedResources("sse-push"));
-        Assertions.assertEquals(Boolean.TRUE, executeScript(
-                "return !!window.Vaadin.Flow.pushTransports['sse-addon']"));
+        Assertions.assertEquals(Boolean.TRUE,
+                executeScript("return !!window.Vaadin.Flow.pushTransport"));
     }
 
     @Test

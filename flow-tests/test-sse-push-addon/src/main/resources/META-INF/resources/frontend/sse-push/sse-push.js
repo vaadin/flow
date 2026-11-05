@@ -20,8 +20,8 @@
  * engine as regular requests.
  *
  * The frontend bundle includes this module, and the client engine uses the
- * transport it registers under its name in window.Vaadin.Flow.pushTransports. The transport implements the
- * subset of the Atmosphere API that the push connection of the client engine
+ * transport it registers as window.Vaadin.Flow.pushTransport. The transport
+ * implements the subset of the Atmosphere API that the push connection of the client engine
  * uses: subscribe(request) and unsubscribeUrl(url).
  */
 (function () {
@@ -185,8 +185,7 @@
 
   window.Vaadin = window.Vaadin || {};
   window.Vaadin.Flow = window.Vaadin.Flow || {};
-  window.Vaadin.Flow.pushTransports = window.Vaadin.Flow.pushTransports || {};
-  window.Vaadin.Flow.pushTransports[NAME] = {
+  window.Vaadin.Flow.pushTransport = {
     subscribe(request) {
       const connection = new SseConnection(request);
       connections.set(request.url, connection);

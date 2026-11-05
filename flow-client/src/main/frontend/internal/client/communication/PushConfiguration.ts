@@ -31,7 +31,6 @@ const PUSHMODE_KEY = 'pushMode';
 const PUSH_SERVLET_MAPPING_KEY = 'pushServletMapping';
 const ALWAYS_USE_XHR_TO_SERVER = 'alwaysXhrToServer';
 const PARAMETERS_KEY = 'parameters';
-const TRANSPORT_SCRIPT_KEY = 'transportScript';
 
 // Whether a PUSHMODE value enables push (anything other than DISABLED).
 function isPushModeEnabled(propertyValue: unknown): boolean {
@@ -109,21 +108,6 @@ export class PushConfiguration {
   isAlwaysXhrToServer(): boolean {
     // The only possible value is "true".
     return this.#getConfigurationMap().hasPropertyValue(ALWAYS_USE_XHR_TO_SERVER);
-  }
-
-  /**
-   * Gets the URL of the script implementing the client side of the primary
-   * transport, when the transport is added by an add-on.
-   *
-   * @returns the URL of the script relative to the service URL, or null for a
-   *          built-in transport
-   */
-  getTransportScript(): string | null {
-    const map = this.#getConfigurationMap();
-    if (map.hasPropertyValue(TRANSPORT_SCRIPT_KEY)) {
-      return map.getProperty(TRANSPORT_SCRIPT_KEY).getValue() as string;
-    }
-    return null;
   }
 
   /**

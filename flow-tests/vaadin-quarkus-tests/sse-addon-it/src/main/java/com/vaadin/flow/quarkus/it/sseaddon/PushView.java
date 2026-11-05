@@ -85,7 +85,8 @@ public class PushView extends Div {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         UI ui = attachEvent.getUI();
-        add(new Span(ui.getPushConfiguration().getTransportName()) {
+        add(new Span(ui.getInternals().getPushConnection().getClass()
+                .getSimpleName()) {
             {
                 setId("transport");
             }

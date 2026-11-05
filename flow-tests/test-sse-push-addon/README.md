@@ -5,9 +5,8 @@ A push transport for Vaadin Flow that streams messages from the server with
 without Atmosphere. Messages to the server are regular requests, as with the
 default `WEBSOCKET_XHR` transport.
 
-The add-on is built only against the public push transport API of Flow
-(`PushTransport`, `ServiceInitEvent.addPushTransport`, `@Push(transportName)`),
-to show that the API is enough for a transport. It lives in the Flow test
+The add-on is built only against public API of Flow, a `PushConnectionFactory`
+that does not need Atmosphere, to show that the API is enough for a transport. It lives in the Flow test
 suite and is not published, but it is written like a real add-on, and the
 instructions below are the ones an add-on like this would give. When
 published, its coordinates would change from `com.vaadin:flow-test-sse-push-addon`.
@@ -89,8 +88,8 @@ public class Application implements AppShellConfigurator {
 Push uses the add-on, in development and in production. Nothing else is
 needed:
 
-- The add-on registers itself through a `VaadinServiceInitListener` found with
-  the service loader, so there is no Spring configuration to add.
+- The add-on registers itself with the service loader, so there is no Spring
+  configuration to add.
 - `VaadinSecurityConfigurer` already lets requests to `/VAADIN/**` through, so
   the event stream passes Spring Security, also with `vaadin.url-mapping`.
 
@@ -145,7 +144,7 @@ from the first two, and add the add-on:
 ```
 
 Enable push with `@Push` on the `AppShellConfigurator`, as above. The add-on
-is found with the service loader, so it needs no CDI beans or Quarkus
+registers itself with the service loader, so it needs no CDI beans or Quarkus
 configuration.
 
 Not checked yet: whether the dev tools keep their Atmosphere connection in
@@ -179,17 +178,8 @@ behaves the same in development and in production.
 
 ## Choosing a transport
 
-With the add-on on the classpath, push uses it unless the application chooses
-a transport. To use a built-in transport next to the add-on, name it:
-
-```java
-@Push(transportName = "websocket-xhr")
-public class Application implements AppShellConfigurator {
-}
-```
-
-The built-in transports need Atmosphere, so without it push uses the add-on
-whatever transport is chosen.
+With the add-on on the classpath, push always uses it, also when `@Push`
+names a transport. To use a built-in transport, remove the add-on.
 
 ## Configuration
 
@@ -219,13 +209,17 @@ HTTP/3 have no such limit.
 
 ## How it works
 
-- `SsePushServiceInitListener` adds the `SsePushTransport` and the
-  `SseRequestHandler` to every Vaadin service.
+- `SsePushConnectionFactory`, registered for the service loader in
+  `META-INF/services/com.vaadin.flow.server.communication.PushConnectionFactory`,
+  creates the push connection of every UI, and tells Flow that push does not
+  need Atmosphere.
+- `SsePushServiceInitListener` adds the `SseRequestHandler` to every Vaadin
+  service.
 - The client side of the transport, `sse-push.js` in
   `META-INF/resources/frontend`, is in the frontend bundle of the application,
   as `SsePushServiceInitListener` has a `@JsModule` for it. It registers the
-  transport in `window.Vaadin.Flow.pushTransports` when the application
-  loads, so it needs no request of its own.
+  transport as `window.Vaadin.Flow.pushTransport` when the application loads,
+  so it needs no request of its own.
 - The client opens an `EventSource` to `VAADIN/push?v-r=sse`, and
   `SseRequestHandler` connects it to the `SsePushConnection` of the UI.
 - `SsePushConnection` writes each message as an event. Writes are queued and

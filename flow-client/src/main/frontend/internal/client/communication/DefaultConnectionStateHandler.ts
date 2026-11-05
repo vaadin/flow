@@ -332,7 +332,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
     Console.debug('Reopening push connection');
     // The transports of add-ons tell when the connection is available again,
     // like the bidirectional ones
-    if (pushConnection.isBidirectional() || getAddOnPushTransport(pushConnection.getTransportType())) {
+    if (pushConnection.isBidirectional() || getAddOnPushTransport()) {
       // Lost connection for a connection which will tell us when the connection
       // is available again
       this.#machine.handleRecoverableError(ConnectionMessageType.PUSH, null);

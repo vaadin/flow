@@ -135,21 +135,14 @@ function atmosphere(): Atmosphere | undefined {
 }
 
 /**
- * Gets the push transport an add-on has registered with the given name. The
- * client script of the transport registers it in
- * window.Vaadin.Flow.pushTransports, with the subset of the Atmosphere API
- * that the push connection uses.
+ * Gets the push transport an add-on has registered. A module of the add-on in
+ * the frontend bundle registers it as window.Vaadin.Flow.pushTransport, with
+ * the subset of the Atmosphere API that the push connection uses.
  *
- * @param name - the name of the transport
- * @returns the transport, or undefined if no transport has that name
+ * @returns the transport, or undefined if no add-on has registered one
  */
-export function getAddOnPushTransport(name: string | null): Atmosphere | undefined {
-  if (name === null) {
-    return undefined;
-  }
-  const flow = (window as unknown as { Vaadin?: { Flow?: { pushTransports?: Record<string, Atmosphere> } } }).Vaadin
-    ?.Flow;
-  return flow?.pushTransports?.[name];
+export function getAddOnPushTransport(): Atmosphere | undefined {
+  return (window as unknown as { Vaadin?: { Flow?: { pushTransport?: Atmosphere } } }).Vaadin?.Flow?.pushTransport;
 }
 
 /** Whether the Atmosphere push library is loaded. */
@@ -557,29 +550,17 @@ export class DefaultPushConnection implements PushConnection {
 
   /**
    * Gets the implementation of the transport: the push transport an add-on
-   * has registered for the configured transport name, or the Atmosphere
-   * library for the built-in transports, whose names add-ons cannot take. The
-   * connection only connects or disconnects after the implementation has
-   * loaded.
+   * has registered, or the Atmosphere library. The connection only connects or
+   * disconnects after the implementation has loaded.
    */
   #getTransport(): Atmosphere {
-    return getAddOnPushTransport(this.#getTransportName()) ?? atmosphere()!;
-  }
-
-  #getTransportName(): string | null {
-    return (this.#config[TRANSPORT_KEY] as string | undefined) ?? null;
+    return getAddOnPushTransport() ?? atmosphere()!;
   }
 
   #runWhenAtmosphereLoaded(command: Command): void {
-    if (getAddOnPushTransport(this.#getTransportName())) {
-      // Registered by a module of the frontend bundle, or a script loaded by
-      // the bootstrap
+    if (getAddOnPushTransport()) {
+      // Registered by a module of the frontend bundle
       command();
-      return;
-    }
-    const transportScript = this.#registry.getPushConfiguration().getTransportScript();
-    if (transportScript !== null) {
-      this.#runWhenAddOnTransportLoaded(transportScript, command);
       return;
     }
     if (isAtmosphereLoaded()) {
@@ -607,27 +588,6 @@ export class DefaultPushConnection implements PushConnection {
       }
     };
     this.#registry.getResourceLoader().loadScript(pushScriptUrl, listener);
-  }
-
-  /** Loads the client script of the transport of an add-on, and runs the command once it has registered the transport. */
-  #runWhenAddOnTransportLoaded(transportScript: string, command: Command): void {
-    const name = this.#getTransportName();
-    const scriptUrl = this.#registry.getApplicationConfiguration().getServiceUrl() + transportScript;
-    Console.debug(`Loading ${transportScript}`);
-    const listener: ResourceLoadListener = {
-      onLoad: (event: ResourceLoadEvent) => {
-        if (getAddOnPushTransport(name)) {
-          command();
-        } else {
-          Console.error(`${transportScript} did not register the push transport ${name}`);
-          listener.onError(event);
-        }
-      },
-      onError: (event: ResourceLoadEvent) => {
-        this.#getConnectionStateHandler().pushScriptLoadError(event.getResourceData());
-      }
-    };
-    this.#registry.getResourceLoader().loadScript(scriptUrl, listener);
   }
 
   getTransportType(): string | null {
