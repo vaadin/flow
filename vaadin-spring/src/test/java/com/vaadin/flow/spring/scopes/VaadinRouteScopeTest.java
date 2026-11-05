@@ -200,12 +200,13 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
     }
 
     @Test
-    void refresh_previousUIStillOpen_beanIsNotShared() {
+    void preservedChain_closingUIOfOtherWindow_beanIsNotTakenOver() {
         UI ui = mockUI();
 
         UI anotherUI = makeAnotherUI(ui);
 
-        setWindowName("bar", ui, anotherUI);
+        setWindowName("bar", ui);
+        setWindowName("baz", anotherUI);
 
         VaadinSession session = ui.getSession();
         session.addUI(ui);
@@ -218,20 +219,21 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
         AtomicInteger count = new AtomicInteger();
         scope.registerDestructionCallback("foo", count::getAndIncrement);
 
-        navigateTo(ui, new NavigationTarget());
-
+        navigateTo(ui, new PreservedNavigationTarget());
         ObjectFactory<?> factory = putObjectIntoScope(scope);
 
-        // A UI created for the same browser window while the previous one is
-        // still open, e.g. after the browser tab crashed.
+        // A UI of another browser window enters the same preserved route
+        // while the first UI is closing
+        ui.close();
         UI.setCurrent(anotherUI);
         scope = initScope(anotherUI);
-        navigateTo(anotherUI, new NavigationTarget());
+        navigateTo(anotherUI, new PreservedNavigationTarget());
 
         scope.get("foo", factory);
         verify(factory, times(2)).getObject();
 
-        // The bean of the previous UI is destroyed with that UI
+        // The bean of the first UI is destroyed with that UI
+        assertEquals(0, count.get());
         UI.setCurrent(ui);
         session.removeUI(ui);
         assertEquals(1, count.get());
