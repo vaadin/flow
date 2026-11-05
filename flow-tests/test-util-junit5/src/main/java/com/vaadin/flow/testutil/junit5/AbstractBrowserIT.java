@@ -36,8 +36,9 @@ public abstract class AbstractBrowserIT extends BrowserTestBase
 
     /**
      * Port the application is served on, read from the {@code serverPort}
-     * system property that the {@code flow-tests} parent passes to every IT, so
-     * that modules running in parallel do not share a port.
+     * system property that the root POM's failsafe configuration sets from
+     * {@code server.port}, so that modules running in parallel do not share a
+     * port.
      */
     public static final int SERVER_PORT = Integer
             .parseInt(System.getProperty("serverPort", "8888"));
