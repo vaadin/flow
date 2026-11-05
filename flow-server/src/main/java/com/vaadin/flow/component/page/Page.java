@@ -46,6 +46,7 @@ import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.server.CspMode;
 import com.vaadin.flow.server.CspViolationException;
 import com.vaadin.flow.server.InitParameters;
@@ -895,10 +896,7 @@ public class Page implements Serializable {
         // The vaadin-redirect-pending event might be useful to block other
         // client side
         // reload/redirection triggered by other components, for example Vite.
-        executeJs(
-                "window.dispatchEvent(new CustomEvent('vaadin-redirect-pending', {detail: {url: $0}})); "
-                        + "if ($1 == '_self') this.stopApplication(); window.open($0, $1)",
-                url, windowName);
+        executeJs(NavigationJs.class).open(url, windowName);
     }
 
     /**
@@ -1097,6 +1095,38 @@ public class Page implements Serializable {
          */
         @JsExpression("return document.dir")
         PendingJavaScriptResult readDirection();
+    }
+
+    /**
+     * What this page runs to open a URL, as a JavaScript definition for
+     * {@link #executeJs(Class)}. Kept apart from {@link PageJs} since it
+     * reaches the execution context of the client and does not check the URL,
+     * which {@link #open(String, String)} does before calling it.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    @JsDefinition
+    public interface NavigationJs extends Serializable {
+
+        /**
+         * Opens a URL in the window with the given name, after telling the
+         * client that a redirect is pending. Opening it in this window stops
+         * the application first, so that the client does not try to talk to the
+         * server while the page unloads.
+         *
+         * @param url
+         *            the URL to open
+         * @param windowName
+         *            the name of the window to open it in, or
+         *            <code>_self</code> for this window
+         */
+        @JsExpression("""
+                window.dispatchEvent(new CustomEvent('vaadin-redirect-pending', {detail: {url: $0}}));
+                if ($1 == '_self') $executionContext.stopApplication();
+                window.open($0, $1);
+                """)
+        @JsWithExecutionContext
+        void open(String url, String windowName);
     }
 
     /**
