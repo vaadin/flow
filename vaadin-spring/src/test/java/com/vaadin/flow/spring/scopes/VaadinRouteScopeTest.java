@@ -239,7 +239,7 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
     }
 
     @Test
-    void refresh_windowNameKnownAfterBeanCreated_preservedBeanIsReused() {
+    void refresh_windowNameKnownLate_preservedBeanIsReusedOnRepeatedNavigation() {
         UI ui = mockUI();
 
         UI anotherUI = makeAnotherUI(ui);
@@ -258,18 +258,29 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
         navigateTo(ui, new PreservedNavigationTarget());
         ObjectFactory<?> factory = putObjectIntoScope(scope);
 
-        setWindowName("bar", ui, anotherUI);
+        setWindowName("bar", ui);
         scope.get("foo", factory);
 
-        ui.close();
-
+        // The refreshed UI first navigates without a window name, so it gets
+        // its own beans
         UI.setCurrent(anotherUI);
         scope = initScope(anotherUI);
+        AtomicInteger anotherCount = new AtomicInteger();
+        scope.registerDestructionCallback("foo", anotherCount::getAndIncrement);
+        navigateTo(anotherUI, new PreservedNavigationTarget());
+        scope.get("foo", factory);
+        verify(factory, times(2)).getObject();
+
+        // Flow repeats the navigation once the window name is known, hands
+        // the preserved chain over and closes the first UI
+        setWindowName("bar", anotherUI);
+        ui.close();
         navigateTo(anotherUI, new PreservedNavigationTarget());
         scope.get("foo", factory);
 
-        verify(factory, times(1)).getObject();
+        verify(factory, times(2)).getObject();
         assertEquals(0, count.get());
+        assertEquals(1, anotherCount.get());
     }
 
     @Test

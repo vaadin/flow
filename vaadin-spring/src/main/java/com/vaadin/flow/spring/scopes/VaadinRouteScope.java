@@ -77,12 +77,6 @@ public class VaadinRouteScope extends AbstractScope {
 
         private RouteBeanStore getBeanStore(UI ui) {
             assert session.hasLock();
-            if (getWindowName(ui) == null) {
-                // A preserved navigation chain handed over by another UI can
-                // only be matched once the browser window name is known.
-                ui.getPage().retrieveExtendedClientDetails(
-                        details -> takeOverHandedOverStore(ui));
-            }
             takeOverHandedOverStore(ui);
             return routeStores.computeIfAbsent(ui.getUIId(),
                     id -> new RouteBeanStore(ui, session, store -> routeStores
@@ -98,6 +92,10 @@ public class VaadinRouteScope extends AbstractScope {
          * PreserveOnRefresh} UI is not closed when its page unloads. Any other
          * UI of the window that is still open keeps its own components, e.g.
          * one left behind by a crashed tab, so its beans are not shared.
+         * <p>
+         * Flow needs the window name to hand a preserved chain over, so it
+         * repeats the navigation once the name is known, and the store is taken
+         * over then.
          */
         private void takeOverHandedOverStore(UI ui) {
             String windowName = getWindowName(ui);
