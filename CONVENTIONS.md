@@ -392,8 +392,9 @@ two launchers the same word for word.
 Write an end-to-end test of the loop once, in
 `flow-tests/test-devloop/test-devloop-support`, so that every fixture runs it,
 and put a test in a single fixture only when it is about that fixture's
-runtime. A fixture that genuinely cannot run a shared IT excludes it in its pom
-and adds a replacement of its own beside the exclusion. See `guidelines/dev-loop.md`.
+runtime. A fixture whose runtime genuinely cannot answer a shared IT excludes
+it in its pom, and checks the same thing another way in a test of its own where
+the runtime allows. See `guidelines/dev-loop.md`.
 
 ## Javadoc
 

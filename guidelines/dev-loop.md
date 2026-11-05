@@ -366,7 +366,8 @@ command line runs on every module in the reactor, and a sibling left at
 `compile` reaches a deployed WAR as an empty directory. The ITs that are about
 the loop rather than a container live once in `test-devloop-support` and every
 fixture runs them, so a fix verified on one shape is checked on all of them. A
-shape that genuinely cannot answer a shared question excludes that IT and puts
-a replacement of its own beside the exclusion, the way the forked servers
-replace `DevLoopCssIT`; `flow-tests/test-devloop/README.md` describes the
-layout.
+shape that genuinely cannot answer a shared question excludes that IT: the
+forked servers exclude `DevLoopCssIT`, because a container reading a deployed
+WAR cannot see a resource refreshed in the module's output, and Cargo checks the
+same thing its own way in `DevLoopCargoResourceIT`.
+`flow-tests/test-devloop/README.md` describes the layout.
