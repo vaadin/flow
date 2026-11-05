@@ -323,6 +323,36 @@ describe('SystemErrorHandler', () => {
       }
     });
 
+    it('lets a later resync start after a failed session resynchronization request', async () => {
+      const intervals: number[] = [];
+      const errorStub = sinon.stub(Console, 'error');
+      const failures = () =>
+        errorStub.getCalls().filter((call) => String(call.args[0]).includes('failed with status 404')).length;
+      try {
+        const handler = new SystemErrorHandler(
+          testRegistry({
+            ApplicationConfiguration: {
+              isWebComponentMode: () => true,
+              getSessionExpiredError: () => null,
+              // A path the test server does not serve.
+              getServiceUrl: () => '/no-such-resync-endpoint/',
+              getHeartbeatInterval: () => 300
+            },
+            Heartbeat: { setInterval: (interval: number) => intervals.push(interval) },
+            PushConfiguration: { isPushEnabled: () => false }
+          })
+        );
+        handler.handleUnrecoverableError(null, null, null, null, null);
+        await waitUntil(() => failures() === 1);
+        expect(intervals).to.deep.equal([-1, 300]);
+
+        handler.handleUnrecoverableError(null, null, null, null, null);
+        await waitUntil(() => failures() === 2);
+      } finally {
+        errorStub.restore();
+      }
+    });
+
     it('recreates exported web components after resynchronization, also those that never connected', async () => {
       const connected = document.createElement('x-resync-test') as HTMLElement & {
         $server?: { disconnected: () => void };

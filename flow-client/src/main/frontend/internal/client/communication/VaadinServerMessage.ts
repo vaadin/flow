@@ -36,7 +36,8 @@ export type VaadinServerMessageOutcome = 'applied' | 'discarded' | 'failed';
  *   {@link VaadinServerMessage.request} tells which request it replies to.
  * - `start`: the client starts handling the message, in order and when no
  *   other work holds handling back, before it loads the dependencies the
- *   message brings.
+ *   message brings. A message that forces a page reload while a resync request
+ *   is pending starts right away instead, just before the reload.
  * - `end`: {@link VaadinServerMessage.outcome} says how the message was
  *   handled. Dispatched exactly once, as the last event, unless the client
  *   never gets to handle the message. That happens to a message waiting for an
