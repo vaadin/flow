@@ -26,6 +26,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.ErrorNavigationEvent;
@@ -36,6 +37,7 @@ import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -125,6 +127,47 @@ class ErrorStateRendererTest {
             return 500;
         }
 
+    }
+
+    @Tag(Tag.A)
+    public static class NotFoundErrorTarget extends Component
+            implements HasErrorParameter<NotFoundException> {
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<NotFoundException> parameter) {
+            return 404;
+        }
+    }
+
+    @Test
+    void handle_routerLinkToMissingRoute_schedulesNoJavaScript() {
+        UI ui = configureMocks();
+
+        NavigationState state = new NavigationStateBuilder(
+                ui.getInternals().getRouter())
+                .withTarget(NotFoundErrorTarget.class).build();
+        ErrorStateRenderer renderer = new ErrorStateRenderer(state);
+
+        ObjectNode routerLinkState = new ObjectMapper().createObjectNode();
+        routerLinkState.put("href", "missing");
+        ErrorNavigationEvent event = new ErrorNavigationEvent(
+                ui.getInternals().getRouter(), new Location("missing"), ui,
+                NavigationTrigger.ROUTER_LINK,
+                new ErrorParameter<>(NotFoundException.class,
+                        new NotFoundException()),
+                routerLinkState);
+        assertEquals(404, renderer.handle(event));
+
+        // Only the title of the error view is sent
+        List<Class<?>> scheduled = ui.getInternals()
+                .dumpPendingJavaScriptInvocations().stream()
+                .map(pending -> pending.getInvocation().getJsCall())
+                .<Class<?>> map(
+                        call -> call == null ? null : call.definitionType())
+                .toList();
+        assertEquals(List.of(UIInternals.TitleJs.class), scheduled,
+                "an error view should neither push history nor run other JavaScript");
     }
 
     @Test
