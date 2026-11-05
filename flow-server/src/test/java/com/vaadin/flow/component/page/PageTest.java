@@ -47,8 +47,6 @@ import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -360,120 +358,69 @@ class PageTest {
     }
 
     @Test
-    void open_openInSameWindow_closeTheClientApplication() {
-        AtomicReference<String> capture = new AtomicReference<>();
-        List<Object> params = new ArrayList<>();
-        Page page = new Page(new MockUI()) {
-            @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... parameters) {
-                capture.set(expression);
-                params.addAll(Arrays.asList(parameters));
-                return mock(PendingJavaScriptResult.class);
-            }
-        };
+    void setLocation_opensInThisWindow() {
+        MockUI ui = new MockUI();
 
-        page.setLocation("foo");
+        ui.getPage().setLocation("/logout-landing");
 
-        // self check
-        assertEquals("_self", params.get(1));
-
-        assertThat(capture.get(), containsString("this.stopApplication();"));
+        assertEquals(List.of(openCall("/logout-landing", "_self")),
+                collectCalls(ui));
     }
 
     @Test
-    void setLocation_dispatchesRedirectPendingEvent() {
-        AtomicReference<String> capture = new AtomicReference<>();
-        List<Object> params = new ArrayList<>();
-        Page page = new Page(new MockUI()) {
-            @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... parameters) {
-                capture.set(expression);
-                params.addAll(Arrays.asList(parameters));
-                return mock(PendingJavaScriptResult.class);
-            }
-        };
+    void open_dispatchesRedirectPendingAndStopsTheApplicationBeforeOpening() {
+        MockUI ui = new MockUI();
 
-        page.setLocation("/logout-landing");
+        ui.getPage().open("https://example.com", "_blank");
 
-        String expression = capture.get();
-        assertTrue(expression.contains("vaadin-redirect-pending"),
-                "Should dispatch vaadin-redirect-pending event");
-        assertTrue(expression.contains("window.open"),
-                "Should call window.open");
-        assertEquals("/logout-landing", params.get(0),
-                "URL parameter should be passed");
-    }
-
-    @Test
-    void open_dispatchesRedirectPendingEventBeforeRedirect() {
-        AtomicReference<String> capture = new AtomicReference<>();
-        Page page = new Page(new MockUI()) {
-            @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... parameters) {
-                capture.set(expression);
-                return mock(PendingJavaScriptResult.class);
-            }
-        };
-
-        page.open("https://example.com", "_blank");
-
-        String expression = capture.get();
-        // Verify event dispatch comes before window.open
+        List<JsCall> calls = collectCalls(ui);
+        assertEquals(List.of(openCall("https://example.com", "_blank")), calls);
+        // Other client side reloads, such as the one of Vite, wait for the
+        // event, and a client that is still running would try to talk to the
+        // server while the page unloads
+        String expression = calls.get(0).getExpression();
         int eventDispatchIndex = expression.indexOf("vaadin-redirect-pending");
+        int stopIndex = expression
+                .indexOf("executionContext.stopApplication()");
         int windowOpenIndex = expression.indexOf("window.open");
-        assertTrue(eventDispatchIndex >= 0, "Event dispatch should be present");
-        assertTrue(windowOpenIndex >= 0, "window.open should be present");
-        assertTrue(eventDispatchIndex < windowOpenIndex,
-                "Event dispatch should come before window.open in the script");
+        assertTrue(
+                eventDispatchIndex >= 0 && eventDispatchIndex < stopIndex
+                        && stopIndex < windowOpenIndex,
+                "the event should be dispatched and the application stopped before window.open: "
+                        + expression);
     }
 
     @Test
     void open_unsafeScheme_throws() {
-        Page page = new Page(new MockUI()) {
-            @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... parameters) {
-                return fail("Unsafe URL should not reach the client");
-            }
-        };
+        MockUI ui = new MockUI();
 
         assertThrows(IllegalArgumentException.class,
-                () -> page.open("javascript:alert(1)"));
+                () -> ui.getPage().open("javascript:alert(1)"));
         assertThrows(IllegalArgumentException.class,
-                () -> page.open("javascript:alert(1)", "_blank"));
+                () -> ui.getPage().open("javascript:alert(1)", "_blank"));
+        assertEquals(List.of(), collectCalls(ui),
+                "an unsafe URL should not reach the client");
     }
 
     @Test
     void setLocation_unsafeScheme_throws() {
-        Page page = new Page(new MockUI()) {
-            @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... parameters) {
-                return fail("Unsafe URL should not reach the client");
-            }
-        };
+        MockUI ui = new MockUI();
 
         assertThrows(IllegalArgumentException.class,
-                () -> page.setLocation("javascript:alert(1)"));
+                () -> ui.getPage().setLocation("javascript:alert(1)"));
+        assertEquals(List.of(), collectCalls(ui),
+                "an unsafe URL should not reach the client");
     }
 
     @Test
     void open_nullUrl_throwsWithUsefulMessage() {
-        Page page = new Page(new MockUI()) {
-            @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... parameters) {
-                return fail("Null URL should not reach the client");
-            }
-        };
+        MockUI ui = new MockUI();
 
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
-                () -> page.open(null, "_blank"));
+                () -> ui.getPage().open(null, "_blank"));
         assertEquals("URL must not be null", ex.getMessage());
+        assertEquals(List.of(), collectCalls(ui));
     }
 
     @Test
@@ -481,35 +428,34 @@ class PageTest {
         // The UI is always known, so the configuration of the right application
         // is used even though the URL is safe according to the framework
         // default
-        Page page = new Page(createUI("https")) {
-            @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... parameters) {
-                return fail("Unsafe URL should not reach the client");
-            }
-        };
+        UI ui = createUI("https");
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> page.open("http://example.com"));
+                () -> ui.getPage().open("http://example.com"));
         assertTrue(exception.getMessage().contains("http://example.com"));
+        assertEquals(List.of(), collectCalls(ui),
+                "an unsafe URL should not reach the client");
     }
 
     @Test
     void open_safeInApplicationConfiguration_opens() {
-        AtomicReference<String> capture = new AtomicReference<>();
-        Page page = new Page(createUI("https")) {
-            @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... parameters) {
-                capture.set(expression);
-                return mock(PendingJavaScriptResult.class);
-            }
-        };
+        UI ui = createUI("https");
 
-        page.open("https://example.com");
+        ui.getPage().open("https://example.com");
 
-        assertTrue(capture.get().contains("window.open"));
+        assertEquals(List.of(openCall("https://example.com", "_blank")),
+                collectCalls(ui));
+    }
+
+    private static JsCall openCall(String url, String windowName) {
+        return new JsCall(Page.PageJs.class, "open", List.of(url, windowName));
+    }
+
+    private static List<JsCall> collectCalls(UI ui) {
+        return ui.getInternals().dumpPendingJavaScriptInvocations().stream()
+                .map(invocation -> invocation.getInvocation().getJsCall())
+                .toList();
     }
 
     /**
@@ -534,45 +480,15 @@ class PageTest {
 
     @Test
     void openUnsafe_unsafeScheme_opensWithoutValidation() {
-        AtomicReference<String> capture = new AtomicReference<>();
-        List<Object> params = new ArrayList<>();
-        Page page = new Page(new MockUI()) {
-            @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... parameters) {
-                capture.set(expression);
-                params.addAll(Arrays.asList(parameters));
-                return mock(PendingJavaScriptResult.class);
-            }
-        };
+        MockUI ui = new MockUI();
 
-        page.openUnsafe("javascript:alert(1)");
+        ui.getPage().openUnsafe("javascript:alert(1)");
+        ui.getPage().openUnsafe("javascript:alert(1)", "_self");
 
-        assertTrue(capture.get().contains("window.open"),
-                "Should call window.open");
-        assertEquals("javascript:alert(1)", params.get(0));
-    }
-
-    @Test
-    void openUnsafe_twoArg_opensWithoutValidation() {
-        AtomicReference<String> capture = new AtomicReference<>();
-        List<Object> params = new ArrayList<>();
-        Page page = new Page(new MockUI()) {
-            @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... parameters) {
-                capture.set(expression);
-                params.addAll(Arrays.asList(parameters));
-                return mock(PendingJavaScriptResult.class);
-            }
-        };
-
-        page.openUnsafe("javascript:alert(1)", "_blank");
-
-        assertTrue(capture.get().contains("window.open"),
-                "Should call window.open");
-        assertEquals("javascript:alert(1)", params.get(0));
-        assertEquals("_blank", params.get(1));
+        assertEquals(
+                List.of(openCall("javascript:alert(1)", "_blank"),
+                        openCall("javascript:alert(1)", "_self")),
+                collectCalls(ui));
     }
 
     @Test
