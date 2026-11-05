@@ -1018,7 +1018,9 @@ jobs:
       # A run triggered by Dependabot is given the Dependabot secret store
       # instead of the Actions one, so this secret is empty there. The secrets
       # context cannot be read from an if: condition, but env can, so the token
-      # is bound here and every step that needs it is guarded on it.
+      # is bound here and every step that needs it is guarded on it. For
+      # Dependabot PRs to be auto merged, VAADIN_BOT_TOKEN and
+      # VAADIN_REVIEW_BOT must therefore also be Dependabot secrets.
       VAADIN_BOT_TOKEN: ${{ secrets.VAADIN_BOT_TOKEN }}
     steps:
       - name: Skip auto-merge without a bot token
@@ -1042,8 +1044,12 @@ jobs:
         if: ${{ env.VAADIN_BOT_TOKEN != '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.VAADIN_BOT_TOKEN }}
-          GITHUB_REVIEW_TOKEN: ${{ secrets.REVIEW_TOKEN }}
+          # REVIEW_TOKEN is not in the Dependabot secret store, so Dependabot
+          # runs fall back to VAADIN_REVIEW_BOT.
+          GITHUB_REVIEW_TOKEN: ${{ secrets.REVIEW_TOKEN || secrets.VAADIN_REVIEW_BOT }}
           PR_NUMBER: ${{ github.event.number }}
+          # Also approve and auto merge patch and minor Dependabot updates.
+          AUTO_MERGE_DEPENDABOT: true
         run: node scripts/autoMerge.js
   api-diff-labeling:
     if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork
