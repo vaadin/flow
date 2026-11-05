@@ -24,7 +24,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.WebPushJs;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.server.VaadinSession;
@@ -86,20 +85,33 @@ public class WebPushTest {
     }
 
     @Test
-    public void subscribe_runsTheDeclaredJavaScriptWithThePublicKey() {
+    public void clientCommands_runTheDeclaredJavaScript() {
         UI ui = new UI();
         VaadinSession session = mock(VaadinSession.class);
         when(session.hasLock()).thenReturn(true);
         ui.getInternals().setSession(session);
+        WebPushState state = mock(WebPushState.class);
+        WebPushSubscriptionResponse response = mock(
+                WebPushSubscriptionResponse.class);
 
-        webPush.subscribe(ui, subscription -> {
-        });
+        webPush.subscriptionExists(ui, state);
+        webPush.isNotificationDenied(ui, state);
+        webPush.isNotificationGranted(ui, state);
+        webPush.subscribe(ui, response);
+        webPush.unsubscribe(ui, response);
+        webPush.fetchExistingSubscription(ui, response);
 
-        List<PendingJavaScriptInvocation> invocations = ui.getInternals()
-                .dumpPendingJavaScriptInvocations();
-        assertEquals(1, invocations.size());
-        assertEquals(
+        List<JsCall> calls = ui.getInternals()
+                .dumpPendingJavaScriptInvocations().stream()
+                .map(invocation -> invocation.getInvocation().getJsCall())
+                .toList();
+        assertEquals(List.of(
+                new JsCall(WebPushJs.class, "registrationStatus", List.of()),
+                new JsCall(WebPushJs.class, "notificationDenied", List.of()),
+                new JsCall(WebPushJs.class, "notificationGranted", List.of()),
                 new JsCall(WebPushJs.class, "subscribe", List.of(PUBLIC_KEY)),
-                invocations.get(0).getInvocation().getJsCall());
+                new JsCall(WebPushJs.class, "unsubscribe", List.of()),
+                new JsCall(WebPushJs.class, "getSubscription", List.of())),
+                calls);
     }
 }
