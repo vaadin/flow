@@ -355,23 +355,6 @@ the connector fetch the changed module, not by hoping a browser re-fetched it
 while the daemon watched the log. The daemon README's Known limits section
 lists what the loop cannot make live and why.
 
-## Not decided yet
-
-These are open on purpose. Behavior in these areas is what the code happens to
-do today, not a decision, and a change that settles one should add the decision
-here and in `CONVENTIONS.md`:
-
-- the IDE-led mode, and whether it wraps or replaces the IDE plugins' Copilot
-  REST service;
-- per-browser identity and reload acknowledgement on top of the live reload
-  broadcast;
-- whether a restart should ever preserve session state;
-- how cleanly a superseded compile or frontend task can be cancelled mid-run;
-- which single process writes Flow's build-info token file, and who decides
-  when the dev bundle is rebuilt;
-- whether an MCP server is ever added beside the CLI, as one more client over
-  the same RPC.
-
 ## Verifying a change
 
 The daemon's unit tests cover what is decidable without a running application.

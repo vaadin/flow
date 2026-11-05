@@ -1,33 +1,18 @@
 # flow-devloop-daemon
 
-A long-running daemon that owns one Vaadin application's edit-to-running-app
-loop: background compilation, hot swap or restart, browser refresh, error
-reporting. It answers, authoritatively, *"what is the state of my last
-change?"* — an agent batches edits, runs one `apply`, and reads a verdict from
-the exit code instead of rebuilding, relaunching and guessing from screenshots.
+How the dev-loop daemon is implemented, for someone who has to change the code
+here. What the loop is for, and the decisions every change has to keep, are in
+the Dev Loop section of [`CONVENTIONS.md`](../CONVENTIONS.md) and in
+[`guidelines/dev-loop.md`](../guidelines/dev-loop.md); the user-facing contract
+is the `vaadin-devloop` skill under
+`flow-plugins/flow-plugin-base/src/main/resources/vaadin-dev-cli/`.
 
 Everything in this module is for internal use only. May be renamed or removed
 in a future release.
 
-The user-facing documentation is the `vaadin-devloop` skill installed by
-`mvn vaadin:install-dev-cli` (its resources live in
-`flow-plugins/flow-plugin-base/src/main/resources/vaadin-dev-cli/`). The
-decisions every change here has to keep — zero dependencies, the handshake and
-its lock, the daemon's own session, the command contract and exit codes, when
-settings are read — are rules in the Dev Loop section of
-[`CONVENTIONS.md`](../CONVENTIONS.md), explained in
-[`guidelines/dev-loop.md`](../guidelines/dev-loop.md). This file is for someone
-who has to change the code here: how each part is implemented.
-
 ## The jar
 
-The daemon depends on the JDK alone, which a `maven-enforcer-plugin`
-`RestrictImports` execution in `pom.xml` enforces. That is why `Json`
-hand-rolls its JSON escaping, `Reactor` reads poms with the JDK's own XML
-parser, and `MainClass` walks a class file's constant pool instead of calling
-`Class.forName`.
-
-The jar is also the javaagent: the manifest carries `Premain-Class` /
+The jar doubles as the javaagent: the manifest carries `Premain-Class` /
 `Agent-Class` for `com.vaadin.flow.devloop.agent.DevLoopAgent` alongside its own
 `Main-Class`, so the app JVM is launched with `-javaagent:<this jar>` and there is
 one artifact to resolve rather than two to keep in step. Only `DevLoopAgent`
@@ -44,18 +29,11 @@ nothing else.
 
 ### CLI ↔ daemon
 
-`<app>/.vaadin/daemon.properties` (`Handshake`) records the daemon's pid, process
-start time, port and auth token, and `.vaadin/daemon.lock` beside it is held as
-an OS file lock for as long as the daemon runs. `install-dev-cli` puts the
-`vaadin-dev` scripts in that same directory, together with a `.vaadin/.gitignore`
-naming the per-run files. The CLI spawns the daemon with `setsid`, or perl's
-`POSIX::setsid` where no `setsid` binary ships. Why the handshake is outside
-`target/`, what the lock prevents and why the daemon needs a session of its own
-is in [`guidelines/dev-loop.md`](../guidelines/dev-loop.md).
-
-A request is one line, `<token> <verb> <args...>`, and the reply is progress
-lines followed by one `EXIT <code>` (see
-[the command contract](../guidelines/dev-loop.md#the-command-contract)).
+The handshake is `Handshake`, and `install-dev-cli` puts the `vaadin-dev`
+scripts beside it in `.vaadin/`. Where no `setsid` binary ships, the CLI falls
+back to perl's `POSIX::setsid`. The handshake, the lock, the daemon's own
+session and the request format are in
+[`guidelines/dev-loop.md`](../guidelines/dev-loop.md).
 
 Verbs: `ping`, `status [--json]`, `start`, `stop`, `restart`, `shutdown`,
 `apply [--json] [--no-restart]`, `redefine <a.b.C,...>` (diagnostic — pushes
@@ -64,10 +42,8 @@ the connector's own connection rather than a command.
 
 ### daemon ↔ in-app connector
 
-The connector (`com.vaadin.base.devserver.devloop` in `vaadin-dev-server`) opens
-one socket and holds it for the app's lifetime, so its close *is* the signal that
-the app is gone — no polling, no port probing. The daemon sends commands down the
-same connection and reads one reply line:
+The daemon sends commands down the connector's one socket and reads one reply
+line:
 
 ```
 REDEFINE a.b.C,a.b.D   ->  OK redefined=2 notLoaded=0 dupes=0 completed=true frontendImports=MyView …
@@ -102,10 +78,9 @@ Windows' 32 kB command-line limit). Each in-loop module gets its own
 
 **`model.properties` is how the daemon knows what starts the application**,
 written by `DevLoopBuildExtension` as each resolve reads the projects and read
-back by `EffectiveModel`. Whether a profile is active, and what a module
-inherits from a parent outside the checkout, are Maven's to decide and cannot
-be worked out from the poms — so they are not guessed at: the extension writes
-down the effective `<build><plugins>`, the packaging and the active profiles,
+back by `EffectiveModel` (see
+[Ask the build, do not guess](../guidelines/dev-loop.md#ask-the-build-do-not-guess)).
+The extension writes down the effective `<build><plugins>`, the packaging and the active profiles,
 and that is the only source `Reactor.plugin` reads. A `<pluginManagement>`
 version is absent from it by construction, and so is a plugin from a profile
 that did not run. It is believed only while it is newer than the poms it was
@@ -136,13 +111,6 @@ unaffected and one that did never downloads twice.
 the pinned jar into `~/.vaadin/devloop/` by hand works too, since what is
 there is checksum-verified either way.
 
-## Outcomes and exit codes
-
-`TransactionEngine.Outcome` is the whole vocabulary, and the exit code is
-derived from it. The table of outcomes and codes, and the rules for
-superseding a transaction, are in
-[the command contract](../guidelines/dev-loop.md#the-command-contract).
-
 ## Knobs
 
 All are system properties on the daemon JVM
@@ -164,9 +132,7 @@ a daemon is spawned (see
 Three are held back because the loop sets them itself, and a forwarded copy
 would override rather than repeat them (a later `-D` wins):
 `spring.devtools.restart.enabled`, `vaadin.launch-browser` and
-`vaadin.devloop.classes`. Devtools is the one that matters — two things
-restarting the application on their own schedules is what the transaction model
-exists to prevent. `vaadin.dev.jvmArgs` is held back too: the app gets its
+`vaadin.devloop.classes`. `vaadin.dev.jvmArgs` is held back too: the app gets its
 flags, not the property.
 
 The forwarding is `Launch.forwardedToApp`.
@@ -1091,9 +1057,7 @@ particular symptom of `-XX:+AllowEnhancedClassRedefinition` having been dropped,
 which is the failure Payara's one-value trick and Liberty's one property per
 flag both exist to prevent.
 
-**Run that by hand against a reactor, not a single module.** Two of the things a
-forked container has to get right are invisible to a project with no sibling: a
-goal named on a command line runs on every module in the reactor, which is what
-the skip and the forced `<skip>false</skip>` are for — and, for TomEE, the bound
-execution — and a sibling left at `compile` reaches the WAR as an empty
-directory, which is what `package` across the reactor is for.
+**Run that by hand against a reactor, not a single module**, for the reasons in
+[Verifying a change](../guidelines/dev-loop.md#verifying-a-change): the skip and
+the forced `<skip>false</skip>` (and, for TomEE, the bound execution) and
+`package` across the reactor are invisible to a project with no sibling.
