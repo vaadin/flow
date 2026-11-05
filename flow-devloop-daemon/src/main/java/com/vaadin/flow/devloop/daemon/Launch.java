@@ -1272,8 +1272,9 @@ final class Launch {
         if (java.jbr()) {
             flags.add("-XX:+AllowEnhancedClassRedefinition");
         }
-        // Vaadin: the plugin declares itself for Vaadin 23-24, though 2.0.3
-        // does look for the 25 Hotswapper as well - so the reason it stays off
+        // Vaadin: the plugin declares itself for Vaadin 23-24, though the
+        // pinned release does look for the 25 Hotswapper as well - so the
+        // reason it stays off
         // is not that it would fail. It is that it would work: a second driver
         // of onHotswap and BrowserLiveReload, on its own file-watch schedule
         // and outside this transaction, so an apply could no longer say what it
@@ -1309,12 +1310,11 @@ final class Launch {
         // API loader while it waited on the boot loader. The odd start never
         // got past "Registered ...HazelcastBackingStoreFactoryProxy", with no
         // error and no exit, until the start timeout. A stopgap: the cause is
-        // HotswapAgent's, not the plugin's, and once a HotswapAgent release
-        // no longer resolves through the context loader - the fix is
-        // https://github.com/HotswapProjects/HotswapAgent/pull/681 -
-        // HotswapAgentJar should move to it and this entry should go. Until
-        // then, what the
-        // plugin buys - clearing Jackson's caches after a redefine - is not
+        // HotswapAgent's, not the plugin's. The fix -
+        // https://github.com/HotswapProjects/HotswapAgent/pull/681 - ships in
+        // 2.0.4, which HotswapAgentJar now pins, so this entry should go once
+        // the Payara Micro boot is measured again without it. Until then, what
+        // the plugin buys - clearing Jackson's caches after a redefine - is not
         // worth a start that may never end.
         // The key is "hotswapagent.disablePlugin", read in premain into a set
         // every class loader's configuration consults. "disabledPlugins", the

@@ -617,6 +617,79 @@ public class RouteUtil {
     }
 
     /**
+     * Gets the parent layouts the router creates for the given route target.
+     * These are the parent layouts of the route target, or the layouts of the
+     * {@link Layout} that matches the path when the route target has no parent
+     * layouts and can get the automatic layout.
+     *
+     * @param routeTarget
+     *            the route target to get the parent layouts for, not
+     *            {@code null}
+     * @param registry
+     *            the registry that holds the {@link Layout} classes, not
+     *            {@code null}
+     * @param path
+     *            the path the route target was resolved from, not {@code null}
+     * @return the parent layouts, starting from the one closest to the route
+     *         target, or an empty list if there are none
+     * @since 25.3.6
+     */
+    public static List<Class<? extends RouterLayout>> getTargetParentLayouts(
+            RouteTarget routeTarget, RouteRegistry registry, String path) {
+        if (routeTarget.getParentLayouts().isEmpty()
+                && isAutolayoutEnabled(routeTarget.getTarget(), path)
+                && registry.hasLayout(path)) {
+            return collectRouteParentLayouts(registry.getLayout(path));
+        }
+        return routeTarget.getParentLayouts();
+    }
+
+    /**
+     * Resolves the parent layouts that navigation to the given path shows the
+     * navigation target in. This gives the same result as
+     * {@link #getTargetParentLayouts(RouteTarget, RouteRegistry, String)} for
+     * the route target the path resolves to, including a {@link RouteAlias}
+     * with its own layout.
+     * <p>
+     * If the path does not resolve to the navigation target, for example when
+     * the path is a route template with parameters, the parent layouts of the
+     * first route registered for the navigation target are used instead.
+     *
+     * @param registry
+     *            the registry to resolve the path in, not {@code null}
+     * @param navigationTarget
+     *            the navigation target, not {@code null}
+     * @param path
+     *            the path to resolve, not {@code null}
+     * @return the parent layouts, starting from the one closest to the
+     *         navigation target, or an empty list if there are none
+     * @since 25.3.6
+     */
+    public static List<Class<? extends RouterLayout>> resolveTargetParentLayouts(
+            RouteRegistry registry, Class<?> navigationTarget, String path) {
+        NavigationRouteTarget navigationRouteTarget = registry
+                .getNavigationRouteTarget(path);
+        if (navigationRouteTarget.hasTarget() && navigationRouteTarget
+                .getRouteTarget().getTarget().equals(navigationTarget)) {
+            return getTargetParentLayouts(
+                    navigationRouteTarget.getRouteTarget(), registry,
+                    navigationRouteTarget.getPath());
+        }
+        List<Class<? extends RouterLayout>> parentLayouts = registry
+                .getRegisteredRoutes().stream()
+                .filter(routeData -> routeData.getNavigationTarget()
+                        .equals(navigationTarget))
+                .map(RouteBaseData::getParentLayouts).findFirst()
+                .orElse(List.of());
+        if (parentLayouts.isEmpty()
+                && isAutolayoutEnabled(navigationTarget, path)
+                && registry.hasLayout(path)) {
+            return collectRouteParentLayouts(registry.getLayout(path));
+        }
+        return parentLayouts;
+    }
+
+    /**
      * Checks the given list of Flow routes for potential collisions with Hilla
      * routes.
      *
@@ -800,17 +873,47 @@ public class RouteUtil {
         RouteParent annotation = navigationTarget
                 .getAnnotation(RouteParent.class);
         if (annotation != null) {
-            if (!RouteParentResolver.class.equals(annotation.resolver())) {
+            if (definesResolver(annotation)) {
                 return instantiateResolver(annotation.resolver()).resolveParent(
                         new RouteParentContext(navigationTarget, parameters));
             }
-            if (!Component.class.equals(annotation.value())) {
+            if (definesStaticParent(annotation)) {
                 return Optional.of(new RouteReference(annotation.value(),
                         narrowParametersToTemplate(registry, annotation.value(),
                                 parameters)));
             }
         }
         return getUrlBasedRouteParent(registry, navigationTarget, parameters);
+    }
+
+    /**
+     * Checks whether the given navigation target defines its logical parent
+     * explicitly with a {@link RouteParent} annotation, i.e. whether
+     * {@link #getRouteParent(RouteRegistry, Class, RouteParameters)} resolves
+     * the parent from the annotation rather than from the route URL.
+     *
+     * @param navigationTarget
+     *            the navigation target to check, not {@code null}
+     * @return {@code true} if a {@link RouteParent#value()} or
+     *         {@link RouteParent#resolver()} is defined for the target,
+     *         {@code false} otherwise
+     */
+    public static boolean hasExplicitRouteParent(
+            Class<? extends Component> navigationTarget) {
+        RouteParent annotation = navigationTarget
+                .getAnnotation(RouteParent.class);
+        return annotation != null && (definesResolver(annotation)
+                || definesStaticParent(annotation));
+    }
+
+    private static boolean definesResolver(RouteParent annotation) {
+        // RouteParentResolver itself is the "not defined" marker
+        return !RouteParentResolver.class.equals(annotation.resolver());
+    }
+
+    private static boolean definesStaticParent(RouteParent annotation) {
+        // Component itself is the "not defined" marker
+        return !Component.class.equals(annotation.value());
     }
 
     /**
