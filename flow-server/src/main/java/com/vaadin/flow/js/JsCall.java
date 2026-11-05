@@ -36,6 +36,7 @@ import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 /**
  * A call made through {@link Element#executeJs(Class)}: which definition
@@ -182,7 +183,9 @@ public record JsCall(Class<?> definitionType, String methodName,
      * a function taking the {@link JsCalledWith} parameters. What sets it apart
      * is hashed with the JavaScript, so a snippet and a call that declare the
      * same JavaScript are different functions, and so are two snippets called
-     * with different parameters.
+     * with different parameters. A method annotated with
+     * {@link JsWithExecutionContext} is generated with the execution context as
+     * a leading parameter, and is told apart the same way.
      *
      * @param method
      *            a method annotated with {@link JsExpression}, not
@@ -202,6 +205,16 @@ public record JsCall(Class<?> definitionType, String methodName,
         String expression = annotation.value();
         int parameterCount = method.getParameterCount();
         boolean variadic = method.isVarArgs();
+        if (method.isAnnotationPresent(JsWithExecutionContext.class)) {
+            // A call is hashed from what starts with the parameter count and a
+            // snippet from what starts with "(", so this never shares the hash
+            // input of either
+            return StringUtil
+                    .getHash(
+                            "executionContext," + parameterCount
+                                    + (variadic ? "*" : "") + ":" + expression,
+                            StandardCharsets.UTF_8);
+        }
         if (!JsSnippet.class.isAssignableFrom(method.getReturnType())) {
             return functionId(expression, parameterCount, variadic);
         }
