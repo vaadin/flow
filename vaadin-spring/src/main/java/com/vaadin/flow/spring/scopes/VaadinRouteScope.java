@@ -127,6 +127,12 @@ public class VaadinRouteScope extends AbstractScope {
                     && isPreserveOnRefreshChain(previousUI);
         }
 
+        private static String getWindowName(UI ui) {
+            ExtendedClientDetails details = ui.getInternals()
+                    .getExtendedClientDetails();
+            return details.getWindowName();
+        }
+
         private static boolean isPreserveOnRefreshChain(UI ui) {
             NavigationListener listener = ComponentUtil.getData(ui,
                     NavigationListener.class);
@@ -457,12 +463,6 @@ public class VaadinRouteScope extends AbstractScope {
             return null;
         }
         return wrapper.getBeanStore(getUI());
-    }
-
-    private static String getWindowName(UI ui) {
-        ExtendedClientDetails details = ui.getInternals()
-                .getExtendedClientDetails();
-        return details.getWindowName();
     }
 
     private static UI getUI() {
