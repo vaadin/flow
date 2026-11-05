@@ -16,11 +16,18 @@
 package com.vaadin.flow.server.webpush;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 import com.interaso.webpush.WebPush.SubscriptionState;
 import com.interaso.webpush.WebPushService;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.internal.WebPushJs;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.server.VaadinSession;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -76,5 +83,23 @@ public class WebPushTest {
         WebPushMessage message = new WebPushMessage("title", "body");
 
         webPush.sendNotification(subscription, message);
+    }
+
+    @Test
+    public void subscribe_runsTheDeclaredJavaScriptWithThePublicKey() {
+        UI ui = new UI();
+        VaadinSession session = mock(VaadinSession.class);
+        when(session.hasLock()).thenReturn(true);
+        ui.getInternals().setSession(session);
+
+        webPush.subscribe(ui, subscription -> {
+        });
+
+        List<PendingJavaScriptInvocation> invocations = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, invocations.size());
+        assertEquals(
+                new JsCall(WebPushJs.class, "subscribe", List.of(PUBLIC_KEY)),
+                invocations.get(0).getInvocation().getJsCall());
     }
 }
