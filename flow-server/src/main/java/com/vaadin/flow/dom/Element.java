@@ -2538,7 +2538,8 @@ public class Element extends Node<Element> {
 
         /**
          * Dispatches a <code>window-resize</code> event on the element whenever
-         * the browser window is resized, with the size of the document as its
+         * the browser window is resized, with the new browser window width and
+         * height (the viewport size, excluding scrollbars) as its
          * <code>w</code> and <code>h</code> properties, so that a resize can be
          * listened to on the element.
          */
