@@ -48,7 +48,9 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
  * Generates {@link FrontendUtils#JS_DEFINITIONS_FILE_NAME}, which registers the
  * JavaScript of every {@link JsDefinition} interface on the class path as an
  * ordinary function of the bundle: in one registry for the methods that run
- * their JavaScript when called, and in another for the methods that declare a
+ * their JavaScript when called, in another for those of them that are annotated
+ * with {@link JsWithExecutionContext} and take the execution context as their
+ * first parameter, and in a third for the methods that declare a
  * {@link JsSnippet}, which the client turns into a function when it decodes the
  * snippet. A definition that does not pass
  * {@link JsDefinitionProxy#checkDefinition(Class)} is left out, with an error
