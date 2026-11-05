@@ -114,7 +114,7 @@ class JsDefinitionProxyTest {
 
     @JsDefinition
     interface SnippetWithExecutionContextJs extends Serializable {
-        @JsExpression("console.log(executionContext);")
+        @JsExpression("console.log($executionContext);")
         @JsWithExecutionContext
         JsFunction createLogger();
     }

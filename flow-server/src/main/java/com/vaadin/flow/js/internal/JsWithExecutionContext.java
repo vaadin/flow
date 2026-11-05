@@ -29,7 +29,7 @@ import com.vaadin.flow.js.JsExpression;
  * to {@code executeJs(String, Object...)} runs against as <code>this</code>.
  * <p>
  * The generated function takes the context as a leading parameter named
- * <code>executionContext</code>, followed by the arguments of the call as
+ * <code>$executionContext</code>, followed by the arguments of the call as
  * <code>$0</code>, <code>$1</code>, &hellip;, and <code>this</code> stays the
  * element the definition was obtained from. The context carries the framework
  * callbacks, such as <code>stopApplication()</code> and
