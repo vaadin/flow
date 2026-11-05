@@ -97,7 +97,11 @@ describe('ExecuteJavaScriptProcessor', () => {
 
     type DefinitionWindow = Window & {
       Vaadin?: {
-        Flow?: { jsDefinitions?: Record<string, DefinitionFunction>; jsDefinitionNames?: Record<string, string> };
+        Flow?: {
+          jsDefinitions?: Record<string, DefinitionFunction>;
+          jsDefinitionsWithExecutionContext?: Record<string, DefinitionFunction>;
+          jsDefinitionNames?: Record<string, string>;
+        };
       };
     };
 
@@ -113,6 +117,16 @@ describe('ExecuteJavaScriptProcessor', () => {
         vaadin.Flow.jsDefinitionNames = vaadin.Flow.jsDefinitionNames ?? {};
         vaadin.Flow.jsDefinitionNames[functionId] = name;
       }
+    }
+
+    // Registers a function the way the generated bundle does for a method
+    // that gets the execution context.
+    function registerDefinitionWithExecutionContext(functionId: string, fn: DefinitionFunction): void {
+      const vaadin = (window as DefinitionWindow).Vaadin ?? {};
+      (window as DefinitionWindow).Vaadin = vaadin;
+      vaadin.Flow = vaadin.Flow ?? {};
+      vaadin.Flow.jsDefinitionsWithExecutionContext = vaadin.Flow.jsDefinitionsWithExecutionContext ?? {};
+      vaadin.Flow.jsDefinitionsWithExecutionContext[functionId] = fn;
     }
 
     function fixture(): { processor: ExecuteJavaScriptProcessor; registry: TestRegistry } {
@@ -133,6 +147,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       const flow = (window as DefinitionWindow).Vaadin?.Flow;
       for (const functionId of [GREETING, VALUE]) {
         delete flow?.jsDefinitions?.[functionId];
+        delete flow?.jsDefinitionsWithExecutionContext?.[functionId];
         delete flow?.jsDefinitionNames?.[functionId];
       }
     });
@@ -265,6 +280,60 @@ describe('ExecuteJavaScriptProcessor', () => {
       registerDefinition(GREETING, function (this: unknown, name: unknown, ...rest: unknown[]) {
         calls.push({ thisArg: this, args: [name, rest] });
       });
+      const element = { tagName: 'div' };
+
+      run(['greet', 'Alice', 'Bob', element, { f: GREETING, n: 3 }]);
+
+      expect(calls).to.have.lengthOf(1);
+      expect(calls[0].thisArg).to.equal(element);
+      expect(calls[0].args).to.eql(['greet', ['Alice', 'Bob']]);
+    });
+
+    it('passes the execution context ahead of the arguments to a function registered as getting it', () => {
+      const lifecycleStates: UIState[] = [];
+      const registry = treeRegistry();
+      registry.register('ApplicationConfiguration', {
+        getApplicationId: () => 'ROOT-1',
+        isProductionMode: () => false
+      });
+      registry.register('UILifecycle', {
+        isTerminated: () => false,
+        setState: (state: UIState) => lifecycleStates.push(state)
+      });
+      const node = registeredNode(registry, 10);
+      const element = document.createElement('div');
+      node.setDomNode(element);
+      const calls: Array<{ thisArg: unknown; args: unknown[]; nodeOfElement: unknown }> = [];
+      registerDefinitionWithExecutionContext(
+        GREETING,
+        function (this: unknown, executionContext: unknown, target: unknown, greeting: unknown) {
+          const context = executionContext as { getNode: (element: unknown) => unknown; stopApplication: () => void };
+          calls.push({ thisArg: this, args: [target, greeting], nodeOfElement: context.getNode(target) });
+          context.stopApplication();
+        }
+      );
+
+      execute(new ExecuteJavaScriptProcessor(registry), registry, [
+        [{ '@v-node': node.getId() }, 'Hello', null, greeting]
+      ]);
+
+      expect(calls).to.have.lengthOf(1);
+      expect(calls[0].thisArg).to.equal(null);
+      expect(calls[0].args).to.eql([element, 'Hello']);
+      // The same context an expression runs against: an element parameter
+      // maps back to its node, and the callbacks reach the application
+      expect(calls[0].nodeOfElement).to.equal(node);
+      expect(lifecycleStates).to.eql([UIState.TERMINATED]);
+    });
+
+    it('splits the parameters of a variadic call that gets the execution context by the count the server sent', () => {
+      const calls: Array<{ thisArg: unknown; args: unknown[] }> = [];
+      registerDefinitionWithExecutionContext(
+        GREETING,
+        function (this: unknown, _executionContext: unknown, name: unknown, ...rest: unknown[]) {
+          calls.push({ thisArg: this, args: [name, rest] });
+        }
+      );
       const element = { tagName: 'div' };
 
       run(['greet', 'Alice', 'Bob', element, { f: GREETING, n: 3 }]);

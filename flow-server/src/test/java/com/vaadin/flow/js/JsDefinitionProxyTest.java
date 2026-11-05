@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -109,6 +110,13 @@ class JsDefinitionProxyTest {
         @JsExpression("console.log(value);")
         @JsCalledWith("value")
         void log();
+    }
+
+    @JsDefinition
+    interface SnippetWithExecutionContextJs extends Serializable {
+        @JsExpression("console.log(executionContext);")
+        @JsWithExecutionContext
+        JsFunction createLogger();
     }
 
     private final List<JsCall> calls = new ArrayList<>();
@@ -276,6 +284,18 @@ class JsDefinitionProxyTest {
                 () -> proxy(CalledWithWhenRunJs.class));
 
         assertTrue(exception.getMessage().contains("@JsCalledWith"),
+                exception.getMessage());
+    }
+
+    @Test
+    void createSnippets_executionContextOnASnippet_throws() {
+        // Only a call runs against an element with the context beside it, a
+        // snippet is evaluated by whatever it is passed to
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> JsDefinitionProxy
+                        .createSnippets(SnippetWithExecutionContextJs.class));
+
+        assertTrue(exception.getMessage().contains("@JsWithExecutionContext"),
                 exception.getMessage());
     }
 }
