@@ -44,6 +44,7 @@ import java.util.zip.GZIPOutputStream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -359,15 +360,13 @@ public class ResponseWriterTest {
             "2000, UNKNOWN, 0, br" })
     public void writeDataBrotliAndGzip_onlyServedWhenNotOlderThanResource(
             long resourceTime, String brotliTime, long gzipTime,
-            String expectedEncoding) throws IOException {
+            String expectedEncoding, @TempDir File dir) throws IOException {
         // A production build writes the .br/.gz variants after the resource.
         // When the resource is replaced afterwards (e.g. by an IDE build),
         // the variants hold the old content and must not be served.
         responseWriter.overrideAcceptsBrotliResource = Boolean.TRUE;
         responseWriter.overrideAcceptsGzippedResource = Boolean.TRUE;
 
-        File dir = Files.createTempDirectory("response-writer-test").toFile();
-        dir.deleteOnExit();
         File jsFile = new File(dir, "file.js");
         Files.write(jsFile.toPath(), fileJsContents);
         File brotliFile = new File(dir, "file.js.br");
