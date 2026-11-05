@@ -893,21 +893,11 @@ class BuildFrontendUtilTest {
     @Test
     @DisabledOnOs(OS.WINDOWS)
     void runVite_nonZeroExit_doesNotLeakEnvironment() throws Exception {
-        File fakeNode = new File(baseDir, "fake-node.sh");
-        Files.writeString(fakeNode.toPath(), """
+        FrontendTools frontendTools = mockFrontendToolsWithFakeNode("""
                 #!/bin/sh
                 echo TEST_OUTPUT_LINE
                 exit 7
                 """);
-        assertTrue(fakeNode.setExecutable(true));
-
-        File viteJs = new File(baseDir, "node_modules/vite/bin/vite.js");
-
-        FrontendTools frontendTools = mock(FrontendTools.class);
-        when(frontendTools.getNodeExecutable())
-                .thenReturn(fakeNode.getAbsolutePath());
-        when(frontendTools.getNpmPackageExecutable("vite", "vite", baseDir))
-                .thenReturn(viteJs.toPath());
 
         IllegalStateException ex = assertThrows(IllegalStateException.class,
                 () -> BuildFrontendUtil.runVite(adapter, frontendTools));
@@ -928,20 +918,15 @@ class BuildFrontendUtilTest {
     @Test
     @DisabledOnOs(OS.WINDOWS)
     void runVite_removesBundleFilesOfPreviousBuild() throws Exception {
-        File fakeNode = new File(baseDir, "fake-node.sh");
-        Files.writeString(fakeNode.toPath(), """
-                #!/bin/sh
-                exit 0
-                """);
-        assertTrue(fakeNode.setExecutable(true));
-        FrontendTools frontendTools = mock(FrontendTools.class);
-        when(frontendTools.getNodeExecutable())
-                .thenReturn(fakeNode.getAbsolutePath());
-        when(frontendTools.getNpmPackageExecutable("vite", "vite", baseDir))
-                .thenReturn(new File(baseDir, "node_modules/vite/bin/vite.js")
-                        .toPath());
-
         Path webapp = adapter.frontendOutputDirectory().toPath();
+        Path newChunk = webapp.resolve("VAADIN/build/indexhtml-NEW.js");
+        // The fake Vite build writes a chunk, which must survive the cleanup
+        FrontendTools frontendTools = mockFrontendToolsWithFakeNode("""
+                #!/bin/sh
+                mkdir -p "%1$s"
+                echo new > "%2$s"
+                """.formatted(newChunk.getParent(), newChunk));
+
         Path staleChunk = webapp.resolve("VAADIN/build/indexhtml-OLD.js");
         Path themeResource = webapp
                 .resolve("VAADIN/static/themes/my-theme/styles.css");
@@ -954,8 +939,25 @@ class BuildFrontendUtilTest {
 
         assertFalse(Files.exists(staleChunk),
                 "Chunk of the previous build should be removed");
+        assertTrue(Files.exists(newChunk),
+                "Chunk written by the build should be kept");
         assertTrue(Files.exists(themeResource),
                 "Resources outside VAADIN/build should be kept");
+    }
+
+    private FrontendTools mockFrontendToolsWithFakeNode(String script)
+            throws Exception {
+        File fakeNode = new File(baseDir, "fake-node.sh");
+        Files.writeString(fakeNode.toPath(), script);
+        assertTrue(fakeNode.setExecutable(true));
+
+        FrontendTools frontendTools = mock(FrontendTools.class);
+        when(frontendTools.getNodeExecutable())
+                .thenReturn(fakeNode.getAbsolutePath());
+        when(frontendTools.getNpmPackageExecutable("vite", "vite", baseDir))
+                .thenReturn(new File(baseDir, "node_modules/vite/bin/vite.js")
+                        .toPath());
+        return frontendTools;
     }
 
     private static String statsJsonWithCommercialComponents() {
