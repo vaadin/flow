@@ -23,14 +23,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import com.vaadin.flow.testutil.junit5.AbstractBrowserIT;
 import com.vaadin.testbench.BrowserTest;
-import com.vaadin.testbench.BrowserTestBase;
-import com.vaadin.testbench.DriverSupplier;
 
 /**
  * The half only a browser can answer: the exit code proves the bytes are live,
@@ -48,25 +44,19 @@ import com.vaadin.testbench.DriverSupplier;
  * {@code vaadin.frontend.hotdeploy=false} so that nothing but the daemon can
  * push - which is what makes the same assertions meaningful on both.
  * <p>
- * This class does not extend {@link AbstractDevLoopIT}: TestBench's
- * {@link BrowserTestBase} is the superclass a {@link BrowserTest} needs, so the
+ * This class does not extend {@link AbstractDevLoopIT}: a {@link BrowserTest}
+ * needs TestBench's base class, which {@link AbstractBrowserIT} extends, so the
  * fixture paths and the CLI are used through it instead of inherited.
  */
 @Isolated
-class DevLoopBrowserIT extends BrowserTestBase implements DriverSupplier {
+class DevLoopBrowserIT extends AbstractBrowserIT {
 
     private VaadinDevCli cli;
     private SourcePatch patch;
 
     @Override
-    public WebDriver createDriver() {
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless=new", "--disable-gpu",
-                "--disable-backgrounding-occluded-windows");
-        // Required in CI and containers, which disable the Chrome sandbox and
-        // have a small /dev/shm.
-        options.addArguments("--no-sandbox", "--disable-dev-shm-usage");
-        return new ChromeDriver(options);
+    protected String getRootURL() {
+        return AbstractDevLoopIT.ROOT_URL;
     }
 
     @BeforeEach
@@ -75,7 +65,7 @@ class DevLoopBrowserIT extends BrowserTestBase implements DriverSupplier {
         patch = new SourcePatch();
         cli.run("start").assertExitCode(0);
         cli.run("apply").assertExitCode(0);
-        getDriver().get(AbstractDevLoopIT.ROOT_URL + "/");
+        getDriver().get(getRootURL() + "/");
         // The first snapshot after navigating is usually empty - Vaadin renders
         // client-side - so wait for something the view owns.
         waitFor("#title");

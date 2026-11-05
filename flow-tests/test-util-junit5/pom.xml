@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-tests</artifactId>
+    <version>25.4-SNAPSHOT</version>
+  </parent>
+  <artifactId>flow-test-util-junit5</artifactId>
+  <packaging>jar</packaging>
+  <name>Flow JUnit 6 integration test utilities</name>
+  <description>Base class for the integration test modules that run on the JUnit Platform, on top of TestBench's JUnit 5+ BrowserTestBase.</description>
+
+  <!-- The JUnit Platform counterpart of flow-test-util, kept apart from it so
+       the JUnit 4 test modules do not get a second TestBench line and a second
+       JUnit version on their classpath. Internal to this repository: it is
+       neither deployed nor part of the BOM. -->
+
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+    <maven.javadoc.skip>true</maven.javadoc.skip>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-testbench-bom</artifactId>
+        <version>${testbench.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-testbench-core-junit5</artifactId>
+    </dependency>
+  </dependencies>
+
+</project>

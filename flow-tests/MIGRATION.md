@@ -265,8 +265,11 @@ For each IT moved into a module:
 - ITs on the **JUnit Platform** via the `failsafe.provider.artifactId` override
   (the `flow-tests` parent exposes this property; default stays
   `surefire-junit47`).
-- `AbstractDefaultIT` supplies a headless Chrome driver via TestBench
-  `DriverSupplier` (`--headless=new --no-sandbox --disable-dev-shm-usage …`).
+- `AbstractDefaultIT` extends `AbstractBrowserIT` from `flow-test-util-junit5`
+  (`flow-tests/test-util-junit5`), which supplies a headless Chrome driver via
+  TestBench `DriverSupplier` (`--headless=new --no-sandbox
+  --disable-dev-shm-usage …`). Other JUnit Platform modules depend on that
+  module and extend the same base instead of copying the driver setup.
 - `@TestFor(view)` + default `getTestPath()`.
 
 ## 8. CI

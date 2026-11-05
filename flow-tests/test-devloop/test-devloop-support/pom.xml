@@ -52,11 +52,12 @@
       <version>${junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
-    <!-- DevLoopBrowserIT drives a browser, so it needs TestBench's base class
-         and Selenium. -->
+    <!-- DevLoopBrowserIT drives a browser, so it needs the shared browser IT
+         base class, which brings TestBench and Selenium. -->
     <dependency>
       <groupId>com.vaadin</groupId>
-      <artifactId>vaadin-testbench-core-junit5</artifactId>
+      <artifactId>flow-test-util-junit5</artifactId>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

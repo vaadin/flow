@@ -110,7 +110,8 @@
     </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
-      <artifactId>vaadin-testbench-core-junit5</artifactId>
+      <artifactId>flow-test-util-junit5</artifactId>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <!-- DevLoopPomEditIT adds a dependency below this line and reverts it. The
