@@ -52,17 +52,20 @@ import com.vaadin.flow.js.JsSnippets;
  *         .setFilterExpression(FILTERS.isKey("Enter"));
  * </pre>
  * <p>
- * The build adds the expression to the bundle. Because of this, the browser
- * does not compile any JavaScript from a string. All filters from the same
- * method use the same function, also when the captured values are different.
+ * The build adds the expression to the bundle, so the browser does not compile
+ * any JavaScript from a string. Filters from the same method share one function
+ * in the browser, also when the arguments are different. Each one still checks
+ * its own arguments: one listener can have <code>isKey("Enter")</code> and
+ * another listener of the same element <code>isKey("Escape")</code>. The first
+ * listener then gets only Enter, and the second only Escape.
  * <p>
- * When all captured values are plain values, such as strings, numbers, booleans
- * or enums, the settings of the listener are stored in a cache that the server
- * and the browser keep for the lifetime of the UI. Each different value adds
- * one entry to this cache, and entries are never removed. So avoid a captured
- * value that is different for each element, such as a row id on every row of a
- * long list. Read such a value from the element instead, for example from an
- * attribute.
+ * When all arguments are plain values (strings, numbers, booleans, characters,
+ * enums or <code>null</code>), the settings of the listener are stored in a
+ * cache that the server and the browser keep for the lifetime of the UI. Each
+ * different value adds one entry to this cache, and entries are never removed.
+ * So avoid a captured value that is different for each element, such as a row
+ * id on every row of a long list. Read such a value from the element instead,
+ * for example from an attribute.
  * <p>
  * The captured values are checked when the filter is created. If a value cannot
  * be sent to the browser, creating the filter fails.
