@@ -18,17 +18,25 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import org.atmosphere.cpr.ApplicationConfig;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
+import org.atmosphere.cpr.AtmosphereResourceEvent;
+import org.atmosphere.cpr.AtmosphereResourceImpl;
 import org.atmosphere.cpr.AtmosphereResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinServletService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class PushAtmosphereHandlerTest {
@@ -85,6 +93,32 @@ class PushAtmosphereHandlerTest {
         // response shouldn't contain async
         assertEquals("{\"meta\":{\"async\":true,\"sessionExpired\":true}}",
                 responseContent, "Invalid response");
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void onStateChange_messageWrittenOnlyWhileClientConnected(
+            boolean closedByClient) throws IOException {
+        AtmosphereResourceImpl resourceImpl = mock(
+                AtmosphereResourceImpl.class);
+        when(resourceImpl.getRequest()).thenReturn(request);
+        when(resourceImpl.getRequest(false)).thenReturn(request);
+        when(resourceImpl.getResponse()).thenReturn(response);
+        when(request.getAttribute(ApplicationConfig.PROPERTY_USE_STREAM))
+                .thenReturn(false);
+
+        AtmosphereResourceEvent event = mock(AtmosphereResourceEvent.class);
+        when(event.getResource()).thenReturn(resourceImpl);
+        when(event.getMessage()).thenReturn("pending push message");
+        when(event.isClosedByClient()).thenReturn(closedByClient);
+
+        atmosphereHandler.onStateChange(event);
+
+        if (closedByClient) {
+            verify(printWriter, never()).write(anyString());
+        } else {
+            verify(printWriter).write("pending push message");
+        }
     }
 
 }
