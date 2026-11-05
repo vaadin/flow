@@ -253,5 +253,4 @@ public class WebPush {
     private Logger getLogger() {
         return LoggerFactory.getLogger(WebPush.class);
     }
-
 }

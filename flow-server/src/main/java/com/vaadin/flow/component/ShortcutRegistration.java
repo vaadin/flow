@@ -978,8 +978,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     private static String generateNestedModalOriginFilter(String boundaryExpr) {
         // Delegate path: the boundary element is the listener element the
         // delegate re-dispatches to. Evaluated on the original event, so its
-        // composedPath is correct. Helper defined in the client-side
-        // Shortcut.ts.
+        // composedPath is correct. Helper defined in FlowShortcut.js.
         return "window.Vaadin.Flow.shortcut.eventWithinBoundary(event, "
                 + boundaryExpr + ")";
     }
@@ -1010,7 +1009,7 @@ public class ShortcutRegistration implements Registration, Serializable {
         }
         // Normal path: locate the owner element via its marker attribute and
         // fire only when it shares the event's popover/modal scope. Helper
-        // defined in the client-side Shortcut.ts.
+        // defined in FlowShortcut.js.
         return "window.Vaadin.Flow.shortcut.eventInOwnerScope(event, '["
                 + SHORTCUT_OWNER_ATTRIBUTE + "~=\"" + token + "\"]')";
     }
