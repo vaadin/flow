@@ -32,7 +32,11 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.PreserveOnRefresh;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
+import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.server.UIInitEvent;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
@@ -43,6 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -57,6 +62,19 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
 
     @Tag(Tag.A)
     public static class AnotherNavigationTarget extends Component {
+
+    }
+
+    @Tag(Tag.A)
+    @PreserveOnRefresh
+    public static class PreservedNavigationTarget extends Component {
+
+    }
+
+    @Tag(Tag.A)
+    @PreserveOnRefresh
+    public static class PreservedLayout extends Component
+            implements RouterLayout {
 
     }
 
@@ -134,15 +152,12 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
     }
 
     @Test
-    void refresh_uiWithTheSameWindowName_beanInScopeIsDestroyedAfterRefresh() {
+    void refresh_preserveOnRefreshTarget_beanInScopeIsDestroyedAfterRefresh() {
         UI ui = mockUI();
 
         UI anotherUI = makeAnotherUI(ui);
 
-        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
-        when(details.getWindowName()).thenReturn("bar");
-        ui.getInternals().setExtendedClientDetails(details);
-        anotherUI.getInternals().setExtendedClientDetails(details);
+        setWindowName("bar", ui, anotherUI);
 
         ui.getSession().addUI(ui);
         ui.getSession().addUI(anotherUI);
@@ -154,12 +169,9 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
         AtomicInteger count = new AtomicInteger();
         scope.registerDestructionCallback("foo", () -> count.getAndIncrement());
 
-        new VaadinRouteScope.NavigationListenerRegistrar()
-                .uiInit(new UIInitEvent(ui, ui.getSession().getService()));
+        navigateTo(ui, new PreservedNavigationTarget());
 
-        navigateTo(ui, new NavigationTarget());
-
-        putObjectIntoScope(scope);
+        ObjectFactory<?> factory = putObjectIntoScope(scope);
 
         // close the first UI
         ui.getSession().removeUI(ui);
@@ -170,14 +182,89 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
         UI.setCurrent(anotherUI);
 
         scope = initScope(anotherUI);
+        navigateTo(anotherUI, new PreservedNavigationTarget());
 
-        // the bean is not removed since there is a "preserved" UI
+        // the refreshed UI gets the same bean
+        scope.get("foo", factory);
+        verify(factory, times(1)).getObject();
         assertEquals(0, count.get());
 
         navigateTo(anotherUI, new AnotherNavigationTarget());
 
         // the bean is removed since navigation away from it's owner navigation
         // target
+        assertEquals(1, count.get());
+    }
+
+    @Test
+    void refresh_previousUIStillOpen_beanIsNotShared() {
+        UI ui = mockUI();
+
+        UI anotherUI = makeAnotherUI(ui);
+
+        setWindowName("bar", ui, anotherUI);
+
+        VaadinSession session = ui.getSession();
+        session.addUI(ui);
+        session.addUI(anotherUI);
+
+        mockServletContext(ui);
+
+        VaadinRouteScope scope = initScope(ui);
+
+        AtomicInteger count = new AtomicInteger();
+        scope.registerDestructionCallback("foo", count::getAndIncrement);
+
+        navigateTo(ui, new NavigationTarget());
+
+        ObjectFactory<?> factory = putObjectIntoScope(scope);
+
+        // A UI created for the same browser window while the previous one is
+        // still open, e.g. after the browser tab crashed.
+        UI.setCurrent(anotherUI);
+        scope = initScope(anotherUI);
+        navigateTo(anotherUI, new NavigationTarget());
+
+        scope.get("foo", factory);
+        verify(factory, times(2)).getObject();
+
+        // The bean of the previous UI is destroyed with that UI
+        UI.setCurrent(ui);
+        session.removeUI(ui);
+        assertEquals(1, count.get());
+    }
+
+    @Test
+    void navigate_chainStopsBeingPreserved_beanIsKeptAndDestroyedOnUIDetach() {
+        UI ui = mockUI();
+
+        setWindowName("bar", ui);
+
+        VaadinSession session = ui.getSession();
+        session.addUI(ui);
+
+        mockServletContext(ui);
+
+        VaadinRouteScope scope = initScope(ui);
+
+        AtomicInteger count = new AtomicInteger();
+        scope.registerDestructionCallback("foo", count::getAndIncrement);
+
+        NavigationTarget target = new NavigationTarget();
+        navigateTo(ui, target);
+        ObjectFactory<?> factory = putObjectIntoScope(scope);
+
+        // The owner stays in the chain while it starts and then stops being
+        // preserved on refresh
+        navigateTo(ui, target, PreservedLayout.class);
+        scope.get("foo", factory);
+        navigateTo(ui, target);
+        scope.get("foo", factory);
+
+        verify(factory, times(1)).getObject();
+        assertEquals(0, count.get());
+
+        session.removeUI(ui);
         assertEquals(1, count.get());
     }
 
@@ -233,10 +320,7 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
 
         UI anotherUI = makeAnotherUI(ui);
 
-        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
-        when(details.getWindowName()).thenReturn("bar");
-        ui.getInternals().setExtendedClientDetails(details);
-        anotherUI.getInternals().setExtendedClientDetails(details);
+        setWindowName("bar", ui, anotherUI);
 
         VaadinSession session = ui.getSession();
         session.addUI(ui);
@@ -249,7 +333,7 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
         AtomicInteger count = new AtomicInteger();
         scope.registerDestructionCallback("foo", count::getAndIncrement);
 
-        navigateTo(ui, new NavigationTarget());
+        navigateTo(ui, new PreservedNavigationTarget());
 
         putObjectIntoScope(scope);
 
@@ -257,6 +341,7 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
         // store's detach listener stays on the first UI.
         UI.setCurrent(anotherUI);
         initScope(anotherUI);
+        navigateTo(anotherUI, new PreservedNavigationTarget());
 
         List<Throwable> reportedErrors = new ArrayList<>();
         when(session.getErrorHandler())
@@ -282,10 +367,7 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
 
         UI anotherUI = makeAnotherUI(ui);
 
-        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
-        when(details.getWindowName()).thenReturn("bar");
-        ui.getInternals().setExtendedClientDetails(details);
-        anotherUI.getInternals().setExtendedClientDetails(details);
+        setWindowName("bar", ui, anotherUI);
 
         VaadinSession session = ui.getSession();
         session.addUI(ui);
@@ -298,7 +380,7 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
         AtomicInteger count = new AtomicInteger();
         scope.registerDestructionCallback("foo", () -> count.getAndIncrement());
 
-        navigateTo(ui, new NavigationTarget());
+        navigateTo(ui, new PreservedNavigationTarget());
 
         putObjectIntoScope(scope);
 
@@ -306,6 +388,7 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
         // store's detach listener stays on the first UI.
         UI.setCurrent(anotherUI);
         initScope(anotherUI);
+        navigateTo(anotherUI, new PreservedNavigationTarget());
 
         // The stale UI is closed later on, e.g. by the inactive UI cleanup.
         UI.setCurrent(ui);
@@ -321,7 +404,16 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
         assertEquals(1, count.get());
     }
 
-    private void navigateTo(UI ui, Component component) {
+    @SafeVarargs
+    private void navigateTo(UI ui, Component component,
+            Class<? extends RouterLayout>... layouts) {
+        BeforeEnterEvent beforeEnterEvent = mock(BeforeEnterEvent.class);
+        doReturn(component.getClass()).when(beforeEnterEvent)
+                .getNavigationTarget();
+        when(beforeEnterEvent.getLayouts()).thenReturn(List.of(layouts));
+        ui.getNavigationListeners(BeforeEnterHandler.class)
+                .forEach(listener -> listener.beforeEnter(beforeEnterEvent));
+
         AfterNavigationEvent event = mock(AfterNavigationEvent.class);
         when(event.getActiveChain())
                 .thenReturn(Collections.singletonList(component));
@@ -329,6 +421,14 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
                 .getNavigationListeners(AfterNavigationHandler.class);
         navigationListeners
                 .forEach(listener -> listener.afterNavigation(event));
+    }
+
+    private void setWindowName(String windowName, UI... uis) {
+        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
+        when(details.getWindowName()).thenReturn(windowName);
+        for (UI ui : uis) {
+            ui.getInternals().setExtendedClientDetails(details);
+        }
     }
 
     private ObjectFactory<?> putObjectIntoScope(VaadinRouteScope scope) {

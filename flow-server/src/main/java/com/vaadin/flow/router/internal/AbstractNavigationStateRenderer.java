@@ -206,8 +206,8 @@ public abstract class AbstractNavigationStateRenderer
 
         final ArrayList<HasElement> chain = new ArrayList<>();
 
-        final boolean preserveOnRefreshTarget = isPreserveOnRefreshTarget(
-                routeTargetType, routeLayoutTypes);
+        final boolean preserveOnRefreshTarget = RouteUtil
+                .isPreserveOnRefreshTarget(routeTargetType, routeLayoutTypes);
 
         if (populateChain(chain, preserveOnRefreshTarget, event)) {
             return HttpStatusCode.OK.getCode();
@@ -1195,14 +1195,6 @@ public abstract class AbstractNavigationStateRenderer
                         .orElseGet(lookForTitleInTarget));
 
         navigationEvent.getUI().getPage().setTitle(title);
-    }
-
-    private static boolean isPreserveOnRefreshTarget(
-            Class<? extends Component> routeTargetType,
-            List<Class<? extends RouterLayout>> routeLayoutTypes) {
-        return routeTargetType.isAnnotationPresent(PreserveOnRefresh.class)
-                || routeLayoutTypes.stream().anyMatch(layoutType -> layoutType
-                        .isAnnotationPresent(PreserveOnRefresh.class));
     }
 
     private static boolean isPreservePartialTarget(

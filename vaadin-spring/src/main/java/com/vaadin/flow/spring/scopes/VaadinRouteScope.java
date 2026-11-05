@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jspecify.annotations.NonNull;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -40,6 +39,7 @@ import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.UIInitEvent;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinSession;
@@ -64,6 +64,15 @@ public class VaadinRouteScope extends AbstractScope {
 
     private static class RouteStoreWrapper implements Serializable {
 
+        /** Prefix of the keys of stores bound to a single UI. */
+        private static final String UI_STORE_KEY_PREFIX = "uid-";
+
+        /**
+         * Prefix of the keys of stores bound to a browser window, and thus
+         * shared by all the UIs of that window.
+         */
+        private static final String WINDOW_STORE_KEY_PREFIX = "win-";
+
         private final VaadinSession session;
 
         private final Map<String, RouteBeanStore> routeStores;
@@ -77,18 +86,18 @@ public class VaadinRouteScope extends AbstractScope {
 
         private RouteBeanStore getBeanStore(UI ui) {
             assert session.hasLock();
-            ExtendedClientDetails details = ui.getInternals()
-                    .getExtendedClientDetails();
-            String key = getUIStoreKey(ui);
-            if (details.getWindowName() == null) {
+            if (getWindowName(ui) == null) {
+                // A preserved navigation chain can only be bound to the browser
+                // window once its name is known, so that a UI created by a page
+                // refresh finds the beans.
                 ui.getPage().retrieveExtendedClientDetails(
-                        det -> relocateStore(ui, key));
+                        details -> findBeanStore(ui));
             }
-            RouteBeanStore beanStore = routeStores.get(key);
+            RouteBeanStore beanStore = findBeanStore(ui);
             if (beanStore == null) {
-                beanStore = new RouteBeanStore(ui, session,
-                        uiInstance -> routeStores
-                                .remove(getUIStoreKey(uiInstance)));
+                String key = getStoreKey(ui);
+                beanStore = new RouteBeanStore(ui, session, key,
+                        store -> routeStores.remove(store.key, store));
                 routeStores.put(key, beanStore);
             }
             if (!ui.equals(beanStore.currentUI)) {
@@ -99,33 +108,55 @@ public class VaadinRouteScope extends AbstractScope {
             return beanStore;
         }
 
-        private void relocateStore(UI ui, String key) {
+        /**
+         * Finds the store of the given UI, moving it between the UI and the
+         * browser window keys when the navigation chain of the UI starts or
+         * stops being preserved on refresh, so that its beans are not recreated
+         * while their owners stay in the chain.
+         */
+        private RouteBeanStore findBeanStore(UI ui) {
             assert session.hasLock();
-            RouteBeanStore beanStore = routeStores.remove(key);
-            if (beanStore == null) {
-                LoggerFactory.getLogger(RouteStoreWrapper.class).trace(
-                        "UI bean store is not found by the initial UI id via the key '"
-                                + key + "'.");
-                if (routeStores.get(getUIStoreKey(ui)) == null) {
-                    throw new IllegalStateException(
-                            "UI bean store is not found by the initial UI id via the key '"
-                                    + key + "' and it's not found by the key '"
-                                    + getUIStoreKey(ui)
-                                    + "' after relocation.");
-                }
-            } else {
-                routeStores.put(getUIStoreKey(ui), beanStore);
+            String uiKey = getUIStoreKey(ui);
+            String windowName = getWindowName(ui);
+            if (windowName == null) {
+                return routeStores.get(uiKey);
             }
+            String windowKey = WINDOW_STORE_KEY_PREFIX + windowName;
+            if (isPreserveOnRefreshChain(ui)) {
+                return rescope(uiKey, windowKey);
+            }
+            // The beans of the window are bound back to this UI only if no
+            // other UI of the same browser window is alive, since that UI may
+            // hold the preserved chain.
+            if (routeStores.containsKey(windowKey)
+                    && findPreservingUI(ui) == null) {
+                return rescope(windowKey, uiKey);
+            }
+            return routeStores.get(uiKey);
         }
 
-        private String getUIStoreKey(UI ui) {
-            ExtendedClientDetails details = ui.getInternals()
-                    .getExtendedClientDetails();
-            if (details.getWindowName() == null) {
-                return "uid-" + ui.getUIId();
-            } else {
-                return "win-" + details.getWindowName();
+        private RouteBeanStore rescope(String fromKey, String toKey) {
+            RouteBeanStore beanStore = routeStores.get(toKey);
+            if (beanStore == null) {
+                beanStore = routeStores.remove(fromKey);
+                if (beanStore != null) {
+                    beanStore.key = toKey;
+                    routeStores.put(toKey, beanStore);
+                }
             }
+            return beanStore;
+        }
+
+        private String getStoreKey(UI ui) {
+            String windowName = getWindowName(ui);
+            if (windowName != null && isPreserveOnRefreshChain(ui)) {
+                return WINDOW_STORE_KEY_PREFIX + windowName;
+            }
+            return getUIStoreKey(ui);
+        }
+
+        private static String getUIStoreKey(UI ui) {
+            return UI_STORE_KEY_PREFIX + ui.getUIId();
         }
 
         private void destroy() {
@@ -288,16 +319,19 @@ public class VaadinRouteScope extends AbstractScope {
 
         private UI currentUI;
 
+        private String key;
+
         private Registration uiDetachRegistration;
 
-        private SerializableConsumer<UI> detachUiCallback;
+        private SerializableConsumer<RouteBeanStore> detachUiCallback;
 
         private final BeanNamesWrapper beanNames = new BeanNamesWrapper();
 
-        private RouteBeanStore(UI ui, VaadinSession session,
-                SerializableConsumer<UI> detachUiCallback) {
+        private RouteBeanStore(UI ui, VaadinSession session, String key,
+                SerializableConsumer<RouteBeanStore> detachUiCallback) {
             super(session);
             currentUI = ui;
+            this.key = key;
             uiDetachRegistration = currentUI.addDetachListener(this);
             this.detachUiCallback = detachUiCallback;
         }
@@ -306,12 +340,18 @@ public class VaadinRouteScope extends AbstractScope {
         public void onComponentEvent(DetachEvent event) {
             assert getVaadinSession().hasLock();
             uiDetachRegistration.remove();
-            if (resetUI(event.getUI())) {
+            // Only a store bound to the browser window outlives its UI, to be
+            // taken over by the UI that a page refresh creates.
+            if (isWindowScoped() && resetUI(event.getUI())) {
                 uiDetachRegistration = currentUI.addDetachListener(this);
             } else {
                 destroy();
-                detachUiCallback.accept(currentUI);
+                detachUiCallback.accept(this);
             }
+        }
+
+        private boolean isWindowScoped() {
+            return key.startsWith(RouteStoreWrapper.WINDOW_STORE_KEY_PREFIX);
         }
 
         @Override
@@ -472,6 +512,15 @@ public class VaadinRouteScope extends AbstractScope {
         ExtendedClientDetails details = ui.getInternals()
                 .getExtendedClientDetails();
         return details.getWindowName();
+    }
+
+    private static boolean isPreserveOnRefreshChain(UI ui) {
+        NavigationListener listener = ComponentUtil.getData(ui,
+                NavigationListener.class);
+        return listener != null && listener.currentNavigationTarget != null
+                && RouteUtil.isPreserveOnRefreshTarget(
+                        listener.currentNavigationTarget,
+                        listener.currentLayouts);
     }
 
     private static UI getUI() {
