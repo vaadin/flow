@@ -166,6 +166,15 @@ public class VaadinRouteScope extends AbstractScope {
             return getUIStoreKey(ui);
         }
 
+        private static boolean isPreserveOnRefreshChain(UI ui) {
+            NavigationListener listener = ComponentUtil.getData(ui,
+                    NavigationListener.class);
+            return listener != null && listener.currentNavigationTarget != null
+                    && RouteUtil.isPreserveOnRefreshTarget(
+                            listener.currentNavigationTarget,
+                            listener.currentLayouts);
+        }
+
         private static String getUIStoreKey(UI ui) {
             return UI_STORE_KEY_PREFIX + ui.getUIId();
         }
@@ -190,9 +199,9 @@ public class VaadinRouteScope extends AbstractScope {
         private Class<?> currentNavigationTarget;
         private List<Class<? extends RouterLayout>> currentLayouts;
 
-        private Registration beforeEnterListener;
-        private Registration afterNavigationListener;
-        private Registration detachListener;
+        private final Registration beforeEnterListener;
+        private final Registration afterNavigationListener;
+        private final Registration detachListener;
 
         private final UI ui;
 
@@ -334,7 +343,7 @@ public class VaadinRouteScope extends AbstractScope {
 
         private Registration uiDetachRegistration;
 
-        private SerializableConsumer<RouteBeanStore> detachUiCallback;
+        private final SerializableConsumer<RouteBeanStore> detachUiCallback;
 
         private final BeanNamesWrapper beanNames = new BeanNamesWrapper();
 
@@ -523,15 +532,6 @@ public class VaadinRouteScope extends AbstractScope {
         ExtendedClientDetails details = ui.getInternals()
                 .getExtendedClientDetails();
         return details.getWindowName();
-    }
-
-    private static boolean isPreserveOnRefreshChain(UI ui) {
-        NavigationListener listener = ComponentUtil.getData(ui,
-                NavigationListener.class);
-        return listener != null && listener.currentNavigationTarget != null
-                && RouteUtil.isPreserveOnRefreshTarget(
-                        listener.currentNavigationTarget,
-                        listener.currentLayouts);
     }
 
     private static UI getUI() {
