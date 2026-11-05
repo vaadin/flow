@@ -23,7 +23,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.testutil.junit5.AbstractBrowserIT;
+import com.vaadin.flow.testutil.junit6.AbstractBrowserIT;
 
 /**
  * Base class for the integration tests in the default configuration module.

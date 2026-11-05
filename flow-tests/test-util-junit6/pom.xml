@@ -6,7 +6,7 @@
     <artifactId>flow-tests</artifactId>
     <version>25.4-SNAPSHOT</version>
   </parent>
-  <artifactId>flow-test-util-junit5</artifactId>
+  <artifactId>flow-test-util-junit6</artifactId>
   <packaging>jar</packaging>
   <name>Flow JUnit 6 integration test utilities</name>
   <description>Base class for the integration test modules that run on the JUnit Platform, on top of TestBench's JUnit 5+ BrowserTestBase.</description>
@@ -34,6 +34,8 @@
   </dependencyManagement>
 
   <dependencies>
+    <!-- TestBench names its JUnit Platform artifact after JUnit 5; it runs on
+         the JUnit 6 version managed by the root POM. -->
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>vaadin-testbench-core-junit5</artifactId>

@@ -26,7 +26,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import com.vaadin.flow.testutil.junit5.AbstractBrowserIT;
+import com.vaadin.flow.testutil.junit6.AbstractBrowserIT;
 import com.vaadin.testbench.BrowserTest;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;

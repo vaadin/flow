@@ -56,7 +56,7 @@
          base class, which brings TestBench and Selenium. -->
     <dependency>
       <groupId>com.vaadin</groupId>
-      <artifactId>flow-test-util-junit5</artifactId>
+      <artifactId>flow-test-util-junit6</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>

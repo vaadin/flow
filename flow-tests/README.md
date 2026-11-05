@@ -96,7 +96,7 @@ These modules are built regardless of `-DskipTests`.
 |--------|-------------|
 | **test-resources** | Shared JAR providing static frontend and Java resources (JS modules, Flow bootstrap files, test component classes) reused across multiple test modules. Contains no runnable tests. |
 | **test-common** | Shared JAR providing common base classes and utilities for UI integration tests, such as `AbstractDivView`, servlet helpers, and dependency-loading base views. |
-| **test-util-junit5** | Shared JAR (`flow-test-util-junit5`) with `AbstractBrowserIT`, the JUnit 6 base class for ITs on the JUnit Platform: headless Chrome driver, server port and root URL, `open(path)`. The JUnit Platform counterpart of `flow-test-util`; internal to this repository and not deployed. |
+| **test-util-junit6** | Shared JAR (`flow-test-util-junit6`) with `AbstractBrowserIT`, the JUnit 6 base class for ITs on the JUnit Platform: headless Chrome driver, server port and root URL, `open(path)`. The JUnit Platform counterpart of `flow-test-util`; internal to this repository and not deployed. |
 | **test-lumo** | Test-only Lumo theme implementation (`AbstractTheme`) pulling in Vaadin Lumo npm packages and JS modules. Consumed by other test modules needing Lumo support. |
 | **test-express-build** | Parent POM aggregating tests for Vaadin's "express build" feature (pre-built dev bundles and production bundles that skip full Vite/npm builds). Sub-modules cover dev bundle creation, production bundle validation, add-on scenarios, reusable themes, and embedding. |
 
