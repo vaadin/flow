@@ -509,6 +509,72 @@ class StateTreeTest {
     }
 
     @Test
+    void beforeClientResponse_ownerDetachedByEarlierExecution_executionDiscardedAndRunWhenAttachedAgain() {
+        StateNode child = new StateNode(ElementChildrenList.class);
+        StateNodeTest.setParent(child, tree.getRootNode());
+
+        tree.beforeClientResponse(child,
+                context -> StateNodeTest.setParent(child, null));
+        TestExecution execution = new TestExecution();
+        tree.beforeClientResponse(child, execution);
+
+        tree.runExecutionsBeforeClientResponse();
+
+        assertEquals(0, execution.executed,
+                "an execution should not run for a node detached by an earlier execution");
+        assertEquals(1, execution.discarded);
+
+        StateNodeTest.setParent(child, tree.getRootNode());
+        tree.runExecutionsBeforeClientResponse();
+
+        assertEquals(1, execution.restored);
+        assertEquals(1, execution.executed,
+                "the postponed execution should be run when the node is attached again");
+    }
+
+    @Test
+    void beforeClientResponse_ownerDetachedByEarlierExecution_postponedExecutionCanBeRemoved() {
+        StateNode child = new StateNode(ElementChildrenList.class);
+        StateNodeTest.setParent(child, tree.getRootNode());
+
+        tree.beforeClientResponse(child,
+                context -> StateNodeTest.setParent(child, null));
+        TestExecution execution = new TestExecution();
+        StateTree.ExecutionRegistration registration = tree
+                .beforeClientResponse(child, execution);
+
+        tree.runExecutionsBeforeClientResponse();
+        assertEquals(1, execution.discarded);
+        registration.remove();
+
+        StateNodeTest.setParent(child, tree.getRootNode());
+        tree.runExecutionsBeforeClientResponse();
+
+        assertEquals(0, execution.restored,
+                "a removed execution should no longer be on the node");
+        assertEquals(0, execution.executed,
+                "a removed execution should not be run when the node is attached again");
+    }
+
+    @Test
+    void beforeClientResponse_removeAfterExecutionRun_noException() {
+        StateNode child = new StateNode(ElementChildrenList.class);
+        StateNodeTest.setParent(child, tree.getRootNode());
+
+        TestExecution execution = new TestExecution();
+        StateTree.ExecutionRegistration registration = tree
+                .beforeClientResponse(child, execution);
+        tree.runExecutionsBeforeClientResponse();
+        assertEquals(1, execution.executed);
+
+        registration.remove();
+        tree.runExecutionsBeforeClientResponse();
+
+        assertEquals(1, execution.executed,
+                "removing an execution that has run should not affect it");
+    }
+
+    @Test
     void beforeClientResponse_initiallyNotAttached_executedWithUI_executionRun() {
         StateTree someTree = new UI().getInternals().getStateTree();
 

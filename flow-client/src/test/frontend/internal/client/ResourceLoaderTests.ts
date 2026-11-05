@@ -87,6 +87,16 @@ describe('ResourceLoader', () => {
       expect(errored).to.be.true;
     });
 
+    it('calls the given function instead of compiling the expression', async () => {
+      await new Promise<void>((resolve, reject) => {
+        loader().loadDynamicImport(
+          '{"not": "JavaScript to compile"',
+          listener(resolve, () => reject(new Error('onError called'))),
+          () => Promise.resolve()
+        );
+      });
+    });
+
     it('notifies onError when the promise rejects', async () => {
       await new Promise<void>((resolve, reject) => {
         loader().loadDynamicImport(

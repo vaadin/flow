@@ -11,7 +11,7 @@ class TokenRegistry extends TestRegistry {
     this.set(type, instance);
   }
 
-  registerResettable<T>(type: ServiceKey, supplier: () => T): void {
+  registerResettableToken<T>(type: ServiceKey, supplier: () => T): void {
     this.setResettable(type, supplier);
   }
 
@@ -64,22 +64,31 @@ describe('Registry', () => {
     );
   });
 
-  it('recreates resettable instances on reset, leaving final ones untouched', () => {
+  it('recreates resettable instances on reset, leaving final ones untouched, and tells reset listeners', () => {
     // Beyond the Java suite: Registry.java has no resettable-supplier overload.
     const registry = new TokenRegistry();
     const final = { id: 'final' };
     registry.registerToken('Final', final);
 
     let counter = 0;
-    registry.registerResettable('Resettable', () => ({ id: counter++ }));
+    registry.registerResettableToken('Resettable', () => ({ id: counter++ }));
     const first = registry.lookup<{ id: number }>('Resettable');
     expect(first.id).to.equal(0);
+
+    // A reset listener sees the recreated instance.
+    const seen: number[] = [];
+    const registration = registry.addResetListener(() => seen.push(registry.lookup<{ id: number }>('Resettable').id));
 
     registry.reset();
     const second = registry.lookup<{ id: number }>('Resettable');
     expect(second.id).to.equal(1);
     expect(second).to.not.equal(first);
+    expect(seen).to.deep.equal([1]);
     // Non-resettable instance is unchanged.
     expect(registry.lookup('Final')).to.equal(final);
+
+    registration.remove();
+    registry.reset();
+    expect(seen).to.deep.equal([1]);
   });
 });

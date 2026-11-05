@@ -248,6 +248,20 @@ travels as a single-key wrapper object whose key is reserved:
   manifested on the client as a real function with its captures pre-bound.
   This is how `Element.addJsInitializer` ships a user expression as a
   parameter of a fixed framework expression.
+- `{"@v-fn": {"id": …, "captures": […]}}` — a `JsFunction` declared as a
+  `JsSnippet` by a `@JsDefinition` method. The client looks the id up in
+  `window.Vaadin.Flow.jsSnippets` and calls that function with the
+  captures; what it returns is the decoded value, so nothing is compiled
+  from a string. That is a function whose body is the declared expression
+  and whose parameters are the names of `@JsCalledWith`, or none without
+  it, so no declared JavaScript runs while decoding. The registry is
+  separate from `jsDefinitions` because a snippet function is not
+  `async`: whatever it is passed to may need its value synchronously. A
+  missing id decodes to a function that throws when it is called rather
+  than failing the decoding of the whole invocation. Where the error ends up depends on
+  the caller: an invocation that calls it reports it through its error
+  channel, while a call from an event listener only reaches the browser
+  console.
 
 `ClientJsonCodec.decodeWithTypeInfo` decodes these **recursively through
 objects and arrays**. The whole `@v-` prefix is consequently reserved on
@@ -269,10 +283,19 @@ invocation dropped.
   `stopApplication`, …) that framework-authored expressions rely on.
 - For an object it looks the function up in
   `window.Vaadin.Flow.jsDefinitions`, which the generated bundle fills,
-  and applies it to the element with the arguments. There is no context
-  object on this path. A function missing from the bundle, or a
-  parameter count that does not match it, is reported through the error
-  channel rather than run.
+  and applies it to the element with the arguments. A function missing
+  from the bundle, or a parameter count that does not match it, is
+  reported through the error channel rather than run.
+- A method annotated with the internal `@JsWithExecutionContext` is
+  generated into `window.Vaadin.Flow.jsDefinitionsWithExecutionContext`
+  instead, as a function taking the same context object an expression
+  runs against as its first parameter, `$executionContext`, ahead of the
+  arguments; `this` is still the element. The client passes the context
+  only to a function it finds in that registry, so the bundle decides
+  which functions get it and nothing on the wire can ask for it. The
+  marker is part of the function id, so the same JavaScript with and
+  without it is two functions. It is for framework code that needs the
+  callbacks of the context, such as `stopApplication`, and not an API.
 
 **An invocation referencing a node that is not bound yet is deferred, not
 dropped**: the processor registers a DOM-node listener and retries the
