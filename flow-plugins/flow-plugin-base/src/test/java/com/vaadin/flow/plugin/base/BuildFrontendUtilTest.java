@@ -925,6 +925,39 @@ class BuildFrontendUtilTest {
         assertEquals(null, ex.getCause());
     }
 
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    void runVite_removesBundleFilesOfPreviousBuild() throws Exception {
+        File fakeNode = new File(baseDir, "fake-node.sh");
+        Files.writeString(fakeNode.toPath(), """
+                #!/bin/sh
+                exit 0
+                """);
+        assertTrue(fakeNode.setExecutable(true));
+        FrontendTools frontendTools = mock(FrontendTools.class);
+        when(frontendTools.getNodeExecutable())
+                .thenReturn(fakeNode.getAbsolutePath());
+        when(frontendTools.getNpmPackageExecutable("vite", "vite", baseDir))
+                .thenReturn(new File(baseDir, "node_modules/vite/bin/vite.js")
+                        .toPath());
+
+        Path webapp = adapter.frontendOutputDirectory().toPath();
+        Path staleChunk = webapp.resolve("VAADIN/build/indexhtml-OLD.js");
+        Path themeResource = webapp
+                .resolve("VAADIN/static/themes/my-theme/styles.css");
+        Files.createDirectories(staleChunk.getParent());
+        Files.writeString(staleChunk, "old");
+        Files.createDirectories(themeResource.getParent());
+        Files.writeString(themeResource, "theme");
+
+        BuildFrontendUtil.runVite(adapter, frontendTools);
+
+        assertFalse(Files.exists(staleChunk),
+                "Chunk of the previous build should be removed");
+        assertTrue(Files.exists(themeResource),
+                "Resources outside VAADIN/build should be kept");
+    }
+
     private static String statsJsonWithCommercialComponents() {
         return """
                     {
