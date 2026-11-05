@@ -27,15 +27,14 @@ import org.atmosphere.cpr.AtmosphereResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinServletService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -96,9 +95,12 @@ class PushAtmosphereHandlerTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = { false, true })
-    void onStateChange_messageWrittenOnlyWhileClientConnected(
+    @CsvSource({ "false, false", "true, false", "false, true" })
+    void onStateChange_messageWrittenOnlyWhileClientConnected(boolean cancelled,
             boolean closedByClient) throws IOException {
+        PushHandler pushHandler = mock(PushHandler.class);
+        atmosphereHandler.setPushHandler(pushHandler);
+
         AtmosphereResourceImpl resourceImpl = mock(
                 AtmosphereResourceImpl.class);
         when(resourceImpl.getRequest()).thenReturn(request);
@@ -110,15 +112,15 @@ class PushAtmosphereHandlerTest {
         AtmosphereResourceEvent event = mock(AtmosphereResourceEvent.class);
         when(event.getResource()).thenReturn(resourceImpl);
         when(event.getMessage()).thenReturn("pending push message");
+        when(event.isCancelled()).thenReturn(cancelled);
         when(event.isClosedByClient()).thenReturn(closedByClient);
 
         atmosphereHandler.onStateChange(event);
 
-        if (closedByClient) {
-            verify(printWriter, never()).write(anyString());
-        } else {
-            verify(printWriter).write("pending push message");
-        }
+        boolean connected = !cancelled && !closedByClient;
+        verify(printWriter, times(connected ? 1 : 0))
+                .write("pending push message");
+        verify(pushHandler, times(cancelled ? 1 : 0)).connectionLost(event);
     }
 
 }
