@@ -33,7 +33,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.server.Command;
+import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
@@ -66,11 +66,9 @@ class InputStreamDownloadHandlerTest {
 
         ui = Mockito.mock(UI.class);
         // run the command immediately
-        Mockito.doAnswer(invocation -> {
-            Command command = invocation.getArgument(0);
-            command.execute();
-            return null;
-        }).when(ui).access(Mockito.any(Command.class));
+        Mockito.when(ui.accessLater(Mockito.any(SerializableRunnable.class),
+                Mockito.any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         owner = Mockito.mock(Element.class);
         Component componentOwner = Mockito.mock(Component.class);

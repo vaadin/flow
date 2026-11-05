@@ -45,6 +45,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -114,6 +115,9 @@ class UploadTransferProgressTest {
             command.execute();
             return null;
         }).when(ui).access(Mockito.any(Command.class));
+        Mockito.when(ui.accessLater(Mockito.any(SerializableRunnable.class),
+                Mockito.any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
         Mockito.when(componentOwner.getUI()).thenReturn(Optional.of(ui));
 
         uploadEvent = new UploadEvent(request, response, session,
