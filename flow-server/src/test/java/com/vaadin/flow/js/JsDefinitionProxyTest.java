@@ -16,8 +16,10 @@
 package com.vaadin.flow.js;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.Test;
@@ -33,6 +35,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -268,6 +271,20 @@ class JsDefinitionProxyTest {
         assertThrows(RuntimeException.class,
                 () -> events.isDetail(unencodable));
         assertThrows(RuntimeException.class, () -> events.echo(unencodable));
+    }
+
+    @Test
+    void createSnippets_plainCaptures_equalKeysForEqualValues() {
+        EventJs events = JsDefinitionProxy.createSnippets(EventJs.class);
+
+        assertEquals(events.echo(42).getSnippetKey(),
+                events.echo(42).getSnippetKey());
+        assertEquals(events.echo(new BigDecimal("1.5")).getSnippetKey(),
+                events.echo(new BigDecimal("1.5")).getSnippetKey());
+        // A number that can change later is not a plain value
+        AtomicInteger counter = new AtomicInteger(42);
+        assertNotEquals(events.echo(counter).getSnippetKey(),
+                events.echo(counter).getSnippetKey());
     }
 
     @Test

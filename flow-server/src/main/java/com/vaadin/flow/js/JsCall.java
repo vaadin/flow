@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -382,9 +384,11 @@ public record JsCall(Class<?> definitionType, String methodName,
 
     /**
      * Checks whether all captures of a snippet created by this call are plain
-     * values: strings, numbers, booleans, characters, enums or
-     * <code>null</code>. Plain values are encoded in the same way each time the
-     * snippet is sent. It is also <code>true</code> when there are no captures.
+     * values: strings, numbers of the boxed primitive types,
+     * <code>BigInteger</code> or <code>BigDecimal</code>, booleans, characters,
+     * enums or <code>null</code>. Plain values are encoded in the same way each
+     * time the snippet is sent. It is also <code>true</code> when there are no
+     * captures.
      *
      * @return <code>true</code> if all captures are plain values
      */
@@ -394,8 +398,17 @@ public record JsCall(Class<?> definitionType, String methodName,
 
     private static boolean isPlainValue(Object value) {
         return value == null || value instanceof String
-                || value instanceof Number || value instanceof Boolean
+                || isUnchangeableNumber(value) || value instanceof Boolean
                 || value instanceof Character || value instanceof Enum<?>;
+    }
+
+    // Not every Number: AtomicInteger, AtomicLong and the like can change
+    // after the snippet is created, but its key would not
+    private static boolean isUnchangeableNumber(Object value) {
+        return value instanceof Integer || value instanceof Long
+                || value instanceof Double || value instanceof Float
+                || value instanceof Short || value instanceof Byte
+                || value instanceof BigInteger || value instanceof BigDecimal;
     }
 
     /**
