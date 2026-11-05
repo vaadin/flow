@@ -122,17 +122,41 @@ public class VaadinRouteScope extends AbstractScope {
                 return routeStores.get(uiKey);
             }
             String windowKey = WINDOW_STORE_KEY_PREFIX + windowName;
+            RouteBeanStore windowStore = routeStores.get(windowKey);
             if (isPreserveOnRefreshChain(ui)) {
+                if (isHeldByAnotherOpenUI(windowStore, ui)) {
+                    return routeStores.get(uiKey);
+                }
                 return rescope(ui, uiKey, windowKey);
             }
             // The window store is bound back to this UI only if this UI is the
             // one that used it last. Otherwise it belongs to another UI of the
             // same browser window, e.g. one left open by a crashed tab.
-            RouteBeanStore windowStore = routeStores.get(windowKey);
             if (windowStore != null && ui.equals(windowStore.currentUI)) {
                 return rescope(ui, windowKey, uiKey);
             }
             return routeStores.get(uiKey);
+        }
+
+        /**
+         * Checks whether the given window store still belongs to another UI of
+         * the same browser window. Flow closes the previous UI when it hands
+         * its preserved navigation chain to a new UI, so a previous UI that is
+         * still open keeps its components, e.g. when the tab crashed and is
+         * reloaded to another preserved route, and the beans must not be shared
+         * with the new UI.
+         */
+        private static boolean isHeldByAnotherOpenUI(RouteBeanStore windowStore,
+                UI ui) {
+            if (windowStore == null || ui.equals(windowStore.currentUI)) {
+                return false;
+            }
+            UI holder = windowStore.currentUI;
+            return !holder.isClosing() && holder.getSession() != null;
+        }
+
+        private boolean hasUIStore(UI ui) {
+            return routeStores.containsKey(getUIStoreKey(ui));
         }
 
         private RouteBeanStore rescope(UI ui, String fromKey, String toKey) {
@@ -161,7 +185,10 @@ public class VaadinRouteScope extends AbstractScope {
         private String getStoreKey(UI ui) {
             String windowName = getWindowName(ui);
             if (windowName != null && isPreserveOnRefreshChain(ui)) {
-                return WINDOW_STORE_KEY_PREFIX + windowName;
+                String windowKey = WINDOW_STORE_KEY_PREFIX + windowName;
+                if (!isHeldByAnotherOpenUI(routeStores.get(windowKey), ui)) {
+                    return windowKey;
+                }
             }
             return getUIStoreKey(ui);
         }
@@ -417,15 +444,25 @@ public class VaadinRouteScope extends AbstractScope {
          *
          * @param detachedUI
          *            the UI being detached
-         * @return {@code true} if a replacement UI was found
+         * @return {@code true} if a replacement UI without a store of its own
+         *         was found
          */
         private boolean resetUI(UI detachedUI) {
             UI ui = findPreservingUI(detachedUI);
-            if (ui == null) {
+            if (ui == null || hasOwnStore(ui)) {
+                // A UI with a store of its own built its navigation chain
+                // without the components of the detached UI, so the beans of
+                // this store are out of scope.
                 return false;
             }
             currentUI = ui;
             return true;
+        }
+
+        private boolean hasOwnStore(UI ui) {
+            RouteStoreWrapper wrapper = getVaadinSession()
+                    .getAttribute(RouteStoreWrapper.class);
+            return wrapper != null && wrapper.hasUIStore(ui);
         }
 
         @NonNull
