@@ -47,6 +47,8 @@ import com.vaadin.flow.internal.ToStringBuilder;
  * adjust it before the header is sent. In that policy, {@code script-src} holds
  * the nonce of the response and should be left unchanged, see
  * {@link com.vaadin.flow.server.communication.IndexHtmlResponse#getContentSecurityPolicy()}.
+ * 
+ * @since 25.4
  */
 public class ContentSecurityPolicy implements Serializable {
 

@@ -39,7 +39,7 @@ jobs:
           cache: maven
 
       - id: since
-        uses: vaadin/github-actions/reconcile-since-tags@452570a6575db482f7a602673b26fbe891422f65
+        uses: vaadin/github-actions/reconcile-since-tags@1a69994dd537ba87cbc3f4aec208e49278e48638
         with:
           group-id: com.vaadin
           version: ${{ inputs.dev }}
@@ -70,7 +70,7 @@ jobs:
       # and silently rewrite @since from its true 1.x-9.x value to 23.0 across most
       # of the framework. An isolated index-dir keeps vaadin-spring's versions off
       # the shared axis (a separate load + axis per invocation).
-      - uses: vaadin/github-actions/reconcile-since-tags@452570a6575db482f7a602673b26fbe891422f65
+      - uses: vaadin/github-actions/reconcile-since-tags@1a69994dd537ba87cbc3f4aec208e49278e48638
         with:
           group-id: com.vaadin
           version: ${{ inputs.dev }}
@@ -88,7 +88,7 @@ jobs:
       # Branches older than the import have no vaadin-cdi module, so the step
       # is skipped there instead of failing on a missing source root.
       - if: hashFiles('vaadin-cdi/pom.xml') != ''
-        uses: vaadin/github-actions/reconcile-since-tags@452570a6575db482f7a602673b26fbe891422f65
+        uses: vaadin/github-actions/reconcile-since-tags@1a69994dd537ba87cbc3f4aec208e49278e48638
         with:
           group-id: com.vaadin
           version: ${{ inputs.dev }}
@@ -105,7 +105,7 @@ jobs:
       # artifact, so the source root is spelled out. Skipped on branches older
       # than the import, like vaadin-cdi above.
       - if: hashFiles('vaadin-quarkus/pom.xml') != ''
-        uses: vaadin/github-actions/reconcile-since-tags@452570a6575db482f7a602673b26fbe891422f65
+        uses: vaadin/github-actions/reconcile-since-tags@1a69994dd537ba87cbc3f4aec208e49278e48638
         with:
           group-id: com.vaadin
           version: ${{ inputs.dev }}

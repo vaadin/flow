@@ -22,6 +22,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.flow.component.Component;
+
 /**
  * Defines menu information for a route that should appear in an automatically
  * populated menu.
@@ -71,4 +73,31 @@ public @interface Menu {
      * @return A String for an icon. Empty String by default.
      */
     String icon() default "";
+
+    /**
+     * The menu entry to nest this entry under in a hierarchical menu, such as
+     * the one built from
+     * {@link com.vaadin.flow.server.menu.MenuConfiguration#getMenuEntriesTree()}.
+     * <p>
+     * Use this when the menu hierarchy does not match the route hierarchy: by
+     * default an entry is nested under the route it logically belongs to
+     * (defined by {@link RouteParent}, or derived from the route URL, where the
+     * index route of the application or of a {@link RoutePrefix} layout is not
+     * used as a parent), and defining a parent here overrides that for the menu
+     * only. It has no effect on navigation or on the flat
+     * {@link com.vaadin.flow.server.menu.MenuConfiguration#getMenuEntries()}.
+     * <p>
+     * The parent does not have to be a direct route ancestor of the annotated
+     * route. If the given parent is not itself part of the menu, the entry is
+     * nested under the nearest ancestor of that parent which is, or becomes a
+     * root entry when there is none. The parent has to be a registered route
+     * other than the annotated one. A route naming itself is rejected at
+     * startup; a parent that is not a registered route (or a self-reference of
+     * a route registered after startup) is ignored with a warning and the route
+     * hierarchy is used instead.
+     *
+     * @return the menu parent navigation target, or {@link Component} itself,
+     *         the default, when the route hierarchy should be used
+     */
+    Class<? extends Component> parent() default Component.class;
 }
