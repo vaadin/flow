@@ -113,5 +113,13 @@ public class WebPushTest {
                 new JsCall(WebPushJs.class, "unsubscribe", List.of()),
                 new JsCall(WebPushJs.class, "getSubscription", List.of())),
                 calls);
+        assertEquals(List.of(
+                "return window.Vaadin.Flow.webPush.registrationStatus()",
+                "return window.Vaadin.Flow.webPush.notificationDenied()",
+                "return window.Vaadin.Flow.webPush.notificationGranted()",
+                "return window.Vaadin.Flow.webPush.subscribe($0)",
+                "return window.Vaadin.Flow.webPush.unsubscribe()",
+                "return window.Vaadin.Flow.webPush.getSubscription()"),
+                calls.stream().map(JsCall::getExpression).toList());
     }
 }
