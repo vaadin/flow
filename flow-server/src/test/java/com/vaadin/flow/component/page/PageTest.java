@@ -33,6 +33,7 @@ import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.dom.Element.ElementJs;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.js.JsCall;
@@ -232,6 +233,20 @@ class PageTest {
         assertEquals(1, invocations.size());
         assertEquals(new JsCall(Page.PageJs.class, "reload", List.of()),
                 invocations.get(0).getInvocation().getJsCall());
+    }
+
+    @Test
+    void addBrowserWindowResizeListener_runsTheDeclaredJavaScriptOnTheUiElement() {
+        MockUI mockUI = new MockUI();
+
+        mockUI.getPage().addBrowserWindowResizeListener(listener);
+
+        JavaScriptInvocation invocation = mockUI.onlyScheduledInvocation();
+        assertEquals(
+                new JsCall(ElementJs.class, "forwardWindowResize", List.of()),
+                invocation.getJsCall());
+        assertEquals(List.of(mockUI.getElement()), invocation.getParameters(),
+                "the resize event should be dispatched on the UI element");
     }
 
     @Test
