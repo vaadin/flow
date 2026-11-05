@@ -152,7 +152,7 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
     }
 
     @Test
-    void refresh_preserveOnRefreshTarget_beanInScopeIsDestroyedAfterRefresh() {
+    void refresh_preserveOnRefreshTarget_beanIsReusedAndDestroyedOnNavigationAway() {
         UI ui = mockUI();
 
         UI anotherUI = makeAnotherUI(ui);
@@ -235,12 +235,91 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
     }
 
     @Test
+    void refresh_windowNameKnownAfterBeanCreated_preservedBeanIsReused() {
+        UI ui = mockUI();
+
+        UI anotherUI = makeAnotherUI(ui);
+
+        VaadinSession session = ui.getSession();
+        session.addUI(ui);
+        session.addUI(anotherUI);
+
+        mockServletContext(ui);
+
+        VaadinRouteScope scope = initScope(ui);
+
+        AtomicInteger count = new AtomicInteger();
+        scope.registerDestructionCallback("foo", count::getAndIncrement);
+
+        navigateTo(ui, new PreservedNavigationTarget());
+        ObjectFactory<?> factory = putObjectIntoScope(scope);
+
+        setWindowName("bar", ui, anotherUI);
+        scope.get("foo", factory);
+
+        session.removeUI(ui);
+
+        UI.setCurrent(anotherUI);
+        scope = initScope(anotherUI);
+        navigateTo(anotherUI, new PreservedNavigationTarget());
+        scope.get("foo", factory);
+
+        verify(factory, times(1)).getObject();
+        assertEquals(0, count.get());
+    }
+
+    @Test
+    void preservedChain_previousUIStillOpen_otherChainOfNewUIGetsOwnBeans() {
+        UI ui = mockUI();
+
+        UI anotherUI = makeAnotherUI(ui);
+
+        setWindowName("bar", ui, anotherUI);
+
+        VaadinSession session = ui.getSession();
+        session.addUI(ui);
+        session.addUI(anotherUI);
+
+        mockServletContext(ui);
+
+        VaadinRouteScope scope = initScope(ui);
+
+        AtomicInteger count = new AtomicInteger();
+        scope.registerDestructionCallback("foo", count::getAndIncrement);
+
+        navigateTo(ui, new PreservedNavigationTarget());
+        ObjectFactory<?> factory = putObjectIntoScope(scope);
+
+        UI.setCurrent(anotherUI);
+        VaadinRouteScope anotherScope = initScope(anotherUI);
+        navigateTo(anotherUI, new NavigationTarget());
+
+        AtomicInteger anotherCount = new AtomicInteger();
+        anotherScope.registerDestructionCallback("foo",
+                anotherCount::getAndIncrement);
+        anotherScope.get("foo", factory);
+        verify(factory, times(2)).getObject();
+
+        // Entering the preserved chain takes over the preserved beans, and the
+        // beans of the previous chain of the new UI go out of scope
+        navigateTo(anotherUI, new PreservedNavigationTarget());
+        anotherScope.get("foo", factory);
+        verify(factory, times(2)).getObject();
+        assertEquals(1, anotherCount.get());
+        assertEquals(0, count.get());
+    }
+
+    @Test
     void navigate_chainStopsBeingPreserved_beanIsKeptAndDestroyedOnUIDetach() {
         UI ui = mockUI();
 
-        setWindowName("bar", ui);
+        // A stale UI of the same browser window, e.g. the one before a refresh
+        UI staleUI = makeAnotherUI(ui);
+
+        setWindowName("bar", ui, staleUI);
 
         VaadinSession session = ui.getSession();
+        session.addUI(staleUI);
         session.addUI(ui);
 
         mockServletContext(ui);

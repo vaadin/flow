@@ -91,9 +91,9 @@ public class VaadinRouteScope extends AbstractScope {
                 // window once its name is known, so that a UI created by a page
                 // refresh finds the beans.
                 ui.getPage().retrieveExtendedClientDetails(
-                        details -> findBeanStore(ui));
+                        details -> resolveBeanStore(ui));
             }
-            RouteBeanStore beanStore = findBeanStore(ui);
+            RouteBeanStore beanStore = resolveBeanStore(ui);
             if (beanStore == null) {
                 String key = getStoreKey(ui);
                 beanStore = new RouteBeanStore(ui, session, key,
@@ -109,12 +109,12 @@ public class VaadinRouteScope extends AbstractScope {
         }
 
         /**
-         * Finds the store of the given UI, moving it between the UI and the
-         * browser window keys when the navigation chain of the UI starts or
-         * stops being preserved on refresh, so that its beans are not recreated
-         * while their owners stay in the chain.
+         * Resolves the existing store of the given UI. The store is moved
+         * between the UI and the browser window keys when the navigation chain
+         * of the UI starts or stops being preserved on refresh, so that its
+         * beans are not recreated while their owners stay in the chain.
          */
-        private RouteBeanStore findBeanStore(UI ui) {
+        private RouteBeanStore resolveBeanStore(UI ui) {
             assert session.hasLock();
             String uiKey = getUIStoreKey(ui);
             String windowName = getWindowName(ui);
@@ -123,28 +123,39 @@ public class VaadinRouteScope extends AbstractScope {
             }
             String windowKey = WINDOW_STORE_KEY_PREFIX + windowName;
             if (isPreserveOnRefreshChain(ui)) {
-                return rescope(uiKey, windowKey);
+                return rescope(ui, uiKey, windowKey);
             }
-            // The beans of the window are bound back to this UI only if no
-            // other UI of the same browser window is alive, since that UI may
-            // hold the preserved chain.
-            if (routeStores.containsKey(windowKey)
-                    && findPreservingUI(ui) == null) {
-                return rescope(windowKey, uiKey);
+            // The window store is bound back to this UI only if this UI is the
+            // one that used it last. Otherwise it belongs to another UI of the
+            // same browser window, e.g. one left open by a crashed tab.
+            RouteBeanStore windowStore = routeStores.get(windowKey);
+            if (windowStore != null && ui.equals(windowStore.currentUI)) {
+                return rescope(ui, windowKey, uiKey);
             }
             return routeStores.get(uiKey);
         }
 
-        private RouteBeanStore rescope(String fromKey, String toKey) {
-            RouteBeanStore beanStore = routeStores.get(toKey);
-            if (beanStore == null) {
-                beanStore = routeStores.remove(fromKey);
-                if (beanStore != null) {
-                    beanStore.key = toKey;
-                    routeStores.put(toKey, beanStore);
-                }
+        private RouteBeanStore rescope(UI ui, String fromKey, String toKey) {
+            RouteBeanStore fromStore = routeStores.remove(fromKey);
+            RouteBeanStore toStore = routeStores.get(toKey);
+            if (fromStore == null) {
+                return toStore;
             }
-            return beanStore;
+            if (toStore != null) {
+                // The beans of the other store are the ones the navigation
+                // chain uses, so the beans this UI held under the previous key
+                // are out of scope.
+                fromStore.uiDetachRegistration.remove();
+                fromStore.destroy();
+                return toStore;
+            }
+            fromStore.key = toKey;
+            // The store may have been listening to an earlier UI of the same
+            // browser window, but it now belongs to this UI only.
+            fromStore.uiDetachRegistration.remove();
+            fromStore.uiDetachRegistration = ui.addDetachListener(fromStore);
+            routeStores.put(toKey, fromStore);
+            return fromStore;
         }
 
         private String getStoreKey(UI ui) {
