@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.dom.impl;
 
+import java.io.Serializable;
 import java.util.Optional;
 
 import com.vaadin.flow.component.internal.ComponentTracker;
@@ -30,6 +31,9 @@ import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.ShadowRootHost;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 /**
  * Abstract implementation of the {@link ElementStateProvider} related to the
@@ -159,10 +163,10 @@ public abstract class AbstractNodeStateProvider
                     node.getFeature(AttachExistingElementFeature.class)
                             .register(getNode(node), previousSibling,
                                     proposedNode, callback);
-                    ui.getPage().executeJs(
-                            "this.attachExistingElement($0, $1, $2, $3);",
-                            getNode(node), previousSibling, tagName,
-                            proposedNode.getId());
+                    ui.getPage().executeJs(AttachExistingElementJs.class)
+                            .attachExistingElement(getNode(node),
+                                    previousSibling, tagName,
+                                    proposedNode.getId());
                 }));
 
     }
@@ -225,4 +229,35 @@ public abstract class AbstractNodeStateProvider
         return node.getFeature(ElementChildrenList.class);
     }
 
+    /**
+     * Asks the client to find an existing child element for a server-side
+     * element, as a JavaScript definition for
+     * {@link com.vaadin.flow.component.page.Page#executeJs(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    @JsDefinition
+    public interface AttachExistingElementJs extends Serializable {
+
+        /**
+         * Looks for an element with the given tag name among the children of
+         * the parent, after the previous sibling, and reports the outcome to
+         * the server for the node with the given id.
+         *
+         * @param parent
+         *            the parent element or shadow root to look in
+         * @param previousSibling
+         *            the sibling the element comes after, or <code>null</code>
+         *            to look from the first child
+         * @param tagName
+         *            the tag name of the element to look for
+         * @param id
+         *            the id of the node that represents the element on the
+         *            server
+         */
+        @JsExpression("$executionContext.attachExistingElement($0, $1, $2, $3);")
+        @JsWithExecutionContext
+        void attachExistingElement(Node<?> parent, Element previousSibling,
+                String tagName, int id);
+    }
 }
