@@ -275,8 +275,9 @@ Each transaction redefines all of its changed classes in one
 connector. The JVM's enhanced class redefinition and HotswapAgent's plugins
 are used, but never HotswapAgent's own delivery: its file watcher turns one
 edit into an event per generated class file (lambdas, inner classes), and
-Flow's route registry update, which is not thread-safe, then races itself. One batch per transaction is what avoids that,
-and it is also why the daemon is the only redefiner in the JVM.
+Flow's route registry update, which is not thread-safe, then races itself. One
+batch per transaction is what avoids that, and it is also why the daemon is the
+only redefiner in the JVM.
 
 Redefining bytecode is not enough to show the change: re-rendering the open
 view in place takes Flow's `Hotswapper.onHotswap`, which resolves classes in
@@ -315,10 +316,12 @@ directory alone: `.vaadin-node-tasks.lock` expects short-lived holders, and an
 IDE or a CI build may be running Flow's tasks at the same time.
 
 An apply compiles its change-set itself — with javac in the daemon, or with
-Maven's `compiler:compile` goal — and never runs the `compile` phase. The phase
-copies resources again, which can trigger reloads nobody asked for, and runs
-`prepare-frontend` and whatever else the project binds before `compile` on
-every apply.
+Maven's `compiler:compile` goal — and does not compile through the `compile`
+phase. The phase copies resources again, which can trigger reloads nobody asked
+for, and runs `prepare-frontend` and whatever else the project binds before
+`compile` on every apply. Resolving the classpath again after a pom edit is a
+different step and does name `compile`, so that Maven's reactor reader hands
+back `target/classes` rather than a stale jar; the daemon README explains it.
 
 ## Ask the build, do not guess
 
@@ -366,7 +369,8 @@ here and in `CONVENTIONS.md`:
 - how cleanly a superseded compile or frontend task can be cancelled mid-run;
 - which single process writes Flow's build-info token file, and who decides
   when the dev bundle is rebuilt;
-- an MCP surface beside the CLI.
+- whether an MCP server is ever added beside the CLI, as one more client over
+  the same RPC.
 
 ## Verifying a change
 
@@ -378,5 +382,8 @@ sibling library, because two failures only exist there: a goal named on a
 command line runs on every module in the reactor, and a sibling left at
 `compile` reaches a deployed WAR as an empty directory. The ITs that are about
 the loop rather than a container live once in `test-devloop-support` and every
-fixture runs them, so a fix verified on one shape is checked on all of them;
-`flow-tests/test-devloop/README.md` describes the layout.
+fixture runs them, so a fix verified on one shape is checked on all of them. A
+shape that genuinely cannot answer a shared question excludes that IT and puts
+a replacement of its own beside the exclusion, the way the forked servers
+replace `DevLoopCssIT`; `flow-tests/test-devloop/README.md` describes the
+layout.

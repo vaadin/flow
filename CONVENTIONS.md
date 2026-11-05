@@ -355,7 +355,8 @@ browser. Report only what the loop knows, such as whether a reload was sent.
 
 Where Flow already decides something — whether the dev bundle is stale, how a
 theme or a redefined class is refreshed — use Flow's own code path instead of a
-parallel tracker. Never run Maven's `compile` phase for an apply, and never
+parallel tracker. Compile an apply's change-set with javac or the
+`compiler:compile` goal, never through Maven's `compile` phase, and never
 assume the daemon is the only process running Flow's frontend tasks in the
 project. See `guidelines/dev-loop.md`.
 
@@ -389,7 +390,8 @@ two launchers the same word for word.
 Write an end-to-end test of the loop once, in
 `flow-tests/test-devloop/test-devloop-support`, so that every fixture runs it,
 and put a test in a single fixture only when it is about that fixture's
-runtime. See `guidelines/dev-loop.md`.
+runtime. A fixture that genuinely cannot run a shared IT excludes it in its pom
+and adds a replacement of its own beside the exclusion. See `guidelines/dev-loop.md`.
 
 ## Javadoc
 
