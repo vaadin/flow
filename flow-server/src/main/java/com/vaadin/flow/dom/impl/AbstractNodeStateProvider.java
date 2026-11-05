@@ -255,7 +255,7 @@ public abstract class AbstractNodeStateProvider
          *            the id of the node that represents the element on the
          *            server
          */
-        @JsExpression("executionContext.attachExistingElement($0, $1, $2, $3);")
+        @JsExpression("$executionContext.attachExistingElement($0, $1, $2, $3);")
         @JsWithExecutionContext
         void attachExistingElement(Node<?> parent, Element previousSibling,
                 String tagName, int id);

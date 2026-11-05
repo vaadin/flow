@@ -381,7 +381,7 @@ class PageTest {
         String expression = calls.get(0).getExpression();
         int eventDispatchIndex = expression.indexOf("vaadin-redirect-pending");
         int stopIndex = expression
-                .indexOf("executionContext.stopApplication()");
+                .indexOf("$executionContext.stopApplication()");
         int windowOpenIndex = expression.indexOf("window.open");
         assertTrue(
                 eventDispatchIndex >= 0 && eventDispatchIndex < stopIndex

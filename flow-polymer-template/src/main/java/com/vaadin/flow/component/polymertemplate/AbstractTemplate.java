@@ -320,7 +320,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
          * @param properties
          *            the names of the properties
          */
-        @JsExpression("executionContext.registerUpdatableModelProperties($0, $1)")
+        @JsExpression("$executionContext.registerUpdatableModelProperties($0, $1)")
         @JsWithExecutionContext
         void registerUpdatableModelProperties(Element template,
                 ArrayNode properties);
@@ -335,7 +335,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
          *            the names of the properties that the server has no value
          *            for
          */
-        @JsExpression("executionContext.populateModelProperties($0, $1)")
+        @JsExpression("$executionContext.populateModelProperties($0, $1)")
         @JsWithExecutionContext
         void populateModelProperties(Element template, ArrayNode properties);
     }

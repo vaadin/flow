@@ -1129,7 +1129,7 @@ public class Page implements Serializable {
          */
         @JsExpression("""
                 window.dispatchEvent(new CustomEvent('vaadin-redirect-pending', {detail: {url: $0}}));
-                if ($1 == '_self') executionContext.stopApplication();
+                if ($1 == '_self') $executionContext.stopApplication();
                 window.open($0, $1);
                 """)
         @JsWithExecutionContext
