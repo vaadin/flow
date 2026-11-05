@@ -80,7 +80,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
     // What the declared JavaScript of a function that gets the execution
     // context calls it by
-    private static final String EXECUTION_CONTEXT = "executionContext";
+    private static final String EXECUTION_CONTEXT = "$executionContext";
 
     // A function that gets the execution context is kept apart from the
     // others, so that being found here is what tells the client to pass it:

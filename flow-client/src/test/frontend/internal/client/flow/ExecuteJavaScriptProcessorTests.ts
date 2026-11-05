@@ -306,8 +306,8 @@ describe('ExecuteJavaScriptProcessor', () => {
       const calls: Array<{ thisArg: unknown; args: unknown[]; nodeOfElement: unknown }> = [];
       registerDefinitionWithExecutionContext(
         GREETING,
-        function (this: unknown, executionContext: unknown, target: unknown, greeting: unknown) {
-          const context = executionContext as { getNode: (element: unknown) => unknown; stopApplication: () => void };
+        function (this: unknown, $executionContext: unknown, target: unknown, greeting: unknown) {
+          const context = $executionContext as { getNode: (element: unknown) => unknown; stopApplication: () => void };
           calls.push({ thisArg: this, args: [target, greeting], nodeOfElement: context.getNode(target) });
           context.stopApplication();
         }

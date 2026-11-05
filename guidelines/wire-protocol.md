@@ -289,7 +289,7 @@ invocation dropped.
 - A method annotated with the internal `@JsWithExecutionContext` is
   generated into `window.Vaadin.Flow.jsDefinitionsWithExecutionContext`
   instead, as a function taking the same context object an expression
-  runs against as its first parameter, `executionContext`, ahead of the
+  runs against as its first parameter, `$executionContext`, ahead of the
   arguments; `this` is still the element. The client passes the context
   only to a function it finds in that registry, so the bundle decides
   which functions get it and nothing on the wire can ask for it. The

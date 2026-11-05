@@ -114,7 +114,7 @@ class TaskGenerateJsDefinitionsTest {
         @JsWithExecutionContext
         void stop(String greeting);
 
-        @JsExpression("executionContext.stopApplication()")
+        @JsExpression("$executionContext.stopApplication()")
         @JsWithExecutionContext
         void stop();
     }
@@ -187,13 +187,13 @@ class TaskGenerateJsDefinitionsTest {
                 "window.Vaadin.Flow.jsDefinitionsWithExecutionContext[\""
                         + JsCall.functionId(
                                 StopperJs.class.getMethod("stop", String.class))
-                        + "\"] = async function (executionContext, $0) {"),
+                        + "\"] = async function ($executionContext, $0) {"),
                 "the context should lead the arguments of the call: "
                         + content);
         assertTrue(content.contains(
                 "window.Vaadin.Flow.jsDefinitionsWithExecutionContext[\""
                         + JsCall.functionId(StopperJs.class.getMethod("stop"))
-                        + "\"] = async function (executionContext) {"),
+                        + "\"] = async function ($executionContext) {"),
                 "a method without arguments should take only the context: "
                         + content);
         assertFalse(content.contains("jsDefinitions[\""),
