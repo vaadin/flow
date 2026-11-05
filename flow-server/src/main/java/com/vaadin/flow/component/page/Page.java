@@ -903,7 +903,7 @@ public class Page implements Serializable {
         // The vaadin-redirect-pending event might be useful to block other
         // client side
         // reload/redirection triggered by other components, for example Vite.
-        executeJs(PageJs.class).open(url, windowName);
+        executeJs(NavigationJs.class).open(url, windowName);
     }
 
     /**
@@ -1102,6 +1102,18 @@ public class Page implements Serializable {
          */
         @JsExpression("return document.dir")
         PendingJavaScriptResult readDirection();
+    }
+
+    /**
+     * What this page runs to open a URL, as a JavaScript definition for
+     * {@link #executeJs(Class)}. Kept apart from {@link PageJs} since it
+     * reaches the execution context of the client and does not check the URL,
+     * which {@link #open(String, String)} does before calling it.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    @JsDefinition
+    public interface NavigationJs extends Serializable {
 
         /**
          * Opens a URL in the window with the given name, after telling the

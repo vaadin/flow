@@ -449,7 +449,8 @@ class PageTest {
     }
 
     private static JsCall openCall(String url, String windowName) {
-        return new JsCall(Page.PageJs.class, "open", List.of(url, windowName));
+        return new JsCall(Page.NavigationJs.class, "open",
+                List.of(url, windowName));
     }
 
     private static List<JsCall> collectCalls(UI ui) {
