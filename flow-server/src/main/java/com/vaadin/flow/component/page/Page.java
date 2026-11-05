@@ -45,6 +45,7 @@ import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.CspMode;
 import com.vaadin.flow.server.CspViolationException;
 import com.vaadin.flow.server.InitParameters;
@@ -425,7 +426,11 @@ public class Page implements Serializable {
      * {@code Promise} of the {@code expression} is completed. It behaves like
      * other dependencies ({@link #addJavaScript(String)},
      * {@link #addJsModule(String)}, etc.)
-     *
+     * <p>
+     * The browser compiles the expression from a string, which a Content
+     * Security Policy without {@code unsafe-eval} blocks. Use
+     * {@link #addDynamicImport(JsFunction)} with a function declared by a
+     * {@link JsDefinition} interface to keep the JavaScript in the bundle.
      *
      * @param expression
      *            the JavaScript expression which return a Promise
@@ -436,6 +441,53 @@ public class Page implements Serializable {
     public void addDynamicImport(String expression) {
         CspViolationReporter.reportStringJavaScript();
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
+    }
+
+    /**
+     * Adds a dynamic import that calls the given function, which is supposed to
+     * return a JavaScript {@code Promise}.
+     * <p>
+     * No change will be applied on the client side until the resulting
+     * {@code Promise} is completed, as with {@link #addDynamicImport(String)}.
+     * Unlike that method, which sends an expression that the browser compiles,
+     * this one sends a function value, so a function declared by a
+     * {@link JsDefinition} interface and obtained from
+     * {@link JsSnippets#of(Class)} loads without anything being compiled in the
+     * browser:
+     *
+     * <pre>
+     * &#64;JsDefinition
+     * public interface ReportEditorJs extends Serializable {
+     *     &#64;JsExpression("return import('Frontend/report-editor/report-editor.js');")
+     *     JsFunction loadEditor();
+     * }
+     *
+     * page.addDynamicImport(JsSnippets.of(ReportEditorJs.class).loadEditor());
+     * // Defined by the time it is attached, as the import blocks later changes
+     * layout.add(new ReportEditor());
+     * </pre>
+     *
+     * The build puts the expression into the bundle, where the bundler can
+     * split a module imported with a literal path into a file of its own that
+     * is loaded only when the import runs.
+     * <p>
+     * A function that is added again with the same captured values is loaded
+     * only once. The function cannot capture an element or a component,
+     * attached or not, as the browser loads dependencies before it applies the
+     * changes of the same round trip, and a detached element cannot be
+     * referenced. This is checked for a capture itself and for what a
+     * collection, a map, an array or a captured function holds. Bean properties
+     * are only checked for attached elements; a detached one in a bean is sent
+     * as {@code null}, as it is for any other value sent to the browser.
+     *
+     * @param dynamicImport
+     *            the function that returns a Promise, not {@code null}
+     * @throws IllegalArgumentException
+     *             if the function captures an element or a component, as
+     *             described above
+     */
+    public void addDynamicImport(JsFunction dynamicImport) {
+        addDependency(new Dependency(dynamicImport));
     }
 
     /**

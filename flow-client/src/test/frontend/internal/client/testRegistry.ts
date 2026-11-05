@@ -37,6 +37,21 @@ export class TestRegistry extends Registry {
     this.set(TOKEN[name], instance);
     return this;
   }
+
+  /**
+   * Registers a supplier of the instance to answer the getter for the given
+   * service, called again on each reset, as DefaultRegistry does for its
+   * resettable services.
+   *
+   * @param name - the service to register
+   * @param supplier - creates the instance, or a fake of the members under test
+   * @returns this registry, so registrations can be chained
+   * @typeParam N - the service being registered
+   */
+  registerResettable<N extends ServiceName>(name: N, supplier: () => Fake<N>): this {
+    this.setResettable(TOKEN[name], supplier);
+    return this;
+  }
 }
 
 /**

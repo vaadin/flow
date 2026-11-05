@@ -1461,12 +1461,8 @@ final class DevLoopRedefiner {
         // browser has, and editing what it declares changes everything.
         if (type.isAnnotationPresent(JsDefinition.class)) {
             for (Method method : type.getMethods()) {
-                JsExpression expression = method
-                        .getAnnotation(JsExpression.class);
-                if (expression != null) {
-                    imports.add("jsdefinition:" + JsCall.functionId(
-                            expression.value(), method.getParameterCount(),
-                            method.isVarArgs()));
+                if (method.isAnnotationPresent(JsExpression.class)) {
+                    imports.add("jsdefinition:" + fingerprintOf(method));
                 }
             }
         }
@@ -1489,6 +1485,24 @@ final class DevLoopRedefiner {
         }
         java.util.Collections.sort(imports);
         return String.join(";", imports);
+    }
+
+    /**
+     * What identifies the function the build generates for a method of a
+     * JavaScript definition, which covers everything the generated function is
+     * made of: for a snippet, the names it is called with as well.
+     */
+    private static String fingerprintOf(Method method) {
+        try {
+            return JsCall.functionId(method);
+        } catch (IllegalArgumentException e) {
+            // Names the build can not generate a function with: what was
+            // declared is still what tells one edit from another, and the
+            // restart that follows reports what is wrong with it
+            LOGGER.debug("Fingerprinting {} by why it can not be generated",
+                    method, e);
+            return "invalid:" + e.getMessage();
+        }
     }
 
     /**

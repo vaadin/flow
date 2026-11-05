@@ -38,7 +38,9 @@ jobs:
     runs-on: ubuntu-26.04
     # The `watch` event fires whenever anyone stars this repository, so the
     # actor check is what keeps this from running hundreds of times a day.
-    if: github.actor == 'quarkusbot' || github.event_name == 'workflow_dispatch'
+    # The repository check keeps a copy of this repository from reporting to
+    # the Quarkus ecosystem CI issue with its token.
+    if: github.repository == 'vaadin/flow' && (github.actor == 'quarkusbot' || github.event_name == 'workflow_dispatch')
 
     steps:
       - name: Checkout repo

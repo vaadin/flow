@@ -102,6 +102,7 @@ public class AuthenticationContext {
      * @param securityContextHolderStrategy
      *            the strategy to read the current authentication from, not
      *            {@literal null}
+     * @since 25.4
      */
     public AuthenticationContext(
             SecurityContextHolderStrategy securityContextHolderStrategy) {
