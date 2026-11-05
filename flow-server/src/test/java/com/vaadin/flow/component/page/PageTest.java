@@ -359,21 +359,21 @@ class PageTest {
 
     @Test
     void setLocation_opensInThisWindow() {
-        MockUI ui = new MockUI();
+        MockUI mockUI = new MockUI();
 
-        ui.getPage().setLocation("/logout-landing");
+        mockUI.getPage().setLocation("/logout-landing");
 
         assertEquals(List.of(openCall("/logout-landing", "_self")),
-                collectCalls(ui));
+                collectCalls(mockUI));
     }
 
     @Test
     void open_dispatchesRedirectPendingAndStopsTheApplicationBeforeOpening() {
-        MockUI ui = new MockUI();
+        MockUI mockUI = new MockUI();
 
-        ui.getPage().open("https://example.com", "_blank");
+        mockUI.getPage().open("https://example.com", "_blank");
 
-        List<JsCall> calls = collectCalls(ui);
+        List<JsCall> calls = collectCalls(mockUI);
         assertEquals(List.of(openCall("https://example.com", "_blank")), calls);
         // Other client side reloads, such as the one of Vite, wait for the
         // event, and a client that is still running would try to talk to the
@@ -392,35 +392,41 @@ class PageTest {
 
     @Test
     void open_unsafeScheme_throws() {
-        MockUI ui = new MockUI();
+        MockUI mockUI = new MockUI();
+
+        Page mockPage = mockUI.getPage();
 
         assertThrows(IllegalArgumentException.class,
-                () -> ui.getPage().open("javascript:alert(1)"));
+                () -> mockPage.open("javascript:alert(1)"));
         assertThrows(IllegalArgumentException.class,
-                () -> ui.getPage().open("javascript:alert(1)", "_blank"));
-        assertEquals(List.of(), collectCalls(ui),
+                () -> mockPage.open("javascript:alert(1)", "_blank"));
+        assertEquals(List.of(), collectCalls(mockUI),
                 "an unsafe URL should not reach the client");
     }
 
     @Test
     void setLocation_unsafeScheme_throws() {
-        MockUI ui = new MockUI();
+        MockUI mockUI = new MockUI();
+
+        Page mockPage = mockUI.getPage();
 
         assertThrows(IllegalArgumentException.class,
-                () -> ui.getPage().setLocation("javascript:alert(1)"));
-        assertEquals(List.of(), collectCalls(ui),
+                () -> mockPage.setLocation("javascript:alert(1)"));
+        assertEquals(List.of(), collectCalls(mockUI),
                 "an unsafe URL should not reach the client");
     }
 
     @Test
     void open_nullUrl_throwsWithUsefulMessage() {
-        MockUI ui = new MockUI();
+        MockUI mockUI = new MockUI();
+
+        Page mockPage = mockUI.getPage();
 
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
-                () -> ui.getPage().open(null, "_blank"));
+                () -> mockPage.open(null, "_blank"));
         assertEquals("URL must not be null", ex.getMessage());
-        assertEquals(List.of(), collectCalls(ui));
+        assertEquals(List.of(), collectCalls(mockUI));
     }
 
     @Test
@@ -428,24 +434,26 @@ class PageTest {
         // The UI is always known, so the configuration of the right application
         // is used even though the URL is safe according to the framework
         // default
-        UI ui = createUI("https");
+        UI mockUI = createUI("https");
+
+        Page mockPage = mockUI.getPage();
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> ui.getPage().open("http://example.com"));
+                () -> mockPage.open("http://example.com"));
         assertTrue(exception.getMessage().contains("http://example.com"));
-        assertEquals(List.of(), collectCalls(ui),
+        assertEquals(List.of(), collectCalls(mockUI),
                 "an unsafe URL should not reach the client");
     }
 
     @Test
     void open_safeInApplicationConfiguration_opens() {
-        UI ui = createUI("https");
+        UI mockUI = createUI("https");
 
-        ui.getPage().open("https://example.com");
+        mockUI.getPage().open("https://example.com");
 
         assertEquals(List.of(openCall("https://example.com", "_blank")),
-                collectCalls(ui));
+                collectCalls(mockUI));
     }
 
     private static JsCall openCall(String url, String windowName) {
@@ -453,8 +461,8 @@ class PageTest {
                 List.of(url, windowName));
     }
 
-    private static List<JsCall> collectCalls(UI ui) {
-        return ui.getInternals().dumpPendingJavaScriptInvocations().stream()
+    private static List<JsCall> collectCalls(UI mockUI) {
+        return mockUI.getInternals().dumpPendingJavaScriptInvocations().stream()
                 .map(invocation -> invocation.getInvocation().getJsCall())
                 .toList();
     }
@@ -481,15 +489,15 @@ class PageTest {
 
     @Test
     void openUnsafe_unsafeScheme_opensWithoutValidation() {
-        MockUI ui = new MockUI();
+        MockUI mockUI = new MockUI();
 
-        ui.getPage().openUnsafe("javascript:alert(1)");
-        ui.getPage().openUnsafe("javascript:alert(1)", "_self");
+        mockUI.getPage().openUnsafe("javascript:alert(1)");
+        mockUI.getPage().openUnsafe("javascript:alert(1)", "_self");
 
         assertEquals(
                 List.of(openCall("javascript:alert(1)", "_blank"),
                         openCall("javascript:alert(1)", "_self")),
-                collectCalls(ui));
+                collectCalls(mockUI));
     }
 
     @Test
