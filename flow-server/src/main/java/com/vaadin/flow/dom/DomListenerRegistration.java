@@ -122,9 +122,7 @@ public interface DomListenerRegistration extends Registration {
      * <p>
      * The browser does not compile any JavaScript from a string, unlike with
      * {@link #addEventData(String)}. So this also works with a Content Security
-     * Policy that does not allow <code>unsafe-eval</code>. The captured values
-     * are sent separately from the expression. Because of this, all event data
-     * from the same method uses one function in the browser.
+     * Policy that does not allow <code>unsafe-eval</code>.
      *
      * @param eventData
      *            the event data to send, not <code>null</code>
@@ -181,9 +179,7 @@ public interface DomListenerRegistration extends Registration {
      * <p>
      * The browser does not compile any JavaScript from a string, unlike with
      * {@link #setFilter(String)}. So this also works with a Content Security
-     * Policy that does not allow <code>unsafe-eval</code>. The captured values
-     * are sent separately from the expression. Because of this, all filters
-     * from the same method use one function in the browser.
+     * Policy that does not allow <code>unsafe-eval</code>.
      * <p>
      * Any previous filter for this registration is discarded, also one set with
      * {@link #setFilter(String)}.

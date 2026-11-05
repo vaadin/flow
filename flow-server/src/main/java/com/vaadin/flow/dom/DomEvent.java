@@ -255,6 +255,12 @@ public class DomEvent extends EventObject {
      * method defines. For example, for a method that returns
      * <code>DomEventData&lt;String&gt;</code>, the value is a
      * <code>String</code>.
+     * <p>
+     * Pass the instance that you added to the listener. If all arguments of the
+     * event data are plain values (strings, numbers, booleans, characters,
+     * enums or <code>null</code>), another instance created with the same
+     * method and equal arguments also works. With any other argument, such as
+     * an element, a record or a list, another instance gets <code>null</code>.
      *
      * @param <T>
      *            the type of the value
@@ -263,7 +269,8 @@ public class DomEvent extends EventObject {
      *            {@link DomListenerRegistration#addEventData(DomEventData)},
      *            not <code>null</code>
      * @return the value, or <code>null</code> if the browser sent no value for
-     *         the event data
+     *         the event data, or if the event data was not added to the
+     *         listener
      * @throws IllegalArgumentException
      *             if the value cannot be read as the declared type
      */
