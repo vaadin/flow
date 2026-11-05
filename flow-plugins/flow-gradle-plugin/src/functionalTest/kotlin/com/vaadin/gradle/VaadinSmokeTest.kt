@@ -11,6 +11,7 @@ package com.vaadin.flow.gradle
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import java.util.zip.ZipFile
 import kotlin.io.path.div
 import kotlin.io.path.writeText
 import kotlin.test.assertContains
@@ -670,6 +671,57 @@ class VaadinSmokeTest : AbstractGradleTest() {
             false,
             "Expected vaadin-react.tsx not to be created when Hilla is not available"
         ) { vaadinReactTsx.exists() }
+    }
+
+    @Test
+    fun testBuildFrontend_rebuild_removesChunksOfPreviousBuild() {
+        // Vite does not empty its output folder in production builds, and
+        // chunk names contain a content hash, so the chunks of earlier builds
+        // used to pile up in the output folder, the archive and prod.bundle.
+        testProject.newFile("src/main/java/org/vaadin/example/MainView.java", """
+            package org.vaadin.example;
+
+            import com.vaadin.flow.component.dependency.JsModule;
+            import com.vaadin.flow.component.html.Div;
+            import com.vaadin.flow.router.Route;
+
+            @JsModule("./marker.js")
+            @Route("")
+            public class MainView extends Div {
+            }
+        """.trimIndent())
+        val marker = testProject.newFile("src/main/frontend/marker.js",
+            "window.chunkMarker = 'MARK-one';")
+        val args = arrayOf("-Pvaadin.productionMode", "vaadinBuildFrontend")
+
+        testProject.build(*args)
+        marker.writeText("window.chunkMarker = 'MARK-two';")
+        testProject.build(*args)
+        expectOnlyChunksOfCurrentBuild("MARK-two", "MARK-one")
+    }
+
+    private fun expectOnlyChunksOfCurrentBuild(currentMarker: String,
+                                               staleMarker: String) {
+        val buildFolder = File(testProject.dir,
+            "build/resources/main/META-INF/VAADIN/webapp/VAADIN/build")
+        buildFolder.find("indexhtml-*.js")
+        val chunks = buildFolder.find("*.js", 1..Int.MAX_VALUE)
+        expect(true, "No chunk contains $currentMarker") {
+            chunks.any { it.readText().contains(currentMarker) }
+        }
+        expect(listOf(), "Chunks of the previous build found") {
+            chunks.filter { it.readText().contains(staleMarker) }
+        }
+
+        val prodBundle = File(testProject.dir, "src/main/bundles/prod.bundle")
+        val indexHtmlChunks = ZipFile(prodBundle).use { zip ->
+            zip.entries().asSequence().map { it.name }
+                .filter { it.contains("/indexhtml-") && it.endsWith(".js") }
+                .toList()
+        }
+        expect(1, "indexhtml chunks in $prodBundle: $indexHtmlChunks") {
+            indexHtmlChunks.size
+        }
     }
 
     private fun enableHilla() {
