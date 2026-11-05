@@ -19,6 +19,81 @@ launchers, all under
 A behavior none of these describe is not a decision anyone made, and a change
 that relies on it should write it down.
 
+## Why the loop exists
+
+A human developer gets a feedback loop from the IDE without asking for one: it
+compiles in the background, applies the change to the running application,
+refreshes the browser and shows the errors. A coding agent that edits the
+sources from outside the IDE gets none of that
+([#25197](https://github.com/vaadin/flow/issues/25197)):
+
+- There is no authoritative answer to "is my last change live in the running
+  app?", so the agent guesses, waits on timers and retries.
+- Compile and runtime failures are invisible, or found only indirectly.
+- A change that spans Java and generated frontend artifacts has no point at
+  which it is known to be consistent across both.
+- A human and an agent working on the same running application cannot observe
+  one shared, unambiguous state.
+
+The cost is slower iteration, wasted tokens, and agents drawing conclusions
+about an application they cannot actually see. The loop is measured against
+exactly that: with it, an agent should finish the same task faster and with
+fewer tokens, and the code it writes should be no worse.
+
+## What the loop is and is not
+
+The daemon launches, coordinates and observes; it does not replace anything.
+Compilers, HotswapAgent, Flow's `Hotswapper`, the Vite dev server and the
+browser's live reload all keep doing their own jobs, and the daemon calls them
+and reports what they did. Out of scope, on purpose:
+
+- **Checking what rendered.** Loading a route and asserting what is on the page
+  is the agent's job, with its own tools such as Playwright. The daemon's job
+  ends when the change is live in the running application; it carries no
+  browser automation or UI-testing API.
+- **Production builds**, code-generation quality and visual design tooling.
+- **An MCP server.** See [The CLI is the agent surface](#the-cli-is-the-agent-surface).
+- **Shared write-coordination** — an agent compiling while an IDE owns the JVM.
+
+## The CLI is the agent surface
+
+Agents reach the loop through one surface, the `vaadin-dev` CLI, a thin client
+over the daemon's loopback RPC. The choice over an MCP server is deliberate:
+
+- **Token cost.** An MCP tool schema sits in the agent's context on every turn.
+  A CLI is learned once, from a line in the skill or `--help`, and afterwards
+  costs only the command and its output. That is why the default output is
+  terse — a success is about two lines — full diagnostics are printed only on
+  failure, and structured output is the opt-in `--json`.
+- **Composability.** `apply && …`, piping `--json` to `jq`, scripts.
+- **Human and CI parity.** A developer or a CI job runs the very same command.
+- **No special client.** Any agent with a shell can use it.
+
+An MCP server would be one more client over the same RPC, so it can be added
+later without changing the contract; until then a new capability is a new verb
+or option on the CLI.
+
+The RPC binds to the loopback interface only and every request carries the
+token from the handshake, because whoever can reach it can make the daemon
+compile, redefine and restart the application.
+
+## Who owns the application
+
+Whoever launches the application owns compiling and reloading it for that
+session. The daemon is always the one that aggregates state and answers
+questions about it, and never a second actor competing with the owner: two
+owners both compiling, both redefining over one JVM or both restarting the
+application diverge, and the answer to "what is the state of my last change?"
+is lost again.
+
+The loop implements the agent-led mode: the daemon launches the application,
+compiles, redefines and restarts it, and `status` reports `owner=daemon`. An
+IDE-led mode, where a human launched the application from the IDE, is planned
+as observe-only: the daemon would relay the IDE's state through the IDE
+plugins' existing Copilot REST service rather than inventing its own
+coordination, and it must then neither run its own redefiner nor launch a JVM
+with its own HotswapAgent beside the IDE's.
+
 ## The pieces
 
 - **The launchers** — `vaadin-dev` (bash), `vaadin-dev.ps1` (PowerShell) and
@@ -64,6 +139,21 @@ loader of its own, as the Build & Dependencies rules require of any dev-only
 jar.
 
 ## One daemon, outliving the command that started it
+
+Nobody starts the daemon by hand. The CLI spawns it when a command needs one
+and every later command, from any agent or terminal, reuses it — the pattern of
+the Gradle daemon and of language servers. There is exactly one per application
+root, because two daemons would bring back two answers to "what is the current
+state?". It ends on an explicit `shutdown`, after an idle timeout with no
+application running (`vaadin.dev.idleSeconds`), or when a newly spawned daemon
+finds its predecessor dead. Whether a daemon or an application is alive is
+decided by its process, never by probing a socket: a raw probe of the
+application's JDWP port leaves the JDWP handshake half-open and disables the
+listener for the rest of the session.
+
+So `start`, `stop` and `restart` are about the application, and the daemon's
+own lifecycle is automatic. Shutting the daemon down stops the application it
+launched, because it owns it.
 
 The loop holding across commands is the one thing the daemon exists to do, and
 three decisions protect it.
@@ -117,11 +207,36 @@ what a code means breaks every agent that branches on it:
 The CLI adds `64` (usage), `70` (internal, or the daemon is unreachable) and
 `77` (unauthorized) of its own.
 
+## The transaction
+
+A transaction is what the daemon tracks: one logical source change carried
+through to a running application that is stable again. State, diagnostics and
+the outcome an agent reads all hang off it. Two edited files, the class files
+they compile to and the redefinition that applies them are one transaction with
+one outcome, not three events to correlate.
+
+The agent makes its edits with its own tools and then commits them with
+`apply`; there is no debounce guessing when an agent is done typing. `apply`
+blocks until the transaction reaches a terminal outcome, printing each phase it
+enters, and the wait lives in the daemon, gated on what actually happened.
+An agent never sleeps or polls to learn whether its change is live.
+
 "What is the state of my last change?" only has an answer while one
 transaction at a time decides it. A newer `apply` supersedes the running one
 rather than queueing behind it because only the latest bytes on disk matter:
 a queued apply would spend its time on a change-set that is already out of
 date. The superseded caller still needs an answer, or it waits for ever.
+
+When the application dies, the connector's socket closes, and how it closed
+tells a `stop` or a normal exit from a crash. A transaction in flight then
+fails — it cannot become stable without a running application — and `status`
+reports the application as stopped or crashed, with the exit code when there
+is one. The daemon stays up and does not restart the application on its own:
+it reports, and the agent relaunches it with `start` or `restart`. An `apply`
+with nothing running compiles and says so (`COMPILED`, with `start` as the next
+step) rather than launching the application behind the agent's back.
+A loop that quietly relaunched a crashing application would hide the very
+failure the agent needs to see.
 
 ## Settings are fixed when the daemon is spawned
 
@@ -152,6 +267,58 @@ the Payara and Liberty plugins, which are never run. The HotswapAgent plugins
 that fire a competing page reload or act on Spring beans behind the loop's back
 are disabled for the same reason. The daemon README lists each one and how it
 is switched off.
+
+## One atomic redefinition, then ask Flow to refresh
+
+Each transaction redefines all of its changed classes in one
+`Instrumentation.redefineClasses` call, made in the application JVM by the
+connector. The JVM's enhanced class redefinition and HotswapAgent's plugins
+are used, but never HotswapAgent's own delivery: its file watcher turns one
+edit into an event per generated class file (lambdas, inner classes), and
+Flow's route registry update, which is not thread-safe, then races itself. One batch per transaction is what avoids that,
+and it is also why the daemon is the only redefiner in the JVM.
+
+Redefining bytecode is not enough to show the change: re-rendering the open
+view in place takes Flow's `Hotswapper.onHotswap`, which resolves classes in
+the application's class loader and so runs in-process, in the connector, after
+the redefinition. Whether the classes were redefined changes what it does, so
+the connector tells it the truth, and a Java change is Stable only once the
+classes were redefined and `onHotswap` ran.
+
+Applying is attempt-then-escalate. What a change will need — a frontend hot
+module replacement for CSS, a hot reload for a method body, a restart for a
+structural change — can be predicted, but the prediction is not the answer:
+the loop tries, escalates to a restart when the JVM refuses, and reports what
+actually happened and why.
+
+## The browser is told, not driven
+
+The daemon never talks to a browser. A refresh rides Flow's existing live
+reload channel (`BrowserLiveReload` over the debug window connection), which the
+connector triggers. That channel is a fire-and-forget broadcast with no
+per-browser acknowledgement, so the loop reports what it knows — whether a
+reload was sent and whether the channel is connected — and nothing about what a
+browser rendered. `apply` does not wait for a browser either: an agent-led
+session often has none open.
+
+## Reuse Flow's machinery
+
+Where Flow already decides something, the loop lets Flow decide it rather
+than growing a parallel tracker: a stale dev bundle is rebuilt by Flow's own
+startup path (`NodeTasks`, `BundleValidationUtil.needsBuild`), theme CSS goes
+through `ThemeLiveUpdater.push` as on a save, `Hotswapper` and its
+`VaadinHotswapper` implementations react to redefined classes, and
+`BrowserLiveReload` reaches the browser. A second tracker that decides the same
+thing differently is one more way for the loop and the running application to
+disagree. For the same reason the loop never assumes it owns the project
+directory alone: `.vaadin-node-tasks.lock` expects short-lived holders, and an
+IDE or a CI build may be running Flow's tasks at the same time.
+
+An apply compiles its change-set itself — with javac in the daemon, or with
+Maven's `compiler:compile` goal — and never runs the `compile` phase. The phase
+copies resources again, which can trigger reloads nobody asked for, and runs
+`prepare-frontend` and whatever else the project binds before `compile` on
+every apply.
 
 ## Ask the build, do not guess
 
@@ -184,6 +351,22 @@ ask, it asks rather than overhears — a Vite compile error is found by having
 the connector fetch the changed module, not by hoping a browser re-fetched it
 while the daemon watched the log. The daemon README's Known limits section
 lists what the loop cannot make live and why.
+
+## Not decided yet
+
+These are open on purpose. Behavior in these areas is what the code happens to
+do today, not a decision, and a change that settles one should add the decision
+here and in `CONVENTIONS.md`:
+
+- the IDE-led mode, and whether it wraps or replaces the IDE plugins' Copilot
+  REST service;
+- per-browser identity and reload acknowledgement on top of the live reload
+  broadcast;
+- whether a restart should ever preserve session state;
+- how cleanly a superseded compile or frontend task can be cancelled mid-run;
+- which single process writes Flow's build-info token file, and who decides
+  when the dev bundle is rebuilt;
+- an MCP surface beside the CLI.
 
 ## Verifying a change
 

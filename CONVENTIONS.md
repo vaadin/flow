@@ -305,6 +305,27 @@ it does not take the daemon and the application with it. Report a handshake left
 behind by a dead daemon instead of reaping it silently. See
 `guidelines/dev-loop.md`.
 
+Keep the daemon an orchestrator and observer: it calls compilers, HotswapAgent,
+Flow's `Hotswapper`, the dev server and live reload, and replaces none of them.
+Checking what a page renders is the agent's job, so add no browser automation
+or UI-testing API to the loop. See `guidelines/dev-loop.md`.
+
+Expose agent-facing capabilities as `vaadin-dev` verbs and options over the
+daemon's RPC, not as an MCP server. Keep the default output terse, print full
+diagnostics only on failure, and make structured output the opt-in `--json`.
+Bind the RPC to loopback only and require the handshake token on every request.
+
+Let whoever launched the application own compiling and reloading it. Never
+compile, redefine or restart an application the daemon did not launch, and do
+not start a second HotswapAgent JVM beside one an IDE owns. See
+`guidelines/dev-loop.md`.
+
+Keep the daemon's lifecycle automatic and separate from the application's:
+`start`, `stop` and `restart` act on the application, the daemon ends on
+`shutdown`, the idle timeout or a stale-instance takeover, and shutting it down
+stops the application it launched. Decide whether a daemon or an application
+is alive from its process, never by probing a socket.
+
 Answer every daemon verb with zero or more `> ` progress lines and exactly one
 `EXIT <code>`, and derive the code from `TransactionEngine.Outcome`, never from
 parsed text. The exit codes are the contract agents act on — `0`, `1` and `4`
@@ -314,6 +335,29 @@ of one.
 Keep at most one transaction in flight. A new `apply` supersedes the running one
 rather than queueing behind it, and the superseded caller still gets a terminal
 answer.
+
+Make `apply` block until the transaction reaches a terminal outcome and gate
+that wait on what happened, never on a timer, so an agent never has to sleep or
+poll. When the application dies, fail the transaction in flight, report the
+application as stopped or crashed, and never relaunch it on the daemon's own
+initiative.
+
+Redefine all classes of a transaction in one `redefineClasses` call from the
+connector, then call `Hotswapper.onHotswap` with whether the redefinition
+really succeeded. Keep the daemon the only redefiner: never enable
+HotswapAgent's own file-watching delivery or a plugin that reloads on its own.
+Report the classification of an apply (`hmr`, `hot-reload`, `restart`) from
+what happened, not from what was predicted.
+
+Keep the daemon passive on the browser: a refresh goes through Flow's
+`BrowserLiveReload` channel from the connector, and `apply` never waits for a
+browser. Report only what the loop knows, such as whether a reload was sent.
+
+Where Flow already decides something — whether the dev bundle is stale, how a
+theme or a redefined class is refreshed — use Flow's own code path instead of a
+parallel tracker. Never run Maven's `compile` phase for an apply, and never
+assume the daemon is the only process running Flow's frontend tasks in the
+project. See `guidelines/dev-loop.md`.
 
 Read a setting that steers the daemon or the application from the daemon's own
 system properties or environment, which are fixed when the daemon is spawned,
