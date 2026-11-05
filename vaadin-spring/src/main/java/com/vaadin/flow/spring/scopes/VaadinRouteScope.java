@@ -169,10 +169,7 @@ public class VaadinRouteScope extends AbstractScope {
         private static boolean isPreserveOnRefreshChain(UI ui) {
             NavigationListener listener = ComponentUtil.getData(ui,
                     NavigationListener.class);
-            return listener != null && listener.currentNavigationTarget != null
-                    && RouteUtil.isPreserveOnRefreshTarget(
-                            listener.currentNavigationTarget,
-                            listener.currentLayouts);
+            return listener != null && listener.isPreserveOnRefreshChain();
         }
 
         private static String getUIStoreKey(UI ui) {
@@ -266,6 +263,12 @@ public class VaadinRouteScope extends AbstractScope {
         boolean hasNavigationOwner(RouteScopeOwner owner) {
             return owner == null || hasOwnerType(currentNavigationTarget, owner)
                     || layoutsContainsOwner(owner);
+        }
+
+        boolean isPreserveOnRefreshChain() {
+            return currentNavigationTarget != null
+                    && RouteUtil.isPreserveOnRefreshTarget(
+                            currentNavigationTarget, currentLayouts);
         }
 
         void storeOwner(String name, RouteScopeOwner owner) {
