@@ -65,6 +65,10 @@ class JsFunctionTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> JsFunction.ofDeclaredCall(call));
+        assertThrows(IllegalArgumentException.class,
+                () -> DomEventFilter.ofDeclaredCall(call));
+        assertThrows(IllegalArgumentException.class,
+                () -> DomEventData.ofDeclaredCall(call, String.class));
     }
 
     @Test

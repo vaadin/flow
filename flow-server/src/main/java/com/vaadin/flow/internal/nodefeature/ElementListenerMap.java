@@ -79,7 +79,8 @@ public class ElementListenerMap extends NodeMap {
 
     /**
      * Separator in the key of an entry with captures. The part before it is the
-     * shared key. The part after it is a hash of the captured values.
+     * shared key. The part after it is a hash of the capture identity of the
+     * snippet.
      */
     private static final char CAPTURE_KEY_SEPARATOR = '$';
 

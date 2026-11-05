@@ -180,10 +180,13 @@ debounce and `setFilter(JS.isKey("Escape")).debounce(300)` on the same
 element use the same pooled entry, and only the Escape filter must be
 debounced.
 
-The per-element key is the entry key plus `$` and a hash of the capture
-values, and it is the key the client reports that value under, so two
-listeners sharing a declared function with different captures stay
-apart. The server maps the reported keys of expressions back to the
+The per-element key is the entry key plus `$` and a hash of the
+snippet's capture identity, and it is the key the client reports that
+value under, so two listeners sharing a declared function with different
+captures stay apart. The capture identity is the capture values when all
+of them are strings, numbers, booleans, enums or `null`, so equal
+snippets share a key. Otherwise it is a random id fixed when the snippet
+is created, so only that snippet instance has the key. The server maps the reported keys of expressions back to the
 expressions that `DomEvent.getEventData()` exposes before any listener
 runs, and `DomEvent.getEventData(DomEventData)` reads the value of
 declared event data by deriving the same key from the snippet.

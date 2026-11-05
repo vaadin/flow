@@ -1282,9 +1282,9 @@ function handleDomEvent(event: Event, context: BindingContext): void {
     assert(settings !== undefined, 'There must be shared settings for a captured expression');
     entrySettings[key] = debounce;
 
-    // A capture keeps the id of the node it had when the listener was set up.
-    // If the server has removed that node since, the event is still sent, and
-    // the function gets null for the removed node.
+    // A capture has the id the node had when the settings were sent. If the
+    // server has removed that node since, the event is still sent, and the
+    // function gets null for the removed node.
     const decodedCaptures = captures.map((capture) => decodeCopyWithTypeInfo(node.getTree(), capture));
     eventData![key] = evaluateEntry(settings, decodedCaptures, event, element);
   }
