@@ -273,8 +273,9 @@ describe('SystemErrorHandler', () => {
       expect(announced).to.equal(message);
     });
 
-    it('ends an unparseable session resynchronization message as discarded and resynchronizes nothing', async () => {
-      const message = new VaadinServerMessage();
+    it('ends an unparseable session resynchronization message as discarded and lets a later resync start', async () => {
+      const messages: VaadinServerMessage[] = [];
+      const intervals: number[] = [];
       const handleMessage = sinon.spy();
       const setState = sinon.spy();
       const registry = testRegistry({
@@ -286,23 +287,37 @@ describe('SystemErrorHandler', () => {
           getServiceUrl: () => '/README.md#',
           getUIId: () => 0,
           setUIId: () => {},
-          getHeartbeatInterval: () => 0
+          getHeartbeatInterval: () => 300
         },
-        Heartbeat: { setInterval: () => {} },
+        Heartbeat: { setInterval: (interval: number) => intervals.push(interval) },
         PushConfiguration: { isPushEnabled: () => false },
         UILifecycle: { setState },
-        MessageHandler: { announceMessage: () => message, handleMessage }
+        MessageHandler: {
+          announceMessage: () => {
+            const message = new VaadinServerMessage();
+            messages.push(message);
+            return message;
+          },
+          handleMessage
+        }
       });
       const reset = sinon.spy(registry, 'reset');
       const errorStub = sinon.stub(Console, 'error');
       try {
-        new SystemErrorHandler(registry).handleUnrecoverableError(null, null, null, null, null);
+        const handler = new SystemErrorHandler(registry);
+        handler.handleUnrecoverableError(null, null, null, null, null);
 
-        await waitUntil(() => message.outcome !== undefined);
-        expect(message.outcome).to.equal('discarded');
+        await waitUntil(() => messages[0]?.outcome !== undefined);
+        expect(messages[0].outcome).to.equal('discarded');
         expect(handleMessage.called).to.be.false;
         expect(reset.called).to.be.false;
         expect(setState.called).to.be.false;
+        expect(intervals.at(-1)).to.equal(300);
+        expect(errorStub.calledWith('Ignored unparseable session resynchronization message')).to.be.true;
+
+        // The failed attempt no longer counts as in progress.
+        handler.handleUnrecoverableError(null, null, null, null, null);
+        await waitUntil(() => messages[1]?.outcome !== undefined);
       } finally {
         errorStub.restore();
       }

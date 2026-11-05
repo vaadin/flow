@@ -260,6 +260,13 @@ export class MessageHandler {
     }
   }
 
+  #startMessage(json: ValueMap): void {
+    const message = this.#messages.get(json);
+    if (message) {
+      dispatchStart(message);
+    }
+  }
+
   #endMessage(json: ValueMap, outcome: VaadinServerMessageOutcome): void {
     const message = this.#messages.get(json);
     if (message) {
@@ -300,6 +307,9 @@ export class MessageHandler {
         for (const command of commands) {
           if (resolveWhatRuns(command, this.#registry.getConstantPool()) === 'window.location.reload();') {
             Console.warn('Executing forced page reload while a resync request is ongoing.');
+            // The reload is how the message is handled, so it starts here
+            // like any other applied message.
+            this.#startMessage(valueMap);
             window.location.reload();
             this.#endMessage(valueMap, 'applied');
             return;
@@ -373,10 +383,7 @@ export class MessageHandler {
     this.suspendReponseHandling(lock);
 
     Console.debug('Handling message from server');
-    const message = this.#messages.get(valueMap);
-    if (message) {
-      dispatchStart(message);
-    }
+    this.#startMessage(valueMap);
     // Client id must be updated before server id (a server-id update can trigger
     // a resync that must use the updated client id).
     if (CLIENT_TO_SERVER_ID in valueMap) {

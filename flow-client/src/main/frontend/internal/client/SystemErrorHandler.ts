@@ -234,8 +234,8 @@ export class SystemErrorHandler {
         const uiId = configuration.getUIId();
         const json = parseJson(responseText);
         if (json === null) {
-          Console.error('Ignored unparseable session resynchronization message');
           dispatchMessageEnd(message, 'discarded');
+          this.#abortResynchronization('Ignored unparseable session resynchronization message');
           return;
         }
         const newUiId = json[UI_ID] as number;
@@ -262,11 +262,19 @@ export class SystemErrorHandler {
           getScheduler().scheduleDeferred(() => this.#recreateWebComponents());
         }
       },
-      (error) => {
-        this.#registry.getHeartbeat().setInterval(configuration.getHeartbeatInterval());
-        this.handleError(error.message);
-      }
+      (error) => this.#abortResynchronization(error.message)
     );
+  }
+
+  /**
+   * Gives up on a failed resynchronization. The heartbeat is restarted so the
+   * next one that finds the session expired starts a new attempt, which the
+   * in-progress flag would otherwise block for good.
+   */
+  #abortResynchronization(errorMessage: string): void {
+    this.#registry.getHeartbeat().setInterval(this.#registry.getApplicationConfiguration().getHeartbeatInterval());
+    this.#resyncInProgress = false;
+    this.handleError(errorMessage);
   }
 
   /** Recreates every exported web component's elements (detaching stale ones). */
