@@ -24,8 +24,6 @@
 import './Clipboard';
 import './Download';
 import './ElementResize';
-import './FlowShortcut.js';
-import './FlowWebPush.js';
 import { currentFullscreenState } from './Fullscreen';
 import './Geolocation';
 import { currentVisibility } from './PageVisibility';
