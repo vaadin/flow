@@ -161,6 +161,9 @@ public class ElementListenerMap extends NodeMap {
          * uses them, so that they can be shared through the constant pool. A
          * snippet that captures for example an element is sent for each element
          * instead.
+         *
+         * @return <code>true</code> if the settings can be sent through the
+         *         constant pool
          */
         private boolean isShared() {
             return !(entry instanceof SnippetEntry snippet)
@@ -182,6 +185,9 @@ public class ElementListenerMap extends NodeMap {
          * is an object with the function, the debounce settings, the side
          * effect and the captures. The captures are encoded now, so that an
          * element is sent with the id that it has now.
+         *
+         * @return the debounce settings for an expression, or the settings
+         *         object for a snippet, not <code>null</code>
          */
         public JsonNode toJson() {
             if (!(entry instanceof SnippetEntry snippet)) {
@@ -624,6 +630,13 @@ public class ElementListenerMap extends NodeMap {
      * as its side effect. Nothing is made from strings, so no JavaScript is
      * compiled in the browser.</li>
      * </ul>
+     *
+     * @param expression
+     *            the event data expression, not <code>null</code>
+     * @param filter
+     *            the filter of the listener, or <code>null</code> if it has
+     *            none
+     * @return the entry to send for the expression, not <code>null</code>
      */
     private static Entry makeConditional(String expression, Entry filter) {
         String method = switch (expression) {
@@ -662,6 +675,12 @@ public class ElementListenerMap extends NodeMap {
      * constant pool. If there are settings for this element only, such as a
      * snippet that captures an element, the value is the constant pool key
      * together with those settings.
+     *
+     * @param eventType
+     *            the event type, not <code>null</code>
+     * @return a {@link ConstantPoolKey}, or a
+     *         {@link ParameterizedConstantPoolKey} if some settings are for
+     *         this element only
      */
     private Serializable createEventSettingsKey(String eventType) {
         ObjectNode shared = JacksonUtils.createObjectNode();
