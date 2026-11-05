@@ -278,8 +278,9 @@ self.addEventListener('message', (event) => {
   }
 
   // Sent by the dev server when sw.ts has been edited, to apply the rebuilt
-  // worker without closing the open pages
-  if (event.data.method === 'Vaadin.ServiceWorker.skipWaiting') {
+  // worker without closing the open pages. Not handled in production, where a
+  // new worker must wait until the pages of the previous build are closed.
+  if (import.meta.env.DEV && event.data.method === 'Vaadin.ServiceWorker.skipWaiting') {
     self.skipWaiting();
   }
 });

@@ -74,11 +74,13 @@ public class ServiceWorkerUpdateIT extends ChromeDeviceTest {
     }
 
     @Test
-    public void newServiceWorker_waitsUntilSkipWaitingRequested() {
+    public void newServiceWorker_waitsUntilSkipWaitingRequestedInDevelopment() {
         // The Vite dev server does not serve sw.js with a query string, which
         // the test uses to install a new worker
         Assume.assumeFalse("Running with the Vite dev server",
                 Boolean.getBoolean("vaadin.test.viteDevServer"));
+        // Only a development build handles the skip waiting message
+        boolean development = Boolean.getBoolean("vaadin.test.devBundle");
         open();
         waitForServiceWorkerControl();
 
@@ -87,12 +89,14 @@ public class ServiceWorkerUpdateIT extends ChromeDeviceTest {
         Map<?, ?> result = (Map<?, ?>) ((JavascriptExecutor) getDriver())
                 .executeAsyncScript(
                         """
+                                const expectTakeover = arguments[0];
                                 const done = arguments[arguments.length - 1];
                                 const stateReached = (worker, states) => new Promise((resolve) => {
                                   const check = () => states.includes(worker.state) && resolve();
                                   check();
                                   worker.addEventListener('statechange', check);
                                 });
+                                const delay = () => new Promise((resolve) => setTimeout(resolve, 2000));
                                 (async () => {
                                   const registration = await navigator.serviceWorker.getRegistration();
                                   const previous = registration.active;
@@ -100,7 +104,7 @@ public class ServiceWorkerUpdateIT extends ChromeDeviceTest {
                                   const worker = registration.installing || registration.waiting || registration.active;
                                   await stateReached(worker, ['installed', 'activating', 'activated']);
                                   // Give a worker that skips waiting time to activate
-                                  await new Promise((resolve) => setTimeout(resolve, 2000));
+                                  await delay();
                                   if (registration.waiting !== worker || registration.active !== previous) {
                                     return { waiting: false };
                                   }
@@ -109,23 +113,30 @@ public class ServiceWorkerUpdateIT extends ChromeDeviceTest {
                                   // Same message as vite-devmode.ts sends after an update of
                                   // sw.ts, see the message listener in sw.ts
                                   worker.postMessage({ method: 'Vaadin.ServiceWorker.skipWaiting' });
-                                  await stateReached(worker, ['activated']);
-                                  await controllerChanged;
+                                  if (expectTakeover) {
+                                    await stateReached(worker, ['activated']);
+                                    await controllerChanged;
+                                  } else {
+                                    // Give a worker that handles the message time to activate
+                                    await delay();
+                                  }
                                   return {
                                     waiting: true,
                                     controlling: navigator.serviceWorker.controller === worker
                                   };
                                 })().then(done, (error) => done({ error: String(error) }));
-                                """);
+                                """,
+                        development);
 
         Assert.assertNull("Updating the service worker failed",
                 result.get("error"));
         Assert.assertEquals(
                 "The new service worker should wait while the page is open",
                 true, result.get("waiting"));
-        Assert.assertEquals(
-                "The new service worker should take over when asked to skip waiting",
-                true, result.get("controlling"));
+        Assert.assertEquals(development
+                ? "The new service worker should take over when asked to skip waiting"
+                : "The new service worker should ignore the skip waiting message in production",
+                development, result.get("controlling"));
     }
 
     @Override
