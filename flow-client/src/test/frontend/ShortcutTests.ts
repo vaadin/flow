@@ -50,6 +50,10 @@ describe('shortcut origin guards', () => {
     const inScope = (e: Event) => $wnd.Vaadin.Flow.shortcut.eventInOwnerScope(e, ownerSelector);
     expect(guardResult(owner, inScope)).to.be.true;
     expect(guardResult(inPopover, inScope)).to.be.false;
+    // An owner that is not in the document does not block the shortcut.
+    const missingOwner = (e: Event) =>
+      $wnd.Vaadin.Flow.shortcut.eventInOwnerScope(e, '[data-shortcut-owner~="missing"]');
+    expect(guardResult(inPopover, missingOwner)).to.be.true;
 
     popover.removeChild(inPopover);
     popover.setAttribute('data-shortcut-owner', 'owner');
@@ -122,6 +126,9 @@ describe('shortcut origin guards', () => {
     // The relayed clone keeps the popover scope, so an owner outside of it
     // does not fire for an event that came from the popover.
     expect($wnd.Vaadin.Flow.shortcut.eventInTopLevelScope(relayed[0])).to.be.false;
+    expect(() => $wnd.Vaadin.Flow.shortcut.registerKeydownDelegate(listenOn, null, () => true, false, false)).to.throw(
+      /not found/
+    );
     listenOn.remove();
   });
 });
