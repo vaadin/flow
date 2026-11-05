@@ -16,6 +16,9 @@ env:
 
 jobs:
   update-dependencies:
+    # Only in vaadin/flow: a copy of this repository that has the organization
+    # secrets would otherwise open dependency update pull requests of its own.
+    if: github.repository == 'vaadin/flow'
     runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
