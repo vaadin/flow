@@ -58,6 +58,41 @@ describe('shortcut origin guards', () => {
     expect(guardResult(inPopover, inScope)).to.be.true;
   });
 
+  it('resolves the scope of a slotted owner through the shadow tree', () => {
+    const ownerSelector = '[data-shortcut-owner~="slotted"]';
+    const inScope = (e: Event) => $wnd.Vaadin.Flow.shortcut.eventInOwnerScope(e, ownerSelector);
+
+    // The open popover is in the shadow root of a component and the owner is
+    // slotted into it, like the content of an overlay component.
+    const overlayHost = document.createElement('div');
+    const shadowPopover = document.createElement('div');
+    shadowPopover.setAttribute('popover', 'manual');
+    shadowPopover.appendChild(document.createElement('slot'));
+    overlayHost.attachShadow({ mode: 'open' }).appendChild(shadowPopover);
+    const slottedOwner = document.createElement('input');
+    slottedOwner.setAttribute('data-shortcut-owner', 'slotted');
+    overlayHost.appendChild(slottedOwner);
+    document.body.appendChild(overlayHost);
+    shadowPopover.showPopover();
+    try {
+      expect(guardResult(slottedOwner, inScope)).to.be.true;
+      expect(guardResult(document.body, inScope)).to.be.false;
+    } finally {
+      overlayHost.remove();
+    }
+
+    // The owner is slotted into a component that sits inside an open popover,
+    // so its scope is found by leaving the shadow root through its host.
+    const host = document.createElement('div');
+    host.attachShadow({ mode: 'open' }).appendChild(document.createElement('slot'));
+    const ownerInHost = document.createElement('span');
+    ownerInHost.setAttribute('data-shortcut-owner', 'slotted');
+    host.appendChild(ownerInHost);
+    popover.appendChild(host);
+    expect(guardResult(inPopover, inScope)).to.be.true;
+    expect(guardResult(owner, inScope)).to.be.false;
+  });
+
   it('fires a top-level shortcut only outside open popovers', () => {
     const topLevel = (e: Event) => $wnd.Vaadin.Flow.shortcut.eventInTopLevelScope(e);
     expect(guardResult(owner, topLevel)).to.be.true;
