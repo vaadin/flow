@@ -64,11 +64,14 @@ import com.vaadin.flow.js.JsSnippets;
  *         .addEventData(pasted);
  * </pre>
  * <p>
- * The build adds the expression to the bundle. Because of this, the browser
- * does not compile any JavaScript from a string. All event data from the same
- * method uses the same function, also when the captured values are different.
- * You can use the same method several times on one listener with different
- * values. Each value is read separately.
+ * The build adds the expression to the bundle, so the browser does not compile
+ * any JavaScript from a string. Event data from the same method shares one
+ * function in the browser, also when the arguments are different. Each one
+ * still sends its own value: a listener can have both
+ * <code>clipboardData("text/plain")</code> and
+ * <code>clipboardData("text/html")</code>, and
+ * {@link DomEvent#getEventData(DomEventData)} returns the value of the one that
+ * you pass to it.
  * <p>
  * When all captured values are plain values, such as strings, numbers, booleans
  * or enums, the settings of the listener are stored in a cache that the server
@@ -95,10 +98,13 @@ import com.vaadin.flow.js.JsSnippets;
  * detached. A declared expression that uses such a captured value must handle
  * <code>null</code>.
  * <p>
- * If all captured values are plain values, such as strings, numbers, booleans
- * or enums, you can read the value with any event data created with the same
- * method and equal values. Otherwise, for example when an element is captured,
- * read the value with the same instance that you added to the listener.
+ * {@link DomEvent#getEventData(DomEventData)} finds the value by the method and
+ * the arguments of the event data that you pass to it. If all arguments are
+ * plain values (strings, numbers, booleans, characters, enums or
+ * <code>null</code>), you can pass any event data created with the same method
+ * and equal arguments. With any other argument, such as an element, a record or
+ * a list, pass the same instance that you added to the listener. Another
+ * instance gets <code>null</code>, so keep the instance in a variable.
  *
  * @param <T>
  *            the type of the value
