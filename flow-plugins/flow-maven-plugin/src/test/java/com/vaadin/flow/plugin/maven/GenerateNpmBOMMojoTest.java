@@ -169,6 +169,19 @@ class GenerateNpmBOMMojoTest {
     }
 
     @Test
+    void getProperties_runsSingleExecutableNpx() {
+        String npx = new File("dir with space", "npx").getAbsolutePath();
+
+        Properties properties = mojo.getProperties(List.of(npx));
+
+        assertEquals(npx, properties.getProperty("exec.executable"));
+        assertTrue(
+                properties.getProperty("exec.args")
+                        .startsWith("--yes @cyclonedx/cyclonedx-npm "),
+                properties.getProperty("exec.args"));
+    }
+
+    @Test
     void addNodeToPath_putsNodeDirectoryFirst() {
         File nodeDir = new File("node-dir").getAbsoluteFile();
         InvocationRequest request = new DefaultInvocationRequest();
