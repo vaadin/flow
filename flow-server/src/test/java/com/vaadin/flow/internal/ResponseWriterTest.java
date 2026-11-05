@@ -44,7 +44,9 @@ import java.util.zip.GZIPOutputStream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -59,6 +61,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -343,6 +346,57 @@ public class ResponseWriterTest {
 
         assertArrayEquals(fileJsBrotliContents, out.getOutput());
         verify(response).setHeader("Content-Encoding", "br");
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            // resource replaced after compression: plain file
+            "2000, 0, 0, ",
+            // written by the same build: brotli
+            "0, 0, 0, br",
+            // only the brotli variant is outdated: gzip
+            "2000, 0, 2000, gzip",
+            // brotli timestamp unknown (0): brotli
+            "2000, UNKNOWN, 0, br" })
+    public void writeDataBrotliAndGzip_onlyServedWhenNotOlderThanResource(
+            long resourceTime, String brotliTime, long gzipTime,
+            String expectedEncoding, @TempDir File dir) throws IOException {
+        // A production build writes the .br/.gz variants after the resource.
+        // When the resource is replaced afterwards (e.g. by an IDE build),
+        // the variants hold the old content and must not be served.
+        responseWriter.overrideAcceptsBrotliResource = Boolean.TRUE;
+        responseWriter.overrideAcceptsGzippedResource = Boolean.TRUE;
+
+        File jsFile = new File(dir, "file.js");
+        Files.write(jsFile.toPath(), fileJsContents);
+        File brotliFile = new File(dir, "file.js.br");
+        Files.write(brotliFile.toPath(), fileJsBrotliContents);
+        File gzipFile = new File(dir, "file.js.gz");
+        Files.write(gzipFile.toPath(), fileJsGzippedContents);
+
+        long base = 1_700_000_000_000L;
+        jsFile.setLastModified(base + resourceTime);
+        brotliFile.setLastModified("UNKNOWN".equals(brotliTime) ? 0
+                : base + Long.parseLong(brotliTime));
+        gzipFile.setLastModified(base + gzipTime);
+
+        CapturingServletOutputStream out = new CapturingServletOutputStream();
+        when(response.getOutputStream()).thenReturn(out);
+
+        responseWriter.writeResponseContents("/static/file.js",
+                jsFile.toURI().toURL(), request, response);
+
+        if (expectedEncoding == null) {
+            assertArrayEquals(fileJsContents, out.getOutput());
+            verify(response, never()).setHeader(eq("Content-Encoding"),
+                    anyString());
+        } else {
+            assertArrayEquals(
+                    "br".equals(expectedEncoding) ? fileJsBrotliContents
+                            : fileJsGzippedContents,
+                    out.getOutput());
+            verify(response).setHeader("Content-Encoding", expectedEncoding);
+        }
     }
 
     @Test

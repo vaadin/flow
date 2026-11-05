@@ -49,6 +49,7 @@ import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.geolocation.GeolocationAvailability;
@@ -64,6 +65,7 @@ import com.vaadin.flow.component.webshare.WebShareSupport;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
@@ -74,7 +76,6 @@ import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
-import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
@@ -84,6 +85,7 @@ import com.vaadin.flow.internal.streams.ActiveTransfer;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
@@ -105,6 +107,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
@@ -120,6 +123,12 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * @since 1.0
  */
 public class UIInternals implements Serializable {
+
+    private static final ChunkJs CHUNK_JS = JsSnippets.of(ChunkJs.class);
+
+    // One entry per chunk id, which is per component class name in development
+    // mode.
+    private static final Map<String, Dependency> chunkDependencies = new ConcurrentHashMap<>();
 
     private static final Pattern APP_ID_REPLACE_PATTERN = Pattern
             .compile("-\\d+$");
@@ -283,7 +292,7 @@ public class UIInternals implements Serializable {
     private final Signal<RouterState> readonlyRouterStateSignal = routerStateSignal
             .asReadonly();
 
-    private HashMap<Class<?>, List<?>> listeners = new HashMap<>();
+    private final HashMap<Class<?>, List<?>> listeners = new HashMap<>();
 
     private Location lastHandledNavigation = null;
 
@@ -1457,8 +1466,11 @@ public class UIInternals implements Serializable {
         } else {
             chunkIds.add(BundleUtils.getChunkId(componentClass));
         }
-        chunkIds.forEach(chunkId -> ui.getPage().addDynamicImport(
-                "return window.Vaadin.Flow.loadOnDemand('" + chunkId + "');"));
+        // What Page.addDynamicImport(JsFunction) adds, created once per chunk
+        // rather than every time a response attaches a component of it
+        chunkIds.forEach(chunkId -> dependencyList
+                .add(chunkDependencies.computeIfAbsent(chunkId,
+                        id -> new Dependency(CHUNK_JS.loadChunk(id)))));
     }
 
     private static void collectProductionChunkIds(
@@ -1496,15 +1508,16 @@ public class UIInternals implements Serializable {
         }
 
         List<String> jsDeps = new ArrayList<>();
-        // type=MODULE values are deliberately kept out of the bundle and are
-        // loaded at runtime instead, so their absence is not a problem
-        jsDeps.addAll(dependencies.getJavaScripts().stream()
-                .filter(dep -> dep.type() != JavaScript.Type.MODULE)
-                .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
-                .collect(Collectors.toList()));
-        jsDeps.addAll(dependencies.getJsModules().stream()
-                .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
-                .collect(Collectors.toList()));
+        // type=MODULE values and values with a runtime prefix are deliberately
+        // kept out of the bundle and are loaded at runtime instead, so their
+        // absence is not a problem
+        jsDeps.addAll(dependencies.getJavaScripts().stream().filter(
+                js -> !FrontendDependencyUrlResolver.isRuntimeJavaScript(js))
+                .map(JavaScript::value).toList());
+        jsDeps.addAll(dependencies.getJsModules().stream().map(JsModule::value)
+                .filter(src -> !FrontendDependencyUrlResolver
+                        .isRuntimeDependencyUrl(src))
+                .toList());
 
         if (!jsDeps.isEmpty()) {
             maybeWarnAboutDependencies(componentClass, jsDeps);
@@ -1534,7 +1547,16 @@ public class UIInternals implements Serializable {
             Class<? extends Component> componentClass,
             DependencyInfo dependency) {
         Page page = ui.getPage();
-        dependency.getJavaScripts().stream().filter(this::isRuntimeJavaScript)
+        boolean productionMode = ui.getSession() != null
+                && ui.getSession().getConfiguration().isProductionMode();
+        // Bundled developmentOnly values are left out of the production bundle
+        // by the build. Runtime values never go through the bundle, so the
+        // same rule has to be applied here (for both @JavaScript and
+        // @JsModule), otherwise a developmentOnly script would be loaded in
+        // production too.
+        dependency.getJavaScripts().stream()
+                .filter(FrontendDependencyUrlResolver::isRuntimeJavaScript)
+                .filter(js -> !productionMode || !js.developmentOnly())
                 .forEach(js -> {
                     // Checked before resolving the value so that an
                     // unsupported combination is reported even when the value
@@ -1546,40 +1568,27 @@ public class UIInternals implements Serializable {
                                 + componentClass.getName()
                                 + " uses LoadMode.INLINE together with Type.MODULE, which is not supported. Use LoadMode.EAGER or LoadMode.LAZY, or Type.SCRIPT if the contents must be inlined into the page.");
                     }
-                    String resolved = resolveRuntimeJavaScript(js.value());
+                    String resolved = FrontendDependencyUrlResolver
+                            .resolveRuntimeJavaScript(js.value());
                     if (resolved == null) {
                         return;
                     }
                     page.addJavaScript(resolved, js.loadMode(), js.type());
                 });
+        // Must match the runtime URL check that keeps @JsModule values out of
+        // the bundle at build time (FrontendClassVisitor and
+        // FullDependenciesScanner), so each value is loaded exactly once.
         dependency.getJsModules().stream()
-                .filter(js -> UrlUtil.isExternal(js.value()))
-                .forEach(js -> page.addJavaScript(js.value(), LoadMode.EAGER,
-                        JavaScript.Type.MODULE));
-    }
-
-    private boolean isRuntimeJavaScript(JavaScript js) {
-        return js.type() == JavaScript.Type.MODULE
-                || UrlUtil.isExternal(js.value());
-    }
-
-    /**
-     * Normalizes a runtime {@link JavaScript} annotation value so that the
-     * bootstrap URI resolver can expand it.
-     * <p>
-     * Values with a protocol (external URLs but also {@code context://} and
-     * {@code base://}) are passed through untouched, the same way they were
-     * before {@link JavaScript.Type#MODULE} existed. Only bare relative values,
-     * which are new with {@code Type.MODULE}, need normalizing to the context
-     * root.
-     *
-     * @return the normalized value, or {@code null} if the value was rejected
-     */
-    private String resolveRuntimeJavaScript(String value) {
-        if (UrlUtil.isExternal(value)) {
-            return value;
-        }
-        return FrontendDependencyUrlResolver.resolveToContextRoot(value);
+                .filter(js -> FrontendDependencyUrlResolver
+                        .isRuntimeDependencyUrl(js.value()))
+                .filter(js -> !productionMode || !js.developmentOnly())
+                // Resolved like a runtime @JavaScript value, so that the same
+                // value is accepted or rejected for both annotations
+                .map(js -> FrontendDependencyUrlResolver
+                        .resolveRuntimeJavaScript(js.value()))
+                .filter(Objects::nonNull)
+                .forEach(resolved -> page.addJavaScript(resolved,
+                        LoadMode.EAGER, JavaScript.Type.MODULE));
     }
 
     /**
@@ -2165,7 +2174,7 @@ public class UIInternals implements Serializable {
      * without making the UI inert.
      *
      * @return {@code true} if a component with modality is defined
-     * @since 25.4
+     * @since 25.3.5
      */
     public boolean hasModalityComponent() {
         return modalityStack != null && !modalityStack.isEmpty();
@@ -2177,7 +2186,7 @@ public class UIInternals implements Serializable {
      * set first.
      *
      * @return the components with modality, never {@code null}
-     * @since 25.4
+     * @since 25.3.5
      */
     public List<Component> getModalityComponents() {
         if (!hasModalityComponent()) {
@@ -2200,7 +2209,7 @@ public class UIInternals implements Serializable {
      *
      * @return the most recently set component with modality, or {@code null} if
      *         there is none
-     * @since 25.4
+     * @since 25.3.5
      */
     public Component getActiveModalityComponent() {
         if (!hasModalityComponent()) {
@@ -2261,7 +2270,7 @@ public class UIInternals implements Serializable {
      *            the child component to change modality for
      * @param mode
      *            the modality mode, not {@code null}
-     * @since 25.4
+     * @since 25.3.5
      */
     public void setChildModal(Component child, ModalityMode mode) {
         setModality(child, Objects.requireNonNull(mode));
@@ -2492,5 +2501,27 @@ public class UIInternals implements Serializable {
         @JsExpression("if(window.Vaadin.Flow.navigation) { window.addEventListener('vaadin-navigated', function(event) {"
                 + SET_TITLE + "}, {once:true}); }  else { " + SET_TITLE + " }")
         PendingJavaScriptResult setTitleAfterNavigation(String title);
+    }
+
+    /**
+     * How the chunk of a component is loaded, as a JavaScript definition for
+     * {@link JsSnippets#of(Class)}, so that loading it compiles nothing in the
+     * browser.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    @JsDefinition
+    public interface ChunkJs extends Serializable {
+
+        /**
+         * Declares the function that loads a chunk, for
+         * {@link Page#addDynamicImport(JsFunction)}.
+         *
+         * @param chunkId
+         *            the id of the chunk to load
+         * @return the function, which returns the promise of the chunk
+         */
+        @JsExpression("return window.Vaadin.Flow.loadOnDemand($0);")
+        JsFunction loadChunk(String chunkId);
     }
 }

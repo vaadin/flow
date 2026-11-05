@@ -662,6 +662,9 @@ jobs:
     # production mode builds the functional tests run, so the job writes the
     # TestBench license and, like the other test jobs, is skipped for pull
     # requests from forks.
+    permissions:
+      contents: read
+      checks: write
     needs: build
     if: ${{ !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 120
@@ -844,22 +847,45 @@ jobs:
           name: gradle-tests-report
           path: gradle-tests-report.tgz
           if-no-files-found: ignore
+      - name: Publish Gradle Test Results
+        # The functional tests keep the nested build output off the console,
+        # so this check run and the job summary list the failing tests with
+        # their failure messages. The nested build output of each test is in
+        # the gradle-tests-report artifact. The PR comment is left to the
+        # test-results job.
+        if: ${{ always() && steps.decide.outputs.run == 'true' }}
+        uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
+        with:
+          check_name: Gradle Test Results
+          files: 'flow-plugins/flow-gradle-plugin/build/test-results/**/TEST-*.xml'
+          comment_mode: 'off'
+          check_run_annotations: all tests, skipped tests
   sonar-analysis:
     name: Sonar Analysis
     # Runs after the unit tests so the analysis can reuse their JaCoCo
     # coverage reports instead of running the tests a second time.
+    # Only in vaadin/flow: a copy of this repository that has the organization
+    # secrets would otherwise upload its analysis to the flow SonarCloud
+    # project.
     needs: unit-tests
-    if: ${{ (github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'push') && !github.event.pull_request.head.repo.fork }}
+    if: ${{ github.repository == 'vaadin/flow' && (github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'push') && !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 60
     runs-on: ubuntu-26.04
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
+      - name: Skip Sonar analysis without a token
+        if: ${{ env.SONAR_TOKEN == '' }}
+        run: |
+          echo "⏭️ **SONAR_TOKEN** is not available to this run, skipping Sonar analysis" \
+            | tee -a $GITHUB_STEP_SUMMARY
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        if: ${{ env.SONAR_TOKEN != '' }}
         with:
           ref: ${{env._HEAD_SHA}}
           fetch-depth: 0  # Full history required for SonarCloud PR analysis
       - name: Set up JDK
+        if: ${{ env.SONAR_TOKEN != '' }}
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           java-version-file: .tool-versions
@@ -868,39 +894,44 @@ jobs:
         # The saved workspace was built as 999.99-SNAPSHOT; the poms must
         # match it for the restored target directories and .m2 artifacts
         # to be picked up.
+        if: ${{ env.SONAR_TOKEN != '' }}
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
       - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        if: ${{ env.SONAR_TOKEN != '' }}
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        if: ${{ github.run_attempt == 1 }}
+        if: ${{ env.SONAR_TOKEN != '' && github.run_attempt == 1 }}
         with:
           name: saved-workspace
       - name: Restore Workspace
         # Reuse the classes compiled by the build job instead of recompiling.
-        if: ${{ github.run_attempt == 1 }}
+        if: ${{ env.SONAR_TOKEN != '' && github.run_attempt == 1 }}
         run: |
           tar xf workspace.tar
           tar cf - .m2 | (cd ~ && tar xf -)
       - name: Compile and Install Flow
         # On re-runs the saved-workspace artifact has already been deleted,
         # so compile from scratch like the test jobs do.
-        if: ${{ github.run_attempt > 1 }}
+        if: ${{ env.SONAR_TOKEN != '' && github.run_attempt > 1 }}
         run: |
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Download coverage reports
+        if: ${{ env.SONAR_TOKEN != '' }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: coverage-unit-*
           merge-multiple: true
       - name: Extract coverage reports
+        if: ${{ env.SONAR_TOKEN != '' }}
         run: |
           for i in coverage-unit-*.tgz; do tar xzf "$i"; done
       - name: Run Sonar analysis
+        if: ${{ env.SONAR_TOKEN != '' }}
         # flow-gradle-plugin is excluded because the build job does not
         # compile it, so the workspace has no classes for it.
         #
@@ -925,6 +956,7 @@ jobs:
   test-results:
     permissions:
       actions: write
+      contents: read
       issues: read
       checks: write
       pull-requests: write
@@ -950,7 +982,7 @@ jobs:
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
         with:
-          junit_files: '**/target/*-reports/TEST*.xml'
+          files: '**/target/*-reports/TEST*.xml'
           check_run_annotations: all tests, skipped tests
       - name: Compute Stats
         run: |
@@ -986,7 +1018,9 @@ jobs:
       # A run triggered by Dependabot is given the Dependabot secret store
       # instead of the Actions one, so this secret is empty there. The secrets
       # context cannot be read from an if: condition, but env can, so the token
-      # is bound here and every step that needs it is guarded on it.
+      # is bound here and every step that needs it is guarded on it. For
+      # Dependabot PRs to be auto merged, VAADIN_BOT_TOKEN and
+      # VAADIN_REVIEW_BOT must therefore also be Dependabot secrets.
       VAADIN_BOT_TOKEN: ${{ secrets.VAADIN_BOT_TOKEN }}
     steps:
       - name: Skip auto-merge without a bot token
@@ -1010,8 +1044,12 @@ jobs:
         if: ${{ env.VAADIN_BOT_TOKEN != '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.VAADIN_BOT_TOKEN }}
-          GITHUB_REVIEW_TOKEN: ${{ secrets.REVIEW_TOKEN }}
+          # REVIEW_TOKEN is not in the Dependabot secret store, so Dependabot
+          # runs fall back to VAADIN_REVIEW_BOT.
+          GITHUB_REVIEW_TOKEN: ${{ secrets.REVIEW_TOKEN || secrets.VAADIN_REVIEW_BOT }}
           PR_NUMBER: ${{ github.event.number }}
+          # Also approve and auto merge patch and minor Dependabot updates.
+          AUTO_MERGE_DEPENDABOT: true
         run: node scripts/autoMerge.js
   api-diff-labeling:
     if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork
@@ -1098,7 +1136,7 @@ jobs:
             fi
           done | paste -sd, -)
           echo "Comparing $MODULES"
-          mvn clean install -B -ntp -e -V -pl="$MODULES" -am -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
+          mvn clean install -B -ntp -e -V -pl "$MODULES" -am -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
       - name: Move API diff results
         run: |
           #!/bin/bash

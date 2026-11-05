@@ -219,6 +219,34 @@ in the Javadoc and enforced for everything on the interpreted side. What must
 never happen is a member that quietly does nothing because it fell between the
 two.
 
+### Naming boolean properties
+
+Name a boolean property after its positive state: `isEnabled()` /
+`setEnabled(boolean)`, `isVisible()`, `isRequired()` — not `isDisabled()`,
+`isHidden()` or `setNotRequired(boolean)`. A negative name turns every
+negated check into a double negative: `!isDisabled()` makes the reader undo
+two negations to learn that the thing is enabled, and `setHidden(false)` is
+harder to follow than `setVisible(true)`.
+
+- **The getter and the setter share one polarity.** `setEnabled(false)` is
+  read back with `isEnabled()`, never with a separate `isDisabled()`.
+- **Flip the polarity at the boundary, not in the API.** HTML boolean
+  attributes name the non-default state (`disabled`, `hidden`) because they
+  work by presence and absence; Java has no such constraint. The wrapper maps
+  `setEnabled(false)` to the `disabled` attribute so that application code
+  never sees the negative form.
+- **Words that are positive concepts are fine.** `isEmpty()`, `isInert()`,
+  `isDisposed()` and `isReadOnly()` name a state of their own, not the
+  negation of another name in the same API. The rule is about `not`, `no`,
+  `dis-`, `un-` and `hidden`-style names whose opposite is the state callers
+  actually ask about.
+- **Existing negative names stay, and new API matches them.** Renaming
+  public API is a breaking change; do not rename only to follow this rule.
+  When new API joins a family that already uses a negative name, consistency
+  with the family wins: a field implements `HasValidation` with
+  `setInvalid(boolean)` / `isInvalid()`, so a range field that adds a flag for
+  one of its parts names it `isStartInvalid()`, not `isStartValid()`.
+
 ### Naming components that wrap HTML elements
 
 A component class name in `flow-html-components` is public API: changing it
@@ -279,3 +307,70 @@ Decide it from the rules below rather than case by case.
   explaining what to use instead, and remove it in the next major — the way
   `Label` was replaced by `NativeLabel` in 24.1 and removed in 25.
 
+
+### `toString()`
+
+`toString()` is for people: log lines, debugger views and exception messages.
+Loggers, IDEs and string concatenation call it on their own, at moments the
+class does not choose, so it has two jobs — say enough to tell what an instance
+is — and one constraint — never get in the way of the code that called it.
+
+- **It is not a contract.** No code path, wire format, CSS value or
+  JavaScript name depends on what `toString()` returns. A string the program
+  needs gets a named method, and `toString()` may delegate to it:
+  `ScrollIntoViewOption.Behavior.getValue()`,
+  `ScreenOrientationType.getClientValue()`, `Direction.getClientName()`. Call
+  the named method, not `toString()` — `element.getOuterHTML()` rather than
+  `element.toString()`, `message.toJson()` rather than `message.toString()`.
+  Enums such as `HasText.WhiteSpace`, `WebStorage.Storage` and `Unit` predate
+  this and return their client value from `toString()`; they stay that way for
+  compatibility, but do not copy the pattern. Relying on the `toString()` of a
+  JDK or library type is fine when its Javadoc documents the format, such as
+  `Path` or `URI`.
+- **Cheap, side-effect free, never throws.** It runs on log paths, possibly
+  per request, and inside the construction of an error message, where an
+  exception from `toString()` hides the error that was being reported (which
+  is why `StateNode.describe()` catches one from a component). Do not serialize
+  a subtree, walk a large structure or load data to build it. Be careful with
+  values the application supplied: `size()` on the collection behind a
+  `ListDataProvider` can be slow or initialise a lazy JPA collection, which is
+  only acceptable as a deliberate choice.
+- **Signals use `peek()`.** A signal's `toString()` reads the value with
+  `peek()`, never `get()`, so that logging a signal inside an effect or a
+  computed signal does not register a dependency (`ValueSignal`,
+  `SharedListSignal`, …).
+- **Use the runtime class name.** Start with `getClass().getSimpleName()`, not
+  a string literal, so a subclass reports its own type (`Range`,
+  `StringLengthValidator`, `AbstractField.ComponentValueChangeEvent`). For a
+  class with many instances that wraps application data, such as a data
+  provider, keep `super.toString()` so the identity hash still tells two
+  instances apart, and append the summary to it.
+- **Shape: type name and the state that identifies the instance.** Follow
+  `SimpleName[…]`: the type name, then the state in square brackets, as
+  `name=value` pairs the way records print them when the values need a name
+  (`Name[width=100, height=50]`), and bare when they do not
+  (`StringLengthValidator[1, 10]`). Show what identifies the instance or
+  explains its behaviour, not every field. The
+  signals and `RegexpValidator` have the shape but write the class name as a
+  literal, so a subclass such as `EmailValidator` prints `RegexpValidator[…]`;
+  do not copy that part.
+- **Label numbers that can mislead.** If a value can be read two ways, say
+  which one it is: `ListDataProvider` prints `250 backend items, filtered`,
+  because a bare `250 items` suggests the data is fine when a filter hides all
+  of it.
+- **Wrappers include what they wrap.** `DataProviderWrapper` and
+  `ConfigurableFilterDataProviderWrapper` print the wrapped provider, so the
+  chain is visible in one line.
+- **No secrets, and no application content on per-request log paths.** Never
+  include a password, token or other credential — `ProxyConfig.Proxy` says
+  that authentication is used instead of printing the username and password
+  (its id-first format is not an example of the shape). A description written
+  into a server log on every request should name structure (class, id, tag),
+  not the user's data.
+- **Records already have one.** Do not override the generated `toString()` of
+  a record unless it has to hide a field or the components alone do not
+  describe it.
+
+Changing the text of an existing `toString()` is not an API break, but tests
+in other repositories and applications sometimes compare it, so mention it as a
+behaviour change in the pull request.

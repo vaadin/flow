@@ -116,6 +116,12 @@ public class MockVaadinServletService extends VaadinServletService {
         return Collections.emptyList();
     }
 
+    @Override
+    protected List<SessionlessRequestHandler> createSessionlessRequestHandlers()
+            throws ServiceException {
+        return Collections.emptyList();
+    }
+
     public List<Throwable> getUncaughtExecutorExceptions() {
         return uncaughtExecutorExceptions;
     }
