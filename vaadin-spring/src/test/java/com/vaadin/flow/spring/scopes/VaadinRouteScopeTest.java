@@ -173,11 +173,9 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
 
         ObjectFactory<?> factory = putObjectIntoScope(scope);
 
-        // close the first UI
-        ui.getSession().removeUI(ui);
-
-        // the bean is not removed since there is a "preserved" UI
-        assertEquals(0, count.get());
+        // Refresh: Flow hands the preserved chain over to the new UI and
+        // closes the first UI.
+        ui.close();
 
         UI.setCurrent(anotherUI);
 
@@ -187,6 +185,12 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
         // the refreshed UI gets the same bean
         scope.get("foo", factory);
         verify(factory, times(1)).getObject();
+
+        // the bean is not removed with the first UI since the refreshed UI
+        // hosts it
+        UI.setCurrent(ui);
+        ui.getSession().removeUI(ui);
+        UI.setCurrent(anotherUI);
         assertEquals(0, count.get());
 
         navigateTo(anotherUI, new AnotherNavigationTarget());
@@ -257,7 +261,7 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
         setWindowName("bar", ui, anotherUI);
         scope.get("foo", factory);
 
-        session.removeUI(ui);
+        ui.close();
 
         UI.setCurrent(anotherUI);
         scope = initScope(anotherUI);
@@ -269,7 +273,7 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
     }
 
     @Test
-    void preservedChain_previousUIStillOpen_otherChainOfNewUIGetsOwnBeans() {
+    void preservedChain_previousUIClosedOnHandOver_newUITakesOverPreservedBeans() {
         UI ui = mockUI();
 
         UI anotherUI = makeAnotherUI(ui);
@@ -312,7 +316,7 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
     }
 
     @Test
-    void preservedChain_previousUIStillOpenAndChainNotReused_newUIGetsOwnBeans() {
+    void preservedChain_previousUIStillOpenAndChainNotHandedOver_newUIGetsOwnBeans() {
         UI ui = mockUI();
 
         UI anotherUI = makeAnotherUI(ui);
@@ -346,16 +350,28 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
         anotherScope.get("foo", factory);
         verify(factory, times(2)).getObject();
 
-        // The beans of the previous UI are destroyed with that UI, and the new
-        // UI keeps its own
+        // A refresh hands the chain of the new UI over to a third UI while the
+        // previous UI is still open: the third UI gets the beans of the
+        // chain it shows
+        UI thirdUI = makeAnotherUI(anotherUI);
+        setWindowName("bar", thirdUI);
+        session.addUI(thirdUI);
+        anotherUI.close();
+        UI.setCurrent(thirdUI);
+        VaadinRouteScope thirdScope = initScope(thirdUI);
+        navigateTo(thirdUI, new PreservedNavigationTarget());
+        thirdScope.get("foo", factory);
+        verify(factory, times(2)).getObject();
+
+        UI.setCurrent(anotherUI);
+        session.removeUI(anotherUI);
+        assertEquals(0, anotherCount.get());
+
+        // The beans of the previous UI are destroyed with that UI
         UI.setCurrent(ui);
         session.removeUI(ui);
         assertEquals(1, count.get());
         assertEquals(0, anotherCount.get());
-
-        UI.setCurrent(anotherUI);
-        anotherScope.get("foo", factory);
-        verify(factory, times(2)).getObject();
     }
 
     @Test

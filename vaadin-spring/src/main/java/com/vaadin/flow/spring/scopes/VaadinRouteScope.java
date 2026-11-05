@@ -64,18 +64,9 @@ public class VaadinRouteScope extends AbstractScope {
 
     private static class RouteStoreWrapper implements Serializable {
 
-        /** Prefix of the keys of stores bound to a single UI. */
-        private static final String UI_STORE_KEY_PREFIX = "uid-";
-
-        /**
-         * Prefix of the keys of stores bound to a browser window, and thus
-         * shared by all the UIs of that window.
-         */
-        private static final String WINDOW_STORE_KEY_PREFIX = "win-";
-
         private final VaadinSession session;
 
-        private final Map<String, RouteBeanStore> routeStores;
+        private final Map<Integer, RouteBeanStore> routeStores;
 
         private RouteStoreWrapper(VaadinSession session) {
             assert session.hasLock();
@@ -87,120 +78,61 @@ public class VaadinRouteScope extends AbstractScope {
         private RouteBeanStore getBeanStore(UI ui) {
             assert session.hasLock();
             if (getWindowName(ui) == null) {
-                // A preserved navigation chain can only be bound to the browser
-                // window once its name is known, so that a UI created by a page
-                // refresh finds the beans.
+                // A preserved navigation chain handed over by another UI can
+                // only be matched once the browser window name is known.
                 ui.getPage().retrieveExtendedClientDetails(
-                        details -> resolveBeanStore(ui));
+                        details -> takeOverHandedOverStore(ui));
             }
-            RouteBeanStore beanStore = resolveBeanStore(ui);
-            if (beanStore == null) {
-                String key = getStoreKey(ui);
-                beanStore = new RouteBeanStore(ui, session, key,
-                        store -> routeStores.remove(store.key, store));
-                routeStores.put(key, beanStore);
-            }
-            if (!ui.equals(beanStore.currentUI)) {
-                // Reloading for new UI on same window name. Update UI for
-                // beanStore.
-                beanStore.currentUI = ui;
-            }
-            return beanStore;
+            takeOverHandedOverStore(ui);
+            return routeStores.computeIfAbsent(ui.getUIId(),
+                    id -> new RouteBeanStore(ui, session, store -> routeStores
+                            .remove(store.currentUI.getUIId(), store)));
         }
 
         /**
-         * Resolves the existing store of the given UI. The store is moved
-         * between the UI and the browser window keys when the navigation chain
-         * of the UI starts or stops being preserved on refresh, so that its
-         * beans are not recreated while their owners stay in the chain.
+         * Moves the store of the UI whose preserved navigation chain the given
+         * UI has been handed, so that the beans follow their owner components.
+         * <p>
+         * Flow closes the previous UI of a browser window exactly when it hands
+         * its preserved chain over to a new UI, and a {@code
+         * PreserveOnRefresh} UI is not closed when its page unloads. Any other
+         * UI of the window that is still open keeps its own components, e.g.
+         * one left behind by a crashed tab, so its beans are not shared.
          */
-        private RouteBeanStore resolveBeanStore(UI ui) {
-            assert session.hasLock();
-            String uiKey = getUIStoreKey(ui);
+        private void takeOverHandedOverStore(UI ui) {
             String windowName = getWindowName(ui);
-            if (windowName == null) {
-                return routeStores.get(uiKey);
+            if (windowName == null || !isPreserveOnRefreshChain(ui)) {
+                return;
             }
-            String windowKey = WINDOW_STORE_KEY_PREFIX + windowName;
-            RouteBeanStore windowStore = routeStores.get(windowKey);
-            if (isPreserveOnRefreshChain(ui)) {
-                if (isHeldByAnotherOpenUI(windowStore, ui)) {
-                    return routeStores.get(uiKey);
-                }
-                return rescope(ui, uiKey, windowKey);
+            RouteBeanStore handedOver = routeStores.values().stream().filter(
+                    store -> isHandedOver(store.currentUI, ui, windowName))
+                    .findFirst().orElse(null);
+            if (handedOver == null) {
+                return;
             }
-            // The window store is bound back to this UI only if this UI is the
-            // one that used it last. Otherwise it belongs to another UI of the
-            // same browser window, e.g. one left open by a crashed tab.
-            if (windowStore != null && ui.equals(windowStore.currentUI)) {
-                return rescope(ui, windowKey, uiKey);
+            routeStores.remove(handedOver.currentUI.getUIId());
+            RouteBeanStore ownStore = routeStores.remove(ui.getUIId());
+            if (ownStore != null) {
+                // The handed over chain replaces the chain this UI had, so the
+                // beans of that chain are out of scope.
+                ownStore.uiDetachRegistration.remove();
+                ownStore.destroy();
             }
-            return routeStores.get(uiKey);
+            handedOver.setUI(ui);
+            routeStores.put(ui.getUIId(), handedOver);
         }
 
-        /**
-         * Checks whether the given window store still belongs to another UI of
-         * the same browser window. Flow closes the previous UI when it hands
-         * its preserved navigation chain to a new UI, so a previous UI that is
-         * still open keeps its components, e.g. when the tab crashed and is
-         * reloaded to another preserved route, and the beans must not be shared
-         * with the new UI.
-         */
-        private static boolean isHeldByAnotherOpenUI(RouteBeanStore windowStore,
-                UI ui) {
-            if (windowStore == null || ui.equals(windowStore.currentUI)) {
-                return false;
-            }
-            UI holder = windowStore.currentUI;
-            return !holder.isClosing() && holder.getSession() != null;
-        }
-
-        private boolean hasUIStore(UI ui) {
-            return routeStores.containsKey(getUIStoreKey(ui));
-        }
-
-        private RouteBeanStore rescope(UI ui, String fromKey, String toKey) {
-            RouteBeanStore fromStore = routeStores.remove(fromKey);
-            RouteBeanStore toStore = routeStores.get(toKey);
-            if (fromStore == null) {
-                return toStore;
-            }
-            if (toStore != null) {
-                // The beans of the other store are the ones the navigation
-                // chain uses, so the beans this UI held under the previous key
-                // are out of scope.
-                fromStore.uiDetachRegistration.remove();
-                fromStore.destroy();
-                return toStore;
-            }
-            fromStore.key = toKey;
-            // The store may have been listening to an earlier UI of the same
-            // browser window, but it now belongs to this UI only.
-            fromStore.uiDetachRegistration.remove();
-            fromStore.uiDetachRegistration = ui.addDetachListener(fromStore);
-            routeStores.put(toKey, fromStore);
-            return fromStore;
-        }
-
-        private String getStoreKey(UI ui) {
-            String windowName = getWindowName(ui);
-            if (windowName != null && isPreserveOnRefreshChain(ui)) {
-                String windowKey = WINDOW_STORE_KEY_PREFIX + windowName;
-                if (!isHeldByAnotherOpenUI(routeStores.get(windowKey), ui)) {
-                    return windowKey;
-                }
-            }
-            return getUIStoreKey(ui);
+        private static boolean isHandedOver(UI previousUI, UI ui,
+                String windowName) {
+            return previousUI != ui && previousUI.isClosing()
+                    && windowName.equals(getWindowName(previousUI))
+                    && isPreserveOnRefreshChain(previousUI);
         }
 
         private static boolean isPreserveOnRefreshChain(UI ui) {
             NavigationListener listener = ComponentUtil.getData(ui,
                     NavigationListener.class);
             return listener != null && listener.isPreserveOnRefreshChain();
-        }
-
-        private static String getUIStoreKey(UI ui) {
-            return UI_STORE_KEY_PREFIX + ui.getUIId();
         }
 
         private void destroy() {
@@ -369,19 +301,16 @@ public class VaadinRouteScope extends AbstractScope {
 
         private UI currentUI;
 
-        private String key;
-
         private Registration uiDetachRegistration;
 
         private final SerializableConsumer<RouteBeanStore> detachUiCallback;
 
         private final BeanNamesWrapper beanNames = new BeanNamesWrapper();
 
-        private RouteBeanStore(UI ui, VaadinSession session, String key,
+        private RouteBeanStore(UI ui, VaadinSession session,
                 SerializableConsumer<RouteBeanStore> detachUiCallback) {
             super(session);
             currentUI = ui;
-            this.key = key;
             uiDetachRegistration = currentUI.addDetachListener(this);
             this.detachUiCallback = detachUiCallback;
         }
@@ -390,18 +319,14 @@ public class VaadinRouteScope extends AbstractScope {
         public void onComponentEvent(DetachEvent event) {
             assert getVaadinSession().hasLock();
             uiDetachRegistration.remove();
-            // Only a store bound to the browser window outlives its UI, to be
-            // taken over by the UI that a page refresh creates.
-            if (isWindowScoped() && resetUI(event.getUI())) {
-                uiDetachRegistration = currentUI.addDetachListener(this);
-            } else {
-                destroy();
-                detachUiCallback.accept(this);
-            }
+            destroy();
+            detachUiCallback.accept(this);
         }
 
-        private boolean isWindowScoped() {
-            return key.startsWith(RouteStoreWrapper.WINDOW_STORE_KEY_PREFIX);
+        private void setUI(UI ui) {
+            uiDetachRegistration.remove();
+            currentUI = ui;
+            uiDetachRegistration = ui.addDetachListener(this);
         }
 
         @Override
@@ -431,38 +356,6 @@ public class VaadinRouteScope extends AbstractScope {
 
         BeanNamesWrapper getBeanNamesWrapper() {
             return beanNames;
-        }
-
-        /**
-         * Re-points this store to the UI that replaces the given detached UI on
-         * the same browser window, if any.
-         * <p>
-         * The detached UI is passed in explicitly because {@code currentUI} may
-         * already have been re-assigned to a newer UI by
-         * {@link RouteStoreWrapper#getBeanStore(UI)}, in which case it is not
-         * the UI this detach event originates from.
-         *
-         * @param detachedUI
-         *            the UI being detached
-         * @return {@code true} if a replacement UI without a store of its own
-         *         was found
-         */
-        private boolean resetUI(UI detachedUI) {
-            UI ui = findPreservingUI(detachedUI);
-            if (ui == null || hasOwnStore(ui)) {
-                // A UI with a store of its own built its navigation chain
-                // without the components of the detached UI, so the beans of
-                // this store are out of scope.
-                return false;
-            }
-            currentUI = ui;
-            return true;
-        }
-
-        private boolean hasOwnStore(UI ui) {
-            RouteStoreWrapper wrapper = getVaadinSession()
-                    .getAttribute(RouteStoreWrapper.class);
-            return wrapper != null && wrapper.hasUIStore(ui);
         }
 
         @NonNull
@@ -576,33 +469,6 @@ public class VaadinRouteScope extends AbstractScope {
 
     private static UI getUI() {
         return UI.getCurrentOrThrow();
-    }
-
-    /**
-     * Finds the UI that took over the browser window of the given UI, e.g. on a
-     * page refresh.
-     *
-     * @param ui
-     *            the UI being detached
-     * @return the UI on the same browser window, or {@code null} if there is
-     *         none
-     */
-    private static UI findPreservingUI(UI ui) {
-        VaadinSession session = ui.getSession();
-        String windowName = getWindowName(ui);
-        if (session == null || windowName == null) {
-            // Without a window name there is nothing to match the session UIs
-            // against, and a UI that has already been detached from the session
-            // cannot be matched at all.
-            return null;
-        }
-        for (UI sessionUi : session.getUIs()) {
-            if (sessionUi != ui
-                    && windowName.equals(getWindowName(sessionUi))) {
-                return sessionUi;
-            }
-        }
-        return null;
     }
 
 }
