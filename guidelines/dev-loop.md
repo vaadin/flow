@@ -190,11 +190,13 @@ that failure, and the CLI reports it rather than quietly reaping it.
 A request is one line, `<token> <verb> <args...>`. The reply is zero or more
 `> text` progress lines followed by exactly one `EXIT <code>`, which becomes
 the CLI's exit status. Progress-then-code is the shape `apply` needs, so every
-verb uses it. The verbs and their arguments are listed in the daemon README.
+command uses it; `register` is the connector's long-lived connection rather
+than a command, and sends no `EXIT`. The verbs and their arguments are listed
+in the daemon README.
 
-The exit code is what an agent acts on, which is why it is derived from
-`TransactionEngine.Outcome` rather than parsed out of text, and why changing
-what a code means breaks every agent that branches on it:
+The exit code is what an agent acts on, which is why an `apply`'s code is
+derived from `TransactionEngine.Outcome` rather than parsed out of text, and
+why changing what a code means breaks every agent that branches on it:
 
 | Outcome      | Exit | Means                                           |
 | ------------ | ---- | ----------------------------------------------- |

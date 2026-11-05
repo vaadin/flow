@@ -328,9 +328,10 @@ Keep the daemon's lifecycle automatic and separate from the application's:
 stops the application it launched. Decide whether a daemon or an application
 is alive from its process, never by probing a socket.
 
-Answer every daemon verb with zero or more `> ` progress lines and exactly one
-`EXIT <code>`, and derive the code from `TransactionEngine.Outcome`, never from
-parsed text. The exit codes are the contract agents act on — `0`, `1` and `4`
+Answer every daemon command with zero or more `> ` progress lines and exactly
+one `EXIT <code>`; `register`, the connector's own connection, is not a
+command. Derive the code of an `apply` from `TransactionEngine.Outcome`, never
+from parsed text. The exit codes are the contract agents act on — `0`, `1` and `4`
 for outcomes, `64`, `70` and `77` from the CLI — so do not change the meaning
 of one.
 
