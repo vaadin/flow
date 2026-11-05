@@ -547,17 +547,12 @@ public class ResponseWriter implements Serializable {
         if (compressedUrl == null) {
             return null;
         }
+        // Read first so a failure here leaves no compressed stream open
+        long resourceLastModified = getLastModified(resourceUrl);
         URLConnection connection = compressedUrl.openConnection();
-        boolean outdated;
-        try {
-            long compressedLastModified = connection.getLastModified();
-            outdated = compressedLastModified > 0
-                    && compressedLastModified < getLastModified(resourceUrl);
-        } catch (IOException | RuntimeException e) {
-            closeConnection(connection);
-            throw e;
-        }
-        if (outdated) {
+        long compressedLastModified = connection.getLastModified();
+        if (compressedLastModified > 0
+                && compressedLastModified < resourceLastModified) {
             getLogger().debug("Not serving {} because it is older than {}",
                     compressedUrl, resourceUrl);
             closeConnection(connection);
