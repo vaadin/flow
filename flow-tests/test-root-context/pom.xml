@@ -190,5 +190,72 @@
         </plugins>
       </build>
     </profile>
+    <!-- Runs the push tests and a selection of general tests through a
+         reverse proxy that terminates HTTPS, e.g.
+         -Dreverse.proxy=nginx -Dreverse.proxy.config=default
+         See ReverseProxy in flow-test-util for the available proxies. -->
+    <profile>
+      <id>reverse-proxy</id>
+      <activation>
+        <property>
+          <name>reverse.proxy</name>
+        </property>
+      </activation>
+      <properties>
+        <reverse.proxy.config>recommended</reverse.proxy.config>
+        <!-- The push tests are the ones a proxy breaks most often -->
+        <excludedGroups>com.vaadin.flow.testcategory.SlowTests,
+                com.vaadin.flow.testcategory.ScreenshotTests</excludedGroups>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.testcontainers</groupId>
+          <artifactId>testcontainers</artifactId>
+          <version>${testcontainers.version}</version>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <configuration>
+              <includes>
+                <include>**/ui/push/*IT.java</include>
+                <include>**/ui/*Push*IT.java</include>
+                <include>**/ui/LongPolling*IT.java</include>
+                <include>**/ui/RefreshCloseConnectionIT.java</include>
+                <include>**/ui/RouterIT.java</include>
+                <include>**/ui/RouterLinkIT.java</include>
+                <include>**/ui/NavigationEventsIT.java</include>
+                <include>**/ui/HistoryIT.java</include>
+                <include>**/ui/ForwardToIT.java</include>
+                <include>**/ui/PreserveOnRefreshIT.java</include>
+                <include>**/ui/RefreshCurrentRouteIT.java</include>
+                <include>**/ui/StreamResourceIT.java</include>
+                <include>**/ui/TriggerDownloadIT.java</include>
+                <include>**/ui/DownloadQuoteFileNameIT.java</include>
+                <include>**/ui/ExceptionInStreamResourceIT.java</include>
+                <include>**/ui/ErrorHandlingIT.java</include>
+                <include>**/ui/InternalErrorIT.java</include>
+                <include>**/ui/SyncErrorIT.java</include>
+                <include>**/ui/InvalidateHttpSessionIT.java</include>
+                <include>**/ui/RouterSessionExpirationIT.java</include>
+                <include>**/ui/UIsCollectedWithBeaconAPIIT.java</include>
+                <include>**/ui/ExecJavaScriptIT.java</include>
+              </includes>
+              <excludes>
+                <!-- These connect through their own TCP proxy to the server,
+                     past the reverse proxy -->
+                <exclude>**/ui/push/Reconnect*IT.java</exclude>
+              </excludes>
+              <!-- The known issues of the proxy configuration -->
+              <excludesFile>${project.basedir}/reverse-proxy/${reverse.proxy}-${reverse.proxy.config}-excludes.txt</excludesFile>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>

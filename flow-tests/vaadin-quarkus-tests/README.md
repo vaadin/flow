@@ -21,6 +21,8 @@ The modules are:
   the native image build uses
 - `push-dispatch-it` — a deadlock regression test for the Push dispatch
   default the extension sets
+- `sse-addon-it` — push through the transport of the SSE push add-on
+  (`flow-tests/test-sse-push-addon`), in production mode without Atmosphere
 - `custom-servlet-it` — an application whose only Vaadin servlet is a
   user-defined one mapped to `/app/*`, checked in a browser under that prefix
 - `codestarts` — generates a project from the extension's codestart and

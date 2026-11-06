@@ -2,9 +2,9 @@ import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
 import { testRegistry } from '../testRegistry';
 import {
-  AtmospherePushConnection,
+  DefaultPushConnection,
   FragmentedMessage
-} from '../../../../../main/frontend/internal/client/communication/AtmospherePushConnection';
+} from '../../../../../main/frontend/internal/client/communication/DefaultPushConnection';
 import { URIResolver } from '../../../../../main/frontend/internal/client/URIResolver';
 
 const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
@@ -13,13 +13,20 @@ interface AtmosphereConfigCapture {
   config: Record<string, (...args: unknown[]) => unknown> | null;
 }
 
-function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
+interface AddOnTransportOptions {
+  transportScript?: string;
+  parameters?: Map<string, string>;
+  loadScript?: (url: string, listener: { onLoad: (e: unknown) => void; onError: (e: unknown) => void }) => void;
+}
+
+function setupPush(serviceUrl = '/app/', contextRootUrl = '/', addOn: AddOnTransportOptions = {}) {
   const log = {
     pushOk: 0,
     pushError: 0,
     pushClosed: 0,
     pushInvalidContent: [] as string[],
     pushNotConnected: 0,
+    pushScriptLoadError: [] as string[],
     handled: [] as unknown[],
     pushed: [] as string[],
     disconnected: [] as string[]
@@ -43,8 +50,9 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
   const registry = testRegistry({
     UILifecycle: { addHandler: () => ({ remove: () => {} }) },
     PushConfiguration: {
-      getParameters: () => new Map<string, string>(),
+      getParameters: () => addOn.parameters ?? new Map<string, string>(),
       getPushServletMapping: () => null,
+      getTransportScript: () => addOn.transportScript ?? null,
       isAlwaysXhrToServer: () => false
     },
     ConnectionStateHandler: {
@@ -55,7 +63,7 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
       pushReconnectPending: () => {},
       pushInvalidContent: (_c: unknown, message: string) => log.pushInvalidContent.push(message),
       pushNotConnected: () => log.pushNotConnected++,
-      pushScriptLoadError: () => {}
+      pushScriptLoadError: (url: string) => log.pushScriptLoadError.push(url)
     },
     ApplicationConfiguration: {
       getServiceUrl: () => serviceUrl,
@@ -73,7 +81,7 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
       getLastSeenServerSyncId: () => 5,
       handleMessage: (json: unknown) => log.handled.push(json)
     },
-    ResourceLoader: { loadScript: () => {} }
+    ResourceLoader: { loadScript: addOn.loadScript ?? (() => {}) }
   });
   return { registry, log, capture, fakeSocket };
 }
@@ -93,7 +101,7 @@ function reassemble(fragments: string[]): string {
   return body.substring(0, length);
 }
 
-describe('AtmospherePushConnection', () => {
+describe('DefaultPushConnection', () => {
   const win = window as unknown as { vaadinPush?: unknown };
   let saved: unknown;
   beforeEach(() => {
@@ -109,9 +117,97 @@ describe('AtmospherePushConnection', () => {
     // no subscription happens.
     const { registry, capture } = setupPush();
     win.vaadinPush = undefined;
-    new AtmospherePushConnection(registry);
+    new DefaultPushConnection(registry);
     await tick();
     expect(capture.config).to.equal(null);
+  });
+
+  describe('push transport of an add-on', () => {
+    const flowWindow = window as unknown as { Vaadin?: { Flow?: { pushTransports?: Record<string, unknown> } } };
+    const addOn = {
+      transportScript: 'VAADIN/static/add-on/push.js',
+      parameters: new Map([['transport', 'add-on-push']])
+    };
+
+    function registerTransport(capture: AtmosphereConfigCapture): void {
+      flowWindow.Vaadin ??= {};
+      flowWindow.Vaadin.Flow ??= {};
+      flowWindow.Vaadin.Flow.pushTransports = {
+        'add-on-push': {
+          subscribe: (config: Record<string, (...args: unknown[]) => unknown>) => {
+            capture.config = config;
+            return {};
+          },
+          unsubscribeUrl: () => {}
+        }
+      };
+    }
+
+    afterEach(() => {
+      delete flowWindow.Vaadin?.Flow?.pushTransports;
+    });
+
+    it('connects with the registered transport instead of Atmosphere', async () => {
+      const { registry, capture } = setupPush('/app/', '/', addOn);
+      const addOnCapture: AtmosphereConfigCapture = { config: null };
+      registerTransport(addOnCapture);
+
+      new DefaultPushConnection(registry);
+      await tick();
+
+      expect(addOnCapture.config).to.not.equal(null);
+      expect(addOnCapture.config!.transport).to.equal('add-on-push');
+      expect(capture.config).to.equal(null);
+    });
+
+    it('uses a transport registered by the frontend bundle without loading a script', async () => {
+      const loaded: string[] = [];
+      const { registry, capture } = setupPush('/app/', '/', {
+        parameters: addOn.parameters,
+        loadScript: (url) => loaded.push(url)
+      });
+      const addOnCapture: AtmosphereConfigCapture = { config: null };
+      registerTransport(addOnCapture);
+
+      new DefaultPushConnection(registry);
+      await tick();
+
+      expect(addOnCapture.config).to.not.equal(null);
+      expect(capture.config).to.equal(null);
+      expect(loaded).to.deep.equal([]);
+    });
+
+    it('loads the client script of the transport before connecting', async () => {
+      const loaded: string[] = [];
+      const addOnCapture: AtmosphereConfigCapture = { config: null };
+      const { registry } = setupPush('/app/', '/', {
+        ...addOn,
+        loadScript: (url, listener) => {
+          loaded.push(url);
+          // The script registers the transport when it runs
+          registerTransport(addOnCapture);
+          listener.onLoad({});
+        }
+      });
+
+      new DefaultPushConnection(registry);
+      await tick();
+
+      expect(loaded).to.deep.equal(['/app/VAADIN/static/add-on/push.js']);
+      expect(addOnCapture.config).to.not.equal(null);
+    });
+
+    it('reports a client script that does not register the transport', async () => {
+      const { registry, log } = setupPush('/app/', '/', {
+        ...addOn,
+        loadScript: (_url, listener) => listener.onLoad({ getResourceData: () => 'push.js' })
+      });
+
+      new DefaultPushConnection(registry);
+      await tick();
+
+      expect(log.pushScriptLoadError).to.deep.equal(['push.js']);
+    });
   });
 
   describe('FragmentedMessage', () => {
@@ -152,7 +248,7 @@ describe('AtmospherePushConnection', () => {
     it('is active and not yet bidirectional before connecting', async () => {
       // Beyond the Java suite: No Java case covers the state before a transport is known.
       const { registry } = setupPush();
-      const connection = new AtmospherePushConnection(registry);
+      const connection = new DefaultPushConnection(registry);
       await tick(); // let the deferred connect() run
       expect(connection.isActive()).to.be.true; // CONNECT_PENDING
       expect(connection.isBidirectional()).to.be.false; // no transport yet
@@ -162,7 +258,7 @@ describe('AtmospherePushConnection', () => {
     it('subscribes with the default config and a sync-id supplier', async () => {
       // Beyond the Java suite: The Gwt suite reads the subscribe url only; the config defaults and the header supplier have no Java case.
       const { registry, capture } = setupPush();
-      new AtmospherePushConnection(registry);
+      new DefaultPushConnection(registry);
       await tick();
 
       const config = capture.config!;
@@ -181,7 +277,7 @@ describe('AtmospherePushConnection', () => {
     it('becomes connected and bidirectional on a websocket open, and fragments pushes', async () => {
       // Beyond the Java suite: No Java case drives onOpen through to a push.
       const { registry, log, capture } = setupPush();
-      const connection = new AtmospherePushConnection(registry);
+      const connection = new DefaultPushConnection(registry);
       await tick();
       expect(capture.config).to.not.equal(null); // subscribe was called
 
@@ -198,7 +294,7 @@ describe('AtmospherePushConnection', () => {
     it('routes a valid push message to the message handler and reports invalid content', async () => {
       // Beyond the Java suite: No Java case covers onMessage.
       const { registry, log, capture } = setupPush();
-      new AtmospherePushConnection(registry);
+      new DefaultPushConnection(registry);
       await tick();
       capture.config!.onOpen(response('websocket'));
 
@@ -212,7 +308,7 @@ describe('AtmospherePushConnection', () => {
     it('reports errors and closes, and disconnects an open connection', async () => {
       // Beyond the Java suite: No Java case covers onError/onClose.
       const { registry, log, capture } = setupPush();
-      const connection = new AtmospherePushConnection(registry);
+      const connection = new DefaultPushConnection(registry);
       await tick();
       capture.config!.onOpen(response('websocket'));
 
@@ -236,7 +332,7 @@ describe('AtmospherePushConnection', () => {
       // count against a later one, but a connection that keeps failing right
       // after opening must still fall back.
       const { registry, capture, fakeSocket } = setupPush();
-      new AtmospherePushConnection(registry);
+      new DefaultPushConnection(registry);
       await tick();
       const clock = sinon.useFakeTimers({ now: Date.now(), toFake: ['Date'] });
       try {
@@ -265,7 +361,7 @@ describe('AtmospherePushConnection', () => {
     it('unsubscribes from the same url it subscribed to', async () => {
       // Ported from testDisconnect_disconnectUrlIsSameAsInConnect.
       const { registry, log, capture } = setupPush('context://foo', 'bar/');
-      const connection = new AtmospherePushConnection(registry);
+      const connection = new DefaultPushConnection(registry);
       await tick();
       const pushUri = capture.config!.url as unknown as string;
 

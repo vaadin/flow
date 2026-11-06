@@ -25,6 +25,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -246,6 +247,32 @@ class HandlerHelperTest {
                 RequestType.PUSH);
 
         assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
+                request.getHttpServletRequest()));
+    }
+
+    @Test
+    void isFrameworkInternalRequest_addOnPushTransportUrl() {
+        // A push transport of an add-on serves VAADIN/push with a request
+        // type of its own
+        VaadinServletRequest request = createVaadinRequest("VAADIN/push", "",
+                RequestType.PUSH);
+        when(request.getHttpServletRequest()
+                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
+                .thenReturn("add-on-push");
+
+        assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
+                request.getHttpServletRequest()));
+    }
+
+    @Test
+    void isFrameworkInternalRequest_pushUrlWithoutRequestType_notInternal() {
+        VaadinServletRequest request = createVaadinRequest("VAADIN/push", "",
+                RequestType.PUSH);
+        when(request.getHttpServletRequest()
+                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
+                .thenReturn(null);
+
+        assertFalse(HandlerHelper.isFrameworkInternalRequest("/*",
                 request.getHttpServletRequest()));
     }
 

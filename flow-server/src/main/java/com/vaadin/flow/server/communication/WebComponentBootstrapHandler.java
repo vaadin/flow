@@ -160,9 +160,12 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
                 head.prependChild(getBootstrapScript(initialUIDL, context));
 
-                if (context.getPushMode().isEnabled()) {
-                    head.prependChild(createJavaScriptModuleElement(
-                            getPushScript(context), true));
+                String pushScript = context.getPushMode().isEnabled()
+                        ? getPushScript(context)
+                        : null;
+                if (pushScript != null) {
+                    head.prependChild(
+                            createJavaScriptModuleElement(pushScript, true));
                 }
 
                 setupCss(head, context);

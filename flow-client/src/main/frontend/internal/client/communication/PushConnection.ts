@@ -15,7 +15,7 @@
  */
 
 // TypeScript port of the com.vaadin.client.communication.PushConnection
-// interface. AtmospherePushConnection implements it; MessageSender and
+// interface. DefaultPushConnection implements it; MessageSender and
 // ConnectionStateHandler reference the contract.
 
 import type { ConnectionStateHandler } from './ConnectionStateHandler';
