@@ -299,9 +299,10 @@ class JacksonCodecTest {
         assertNull(JacksonCodec.decodeAs(objectMapper.nullNode(), listOfInts));
         assertEquals(json, JacksonCodec.decodeAs(json,
                 types.constructType(JsonNode.class)));
+        JsonNode text = objectMapper.valueToTree("abc");
+        JavaType integer = types.constructType(Integer.class);
         assertThrows(IllegalArgumentException.class,
-                () -> JacksonCodec.decodeAs(objectMapper.valueToTree("abc"),
-                        types.constructType(Integer.class)));
+                () -> JacksonCodec.decodeAs(text, integer));
     }
 
     @Test
