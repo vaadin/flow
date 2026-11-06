@@ -16,6 +16,11 @@
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.AfterEach;
@@ -37,6 +42,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletResponse;
+import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
@@ -49,8 +55,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @Isolated
 class JavaScriptBootstrapHandlerTest {
@@ -262,6 +270,41 @@ class JavaScriptBootstrapHandlerTest {
         PushConfiguration push = UI.getCurrent().getPushConfiguration();
         assertEquals(PushMode.MANUAL, push.getPushMode());
         assertEquals(Transport.LONG_POLLING, push.getTransport());
+    }
+
+    @Test
+    void browserTabInitListener_notifiedOncePerTabBeforeUIInitListeners()
+            throws Exception {
+        // Browser tabs are kept in a session attribute
+        Map<Class<?>, Object> attributes = new HashMap<>();
+        attributes.put(SessionRouteRegistry.class,
+                session.getAttribute(SessionRouteRegistry.class));
+        when(session.getAttribute(any(Class.class)))
+                .thenAnswer(invocation -> attributes
+                        .get(invocation.getArgument(0, Class.class)));
+        doAnswer(invocation -> attributes.put(invocation.getArgument(0),
+                invocation.getArgument(1))).when(session)
+                .setAttribute(any(Class.class), any());
+
+        // No browser tab is created while nobody listens for new tabs
+        jsInitHandler.handleRequest(session, mocks.createRequest(mocks, "/",
+                "v-r=init&location=&v-sw=1&v-wn=tab-a"), response);
+        assertEquals(Set.of(SessionRouteRegistry.class), attributes.keySet());
+
+        List<String> events = new ArrayList<>();
+        mocks.getService().addBrowserTabInitListener(
+                event -> events.add("tab " + event.getBrowserTab().getId()));
+        mocks.getService().addUIInitListener(event -> events.add("ui"));
+
+        for (String windowName : List.of("tab-a", "tab-a", "tab-b")) {
+            jsInitHandler.handleRequest(session,
+                    mocks.createRequest(mocks, "/",
+                            "v-r=init&location=&v-sw=1&v-wn=" + windowName),
+                    response);
+        }
+
+        assertEquals(List.of("tab tab-a", "ui", "ui", "tab tab-b", "ui"),
+                events);
     }
 
     @Test
