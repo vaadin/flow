@@ -410,6 +410,13 @@ public class InitParameters implements Serializable {
     public static final String NPM_EXCLUDE_WEB_COMPONENTS = "npm.excludeWebComponents";
 
     /**
+     * Configuration name for allowing npm packages to be declared with an
+     * exotic version, such as a tarball URL or a git repository, rather than a
+     * registry version or a local path.
+     */
+    public static final String NPM_ALLOW_EXOTIC_VERSIONS = "npm.allowExoticVersions";
+
+    /**
      * Configuration name for enabling browserless mode (e.g. for UI unit
      * tests). When enabled, dev server related warnings are suppressed.
      * 

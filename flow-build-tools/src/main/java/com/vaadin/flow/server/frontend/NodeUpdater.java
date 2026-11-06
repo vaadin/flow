@@ -44,6 +44,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
@@ -138,11 +139,27 @@ public abstract class NodeUpdater implements FallibleCommand {
             return JacksonUtils.createObjectNode();
         }
 
-        return pinnedNpmVersions.getDependencies(
+        final ObjectNode dependencies = pinnedNpmVersions.getDependencies(
                 options.isReactEnabled()
                         && FrontendBuildUtils.isReactModuleAvailable(options),
                 options.isNpmExcludeWebComponents(),
                 new VersionsJsonFilter(getPackageJson(), DEPENDENCIES));
+        if (!options.isNpmAllowExoticVersions()) {
+            for (String pkg : JacksonUtils.getKeys(dependencies)) {
+                final String version = dependencies.get(pkg).asString();
+                if (FrontendBuildUtils.isExoticVersion(version)) {
+                    log().warn(
+                            "Ignoring the version '{}' of npm package '{}' declared in a versions file,"
+                                    + " as versions that are neither a registry version nor a local path"
+                                    + " are not allowed. Set the 'npmAllowExoticVersions' plugin parameter"
+                                    + " or the '{}' configuration property to true to allow them.",
+                            version, pkg,
+                            InitParameters.NPM_ALLOW_EXOTIC_VERSIONS);
+                    dependencies.remove(pkg);
+                }
+            }
+        }
+        return dependencies;
     }
 
     /**
