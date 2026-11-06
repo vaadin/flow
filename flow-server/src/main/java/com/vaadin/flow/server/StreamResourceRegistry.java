@@ -18,9 +18,9 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
@@ -35,7 +35,7 @@ import com.vaadin.flow.server.streams.ElementRequestHandler;
  */
 public class StreamResourceRegistry implements Serializable {
 
-    private final Map<URI, AbstractStreamResource> res = new HashMap<>();
+    private final Map<URI, AbstractStreamResource> res = new ConcurrentHashMap<>();
 
     private final VaadinSession session;
 

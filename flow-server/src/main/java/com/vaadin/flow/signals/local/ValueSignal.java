@@ -110,7 +110,7 @@ public class ValueSignal<T extends @Nullable Object>
 
         // Track if the signal has ever been accessed without a locked session
         VaadinSession session = VaadinSession.getCurrent();
-        if (session == null || !session.hasLock()) {
+        if (session == null || !(session.hasLock() || session.hasAccess())) {
             usedWithoutSessionLock = true;
         }
 

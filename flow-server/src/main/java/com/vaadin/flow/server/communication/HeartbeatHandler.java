@@ -50,6 +50,11 @@ public class HeartbeatHandler extends SynchronizedRequestHandler
         return HandlerHelper.isRequestType(request, RequestType.HEARTBEAT);
     }
 
+    @Override
+    protected boolean canHandleWithUILock() {
+        return true;
+    }
+
     /**
      * Handles a heartbeat request for the given session. Reads the GET
      * parameter named {@link ApplicationConstants#UI_ID_PARAMETER} to identify
@@ -61,7 +66,9 @@ public class HeartbeatHandler extends SynchronizedRequestHandler
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
-        UI ui = session.getService().findUI(request);
+        UI ui = session.isUILockingEnabled()
+                ? session.getService().findUI(session, request)
+                : session.getService().findUI(request);
         if (ui != null) {
             ui.getInternals()
                     .setLastHeartbeatTimestamp(System.currentTimeMillis());

@@ -80,11 +80,12 @@ public class DeadlockDetectingCompletableFuture<T>
             // Won't block if we're done
             return;
         }
-        if (session != null && session.hasLock()) {
+        if (session != null && (session.hasLock() || session.hasAccess())) {
             /*
              * Disallow blocking if the current thread holds the lock for the
-             * session that would need to be locked by a request thread to
-             * complete the result
+             * session, or with UI locking the lock of one of its UIs, that
+             * would need to be locked by a request thread to complete the
+             * result
              */
             throw new IllegalStateException(
                     "Cannot block on the value from the thread that has locked the session. "

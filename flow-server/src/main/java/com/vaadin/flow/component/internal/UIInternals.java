@@ -29,8 +29,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -73,6 +78,7 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.CompressUtil;
 import com.vaadin.flow.internal.ConstantPool;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
@@ -102,6 +108,7 @@ import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.FrontendDependencyUrlResolver;
+import com.vaadin.flow.server.FutureAccess;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
@@ -110,6 +117,7 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
@@ -309,6 +317,24 @@ public class UIInternals implements Serializable {
      * The Vaadin session to which the related UI belongs.
      */
     private volatile VaadinSession session;
+
+    /**
+     * Protects the state of the related UI when the session uses UI locking,
+     * see {@link VaadinSession#isUILockingEnabled()}. Deserialized unlocked.
+     */
+    private final ReentrantLock uiLock = new ReentrantLock();
+
+    /*
+     * Tasks enqueued with UI.access() when the session uses UI locking. Pending
+     * tasks can't be serialized, the queue is recreated lazily.
+     */
+    private transient volatile Queue<FutureAccess> pendingAccessQueue;
+
+    /*
+     * Repeatable-read transaction for shared signals while the UI lock is held,
+     * the UI locking counterpart of the session-scoped transaction.
+     */
+    private transient Transaction uiScopedTransaction;
 
     private final DependencyList dependencyList = new DependencyList();
 
@@ -579,7 +605,7 @@ public class UIInternals implements Serializable {
      */
     // Package private: only used through PendingJavaScriptInvocationUtil
     int addUndeliveredJsInvocations(int delta) {
-        session.checkHasLock();
+        session.checkHasUIAccess(ui);
         // Only an invocation that this instance counted uncounts itself, so
         // the count is not expected to go negative. Clamped rather than
         // asserted since a slip in the bookkeeping behind a warning is not
@@ -599,7 +625,7 @@ public class UIInternals implements Serializable {
      */
     // Package private: only used through PendingJavaScriptInvocationUtil
     boolean markUndeliveredJsInvocationsWarningLogged() {
-        session.checkHasLock();
+        session.checkHasUIAccess(ui);
         if (undeliveredJsInvocationsWarningLogged) {
             return false;
         }
@@ -652,6 +678,221 @@ public class UIInternals implements Serializable {
         } else {
             return session + " for " + session.getService().getServiceName();
         }
+    }
+
+    /**
+     * Checks whether the current thread holds the lock of the related UI. The
+     * UI lock is only used when the session uses UI locking, see
+     * {@link VaadinSession#isUILockingEnabled()}.
+     * <p>
+     * This method is meant for framework internal use.
+     *
+     * @return {@code true} if the current thread holds the UI lock
+     */
+    public boolean hasUILock() {
+        return uiLock.isHeldByCurrentThread();
+    }
+
+    /**
+     * Checks whether the current thread may access the state of the related UI:
+     * it holds the UI lock with UI locking, or the session lock otherwise.
+     * Returns {@code false} if the UI is not attached to a session.
+     *
+     * @return {@code true} if the UI state may be accessed
+     */
+    public boolean hasAccess() {
+        VaadinSession currentSession = session;
+        if (currentSession == null) {
+            return false;
+        }
+        return currentSession.isUILockingEnabled() ? hasUILock()
+                : currentSession.hasLock();
+    }
+
+    /**
+     * Gets the lock protecting the related UI when the session uses UI locking.
+     * Use {@link #lockUI()} and {@link #unlockUI()} instead of locking it
+     * directly, so that pending tasks are run and changes pushed on release.
+     * <p>
+     * This method is meant for framework internal use.
+     *
+     * @return the UI lock, not {@code null}
+     */
+    public ReentrantLock getUILock() {
+        return uiLock;
+    }
+
+    /**
+     * Acquires the UI lock, blocking until it is available.
+     * <p>
+     * Must not be called while holding the session lock or the lock of another
+     * UI, since threads holding a UI lock may wait for the session lock. Use
+     * {@link #tryLockUI()} in that case.
+     * <p>
+     * This method is meant for framework internal use.
+     */
+    public void lockUI() {
+        uiLock.lock();
+    }
+
+    /**
+     * Acquires the UI lock if it is free or already held by the current thread,
+     * without waiting.
+     * <p>
+     * This method is meant for framework internal use.
+     *
+     * @return {@code true} if the lock was acquired and must be released with
+     *         {@link #unlockUI()}
+     */
+    public boolean tryLockUI() {
+        return uiLock.tryLock();
+    }
+
+    /**
+     * Releases the UI lock. When the lock is ultimately released, tasks
+     * enqueued with {@link UI#access(com.vaadin.flow.server.Command)} are run
+     * and pending changes are pushed if push mode is {@link PushMode#AUTOMATIC
+     * automatic}.
+     * <p>
+     * This method is meant for framework internal use.
+     */
+    public void unlockUI() {
+        boolean ultimateRelease = false;
+        try {
+            if (uiLock.getHoldCount() == 1) {
+                ultimateRelease = true;
+                runPendingAccessTasks();
+                pushIfAutomatic();
+                uiScopedTransaction = null;
+            }
+        } finally {
+            uiLock.unlock();
+        }
+        /*
+         * A task may be enqueued after the queue was purged but before the lock
+         * was released, see VaadinSession.unlock().
+         */
+        if (ultimateRelease && !getPendingAccessQueue().isEmpty()) {
+            ensureAccessQueuePurged();
+        }
+    }
+
+    private void pushIfAutomatic() {
+        if (session == null || ui.getPushConfiguration()
+                .getPushMode() != PushMode.AUTOMATIC) {
+            return;
+        }
+        Map<Class<?>, CurrentInstance> oldCurrent = CurrentInstance
+                .setCurrent(ui);
+        try {
+            ui.push();
+        } finally {
+            CurrentInstance.restoreInstances(oldCurrent);
+        }
+    }
+
+    /**
+     * Gets the queue of tasks enqueued with
+     * {@link UI#access(com.vaadin.flow.server.Command)} when the session uses
+     * UI locking. It is safe to access the queue without holding any lock.
+     * <p>
+     * This method is meant for framework internal use.
+     *
+     * @return the queue of pending access tasks, not {@code null}
+     */
+    public Queue<FutureAccess> getPendingAccessQueue() {
+        Queue<FutureAccess> queue = pendingAccessQueue;
+        if (queue == null) {
+            synchronized (uiLock) {
+                queue = pendingAccessQueue;
+                if (queue == null) {
+                    queue = new ConcurrentLinkedQueue<>();
+                    pendingAccessQueue = queue;
+                }
+            }
+        }
+        return queue;
+    }
+
+    /**
+     * Runs the pending access tasks if the UI lock is free, or leaves them to
+     * the thread holding the lock, which runs them before releasing it.
+     * <p>
+     * This method is meant for framework internal use.
+     */
+    public void ensureAccessQueuePurged() {
+        try {
+            // tryLock() would be shorter, but it does not guarantee fairness
+            if (uiLock.tryLock(0, TimeUnit.SECONDS)) {
+                // unlockUI triggers runPendingAccessTasks
+                unlockUI();
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * Runs the tasks enqueued with
+     * {@link UI#access(com.vaadin.flow.server.Command)} when the session uses
+     * UI locking. Does nothing if the current thread does not hold the UI lock,
+     * since the tasks are then run when the lock is released.
+     * <p>
+     * This method is meant for framework internal use.
+     */
+    public void runPendingAccessTasks() {
+        if (!hasUILock()) {
+            // Run by the thread holding the UI lock when releasing it
+            return;
+        }
+        Queue<FutureAccess> queue = getPendingAccessQueue();
+        if (queue.isEmpty()) {
+            return;
+        }
+        // Dump all current instances, not only the ones dumped by setCurrent
+        Map<Class<?>, CurrentInstance> oldInstances = CurrentInstance
+                .getInstances();
+        try {
+            FutureAccess pendingAccess;
+            while ((pendingAccess = queue.poll()) != null) {
+                if (!pendingAccess.isCancelled()) {
+                    CurrentInstance.clearAll();
+                    VaadinSession currentSession = session;
+                    if (currentSession != null) {
+                        CurrentInstance.setCurrent(currentSession);
+                    }
+                    // Fresh reads from shared signals for each task
+                    uiScopedTransaction = null;
+                    pendingAccess.run();
+                    try {
+                        pendingAccess.get();
+                    } catch (CancellationException ignored) { // NOSONAR
+                        // Canceled tasks are not reported to the error handler
+                    } catch (Exception exception) {
+                        pendingAccess.handleError(exception);
+                    }
+                }
+            }
+        } finally {
+            CurrentInstance.clearAll();
+            CurrentInstance.restoreInstances(oldInstances);
+        }
+    }
+
+    /**
+     * Gets the transaction used for shared signal operations while the UI lock
+     * is held, creating it lazily. The UI lock must be held.
+     * <p>
+     * This method is meant for framework internal use.
+     *
+     * @return the UI-scoped transaction, not {@code null}
+     */
+    public Transaction getOrCreateUIScopedTransaction() {
+        assert hasUILock();
+        if (uiScopedTransaction == null) {
+            uiScopedTransaction = Transaction.createWriteThrough();
+        }
+        return uiScopedTransaction;
     }
 
     /**
@@ -782,7 +1023,7 @@ public class UIInternals implements Serializable {
     }
 
     private <E> Registration addListener(Class<E> handler, E listener) {
-        session.checkHasLock();
+        session.checkHasUIAccess(ui);
         List<E> list = (List<E>) listeners.computeIfAbsent(handler,
                 key -> new ArrayList<>());
         list.add(listener);
@@ -837,7 +1078,7 @@ public class UIInternals implements Serializable {
      */
     public void addJavaScriptInvocation(
             PendingJavaScriptInvocation invocation) {
-        session.checkHasLock();
+        session.checkHasUIAccess(ui);
         pendingJsInvocations.add(invocation);
         pendingJsInvocationOwners.add(invocation.getOwner());
         // Counts an invocation that is queued directly, such as one from
@@ -911,7 +1152,7 @@ public class UIInternals implements Serializable {
      * @since 25.2
      */
     public int nextJsInitializerId() {
-        session.checkHasLock();
+        session.checkHasUIAccess(ui);
         return nextJsInitializerId++;
     }
 
@@ -923,7 +1164,7 @@ public class UIInternals implements Serializable {
      * @return a list of pending JavaScript invocations
      */
     public List<PendingJavaScriptInvocation> dumpPendingJavaScriptInvocations() {
-        session.checkHasLock();
+        session.checkHasUIAccess(ui);
         pendingTitleUpdateCanceler = null;
         lastUpdateSentTimestamp = Instant.now();
 
@@ -997,7 +1238,7 @@ public class UIInternals implements Serializable {
      */
     private void checkInvocationQueueLock() {
         if (session != null) {
-            session.checkHasLock();
+            session.checkHasUIAccess(ui);
         }
     }
 
@@ -1010,7 +1251,7 @@ public class UIInternals implements Serializable {
      */
     // Non-private for testing purposes
     Stream<PendingJavaScriptInvocation> getPendingJavaScriptInvocations() {
-        session.checkHasLock();
+        session.checkHasUIAccess(ui);
         return pendingJsInvocations.stream()
                 .filter(invocation -> !invocation.isCanceled());
     }

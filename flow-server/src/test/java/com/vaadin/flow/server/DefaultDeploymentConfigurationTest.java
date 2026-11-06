@@ -345,6 +345,23 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
+    void uiLocking_disabledByDefault() {
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                new Properties());
+
+        assertFalse(config.isUILockingEnabled());
+    }
+
+    @Test
+    void uiLocking_enabledViaInitParameter() {
+        Properties init = new Properties();
+        init.put(InitParameters.SERVLET_PARAMETER_UI_LOCKING, "true");
+        DefaultDeploymentConfiguration config = createDeploymentConfig(init);
+
+        assertTrue(config.isUILockingEnabled());
+    }
+
+    @Test
     void pushMode_unrecognizedValue_fallsBackToDisabled() {
         Properties init = new Properties();
         init.put(InitParameters.SERVLET_PARAMETER_PUSH_MODE, "sometimes");
