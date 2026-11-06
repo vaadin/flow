@@ -766,6 +766,26 @@ class TaskUpdatePackagesNpmTest {
         verifyVersionPinningWithNpmOverrides(true, true, false);
     }
 
+    @Test
+    void npmIsInUse_packageJsonHasUserUrlVersion_exoticVersionsNotAllowed_urlVersionReferencedInOverrides()
+            throws IOException {
+        final String libUrl = "https://example.com/some-lib-1.0.0.tgz";
+        final ObjectNode packageJson = getOrCreatePackageJson();
+        ((ObjectNode) packageJson.get(DEPENDENCIES)).put("some-lib", libUrl);
+        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
+                packageJson.toPrettyString(), StandardCharsets.UTF_8);
+        createBasicVaadinVersionsJson();
+
+        createTask(createApplicationDependencies()).execute();
+        createTask(createApplicationDependencies()).execute();
+
+        final ObjectNode result = getOrCreatePackageJson();
+        assertEquals(libUrl,
+                result.get(DEPENDENCIES).get("some-lib").asString());
+        assertEquals("$some-lib",
+                result.get(OVERRIDES).get("some-lib").asString());
+    }
+
     @ParameterizedTest
     @ValueSource(booleans = { false, true })
     void npmIsInUse_npmPackageHasUrlVersion_exoticVersionsNotAllowed_fails(
@@ -1709,8 +1729,8 @@ class TaskUpdatePackagesNpmTest {
     private TaskUpdatePackages createTask(
             Map<String, String> applicationDependencies, boolean enablePnpm,
             Logger taskLogger) {
-        return createTask(applicationDependencies, Map.of(), enablePnpm,
-                false, taskLogger);
+        return createTask(applicationDependencies, Map.of(), enablePnpm, false,
+                taskLogger);
     }
 
     private TaskUpdatePackages createTask(
