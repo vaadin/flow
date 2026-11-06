@@ -154,15 +154,9 @@ public class VaadinQuarkusNativeProcessor {
     private static final DotName JS_DEFINITION = DotName
             .createSimple(JsDefinition.class);
 
-    // FlowShortcut.js and FlowWebPush.js are client-side helpers Flow reads
-    // from the classpath at runtime. The rest of META-INF/frontend is
-    // build-time input for Vite and is served from the production bundle, so
-    // it is deliberately left out.
     // Visible for testing
     static final List<String> NATIVE_RESOURCE_GLOBS = List.of(
             "META-INF/VAADIN/**", "com/vaadin/**", "vaadin-i18n/**",
-            "META-INF/frontend/FlowShortcut.js",
-            "META-INF/frontend/FlowWebPush.js",
             "org/atmosphere/util/version.properties",
             "META-INF/maven/com.vaadin/vaadin-core/pom.properties",
             "vaadin-featureflags.properties");

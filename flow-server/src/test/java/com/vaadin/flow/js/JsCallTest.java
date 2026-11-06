@@ -32,6 +32,7 @@ import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -90,6 +91,12 @@ class JsCallTest {
         public void count(int... values) {
             greetings.add(Arrays.toString(values));
         }
+    }
+
+    interface ContextJs extends Serializable {
+        @JsExpression("this.run($0)")
+        @JsWithExecutionContext
+        void run(String name);
     }
 
     interface LoggerJs extends Serializable {
@@ -282,6 +289,15 @@ class JsCallTest {
 
         assertEquals(LoggerJs.class.getMethods().length, ids.size(),
                 "every way of generating the same JavaScript should have an identifier of its own");
+    }
+
+    @Test
+    void functionId_withExecutionContext_isAnotherFunction() throws Exception {
+        // The generated function takes the context as a leading parameter, so
+        // it may not be registered under the identifier of the same
+        // JavaScript generated without it
+        assertNotEquals(JsCall.functionId("this.run($0)", 1, false), JsCall
+                .functionId(ContextJs.class.getMethod("run", String.class)));
     }
 
     @Test

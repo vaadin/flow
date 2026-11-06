@@ -35,6 +35,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 /**
  * Hands out implementations of {@link JsDefinition} interfaces, which turn a
@@ -243,6 +244,13 @@ public final class JsDefinitionProxy {
                     : !returnsInvocationResult(method)) {
                 unanswerable.add(method.getName());
             } else if (snippets) {
+                if (method.isAnnotationPresent(JsWithExecutionContext.class)) {
+                    throw new IllegalArgumentException(definitionType.getName()
+                            + " has " + method.getName()
+                            + " annotated with @JsWithExecutionContext, which"
+                            + " only applies to a method that runs JavaScript"
+                            + " when it is called");
+                }
                 // Throws for names the build can not generate a function with
                 JsCall.getCalledWithNames(method);
             } else if (method.isAnnotationPresent(JsCalledWith.class)) {
