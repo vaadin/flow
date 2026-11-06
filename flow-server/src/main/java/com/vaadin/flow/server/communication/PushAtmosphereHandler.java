@@ -51,7 +51,13 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
     @Override
     public void onStateChange(AtmosphereResourceEvent event)
             throws IOException {
-        super.onStateChange(event);
+        // Flow never sets a message to write on close, so any message on a
+        // closing event is a broadcast that is being written concurrently to
+        // the same socket. Writing it again collides with that write (Tomcat:
+        // "TEXT_FULL_WRITING") and the client is gone anyway.
+        if (!event.isCancelled() && !event.isClosedByClient()) {
+            super.onStateChange(event);
+        }
         if (pushHandler == null) {
             getLogger().warn(
                     "AtmosphereHandler.onStateChange called before PushHandler has been set. This should really not happen");
