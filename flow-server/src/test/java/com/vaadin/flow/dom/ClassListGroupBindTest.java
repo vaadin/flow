@@ -172,6 +172,16 @@ class ClassListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
+    void bindBeforeAttach_appliesValueRightAway() {
+        Element element = new Element("div");
+
+        ValueSignal<List<String>> signal = new ValueSignal<>(List.of("a"));
+        element.getClassList().bind(signal);
+
+        assertTrue(element.getClassList().contains("a"));
+    }
+
+    @Test
     void detachAndReattach_reappliesCurrentValue() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);

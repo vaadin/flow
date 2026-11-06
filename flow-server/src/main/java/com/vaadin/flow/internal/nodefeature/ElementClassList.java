@@ -126,7 +126,7 @@ public class ElementClassList extends SerializableNodeList<String> {
             List<String>[] previousValue = new List[] { names.peek() };
             Element element = Element.get(getNode());
 
-            ElementEffect.effect(element, ctx -> {
+            new ElementEffect(element, ctx -> {
                 List<String> signalNames = names.get();
                 Set<String> newNames = new HashSet<>();
                 if (signalNames != null) {

@@ -129,7 +129,10 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
     /**
      * Creates a signal effect that is owned by a given component. The effect is
      * enabled every time the component is attached and automatically disabled
-     * when it is detached.
+     * when it is detached. The effect function is not run before the component
+     * is attached, so values set before attach, e.g. from a route parameter,
+     * are used by the first run. If the component is already attached, it is
+     * run right away.
      * <p>
      * Example of usage:
      *
@@ -164,9 +167,11 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
     /**
      * Creates a context-aware component-scoped signal effect. The effect is
      * enabled every time the component is attached and automatically disabled
-     * when it is detached. The action receives an {@link EffectContext}
-     * providing information about why the effect is running (initial render,
-     * effect owner's request, or background change).
+     * when it is detached. The effect function is not run before the component
+     * is attached. If the component is already attached, it is run right away.
+     * The action receives an {@link EffectContext} providing information about
+     * why the effect is running (initial render, effect owner's request, or
+     * background change).
      * <p>
      * Example of usage:
      *

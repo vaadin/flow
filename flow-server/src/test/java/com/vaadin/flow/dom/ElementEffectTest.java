@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.dom;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -28,11 +30,14 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -42,6 +47,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.DeniedSignalUsageException;
+import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ListSignal;
 import com.vaadin.flow.signals.local.ValueSignal;
@@ -593,7 +599,7 @@ class ElementEffectTest {
         var expected = new Exception("Expected checked exception");
 
         // There is no session error handler to use for the probe run that
-        // happens while the component is detached, so the exception ends up in
+        // happens while the element is detached, so the exception ends up in
         // the uncaught exception handler of the current thread
         var uncaught = new ArrayList<Throwable>();
         Thread thread = Thread.currentThread();
@@ -604,7 +610,7 @@ class ElementEffectTest {
         });
         try {
             ValueSignal<Void> dependency = new ValueSignal<>(null);
-            Signal.effect(component, () -> {
+            new ElementEffect(component.getElement(), () -> {
                 dependency.get();
                 throw sneakyThrow(expected);
             });
@@ -628,32 +634,82 @@ class ElementEffectTest {
         throw (T) exception;
     }
 
-    @Test
-    void effect_notAttached_effectRunsImmediatelyAsProbe() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void effect_notAttached_noSignalRead_throwsOnAttachWithCreationSiteInDevelopmentMode(
+            boolean developmentMode) throws Exception {
         CurrentInstance.clearAll();
-        TestComponent component = new TestComponent();
-        ValueSignal<String> signal = new ValueSignal<>("initial");
-        AtomicInteger count = new AtomicInteger();
+        withComponentTrackerEnabled(developmentMode, () -> {
+            TestComponent component = new TestComponent();
+            Signal.effect(component, () -> {
+                // no signal read
+            });
 
-        Signal.effect(component, () -> {
-            signal.get();
-            count.incrementAndGet();
+            MockUI ui = new MockUI();
+            var exception = assertThrows(MissingSignalUsageException.class,
+                    () -> ui.add(component));
+
+            if (developmentMode) {
+                assertEquals(1, exception.getSuppressed().length);
+                assertCreatedIn(exception.getSuppressed()[0],
+                        "effect_notAttached_noSignalRead_throwsOnAttachWithCreationSiteInDevelopmentMode");
+            } else {
+                assertEquals(0, exception.getSuppressed().length);
+            }
         });
-
-        assertEquals(1, count.get(),
-                "Effect should run once immediately as a probe at construction even when not attached");
     }
 
     @Test
-    void effect_notAttached_noSignalRead_throwsEagerly() {
+    void effect_notAttached_throwsOnAttach_creationSiteAddedToReportedError()
+            throws Exception {
         CurrentInstance.clearAll();
-        TestComponent component = new TestComponent();
+        withComponentTrackerEnabled(true, () -> {
+            TestComponent component = new TestComponent();
+            ValueSignal<Void> dependency = new ValueSignal<>(null);
+            Signal.effect(component, () -> {
+                dependency.get();
+                throw new RuntimeException("Expected exception");
+            });
 
-        assertThrows(com.vaadin.flow.signals.MissingSignalUsageException.class,
-                () -> Signal.effect(component, () -> {
-                    // no signal read
-                }),
-                "MissingSignalUsageException should be thrown eagerly at construction when no signal is read");
+            VaadinService.setCurrent(service);
+            var session = new MockVaadinSession(service);
+            session.lock();
+            var ui = new MockUI(session);
+            var events = new ArrayList<ErrorEvent>();
+            session.setErrorHandler(events::add);
+            ui.add(component);
+
+            assertEquals(1, events.size(),
+                    "Error handler should have been called");
+            Throwable[] suppressed = events.get(0).getThrowable()
+                    .getSuppressed();
+            assertEquals(1, suppressed.length);
+            assertCreatedIn(suppressed[0],
+                    "effect_notAttached_throwsOnAttach_creationSiteAddedToReportedError");
+        });
+    }
+
+    private static void withComponentTrackerEnabled(boolean enabled,
+            Runnable action) throws Exception {
+        Field disabledField = ComponentTracker.class
+                .getDeclaredField("disabled");
+        disabledField.setAccessible(true);
+        Object previousDisabled = disabledField.get(null);
+        disabledField.set(null, !enabled);
+        try {
+            action.run();
+        } finally {
+            disabledField.set(null, previousDisabled);
+        }
+    }
+
+    private static void assertCreatedIn(Throwable creationSite,
+            String testMethodName) {
+        assertTrue(
+                Arrays.stream(creationSite.getStackTrace())
+                        .anyMatch(element -> element.getMethodName()
+                                .equals(testMethodName)),
+                "Creation site should point at the code that created the effect");
     }
 
     @Test
@@ -667,35 +723,34 @@ class ElementEffectTest {
             count.incrementAndGet();
         });
 
-        assertEquals(1, count.get(),
-                "Effect should be run once immediately as a probe even before component is attached");
+        assertEquals(0, count.get(),
+                "Effect should not be run before component is attached");
 
         signal.set("test");
-        assertEquals(1, count.get(),
+        assertEquals(0, count.get(),
                 "Effect should not be run while detached even after signal value change");
 
         MockUI ui = new MockUI();
         ui.add(component);
 
-        assertEquals(2, count.get(),
-                "Effect should re-run on attach because signal changed while detached");
+        assertEquals(1, count.get(), "Effect should be run on attach");
 
         signal.set("test2");
-        assertEquals(3, count.get(),
+        assertEquals(2, count.get(),
                 "Effect should be run when signal value is changed");
 
         ui.remove(component);
 
         signal.set("test3");
-        assertEquals(3, count.get(), "Effect should not be run after detach");
+        assertEquals(2, count.get(), "Effect should not be run after detach");
 
         ui.add(component);
-        assertEquals(4, count.get(),
+        assertEquals(3, count.get(),
                 "Effect should re-run on reattach because signal changed while detached");
 
         registration.remove();
         signal.set("test4");
-        assertEquals(4, count.get(), "Effect should not be run after remove");
+        assertEquals(3, count.get(), "Effect should not be run after remove");
     }
 
     @Test
@@ -752,13 +807,9 @@ class ElementEffectTest {
             count.incrementAndGet();
         });
 
-        assertEquals(1, count.get(),
-                "Effect should run once immediately as a probe at construction");
-
         MockUI ui = new MockUI();
         ui.add(component);
-        assertEquals(1, count.get(),
-                "Effect should not re-run on attach when nothing changed since probe");
+        assertEquals(1, count.get(), "Effect should be run on attach");
 
         ui.remove(component);
         ui.add(component);
