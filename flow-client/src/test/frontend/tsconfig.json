@@ -7,6 +7,6 @@
     "rootDir": "../..",
     "types": ["mocha"]
   },
-  "//include": "Only the ported internal/ tree: the root-level FlowTests/FullscreenTests suites predate the port and are not type-clean. The modules under test enter the program through the suites' imports; src/main/frontend as a whole is covered by the root tsc in npm run build.",
-  "include": ["internal/**/*.ts"]
+  "//include": "The ported internal/ tree and the suites added with it: the other root-level suites predate the port and are not type-clean. The modules under test enter the program through the suites' imports; src/main/frontend as a whole is covered by the root tsc in npm run build.",
+  "include": ["internal/**/*.ts", "ConnectionStateTests.ts", "ConnectionIndicatorTests.ts"]
 }

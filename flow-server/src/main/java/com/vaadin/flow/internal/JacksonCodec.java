@@ -30,6 +30,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
+import com.vaadin.flow.js.JsCall;
 
 /**
  * Utility for encoding objects to and from JSON.
@@ -45,7 +46,9 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * <li>{@link Element} (encoded as a reference to the element)
  * <li>{@link Component} (encoded as a reference to the root element)
  * <li>{@link JsFunction} (encoded as a JS function literal that closes over its
- * captured parameters on the client)
+ * captured parameters on the client, or for one declared by a
+ * {@link com.vaadin.flow.js.JsDefinition JsDefinition} interface as the
+ * identifier of the function in the bundle and the captured parameters)
  * </ul>
  *
  * <p>
@@ -55,6 +58,11 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * @since 24.7
  */
 public class JacksonCodec {
+
+    /**
+     * The key of the JSON object that a {@link JsFunction} is encoded as.
+     */
+    public static final String FUNCTION_KEY = "@v-fn";
 
     private JacksonCodec() {
         // Don't create instances
@@ -103,22 +111,32 @@ public class JacksonCodec {
         return obj;
     }
 
+    @SuppressWarnings("removal")
     private static JsonNode encodeJsFunction(JsFunction value) {
         ObjectMapper mapper = JacksonUtils.getMapper();
         ObjectNode obj = mapper.createObjectNode();
         ObjectNode payload = mapper.createObjectNode();
-        payload.put("body", value.getBody());
+        JsCall declaredCall = value.getDeclaredCall();
+        if (declaredCall != null) {
+            // The bundle has the JavaScript and the parameter names, so all the
+            // client needs is which function to call with the captures
+            payload.put("id", declaredCall.getFunctionId());
+        } else {
+            payload.put("body", value.getBody());
+        }
         ArrayNode captures = mapper.createArrayNode();
         for (Object capture : value.getCaptures()) {
             captures.add(encodeWithTypeInfo(capture));
         }
         payload.set("captures", captures);
-        ArrayNode args = mapper.createArrayNode();
-        for (String name : value.getArgumentNames()) {
-            args.add(name);
+        if (declaredCall == null) {
+            ArrayNode args = mapper.createArrayNode();
+            for (String name : value.getArgumentNames()) {
+                args.add(name);
+            }
+            payload.set("args", args);
         }
-        payload.set("args", args);
-        obj.set("@v-fn", payload);
+        obj.set(FUNCTION_KEY, payload);
         return obj;
     }
 

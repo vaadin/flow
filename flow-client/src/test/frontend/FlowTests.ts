@@ -1,7 +1,7 @@
 import { expect } from '@open-wc/testing';
 
 // API to test
-import { ConnectionState, ConnectionStateStore } from '@vaadin/common-frontend';
+import { ConnectionState, ConnectionStateStore } from '../../main/frontend/ConnectionState';
 import { Flow, type NavigationParameters } from '../../main/frontend/Flow';
 // Intern does not serve webpack chunks, adding deps here in order to
 // produce one chunk, because dynamic imports in Flow.ts  will not work.
@@ -161,44 +161,13 @@ describe('Flow', () => {
 
   it('should initialize a flow loading indicator', async () => {
     new Flow({ imports: () => {} });
-    $wnd.Vaadin.connectionIndicator.firstDelay = 100;
-    $wnd.Vaadin.connectionIndicator.secondDelay = 200;
-    $wnd.Vaadin.connectionIndicator.thirdDelay = 400;
     await $wnd.Vaadin.connectionIndicator.updateComplete;
+    expect($wnd.Vaadin.connectionIndicator.isConnected).to.be.true;
     const indicator = $wnd.document.querySelector('.v-loading-indicator') as HTMLElement;
     const styles = $wnd.document.querySelector('style#css-loading-indicator') as HTMLElement;
     expect(indicator).not.to.be.null;
     expect(styles).not.to.be.null;
-
     expect(indicator.getAttribute('style')).to.equal('display: none');
-
-    $wnd.Vaadin.connectionState.state = ConnectionState.LOADING;
-    await $wnd.Vaadin.connectionIndicator.updateComplete;
-
-    await new Promise((resolve) => setTimeout(resolve, 150));
-    expect(indicator.getAttribute('style')).to.equal('display: block');
-    expect(indicator.classList.contains('first')).to.be.true;
-    expect(indicator.classList.contains('second')).to.be.false;
-    expect(indicator.classList.contains('third')).to.be.false;
-
-    await new Promise((resolve) => setTimeout(resolve, 150));
-    expect(indicator.getAttribute('style')).to.equal('display: block');
-    expect(indicator.classList.contains('first')).to.be.false;
-    expect(indicator.classList.contains('second')).to.be.true;
-    expect(indicator.classList.contains('third')).to.be.false;
-
-    await new Promise((resolve) => setTimeout(resolve, 150));
-    expect(indicator.classList.contains('first')).to.be.false;
-    expect(indicator.classList.contains('second')).to.be.false;
-    expect(indicator.classList.contains('third')).to.be.true;
-
-    $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
-    await $wnd.Vaadin.connectionIndicator.updateComplete;
-
-    expect(indicator.getAttribute('style')).to.equal('display: none');
-    expect(indicator.classList.contains('first')).to.be.false;
-    expect(indicator.classList.contains('second')).to.be.false;
-    expect(indicator.classList.contains('third')).to.be.false;
   });
 
   it('should throw when an incorrect server response is received', () => {

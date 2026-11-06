@@ -691,6 +691,7 @@ public class ReflectTools implements Serializable {
      *         {@code null} if {@code type} is not a subtype of the class
      *         declaring the variable or if the type information is lost because
      *         of raw types
+     * @since 25.4
      */
     public static Type getTypeParameter(Type type,
             TypeVariable<? extends Class<?>> variable) {
@@ -719,6 +720,7 @@ public class ReflectTools implements Serializable {
      *            the type to erase, not {@code null}
      * @return the erased class, or {@code null} if the type is of an unknown
      *         kind
+     * @since 25.4
      */
     public static Class<?> erase(Type type) {
         if (type instanceof Class<?> clazz) {

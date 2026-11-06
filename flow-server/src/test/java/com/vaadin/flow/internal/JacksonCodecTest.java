@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.internal;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -37,6 +38,10 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
+import com.vaadin.flow.js.JsCalledWith;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -202,6 +207,31 @@ class JacksonCodecTest {
         payload.put("body", "alert(message);");
         payload.set("captures", objectMapper.createArrayNode());
         payload.set("args", objectMapper.createArrayNode().add("message"));
+        ObjectNode expected = objectMapper.createObjectNode();
+        expected.set("@v-fn", payload);
+
+        assertJsonEquals(expected, json);
+    }
+
+    @JsDefinition
+    interface LoggerJs extends Serializable {
+        @JsExpression("console.log($0, value);")
+        @JsCalledWith("value")
+        JsFunction createLogger(String prefix);
+    }
+
+    @Test
+    void encodeWithTypeInfo_declaredJsFunction_namesTheFunctionInsteadOfABody() {
+        JsFunction logger = JsSnippets.of(LoggerJs.class)
+                .createLogger("Greeting:");
+
+        JsonNode json = JacksonCodec.encodeWithTypeInfo(logger);
+
+        // The bundle has the JavaScript and the parameter names
+        ObjectNode payload = objectMapper.createObjectNode();
+        payload.put("id", logger.getDeclaredCall().getFunctionId());
+        payload.set("captures",
+                objectMapper.createArrayNode().add("Greeting:"));
         ObjectNode expected = objectMapper.createObjectNode();
         expected.set("@v-fn", payload);
 

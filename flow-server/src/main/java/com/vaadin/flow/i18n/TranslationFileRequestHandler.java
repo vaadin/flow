@@ -106,6 +106,7 @@ public class TranslationFileRequestHandler
      *         handler does not handle the given request type
      * @throws IOException
      *             if an IO error occurred
+     * @since 25.4
      */
     @Override
     public boolean handleRequest(VaadinRequest request, VaadinResponse response)
