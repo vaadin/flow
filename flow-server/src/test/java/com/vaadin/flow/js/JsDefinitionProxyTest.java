@@ -15,22 +15,29 @@
  */
 package com.vaadin.flow.js;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.component.page.PendingJavaScriptResult.JavaScriptException;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -47,7 +54,7 @@ class JsDefinitionProxyTest {
         PendingJavaScriptResult readValue();
     }
 
-    public record Person(String name, int age) {
+    public record Person(String name, int age) implements Serializable {
     }
 
     @JsDefinition
@@ -159,6 +166,7 @@ class JsDefinitionProxyTest {
     /** A pending result that keeps its handlers for a test to complete. */
     private static class RecordingResult implements PendingJavaScriptResult {
         private final List<SerializableConsumer<JsonNode>> resultHandlers = new ArrayList<>();
+        private final List<SerializableConsumer<String>> errorHandlers = new ArrayList<>();
 
         @Override
         public boolean cancelExecution() {
@@ -174,11 +182,18 @@ class JsDefinitionProxyTest {
         public void then(SerializableConsumer<JsonNode> resultHandler,
                 SerializableConsumer<String> errorHandler) {
             resultHandlers.add(resultHandler);
+            if (errorHandler != null) {
+                errorHandlers.add(errorHandler);
+            }
         }
 
         private void complete(String json) {
             JsonNode value = JacksonUtils.getMapper().readTree(json);
             resultHandlers.forEach(handler -> handler.accept(value));
+        }
+
+        private void fail(String message) {
+            errorHandlers.forEach(handler -> handler.accept(message));
         }
     }
 
@@ -232,6 +247,31 @@ class JsDefinitionProxyTest {
         result.complete("42");
 
         assertEquals(42, answer.getNow(null));
+    }
+
+    @Test
+    void create_methodDeclaringATypedResult_failsTheFutureWithTheError() {
+        CompletableFuture<Integer> answer = proxy(TypedJs.class).readAnswer()
+                .toCompletableFuture();
+
+        result.fail("not thinking");
+
+        CompletionException exception = assertThrows(CompletionException.class,
+                () -> answer.getNow(null));
+        assertInstanceOf(JavaScriptException.class, exception.getCause());
+        assertEquals("not thinking", exception.getCause().getMessage());
+    }
+
+    @Test
+    void create_methodDeclaringATypedResult_isSerializable() throws Exception {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (ObjectOutputStream out = new ObjectOutputStream(bytes)) {
+            out.writeObject(proxy(TypedJs.class).readPeople());
+        }
+        try (ObjectInputStream in = new ObjectInputStream(
+                new ByteArrayInputStream(bytes.toByteArray()))) {
+            assertInstanceOf(JavaScriptResult.class, in.readObject());
+        }
     }
 
     @Test

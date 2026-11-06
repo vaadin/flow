@@ -27,10 +27,12 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JavaType;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.NumericNode;
 import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.type.TypeFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -283,6 +285,23 @@ class JacksonCodecTest {
         assertNull(JacksonCodec.decodeAs(json, Integer.class));
         assertNull(JacksonCodec.decodeAs(json, Double.class));
         assertNull(JacksonCodec.decodeAs(json, JsonNode.class));
+    }
+
+    @Test
+    void decodeAs_javaType() {
+        TypeFactory types = objectMapper.getTypeFactory();
+        JavaType listOfInts = types
+                .constructType(new TypeReference<List<Integer>>() {
+                });
+        JsonNode json = objectMapper.valueToTree(List.of(4, 2));
+
+        assertEquals(List.of(4, 2), JacksonCodec.decodeAs(json, listOfInts));
+        assertNull(JacksonCodec.decodeAs(objectMapper.nullNode(), listOfInts));
+        assertEquals(json, JacksonCodec.decodeAs(json,
+                types.constructType(JsonNode.class)));
+        assertThrows(IllegalArgumentException.class,
+                () -> JacksonCodec.decodeAs(objectMapper.valueToTree("abc"),
+                        types.constructType(Integer.class)));
     }
 
     @Test

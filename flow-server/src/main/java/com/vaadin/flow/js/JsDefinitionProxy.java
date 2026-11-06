@@ -294,9 +294,9 @@ public final class JsDefinitionProxy {
 
     private static boolean returnsInvocationResult(Method method) {
         Class<?> returnType = method.getReturnType();
-        // JavaScriptResult is a supertype of PendingJavaScriptResult, but the
-        // pending result is not what a method declaring a typed one gets
-        return returnType == void.class || returnType == JavaScriptResult.class
+        // Also true for JavaScriptResult, as a supertype of the pending result,
+        // whose type argument checkMethods checks before getting here
+        return returnType == void.class
                 || returnType.isAssignableFrom(PendingJavaScriptResult.class);
     }
 
