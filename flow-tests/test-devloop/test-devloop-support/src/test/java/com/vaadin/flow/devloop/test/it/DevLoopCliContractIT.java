@@ -81,26 +81,33 @@ class DevLoopCliContractIT {
     void statusAndPing_withAKilledDaemon_reapItWithoutSpawningAnother(
             @TempDir Path app) throws IOException {
         // A daemon that was killed rather than shut down leaves its handshake
-        // behind, and nothing listens on the port it names.
+        // behind, and nothing listens on the port it names. Its pid is either
+        // gone or, later, reused by an unrelated process, which the recorded
+        // start time tells apart from the daemon.
         Files.writeString(app.resolve("pom.xml"), "<project/>");
         Path handshake = app.resolve(".vaadin/daemon.properties");
         Files.createDirectories(handshake.getParent());
-        Files.writeString(handshake, "port=" + unusedPort()
-                + "\ntoken=stale\npid=" + Integer.MAX_VALUE + "\n");
         VaadinDevCli cli = VaadinDevCli.of(AbstractDevLoopIT.APP);
+        String gonePid = "pid=" + Integer.MAX_VALUE;
+        String reusedPid = "pid=" + ProcessHandle.current().pid()
+                + "\nstartEpochMillis=1";
 
-        cli.run("--app", app.toString(), "status").assertExitCode(0)
-                .assertOutputContains("left its handshake behind")
-                .assertOutputContains("no daemon running");
-        assertFalse(Files.exists(handshake),
-                "status neither reaped the stale handshake nor stopped there");
+        for (String process : new String[] { gonePid, reusedPid }) {
+            Files.writeString(handshake, "port=" + unusedPort()
+                    + "\ntoken=stale\n" + process + "\n");
+            cli.run("--app", app.toString(), "status").assertExitCode(0)
+                    .assertOutputContains("left its handshake behind")
+                    .assertOutputContains("no daemon running");
+            assertFalse(Files.exists(handshake), "status neither reaped the"
+                    + " stale handshake nor stopped there: " + process);
 
-        Files.writeString(handshake, "port=" + unusedPort()
-                + "\ntoken=stale\npid=" + Integer.MAX_VALUE + "\n");
-        cli.run("--app", app.toString(), "ping").assertExitCode(1)
-                .assertOutputContains("no daemon running");
-        assertFalse(Files.exists(handshake),
-                "ping neither reaped the stale handshake nor stopped there");
+            Files.writeString(handshake, "port=" + unusedPort()
+                    + "\ntoken=stale\n" + process + "\n");
+            cli.run("--app", app.toString(), "ping").assertExitCode(1)
+                    .assertOutputContains("no daemon running");
+            assertFalse(Files.exists(handshake), "ping neither reaped the"
+                    + " stale handshake nor stopped there: " + process);
+        }
     }
 
     @Test
@@ -112,8 +119,12 @@ class DevLoopCliContractIT {
         Files.writeString(app.resolve("pom.xml"), "<project/>");
         Path handshake = app.resolve(".vaadin/daemon.properties");
         Files.createDirectories(handshake.getParent());
-        Files.writeString(handshake, "port=" + unusedPort()
-                + "\ntoken=stale\npid=" + ProcessHandle.current().pid() + "\n");
+        Files.writeString(handshake,
+                "port=" + unusedPort() + "\ntoken=stale\npid="
+                        + ProcessHandle.current().pid() + "\nstartEpochMillis="
+                        + ProcessHandle.current().info().startInstant()
+                                .orElseThrow().toEpochMilli()
+                        + "\n");
         VaadinDevCli cli = VaadinDevCli.of(AbstractDevLoopIT.APP);
 
         for (String command : new String[] { "status", "ping" }) {

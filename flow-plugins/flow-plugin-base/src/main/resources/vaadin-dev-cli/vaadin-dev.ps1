@@ -220,6 +220,24 @@ function Read-Handshake([string] $key) {
     return $null
 }
 
+# Whether the daemon the handshake records is still running, decided from its
+# process. A live pid is not enough: once the daemon is killed its pid can be
+# handed to an unrelated process, so the recorded start time has to match too -
+# the same check the daemon makes.
+function Test-RecordedDaemonAlive([int] $processId) {
+    try { $process = Get-Process -Id $processId -ErrorAction Stop }
+    catch { return $false }
+    $recorded = 0L
+    if (-not [long]::TryParse((Read-Handshake 'startEpochMillis'), [ref]$recorded) -or
+            $recorded -le 0) {
+        return $true
+    }
+    try { $started = $process.StartTime } catch { return $true }
+    if (-not $started) { return $true }
+    $actual = ([DateTimeOffset] $started).ToUnixTimeMilliseconds()
+    return [Math]::Abs($actual - $recorded) -lt 2000
+}
+
 function Get-JavaBinary {
     if ($env:JAVA_HOME) {
         $candidate = Join-Path $env:JAVA_HOME 'bin\java.exe'
@@ -612,9 +630,8 @@ function Test-ReportsOnly([string] $verb) {
 }
 
 # The answer a reporting command gives when there is no daemon to ask, as an exit
-# code. The JSON has every member the daemon's own status --json has, null where
-# only a daemon could fill it in, so a reader that indexes into it needs no second
-# shape.
+# code. The JSON has every member the daemon's own status --json has, so a reader
+# finds each one; those only a daemon could fill in are null.
 function Write-NoDaemon([string] $verb, [string[]] $arguments) {
     if ($verb -eq 'ping') {
         [Console]::Out.WriteLine("no daemon running for $root")
@@ -651,11 +668,11 @@ try {
     $status = Send-Command ([int]$port) $token $words
 
     # 99 means the recorded daemon is not answering. Whether there is still a
-    # daemon is decided from its process: a live one is left alone by a command
-    # that only reports - reaping its record would let the next start spawn a
-    # second daemon beside it - and is otherwise replaced by a fresh daemon. A
-    # gone one leaves a stale record, which is reaped; a command that only
-    # reports then answers that there is no daemon.
+    # daemon is decided from its process: a command that only reports says a
+    # live one is not answering and leaves its record alone, so it never reports
+    # a running daemon as missing; any other command reaps the record and tries
+    # once more with a fresh daemon. A gone daemon leaves a stale record, which
+    # is reaped; a command that only reports then answers that there is none.
     #
     # Said out loud, because the application went with it. A daemon that shuts
     # down deletes its own handshake, so a handshake still naming a process that
@@ -666,8 +683,7 @@ try {
         $recorded = Read-Handshake 'pid'
         $alive = $false
         if ($recorded) {
-            try { $alive = [bool] (Get-Process -Id ([int]$recorded) -ErrorAction Stop) }
-            catch { $alive = $false }
+            $alive = Test-RecordedDaemonAlive ([int]$recorded)
         }
         if ($alive -and (Test-ReportsOnly $command)) {
             [Console]::Error.WriteLine("vaadin-dev: the daemon recorded for " +

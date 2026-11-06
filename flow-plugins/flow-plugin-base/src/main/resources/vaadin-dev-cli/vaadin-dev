@@ -217,6 +217,25 @@ read_prop() { # $1=key
     printf '%s' "$value"
 }
 
+# Whether the daemon the handshake records is still running, decided from its
+# process. A live pid is not enough: once the daemon is killed its pid can be
+# handed to an unrelated process, so the recorded start time has to match too,
+# within ps's one-second resolution - the same check the daemon makes.
+recorded_daemon_alive() { # $1=pid
+    kill -0 "$1" 2>/dev/null || return 1
+    local recorded elapsed days=0 h=0 m=0 sec
+    recorded="$(read_prop startEpochMillis)" || return 0
+    (( recorded > 0 )) || return 0
+    elapsed="$(ps -o etime= -p "$1" 2>/dev/null | tr -d ' ')"
+    [[ "$elapsed" =~ ^(([0-9]+)-)?(([0-9]+):)?([0-9]+):([0-9]+)$ ]] || return 0
+    days="${BASH_REMATCH[2]:-0}"; h="${BASH_REMATCH[4]:-0}"
+    m="${BASH_REMATCH[5]}"; sec="${BASH_REMATCH[6]}"
+    elapsed=$(( ((10#$days * 24 + 10#$h) * 60 + 10#$m) * 60 + 10#$sec ))
+    local drift=$(( ($(date +%s) - elapsed) * 1000 - recorded ))
+    (( drift < 0 )) && drift=$(( -drift ))
+    (( drift < 3000 ))
+}
+
 java_bin() {
     if [[ -n "${JAVA_HOME:-}" && -x "$JAVA_HOME/bin/java" ]]; then
         printf '%s' "$JAVA_HOME/bin/java"
@@ -606,8 +625,8 @@ reports_only() { # $1=command
 }
 
 # The answer a reporting command gives when there is no daemon to ask. The JSON
-# has every member the daemon's own status --json has, null where only a daemon
-# could fill it in, so a reader that indexes into it needs no second shape.
+# has every member the daemon's own status --json has, so a reader finds each
+# one; those only a daemon could fill in are null.
 no_daemon() { # $1=command $2...=its arguments
     if [[ "$1" == ping ]]; then
         echo "no daemon running for $ROOT"
@@ -641,11 +660,11 @@ main() {
     local status=$?
 
     # 99 means the recorded daemon is not answering. Whether there is still a
-    # daemon is decided from its process: a live one is left alone by a command
-    # that only reports - reaping its record would let the next start spawn a
-    # second daemon beside it - and is otherwise replaced by a fresh daemon. A
-    # gone one leaves a stale record, which is reaped; a command that only
-    # reports then answers that there is no daemon.
+    # daemon is decided from its process: a command that only reports says a
+    # live one is not answering and leaves its record alone, so it never reports
+    # a running daemon as missing; any other command reaps the record and tries
+    # once more with a fresh daemon. A gone daemon leaves a stale record, which
+    # is reaped; a command that only reports then answers that there is none.
     #
     # Said out loud, because the application went with it. A daemon that shuts
     # down deletes its own handshake, so a handshake still naming a dead process
@@ -654,7 +673,7 @@ main() {
     if (( status == 99 )); then
         local recorded
         recorded="$(read_prop pid || true)"
-        if [[ -n "$recorded" ]] && kill -0 "$recorded" 2>/dev/null; then
+        if [[ -n "$recorded" ]] && recorded_daemon_alive "$recorded"; then
             if reports_only "$cmd"; then
                 echo "vaadin-dev: the daemon recorded for $ROOT (pid $recorded)" \
                      "is running but not answering." >&2
