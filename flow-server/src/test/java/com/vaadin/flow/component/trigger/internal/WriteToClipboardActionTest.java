@@ -39,8 +39,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class WriteToClipboardActionTest {
 
-    private static final String HELPER_BODY = "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event), $2(event))";
-
     @Test
     void fireAndForget_textOnly_callsHelperWithHtmlAndImageSlotsReturningNull() {
         UI ui = new MockUI();

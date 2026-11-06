@@ -24,7 +24,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
-import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.component.trigger.internal.TriggerTestUtil;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
@@ -147,10 +147,6 @@ class WebShareTest {
                 .dumpPendingJavaScriptInvocations();
         assertEquals(1, pending.size(),
                 "Expected exactly one pending JS invocation");
-        JavaScriptInvocation invocation = pending.get(0).getInvocation();
-        Object o = invocation.getParameters().get(1);
-        assertTrue(o instanceof JsFunction,
-                "Expected the initializer argument to be a JsFunction");
-        return (JsFunction) o;
+        return TriggerTestUtil.installFn(pending.get(0).getInvocation());
     }
 }

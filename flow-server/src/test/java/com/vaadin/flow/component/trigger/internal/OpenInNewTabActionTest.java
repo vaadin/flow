@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.util.Objects;
+
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
@@ -29,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class OpenInNewTabActionTest {
 
-    private static final String EXPECTED_BODY = "((u) =>"
+    private static final String GUARDED_WINDOW_OPEN = "((u) =>"
             + " /^[\\x00-\\x20]*javascript:/i.test(String(u))"
             + " || window.open(u, \"_blank\", $1(event)))($0(event))";
 
@@ -49,6 +51,10 @@ class OpenInNewTabActionTest {
         // each live on their own input JsFunction captured by the action.
         JsFunction action = actionOf(singleInstallFn(ui));
         assertEquals("openInNewTab", snippetOf(action));
+        assertEquals(GUARDED_WINDOW_OPEN,
+                Objects.requireNonNull(action.getDeclaredCall())
+                        .getExpression(),
+                "window.open must only run for a URL that is not javascript:");
 
         JsFunction url = (JsFunction) action.getCaptures().get(0);
         assertEquals("https://vaadin.com/docs", url.getCaptures().get(0));
