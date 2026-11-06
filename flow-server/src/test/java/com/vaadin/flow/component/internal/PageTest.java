@@ -215,7 +215,7 @@ class PageTest {
     }
 
     private long countPendingInvocations() {
-        return ui.getInternals().getPendingJavaScriptInvocations().count();
+        return ui.getInternals().getPendingJavaScriptInvocations().size();
     }
 
 }
