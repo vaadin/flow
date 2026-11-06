@@ -236,7 +236,16 @@ public class CachedSignal<T extends @Nullable Object>
         return new Usage() {
             @Override
             public boolean hasChanges() {
-                return superUsage.hasChanges();
+                /*
+                 * Without active listeners, the cached value is only
+                 * revalidated when read, so the stored value may be stale even
+                 * though a dependency has changed. Check the dependencies of
+                 * the stored value as well so that an outer cached signal sees
+                 * transitive changes.
+                 */
+                CacheState state = readState(data(Transaction.getCurrent()));
+                return (state != null && state.dependencies.hasChanges())
+                        || superUsage.hasChanges();
             }
 
             @Override
