@@ -14,6 +14,7 @@
  * the License.
  */
 
+import { notifyActivityChanged } from './ActivityNotifier';
 import type { ApplicationConfiguration, ApplicationConnection } from './clientApi';
 
 /**
@@ -92,4 +93,5 @@ export function publishClient(
     }
   ).Vaadin.Flow.clients;
   clients[applicationId] = client;
+  notifyActivityChanged();
 }

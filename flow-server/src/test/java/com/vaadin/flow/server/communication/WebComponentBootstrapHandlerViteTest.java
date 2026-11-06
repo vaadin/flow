@@ -261,6 +261,39 @@ class WebComponentBootstrapHandlerViteTest {
     }
 
     @Test
+    void writeBootstrapPage_readyScriptInlined() throws IOException {
+        TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
+        VaadinServletService service = new MockVaadinServletService() {
+            @Override
+            protected void instrumentMockLookup(Lookup lookup) {
+                initLookup(lookup);
+            }
+        };
+
+        VaadinSession session = new MockVaadinSession(service);
+        session.lock();
+        MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
+                .getDeploymentConfiguration();
+        config.setProjectFolder(projectRootFolder);
+
+        VaadinServletRequest request = mock(VaadinServletRequest.class);
+        when(request.getService()).thenReturn(service);
+        when(request.getServletPath()).thenReturn("/");
+        when(request.getMethod()).thenReturn("GET");
+        VaadinResponse response = getMockResponse(null);
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        when(response.getOutputStream()).thenReturn(stream);
+
+        handler.synchronizedHandleRequest(session, request, response);
+
+        String result = stream.toString(StandardCharsets.UTF_8.name());
+
+        assertThat(result, containsString("window.Vaadin.Flow.ready = "));
+        assertThat(result, not(containsString("{{READY}}")));
+    }
+
+    @Test
     void writeBootstrapPage_spepe() throws Exception {
         WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
 
@@ -290,7 +323,7 @@ class WebComponentBootstrapHandlerViteTest {
         assertTrue(handler.canHandleRequest(request));
     }
 
-    @Disabled
+    @Disabled("Export chunks are a webpack build output, not produced by the Vite build")
     @Test
     void writeBootstrapPage_withExportChunk()
             throws IOException, ServiceException {
@@ -324,10 +357,9 @@ class WebComponentBootstrapHandlerViteTest {
                 result.contains("VAADIN/build/vaadin-bundle-1111.cache.js"));
     }
 
-    @Disabled
+    @Disabled("Export chunks are a webpack build output, not produced by the Vite build")
     @Test
-    void writeBootstrapPage_noExportChunk()
-            throws IOException, ServiceException {
+    void writeBootstrapPage_noExportChunk() throws IOException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService() {
             @Override
