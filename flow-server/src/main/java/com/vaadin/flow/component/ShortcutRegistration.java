@@ -70,7 +70,7 @@ public class ShortcutRegistration implements Registration, Serializable {
 
     static final String LISTEN_ON_INITIALIZED = "_initialized_listen_on_for_component";
 
-    private final Set<Key> modifiers = new HashSet<>(2);
+    private final Set<Key> modifiers = HashSet.newHashSet(2);
     private Key primaryKey = null;
 
     private StateTree.ExecutionRegistration executionRegistration;
