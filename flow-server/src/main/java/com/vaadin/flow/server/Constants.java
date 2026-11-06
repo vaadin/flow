@@ -29,7 +29,7 @@ import java.util.Set;
 public final class Constants implements Serializable {
 
     // Keep the version number in sync with flow-push/pom.xml
-    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "3.0.5.slf4jvaadin1";
+    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "4.0.73";
 
     /**
      * The prefix used for System property parameters.

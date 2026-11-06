@@ -19,9 +19,11 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.logging.LogEntry;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.uitest.ui.push.components.ClientServerCounter;
 
 public class PushUnloadPolicyIT extends ChromeBrowserTest {
 
@@ -29,8 +31,12 @@ public class PushUnloadPolicyIT extends ChromeBrowserTest {
     public void unloadBlocked_pushClientLoaded_noPermissionsPolicyViolation() {
         open();
 
-        waitUntil(driver -> (Boolean) executeScript(
-                "return !!(window.vaadinPush && window.vaadinPush.atmosphere)"));
+        // A server push arriving means the push client has been loaded and
+        // has connected
+        waitForElementPresent(By.id(ClientServerCounter.START_TIMER_ID));
+        AbstractClientServerCounterIT.getServerCounterStartButton(this).click();
+        waitUntil(driver -> AbstractClientServerCounterIT
+                .getServerCounter(this) > 0);
 
         Assert.assertEquals(
                 "The push client should not register an unload listener",

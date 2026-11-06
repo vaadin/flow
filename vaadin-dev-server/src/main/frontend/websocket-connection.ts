@@ -1,6 +1,7 @@
 import { Connection, ConnectionStatus } from './connection';
 
 const WEBSOCKET_FRAGMENT_SIZE = 16384; // This is PushConstants.WEBSOCKET_FRAGMENT_SIZE
+const VAADIN_PUSH_JS = 'VAADIN/static/push/vaadinPush.js'; // This is ApplicationConstants.VAADIN_PUSH_DEBUG_JS
 
 export class WebSocketConnection extends Connection {
   static HEARTBEAT_INTERVAL = 180000;
@@ -14,47 +15,60 @@ export class WebSocketConnection extends Connection {
       return;
     }
 
-    const config = {
+    const request = {
       transport: 'websocket',
-      fallbackTransport: 'websocket',
       url,
       contentType: 'application/json; charset=UTF-8',
-      reconnectInterval: 5000,
+      reconnect: true,
+      // Retry every 5 s, instead of the exponential backoff atmosphere.js
+      // applies by default
+      retryStrategy: { strategy: 'custom', customCalculate: () => 5000 },
       timeout: -1,
       maxReconnectOnClose: 10000000,
       trackMessageLength: true,
       enableProtocol: true,
-      handleOnlineOffline: false,
-      executeCallbackBeforeReconnect: true,
-      messageDelimiter: '|',
-      onMessage: (response: any) => {
+      messageDelimiter: '|'
+    };
+    const handlers = {
+      message: (response: any) => {
         const message = { data: response.responseBody };
         this.handleMessage(message);
       },
-      onError: (response: any) => {
+      // atmosphere.js reports every failed attempt here and goes on to
+      // reconnect, so only a connection that is given up on is an error.
+      error: () => {
+        this.canSend = false;
+      },
+      failureToReconnect: (_request: any, response: any) => {
         this.canSend = false;
         this.handleError(response);
       },
-      onOpen: () => {
+      open: () => {
         this.canSend = true;
       },
-      onClose: () => {
+      close: () => {
         this.canSend = false;
       },
-      onClientTimeout: () => {
+      clientTimeout: () => {
         this.canSend = false;
       },
-      onReconnect: () => {
+      reconnect: () => {
         this.canSend = false;
       },
-      onReopen: () => {
+      reopen: () => {
         this.canSend = true;
       }
     };
 
-    waitForPush().then((atmosphere) => {
-      this.socket = atmosphere.subscribe(config);
-    });
+    const onError = (error: any) => {
+      this.canSend = false;
+      this.handleError(error);
+    };
+    loadPush().then((atmosphere) => {
+      new atmosphere.Atmosphere().subscribe(request, handlers).then((subscription: any) => {
+        this.socket = subscription;
+      }, onError);
+    }, onError);
   }
 
   onReload(_strategy: string) {
@@ -129,9 +143,8 @@ function waitFor<T>(check: () => T | undefined, callback: (value: T) => void) {
   }
 }
 
-function waitForPush(): Promise<any> {
-  // Wait for window.vaadinPush.atmosphere to be defined and return it
-  return new Promise<any>((resolve, _reject) => {
-    waitFor(() => (window as any)?.vaadinPush?.atmosphere, resolve);
-  });
+function loadPush(): Promise<any> {
+  // vaadinPush.js is the atmosphere.js ES module. The path is relative to the
+  // servlet root, which the document base url points to.
+  return import(/* @vite-ignore */ new URL(VAADIN_PUSH_JS, document.baseURI).href);
 }

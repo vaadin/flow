@@ -15,13 +15,14 @@
     <jandex.skip>true</jandex.skip>
     <pushDirectory>${project.build.outputDirectory}/META-INF/resources/VAADIN/static/push</pushDirectory>
     <vaadinPush.js>${pushDirectory}/vaadinPush.js</vaadinPush.js>
+    <atmosphere.js.registry>https://registry.npmjs.org</atmosphere.js.registry>
     <vaadinPush-min.js>${pushDirectory}/vaadinPush-min.js</vaadinPush-min.js>
   </properties>
 
   <dependencies>
     <!-- Atmosphere -->
     <dependency>
-      <groupId>com.vaadin.external.atmosphere</groupId>
+      <groupId>org.atmosphere</groupId>
       <artifactId>atmosphere-runtime</artifactId>
       <version>${atmosphere.runtime.version}</version>
     </dependency>
@@ -67,54 +68,6 @@
     </pluginManagement>
     <plugins>
       <plugin>
-        <!-- Create minified vaadin push js-->
-        <groupId>net.alchim31.maven</groupId>
-        <artifactId>yuicompressor-maven-plugin</artifactId>
-        <version>1.5.1</version>
-        <configuration>
-          <sourceDirectory>${pushDirectory}</sourceDirectory>
-          <jswarn>false</jswarn>
-          <includes>
-            <include>vaadinPush.js</include>
-          </includes>
-          <outputDirectory>${pushDirectory}</outputDirectory>
-        </configuration>
-        <executions>
-          <execution>
-            <id>minifyjs</id>
-            <goals>
-              <goal>compress</goal>
-            </goals>
-            <phase>process-resources</phase>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.11.0</version>
-        <executions>
-          <execution>
-            <id>unpack-atmosphere-js</id>
-            <goals>
-              <goal>unpack</goal>
-            </goals>
-            <phase>generate-resources</phase>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>org.atmosphere.client</groupId>
-                  <artifactId>javascript</artifactId>
-                  <version>${atmosphere.client.version}</version>
-                  <type>war</type>
-                  <outputDirectory>${project.build.directory}/temp</outputDirectory>
-                </artifactItem>
-              </artifactItems>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
         <version>3.2.0</version>
         <executions>
@@ -126,19 +79,38 @@
             <phase>generate-resources</phase>
             <configuration>
               <target>
-                <property location="${project.build.directory}/temp" name="javascript.unpack"/>
-                <property location="${project.build.sourceDirectory}/../templates" name="templates.dir"/>
+                <property location="${project.build.directory}/atmosphere-js" name="javascript.unpack"/>
+                <property location="${javascript.unpack}/atmosphere.js-${atmosphere.js.version}.tgz" name="atmosphere.js.tgz"/>
 
-                <loadfile property="atmosphere.js.contents" srcfile="${javascript.unpack}/javascript/atmosphere.js"/>
+                <!-- atmosphere.js 5 is published to npm only, so this needs
+                     access to an npm registry: Maven mirrors and offline mode
+                     do not apply. Point atmosphere.js.registry at an npm proxy
+                     where the public registry is not reachable. -->
+                <mkdir dir="${javascript.unpack}"/>
+                <get dest="${atmosphere.js.tgz}" skipexisting="true" src="${atmosphere.js.registry}/atmosphere.js/-/atmosphere.js-${atmosphere.js.version}.tgz"/>
+                <checksum algorithm="SHA-512" file="${atmosphere.js.tgz}" property="${atmosphere.js.sha512}" verifyproperty="atmosphere.js.verified"/>
+                <fail message="${atmosphere.js.tgz} does not match the atmosphere.js.sha512 checksum">
+                  <condition>
+                    <isfalse value="${atmosphere.js.verified}"/>
+                  </condition>
+                </fail>
+                <untar compression="gzip" dest="${javascript.unpack}" src="${atmosphere.js.tgz}">
+                  <patternset>
+                    <include name="package/dist/index.js"/>
+                    <include name="package/dist/index.js.map"/>
+                  </patternset>
+                </untar>
 
-                <loadfile property="vaadinPush.js.contents" srcfile="${templates.dir}/vaadinPush.js.tpl">
-                  <filterchain>
-                    <replacetokens begintoken="@" endtoken="@">
-                      <token key="atmosphere.js" value="${atmosphere.js.contents}"/>
-                    </replacetokens>
-                  </filterchain>
-                </loadfile>
-                <echo file="${vaadinPush.js}">${vaadinPush.js.contents}</echo>
+                <!-- vaadinPush.js is the self-contained ES module build of
+                     atmosphere.js as it is, which the client loads with
+                     import(). It ships minified, so both variants are the
+                     same file. The source map keeps its name, which is the
+                     one the module refers to. npm sets every file in the
+                     tarball to the same date in 1985, so a copy that goes
+                     by dates would keep the files of an earlier version. -->
+                <copy file="${javascript.unpack}/package/dist/index.js" overwrite="true" tofile="${vaadinPush.js}"/>
+                <copy file="${javascript.unpack}/package/dist/index.js" overwrite="true" tofile="${vaadinPush-min.js}"/>
+                <copy file="${javascript.unpack}/package/dist/index.js.map" overwrite="true" todir="${pushDirectory}"/>
               </target>
             </configuration>
           </execution>

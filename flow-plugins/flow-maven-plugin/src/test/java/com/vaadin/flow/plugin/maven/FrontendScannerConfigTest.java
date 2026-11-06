@@ -147,7 +147,7 @@ class FrontendScannerConfigTest {
             com.vaadin:vaadin-checkbox-flow:jar:25.4-SNAPSHOT:compile
             com.vaadin:flow-server:jar:25.4-SNAPSHOT:compile
             com.vaadin:flow-push:jar:25.4-SNAPSHOT:compile
-            com.vaadin.external.atmosphere:atmosphere-runtime:jar:3.0.5.slf4jvaadin1:compile
+            org.atmosphere:atmosphere-runtime:jar:4.0.73:compile
             com.vaadin.servletdetector:throw-if-servlet3:jar:1.0.2:compile
             org.jspecify:jspecify:jar:1.0.0:compile
             org.slf4j:slf4j-api:jar:2.0.17:compile

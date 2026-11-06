@@ -235,7 +235,7 @@ public class FrontendScannerConfig {
         out.addExclude(new FrontendScannerConfig.ArtifactMatcher(
                 "com.vaadin.external", "gentyref"));
         out.addExclude(new FrontendScannerConfig.ArtifactMatcher(
-                "com.vaadin.external.atmosphere", "atmosphere-runtime"));
+                "org.atmosphere", "atmosphere-runtime"));
         out.addExclude(new FrontendScannerConfig.ArtifactMatcher("com.vaadin",
                 "vaadin-dev-server"));
         out.addExclude(new FrontendScannerConfig.ArtifactMatcher("com.vaadin",

@@ -18,12 +18,11 @@
 // from the configuration object (the value returned by
 // $wnd.Vaadin.Flow.getApp(appId), which exposes a getConfig(name) accessor).
 //
-// getAtmosphereJSVersion reads the Atmosphere version off the window rather than
-// through AtmospherePushConnection: Java reaches that class's private static
-// isAtmosphereLoaded through JSNI, which ignores visibility, and TypeScript has
-// no equivalent.
+// getAtmosphereJSVersion reads the Atmosphere version from the loaded
+// atmosphere.js module, which Flow.ts loads during bootstrap when push is on.
 
 import type { ValueMap } from '../ValueMap';
+import { getLoadedAtmosphere } from '../communication/AtmosphereLoader';
 
 // The bootstrap configuration object exposes a getConfig(name) accessor over the
 // values the server injected into the page. This is the JavaScript object the
@@ -139,9 +138,8 @@ export function getAtmosphereVersion(config: ConfigObject): string | null {
  * @returns a string with the version
  */
 export function getAtmosphereJSVersion(): string | null {
-  const atmosphere = (window as unknown as { vaadinPush?: { atmosphere?: { version?: string } } }).vaadinPush
-    ?.atmosphere;
-  return atmosphere?.version ?? null;
+  const atmosphere = getLoadedAtmosphere() as { VERSION?: string } | null;
+  return atmosphere?.VERSION ?? null;
 }
 
 /**
