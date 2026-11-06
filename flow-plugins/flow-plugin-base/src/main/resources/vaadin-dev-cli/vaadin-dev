@@ -640,9 +640,12 @@ main() {
     send "$port" "$token" "$cmd" "$@"
     local status=$?
 
-    # 99 means the recorded daemon is not answering: the record is stale, so reap
-    # it and try once more with a fresh daemon - or, for a command that only
-    # reports, answer that there is none.
+    # 99 means the recorded daemon is not answering. Whether there is still a
+    # daemon is decided from its process: a live one is left alone by a command
+    # that only reports - reaping its record would let the next start spawn a
+    # second daemon beside it - and is otherwise replaced by a fresh daemon. A
+    # gone one leaves a stale record, which is reaped; a command that only
+    # reports then answers that there is no daemon.
     #
     # Said out loud, because the application went with it. A daemon that shuts
     # down deletes its own handshake, so a handshake still naming a dead process
@@ -652,6 +655,11 @@ main() {
         local recorded
         recorded="$(read_prop pid || true)"
         if [[ -n "$recorded" ]] && kill -0 "$recorded" 2>/dev/null; then
+            if reports_only "$cmd"; then
+                echo "vaadin-dev: the daemon recorded for $ROOT (pid $recorded)" \
+                     "is running but not answering." >&2
+                exit 70
+            fi
             echo "vaadin-dev: the daemon recorded for $ROOT (pid $recorded) is" \
                  "running but not answering. Reaping the record." >&2
         else

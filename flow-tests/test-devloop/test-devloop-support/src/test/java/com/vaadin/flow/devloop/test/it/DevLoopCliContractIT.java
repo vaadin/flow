@@ -25,6 +25,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * The exit code is the contract agents depend on, so it has to mean the same
@@ -66,7 +67,9 @@ class DevLoopCliContractIT {
         cli.run("--app", app.toString(), "status").assertExitCode(0)
                 .assertOutputContains("no daemon running");
         cli.run("--app", app.toString(), "status", "--json").assertExitCode(0)
-                .assertOutputContains("{\"app\":{\"state\":\"stopped\"");
+                .assertOutputContains("{\"app\":{\"state\":\"stopped\",")
+                .assertOutputContains(
+                        "\"modules\":null,\"daemon\":null,\"transaction\":null}");
         cli.run("--app", app.toString(), "ping").assertExitCode(1)
                 .assertOutputContains("no daemon running");
 
@@ -98,6 +101,28 @@ class DevLoopCliContractIT {
                 .assertOutputContains("no daemon running");
         assertFalse(Files.exists(handshake),
                 "ping neither reaped the stale handshake nor stopped there");
+    }
+
+    @Test
+    void statusAndPing_withALiveDaemonNotAnswering_keepItsRecord(
+            @TempDir Path app) throws IOException {
+        // The recorded process is alive, so there is a daemon even though it
+        // does not answer: reporting none, or reaping its record, would let
+        // the next start spawn a second daemon beside it.
+        Files.writeString(app.resolve("pom.xml"), "<project/>");
+        Path handshake = app.resolve(".vaadin/daemon.properties");
+        Files.createDirectories(handshake.getParent());
+        Files.writeString(handshake, "port=" + unusedPort()
+                + "\ntoken=stale\npid=" + ProcessHandle.current().pid() + "\n");
+        VaadinDevCli cli = VaadinDevCli.of(AbstractDevLoopIT.APP);
+
+        for (String command : new String[] { "status", "ping" }) {
+            cli.run("--app", app.toString(), command).assertExitCode(70)
+                    .assertOutputContains("running but not answering")
+                    .assertOutputDoesNotContain("no daemon running");
+            assertTrue(Files.exists(handshake),
+                    command + " reaped the record of a live daemon");
+        }
     }
 
     private static int unusedPort() throws IOException {

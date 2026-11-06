@@ -650,9 +650,12 @@ try {
 
     $status = Send-Command ([int]$port) $token $words
 
-    # 99 means the recorded daemon is not answering: the record is stale, so reap
-    # it and try once more with a fresh daemon - or, for a command that only
-    # reports, answer that there is none.
+    # 99 means the recorded daemon is not answering. Whether there is still a
+    # daemon is decided from its process: a live one is left alone by a command
+    # that only reports - reaping its record would let the next start spawn a
+    # second daemon beside it - and is otherwise replaced by a fresh daemon. A
+    # gone one leaves a stale record, which is reaped; a command that only
+    # reports then answers that there is no daemon.
     #
     # Said out loud, because the application went with it. A daemon that shuts
     # down deletes its own handshake, so a handshake still naming a process that
@@ -665,6 +668,11 @@ try {
         if ($recorded) {
             try { $alive = [bool] (Get-Process -Id ([int]$recorded) -ErrorAction Stop) }
             catch { $alive = $false }
+        }
+        if ($alive -and (Test-ReportsOnly $command)) {
+            [Console]::Error.WriteLine("vaadin-dev: the daemon recorded for " +
+                "$root (pid $recorded) is running but not answering.")
+            exit 70
         }
         if ($alive) {
             [Console]::Error.WriteLine("vaadin-dev: the daemon recorded for " +

@@ -162,8 +162,9 @@ What is different is worth knowing:
   about a stylesheet the page never got. Check `status` — the app may have died mid-apply.
 - App failed to start (a taken port, a bad config) → `start` exits `1` and names the reason
   from the app's own log, with the tail printed under it; `status` repeats the reason. The
-  whole log is the target application's `target/devloop/app.log`. Daemon wedged → `shutdown`,
-  then `start` respawns it.
+  whole log is the target application's `target/devloop/app.log`. Daemon wedged (`status`
+  exits `70`: the recorded daemon "is running but not answering") → `shutdown`, then `start`
+  respawns it.
 - Every command reports a fresh daemon (`up=0s`), or `status` reports no daemon running, with
   the app `stopped`, and `vaadin-dev` says the recorded daemon "left its handshake behind" —
   something outside the loop is killing the processes each command created, so the daemon and
