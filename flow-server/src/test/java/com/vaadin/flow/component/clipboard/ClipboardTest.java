@@ -374,6 +374,7 @@ class ClipboardTest {
     }
 
     @Test
+    @SuppressWarnings("removal")
     void onFilePaste_registersUploadAttributeAndJsInitializer() {
         UI ui = uiWithRealSession();
         TestButton target = new TestButton();

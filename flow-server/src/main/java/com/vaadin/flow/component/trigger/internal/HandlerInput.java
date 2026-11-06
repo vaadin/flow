@@ -19,6 +19,7 @@ import java.util.Objects;
 
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.js.internal.ValueJs;
 
 /**
  * Input that reads a property from a trigger handler's {@code event} argument
@@ -42,7 +43,7 @@ import com.vaadin.flow.js.JsSnippets;
  */
 public final class HandlerInput<T> extends Action.Input<T> {
 
-    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
+    private static final ValueJs VALUE_JS = JsSnippets.of(ValueJs.class);
 
     private final String propertyName;
     private final Class<? extends Trigger> ownerClass;
@@ -71,6 +72,6 @@ public final class HandlerInput<T> extends Action.Input<T> {
                     + ownerClass.getSimpleName() + " and cannot be used in a "
                     + trigger.getClass().getSimpleName() + " handler");
         }
-        return TRIGGER_JS.eventProperty(propertyName);
+        return VALUE_JS.eventProperty(propertyName);
     }
 }

@@ -23,6 +23,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration;
 import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.js.internal.ValueJs;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -55,6 +56,7 @@ import com.vaadin.flow.shared.Registration;
 public class SizeTrigger extends Trigger {
 
     private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
+    private static final ValueJs VALUE_JS = JsSnippets.of(ValueJs.class);
 
     /**
      * Creates a size trigger on the given host component's root element.
@@ -125,7 +127,7 @@ public class SizeTrigger extends Trigger {
                             + " and cannot be used in a "
                             + trigger.getClass().getSimpleName() + " handler");
                 }
-                return TRIGGER_JS.event();
+                return VALUE_JS.event();
             }
         };
     }
