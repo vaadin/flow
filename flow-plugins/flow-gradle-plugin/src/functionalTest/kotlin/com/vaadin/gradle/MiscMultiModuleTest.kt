@@ -59,6 +59,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
                 dependencies {
                     implementation project(':lib')
                     implementation("com.vaadin:flow:$flowVersion")
+                    implementation("com.vaadin:flow-client:$flowVersion")
                 }
 
                 vaadin {
@@ -103,6 +104,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
                 dependencies {
                     implementation project(':lib')
                     implementation("com.vaadin:flow:$flowVersion")
+                    implementation("com.vaadin:flow-client:$flowVersion")
                 }
 
                 vaadin {
@@ -167,6 +169,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
                 dependencies {
                     implementation project(':lib')
                     implementation("com.vaadin:flow:$flowVersion")
+                    implementation("com.vaadin:flow-client:$flowVersion")
                 }
 
                 vaadin {
@@ -275,6 +278,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
             dependencies {
                 implementation project(':lib')
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
             }
 
             vaadin {
@@ -326,6 +330,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
             dependencies {
                 implementation project(':lib')
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
             }
 
             vaadin {
@@ -380,6 +385,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
             dependencies {
                 implementation project(':lib')
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
             }
 
             vaadin {
@@ -423,6 +429,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
 
                 dependencies {
                     implementation("com.vaadin:flow:$flowVersion")
+                    implementation("com.vaadin:flow-client:$flowVersion")
                 }
 
                 // Relocate the build dir outside the :web project dir (here a sibling of
@@ -486,6 +493,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
 
                 dependencies {
                     implementation("com.vaadin:flow:$flowVersion")
+                    implementation("com.vaadin:flow-client:$flowVersion")
                 }
 
                 tasks.register('printProjectFolder', JavaExec) {
