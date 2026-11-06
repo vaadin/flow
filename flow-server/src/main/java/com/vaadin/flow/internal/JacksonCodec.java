@@ -327,7 +327,9 @@ public class JacksonCodec {
     }
 
     /**
-     * Decodes a JSON value as an instance of the given Jackson type. PROTOTYPE.
+     * Decodes a JSON value as an instance of the given Jackson type. This
+     * method supports generic types such as {@code List<MyBean>}, for a type
+     * that is only known through reflection.
      *
      * @param <T>
      *            the decoded type
@@ -335,7 +337,9 @@ public class JacksonCodec {
      *            the JSON value to decode, not <code>null</code>
      * @param type
      *            the type to decode to, not <code>null</code>
-     * @return the decoded value
+     * @return the value decoded as the given type
+     * @throws IllegalArgumentException
+     *             if deserialization failed
      */
     public static <T> T decodeAs(JsonNode json, JavaType type) {
         assert json != null;

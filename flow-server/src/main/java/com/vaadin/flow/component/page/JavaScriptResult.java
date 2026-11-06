@@ -24,15 +24,43 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
- * The result of a JavaScript execution, with the value already converted to the
- * type {@code T}. {@link PendingJavaScriptResult} is the untyped variant, where
- * the value is the JSON that the browser sent back.
+ * The result of a JavaScript execution, which hands the value that the
+ * JavaScript returns to the server as a value of the type {@code T}.
  * <p>
- * PROTOTYPE: name and shape are not decided.
+ * A method of a {@link com.vaadin.flow.js.JsDefinition JavaScript definition}
+ * declares this as its return type, with the type to convert the value to as
+ * the type argument:
+ *
+ * <pre>
+ * &#64;JsDefinition
+ * public interface DeepThoughtJs {
+ *     &#64;JsExpression("return 42")
+ *     JavaScriptResult&lt;Integer&gt; getAnswer();
+ * }
+ *
+ * element.executeJs(DeepThoughtJs.class).getAnswer()
+ *         .then(answer -&gt; Notification.show("The answer is " + answer));
+ * </pre>
+ *
+ * The value is converted with Jackson, so every type that Jackson can
+ * deserialize works, including beans and generic types such as
+ * {@code List<Person>}.
+ * <p>
+ * If any of the <code>then</code> or <code>toCompletableFuture</code> methods
+ * have been invoked before the JavaScript is sent to the browser, then there
+ * will be an additional round trip for sending the result back to any
+ * registered handler. If the JavaScript returns a <code>Promise</code>, then
+ * the result will be sent to the server only when it is resolved.
+ * <p>
+ * It is not possible to add handlers after the execution has been sent to the
+ * browser since the original result would in that case already be discarded.
+ * <p>
+ * {@link PendingJavaScriptResult} is the variant where the value is the JSON
+ * that the browser sent back, and that can be converted to a type chosen when a
+ * handler is added.
  *
  * @param <T>
  *            the type of the value of a successful execution
- * @since 25.4
  */
 public interface JavaScriptResult<T> extends Serializable {
 
@@ -57,7 +85,15 @@ public interface JavaScriptResult<T> extends Serializable {
 
     /**
      * Adds a handler that will be run for a successful execution and a handler
-     * that will be run for a failed execution.
+     * that will be run for a failed execution. One of the handlers will be
+     * invoked asynchronously when the result of the execution is sent back to
+     * the server. It is not possible to synchronously wait for the result of
+     * the execution while holding the session lock since the request handling
+     * thread that makes the result available will also need to lock the
+     * session.
+     * <p>
+     * Handlers can only be added before the execution has been sent to the
+     * browser.
      *
      * @param resultHandler
      *            a handler for the value from a successful execution, not
@@ -70,8 +106,12 @@ public interface JavaScriptResult<T> extends Serializable {
             SerializableConsumer<String> errorHandler);
 
     /**
-     * Adds a handler that will be run for a successful execution. In case of a
-     * failure, no handler will be run.
+     * Adds a handler that will be run for a successful execution. The handler
+     * will be invoked asynchronously if the execution was successful. In case
+     * of a failure, no handler will be run.
+     * <p>
+     * A handler can only be added before the execution has been sent to the
+     * browser.
      *
      * @param resultHandler
      *            a handler for the value from a successful execution, not
@@ -83,12 +123,22 @@ public interface JavaScriptResult<T> extends Serializable {
 
     /**
      * Creates a completable future that will be completed with the result of
-     * the execution.
+     * the execution. It will be completed asynchronously when the result of the
+     * execution is sent back to the server. It is not possible to synchronously
+     * wait for the result of the execution while holding the session lock since
+     * the request handling thread that makes the result available will also
+     * need to lock the session.
+     * <p>
+     * A completable future can only be created before the execution has been
+     * sent to the browser.
      *
      * @return a completable future that will be completed based on the
      *         execution results, not <code>null</code>
      */
     default CompletableFuture<T> toCompletableFuture() {
+        // The session that is locked when subscribing is the one that will
+        // complete the future, since subscribing is only possible before the
+        // execution is sent to the browser
         CompletableFuture<T> completableFuture = new DeadlockDetectingCompletableFuture<>(
                 VaadinSession.getCurrent());
         then(completableFuture::complete, errorValue -> completableFuture

@@ -23,17 +23,24 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.JsonNode;
+
 import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
@@ -85,8 +92,8 @@ public final class JsDefinitionProxy {
             .clearedBeforeHotswap(JsDefinitionProxy::checkDefinition);
 
     private static final String RETURN_TYPES = "An interface declares either"
-            + " JavaScript to run, with methods returning void or"
-            + " PendingJavaScriptResult, or snippets, with methods returning"
+            + " JavaScript to run, with methods returning void,"
+            + " JavaScriptResult or PendingJavaScriptResult, or snippets, with methods returning"
             + " JsFunction or JsSnippet, but not both";
 
     private JsDefinitionProxy() {
@@ -206,16 +213,17 @@ public final class JsDefinitionProxy {
 
     /**
      * Checks the methods of a JavaScript definition: every one of them declares
-     * the JavaScript it runs, and returns either nothing or the pending result
-     * of running it, or, for a definition of snippets, every one of them
-     * returns the snippet it declares. An interface that declares JavaScript
-     * declares nothing else, so a method that is implemented in Java - a
-     * default or a static one - is refused rather than left aside.
+     * the JavaScript it runs, and returns either nothing or the result of
+     * running it, typed or pending, or, for a definition of snippets, every one
+     * of them returns the snippet it declares. An interface that declares
+     * JavaScript declares nothing else, so a method that is implemented in Java
+     * - a default or a static one - is refused rather than left aside.
      */
     private static void checkMethods(Class<?> definitionType,
             boolean snippets) {
         List<String> undeclared = new ArrayList<>();
         List<String> unanswerable = new ArrayList<>();
+        List<String> untyped = new ArrayList<>();
         List<String> inJava = new ArrayList<>();
         for (Method method : definitionType.getMethods()) {
             if (method.isDefault()
@@ -231,7 +239,10 @@ public final class JsDefinitionProxy {
                 undeclared.add(method.getName());
                 continue;
             }
-            if (snippets ? !returnsFunction(method)
+            if (!snippets && method.getReturnType() == JavaScriptResult.class
+                    && typedResultType(method) == null) {
+                untyped.add(method.getName());
+            } else if (snippets ? !returnsFunction(method)
                     : !returnsInvocationResult(method)) {
                 unanswerable.add(method.getName());
             } else if (snippets) {
@@ -263,6 +274,14 @@ public final class JsDefinitionProxy {
                     + " returning something that can not be answered with. "
                     + RETURN_TYPES);
         }
+        if (!untyped.isEmpty()) {
+            throw new IllegalArgumentException(definitionType.getName()
+                    + " has " + String.join(", ", untyped)
+                    + " returning JavaScriptResult without a type to convert"
+                    + " the result to. Declare a concrete type argument, such"
+                    + " as JavaScriptResult<Integer>, or return"
+                    + " PendingJavaScriptResult for the JSON value");
+        }
         if (!inJava.isEmpty()) {
             throw new IllegalArgumentException(definitionType.getName()
                     + " has " + String.join(", ", inJava)
@@ -275,31 +294,43 @@ public final class JsDefinitionProxy {
 
     private static boolean returnsInvocationResult(Method method) {
         Class<?> returnType = method.getReturnType();
-        if (returnType == JavaScriptResult.class) {
-            // Typed result: needs a concrete type argument. Must be checked
-            // before the isAssignableFrom below, which is also true for
-            // JavaScriptResult now that PendingJavaScriptResult extends it
-            return typedResultType(method) != null;
-        }
-        return returnType == void.class
+        // JavaScriptResult is a supertype of PendingJavaScriptResult, but the
+        // pending result is not what a method declaring a typed one gets
+        return returnType == void.class || returnType == JavaScriptResult.class
                 || returnType.isAssignableFrom(PendingJavaScriptResult.class);
     }
 
     /**
      * Gets the type argument of a method returning {@link JavaScriptResult}, or
-     * <code>null</code> if it is raw, a wildcard or a type variable.
+     * <code>null</code> if it is raw, a wildcard or refers to a type variable,
+     * none of which tells what to convert the result to.
      */
     private static Type typedResultType(Method method) {
         if (method
                 .getGenericReturnType() instanceof ParameterizedType parameterized) {
             Type argument = parameterized.getActualTypeArguments()[0];
-            if (argument instanceof Class<?>
-                    || argument instanceof ParameterizedType
-                    || argument instanceof GenericArrayType) {
+            if (!(argument instanceof WildcardType)
+                    && !refersToTypeVariable(argument)) {
                 return argument;
             }
         }
         return null;
+    }
+
+    private static boolean refersToTypeVariable(Type type) {
+        return switch (type) {
+        case TypeVariable<?> variable -> true;
+        case ParameterizedType parameterized ->
+            Stream.of(parameterized.getActualTypeArguments())
+                    .anyMatch(JsDefinitionProxy::refersToTypeVariable);
+        case GenericArrayType array ->
+            refersToTypeVariable(array.getGenericComponentType());
+        case WildcardType wildcard -> Stream
+                .concat(Stream.of(wildcard.getUpperBounds()),
+                        Stream.of(wildcard.getLowerBounds()))
+                .anyMatch(JsDefinitionProxy::refersToTypeVariable);
+        default -> false;
+        };
     }
 
     /**
@@ -329,20 +360,53 @@ public final class JsDefinitionProxy {
             if (method.getDeclaringClass() == Object.class) {
                 return method.invoke(this, args);
             }
-            boolean returnsTyped = method
-                    .getReturnType() == JavaScriptResult.class;
-            boolean returnsResult = returnsTyped || method.getReturnType()
-                    .isAssignableFrom(PendingJavaScriptResult.class);
             List<Object> arguments = args == null ? List.of()
                     : Arrays.asList(args);
             PendingJavaScriptResult result = runner.apply(
                     new JsCall(definitionType, method.getName(), arguments));
-            if (returnsTyped) {
-                return new TypedJavaScriptResult<>(result,
-                        JacksonUtils.getMapper().getTypeFactory()
-                                .constructType(typedResultType(method)));
+            Class<?> returnType = method.getReturnType();
+            if (returnType == JavaScriptResult.class) {
+                Type valueType = typedResultType(method);
+                // The pending result already is a JavaScriptResult<JsonNode>
+                return valueType == JsonNode.class ? result
+                        : new TypedJavaScriptResult<>(result,
+                                JacksonUtils.getMapper().getTypeFactory()
+                                        .constructType(valueType));
             }
-            return returnsResult ? result : null;
+            return returnType == void.class ? null : result;
+        }
+    }
+
+    /**
+     * A {@link JavaScriptResult} that converts the JSON value of a pending
+     * result to the type that a method of a JavaScript definition declares. It
+     * adds a handler to the pending result only when a handler is added to it,
+     * so a call whose result nobody reads has no round trip for the result.
+     */
+    private record TypedJavaScriptResult<T>(PendingJavaScriptResult pending,
+            JavaType valueType) implements JavaScriptResult<T> {
+
+        @Override
+        public boolean cancelExecution() {
+            return pending.cancelExecution();
+        }
+
+        @Override
+        public boolean isSentToBrowser() {
+            return pending.isSentToBrowser();
+        }
+
+        @Override
+        public void then(SerializableConsumer<T> resultHandler,
+                SerializableConsumer<String> errorHandler) {
+            if (resultHandler == null) {
+                throw new IllegalArgumentException(
+                        "Result handler cannot be null");
+            }
+            pending.then(
+                    json -> resultHandler
+                            .accept(JacksonCodec.decodeAs(json, valueType)),
+                    errorHandler);
         }
     }
 
