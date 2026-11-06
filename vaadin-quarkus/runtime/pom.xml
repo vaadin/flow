@@ -13,6 +13,7 @@
   <description>Provides Quarkus integration for Vaadin applications.</description>
 
   <properties>
+    <jpms.module.name>com.vaadin.quarkus</jpms.module.name>
     <!--
       Two kinds of code here never run under surefire, so measuring them says
       nothing about how well they are tested:

@@ -12,6 +12,7 @@
   <description>${project.name}</description>
 
   <properties>
+    <jpms.module.name>com.vaadin.base.devserver</jpms.module.name>
     <surefire.argLine>--add-opens=java.base/java.net=ALL-UNNAMED</surefire.argLine>
     <!-- Allows to skip running NPM tests via exec-maven-plugin with both -Dmaven.test.skip=true and -DskipTests=true -->
     <maven.test.skip>false</maven.test.skip>
