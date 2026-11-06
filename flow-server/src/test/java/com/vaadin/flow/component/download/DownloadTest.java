@@ -24,8 +24,10 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.trigger.internal.DownloadAction;
 import com.vaadin.flow.component.trigger.internal.TriggerTestUtil;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.internal.ValueJs;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
@@ -66,7 +68,8 @@ class DownloadTest {
                 "Expected install captures to include the event name: "
                         + installFn.getCaptures());
         JsFunction action = actionOf(installFn);
-        assertEquals("download", snippetOf(action));
+        assertEquals("download",
+                snippetOf(DownloadAction.DownloadJs.class, action));
         resourceUri(action);
     }
 
@@ -75,9 +78,10 @@ class DownloadTest {
         Download.onClick(button, "/files/a.bin", "b.bin");
 
         JsFunction action = actionOf(singleInstallFn());
-        assertEquals("download", snippetOf(action));
-        assertEquals("value",
-                snippetOf(((JsFunction) action.getCaptures().get(1))));
+        assertEquals("download",
+                snippetOf(DownloadAction.DownloadJs.class, action));
+        assertEquals("value", snippetOf(ValueJs.class,
+                ((JsFunction) action.getCaptures().get(1))));
         assertEquals("b.bin", ((JsFunction) action.getCaptures().get(1))
                 .getCaptures().get(0));
     }

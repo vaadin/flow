@@ -46,7 +46,7 @@ class ShareActionTest {
         // JsFunction with the event; the literal values are captured, not
         // stringified into the body.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("share", snippetOf(action));
+        assertEquals("share", snippetOf(ShareAction.ShareJs.class, action));
         assertEquals("Hi", ((JsFunction) action.getCaptures().get(0))
                 .getCaptures().get(0));
         assertEquals("World", ((JsFunction) action.getCaptures().get(1))
@@ -69,7 +69,7 @@ class ShareActionTest {
 
         // Absent slots are passed as null, which leaves them out of the data
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("share", snippetOf(action));
+        assertEquals("share", snippetOf(ShareAction.ShareJs.class, action));
         assertNull(action.getCaptures().get(0));
         assertNull(action.getCaptures().get(1));
         assertEquals("https://vaadin.com",
@@ -94,10 +94,10 @@ class ShareActionTest {
         // with the outcome report to the return channel; the inner function
         // still calls navigator.share.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("reportOutcome", snippetOf(action));
+        assertEquals("reportOutcome", snippetOf(TriggerJs.class, action));
 
         JsFunction inner = (JsFunction) action.getCaptures().get(0);
-        assertEquals("share", snippetOf(inner));
+        assertEquals("share", snippetOf(ShareAction.ShareJs.class, inner));
         assertNull(inner.getCaptures().get(1));
         assertNull(inner.getCaptures().get(2));
     }

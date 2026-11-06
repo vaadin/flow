@@ -44,7 +44,7 @@ class DomEventTriggerTest {
         // Install JS references action at $0 and event name at $1 — no user
         // content leaks into the body, both are captures.
         JsFunction install = singleInstallFn(ui);
-        assertEquals("listenToEvent", snippetOf(install));
+        assertEquals("listenToEvent", snippetOf(TriggerJs.class, install));
         assertEquals("click", install.getCaptures().get(1));
 
         // The install $0 is the action's JsFunction directly — no intermediate
@@ -53,7 +53,7 @@ class DomEventTriggerTest {
 
         // SetPropertyAction body shape; target captured as $0, property name
         // string capture at $1, source JsFunction invoked as $2(event).
-        assertEquals("setProperty", snippetOf(action));
+        assertEquals("setProperty", snippetOf(TriggerJs.class, action));
         assertSame(field.getElement(), action.getCaptures().get(0));
         assertEquals("value", action.getCaptures().get(1));
     }

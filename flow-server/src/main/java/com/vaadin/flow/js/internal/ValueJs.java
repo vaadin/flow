@@ -46,8 +46,8 @@ public interface ValueJs extends Serializable {
     JsFunction value(Object value);
 
     /**
-     * An input that returns <code>null</code>, for a slot of an action that is
-     * not given an input.
+     * An input that returns <code>null</code>, for a slot that is not given an
+     * input.
      *
      * @return the input function
      */
@@ -67,7 +67,7 @@ public interface ValueJs extends Serializable {
     JsFunction property(Element target, String propertyName);
 
     /**
-     * An input that reads a property of the event of the trigger.
+     * An input that reads a property of the event it is called with.
      *
      * @param propertyName
      *            the name of the event property
@@ -78,7 +78,7 @@ public interface ValueJs extends Serializable {
     JsFunction eventProperty(String propertyName);
 
     /**
-     * An input that returns the event of the trigger itself.
+     * An input that returns the event it is called with.
      *
      * @return the input function
      */

@@ -29,6 +29,7 @@ import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration.InitializerJs;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.internal.ValueJs;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
@@ -98,7 +99,7 @@ class SignalInputTest {
         // input's JsFunction, then verify the generated property-name shape.
         JsFunction action = actionOf(singleInstallFn(ui));
         JsFunction textInput = (JsFunction) action.getCaptures().get(0);
-        assertEquals("property", snippetOf(textInput));
+        assertEquals("property", snippetOf(ValueJs.class, textInput));
         String property = (String) textInput.getCaptures().get(1);
         assertTrue(PROPERTY_NAME.matcher(property).matches(),
                 "Unexpected property name: " + property);

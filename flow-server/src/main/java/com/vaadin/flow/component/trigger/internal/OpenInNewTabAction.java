@@ -210,8 +210,7 @@ public class OpenInNewTabAction extends Action {
         // keeps the rendered JS identical regardless of how the URL was
         // supplied, and protects LiteralInput<>("javascript:…") too. The
         // guard in OpenInNewTabJs#openInNewTab short-circuits window.open when
-        // the
-        // resolved URL is a javascript: URL.
+        // the resolved URL is a javascript: URL.
         return OPEN_IN_NEW_TAB_JS.openInNewTab(urlInput.toJs(trigger),
                 featuresInput.toJs(trigger));
     }
