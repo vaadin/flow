@@ -340,6 +340,23 @@ class VaadinServletServiceTest {
         verify(httpRequest, never()).getSession(anyBoolean());
     }
 
+    @Test
+    void handleRequest_faviconBelowServletPath_passedToHandlers()
+            throws Exception {
+        HttpServletRequest httpRequest = createRequest("http://dummy.host:8080",
+                "/contextpath", "/servlet", "/favicon.ico");
+        VaadinResponse response = mock(VaadinResponse.class);
+        RequestHandler customHandler = mock(RequestHandler.class);
+        when(customHandler.handleRequest(any(), any(), any())).thenReturn(true);
+        service.getRequestHandlers().add(0, customHandler);
+
+        service.handleRequest(servlet.createVaadinRequest(httpRequest),
+                response);
+
+        verify(customHandler).handleRequest(notNull(), any(), eq(response));
+        verify(response, never()).setStatus(HttpStatusCode.NOT_FOUND.getCode());
+    }
+
     private String testLocation(String base, String contextPath,
             String servletPath, String pathInfo) throws Exception {
 
