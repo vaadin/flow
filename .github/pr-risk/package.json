@@ -1,0 +1,13 @@
+{
+  "name": "pr-risk",
+  "private": true,
+  "description": "Classifies pull requests by risk, see .github/workflows/pr-risk.yml",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --test \"test/*.test.js\""
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "1.3.0"
+  }
+}
