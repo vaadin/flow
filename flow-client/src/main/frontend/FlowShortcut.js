@@ -15,9 +15,8 @@
  */
 
 /*
- * Client-side helpers for keyboard shortcuts. Loaded on demand by
- * ShortcutRegistration (see initShortcutClient) the same way FlowWebPush.js is
- * loaded by WebPush. Provides the popover/modal origin guards (#24974) and the
+ * Client-side helpers for keyboard shortcuts, bundled through
+ * BrowserHelpers.ts. Provides the popover/modal origin guards (#24974) and the
  * keydown delegate used when a shortcut listens on a browser-only element.
  */
 window.Vaadin = window.Vaadin || {};

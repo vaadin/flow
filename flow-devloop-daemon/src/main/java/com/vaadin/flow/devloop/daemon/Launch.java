@@ -549,12 +549,13 @@ final class Launch {
      * Which modules are in the edit loop.
      * <p>
      * Read off the resolved classpath rather than reconstructed from poms: the
-     * only <em>directory</em> entries Maven emits are reactor modules' output
-     * directories, so this is exactly the set of modules the application
-     * depends on - transitively, after profiles and dependency management, and
-     * correct even for a module that overrides {@code <outputDirectory>}. It
-     * also means the loop cannot contain a module the application does not
-     * actually use.
+     * <em>directory</em> entries Maven emits are module output directories, so
+     * this is the set of modules the application depends on - transitively,
+     * after profiles and dependency management, and correct even for a module
+     * that overrides {@code <outputDirectory>}. It also means the loop cannot
+     * contain a module the application does not actually use. Not every such
+     * directory belongs to this reactor, though; {@link #moduleDirOf} decides
+     * which do.
      */
     List<Reactor.Module> selectModules(List<String> entries) {
         List<Reactor.Module> modules = new ArrayList<>();
@@ -639,25 +640,46 @@ final class Launch {
 
     /**
      * The nearest ancestor that is a Maven module, never above the reactor
-     * root, and only when that module is one of the reactor's own.
+     * root, and only when that module is part of this reactor: under its root,
+     * or one of its candidates.
      * <p>
-     * Membership rather than containment: a reactor may aggregate a sibling of
-     * its root, and a directory on the classpath may belong to a module the
-     * reactor does not aggregate at all. Maven 4 resolves a module of an
-     * enclosing build - one aggregating this reactor from above - to that
-     * module's {@code target/classes} rather than to its installed jar, and
-     * taking such a module into the loop would treat whatever writes to its
-     * sources as an edit of the application.
+     * Containment alone is not enough in either direction. A reactor may
+     * aggregate a sibling of its root, which only the candidates know about.
+     * And a directory on the classpath may belong to a module the reactor does
+     * not aggregate at all: Maven 4 resolves a module of an enclosing build -
+     * one aggregating this reactor from above - to that module's
+     * {@code target/classes} rather than to its installed jar, and taking such
+     * a module into the loop would treat whatever writes to its sources as an
+     * edit of the application. Under the root, the candidates are not required,
+     * so a module the structural pom walk failed to enumerate stays in the
+     * loop. Nor are they for a reactor of one: discovery falls back to that
+     * whenever it cannot see the aggregation - an unreadable aggregator, a root
+     * that is not an ancestor - and its candidates then hold the application
+     * alone, so requiring them would quietly drop every sibling module the
+     * build did put on the classpath.
+     * <p>
+     * A rejected module still loads from its directory, but edits to it are not
+     * reloaded, so that is logged rather than left to be discovered.
+     * <p>
+     * Resolved first, because the candidates and the root are: a classpath
+     * entry spelled through a symlink would otherwise match neither.
      */
     private Path moduleDirOf(Path classesDir) {
         Path root = reactor.root();
-        for (Path dir = Reactor.real(classesDir)
-                .getParent(); dir != null; dir = dir.getParent()) {
+        Path real = Reactor.real(classesDir);
+        boolean underRoot = real.startsWith(root);
+        for (Path dir = real.getParent(); dir != null; dir = dir.getParent()) {
             if (Files.isRegularFile(dir.resolve("pom.xml"))) {
                 Path owner = dir;
-                return reactor.candidates().stream().anyMatch(
-                        candidate -> candidate.dir().equals(owner)) ? owner
-                                : null;
+                if (underRoot || !reactor.isMultiModule()
+                        || reactor.candidates().stream().anyMatch(
+                                candidate -> candidate.dir().equals(owner))) {
+                    return owner;
+                }
+                log.line("module " + owner
+                        + " is on the classpath but not part of reactor " + root
+                        + "; edits to it will not be reloaded");
+                return null;
             }
             if (dir.equals(root)) {
                 return null;
@@ -1283,8 +1305,9 @@ final class Launch {
         if (java.jbr()) {
             flags.add("-XX:+AllowEnhancedClassRedefinition");
         }
-        // Vaadin: the plugin declares itself for Vaadin 23-24, though 2.0.3
-        // does look for the 25 Hotswapper as well - so the reason it stays off
+        // Vaadin: the plugin declares itself for Vaadin 23-24, though the
+        // pinned release does look for the 25 Hotswapper as well - so the
+        // reason it stays off
         // is not that it would fail. It is that it would work: a second driver
         // of onHotswap and BrowserLiveReload, on its own file-watch schedule
         // and outside this transaction, so an apply could no longer say what it
@@ -1320,12 +1343,11 @@ final class Launch {
         // API loader while it waited on the boot loader. The odd start never
         // got past "Registered ...HazelcastBackingStoreFactoryProxy", with no
         // error and no exit, until the start timeout. A stopgap: the cause is
-        // HotswapAgent's, not the plugin's, and once a HotswapAgent release
-        // no longer resolves through the context loader - the fix is
-        // https://github.com/HotswapProjects/HotswapAgent/pull/681 -
-        // HotswapAgentJar should move to it and this entry should go. Until
-        // then, what the
-        // plugin buys - clearing Jackson's caches after a redefine - is not
+        // HotswapAgent's, not the plugin's. The fix -
+        // https://github.com/HotswapProjects/HotswapAgent/pull/681 - ships in
+        // 2.0.4, which HotswapAgentJar now pins, so this entry should go once
+        // the Payara Micro boot is measured again without it. Until then, what
+        // the plugin buys - clearing Jackson's caches after a redefine - is not
         // worth a start that may never end.
         // The key is "hotswapagent.disablePlugin", read in premain into a set
         // every class loader's configuration consults. "disabledPlugins", the

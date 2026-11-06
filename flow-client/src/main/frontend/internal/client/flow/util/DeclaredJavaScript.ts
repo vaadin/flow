@@ -27,6 +27,7 @@ type DeclaredFunction = (this: unknown, ...args: unknown[]) => unknown;
 
 type DeclaredJavaScript = {
   jsDefinitions?: Record<string, DeclaredFunction>;
+  jsDefinitionsWithExecutionContext?: Record<string, DeclaredFunction>;
   jsSnippets?: Record<string, DeclaredFunction>;
   jsDefinitionNames?: Record<string, string>;
 };
@@ -50,6 +51,17 @@ function getDeclaredJavaScript(): DeclaredJavaScript {
  */
 export function findDeclaredFunction(functionId: string): DeclaredFunction | undefined {
   return getOwnEntry(getDeclaredJavaScript().jsDefinitions, functionId);
+}
+
+/**
+ * Looks up the function that the build generated for a method that runs its
+ * JavaScript when called and gets the execution context, which it takes as
+ * its first parameter. The build registers such a function apart from the
+ * others, so where it is found is what decides that it gets the context, not
+ * anything in the message that calls it.
+ */
+export function findDeclaredFunctionWithExecutionContext(functionId: string): DeclaredFunction | undefined {
+  return getOwnEntry(getDeclaredJavaScript().jsDefinitionsWithExecutionContext, functionId);
 }
 
 /**
