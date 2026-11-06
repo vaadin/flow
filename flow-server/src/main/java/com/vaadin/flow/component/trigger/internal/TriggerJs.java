@@ -17,6 +17,7 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
@@ -24,7 +25,6 @@ import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippets;
-import com.vaadin.flow.js.internal.ValueJs;
 
 /**
  * The JavaScript that the built-in triggers and actions share, as snippets for

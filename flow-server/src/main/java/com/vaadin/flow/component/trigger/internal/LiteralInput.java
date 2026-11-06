@@ -17,9 +17,9 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
+import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsSnippets;
-import com.vaadin.flow.js.internal.ValueJs;
 
 /**
  * Input backed by a server-side literal that is captured into the rendered

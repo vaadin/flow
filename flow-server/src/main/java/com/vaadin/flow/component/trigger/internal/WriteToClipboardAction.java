@@ -20,6 +20,7 @@ import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
@@ -27,7 +28,6 @@ import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippets;
-import com.vaadin.flow.js.internal.ValueJs;
 
 /**
  * Writes a {@code ClipboardItem} to the user's clipboard via

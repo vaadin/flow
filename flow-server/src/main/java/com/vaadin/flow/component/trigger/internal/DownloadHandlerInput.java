@@ -19,10 +19,10 @@ import java.net.URI;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
+import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsSnippets;
-import com.vaadin.flow.js.internal.ValueJs;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
