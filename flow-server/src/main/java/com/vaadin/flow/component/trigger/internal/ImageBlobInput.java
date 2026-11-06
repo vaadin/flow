@@ -22,6 +22,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.js.internal.ValueJs;
 
 /**
  * Input that produces the source {@code <img>} element of a component, for use
@@ -40,7 +41,7 @@ import com.vaadin.flow.js.JsSnippets;
  */
 public class ImageBlobInput extends Action.Input<Object> {
 
-    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
+    private static final ValueJs VALUE_JS = JsSnippets.of(ValueJs.class);
 
     private final Element source;
 
@@ -81,6 +82,6 @@ public class ImageBlobInput extends Action.Input<Object> {
 
     @Override
     public JsFunction toJs(Trigger trigger) {
-        return TRIGGER_JS.value(source);
+        return VALUE_JS.value(source);
     }
 }

@@ -15,11 +15,16 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.io.Serializable;
+
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.js.JsCalledWith;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippets;
 
 /**
@@ -47,7 +52,7 @@ import com.vaadin.flow.js.JsSnippets;
  */
 public class ShareAction extends PromiseAction<Void> {
 
-    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
+    private static final ShareJs SHARE_JS = JsSnippets.of(ShareJs.class);
 
     private final Action.@Nullable Input<String> titleInput;
     private final Action.@Nullable Input<String> textInput;
@@ -134,12 +139,44 @@ public class ShareAction extends PromiseAction<Void> {
         // validate() already ensures at least one slot is present, so the data
         // is never empty (the Web Share API rejects a call with no payload
         // fields).
-        return TRIGGER_JS.share(toJs(titleInput, trigger),
+        return SHARE_JS.share(toJs(titleInput, trigger),
                 toJs(textInput, trigger), toJs(urlInput, trigger));
     }
 
     private static @Nullable JsFunction toJs(
             Action.@Nullable Input<String> input, Trigger trigger) {
         return input == null ? null : input.toJs(trigger);
+    }
+
+    /**
+     * How the share sheet is opened, as a snippet for
+     * {@link JsSnippets#of(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    @JsDefinition
+    public interface ShareJs extends Serializable {
+
+        /**
+         * An action that opens the share sheet with the values of the given
+         * inputs, leaving out each field whose input is <code>null</code>.
+         *
+         * @param title
+         *            the input producing the title, or <code>null</code>
+         * @param text
+         *            the input producing the text, or <code>null</code>
+         * @param url
+         *            the input producing the URL, or <code>null</code>
+         * @return the action function, which returns the promise of the share
+         */
+        @JsExpression("""
+                const data = {};
+                if ($0) data.title = $0(event);
+                if ($1) data.text = $1(event);
+                if ($2) data.url = $2(event);
+                return navigator.share(data);""")
+        @JsCalledWith("event")
+        JsFunction share(@Nullable JsFunction title, @Nullable JsFunction text,
+                @Nullable JsFunction url);
     }
 }

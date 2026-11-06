@@ -15,11 +15,15 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.io.Serializable;
+
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.clipboard.ClipboardPayload;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippets;
 
 /**
@@ -61,7 +65,8 @@ import com.vaadin.flow.js.JsSnippets;
  */
 public class ReadFromClipboardAction extends PromiseAction<ClipboardPayload> {
 
-    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
+    private static final ReadFromClipboardJs READ_FROM_CLIPBOARD_JS = JsSnippets
+            .of(ReadFromClipboardJs.class);
 
     /**
      * Creates an action that reads the user's clipboard and delivers the
@@ -87,6 +92,23 @@ public class ReadFromClipboardAction extends PromiseAction<ClipboardPayload> {
         // Clipboard.ts (window.Vaadin.Flow.clipboard.readPayload); this
         // action just routes the resolved Promise through the PromiseAction
         // framework.
-        return TRIGGER_JS.readFromClipboard();
+        return READ_FROM_CLIPBOARD_JS.readFromClipboard();
+    }
+
+    /**
+     * How the clipboard is read, as a snippet for {@link JsSnippets#of(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    @JsDefinition
+    public interface ReadFromClipboardJs extends Serializable {
+
+        /**
+         * An action that reads the clipboard.
+         *
+         * @return the action function, which returns the promise of the read
+         */
+        @JsExpression("return window.Vaadin.Flow.clipboard.readPayload()")
+        JsFunction readFromClipboard();
     }
 }
