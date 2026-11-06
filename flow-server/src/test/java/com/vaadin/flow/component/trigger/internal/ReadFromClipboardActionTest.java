@@ -32,6 +32,7 @@ import com.vaadin.tests.util.MockUI;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleReturnChannel;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -51,14 +52,13 @@ class ReadFromClipboardActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // Action wraps the inner promise function with OBSERVE_PROMISE +
-        // return channel. The inner just invokes the Clipboard.ts helper.
+        // Action wraps the inner promise function with the outcome report to
+        // the return channel. The inner just invokes the Clipboard.ts helper.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0($1(event), $2)", action.getBody());
+        assertEquals("reportOutcome", snippetOf(action));
 
-        JsFunction inner = (JsFunction) action.getCaptures().get(1);
-        assertEquals("return window.Vaadin.Flow.clipboard.readPayload()",
-                inner.getBody());
+        JsFunction inner = (JsFunction) action.getCaptures().get(0);
+        assertEquals("readFromClipboard", snippetOf(inner));
     }
 
     @Test

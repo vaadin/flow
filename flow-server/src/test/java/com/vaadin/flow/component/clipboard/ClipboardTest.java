@@ -42,6 +42,7 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -95,7 +96,7 @@ class ClipboardTest {
         // Action calls the TS helper; literal is captured by the text input
         // JsFunction at action $0.
         JsFunction action = actionFn(ui);
-        assertTrue(action.getBody().contains("writePayload"), action.getBody());
+        assertEquals("writeToClipboard", snippetOf(action));
         JsFunction textInput = (JsFunction) action.getCaptures().get(0);
         assertEquals("Hello", textInput.getCaptures().get(0));
     }
@@ -112,7 +113,7 @@ class ClipboardTest {
         // PropertyInput renders as `return $0[$1]` and captures (element,
         // "value").
         JsFunction textInput = (JsFunction) actionFn(ui).getCaptures().get(0);
-        assertEquals("return $0[$1]", textInput.getBody());
+        assertEquals("property", snippetOf(textInput));
         assertSame(field.getElement(), textInput.getCaptures().get(0));
         assertEquals("value", textInput.getCaptures().get(1));
     }
@@ -158,7 +159,7 @@ class ClipboardTest {
         // ImageBlobInput renders as `return $0` and captures the image
         // element. The action puts it at slot 2.
         JsFunction imageInput = (JsFunction) actionFn(ui).getCaptures().get(2);
-        assertEquals("return $0", imageInput.getBody());
+        assertEquals("value", snippetOf(imageInput));
         assertSame(image.getElement(), imageInput.getCaptures().get(0));
     }
 
@@ -192,7 +193,7 @@ class ClipboardTest {
         Clipboard.onClick(button).write(ClipboardContent.create().text(field));
 
         JsFunction textInput = (JsFunction) actionFn(ui).getCaptures().get(0);
-        assertEquals("return $0[$1]", textInput.getBody());
+        assertEquals("property", snippetOf(textInput));
         assertEquals("value", textInput.getCaptures().get(1));
     }
 
@@ -287,9 +288,8 @@ class ClipboardTest {
         // Observed PromiseAction wraps the inner call; the inner JsFunction
         // delegates to the TS readPayload helper.
         JsFunction action = actionFn(ui);
-        JsFunction inner = (JsFunction) action.getCaptures().get(1);
-        assertEquals("return window.Vaadin.Flow.clipboard.readPayload()",
-                inner.getBody());
+        JsFunction inner = (JsFunction) action.getCaptures().get(0);
+        assertEquals("readFromClipboard", snippetOf(inner));
     }
 
     @Test
@@ -477,8 +477,9 @@ class ClipboardTest {
         assertEquals(1, pending.size(),
                 "Expected exactly one pending JS invocation");
         JavaScriptInvocation invocation = pending.get(0).getInvocation();
-        Object o = invocation.getParameters().get(2);
-        assertTrue(o instanceof JsFunction, "Expected $2 to be a JsFunction");
+        Object o = invocation.getParameters().get(1);
+        assertTrue(o instanceof JsFunction,
+                "Expected the initializer argument to be a JsFunction");
         return (JsFunction) o;
     }
 }

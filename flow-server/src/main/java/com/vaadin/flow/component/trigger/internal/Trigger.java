@@ -23,6 +23,7 @@ import java.util.Objects;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
@@ -52,12 +53,13 @@ import com.vaadin.flow.shared.Registration;
  * client response is built.
  * <p>
  * Each {@link Action} passed to {@link #triggers(Action...)} produces one
- * {@link Element#addJsInitializer addJsInitializer} registration on the host
- * element via {@link #install(JsFunction)} — so a call with N actions yields N
+ * JavaScript initializer registration on the host element via
+ * {@link #install(JsFunction)} — so a call with N actions yields N
  * registrations, all detached by {@link #remove()}. Subclasses implement
  * {@code install} to wire the rendered {@link JsFunction} to whatever client
- * API the trigger wraps (typically passing it to {@code addJsInitializer}
- * alongside whatever literal values the install expression needs).
+ * API the trigger wraps (typically with an
+ * {@link ElementJsInitializerRegistration} whose initializer is a snippet that
+ * captures the action alongside whatever literal values it needs).
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  * 
@@ -211,21 +213,25 @@ public abstract class Trigger implements Serializable {
      * the {@link Registration} that detaches it. Called once per action passed
      * to {@link #triggers(Action...)}.
      * <p>
-     * Implementations typically call
-     * {@link Element#addJsInitializer(String, Object...)
-     * getHost().addJsInitializer} with an install expression that hands the
-     * action {@link JsFunction} to whatever client API the trigger wraps:
+     * Implementations typically register an
+     * {@link ElementJsInitializerRegistration} on the host with an initializer
+     * that hands the action {@link JsFunction} to whatever client API the
+     * trigger wraps. The initializer is declared as a snippet, so that nothing
+     * is compiled from a string in the browser:
      *
-     * <pre>{@code
-     * return getHost().addJsInitializer(
-     *         "this.addEventListener($1, $0);"
-     *                 + "return () => this.removeEventListener($1, $0);",
-     *         action, eventName);
-     * }</pre>
+     * <pre>
+     * &#64;JsExpression("this.addEventListener($1, $0);"
+     *         + "return () =&gt; this.removeEventListener($1, $0);")
+     * JsFunction listenToEvent(JsFunction action, String eventName);
      *
-     * The expression runs with {@code this} bound to the host element. The
-     * captures are made available as {@code $0}, {@code $1}, … in the order
-     * passed.
+     * // In install, with LISTEN_JS = JsSnippets.of(ListenJs.class)
+     * return new ElementJsInitializerRegistration(getHost().getNode(),
+     *         LISTEN_JS.listenToEvent(action, eventName));
+     * </pre>
+     *
+     * The initializer runs with {@code this} bound to the host element, and
+     * returns the function that uninstalls it. The arguments of the snippet are
+     * made available as {@code $0}, {@code $1}, … in the order passed.
      *
      * @param action
      *            the rendered action {@link JsFunction}; takes one runtime

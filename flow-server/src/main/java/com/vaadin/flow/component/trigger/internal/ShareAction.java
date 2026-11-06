@@ -15,14 +15,12 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.js.JsSnippets;
 
 /**
  * Invokes the browser's native share sheet via {@code navigator.share} when the
@@ -48,6 +46,8 @@ import com.vaadin.flow.function.SerializableRunnable;
  * @since 25.2
  */
 public class ShareAction extends PromiseAction<Void> {
+
+    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
 
     private final Action.@Nullable Input<String> titleInput;
     private final Action.@Nullable Input<String> textInput;
@@ -130,33 +130,16 @@ public class ShareAction extends PromiseAction<Void> {
 
     @Override
     protected JsFunction toPromiseJs(Trigger trigger) {
-        // navigator.share({title:$0(event), ...}) with only the slots that were
-        // set; each slot's value is produced on the client by invoking the
-        // input's JsFunction with the trigger event. validate() already ensures
-        // at least one slot is present, so the object is never empty (the Web
-        // Share API rejects a call with no payload fields).
-        StringBuilder expression = new StringBuilder(
-                "return navigator.share({");
-        List<JsFunction> args = new ArrayList<>();
-        appendSlot(expression, args, "title", titleInput, trigger);
-        appendSlot(expression, args, "text", textInput, trigger);
-        appendSlot(expression, args, "url", urlInput, trigger);
-        expression.append("})");
-        return JsFunction.of(expression.toString(), args.toArray())
-                .withArguments("event");
+        // Absent slots are passed as null and left out of the share data.
+        // validate() already ensures at least one slot is present, so the data
+        // is never empty (the Web Share API rejects a call with no payload
+        // fields).
+        return TRIGGER_JS.share(toJs(titleInput, trigger),
+                toJs(textInput, trigger), toJs(urlInput, trigger));
     }
 
-    private static void appendSlot(StringBuilder expression,
-            List<JsFunction> args, String key,
+    private static @Nullable JsFunction toJs(
             Action.@Nullable Input<String> input, Trigger trigger) {
-        if (input == null) {
-            return;
-        }
-        if (!args.isEmpty()) {
-            expression.append(',');
-        }
-        expression.append(key).append(":$").append(args.size())
-                .append("(event)");
-        args.add(input.toJs(trigger));
+        return input == null ? null : input.toJs(trigger);
     }
 }

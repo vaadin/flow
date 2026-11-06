@@ -19,6 +19,8 @@ import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -41,6 +43,8 @@ import com.vaadin.flow.shared.Registration;
  * @since 25.2
  */
 public class DomEventTrigger extends Trigger {
+
+    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
 
     private final String eventName;
 
@@ -83,12 +87,7 @@ public class DomEventTrigger extends Trigger {
 
     @Override
     protected Registration install(JsFunction action) {
-        // Action at $0 (the convention the framework documents in
-        // Trigger#install), event name at $1 — both captures of the install
-        // JsFunction, no string concatenation around either.
-        return getHost().addJsInitializer("""
-                this.addEventListener($1, $0);\
-                return () => this.removeEventListener($1, $0);""", action,
-                eventName);
+        return new ElementJsInitializerRegistration(getHost().getNode(),
+                TRIGGER_JS.listenToEvent(action, eventName));
     }
 }
