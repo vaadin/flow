@@ -166,13 +166,13 @@ public class DownloadAction extends Action {
         // url-only overrides of the client helper keep working.
         if (filenameInput == null) {
             return JsFunction.of(
-                    "window.Vaadin.Flow.download.start($0(event), undefined, event)",
-                    urlInput.toJs(trigger)).withArguments("event");
+                    "window.Vaadin.Flow.download.start($0(event, context), undefined, event)",
+                    urlInput.toJs(trigger)).withArguments("event", "context");
         }
         return JsFunction.of(
-                "window.Vaadin.Flow.download.start($0(event), $1(event), event)",
+                "window.Vaadin.Flow.download.start($0(event, context), $1(event, context), event)",
                 urlInput.toJs(trigger), filenameInput.toJs(trigger))
-                .withArguments("event");
+                .withArguments("event", "context");
     }
 
     private static LiteralInput<String> literal(String value, String name) {

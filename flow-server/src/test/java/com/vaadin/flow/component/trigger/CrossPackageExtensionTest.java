@@ -63,8 +63,9 @@ class CrossPackageExtensionTest {
         @Override
         protected JsFunction toJs(Trigger trigger) {
             return JsFunction
-                    .of("console.log($0(event))", message.toJs(trigger))
-                    .withArguments("event");
+                    .of("console.log($0(event, context))",
+                            message.toJs(trigger))
+                    .withArguments("event", "context");
         }
 
         JsFunction render(Trigger trigger) {
@@ -93,7 +94,7 @@ class CrossPackageExtensionTest {
 
         JsFunction rendered = action.render(click);
 
-        assertEquals("console.log($0(event))", rendered.getBody());
+        assertEquals("console.log($0(event, context))", rendered.getBody());
         JsFunction source = (JsFunction) rendered.getCaptures().get(0);
         assertEquals("return event[$0]", source.getBody());
         assertEquals("screenX", source.getCaptures().get(0));

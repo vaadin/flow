@@ -101,7 +101,7 @@ class FullscreenTest {
         });
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0($1(event), $2)", action.getBody());
+        assertEquals("$0($1(event, context), $2)", action.getBody());
 
         JsFunction inner = (JsFunction) action.getCaptures().get(1);
         assertEquals(
@@ -137,7 +137,7 @@ class FullscreenTest {
         });
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0($1(event), $2)", action.getBody());
+        assertEquals("$0($1(event, context), $2)", action.getBody());
 
         JsFunction inner = (JsFunction) action.getCaptures().get(1);
         assertEquals(

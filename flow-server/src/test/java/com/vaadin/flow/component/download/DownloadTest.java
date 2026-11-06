@@ -65,7 +65,7 @@ class DownloadTest {
                         + installFn.getCaptures());
         JsFunction action = actionOf(installFn);
         assertEquals(
-                "window.Vaadin.Flow.download.start($0(event), undefined, event)",
+                "window.Vaadin.Flow.download.start($0(event, context), undefined, event)",
                 action.getBody());
         resourceUri(action);
     }
@@ -76,7 +76,7 @@ class DownloadTest {
 
         JsFunction action = actionOf(singleInstallFn());
         assertEquals(
-                "window.Vaadin.Flow.download.start($0(event), $1(event), event)",
+                "window.Vaadin.Flow.download.start($0(event, context), $1(event, context), event)",
                 action.getBody());
         assertEquals("return $0",
                 ((JsFunction) action.getCaptures().get(1)).getBody());

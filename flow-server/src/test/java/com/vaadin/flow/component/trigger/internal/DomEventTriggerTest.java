@@ -54,11 +54,12 @@ class DomEventTriggerTest {
         // The install $0 is the action's JsFunction directly — no intermediate
         // composed handler layer. The action is also the DOM event listener.
         JsFunction action = actionOf(install);
-        assertEquals(List.of("event"), action.getArgumentNames());
+        assertEquals(List.of("event", "context"), action.getArgumentNames());
 
         // SetPropertyAction body shape; target captured as $0, property name
-        // string capture at $1, source JsFunction invoked as $2(event).
-        assertEquals("$0[$1] = $2(event)", action.getBody());
+        // string capture at $1, source JsFunction invoked as $2(event,
+        // context).
+        assertEquals("$0[$1] = $2(event, context)", action.getBody());
         assertSame(field.getElement(), action.getCaptures().get(0));
         assertEquals("value", action.getCaptures().get(1));
     }
