@@ -229,7 +229,7 @@ class PushConfigurationImpl implements PushConfiguration {
 
         session.checkHasLock();
 
-        if (pushMode.isEnabled()
+        if (pushMode.isEnabled() && pushConnectionFactory.isAtmosphereRequired()
                 && !session.getService().ensurePushAvailable()) {
             throw new IllegalStateException(
                     "Push is not available. See previous log messages for more information.");

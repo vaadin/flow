@@ -31,6 +31,7 @@ import { UIDL_REFRESH_TOKEN } from './ConnectionStateHandler';
 import { ReconnectStateMachine } from './ReconnectStateMachine';
 import type { XhrConnectionError } from './XhrConnectionError';
 import { Console } from '../Console';
+import { getAddOnPushTransport } from './DefaultPushConnection';
 
 const SC_FORBIDDEN = 403;
 const SC_NOT_FOUND = 404;
@@ -348,7 +349,9 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
   pushReconnectPending(pushConnection: PushConnection): void {
     Console.debug('Reopening push connection');
-    if (pushConnection.isBidirectional()) {
+    // The transports of add-ons tell when the connection is available again,
+    // like the bidirectional ones
+    if (pushConnection.isBidirectional() || getAddOnPushTransport()) {
       // Lost connection for a connection which will tell us when the connection
       // is available again. A message pushed before has to be sent again.
       this.#registry.getMessageSender().failPushAttempt({ reason: 'network' });

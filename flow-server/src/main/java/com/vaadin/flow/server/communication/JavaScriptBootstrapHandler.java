@@ -295,8 +295,11 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         appConfig.set("uidl", getInitialUidl(context.getUI()));
         initial.set("appConfig", appConfig);
 
-        if (context.getPushMode().isEnabled()) {
-            initial.put("pushScript", getPushScript(context));
+        String pushScript = context.getPushMode().isEnabled()
+                ? getPushScript(context)
+                : null;
+        if (pushScript != null) {
+            initial.put("pushScript", pushScript);
         }
         if (!session.getConfiguration().isProductionMode()) {
             initial.set("stats", getStats());

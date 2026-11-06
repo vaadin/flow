@@ -30,12 +30,35 @@ import com.vaadin.flow.function.SerializableFunction;
  * zero-argument constructor and the fully qualified name of the implementation
  * class must be listed on a separate line in a
  * META-INF/services/com.vaadin.flow.server.communication.PushConnectionFactory
- * file present in the jar file containing the implementation class.
+ * file present in the jar file containing the implementation class. At most one
+ * implementation can be present.
  * <p>
- * For internal use only. May be renamed or removed in a future release.
+ * An add-on can provide push without Atmosphere with a factory that returns
+ * {@code false} from {@link #isAtmosphereRequired()}. Push then works without
+ * {@code flow-push} on the classpath, and the bootstrap does not load the
+ * Atmosphere script. The client side of such a transport is a JavaScript module
+ * in the frontend bundle of the application, which registers itself as
+ * {@code window.Vaadin.Flow.pushTransport} with the methods of the Atmosphere
+ * JavaScript API the client engine uses: {@code subscribe(request)} and
+ * {@code unsubscribeUrl(url)}. Messages to the server are sent as regular
+ * requests, as with {@link com.vaadin.flow.shared.ui.Transport#WEBSOCKET_XHR},
+ * and the add-on handles the requests of its transport with a
+ * {@link com.vaadin.flow.server.RequestHandler} serving {@code VAADIN/push}
+ * with a request type of its own.
  *
  * @since 1.0
  */
 public interface PushConnectionFactory
         extends SerializableFunction<UI, PushConnection> {
+
+    /**
+     * Gets whether the push connections of this factory need Atmosphere, on the
+     * server and in the browser.
+     *
+     * @return {@code true} if push needs Atmosphere, {@code false} if the
+     *         factory provides push without it
+     */
+    default boolean isAtmosphereRequired() {
+        return true;
+    }
 }

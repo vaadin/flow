@@ -52,6 +52,15 @@
       </exclusions>
     </dependency>
 
+    <!-- Only needed by the tests that run through a reverse proxy, see
+         ReverseProxy -->
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers</artifactId>
+      <version>${testcontainers.version}</version>
+      <optional>true</optional>
+    </dependency>
+
     <!-- override scope for junit -->
     <dependency>
       <groupId>junit</groupId>

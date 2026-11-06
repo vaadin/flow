@@ -324,7 +324,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             .getPushMode();
                 }
 
-                if (pushMode.isEnabled()
+                if (pushMode.isEnabled() && isAtmosphereRequired(getService())
                         && !getService().ensurePushAvailable()) {
                     /*
                      * Fall back if not supported (ensurePushAvailable will log
@@ -896,9 +896,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 throw new BootstrapException("Unable to append bundle", e);
             }
 
-            if (context.getPushMode().isEnabled()) {
-                head.appendChild(
-                        createJavaScriptElement(getPushScript(context)));
+            String pushScript = context.getPushMode().isEnabled()
+                    ? getPushScript(context)
+                    : null;
+            if (pushScript != null) {
+                head.appendChild(createJavaScriptElement(pushScript));
             }
 
             head.appendChild(getBootstrapScript(initialUIDL, context));
@@ -1420,18 +1422,34 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     protected void setupPushConnectionFactory(
             PushConfiguration pushConfiguration, BootstrapContext context) {
-        VaadinService service = context.getSession().getService();
+        findPushConnectionFactory(context.getSession().getService())
+                .ifPresent(pushConfiguration::setPushConnectionFactory);
+    }
+
+    private static Optional<PushConnectionFactory> findPushConnectionFactory(
+            VaadinService service) {
         Iterator<PushConnectionFactory> iter = ServiceLoader
                 .load(PushConnectionFactory.class, service.getClassLoader())
                 .iterator();
-        if (iter.hasNext()) {
-            pushConfiguration.setPushConnectionFactory(iter.next());
-            if (iter.hasNext()) {
-                throw new BootstrapException(
-                        "Multiple " + PushConnectionFactory.class.getName()
-                                + " implementations found");
-            }
+        if (!iter.hasNext()) {
+            return Optional.empty();
         }
+        PushConnectionFactory factory = iter.next();
+        if (iter.hasNext()) {
+            throw new BootstrapException(
+                    "Multiple " + PushConnectionFactory.class.getName()
+                            + " implementations found");
+        }
+        return Optional.of(factory);
+    }
+
+    /**
+     * Checks whether push needs Atmosphere, which it does unless an add-on
+     * provides the push connections without it.
+     */
+    private static boolean isAtmosphereRequired(VaadinService service) {
+        return findPushConnectionFactory(service)
+                .map(PushConnectionFactory::isAtmosphereRequired).orElse(true);
     }
 
     /**
@@ -1531,7 +1549,19 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
     }
 
+    /**
+     * Gets the URL of the script the client loads for push.
+     *
+     * @param context
+     *            the bootstrap context
+     * @return the URL of the Atmosphere script, or {@code null} if an add-on
+     *         provides push without Atmosphere, with its client side in the
+     *         frontend bundle
+     */
     protected static String getPushScript(BootstrapContext context) {
+        if (!isAtmosphereRequired(context.getService())) {
+            return null;
+        }
         VaadinRequest request = context.getRequest();
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getBuildHash();

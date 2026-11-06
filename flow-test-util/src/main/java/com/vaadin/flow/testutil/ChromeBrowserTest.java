@@ -185,6 +185,9 @@ public class ChromeBrowserTest extends ViewOrUITest {
         // environments such as Docker, where Chrome cannot use its sandbox.
         options.addArguments("--no-sandbox", "--disable-dev-shm-usage");
 
+        // A reverse proxy serves HTTPS with a certificate issued for the test
+        options.setAcceptInsecureCerts(ReverseProxy.isEnabled());
+
         return options;
     }
 }
