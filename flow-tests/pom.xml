@@ -349,6 +349,7 @@
       </activation>
       <modules>
         <module>test-default</module>
+        <module>test-csp-strict</module>
         <module>test-pwa</module>
         <module>test-pwa/pom-production.xml</module>
         <module>test-pwa-disabled-offline</module>
