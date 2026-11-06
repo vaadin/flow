@@ -44,6 +44,7 @@ import com.vaadin.flow.component.Size;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.trigger.internal.SetSignalAction;
@@ -1984,7 +1985,10 @@ public class Element extends Node<Element> {
      * the arguments of the call as <code>$0</code>, <code>$1</code>, and so on,
      * after pending DOM updates, and deferred while the element is not attached
      * or not visible. A method that returns {@link PendingJavaScriptResult} can
-     * be used to retrieve the <code>return</code> value the same way.
+     * be used to retrieve the <code>return</code> value the same way. A method
+     * that returns {@link JavaScriptResult} with a type argument, such as
+     * <code>JavaScriptResult&lt;Integer&gt;</code>, hands the value to its
+     * handlers already converted to that type.
      * <p>
      * What differs is that nothing about the JavaScript is decided at the call
      * site: the build collects the declarations of every JavaScript definition
@@ -1998,9 +2002,10 @@ public class Element extends Node<Element> {
      * driver of the client side that can not run JavaScript can recognize it,
      * or run it on its own implementation of the same interface.
      * <p>
-     * Every method of the interface declares JavaScript and returns either
-     * <code>void</code> or {@link PendingJavaScriptResult}. One that is
-     * implemented in Java instead - a <code>default</code> or a
+     * Every method of the interface declares JavaScript and returns
+     * <code>void</code>, {@link JavaScriptResult} with a type argument that
+     * does not depend on a type variable, or {@link PendingJavaScriptResult}.
+     * One that is implemented in Java instead - a <code>default</code> or a
      * <code>static</code> method - is not what such an interface is for, so the
      * interface is refused rather than partly run in the browser.
      * <p>
