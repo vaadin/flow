@@ -185,8 +185,6 @@ public final class ElementJsInitializerRegistration implements Registration {
      * definition. Both calls run on the element of the registration.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
-     *
-     * @since 25.4
      */
     @JsDefinition
     public interface InitializerJs extends Serializable {
