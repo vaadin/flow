@@ -87,8 +87,8 @@ use.
 
 **Never start the application through Maven** (`spring-boot:run`, `jetty:run`, an IDE run
 configuration): the daemon owns the app, and a second process fights it for the HTTP port. The
-daemon auto-spawns on first use and survives between commands, so every command — from any
-shell, agent or IDE — answers for the same running app.
+daemon auto-spawns on the first command other than `status` or `ping` and survives between
+commands, so every command — from any shell, agent or IDE — answers for the same running app.
 
 That holds for a **WAR project** too, and there the daemon runs the project's own `jetty:run`
 for you — a WAR has no main class, and its servlet container is a build plugin rather than a
