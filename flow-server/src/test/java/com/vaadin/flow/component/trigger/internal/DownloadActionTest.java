@@ -33,6 +33,7 @@ import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleI
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -52,6 +53,8 @@ class DownloadActionTest {
         JsFunction action = actionOf(singleInstallFn(ui));
         assertEquals("download", snippetOf(action));
         assertLiteralInputValue(action, 0, "/api/report.pdf");
+        assertNull(action.getCaptures().get(1),
+                "a missing filename should be passed as null");
     }
 
     @Test

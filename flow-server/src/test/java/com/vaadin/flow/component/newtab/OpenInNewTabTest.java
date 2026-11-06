@@ -26,6 +26,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.trigger.internal.TriggerTestUtil;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinSession;
@@ -111,10 +112,7 @@ class OpenInNewTabTest {
         List<PendingJavaScriptInvocation> pending = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         assertEquals(1, pending.size(), "Expected exactly one pending JS");
-        Object o = pending.get(0).getInvocation().getParameters().get(1);
-        assertTrue(o instanceof JsFunction,
-                "Expected the initializer argument to be a JsFunction");
-        return (JsFunction) o;
+        return TriggerTestUtil.installFn(pending.get(0).getInvocation());
     }
 
     private static JsFunction actionOf(JsFunction installFn) {

@@ -98,6 +98,8 @@ class ShareActionTest {
 
         JsFunction inner = (JsFunction) action.getCaptures().get(0);
         assertEquals("share", snippetOf(inner));
+        assertNull(inner.getCaptures().get(1));
+        assertNull(inner.getCaptures().get(2));
     }
 
     @Test

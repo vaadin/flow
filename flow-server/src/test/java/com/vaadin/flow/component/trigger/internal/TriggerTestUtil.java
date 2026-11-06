@@ -65,7 +65,7 @@ public final class TriggerTestUtil {
      * initializer registration, whose arguments are
      * {@code [initializerId, installFn]}.
      */
-    static JsFunction installFn(JavaScriptInvocation invocation) {
+    public static JsFunction installFn(JavaScriptInvocation invocation) {
         JsCall call = invocation.getJsCall();
         assertNotNull(call, "Expected a declared initializer call");
         assertEquals(InitializerJs.class, call.definitionType());
