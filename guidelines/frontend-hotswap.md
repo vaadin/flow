@@ -31,10 +31,12 @@ change and reloads the module.
 
 ## Re-run the generator, never reimplement it
 
-The one rule everything else follows from: a hotswapper re-runs the real
-generator at the narrowest granularity that generator offers, and never derives
-the file content itself. What that looks like depends on whether the generator
-is a Flow `Task*` command or something else.
+The one rule everything else follows from is in the Client-Side JavaScript
+section of [`CONVENTIONS.md`](../CONVENTIONS.md#client-side-javascript): a
+hotswapper re-runs the real generator at the narrowest granularity that
+generator offers, and never derives the file content itself. What that looks
+like depends on whether the generator is a Flow `Task*` command or something
+else.
 
 ## For a Flow task, call into the task
 
@@ -100,9 +102,9 @@ from its own field initializer, so the `track()` inside `writeIfChanged` goes
 nowhere. That is harmless — the startup run already tracked the file — but do
 not expect a hotswap write to register itself anywhere.
 
-So never write a generated file with `Files.writeString` or a hand-rolled
-writer — that loses both properties. And still gate the call on a cheap check
-of whether the change could affect the file at all. `RouteRegistryHotswapper`
+`Files.writeString` or a hand-rolled writer loses both properties, which is
+why `CONVENTIONS.md` rules them out. Still gate the call on a cheap check of
+whether the change could affect the file at all. `RouteRegistryHotswapper`
 takes the union of the registry's layouts from before and after it applies the
 class changes, then calls `writeLayouts` only when one of the changed classes
 is in that union — that is, when a changed class is a `@Layout` or has just
