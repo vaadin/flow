@@ -77,12 +77,14 @@ public final class TriggerTestUtil {
     }
 
     /**
-     * Returns the name of the method of a JavaScript definition that declares
-     * the given function as a snippet.
+     * Returns the name of the method that declares the given function as a
+     * snippet, after asserting that the method belongs to the given JavaScript
+     * definition.
      */
-    public static String snippetOf(JsFunction function) {
+    public static String snippetOf(Class<?> definition, JsFunction function) {
         JsCall call = function.getDeclaredCall();
         assertNotNull(call, "Expected a function declared as a snippet");
+        assertEquals(definition, call.definitionType());
         return call.methodName();
     }
 

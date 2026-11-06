@@ -80,7 +80,7 @@ class PromiseActionTest {
         // The action reports the outcome of the promise that the inner
         // function returns to the return channel.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("reportOutcome", snippetOf(action));
+        assertEquals("reportOutcome", snippetOf(TriggerJs.class, action));
 
         List<@Nullable Object> captures = action.getCaptures();
         assertEquals(2, captures.size(), "expected inner + channel captures");

@@ -44,7 +44,7 @@ class DoubleClickTriggerTest {
         // is a capture at $1, distinguishing dblclick from click only via that
         // capture.
         JsFunction install = singleInstallFn(ui);
-        assertEquals("listenToEvent", snippetOf(install));
+        assertEquals("listenToEvent", snippetOf(TriggerJs.class, install));
         assertEquals("dblclick", install.getCaptures().get(1));
 
         // The EventData field is inherited from MouseEventTrigger.EventData and

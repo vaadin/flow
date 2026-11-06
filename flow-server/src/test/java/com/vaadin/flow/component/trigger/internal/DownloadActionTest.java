@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.internal.ValueJs;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.DownloadHandler;
@@ -51,7 +52,8 @@ class DownloadActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("download", snippetOf(action));
+        assertEquals("download",
+                snippetOf(DownloadAction.DownloadJs.class, action));
         assertLiteralInputValue(action, 0, "/api/report.pdf");
         assertNull(action.getCaptures().get(1),
                 "a missing filename should be passed as null");
@@ -72,7 +74,8 @@ class DownloadActionTest {
         // verbatim into the input function's capture — Jackson handles the
         // escaping on the wire, no hand-quoting in the JS.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("download", snippetOf(action));
+        assertEquals("download",
+                snippetOf(DownloadAction.DownloadJs.class, action));
         assertLiteralInputValue(action, 0, "/api/report.pdf");
         assertLiteralInputValue(action, 1, "Q1 \"report\".pdf");
     }
@@ -91,7 +94,7 @@ class DownloadActionTest {
 
         JsFunction action = actionOf(singleInstallFn(ui));
         JsFunction urlFn = (JsFunction) action.getCaptures().get(0);
-        assertEquals("property", snippetOf(urlFn));
+        assertEquals("property", snippetOf(ValueJs.class, urlFn));
         assertEquals("value", urlFn.getCaptures().get(1));
     }
 
@@ -189,7 +192,7 @@ class DownloadActionTest {
         assertTrue(capture instanceof JsFunction,
                 "expected JsFunction at capture " + captureIndex);
         JsFunction inputFn = (JsFunction) capture;
-        assertEquals("value", snippetOf(inputFn),
+        assertEquals("value", snippetOf(ValueJs.class, inputFn),
                 "expected LiteralInput shape");
         assertEquals(expectedValue, inputFn.getCaptures().get(0));
     }

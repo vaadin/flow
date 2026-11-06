@@ -44,7 +44,7 @@ class TimeoutTriggerTest {
         // Action at $0, delay in milliseconds at $1; the returned function
         // clears the timer on removal. No user content leaks into the body.
         JsFunction install = singleInstallFn(ui);
-        assertEquals("runAfterTimeout", snippetOf(install));
+        assertEquals("runAfterTimeout", snippetOf(TriggerJs.class, install));
         assertEquals(250L, install.getCaptures().get(1));
     }
 

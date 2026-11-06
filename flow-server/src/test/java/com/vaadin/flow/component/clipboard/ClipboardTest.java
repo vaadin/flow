@@ -29,12 +29,15 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.trigger.internal.ReadFromClipboardAction;
 import com.vaadin.flow.component.trigger.internal.TriggerTestUtil;
+import com.vaadin.flow.component.trigger.internal.WriteToClipboardAction;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
+import com.vaadin.flow.js.internal.ValueJs;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.UploadHandler;
@@ -96,7 +99,8 @@ class ClipboardTest {
         // Action calls the TS helper; literal is captured by the text input
         // JsFunction at action $0.
         JsFunction action = actionFn(ui);
-        assertEquals("writeToClipboard", snippetOf(action));
+        assertEquals("writeToClipboard", snippetOf(
+                WriteToClipboardAction.WriteToClipboardJs.class, action));
         JsFunction textInput = (JsFunction) action.getCaptures().get(0);
         assertEquals("Hello", textInput.getCaptures().get(0));
     }
@@ -113,7 +117,7 @@ class ClipboardTest {
         // PropertyInput renders as `return $0[$1]` and captures (element,
         // "value").
         JsFunction textInput = (JsFunction) actionFn(ui).getCaptures().get(0);
-        assertEquals("property", snippetOf(textInput));
+        assertEquals("property", snippetOf(ValueJs.class, textInput));
         assertSame(field.getElement(), textInput.getCaptures().get(0));
         assertEquals("value", textInput.getCaptures().get(1));
     }
@@ -159,7 +163,7 @@ class ClipboardTest {
         // ImageBlobInput renders as `return $0` and captures the image
         // element. The action puts it at slot 2.
         JsFunction imageInput = (JsFunction) actionFn(ui).getCaptures().get(2);
-        assertEquals("value", snippetOf(imageInput));
+        assertEquals("value", snippetOf(ValueJs.class, imageInput));
         assertSame(image.getElement(), imageInput.getCaptures().get(0));
     }
 
@@ -193,7 +197,7 @@ class ClipboardTest {
         Clipboard.onClick(button).write(ClipboardContent.create().text(field));
 
         JsFunction textInput = (JsFunction) actionFn(ui).getCaptures().get(0);
-        assertEquals("property", snippetOf(textInput));
+        assertEquals("property", snippetOf(ValueJs.class, textInput));
         assertEquals("value", textInput.getCaptures().get(1));
     }
 
@@ -289,7 +293,8 @@ class ClipboardTest {
         // delegates to the TS readPayload helper.
         JsFunction action = actionFn(ui);
         JsFunction inner = (JsFunction) action.getCaptures().get(0);
-        assertEquals("readFromClipboard", snippetOf(inner));
+        assertEquals("readFromClipboard", snippetOf(
+                ReadFromClipboardAction.ReadFromClipboardJs.class, inner));
     }
 
     @Test
