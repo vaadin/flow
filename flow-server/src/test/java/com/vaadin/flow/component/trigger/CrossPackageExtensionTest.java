@@ -18,6 +18,7 @@ package com.vaadin.flow.component.trigger;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.component.trigger.internal.Action;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
 import com.vaadin.flow.component.trigger.internal.DomEventTrigger;
@@ -26,7 +27,6 @@ import com.vaadin.flow.component.trigger.internal.MouseEventTrigger;
 import com.vaadin.flow.component.trigger.internal.Trigger;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
-import com.vaadin.flow.js.internal.ValueJs;
 
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;

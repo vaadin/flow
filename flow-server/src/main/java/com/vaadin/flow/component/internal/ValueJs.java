@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.js.internal;
+package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
 

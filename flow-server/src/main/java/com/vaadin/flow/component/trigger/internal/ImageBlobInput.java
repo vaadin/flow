@@ -19,10 +19,10 @@ import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsSnippets;
-import com.vaadin.flow.js.internal.ValueJs;
 
 /**
  * Input that produces the source {@code <img>} element of a component, for use
