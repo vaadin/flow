@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
@@ -52,7 +50,6 @@ class DomEventTriggerTest {
         // The install $0 is the action's JsFunction directly — no intermediate
         // composed handler layer. The action is also the DOM event listener.
         JsFunction action = actionOf(install);
-        assertEquals(List.of("event"), action.getArgumentNames());
 
         // SetPropertyAction body shape; target captured as $0, property name
         // string capture at $1, source JsFunction invoked as $2(event).

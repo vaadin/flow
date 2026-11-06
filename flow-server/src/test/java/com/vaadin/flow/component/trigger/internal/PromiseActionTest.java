@@ -37,11 +37,13 @@ import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippet
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PromiseActionTest {
 
-    private static final String PROMISE_EXPR = "Promise.resolve(42)";
+    private static final JsFunction PROMISE_FN = JsFunction
+            .of("return Promise.resolve(42)");
 
     @Test
     void fireAndForget_actionFnIsJustThePromise_noServerCallback() {
@@ -57,7 +59,7 @@ class PromiseActionTest {
         // (no observer wrapping, no return channel) — installed directly as
         // the DOM listener.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("return " + PROMISE_EXPR, action.getBody());
+        assertSame(PROMISE_FN, action);
         assertFalse(captureContainsReturnChannel(action),
                 "fire-and-forget overload captures no return channel");
     }
@@ -187,7 +189,7 @@ class PromiseActionTest {
 
         @Override
         protected JsFunction toPromiseJs(Trigger trigger) {
-            return JsFunction.of("return " + PROMISE_EXPR);
+            return PROMISE_FN;
         }
     }
 }

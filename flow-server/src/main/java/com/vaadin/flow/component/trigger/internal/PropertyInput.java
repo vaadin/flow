@@ -21,6 +21,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.js.internal.ValueJs;
 
 /**
  * Reads a JavaScript property from a target component's root element at the
@@ -43,7 +44,7 @@ import com.vaadin.flow.js.JsSnippets;
  */
 public class PropertyInput<T> extends Action.Input<T> {
 
-    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
+    private static final ValueJs VALUE_JS = JsSnippets.of(ValueJs.class);
 
     private final Element target;
     private final String propertyName;
@@ -71,6 +72,6 @@ public class PropertyInput<T> extends Action.Input<T> {
         // Both target (Element) and propertyName (String) are JsFunction
         // captures — JsFunction's wire encoding handles Element-to-DOM-ref
         // mapping and JSON-quotes the property name.
-        return TRIGGER_JS.property(target, propertyName);
+        return VALUE_JS.property(target, propertyName);
     }
 }

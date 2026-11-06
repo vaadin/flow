@@ -22,6 +22,7 @@ import java.util.Map;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.js.internal.ValueJs;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
@@ -44,7 +45,7 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  */
 final class DownloadHandlerInput extends Action.Input<String> {
 
-    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
+    private static final ValueJs VALUE_JS = JsSnippets.of(ValueJs.class);
 
     private static final String ATTR_PREFIX = "data-flow-download-";
 
@@ -65,7 +66,7 @@ final class DownloadHandlerInput extends Action.Input<String> {
             uri = register(trigger);
             uriByTrigger.put(trigger, uri);
         }
-        return TRIGGER_JS.value(uri.toASCIIString());
+        return VALUE_JS.value(uri.toASCIIString());
     }
 
     private URI register(Trigger trigger) {

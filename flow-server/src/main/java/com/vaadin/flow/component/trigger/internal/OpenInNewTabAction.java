@@ -15,10 +15,14 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsCalledWith;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
@@ -89,7 +93,8 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  */
 public class OpenInNewTabAction extends Action {
 
-    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
+    private static final OpenInNewTabJs OPEN_IN_NEW_TAB_JS = JsSnippets
+            .of(OpenInNewTabJs.class);
 
     /**
      * Default features applied when the caller does not supply their own:
@@ -204,9 +209,10 @@ public class OpenInNewTabAction extends Action {
         // for those this check is redundant — but keeping it unconditional
         // keeps the rendered JS identical regardless of how the URL was
         // supplied, and protects LiteralInput<>("javascript:…") too. The
-        // guard in TriggerJs#openInNewTab short-circuits window.open when the
+        // guard in OpenInNewTabJs#openInNewTab short-circuits window.open when
+        // the
         // resolved URL is a javascript: URL.
-        return TRIGGER_JS.openInNewTab(urlInput.toJs(trigger),
+        return OPEN_IN_NEW_TAB_JS.openInNewTab(urlInput.toJs(trigger),
                 featuresInput.toJs(trigger));
     }
 
@@ -222,5 +228,35 @@ public class OpenInNewTabAction extends Action {
     private static LiteralInput<String> literal(String value, String name) {
         return new LiteralInput<>(
                 Objects.requireNonNull(value, name + " must not be null"));
+    }
+
+    /**
+     * How a URL is opened in a new tab, as a snippet for
+     * {@link JsSnippets#of(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    @JsDefinition
+    public interface OpenInNewTabJs extends Serializable {
+
+        /**
+         * An action that opens the URL of an input in a new browser tab, unless
+         * it is a <code>javascript:</code> URL, so that a URL produced on the
+         * client can not run script in the origin of the page. The pattern
+         * skips the leading C0 controls and spaces that the URL parser strips
+         * before the scheme and ignores case, and <code>String(u)</code> keeps
+         * the test from throwing for a value that is not a string.
+         *
+         * @param url
+         *            the input producing the URL
+         * @param features
+         *            the input producing the features of
+         *            <code>window.open</code>
+         * @return the action function
+         */
+        @JsExpression("((u) => /^[\\x00-\\x20]*javascript:/i.test(String(u))"
+                + " || window.open(u, \"_blank\", $1(event)))($0(event))")
+        @JsCalledWith("event")
+        JsFunction openInNewTab(JsFunction url, JsFunction features);
     }
 }

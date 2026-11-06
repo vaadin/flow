@@ -2759,6 +2759,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
+    @SuppressWarnings("removal")
     void addJsInitializer_runsOnAttach_emitsInitInvocation() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
