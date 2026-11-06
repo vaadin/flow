@@ -70,7 +70,7 @@ public class ShortcutRegistration implements Registration, Serializable {
 
     static final String LISTEN_ON_INITIALIZED = "_initialized_listen_on_for_component";
 
-    private Set<Key> modifiers = new HashSet<>(2);
+    private final Set<Key> modifiers = new HashSet<>(2);
     private Key primaryKey = null;
 
     private StateTree.ExecutionRegistration executionRegistration;
@@ -88,11 +88,11 @@ public class ShortcutRegistration implements Registration, Serializable {
     private SerializableSupplier<Component[]> listenOnSuppliers;
 
     // used to determine, if we need to do something before client response
-    private AtomicBoolean isDirty = new AtomicBoolean(false);
+    private final AtomicBoolean isDirty = new AtomicBoolean(false);
 
     private ShortcutEventListener eventListener;
 
-    private List<Registration> registrations = new ArrayList<>();
+    private final List<Registration> registrations = new ArrayList<>();
 
     private DisabledUpdateMode mode = DisabledUpdateMode.ONLY_WHEN_ENABLED;
 
@@ -1158,7 +1158,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * store them by hash.
      */
     private static class HashableKey implements Key {
-        private Key key;
+        private final Key key;
         private Integer hashcode;
 
         HashableKey(Key key) {
