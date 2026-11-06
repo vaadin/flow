@@ -549,14 +549,15 @@ final class Launch {
      * Which modules are in the edit loop.
      * <p>
      * Read off the resolved classpath rather than reconstructed from poms: the
-     * only <em>directory</em> entries Maven emits are reactor modules' output
-     * directories, so this is exactly the set of modules the application
-     * depends on - transitively, after profiles and dependency management, and
-     * correct even for a module that overrides {@code <outputDirectory>}. It
-     * also means the loop cannot contain a module the application does not
-     * actually use.
+     * <em>directory</em> entries Maven emits are module output directories, so
+     * this is the set of modules the application depends on - transitively,
+     * after profiles and dependency management, and correct even for a module
+     * that overrides {@code <outputDirectory>}. It also means the loop cannot
+     * contain a module the application does not actually use. Not every such
+     * directory belongs to this reactor, though; {@link #moduleDirOf} decides
+     * which do.
      */
-    private List<Reactor.Module> selectModules(List<String> entries) {
+    List<Reactor.Module> selectModules(List<String> entries) {
         List<Reactor.Module> modules = new ArrayList<>();
         modules.add(reactor.app());
         Optional<List<Path>> forced = forcedModuleDirs();
@@ -639,14 +640,46 @@ final class Launch {
 
     /**
      * The nearest ancestor that is a Maven module, never above the reactor
-     * root.
+     * root, and only when that module is part of this reactor: under its root,
+     * or one of its candidates.
+     * <p>
+     * Containment alone is not enough in either direction. A reactor may
+     * aggregate a sibling of its root, which only the candidates know about.
+     * And a directory on the classpath may belong to a module the reactor does
+     * not aggregate at all: Maven 4 resolves a module of an enclosing build -
+     * one aggregating this reactor from above - to that module's
+     * {@code target/classes} rather than to its installed jar, and taking such
+     * a module into the loop would treat whatever writes to its sources as an
+     * edit of the application. Under the root, the candidates are not required,
+     * so a module the structural pom walk failed to enumerate stays in the
+     * loop. Nor are they for a reactor of one: discovery falls back to that
+     * whenever it cannot see the aggregation - an unreadable aggregator, a root
+     * that is not an ancestor - and its candidates then hold the application
+     * alone, so requiring them would quietly drop every sibling module the
+     * build did put on the classpath.
+     * <p>
+     * A rejected module still loads from its directory, but edits to it are not
+     * reloaded, so that is logged rather than left to be discovered.
+     * <p>
+     * Resolved first, because the candidates and the root are: a classpath
+     * entry spelled through a symlink would otherwise match neither.
      */
     private Path moduleDirOf(Path classesDir) {
         Path root = reactor.root();
-        for (Path dir = classesDir.getParent(); dir != null; dir = dir
-                .getParent()) {
+        Path real = Reactor.real(classesDir);
+        boolean underRoot = real.startsWith(root);
+        for (Path dir = real.getParent(); dir != null; dir = dir.getParent()) {
             if (Files.isRegularFile(dir.resolve("pom.xml"))) {
-                return dir;
+                Path owner = dir;
+                if (underRoot || !reactor.isMultiModule()
+                        || reactor.candidates().stream().anyMatch(
+                                candidate -> candidate.dir().equals(owner))) {
+                    return owner;
+                }
+                log.line("module " + owner
+                        + " is on the classpath but not part of reactor " + root
+                        + "; edits to it will not be reloaded");
+                return null;
             }
             if (dir.equals(root)) {
                 return null;
