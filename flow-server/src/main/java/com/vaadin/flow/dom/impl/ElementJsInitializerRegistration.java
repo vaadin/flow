@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.dom.impl;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.flow.component.UI;
@@ -23,20 +24,26 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionProxy;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.shared.Registration;
 
 /**
  * Server-side bookkeeping for a JavaScript initializer registered through
- * {@link Element#addJsInitializer(String, Object...)}.
+ * {@link Element#addJsInitializer(String, Object...)}, or by framework code
+ * with an initializer declared as a {@link JsSnippets snippet}.
  * <p>
  * Re-emits the init invocation each time the client acquires a fresh DOM for
  * this element, and emits a matching dispose when the registration is removed.
- * The user expression is sent as a {@link JsFunction} parameter; the wrapper
- * expression itself contains only framework code that delegates registry
- * bookkeeping to {@code this.registerInitializer} /
- * {@code this.disposeInitializer}, which the client provides as part of the
- * {@code executeJs} execution context.
+ * The initializer is sent as a {@link JsFunction} parameter of the declared
+ * {@link InitializerJs} calls, which delegate the registry bookkeeping to the
+ * {@code registerInitializer} / {@code disposeInitializer} callbacks of the
+ * client-side execution context. An initializer declared as a snippet is
+ * therefore not compiled from a string in the browser.
  * <p>
  * For internal use only.
  * 
@@ -44,29 +51,8 @@ import com.vaadin.flow.shared.Registration;
  */
 public final class ElementJsInitializerRegistration implements Registration {
 
-    private static final String INIT_EXPRESSION = """
-            const element = $0;
-            const initializerId = $1;
-            const initializer = $2;
-            const node = this.getNode(element);
-            const cleanup = initializer.apply(element);
-            if (typeof cleanup === 'function') {
-              this.registerInitializer(node, initializerId, cleanup);
-            } else if (cleanup !== undefined && cleanup !== null) {
-              console.error('addJsInitializer expression must return a function, null or undefined; got ' + (typeof cleanup));
-            }
-            """;
-
-    private static final String DISPOSE_EXPRESSION = """
-            const element = $0;
-            const initializerId = $1;
-            try {
-              this.disposeInitializer(this.getNode(element), initializerId);
-            } catch (e) {}
-            """;
-
     private final StateNode node;
-    private final JsFunction userFunction;
+    private final JsFunction initializer;
 
     // Allocated lazily from the UI-wide counter on the first emit, then
     // reused for any re-emits and the dispose invocation.
@@ -78,8 +64,9 @@ public final class ElementJsInitializerRegistration implements Registration {
     private Registration attachListenerRegistration;
 
     /**
-     * Creates a new registration and schedules the first init invocation if the
-     * node is currently attached.
+     * Creates a new registration for an expression given by the application and
+     * schedules the first init invocation if the node is currently attached.
+     * The expression is compiled from a string in the browser.
      *
      * @param node
      *            the owning state node, not {@code null}
@@ -90,11 +77,32 @@ public final class ElementJsInitializerRegistration implements Registration {
      */
     public ElementJsInitializerRegistration(StateNode node, String expression,
             Object[] parameters) {
-        this.node = Objects.requireNonNull(node, "node");
-        Objects.requireNonNull(expression, "expression");
         // JsFunction.of validates each capture, so unsupported parameter
         // types fail fast here rather than at execution time.
-        this.userFunction = JsFunction.of(expression, parameters);
+        this(node, JsFunction.of(
+                Objects.requireNonNull(expression, "expression"), parameters));
+    }
+
+    /**
+     * Creates a new registration for the given initializer and schedules the
+     * first init invocation if the node is currently attached.
+     * <p>
+     * The initializer is applied with the element as <code>this</code> and no
+     * arguments, and returns a cleanup function, <code>null</code> or
+     * <code>undefined</code>, as described for
+     * {@link Element#addJsInitializer(String, Object...)}. Framework code
+     * passes one declared as a {@link JsSnippets snippet}, so that nothing is
+     * compiled from a string in the browser.
+     *
+     * @param node
+     *            the owning state node, not {@code null}
+     * @param initializer
+     *            the initializer to run, not {@code null}
+     */
+    public ElementJsInitializerRegistration(StateNode node,
+            JsFunction initializer) {
+        this.node = Objects.requireNonNull(node, "node");
+        this.initializer = Objects.requireNonNull(initializer, "initializer");
 
         // Do not convert to lambda: the returned registration captures this
         // listener and is stored in a field here, and lambda deserialization
@@ -134,16 +142,25 @@ public final class ElementJsInitializerRegistration implements Registration {
         if (initializerId == -1) {
             initializerId = ui.getInternals().nextJsInitializerId();
         }
-        Object[] params = new Object[] { Element.get(node), initializerId,
-                userFunction };
-        ui.getInternals().addJavaScriptInvocation(node,
-                new JavaScriptInvocation(INIT_EXPRESSION, params));
+        createInitializerJs(ui).init(initializerId, initializer);
     }
 
     private void emitDispose(UI ui) {
-        Object[] params = new Object[] { Element.get(node), initializerId };
-        ui.getInternals().addJavaScriptInvocation(node,
-                new JavaScriptInvocation(DISPOSE_EXPRESSION, params));
+        createInitializerJs(ui).dispose(initializerId);
+    }
+
+    /**
+     * Queues the calls on the UI for this node directly rather than through
+     * {@link Element#executeJs(Class)}, which waits for the node to be attached
+     * and for the next response, as both are emitted while that response is
+     * being built.
+     */
+    private InitializerJs createInitializerJs(UI ui) {
+        Element element = Element.get(node);
+        return JsDefinitionProxy.create(InitializerJs.class,
+                call -> ui.getInternals().addJavaScriptInvocation(node,
+                        new JavaScriptInvocation(call, call.getExpression(),
+                                call.parametersFor(element))));
     }
 
     @Override
@@ -161,5 +178,52 @@ public final class ElementJsInitializerRegistration implements Registration {
             ui.getInternals().getStateTree().beforeClientResponse(node,
                     context -> emitDispose(context.getUI()));
         }
+    }
+
+    /**
+     * Runs and disposes of an initializer on the client, as a JavaScript
+     * definition. Both calls run on the element of the registration.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    @JsDefinition
+    public interface InitializerJs extends Serializable {
+
+        /**
+         * Applies the initializer to the element and registers the cleanup
+         * function it returns, to be called when the client discards the DOM
+         * node of the element or the initializer is disposed of.
+         *
+         * @param initializerId
+         *            the id of the initializer, unique within the UI
+         * @param initializer
+         *            the initializer to apply
+         */
+        @JsExpression("""
+                const node = $executionContext.getNode(this);
+                const cleanup = $1.apply(this);
+                if (typeof cleanup === 'function') {
+                  $executionContext.registerInitializer(node, $0, cleanup);
+                } else if (cleanup !== undefined && cleanup !== null) {
+                  console.error('addJsInitializer expression must return a function, null or undefined; got ' + (typeof cleanup));
+                }
+                """)
+        @JsWithExecutionContext
+        void init(int initializerId, JsFunction initializer);
+
+        /**
+         * Calls the cleanup function that the initializer with the given id
+         * registered, if any.
+         *
+         * @param initializerId
+         *            the id of the initializer
+         */
+        @JsExpression("""
+                try {
+                  $executionContext.disposeInitializer($executionContext.getNode(this), $0);
+                } catch (e) {}
+                """)
+        @JsWithExecutionContext
+        void dispose(int initializerId);
     }
 }

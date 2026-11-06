@@ -15,20 +15,24 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.util.Objects;
+
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class OpenInNewTabActionTest {
 
-    private static final String EXPECTED_BODY = "((u) =>"
+    private static final String GUARDED_WINDOW_OPEN = "((u) =>"
             + " /^[\\x00-\\x20]*javascript:/i.test(String(u))"
             + " || window.open(u, \"_blank\", $1(event)))($0(event))";
 
@@ -47,7 +51,12 @@ class OpenInNewTabActionTest {
         // when the resolved URL starts with javascript:. URL and features
         // each live on their own input JsFunction captured by the action.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(EXPECTED_BODY, action.getBody());
+        assertEquals("openInNewTab",
+                snippetOf(OpenInNewTabAction.OpenInNewTabJs.class, action));
+        assertEquals(GUARDED_WINDOW_OPEN,
+                Objects.requireNonNull(action.getDeclaredCall())
+                        .getExpression(),
+                "window.open must only run for a URL that is not javascript:");
 
         JsFunction url = (JsFunction) action.getCaptures().get(0);
         assertEquals("https://vaadin.com/docs", url.getCaptures().get(0));
@@ -69,7 +78,8 @@ class OpenInNewTabActionTest {
 
         // Supplying features replaces — does not extend — the defaults.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(EXPECTED_BODY, action.getBody());
+        assertEquals("openInNewTab",
+                snippetOf(OpenInNewTabAction.OpenInNewTabJs.class, action));
 
         JsFunction features = (JsFunction) action.getCaptures().get(1);
         assertEquals("noopener,width=600,height=400",
@@ -91,10 +101,11 @@ class OpenInNewTabActionTest {
         // The URL slot now holds a PropertyInput JsFunction that reads
         // field["value"] on the client at fire time.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(EXPECTED_BODY, action.getBody());
+        assertEquals("openInNewTab",
+                snippetOf(OpenInNewTabAction.OpenInNewTabJs.class, action));
 
         JsFunction url = (JsFunction) action.getCaptures().get(0);
-        assertEquals("return $0[$1]", url.getBody());
+        assertEquals("property", snippetOf(ValueJs.class, url));
         assertEquals(field.getElement(), url.getCaptures().get(0));
         assertEquals("value", url.getCaptures().get(1));
     }

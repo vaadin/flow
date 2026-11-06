@@ -24,12 +24,16 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.internal.ValueJs;
+import com.vaadin.flow.component.trigger.internal.DownloadAction;
+import com.vaadin.flow.component.trigger.internal.TriggerTestUtil;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
 
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -64,9 +68,8 @@ class DownloadTest {
                 "Expected install captures to include the event name: "
                         + installFn.getCaptures());
         JsFunction action = actionOf(installFn);
-        assertEquals(
-                "window.Vaadin.Flow.download.start($0(event), undefined, event)",
-                action.getBody());
+        assertEquals("download",
+                snippetOf(DownloadAction.DownloadJs.class, action));
         resourceUri(action);
     }
 
@@ -75,11 +78,10 @@ class DownloadTest {
         Download.onClick(button, "/files/a.bin", "b.bin");
 
         JsFunction action = actionOf(singleInstallFn());
-        assertEquals(
-                "window.Vaadin.Flow.download.start($0(event), $1(event), event)",
-                action.getBody());
-        assertEquals("return $0",
-                ((JsFunction) action.getCaptures().get(1)).getBody());
+        assertEquals("download",
+                snippetOf(DownloadAction.DownloadJs.class, action));
+        assertEquals("value", snippetOf(ValueJs.class,
+                ((JsFunction) action.getCaptures().get(1))));
         assertEquals("b.bin", ((JsFunction) action.getCaptures().get(1))
                 .getCaptures().get(0));
     }
@@ -118,10 +120,7 @@ class DownloadTest {
         List<PendingJavaScriptInvocation> pending = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         assertEquals(1, pending.size(), "Expected exactly one pending JS");
-        Object o = pending.get(0).getInvocation().getParameters().get(2);
-        assertTrue(o instanceof JsFunction,
-                "Expected install param $2 to be a JsFunction");
-        return (JsFunction) o;
+        return TriggerTestUtil.installFn(pending.get(0).getInvocation());
     }
 
     private static JsFunction actionOf(JsFunction installFn) {

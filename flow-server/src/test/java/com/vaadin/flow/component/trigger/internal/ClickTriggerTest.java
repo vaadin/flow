@@ -21,11 +21,13 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.installFns;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -53,13 +55,12 @@ class ClickTriggerTest {
         List<JsFunction> installs = installFns(ui);
         JsFunction source0 = (JsFunction) actionOf(installs.get(0))
                 .getCaptures().get(2);
-        assertEquals(List.of("event"), source0.getArgumentNames());
-        assertEquals("return event[$0]", source0.getBody());
+        assertEquals("eventProperty", snippetOf(ValueJs.class, source0));
         assertEquals("screenX", source0.getCaptures().get(0));
 
         JsFunction source1 = (JsFunction) actionOf(installs.get(1))
                 .getCaptures().get(2);
-        assertEquals("return event[$0]", source1.getBody());
+        assertEquals("eventProperty", snippetOf(ValueJs.class, source1));
         assertEquals("screenY", source1.getCaptures().get(0));
     }
 

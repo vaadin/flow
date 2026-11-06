@@ -20,10 +20,12 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -63,6 +65,8 @@ import com.vaadin.flow.signals.Signal;
  */
 public class SignalInput<T> extends Action.Input<T> {
 
+    private static final ValueJs VALUE_JS = JsSnippets.of(ValueJs.class);
+
     // Generates unique property-name suffixes; a long won't realistically
     // overflow. Class reload during devmode hotdeploy resets it, but the
     // matching SignalInput instances reload with it, so no live collision
@@ -99,10 +103,9 @@ public class SignalInput<T> extends Action.Input<T> {
     @Override
     public JsFunction toJs(Trigger trigger) {
         installEffectIfNeeded();
-        // $0 = the owner element (resolved to a DOM ref on the wire); $1 =
-        // the mirrored property name. Matches PropertyInput's shape — both
-        // read a property from a known element.
-        return JsFunction.of("return $0[$1]", owner.getElement(), propertyName);
+        // Matches PropertyInput's shape — both read a property from a known
+        // element.
+        return VALUE_JS.property(owner.getElement(), propertyName);
     }
 
     private void installEffectIfNeeded() {

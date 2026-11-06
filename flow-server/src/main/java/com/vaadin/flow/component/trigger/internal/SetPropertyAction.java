@@ -20,8 +20,10 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsSnippets;
 
 /**
  * Assigns a value to a JavaScript property on a target element when the bound
@@ -55,6 +57,9 @@ import com.vaadin.flow.dom.JsFunction;
  */
 public class SetPropertyAction<T> extends Action {
 
+    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
+    private static final ValueJs VALUE_JS = JsSnippets.of(ValueJs.class);
+
     /**
      * Singleton input that yields a JS {@code null}. Used by the
      * {@link #SetPropertyAction(Component, String, Object) null-accepting
@@ -63,7 +68,7 @@ public class SetPropertyAction<T> extends Action {
     private static final Action.Input<Object> NULL_LITERAL = new Action.Input<>() {
         @Override
         public JsFunction toJs(Trigger trigger) {
-            return JsFunction.of("return null");
+            return VALUE_JS.nullValue();
         }
     };
 
@@ -117,10 +122,8 @@ public class SetPropertyAction<T> extends Action {
 
     @Override
     protected JsFunction toJs(Trigger trigger) {
-        // $0 = target element (captured), $1 = property name (string
-        // capture, Jackson-quoted on the client), $2 = source JsFunction
-        // (invoked with event so handler-scoped inputs work).
-        return JsFunction.of("$0[$1] = $2(event)", target, propertyName,
-                source.toJs(trigger)).withArguments("event");
+        // The source is invoked with event so handler-scoped inputs work
+        return TRIGGER_JS.setProperty(target, propertyName,
+                source.toJs(trigger));
     }
 }
