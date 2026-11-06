@@ -173,4 +173,71 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
         };
     }
 
+    /**
+     * Wraps the given {@code converter} with a converter that handles both null
+     * presentation and null model values:
+     * <ul>
+     * <li>If the model value is null, the converter returns null. Otherwise, it
+     * delegates to the wrapped converter.</li>
+     * <li>If the presentation value is null, or equal to the
+     * {@link com.vaadin.flow.component.HasValue#getEmptyValue() empty value} of
+     * the field available through {@link ValueContext#getHasValue()}, the
+     * converter returns null. Otherwise, it delegates to the wrapped
+     * converter.</li>
+     * </ul>
+     * When the converter is used directly on a field, as the first converter of
+     * a binding, the wrapped converter thus never sees a null value nor the
+     * field's empty value, such as an empty string from a text field. The
+     * field's empty value is always converted to null, even when it is a
+     * meaningful value such as {@code false} for a checkbox. The empty value
+     * check is only meaningful when this converter is attached directly to the
+     * field: further down a converter chain, the incoming value is still
+     * compared to the field's empty value. Without a field in the context, for
+     * example when the converter is used outside a binder, only null is
+     * converted to null.
+     * <p>
+     * A null model value is converted to a null presentation value. If the
+     * field does not accept null, configure a null representation for the
+     * binding with {@link BindingBuilder#withNullRepresentation(Object)} before
+     * adding this converter.
+     * <p>
+     * Example use:
+     * 
+     * <pre>
+     * {@code
+     * Converter<String, LocalDate> converter = Converter
+     *         .nullSafeConverter(Converter.from(LocalDate::parse,
+     *                 LocalDate::toString, Exception::getMessage));
+     * }
+     * </pre>
+     *
+     * @param <P>
+     *            the presentation type
+     * @param <M>
+     *            the model type
+     * @param converter
+     *            the converter to delegate to when the value being converted is
+     *            neither null nor the field's empty value
+     * @return a converter that handles both null presentation and null model
+     *         values
+     */
+    static <P, M> Converter<P, M> nullSafeConverter(Converter<P, M> converter) {
+        return new Converter<P, M>() {
+            @Override
+            public Result<M> convertToModel(P value, ValueContext context) {
+                if (value == null || context.getHasValue()
+                        .map(field -> value.equals(field.getEmptyValue()))
+                        .orElse(false)) {
+                    return Result.ok(null);
+                }
+                return converter.convertToModel(value, context);
+            }
+
+            @Override
+            public P convertToPresentation(M value, ValueContext context) {
+                return value == null ? null
+                        : converter.convertToPresentation(value, context);
+            }
+        };
+    }
 }
