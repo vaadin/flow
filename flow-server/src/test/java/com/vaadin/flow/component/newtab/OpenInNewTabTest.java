@@ -26,6 +26,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.trigger.internal.OpenInNewTabAction;
 import com.vaadin.flow.component.trigger.internal.TriggerTestUtil;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.server.StreamResourceRegistry;
@@ -73,7 +74,8 @@ class OpenInNewTabTest {
         assertTrue(handler.isInline(),
                 "A built-in handler should serve its content inline");
         JsFunction action = actionOf(singleInstallFn());
-        assertEquals("openInNewTab", snippetOf(action));
+        assertEquals("openInNewTab",
+                snippetOf(OpenInNewTabAction.OpenInNewTabJs.class, action));
         Object uri = urlCapture(action);
         assertTrue(
                 uri instanceof String s
@@ -86,7 +88,8 @@ class OpenInNewTabTest {
         OpenInNewTab.onClick(button, "/files/terms.html");
 
         JsFunction action = actionOf(singleInstallFn());
-        assertEquals("openInNewTab", snippetOf(action));
+        assertEquals("openInNewTab",
+                snippetOf(OpenInNewTabAction.OpenInNewTabJs.class, action));
         assertEquals("/files/terms.html", urlCapture(action));
     }
 

@@ -24,8 +24,10 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.trigger.internal.ShareAction;
 import com.vaadin.flow.component.trigger.internal.TriggerTestUtil;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.internal.ValueJs;
 import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
@@ -78,7 +80,7 @@ class WebShareTest {
         // Each slot value is produced by invoking its input JsFunction with the
         // event; the literals are captured inside those nested functions.
         JsFunction handler = handlerFn(ui);
-        assertEquals("share", snippetOf(handler));
+        assertEquals("share", snippetOf(ShareAction.ShareJs.class, handler));
         assertEquals("Hi", ((JsFunction) handler.getCaptures().get(0))
                 .getCaptures().get(0));
         assertEquals("World", ((JsFunction) handler.getCaptures().get(1))
@@ -101,9 +103,9 @@ class WebShareTest {
         // PropertyInput renders as its own JsFunction (return $0[$1]) with the
         // property name captured at $1.
         JsFunction handler = handlerFn(ui);
-        assertEquals("share", snippetOf(handler));
+        assertEquals("share", snippetOf(ShareAction.ShareJs.class, handler));
         JsFunction titleInput = (JsFunction) handler.getCaptures().get(0);
-        assertEquals("property", snippetOf(titleInput));
+        assertEquals("property", snippetOf(ValueJs.class, titleInput));
         assertEquals("value", titleInput.getCaptures().get(1));
     }
 

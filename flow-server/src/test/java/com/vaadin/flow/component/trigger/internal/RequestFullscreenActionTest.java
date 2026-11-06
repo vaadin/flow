@@ -55,7 +55,8 @@ class RequestFullscreenActionTest {
 
         // Fire-and-forget: action function is the inner promise function.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("requestPageFullscreen", snippetOf(action));
+        assertEquals("requestPageFullscreen", snippetOf(
+                RequestFullscreenAction.RequestFullscreenJs.class, action));
     }
 
     @Test
@@ -73,10 +74,11 @@ class RequestFullscreenActionTest {
         // With callbacks: outer function reports the outcome; the inner
         // function is captured at $0 and makes the actual fullscreen call.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("reportOutcome", snippetOf(action));
+        assertEquals("reportOutcome", snippetOf(TriggerJs.class, action));
 
         JsFunction inner = (JsFunction) action.getCaptures().get(0);
-        assertEquals("requestPageFullscreen", snippetOf(inner));
+        assertEquals("requestPageFullscreen", snippetOf(
+                RequestFullscreenAction.RequestFullscreenJs.class, inner));
     }
 
     @Test
@@ -92,7 +94,8 @@ class RequestFullscreenActionTest {
 
         // $0 = target element, $1 = wrapper element from UIInternals.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("requestComponentFullscreen", snippetOf(action));
+        assertEquals("requestComponentFullscreen", snippetOf(
+                RequestFullscreenAction.RequestFullscreenJs.class, action));
         assertSame(panel.getElement(), action.getCaptures().get(0));
         assertSame(ui.getInternals().getWrapperElement(),
                 action.getCaptures().get(1));
@@ -112,10 +115,11 @@ class RequestFullscreenActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("reportOutcome", snippetOf(action));
+        assertEquals("reportOutcome", snippetOf(TriggerJs.class, action));
 
         JsFunction inner = (JsFunction) action.getCaptures().get(0);
-        assertEquals("requestComponentFullscreen", snippetOf(inner));
+        assertEquals("requestComponentFullscreen", snippetOf(
+                RequestFullscreenAction.RequestFullscreenJs.class, inner));
         assertSame(panel.getElement(), inner.getCaptures().get(0));
         assertSame(ui.getInternals().getWrapperElement(),
                 inner.getCaptures().get(1));

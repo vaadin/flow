@@ -55,10 +55,11 @@ class ReadFromClipboardActionTest {
         // Action wraps the inner promise function with the outcome report to
         // the return channel. The inner just invokes the Clipboard.ts helper.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("reportOutcome", snippetOf(action));
+        assertEquals("reportOutcome", snippetOf(TriggerJs.class, action));
 
         JsFunction inner = (JsFunction) action.getCaptures().get(0);
-        assertEquals("readFromClipboard", snippetOf(inner));
+        assertEquals("readFromClipboard", snippetOf(
+                ReadFromClipboardAction.ReadFromClipboardJs.class, inner));
     }
 
     @Test

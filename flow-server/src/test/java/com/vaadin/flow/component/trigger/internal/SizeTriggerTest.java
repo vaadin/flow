@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.internal.ValueJs;
 import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
@@ -51,7 +52,7 @@ class SizeTriggerTest {
         // remove. No user content leaks into the body — the action is a
         // capture.
         JsFunction install = singleInstallFn(ui);
-        assertEquals("observeSize", snippetOf(install));
+        assertEquals("observeSize", snippetOf(TriggerJs.class, install));
     }
 
     @Test
@@ -78,12 +79,12 @@ class SizeTriggerTest {
         List<JsFunction> installs = installFns(ui);
         JsFunction widthSource = (JsFunction) actionOf(installs.get(0))
                 .getCaptures().get(2);
-        assertEquals("eventProperty", snippetOf(widthSource));
+        assertEquals("eventProperty", snippetOf(ValueJs.class, widthSource));
         assertEquals("width", widthSource.getCaptures().get(0));
 
         JsFunction heightSource = (JsFunction) actionOf(installs.get(1))
                 .getCaptures().get(2);
-        assertEquals("eventProperty", snippetOf(heightSource));
+        assertEquals("eventProperty", snippetOf(ValueJs.class, heightSource));
         assertEquals("height", heightSource.getCaptures().get(0));
     }
 
@@ -105,7 +106,7 @@ class SizeTriggerTest {
 
         JsFunction sizeSource = (JsFunction) actionOf(singleInstallFn(ui))
                 .getCaptures().get(2);
-        assertEquals("event", snippetOf(sizeSource));
+        assertEquals("event", snippetOf(ValueJs.class, sizeSource));
         assertEquals(List.of(), sizeSource.getCaptures());
     }
 

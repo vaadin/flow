@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.internal.ValueJs;
 import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
@@ -50,7 +51,8 @@ class OpenInNewTabActionTest {
         // when the resolved URL starts with javascript:. URL and features
         // each live on their own input JsFunction captured by the action.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("openInNewTab", snippetOf(action));
+        assertEquals("openInNewTab",
+                snippetOf(OpenInNewTabAction.OpenInNewTabJs.class, action));
         assertEquals(GUARDED_WINDOW_OPEN,
                 Objects.requireNonNull(action.getDeclaredCall())
                         .getExpression(),
@@ -76,7 +78,8 @@ class OpenInNewTabActionTest {
 
         // Supplying features replaces — does not extend — the defaults.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("openInNewTab", snippetOf(action));
+        assertEquals("openInNewTab",
+                snippetOf(OpenInNewTabAction.OpenInNewTabJs.class, action));
 
         JsFunction features = (JsFunction) action.getCaptures().get(1);
         assertEquals("noopener,width=600,height=400",
@@ -98,10 +101,11 @@ class OpenInNewTabActionTest {
         // The URL slot now holds a PropertyInput JsFunction that reads
         // field["value"] on the client at fire time.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("openInNewTab", snippetOf(action));
+        assertEquals("openInNewTab",
+                snippetOf(OpenInNewTabAction.OpenInNewTabJs.class, action));
 
         JsFunction url = (JsFunction) action.getCaptures().get(0);
-        assertEquals("property", snippetOf(url));
+        assertEquals("property", snippetOf(ValueJs.class, url));
         assertEquals(field.getElement(), url.getCaptures().get(0));
         assertEquals("value", url.getCaptures().get(1));
     }

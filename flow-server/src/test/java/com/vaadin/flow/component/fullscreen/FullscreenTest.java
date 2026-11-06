@@ -24,6 +24,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.trigger.internal.RequestFullscreenAction;
+import com.vaadin.flow.component.trigger.internal.TriggerJs;
 import com.vaadin.flow.component.trigger.internal.TriggerTestUtil;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
@@ -87,7 +89,8 @@ class FullscreenTest {
         Fullscreen.onClick(button).enter();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("requestPageFullscreen", snippetOf(action));
+        assertEquals("requestPageFullscreen", snippetOf(
+                RequestFullscreenAction.RequestFullscreenJs.class, action));
     }
 
     @Test
@@ -100,10 +103,11 @@ class FullscreenTest {
         });
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("reportOutcome", snippetOf(action));
+        assertEquals("reportOutcome", snippetOf(TriggerJs.class, action));
 
         JsFunction inner = (JsFunction) action.getCaptures().get(0);
-        assertEquals("requestPageFullscreen", snippetOf(inner));
+        assertEquals("requestPageFullscreen", snippetOf(
+                RequestFullscreenAction.RequestFullscreenJs.class, inner));
     }
 
     @Test
@@ -115,7 +119,8 @@ class FullscreenTest {
         Fullscreen.onClick(button).enter(panel);
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("requestComponentFullscreen", snippetOf(action));
+        assertEquals("requestComponentFullscreen", snippetOf(
+                RequestFullscreenAction.RequestFullscreenJs.class, action));
         assertSame(panel.getElement(), action.getCaptures().get(0));
         assertSame(ui.getInternals().getWrapperElement(),
                 action.getCaptures().get(1));
@@ -132,10 +137,11 @@ class FullscreenTest {
         });
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("reportOutcome", snippetOf(action));
+        assertEquals("reportOutcome", snippetOf(TriggerJs.class, action));
 
         JsFunction inner = (JsFunction) action.getCaptures().get(0);
-        assertEquals("requestComponentFullscreen", snippetOf(inner));
+        assertEquals("requestComponentFullscreen", snippetOf(
+                RequestFullscreenAction.RequestFullscreenJs.class, inner));
         assertSame(panel.getElement(), inner.getCaptures().get(0));
         assertSame(ui.getInternals().getWrapperElement(),
                 inner.getCaptures().get(1));
@@ -162,7 +168,8 @@ class FullscreenTest {
         // Attach the target — the deferred bind() runs and installs the JS.
         ui.getElement().appendChild(panel.getElement());
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("requestComponentFullscreen", snippetOf(action));
+        assertEquals("requestComponentFullscreen", snippetOf(
+                RequestFullscreenAction.RequestFullscreenJs.class, action));
         assertSame(panel.getElement(), action.getCaptures().get(0));
     }
 
