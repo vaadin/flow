@@ -32,6 +32,7 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -48,6 +49,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.PwaIconGenerator;
 import com.vaadin.flow.internal.ResourceContentHash;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.communication.PwaHandler;
@@ -72,7 +74,6 @@ import com.vaadin.flow.shared.ApplicationConstants;
 public class PwaRegistry implements Serializable {
 
     private static final String META_INF_RESOURCES = "/META-INF/resources";
-    private static final String HEADLESS_PROPERTY = "java.awt.headless";
     private static final String APPLE_STARTUP_IMAGE = "apple-touch-startup-image";
     private static final String APPLE_IMAGE_MEDIA = "screen and (device-width: %dpx) and (device-height: %dpx)"
             + " and (-webkit-device-pixel-ratio: %d) and (orientation: %s)";
@@ -89,6 +90,7 @@ public class PwaRegistry implements Serializable {
 
     private URL baseImageUrl;
     private BufferedImage baseImage;
+    private transient PwaIconGenerator iconGenerator;
 
     /**
      * Creates a new PwaRegistry instance.
@@ -103,11 +105,6 @@ public class PwaRegistry implements Serializable {
      */
     public PwaRegistry(PWA pwa, ServletContext servletContext)
             throws IOException {
-        if (System.getProperty(HEADLESS_PROPERTY) == null) {
-            // set headless mode if the property is not explicitly set
-            System.setProperty(HEADLESS_PROPERTY, Boolean.TRUE.toString());
-        }
-
         // set basic configuration by given PWA annotation
         // fall back to defaults if unavailable
         pwaConfiguration = pwa == null ? new PwaConfiguration()
@@ -117,10 +114,8 @@ public class PwaRegistry implements Serializable {
         initializeResources(servletContext);
     }
 
-    // Lazy load base image to prevent using AWT api unless icon
-    // generation is required at runtime.
-    // baseImageUrl is computed during registry initialization and used on to
-    // load the image.
+    // Only for the deprecated PwaIcon.getBaseImage(). Lazy loaded to prevent
+    // using AWT api unless that method is called.
     BufferedImage getBaseImage() {
         if (baseImage == null && baseImageUrl != null) {
             try {
@@ -128,11 +123,22 @@ public class PwaRegistry implements Serializable {
             } catch (IOException ex) {
                 getLogger().error("Image is not found or can't be loaded: {}",
                         baseImageUrl);
-            } finally {
-                baseImageUrl = null;
             }
         }
         return baseImage;
+    }
+
+    boolean canGenerateIcons() {
+        return iconGenerator != null;
+    }
+
+    byte[] generateIcon(int width, int height) throws IOException {
+        if (iconGenerator == null) {
+            throw new IllegalStateException(
+                    "PWA icons cannot be generated at runtime. "
+                            + "Build the application for production with the Vaadin Maven or Gradle plugin to generate them.");
+        }
+        return iconGenerator.generateIcon(baseImageUrl, width, height);
     }
 
     private void initializeResources(ServletContext servletContext)
@@ -189,11 +195,21 @@ public class PwaRegistry implements Serializable {
     }
 
     private List<PwaIcon> initializeIcons(ServletContext servletContext) {
-        Optional<ResourceProvider> optionalResourceProvider = Optional
+        Optional<Lookup> optionalLookup = Optional
                 .ofNullable(new VaadinServletContext(servletContext)
-                        .getAttribute(Lookup.class))
+                        .getAttribute(Lookup.class));
+        Optional<ResourceProvider> optionalResourceProvider = optionalLookup
                 .map(lookup -> lookup.lookup(ResourceProvider.class));
-        for (PwaIcon icon : getIconTemplates(pwaConfiguration.getIconPath())) {
+        List<PwaIcon> iconTemplates = getIconTemplates(
+                pwaConfiguration.getIconPath());
+        // Only available during development, a production build ships
+        // pre-generated icons
+        iconGenerator = optionalLookup
+                .map(lookup -> lookup.lookup(PwaIconGenerator.class))
+                .filter(generator -> canReadBaseImage(generator, iconTemplates))
+                .orElse(null);
+        int missingIcons = 0;
+        for (PwaIcon icon : iconTemplates) {
             icon.setRegistry(this);
             // Try to find a pre-generated image
             String iconPath = Constants.VAADIN_WEBAPP_RESOURCES
@@ -203,9 +219,37 @@ public class PwaRegistry implements Serializable {
                     provider -> tryLoadGeneratedIcon(provider, icon, iconPath));
             if (icon.isAvailable()) {
                 icons.add(icon);
+            } else {
+                missingIcons++;
             }
         }
+        if (missingIcons > 0) {
+            getLogger().warn(
+                    "{} PWA icons for '{}' are left out, because they were not generated by the build and cannot be generated at runtime. "
+                            + "In production, build the application with the Vaadin Maven or Gradle plugin to generate them.",
+                    missingIcons, pwaConfiguration.getIconPath());
+        }
         return icons;
+    }
+
+    private boolean canReadBaseImage(PwaIconGenerator generator,
+            List<PwaIcon> iconTemplates) {
+        try {
+            // Generate the smallest icon once, so that icons are not
+            // advertised when the base image cannot be read
+            PwaIcon smallest = iconTemplates.stream()
+                    .min(Comparator.comparingInt(PwaIcon::getWidth))
+                    .orElseThrow();
+            generator.generateIcon(baseImageUrl, smallest.getWidth(),
+                    smallest.getHeight());
+            return true;
+        } catch (IOException | RuntimeException ex) {
+            // Scaling throws unchecked exceptions for images it cannot handle,
+            // such as extreme aspect ratios
+            getLogger().error("Image is not found or can't be loaded: {}",
+                    baseImageUrl, ex);
+            return false;
+        }
     }
 
     private static void tryLoadGeneratedIcon(ResourceProvider resourceProvider,
@@ -217,9 +261,9 @@ public class PwaRegistry implements Serializable {
                 getLogger().trace("Loading generated PWA image from {}",
                         iconPath);
             } catch (IOException ex) {
-                // Ignore, icon will be generated at runtime
+                // Ignore, icon is generated at runtime if possible
                 getLogger().debug(
-                        "Cannot load generated PWA image from {}. Icon will be regenerated at runtime.",
+                        "Cannot load generated PWA image from {}. Icon is generated at runtime if possible.",
                         iconPath, ex);
             }
         }
