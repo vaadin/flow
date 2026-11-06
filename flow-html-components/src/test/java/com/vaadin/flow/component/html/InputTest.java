@@ -38,6 +38,7 @@ class InputTest extends ComponentTest {
         whitelistProperty("valueChangeMode");
         whitelistProperty("valueChangeTimeout");
         whitelistProperty("inputMode");
+        whitelistProperty("name");
         super.setup();
     }
 
@@ -58,6 +59,20 @@ class InputTest extends ComponentTest {
         input.setInputMode(null);
         assertNull(input.getInputMode());
         assertNull(input.getElement().getAttribute("inputmode"));
+    }
+
+    @Test
+    void setName_getName() {
+        Input input = new Input();
+        assertNull(input.getName());
+
+        input.setName("username");
+        assertEquals("username", input.getName());
+        assertEquals("username", input.getElement().getAttribute("name"));
+
+        input.setName(null);
+        assertNull(input.getName());
+        assertNull(input.getElement().getAttribute("name"));
     }
 
     @Override
