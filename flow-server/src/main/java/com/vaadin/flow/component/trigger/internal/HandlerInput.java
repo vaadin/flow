@@ -18,6 +18,7 @@ package com.vaadin.flow.component.trigger.internal;
 import java.util.Objects;
 
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsSnippets;
 
 /**
  * Input that reads a property from a trigger handler's {@code event} argument
@@ -40,6 +41,8 @@ import com.vaadin.flow.dom.JsFunction;
  * @since 25.2
  */
 public final class HandlerInput<T> extends Action.Input<T> {
+
+    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
 
     private final String propertyName;
     private final Class<? extends Trigger> ownerClass;
@@ -68,9 +71,6 @@ public final class HandlerInput<T> extends Action.Input<T> {
                     + ownerClass.getSimpleName() + " and cannot be used in a "
                     + trigger.getClass().getSimpleName() + " handler");
         }
-        // $0 = property name (string capture, Jackson-quoted on the client),
-        // event = the handler argument the framework passes in.
-        return JsFunction.of("return event[$0]", propertyName)
-                .withArguments("event");
+        return TRIGGER_JS.eventProperty(propertyName);
     }
 }

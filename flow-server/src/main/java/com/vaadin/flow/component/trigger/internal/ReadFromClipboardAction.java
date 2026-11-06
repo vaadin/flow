@@ -20,6 +20,7 @@ import org.jspecify.annotations.Nullable;
 import com.vaadin.flow.component.clipboard.ClipboardPayload;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.js.JsSnippets;
 
 /**
  * Reads the user's clipboard via {@code navigator.clipboard.read()} when the
@@ -60,6 +61,8 @@ import com.vaadin.flow.function.SerializableConsumer;
  */
 public class ReadFromClipboardAction extends PromiseAction<ClipboardPayload> {
 
+    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
+
     /**
      * Creates an action that reads the user's clipboard and delivers the
      * contents to {@code onPayload}, or routes any failure to {@code onError}.
@@ -84,7 +87,6 @@ public class ReadFromClipboardAction extends PromiseAction<ClipboardPayload> {
         // Clipboard.ts (window.Vaadin.Flow.clipboard.readPayload); this
         // action just routes the resolved Promise through the PromiseAction
         // framework.
-        return JsFunction
-                .of("return window.Vaadin.Flow.clipboard.readPayload()");
+        return TRIGGER_JS.readFromClipboard();
     }
 }

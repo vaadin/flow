@@ -25,6 +25,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.js.JsSnippets;
 
 /**
  * Asks the browser to enter fullscreen when the bound trigger fires.
@@ -68,6 +69,8 @@ import com.vaadin.flow.function.SerializableRunnable;
  * @since 25.2
  */
 public class RequestFullscreenAction extends PromiseAction<Void> {
+
+    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
 
     private final @Nullable Element target;
     private final @Nullable Element wrapper;
@@ -166,13 +169,11 @@ public class RequestFullscreenAction extends PromiseAction<Void> {
     @Override
     protected JsFunction toPromiseJs(Trigger trigger) {
         if (target == null) {
-            return JsFunction.of(
-                    "return window.Vaadin.Flow.fullscreen.requestPageFullscreen()");
+            return TRIGGER_JS.requestPageFullscreen();
         }
         // wrapper is non-null when target is non-null — resolveWrapper
-        // throws otherwise. $0 = target element, $1 = the UI wrapper element.
-        return JsFunction.of(
-                "return window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1)",
-                target, Objects.requireNonNull(wrapper));
+        // throws otherwise.
+        return TRIGGER_JS.requestComponentFullscreen(target,
+                Objects.requireNonNull(wrapper));
     }
 }

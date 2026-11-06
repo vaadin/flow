@@ -30,6 +30,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
+import com.vaadin.flow.js.JsSnippets;
 
 /**
  * Base class for actions that run a JS expression yielding a <a href=
@@ -71,6 +72,8 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * @since 25.2
  */
 public abstract class PromiseAction<T> extends Action {
+
+    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
 
     private final @Nullable Class<T> payloadType;
     private final @Nullable SerializableConsumer<@Nullable T> onSuccess;
@@ -125,11 +128,14 @@ public abstract class PromiseAction<T> extends Action {
      * API call in an IIFE inside the function body — for example, copying a
      * string and resolving with it:
      *
-     * <pre>{@code
-     * return JsFunction.of(
-     *         "return ((v) => navigator.clipboard.writeText(v).then(() => v))($0(event))",
-     *         textInput.toJs(trigger)).withArguments("event");
-     * }</pre>
+     * <pre>
+     * &#64;JsExpression("return ((v) =&gt; navigator.clipboard.writeText(v).then(() =&gt; v))($0(event))")
+     * &#64;JsCalledWith("event")
+     * JsFunction writeText(JsFunction text);
+     *
+     * // In toPromiseJs, with WRITE_TEXT_JS = JsSnippets.of(WriteTextJs.class)
+     * return WRITE_TEXT_JS.writeText(textInput.toJs(trigger));
+     * </pre>
      *
      * @param trigger
      *            the surrounding trigger this render is for, not {@code null}
@@ -156,31 +162,7 @@ public abstract class PromiseAction<T> extends Action {
         }
         ReturnChannelRegistration channel = channelFor(
                 trigger.getHost().getNode());
-        // $0(observer)($1(event)(promise), $2(channel)) — invoke the inner
-        // function to get a Promise, then hand it plus the return channel to
-        // the shared observer JsFunction which subscribes to .then/.catch.
-        return JsFunction.of("$0($1(event), $2)", createPromiseObserver(),
-                inner, channel).withArguments("event");
-    }
-
-    /**
-     * Wrapper JS: subscribes to {@code promise} and forwards the resolved value
-     * or rejection reason to {@code channel} as an {@link Outcome}-shaped
-     * object. Resolved values are forwarded verbatim — the framework decodes
-     * them once on the server before invoking {@code onSuccess}. Errors are
-     * split into {@code name} (typically the {@code DOMException} class such as
-     * {@code "NotAllowedError"} — useful for switching) and a free-form
-     * {@code message}.
-     */
-    private static JsFunction createPromiseObserver() {
-        // Created per use rather than held in a constant, so that the csp mode
-        // reporting of JsFunction.of runs for a call rather than a class load
-        return JsFunction.of("""
-                promise.then(value => channel({ok: true, value: value}))\
-                .catch(e => channel({ok: false, error: {\
-                name: (e && e.name) ? e.name : '',\
-                message: (e && e.message) ? e.message : String(e)}}));""")
-                .withArguments("promise", "channel");
+        return TRIGGER_JS.reportOutcome(inner, channel);
     }
 
     private ReturnChannelRegistration channelFor(StateNode hostNode) {
@@ -227,7 +209,7 @@ public abstract class PromiseAction<T> extends Action {
     }
 
     /**
-     * Wire shape exchanged between {@link #createPromiseObserver()} and
+     * Wire shape exchanged between {@link TriggerJs#reportOutcome} and
      * {@link #dispatch}. {@code value} is meaningful when {@code ok == true};
      * {@code error} is meaningful when {@code ok == false}.
      *

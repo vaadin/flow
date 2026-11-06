@@ -28,6 +28,7 @@ import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -86,9 +87,7 @@ class FullscreenTest {
         Fullscreen.onClick(button).enter();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(
-                "return window.Vaadin.Flow.fullscreen.requestPageFullscreen()",
-                action.getBody());
+        assertEquals("requestPageFullscreen", snippetOf(action));
     }
 
     @Test
@@ -101,12 +100,10 @@ class FullscreenTest {
         });
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0($1(event), $2)", action.getBody());
+        assertEquals("reportOutcome", snippetOf(action));
 
-        JsFunction inner = (JsFunction) action.getCaptures().get(1);
-        assertEquals(
-                "return window.Vaadin.Flow.fullscreen.requestPageFullscreen()",
-                inner.getBody());
+        JsFunction inner = (JsFunction) action.getCaptures().get(0);
+        assertEquals("requestPageFullscreen", snippetOf(inner));
     }
 
     @Test
@@ -118,9 +115,7 @@ class FullscreenTest {
         Fullscreen.onClick(button).enter(panel);
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(
-                "return window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1)",
-                action.getBody());
+        assertEquals("requestComponentFullscreen", snippetOf(action));
         assertSame(panel.getElement(), action.getCaptures().get(0));
         assertSame(ui.getInternals().getWrapperElement(),
                 action.getCaptures().get(1));
@@ -137,12 +132,10 @@ class FullscreenTest {
         });
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0($1(event), $2)", action.getBody());
+        assertEquals("reportOutcome", snippetOf(action));
 
-        JsFunction inner = (JsFunction) action.getCaptures().get(1);
-        assertEquals(
-                "return window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1)",
-                inner.getBody());
+        JsFunction inner = (JsFunction) action.getCaptures().get(0);
+        assertEquals("requestComponentFullscreen", snippetOf(inner));
         assertSame(panel.getElement(), inner.getCaptures().get(0));
         assertSame(ui.getInternals().getWrapperElement(),
                 inner.getCaptures().get(1));
@@ -169,9 +162,7 @@ class FullscreenTest {
         // Attach the target — the deferred bind() runs and installs the JS.
         ui.getElement().appendChild(panel.getElement());
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(
-                "return window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1)",
-                action.getBody());
+        assertEquals("requestComponentFullscreen", snippetOf(action));
         assertSame(panel.getElement(), action.getCaptures().get(0));
     }
 
@@ -204,9 +195,9 @@ class FullscreenTest {
                 .dumpPendingJavaScriptInvocations();
         assertEquals(1, pending.size(), "Expected exactly one pending JS");
         JavaScriptInvocation invocation = pending.get(0).getInvocation();
-        Object o = invocation.getParameters().get(2);
+        Object o = invocation.getParameters().get(1);
         assertTrue(o instanceof JsFunction,
-                "Expected install param $2 to be a JsFunction");
+                "Expected the initializer argument to be a JsFunction");
         return (JsFunction) o;
     }
 

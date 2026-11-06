@@ -28,6 +28,7 @@ import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -77,9 +78,7 @@ class WebShareTest {
         // Each slot value is produced by invoking its input JsFunction with the
         // event; the literals are captured inside those nested functions.
         JsFunction handler = handlerFn(ui);
-        assertEquals(
-                "return navigator.share({title:$0(event),text:$1(event),url:$2(event)})",
-                handler.getBody());
+        assertEquals("share", snippetOf(handler));
         assertEquals("Hi", ((JsFunction) handler.getCaptures().get(0))
                 .getCaptures().get(0));
         assertEquals("World", ((JsFunction) handler.getCaptures().get(1))
@@ -102,10 +101,9 @@ class WebShareTest {
         // PropertyInput renders as its own JsFunction (return $0[$1]) with the
         // property name captured at $1.
         JsFunction handler = handlerFn(ui);
-        assertEquals("return navigator.share({title:$0(event)})",
-                handler.getBody());
+        assertEquals("share", snippetOf(handler));
         JsFunction titleInput = (JsFunction) handler.getCaptures().get(0);
-        assertEquals("return $0[$1]", titleInput.getBody());
+        assertEquals("property", snippetOf(titleInput));
         assertEquals("value", titleInput.getCaptures().get(1));
     }
 
@@ -150,8 +148,9 @@ class WebShareTest {
         assertEquals(1, pending.size(),
                 "Expected exactly one pending JS invocation");
         JavaScriptInvocation invocation = pending.get(0).getInvocation();
-        Object o = invocation.getParameters().get(2);
-        assertTrue(o instanceof JsFunction, "Expected $2 to be a JsFunction");
+        Object o = invocation.getParameters().get(1);
+        assertTrue(o instanceof JsFunction,
+                "Expected the initializer argument to be a JsFunction");
         return (JsFunction) o;
     }
 }

@@ -32,6 +32,7 @@ import com.vaadin.tests.util.MockUI;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleReturnChannel;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -55,20 +56,20 @@ class WriteToClipboardActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(HELPER_BODY, action.getBody());
+        assertEquals("writeToClipboard", snippetOf(action));
 
         // $0 is the text input — a PropertyInput that reads from the field.
         JsFunction text = (JsFunction) action.getCaptures().get(0);
-        assertEquals("return $0[$1]", text.getBody());
+        assertEquals("property", snippetOf(text));
 
         // $1 is the html slot — the no-op "return null" stand-in.
         JsFunction html = (JsFunction) action.getCaptures().get(1);
-        assertEquals("return null", html.getBody());
+        assertEquals("nullValue", snippetOf(html));
         assertEquals(List.of(), html.getCaptures());
 
         // $2 is the image slot — also the no-op stand-in.
         JsFunction image = (JsFunction) action.getCaptures().get(2);
-        assertEquals("return null", image.getBody());
+        assertEquals("nullValue", snippetOf(image));
         assertEquals(List.of(), image.getCaptures());
     }
 
@@ -85,7 +86,7 @@ class WriteToClipboardActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(HELPER_BODY, action.getBody());
+        assertEquals("writeToClipboard", snippetOf(action));
 
         JsFunction text = (JsFunction) action.getCaptures().get(0);
         assertEquals("plain", text.getCaptures().get(0));
@@ -95,7 +96,7 @@ class WriteToClipboardActionTest {
 
         // image slot is the no-op stand-in.
         JsFunction image = (JsFunction) action.getCaptures().get(2);
-        assertEquals("return null", image.getBody());
+        assertEquals("nullValue", snippetOf(image));
     }
 
     @Test
@@ -111,11 +112,11 @@ class WriteToClipboardActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(HELPER_BODY, action.getBody());
+        assertEquals("writeToClipboard", snippetOf(action));
 
         // $0 is the text slot — the no-op stand-in.
         JsFunction text = (JsFunction) action.getCaptures().get(0);
-        assertEquals("return null", text.getBody());
+        assertEquals("nullValue", snippetOf(text));
 
         // $1 is the html literal input.
         JsFunction html = (JsFunction) action.getCaptures().get(1);
@@ -123,7 +124,7 @@ class WriteToClipboardActionTest {
 
         // $2 is the image slot — the no-op stand-in.
         JsFunction image = (JsFunction) action.getCaptures().get(2);
-        assertEquals("return null", image.getBody());
+        assertEquals("nullValue", snippetOf(image));
     }
 
     @Test
@@ -139,18 +140,18 @@ class WriteToClipboardActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(HELPER_BODY, action.getBody());
+        assertEquals("writeToClipboard", snippetOf(action));
 
         // $0 and $1 are the no-op stand-ins.
-        assertEquals("return null",
-                ((JsFunction) action.getCaptures().get(0)).getBody());
-        assertEquals("return null",
-                ((JsFunction) action.getCaptures().get(1)).getBody());
+        assertEquals("nullValue",
+                snippetOf((JsFunction) action.getCaptures().get(0)));
+        assertEquals("nullValue",
+                snippetOf((JsFunction) action.getCaptures().get(1)));
 
         // $2 is the image input — yields the source <img> element verbatim,
         // captured at $0 of its JsFunction.
         JsFunction image = (JsFunction) action.getCaptures().get(2);
-        assertEquals("return $0", image.getBody());
+        assertEquals("value", snippetOf(image));
         assertSame(img.getElement(), image.getCaptures().get(0));
     }
 
@@ -169,7 +170,7 @@ class WriteToClipboardActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(HELPER_BODY, action.getBody());
+        assertEquals("writeToClipboard", snippetOf(action));
 
         assertEquals("plain", ((JsFunction) action.getCaptures().get(0))
                 .getCaptures().get(0));
@@ -196,14 +197,13 @@ class WriteToClipboardActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         // With outcome handling, the action wraps the inner promise function
-        // with OBSERVE_PROMISE + the return channel. The inner function still
-        // calls writePayload — the action class itself does no string
-        // assembly beyond the static body constant.
+        // with the outcome report to the return channel. The inner function
+        // still calls writePayload.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0($1(event), $2)", action.getBody());
+        assertEquals("reportOutcome", snippetOf(action));
 
-        JsFunction inner = (JsFunction) action.getCaptures().get(1);
-        assertEquals(HELPER_BODY, inner.getBody());
+        JsFunction inner = (JsFunction) action.getCaptures().get(0);
+        assertEquals("writeToClipboard", snippetOf(inner));
     }
 
     @Test
@@ -223,10 +223,10 @@ class WriteToClipboardActionTest {
         // The dedicated image observed constructor produces the same outer
         // shape as the text/html one — only the inner $2 (image) slot differs.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0($1(event), $2)", action.getBody());
+        assertEquals("reportOutcome", snippetOf(action));
 
-        JsFunction inner = (JsFunction) action.getCaptures().get(1);
-        assertEquals(HELPER_BODY, inner.getBody());
+        JsFunction inner = (JsFunction) action.getCaptures().get(0);
+        assertEquals("writeToClipboard", snippetOf(inner));
         JsFunction image = (JsFunction) inner.getCaptures().get(2);
         assertSame(img.getElement(), image.getCaptures().get(0));
     }

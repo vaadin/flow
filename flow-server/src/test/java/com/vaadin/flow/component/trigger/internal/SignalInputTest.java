@@ -26,7 +26,9 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration.InitializerJs;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
@@ -35,6 +37,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -95,7 +98,7 @@ class SignalInputTest {
         // input's JsFunction, then verify the generated property-name shape.
         JsFunction action = actionOf(singleInstallFn(ui));
         JsFunction textInput = (JsFunction) action.getCaptures().get(0);
-        assertEquals("return $0[$1]", textInput.getBody());
+        assertEquals("property", snippetOf(textInput));
         String property = (String) textInput.getCaptures().get(1);
         assertTrue(PROPERTY_NAME.matcher(property).matches(),
                 "Unexpected property name: " + property);
@@ -173,11 +176,11 @@ class SignalInputTest {
                 .dumpPendingJavaScriptInvocations();
         JsFunction installFn = null;
         for (PendingJavaScriptInvocation inv : pending) {
-            List<Object> params = inv.getInvocation().getParameters();
-            if (params.size() >= 3 && params.get(2) instanceof JsFunction) {
+            JsCall call = inv.getInvocation().getJsCall();
+            if (call != null && call.definitionType() == InitializerJs.class) {
                 assertTrue(installFn == null,
                         "Expected exactly one install JsFunction");
-                installFn = (JsFunction) params.get(2);
+                installFn = TriggerTestUtil.installFn(inv.getInvocation());
             }
         }
         assertTrue(installFn != null, "Expected an install JsFunction");

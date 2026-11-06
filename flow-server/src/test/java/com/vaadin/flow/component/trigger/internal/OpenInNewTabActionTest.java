@@ -23,6 +23,7 @@ import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -47,7 +48,7 @@ class OpenInNewTabActionTest {
         // when the resolved URL starts with javascript:. URL and features
         // each live on their own input JsFunction captured by the action.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(EXPECTED_BODY, action.getBody());
+        assertEquals("openInNewTab", snippetOf(action));
 
         JsFunction url = (JsFunction) action.getCaptures().get(0);
         assertEquals("https://vaadin.com/docs", url.getCaptures().get(0));
@@ -69,7 +70,7 @@ class OpenInNewTabActionTest {
 
         // Supplying features replaces — does not extend — the defaults.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(EXPECTED_BODY, action.getBody());
+        assertEquals("openInNewTab", snippetOf(action));
 
         JsFunction features = (JsFunction) action.getCaptures().get(1);
         assertEquals("noopener,width=600,height=400",
@@ -91,10 +92,10 @@ class OpenInNewTabActionTest {
         // The URL slot now holds a PropertyInput JsFunction that reads
         // field["value"] on the client at fire time.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(EXPECTED_BODY, action.getBody());
+        assertEquals("openInNewTab", snippetOf(action));
 
         JsFunction url = (JsFunction) action.getCaptures().get(0);
-        assertEquals("return $0[$1]", url.getBody());
+        assertEquals("property", snippetOf(url));
         assertEquals(field.getElement(), url.getCaptures().get(0));
         assertEquals("value", url.getCaptures().get(1));
     }

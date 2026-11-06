@@ -29,6 +29,7 @@ import com.vaadin.flow.component.trigger.internal.Trigger;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -95,7 +96,7 @@ class CrossPackageExtensionTest {
 
         assertEquals("console.log($0(event))", rendered.getBody());
         JsFunction source = (JsFunction) rendered.getCaptures().get(0);
-        assertEquals("return event[$0]", source.getBody());
+        assertEquals("eventProperty", snippetOf(source));
         assertEquals("screenX", source.getCaptures().get(0));
     }
 
@@ -105,7 +106,7 @@ class CrossPackageExtensionTest {
                 .toJs(new InputEventTrigger(new Div()));
 
         assertEquals(List.of("event"), rendered.getArgumentNames());
-        assertEquals("return event[$0]", rendered.getBody());
+        assertEquals("eventProperty", snippetOf(rendered));
         assertEquals("data", rendered.getCaptures().get(0));
     }
 

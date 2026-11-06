@@ -21,6 +21,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Size;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -51,6 +53,8 @@ import com.vaadin.flow.shared.Registration;
  * @since 25.2
  */
 public class SizeTrigger extends Trigger {
+
+    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
 
     /**
      * Creates a size trigger on the given host component's root element.
@@ -121,7 +125,7 @@ public class SizeTrigger extends Trigger {
                             + " and cannot be used in a "
                             + trigger.getClass().getSimpleName() + " handler");
                 }
-                return JsFunction.of("return event").withArguments("event");
+                return TRIGGER_JS.event();
             }
         };
     }
@@ -129,11 +133,10 @@ public class SizeTrigger extends Trigger {
     @Override
     protected Registration install(JsFunction action) {
         // ElementResize.observe() returns a disconnect function — exactly the
-        // cleanup shape addJsInitializer expects, so we just propagate it.
+        // cleanup shape an initializer returns, so we just propagate it.
         // The callback receives a {width, height} object that the action
-        // ($0) treats as its `event` argument.
-        return getHost().addJsInitializer(
-                "return window.Vaadin.Flow.elementResize.observe(this, $0);",
-                action);
+        // treats as its `event` argument.
+        return new ElementJsInitializerRegistration(getHost().getNode(),
+                TRIGGER_JS.observeSize(action));
     }
 }

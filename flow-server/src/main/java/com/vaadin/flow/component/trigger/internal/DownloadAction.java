@@ -20,6 +20,7 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
@@ -78,6 +79,8 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * @since 25.2
  */
 public class DownloadAction extends Action {
+
+    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
 
     private final Action.Input<String> urlInput;
     private final Action.@Nullable Input<String> filenameInput;
@@ -158,21 +161,14 @@ public class DownloadAction extends Action {
 
     @Override
     protected JsFunction toJs(Trigger trigger) {
-        // Two body shapes — with or without a filename argument — keep the
-        // emitted JS minimal. Both URL and filename are JsFunctions invoked
-        // with event so any handler-scoped inputs read live state. The event
-        // itself is passed last so the client can click the anchor next to
-        // the trigger element, keeping a surrounding overlay open, while
-        // url-only overrides of the client helper keep working.
-        if (filenameInput == null) {
-            return JsFunction.of(
-                    "window.Vaadin.Flow.download.start($0(event), undefined, event)",
-                    urlInput.toJs(trigger)).withArguments("event");
-        }
-        return JsFunction.of(
-                "window.Vaadin.Flow.download.start($0(event), $1(event), event)",
-                urlInput.toJs(trigger), filenameInput.toJs(trigger))
-                .withArguments("event");
+        // Both URL and filename are inputs invoked with event so any
+        // handler-scoped inputs read live state, and a missing filename is
+        // passed as null. The event itself is passed last so the client can
+        // click the anchor next to the trigger element, keeping a surrounding
+        // overlay open, while url-only overrides of the client helper keep
+        // working.
+        return TRIGGER_JS.download(urlInput.toJs(trigger),
+                filenameInput == null ? null : filenameInput.toJs(trigger));
     }
 
     private static LiteralInput<String> literal(String value, String name) {

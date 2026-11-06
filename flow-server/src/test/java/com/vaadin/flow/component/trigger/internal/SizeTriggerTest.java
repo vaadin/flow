@@ -26,6 +26,7 @@ import com.vaadin.tests.util.MockUI;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.installFns;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -50,9 +51,7 @@ class SizeTriggerTest {
         // remove. No user content leaks into the body — the action is a
         // capture.
         JsFunction install = singleInstallFn(ui);
-        assertEquals(
-                "return window.Vaadin.Flow.elementResize.observe(this, $0);",
-                install.getBody());
+        assertEquals("observeSize", snippetOf(install));
     }
 
     @Test
@@ -80,12 +79,12 @@ class SizeTriggerTest {
         JsFunction widthSource = (JsFunction) actionOf(installs.get(0))
                 .getCaptures().get(2);
         assertEquals(List.of("event"), widthSource.getArgumentNames());
-        assertEquals("return event[$0]", widthSource.getBody());
+        assertEquals("eventProperty", snippetOf(widthSource));
         assertEquals("width", widthSource.getCaptures().get(0));
 
         JsFunction heightSource = (JsFunction) actionOf(installs.get(1))
                 .getCaptures().get(2);
-        assertEquals("return event[$0]", heightSource.getBody());
+        assertEquals("eventProperty", snippetOf(heightSource));
         assertEquals("height", heightSource.getCaptures().get(0));
     }
 
@@ -108,7 +107,7 @@ class SizeTriggerTest {
         JsFunction sizeSource = (JsFunction) actionOf(singleInstallFn(ui))
                 .getCaptures().get(2);
         assertEquals(List.of("event"), sizeSource.getArgumentNames());
-        assertEquals("return event", sizeSource.getBody());
+        assertEquals("event", snippetOf(sizeSource));
         assertEquals(List.of(), sizeSource.getCaptures());
     }
 

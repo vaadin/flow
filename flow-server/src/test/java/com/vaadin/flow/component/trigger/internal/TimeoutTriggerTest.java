@@ -24,6 +24,7 @@ import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -43,8 +44,7 @@ class TimeoutTriggerTest {
         // Action at $0, delay in milliseconds at $1; the returned function
         // clears the timer on removal. No user content leaks into the body.
         JsFunction install = singleInstallFn(ui);
-        assertEquals("const id = setTimeout(() => $0(), $1);"
-                + "return () => clearTimeout(id);", install.getBody());
+        assertEquals("runAfterTimeout", snippetOf(install));
         assertEquals(250L, install.getCaptures().get(1));
     }
 
