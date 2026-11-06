@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
@@ -88,6 +89,8 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  */
 public class OpenInNewTabAction extends Action {
 
+    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
+
     /**
      * Default features applied when the caller does not supply their own:
      * severs {@code window.opener} on the new page and strips the
@@ -103,18 +106,6 @@ public class OpenInNewTabAction extends Action {
      */
     private static final Pattern JAVASCRIPT_SCHEME = Pattern
             .compile("^[\\x00-\\x20]*javascript:", Pattern.CASE_INSENSITIVE);
-
-    /**
-     * Client-side guard, mirroring {@link #JAVASCRIPT_SCHEME}, that evaluates
-     * to {@code true} when the resolved URL {@code u} carries a
-     * {@code javascript:} scheme. {@code [\x00-\x20]*} skips the leading C0
-     * controls and ASCII space the URL parser strips before the scheme, and
-     * {@code /i} catches any casing. {@code String(u)} coerces non-string
-     * inputs so {@code .test} never throws. Used to short-circuit
-     * {@code window.open} so an attacker-controlled {@link Input} value can't
-     * execute script in the opener's origin.
-     */
-    private static final String JAVASCRIPT_SCHEME_JS_GUARD = "/^[\\x00-\\x20]*javascript:/i.test(String(u))";
 
     private final Action.Input<String> urlInput;
     private final Action.Input<String> featuresInput;
@@ -213,14 +204,10 @@ public class OpenInNewTabAction extends Action {
         // for those this check is redundant — but keeping it unconditional
         // keeps the rendered JS identical regardless of how the URL was
         // supplied, and protects LiteralInput<>("javascript:…") too. The
-        // JAVASCRIPT_SCHEME_JS_GUARD short-circuits window.open when the
-        // resolved URL is a javascript: URL; see its Javadoc for the regex.
-        // $0 = URL input's JsFunction; $1 = features input's JsFunction —
-        // both invoked with the firing event so handler-scoped inputs work.
-        return JsFunction.of("((u) => " + JAVASCRIPT_SCHEME_JS_GUARD
-                + " || window.open(u, \"_blank\", $1(event)))" + "($0(event))",
-                urlInput.toJs(trigger), featuresInput.toJs(trigger))
-                .withArguments("event");
+        // guard in TriggerJs#openInNewTab short-circuits window.open when the
+        // resolved URL is a javascript: URL.
+        return TRIGGER_JS.openInNewTab(urlInput.toJs(trigger),
+                featuresInput.toJs(trigger));
     }
 
     private static LiteralInput<String> urlLiteral(String url) {

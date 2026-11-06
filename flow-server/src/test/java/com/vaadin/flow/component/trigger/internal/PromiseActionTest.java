@@ -33,6 +33,7 @@ import com.vaadin.tests.util.MockUI;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleReturnChannel;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -74,21 +75,17 @@ class PromiseActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // Action body: observer(inner(event), channel) — $0 is OBSERVE_PROMISE,
-        // $1 is the inner JsFunction returning the promise, $2 is the return
-        // channel.
+        // The action reports the outcome of the promise that the inner
+        // function returns to the return channel.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0($1(event), $2)", action.getBody());
+        assertEquals("reportOutcome", snippetOf(action));
 
         List<@Nullable Object> captures = action.getCaptures();
-        assertEquals(3, captures.size(),
-                "expected observer + inner + channel captures");
+        assertEquals(2, captures.size(), "expected inner + channel captures");
         assertTrue(captures.get(0) instanceof JsFunction,
-                "first capture should be the observer JsFunction");
-        assertTrue(captures.get(1) instanceof JsFunction,
-                "second capture should be the inner promise JsFunction");
-        assertTrue(captures.get(2) instanceof ReturnChannelRegistration,
-                "third capture should be the return channel");
+                "first capture should be the inner promise JsFunction");
+        assertTrue(captures.get(1) instanceof ReturnChannelRegistration,
+                "second capture should be the return channel");
     }
 
     @Test

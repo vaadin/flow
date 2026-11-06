@@ -22,6 +22,7 @@ import org.jspecify.annotations.Nullable;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.js.JsSnippets;
 
 /**
  * Writes a {@code ClipboardItem} to the user's clipboard via
@@ -55,6 +56,8 @@ import com.vaadin.flow.function.SerializableRunnable;
  * @since 25.2
  */
 public class WriteToClipboardAction extends PromiseAction<String> {
+
+    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
 
     private final Action.@Nullable Input<String> textInput;
     private final Action.@Nullable Input<String> htmlInput;
@@ -227,17 +230,13 @@ public class WriteToClipboardAction extends PromiseAction<String> {
         // a no-op input that returns null, so the TS helper sees null and
         // skips that MIME type. Keeping the call shape uniform across all
         // combinations means no per-action JS assembly.
-        // Created per call rather than held in a constant, so that the csp
-        // mode reporting of JsFunction.of runs for a call, not a class load
-        JsFunction nullInput = JsFunction.of("return null");
+        JsFunction nullInput = TRIGGER_JS.nullValue();
         JsFunction text = textInput != null ? textInput.toJs(trigger)
                 : nullInput;
         JsFunction html = htmlInput != null ? htmlInput.toJs(trigger)
                 : nullInput;
         JsFunction image = imageInput != null ? imageInput.toJs(trigger)
                 : nullInput;
-        return JsFunction.of(
-                "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event), $2(event))",
-                text, html, image).withArguments("event");
+        return TRIGGER_JS.writeToClipboard(text, html, image);
     }
 }

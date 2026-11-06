@@ -20,6 +20,8 @@ import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -39,6 +41,8 @@ import com.vaadin.flow.shared.Registration;
  * @since 25.2
  */
 public class TimeoutTrigger extends Trigger {
+
+    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
 
     private final long delayMillis;
 
@@ -64,12 +68,9 @@ public class TimeoutTrigger extends Trigger {
 
     @Override
     protected Registration install(JsFunction action) {
-        // Action at $0 (the convention the framework documents in
-        // Trigger#install), delay in milliseconds at $1 — both captures of the
-        // install JsFunction, no string concatenation around either. The
-        // returned function clears the timer when the registration is removed.
-        return getHost().addJsInitializer("""
-                const id = setTimeout(() => $0(), $1);\
-                return () => clearTimeout(id);""", action, delayMillis);
+        // The installer returns a function that clears the timer when the
+        // registration is removed
+        return new ElementJsInitializerRegistration(getHost().getNode(),
+                TRIGGER_JS.runAfterTimeout(action, delayMillis));
     }
 }

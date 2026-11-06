@@ -26,6 +26,7 @@ import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.installFns;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -54,12 +55,12 @@ class ClickTriggerTest {
         JsFunction source0 = (JsFunction) actionOf(installs.get(0))
                 .getCaptures().get(2);
         assertEquals(List.of("event"), source0.getArgumentNames());
-        assertEquals("return event[$0]", source0.getBody());
+        assertEquals("eventProperty", snippetOf(source0));
         assertEquals("screenX", source0.getCaptures().get(0));
 
         JsFunction source1 = (JsFunction) actionOf(installs.get(1))
                 .getCaptures().get(2);
-        assertEquals("return event[$0]", source1.getBody());
+        assertEquals("eventProperty", snippetOf(source1));
         assertEquals("screenY", source1.getCaptures().get(0));
     }
 

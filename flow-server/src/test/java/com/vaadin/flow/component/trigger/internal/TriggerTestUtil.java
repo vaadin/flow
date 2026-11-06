@@ -21,9 +21,12 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration.InitializerJs;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
+import com.vaadin.flow.js.JsCall;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -32,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * invocations and asserts the expected shape, so tests can focus on the
  * relevant rendered fragments instead of repeating the same plumbing.
  */
-final class TriggerTestUtil {
+public final class TriggerTestUtil {
 
     private TriggerTestUtil() {
     }
@@ -58,14 +61,30 @@ final class TriggerTestUtil {
     }
 
     /**
-     * Extracts the install {@link JsFunction} from an {@code addJsInitializer}
-     * invocation. Parameters are {@code [element, initializerId, installFn]};
-     * the installFn is the trigger's install {@link JsFunction}.
+     * Extracts the install {@link JsFunction} from the init invocation of an
+     * initializer registration, whose arguments are
+     * {@code [initializerId, installFn]}.
      */
     static JsFunction installFn(JavaScriptInvocation invocation) {
-        Object o = invocation.getParameters().get(2);
-        assertTrue(o instanceof JsFunction, "Expected $2 to be a JsFunction");
+        JsCall call = invocation.getJsCall();
+        assertNotNull(call, "Expected a declared initializer call");
+        assertEquals(InitializerJs.class, call.definitionType());
+        assertEquals("init", call.methodName());
+        Object o = call.arguments().get(1);
+        assertTrue(o instanceof JsFunction,
+                "Expected the initializer to be a JsFunction");
         return (JsFunction) o;
+    }
+
+    /**
+     * Returns the name of the {@link TriggerJs} snippet that declares the given
+     * function.
+     */
+    public static String snippetOf(JsFunction function) {
+        JsCall call = function.getDeclaredCall();
+        assertNotNull(call, "Expected a function declared as a snippet");
+        assertEquals(TriggerJs.class, call.definitionType());
+        return call.methodName();
     }
 
     /**
