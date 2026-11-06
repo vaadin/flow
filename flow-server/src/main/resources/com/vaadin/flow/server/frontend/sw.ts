@@ -180,11 +180,25 @@ function checkConnectionPlugin(): WorkboxPlugin {
   };
 }
 
+/**
+ * A workbox plugin that serves the precached response for a request that
+ * fails. Routes registered before `precacheAndRoute` take precedence over the
+ * precache, and their strategy only falls back to the runtime cache, which is
+ * empty until the service worker has handled the request once.
+ */
+function precacheFallbackPlugin(): WorkboxPlugin {
+  return {
+    async handlerDidError({ request }) {
+      return matchPrecache(request);
+    }
+  };
+}
+
 const networkOnly = new NetworkOnly({
   plugins: [checkConnectionPlugin()]
 });
 const networkFirst = new NetworkFirst({
-  plugins: [checkConnectionPlugin()]
+  plugins: [checkConnectionPlugin(), precacheFallbackPlugin()]
 });
 
 if (import.meta.env.DEV) {
