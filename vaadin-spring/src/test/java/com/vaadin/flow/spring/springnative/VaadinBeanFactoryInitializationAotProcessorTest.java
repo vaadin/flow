@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -894,8 +893,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
             Collection<Class<?>> getSubtypesOf(String basePackage,
                     Class<?> parentType) {
                 return Arrays.stream(routeClasses)
-                        .filter(parentType::isAssignableFrom)
-                        .collect(Collectors.toList());
+                        .filter(parentType::isAssignableFrom).toList();
             }
         };
     }

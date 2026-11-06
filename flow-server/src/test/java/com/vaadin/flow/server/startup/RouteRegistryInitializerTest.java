@@ -1286,8 +1286,7 @@ class RouteRegistryInitializerTest {
                         .collect(Collectors.toSet()), servletContext);
 
         List<?> registeredTargets = registry.getRegisteredRoutes().stream()
-                .map(RouteData::getNavigationTarget)
-                .collect(Collectors.toList());
+                .map(RouteData::getNavigationTarget).toList();
         assertEquals(Arrays.asList(NavigationTarget.class), registeredTargets);
     }
 

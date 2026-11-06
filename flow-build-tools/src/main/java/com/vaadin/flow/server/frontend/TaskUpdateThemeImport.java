@@ -130,7 +130,7 @@ public class TaskUpdateThemeImport
                 themePath);
         List<File> existingAppThemeDirectories = appThemePossiblePaths.stream()
                 .map(path -> new File(options.getNpmFolder(), path))
-                .filter(File::exists).collect(Collectors.toList());
+                .filter(File::exists).toList();
 
         if (existingAppThemeDirectories.isEmpty()) {
             String errorMessage = "Discovered @Theme annotation with theme "

@@ -17,8 +17,6 @@ package com.vaadin.flow.spring.flowsecurity;
 
 import jakarta.servlet.ServletContext;
 
-import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.security.autoconfigure.web.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -179,7 +177,7 @@ public class SecurityConfig {
                             userInfo.getRoles().stream()
                                     .map(role -> new SimpleGrantedAuthority(
                                             "ROLE_" + role))
-                                    .collect(Collectors.toList()));
+                                    .toList());
                 }
             }
         };

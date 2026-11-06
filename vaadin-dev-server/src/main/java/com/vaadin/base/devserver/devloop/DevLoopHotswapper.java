@@ -19,7 +19,6 @@ import jakarta.annotation.Priority;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -190,6 +189,6 @@ public class DevLoopHotswapper implements VaadinHotswapper {
 
     private static String names(HotswapClassEvent event) {
         return event.getChangedClasses().stream().map(Class::getSimpleName)
-                .sorted().collect(Collectors.toList()).toString();
+                .sorted().toList().toString();
     }
 }

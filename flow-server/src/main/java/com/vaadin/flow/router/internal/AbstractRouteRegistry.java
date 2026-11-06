@@ -59,8 +59,6 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
 import com.vaadin.flow.shared.Registration;
 
-import static java.util.stream.Collectors.toList;
-
 /**
  * AbstractRouteRegistry with locking support and configuration.
  * <p>
@@ -281,7 +279,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
         routePathMap.entrySet().stream()
                 .filter(entry -> entry.getValue().containsTarget(target))
-                .map(Map.Entry::getKey).collect(toList()).stream()
+                .map(Map.Entry::getKey).toList().stream()
                 .peek(routePathMap::remove)
                 .filter(routePathTemplate -> !routePathTemplate
                         .equals(template))

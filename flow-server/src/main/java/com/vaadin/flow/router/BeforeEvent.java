@@ -21,7 +21,6 @@ import java.util.EventObject;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -984,7 +983,7 @@ public abstract class BeforeEvent extends EventObject {
     private <T> NavigationState getNavigationState(String url,
             List<T> routeParams) {
         List<String> segments = routeParams.stream().map(Object::toString)
-                .collect(Collectors.toList());
+                .toList();
         Class<? extends Component> target = getTargetOrThrow(url, segments);
 
         if (!routeParams.isEmpty()) {

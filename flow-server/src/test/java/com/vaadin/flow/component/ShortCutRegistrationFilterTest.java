@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
@@ -86,7 +85,7 @@ class ShortCutRegistrationFilterTest {
         assertTrue(
                 filterConditions.stream()
                         .filter(c -> c.contains("&") || StringUtils.isBlank(c))
-                        .collect(Collectors.toList()).isEmpty(),
+                        .toList().isEmpty(),
                 "Split filter conditions should not contain '&' character or blank strings.");
         assertEquals(expectedFilterCount, filterConditions.size());
         return filterConditions;
