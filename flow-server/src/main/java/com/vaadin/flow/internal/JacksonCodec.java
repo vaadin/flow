@@ -18,6 +18,7 @@ package com.vaadin.flow.internal;
 import java.io.Serializable;
 
 import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JavaType;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
@@ -321,6 +322,38 @@ public class JacksonCodec {
                     "Cannot deserialize JSON to type "
                             + typeReference.getType().getTypeName() + ": "
                             + e.getMessage(),
+                    e);
+        }
+    }
+
+    /**
+     * Decodes a JSON value as an instance of the given Jackson type. PROTOTYPE.
+     *
+     * @param <T>
+     *            the decoded type
+     * @param json
+     *            the JSON value to decode, not <code>null</code>
+     * @param type
+     *            the type to decode to, not <code>null</code>
+     * @return the decoded value
+     */
+    public static <T> T decodeAs(JsonNode json, JavaType type) {
+        assert json != null;
+        assert type != null;
+        if (json.getNodeType() == JsonNodeType.NULL && !type.isPrimitive()) {
+            return null;
+        }
+        if (type.isTypeOrSubTypeOf(JsonNode.class)) {
+            @SuppressWarnings("unchecked")
+            T node = (T) json;
+            return node;
+        }
+        try {
+            return JacksonUtils.getMapper().treeToValue(json, type);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(
+                    "Cannot deserialize JSON to type " + type.toCanonical()
+                            + ": " + e.getMessage(),
                     e);
         }
     }

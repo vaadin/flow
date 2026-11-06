@@ -16,20 +16,25 @@
 package com.vaadin.flow.js;
 
 import java.io.Serializable;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
@@ -270,8 +275,31 @@ public final class JsDefinitionProxy {
 
     private static boolean returnsInvocationResult(Method method) {
         Class<?> returnType = method.getReturnType();
+        if (returnType == JavaScriptResult.class) {
+            // Typed result: needs a concrete type argument. Must be checked
+            // before the isAssignableFrom below, which is also true for
+            // JavaScriptResult now that PendingJavaScriptResult extends it
+            return typedResultType(method) != null;
+        }
         return returnType == void.class
                 || returnType.isAssignableFrom(PendingJavaScriptResult.class);
+    }
+
+    /**
+     * Gets the type argument of a method returning {@link JavaScriptResult}, or
+     * <code>null</code> if it is raw, a wildcard or a type variable.
+     */
+    private static Type typedResultType(Method method) {
+        if (method
+                .getGenericReturnType() instanceof ParameterizedType parameterized) {
+            Type argument = parameterized.getActualTypeArguments()[0];
+            if (argument instanceof Class<?>
+                    || argument instanceof ParameterizedType
+                    || argument instanceof GenericArrayType) {
+                return argument;
+            }
+        }
+        return null;
     }
 
     /**
@@ -301,12 +329,19 @@ public final class JsDefinitionProxy {
             if (method.getDeclaringClass() == Object.class) {
                 return method.invoke(this, args);
             }
-            boolean returnsResult = method.getReturnType()
+            boolean returnsTyped = method
+                    .getReturnType() == JavaScriptResult.class;
+            boolean returnsResult = returnsTyped || method.getReturnType()
                     .isAssignableFrom(PendingJavaScriptResult.class);
             List<Object> arguments = args == null ? List.of()
                     : Arrays.asList(args);
             PendingJavaScriptResult result = runner.apply(
                     new JsCall(definitionType, method.getName(), arguments));
+            if (returnsTyped) {
+                return new TypedJavaScriptResult<>(result,
+                        JacksonUtils.getMapper().getTypeFactory()
+                                .constructType(typedResultType(method)));
+            }
             return returnsResult ? result : null;
         }
     }

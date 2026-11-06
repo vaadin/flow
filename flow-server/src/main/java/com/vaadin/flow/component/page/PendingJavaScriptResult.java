@@ -43,7 +43,8 @@ import com.vaadin.flow.server.VaadinSession;
  * @author Vaadin Ltd
  * @since 2.0
  */
-public interface PendingJavaScriptResult extends Serializable {
+public interface PendingJavaScriptResult
+        extends JavaScriptResult<JsonNode>, Serializable {
 
     /**
      * Exception used when a {@link CompletableFuture} returned from
