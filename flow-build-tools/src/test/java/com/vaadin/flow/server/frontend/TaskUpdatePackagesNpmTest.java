@@ -766,24 +766,29 @@ class TaskUpdatePackagesNpmTest {
         verifyVersionPinningWithNpmOverrides(true, true, false);
     }
 
-    @Test
-    void npmIsInUse_packageJsonHasUserUrlVersion_exoticVersionsNotAllowed_urlVersionReferencedInOverrides()
-            throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void npmIsInUse_packageJsonHasUserUrlVersion_exoticVersionsNotAllowed_urlVersionReferencedInOverrides(
+            boolean urlVersionInVersionsFile) throws IOException {
         final String libUrl = "https://example.com/some-lib-1.0.0.tgz";
+        final String lib = urlVersionInVersionsFile ? VAADIN_OVERLAY
+                : "some-lib";
         final ObjectNode packageJson = getOrCreatePackageJson();
-        ((ObjectNode) packageJson.get(DEPENDENCIES)).put("some-lib", libUrl);
+        ((ObjectNode) packageJson.get(DEPENDENCIES)).put(lib, libUrl);
         FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
                 packageJson.toPrettyString(), StandardCharsets.UTF_8);
-        createBasicVaadinVersionsJson();
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION,
+                urlVersionInVersionsFile
+                        ? "https://pkg.pr.new/vaadin/web-components/@vaadin/overlay@275762d"
+                        : PINNED_OVERLAY_VERSION);
 
         createTask(createApplicationDependencies()).execute();
         createTask(createApplicationDependencies()).execute();
 
         final ObjectNode result = getOrCreatePackageJson();
-        assertEquals(libUrl,
-                result.get(DEPENDENCIES).get("some-lib").asString());
-        assertEquals("$some-lib",
-                result.get(OVERRIDES).get("some-lib").asString());
+        assertEquals(libUrl, result.get(DEPENDENCIES).get(lib).asString());
+        assertEquals("$" + lib, result.get(OVERRIDES).get(lib).asString());
     }
 
     @ParameterizedTest
