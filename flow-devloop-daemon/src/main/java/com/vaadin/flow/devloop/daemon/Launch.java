@@ -652,7 +652,14 @@ final class Launch {
      * a module into the loop would treat whatever writes to its sources as an
      * edit of the application. Under the root, the candidates are not required,
      * so a module the structural pom walk failed to enumerate stays in the
-     * loop.
+     * loop. Nor are they for a reactor of one: discovery falls back to that
+     * whenever it cannot see the aggregation - an unreadable aggregator, a root
+     * that is not an ancestor - and its candidates then hold the application
+     * alone, so requiring them would quietly drop every sibling module the
+     * build did put on the classpath.
+     * <p>
+     * A rejected module still loads from its directory, but edits to it are not
+     * reloaded, so that is logged rather than left to be discovered.
      * <p>
      * Resolved first, because the candidates and the root are: a classpath
      * entry spelled through a symlink would otherwise match neither.
@@ -664,10 +671,15 @@ final class Launch {
         for (Path dir = real.getParent(); dir != null; dir = dir.getParent()) {
             if (Files.isRegularFile(dir.resolve("pom.xml"))) {
                 Path owner = dir;
-                return underRoot || reactor.candidates().stream()
-                        .anyMatch(candidate -> candidate.dir().equals(owner))
-                                ? owner
-                                : null;
+                if (underRoot || !reactor.isMultiModule()
+                        || reactor.candidates().stream().anyMatch(
+                                candidate -> candidate.dir().equals(owner))) {
+                    return owner;
+                }
+                log.line("module " + owner
+                        + " is on the classpath but not part of reactor " + root
+                        + "; edits to it will not be reloaded");
+                return null;
             }
             if (dir.equals(root)) {
                 return null;

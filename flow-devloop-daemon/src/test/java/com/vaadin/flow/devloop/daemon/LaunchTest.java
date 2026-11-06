@@ -179,9 +179,32 @@ class LaunchTest {
     void selectModules_takesOnlyTheReactorsOwnModules(@TempDir Path workspace)
             throws IOException {
         Path root = reactorFixture(workspace);
+        List<String> log = new ArrayList<>();
 
         assertEquals(List.of("app", "lib", "unlisted", "shared"),
-                selectedFromFixture(root, workspace));
+                selectedFromFixture(root.resolve("app"), workspace, log));
+        assertEquals(1, log.size(), log::toString);
+        assertTrue(
+                log.get(0).startsWith("module "
+                        + Reactor.real(workspace.resolve("outside"))
+                        + " is on the classpath but not part of reactor"),
+                log::toString);
+    }
+
+    /**
+     * When discovery finds no aggregator the reactor is the application alone,
+     * which says nothing about which classpath modules belong to the build, so
+     * every one Maven put there stays in the loop.
+     */
+    @Test
+    void selectModules_reactorOfOne_keepsEveryClasspathModule(
+            @TempDir Path workspace) throws IOException {
+        reactorFixture(workspace);
+        Path app = module(workspace.resolve("standalone"), "standalone");
+
+        assertEquals(
+                List.of("standalone", "lib", "unlisted", "shared", "outside"),
+                selectedFromFixture(app, workspace, new ArrayList<>()));
     }
 
     /**
@@ -196,7 +219,8 @@ class LaunchTest {
                 workspace);
 
         assertEquals(List.of("app", "lib", "unlisted", "shared"),
-                selectedFromFixture(root, alias));
+                selectedFromFixture(root.resolve("app"), alias,
+                        new ArrayList<>()));
     }
 
     /**
@@ -227,15 +251,15 @@ class LaunchTest {
     }
 
     /**
-     * The modules selected from the fixture's output directories, with the
-     * classpath entries spelled under {@code entryBase} instead of the real
-     * workspace.
+     * The modules selected for {@code app} from the fixture's output
+     * directories, with the classpath entries spelled under {@code entryBase}
+     * instead of the real workspace and the launch's log lines added to
+     * {@code log}.
      */
-    private static List<String> selectedFromFixture(Path root, Path entryBase) {
-        Launch launch = new Launch(
-                Reactor.discover(root.resolve("app"), text -> {
-                }), text -> {
-                });
+    private static List<String> selectedFromFixture(Path app, Path entryBase,
+            List<String> log) {
+        Launch launch = new Launch(Reactor.discover(app, text -> {
+        }), log::add);
         List<String> entries = Stream
                 .of("fixture/lib", "fixture/unlisted", "shared", "outside")
                 .map(dir -> entryBase.resolve(dir).resolve("target")
