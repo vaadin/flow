@@ -109,7 +109,7 @@ class WebNotificationTest {
     }
 
     @Test
-    void show_sendsTitleAndOnlyTheOptionsThatAreSet() {
+    void show_sendsTitleSetTextsAndAllFlags() {
         MockUI ui = new MockUI();
         ui.getInternals().setFullAppId("myapp-123");
 
@@ -118,8 +118,12 @@ class WebNotificationTest {
 
         List<Object> parameters = showInvocation(ui).getParameters();
         assertEquals("Report ready", parameters.get(0));
-        assertEquals("{\"body\":\"March\",\"tag\":\"report\"}", JacksonUtils
-                .getMapper().valueToTree(parameters.get(1)).toString());
+        assertEquals(
+                "{\"body\":\"March\",\"tag\":\"report\","
+                        + "\"renotify\":false,\"requireInteraction\":false,"
+                        + "\"silent\":false}",
+                JacksonUtils.getMapper().valueToTree(parameters.get(1))
+                        .toString());
         assertEquals("myapp", parameters.get(4));
     }
 

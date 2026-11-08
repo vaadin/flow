@@ -22,8 +22,9 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * What a notification shows besides its title, and how it behaves. Every
- * setting is optional; a setting that is not set uses the browser's default.
- * Create instances with {@link #builder()}:
+ * setting is optional: a text that is not set is left out, and a flag that is
+ * not set is {@code false}, so a notification behaves the same in every
+ * browser. Create instances with {@link #builder()}:
  *
  * <pre>{@code
  * WebNotificationOptions options = WebNotificationOptions.builder()
@@ -45,21 +46,18 @@ import org.jspecify.annotations.Nullable;
  *            that is still visible instead of adding another one
  * @param renotify
  *            whether replacing a notification with the same tag alerts the user
- *            again with sound or vibration, or {@code null} for the browser's
- *            default (no alert); {@code true} requires a {@code tag} and cannot
- *            be combined with {@code silent}
+ *            again with sound or vibration; {@code true} requires a {@code tag}
+ *            and cannot be combined with {@code silent}
  * @param requireInteraction
  *            whether the notification stays visible until the user clicks or
- *            dismisses it, or {@code null} for the browser's default
+ *            dismisses it instead of closing automatically after a while
  * @param silent
- *            whether the notification is shown without sound or vibration, or
- *            {@code null} for the browser's default
+ *            whether the notification is shown without sound or vibration
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record WebNotificationOptions(@Nullable String body,
-        @Nullable String icon, @Nullable String tag, @Nullable Boolean renotify,
-        @Nullable Boolean requireInteraction,
-        @Nullable Boolean silent) implements Serializable {
+        @Nullable String icon, @Nullable String tag, boolean renotify,
+        boolean requireInteraction, boolean silent) implements Serializable {
 
     /**
      * Validates the combination of settings.
@@ -69,10 +67,10 @@ public record WebNotificationOptions(@Nullable String body,
      *             together with {@code silent}, which browsers reject
      */
     public WebNotificationOptions {
-        if (Boolean.TRUE.equals(renotify) && (tag == null || tag.isEmpty())) {
+        if (renotify && (tag == null || tag.isEmpty())) {
             throw new IllegalArgumentException("renotify requires a tag");
         }
-        if (Boolean.TRUE.equals(renotify) && Boolean.TRUE.equals(silent)) {
+        if (renotify && silent) {
             throw new IllegalArgumentException(
                     "renotify cannot be combined with silent");
         }
@@ -95,9 +93,9 @@ public record WebNotificationOptions(@Nullable String body,
         private @Nullable String body;
         private @Nullable String icon;
         private @Nullable String tag;
-        private @Nullable Boolean renotify;
-        private @Nullable Boolean requireInteraction;
-        private @Nullable Boolean silent;
+        private boolean renotify;
+        private boolean requireInteraction;
+        private boolean silent;
 
         private Builder() {
         }
