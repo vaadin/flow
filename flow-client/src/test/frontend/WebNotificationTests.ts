@@ -104,6 +104,17 @@ describe('webNotification', () => {
     expect(second.calls).to.deep.equal([['close']]);
   });
 
+  it('reports the API as unsupported when the browser has none', async () => {
+    delete $wnd.Notification;
+    const { calls, channel } = recordingChannel();
+
+    show('Report ready', {}, channel);
+
+    expect(calls).to.deep.equal([['error', 'UNSUPPORTED', 'Notifications API not implemented in this browser']]);
+    expect($wnd.Vaadin.Flow.webNotification.queryPermission()).to.equal('UNSUPPORTED');
+    expect(await $wnd.Vaadin.Flow.webNotification.requestPermission()).to.equal('UNSUPPORTED');
+  });
+
   it('closes only the notifications with the given tag', () => {
     const inbox = recordingChannel();
     const other = recordingChannel();
