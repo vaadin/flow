@@ -70,7 +70,7 @@ public class ShortcutRegistration implements Registration, Serializable {
 
     static final String LISTEN_ON_INITIALIZED = "_initialized_listen_on_for_component";
 
-    private Set<Key> modifiers = new HashSet<>(2);
+    private final Set<Key> modifiers = HashSet.newHashSet(2);
     private Key primaryKey = null;
 
     private StateTree.ExecutionRegistration executionRegistration;
@@ -88,11 +88,11 @@ public class ShortcutRegistration implements Registration, Serializable {
     private SerializableSupplier<Component[]> listenOnSuppliers;
 
     // used to determine, if we need to do something before client response
-    private AtomicBoolean isDirty = new AtomicBoolean(false);
+    private final AtomicBoolean isDirty = new AtomicBoolean(false);
 
     private ShortcutEventListener eventListener;
 
-    private List<Registration> registrations = new ArrayList<>();
+    private final List<Registration> registrations = new ArrayList<>();
 
     private DisabledUpdateMode mode = DisabledUpdateMode.ONLY_WHEN_ENABLED;
 
@@ -978,7 +978,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     private static String generateNestedModalOriginFilter(String boundaryExpr) {
         // Delegate path: the boundary element is the listener element the
         // delegate re-dispatches to. Evaluated on the original event, so its
-        // composedPath is correct. Helper defined in FlowShortcut.js.
+        // composedPath is correct. Helper defined in Shortcut.ts.
         return "window.Vaadin.Flow.shortcut.eventWithinBoundary(event, "
                 + boundaryExpr + ")";
     }
@@ -1009,7 +1009,7 @@ public class ShortcutRegistration implements Registration, Serializable {
         }
         // Normal path: locate the owner element via its marker attribute and
         // fire only when it shares the event's popover/modal scope. Helper
-        // defined in FlowShortcut.js.
+        // defined in Shortcut.ts.
         return "window.Vaadin.Flow.shortcut.eventInOwnerScope(event, '["
                 + SHORTCUT_OWNER_ATTRIBUTE + "~=\"" + token + "\"]')";
     }
@@ -1158,7 +1158,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * store them by hash.
      */
     private static class HashableKey implements Key {
-        private Key key;
+        private final Key key;
         private Integer hashcode;
 
         HashableKey(Key key) {
