@@ -23,12 +23,14 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -156,8 +158,16 @@ public final class WebNotification implements Serializable {
      */
     public static Signal<WebNotificationPermission> permissionSignal(UI ui) {
         Objects.requireNonNull(ui, UI_NOT_NULL);
-        ui.getInternals().ensureWebNotificationPermissionWired();
-        return ui.getInternals().getWebNotificationPermissionSignalReadOnly();
+        UIInternals internals = ui.getInternals();
+        VaadinSession session = internals.getSession();
+        if (session != null && !session.hasLock()) {
+            // Read from a background thread: the listener that keeps the
+            // signal up to date changes the UI, so install it under the lock
+            ui.access(internals::ensureWebNotificationPermissionWired);
+        } else {
+            internals.ensureWebNotificationPermissionWired();
+        }
+        return internals.getWebNotificationPermissionSignalReadOnly();
     }
 
     /**

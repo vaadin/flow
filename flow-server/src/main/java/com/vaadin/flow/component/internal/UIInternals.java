@@ -2196,19 +2196,16 @@ public class UIInternals implements Serializable {
      * Installs, once per UI, the DOM listener that bridges
      * {@code vaadin-web-notification-permission-change} events into the web
      * notification permission signal. Guarded by a flag so repeated calls do
-     * not attach duplicate listeners. Can be called from any thread: without
-     * the session lock, the listener is installed through
-     * {@link UI#access(com.vaadin.flow.server.Command)}. For framework use
-     * only.
+     * not attach duplicate listeners. Must be called with the session lock
+     * held. For framework use only.
      */
     public void ensureWebNotificationPermissionWired() {
         if (webNotificationPermissionListenerInstalled) {
             return;
         }
         VaadinSession uiSession = session;
-        if (uiSession != null && !uiSession.hasLock()) {
-            ui.access(this::ensureWebNotificationPermissionWired);
-            return;
+        if (uiSession != null) {
+            uiSession.checkHasLock();
         }
         webNotificationPermissionListenerInstalled = true;
         ui.getElement()
