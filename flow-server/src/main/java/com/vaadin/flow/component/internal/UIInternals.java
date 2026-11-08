@@ -2095,6 +2095,17 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Checks whether the listener that keeps the web notification permission
+     * signal up to date is installed. Can be called from any thread. For
+     * framework use only.
+     *
+     * @return {@code true} if the listener is installed
+     */
+    public boolean isWebNotificationPermissionWired() {
+        return webNotificationPermissionListenerInstalled;
+    }
+
+    /**
      * Installs, once per UI, the DOM listener that bridges
      * {@code vaadin-screen-orientation-change} events into the screen
      * orientation signal. Guarded by a flag so repeated calls do not attach

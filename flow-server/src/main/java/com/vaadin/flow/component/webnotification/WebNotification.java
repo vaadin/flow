@@ -159,13 +159,16 @@ public final class WebNotification implements Serializable {
     public static Signal<WebNotificationPermission> permissionSignal(UI ui) {
         Objects.requireNonNull(ui, UI_NOT_NULL);
         UIInternals internals = ui.getInternals();
-        VaadinSession session = internals.getSession();
-        if (session != null && !session.hasLock()) {
-            // Read from a background thread: the listener that keeps the
-            // signal up to date changes the UI, so install it under the lock
-            ui.access(internals::ensureWebNotificationPermissionWired);
-        } else {
-            internals.ensureWebNotificationPermissionWired();
+        // Checking the flag first keeps polling from background jobs cheap
+        if (!internals.isWebNotificationPermissionWired()) {
+            VaadinSession session = internals.getSession();
+            if (session != null && !session.hasLock()) {
+                // The listener that keeps the signal up to date changes the
+                // UI, so a background thread installs it under the lock
+                ui.access(internals::ensureWebNotificationPermissionWired);
+            } else {
+                internals.ensureWebNotificationPermissionWired();
+            }
         }
         return internals.getWebNotificationPermissionSignalReadOnly();
     }

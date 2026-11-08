@@ -43,6 +43,7 @@ import com.vaadin.tests.util.MockUI;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -91,6 +92,11 @@ class WebNotificationTest {
         access.getValue().execute();
         firePermissionChange(ui, "GRANTED");
         assertEquals(WebNotificationPermission.GRANTED, permission.peek());
+
+        // Once installed, reading from a background thread queues no task
+        when(session.hasLock()).thenReturn(false);
+        WebNotification.permissionSignal(ui);
+        verify(session).access(any());
     }
 
     // JsFunction.getBody() is the only way to see the JavaScript a
