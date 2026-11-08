@@ -26,39 +26,50 @@ import java.lang.annotation.Target;
 import com.vaadin.flow.component.Component;
 
 /**
- * Annotation for defining JavaScript Module dependencies on a {@link Component}
- * class. For adding multiple JavaScript Module files for a single component,
- * you can use this annotation multiple times.
+ * Defines a JavaScript module dependency on a {@link Component} class.
  * <p>
- * The JavaScript module files should be located:
+ * This is a <em>build-time</em> dependency: the referenced file is a bundle
+ * source, fed into Vite at build time, and is not served as a static resource
+ * at runtime. Use {@link JavaScript} for files that should be loaded at runtime
+ * (including external URLs and CDN-hosted scripts).
+ * <p>
+ * Source locations:
  * <ul>
- * <li>inside {@code frontend} directory in your root project folder in case of
- * WAR project
- * <li>inside {@code META-INF/resources/frontend} directory (inside a project
- * resources folder) in case of JAR project (if you are using Maven this is
- * {@code src/main/resources/META-INF/resources/frontend} directory).
+ * <li>Application projects: {@code src/main/frontend/} (recommended), or the
+ * legacy top-level {@code frontend/} directory.</li>
+ * <li>Add-on JARs: {@code META-INF/frontend/} (recommended). The legacy
+ * location {@code META-INF/resources/frontend/} is still supported but
+ * deprecated and emits a build-time warning.</li>
  * </ul>
  * <p>
- * It is guaranteed that dependencies will be loaded only once. The files loaded
- * will be in the same order as the annotations were on the class. However,
- * loading order is only guaranteed on a class level; Annotations from different
- * classes may appear in different order, grouped by the annotated class. Also,
- * files identified by {@code @JsModule} will be loaded before
- * {@link com.vaadin.flow.component.dependency.JavaScript} and
- * {@link com.vaadin.flow.component.dependency.CssImport}.
+ * For adding multiple JavaScript module files for a single component, use this
+ * annotation multiple times.
+ * <p>
+ * It is guaranteed that dependencies will be loaded only once. Loading order is
+ * guaranteed at the class level (annotations on different classes may appear in
+ * different orders relative to each other). {@code @JsModule} files load before
+ * {@link JavaScript} and {@link CssImport}.
+ * <p>
+ * Runtime URLs (with a scheme such as {@code https://}, {@code context://} or
+ * {@code base://}, protocol-relative URLs ({@code //}) and values with a
+ * leading {@code /}) are deprecated. On a component, an interface or the app
+ * shell, they are not bundled but loaded at runtime as
+ * {@code <script type="module">}. On any other class, they are not loaded at
+ * runtime; a value with a leading {@code /} is still bundled from the frontend
+ * folder, and the frontend build fails if the file is not there. Use
+ * {@link JavaScript} with {@link JavaScript.Type#MODULE} for such files
+ * instead. See {@link #value()}.
  * <p>
  * NOTE: Currently all frontend resources are bundled together into one big
- * bundle. This means, that JavaScript files loaded by one class will be present
- * on a view constructed by another class. For example, if there are two classes
- * {@code RootRoute} annotated with {@code @Route("")}, and another class
- * {@code RouteA} annotated with {@code @Route("route-a")} and
- * {@code @JsModule("./src/jsmodule.js")}, the {@code jsmodule.js} will be run
- * on the root route as well.
+ * bundle. JavaScript files loaded by one class will therefore be present on a
+ * view constructed by another class.
  *
  * @author Vaadin Ltd
  * @since 2.0
  *
  * @see CssImport
+ * @see JavaScript
+ * @see StyleSheet
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -70,6 +81,30 @@ public @interface JsModule {
     /**
      * JavaScript module to load before using the annotated {@link Component} in
      * the browser.
+     * <p>
+     * The recommended value is a bundler import specifier — typically a
+     * relative path (e.g. {@code "./my-element.js"}), an npm package specifier
+     * (e.g. {@code "@scope/pkg/foo.js"}), or an alias. The bundler resolves
+     * these against the configured frontend directory.
+     * <p>
+     * Using a runtime URL (one starting with {@code context://},
+     * {@code base://}, {@code /}, {@code http://}, {@code https://} or
+     * {@code //}, or any other URL containing {@code ://}) is deprecated: on a
+     * component, an interface (such as a mixin implemented by components) or
+     * the app shell, such a value is not bundled but loaded at runtime as a
+     * {@code <script type="module">}, and a warning is logged during the
+     * production build. As with {@link JavaScript}, a value with a single
+     * leading {@code /} that contains a path traversal ({@code ..}) is rejected
+     * with a warning and not loaded at all; protocol-relative {@code //} URLs
+     * and values with a scheme, including {@code context://} and
+     * {@code base://}, are passed on unchanged. On any other class, such as a
+     * {@code VaadinServiceInitListener}, nothing loads the value at runtime: a
+     * URL is not loaded at all, and a value with a leading {@code /} is still
+     * bundled from the frontend folder, which makes the frontend build fail if
+     * the file is not there. Use {@link JavaScript @JavaScript} with
+     * {@link JavaScript.Type#MODULE} on a component or the app shell for
+     * runtime modules instead. To bundle a file in the frontend folder, use a
+     * relative value such as {@code ./foo.js}.
      * <p>
      * NOTE: In the case of using JsModule with LitTemplate, the value needs to
      * point to a real file as it will be copied to the templates folder under

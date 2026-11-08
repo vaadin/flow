@@ -32,6 +32,7 @@ import org.jsoup.parser.Parser;
 import org.jsoup.parser.Tag;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Inline.Position;
 import com.vaadin.flow.component.page.Inline.Wrapping;
@@ -337,6 +338,30 @@ public class AppShellSettings {
                 CssBundler.createLayerImport(href, layer));
         attributes.forEach(style::attr);
         getHeadElements(position).add(style);
+    }
+
+    /**
+     * Add a script element loading the given URL to initial page head.
+     *
+     * @param position
+     *            prepend or append
+     * @param src
+     *            location of the script
+     * @param type
+     *            whether to load the script as a classic script or a module
+     * @param defer
+     *            whether to defer running a classic script until the page has
+     *            been parsed
+     */
+    void addScript(Position position, String src, JavaScript.Type type,
+            boolean defer) {
+        Element script = createElement("script", null, "src", src);
+        if (type == JavaScript.Type.MODULE) {
+            script.attr("type", "module");
+        } else if (defer) {
+            script.attr("defer", true);
+        }
+        getHeadElements(position).add(script);
     }
 
     /**

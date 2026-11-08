@@ -28,8 +28,10 @@ import { currentFullscreenState } from './Fullscreen';
 import './Geolocation';
 import { currentVisibility } from './PageVisibility';
 import { currentScreenOrientationAngle, currentScreenOrientationType } from './ScreenOrientation';
+import './Shortcut';
 import './WakeLock';
 import './WebNotification';
+import './WebPush';
 import { isShareSupported } from './WebShare';
 
 const $wnd = window as any;
