@@ -93,6 +93,9 @@ class WebNotificationTest {
         assertEquals(WebNotificationPermission.GRANTED, permission.peek());
     }
 
+    // JsFunction.getBody() is the only way to see the JavaScript a
+    // string-based action runs; it is deprecated for removal
+    @SuppressWarnings("removal")
     @Test
     void onClick_requestPermission_requestsInsideTheClickHandler() {
         UI ui = new MockUI();
