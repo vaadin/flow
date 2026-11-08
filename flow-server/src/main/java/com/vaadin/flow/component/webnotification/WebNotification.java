@@ -21,7 +21,6 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
@@ -118,12 +117,9 @@ public final class WebNotification implements Serializable {
      * @param component
      *            the component whose clicks trigger the action, not
      *            {@code null}
-     * @param <T>
-     *            the component type, must implement {@link ClickNotifier}
      * @return a binding for chaining the action to perform on click
      */
-    public static <T extends Component & ClickNotifier<?>> WebNotificationBinding onClick(
-            T component) {
+    public static WebNotificationBinding onClick(Component component) {
         Objects.requireNonNull(component, "component must not be null");
         return new WebNotificationBinding(new ClickTrigger(component));
     }

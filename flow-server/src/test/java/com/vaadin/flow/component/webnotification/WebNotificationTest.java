@@ -25,7 +25,6 @@ import org.mockito.ArgumentCaptor;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
-import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
@@ -50,8 +49,7 @@ import static org.mockito.Mockito.when;
 class WebNotificationTest {
 
     @Tag("test-button")
-    static final class TestButton extends Component
-            implements ClickNotifier<TestButton> {
+    static final class TestButton extends Component {
     }
 
     @Test
