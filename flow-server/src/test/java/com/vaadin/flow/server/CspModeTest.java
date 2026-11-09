@@ -132,9 +132,15 @@ class CspModeTest {
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).addEventDataElement("event.composedPath()[0]")),
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ui.getElement().addEventListener("click", e -> {
+                        }).addEventData("window.location")),
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ui.getElement().addEventListener("click", e -> {
+                        }).addEventDataElement("document.head")),
                 call(DomListenerRegistration.class, "setFilter",
                         ui -> ui.getElement().addEventListener("click", e -> {
-                        }).setFilter("event.x")),
+                        }).setFilter("event.x == 1")),
                 // Vaadin code sending a filter on its own, with event data
                 // that are property paths
                 call(DomListenerRegistration.class, "setFilter",
@@ -181,6 +187,7 @@ class CspModeTest {
             registration.addEventData(List.of("element.value", "event"));
             registration.addEventDetail();
             registration.addEventDataElement("event.target.parentElement");
+            registration.setFilter("event.isTrusted");
             // The constructor of Page adds the detail of an event
             new MockUI(setup.getSession());
             // The client runs these without compiling them, also when Flow

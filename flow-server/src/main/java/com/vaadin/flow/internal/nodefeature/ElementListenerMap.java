@@ -379,7 +379,7 @@ public class ElementListenerMap extends NodeMap {
 
         @Override
         public DomListenerRegistration setFilter(String filter) {
-            if (filter != null) {
+            if (filter != null && !isPropertyPath(filter)) {
                 CspViolationReporter.reportStringJavaScript();
             }
             return updateFilter(
@@ -491,7 +491,11 @@ public class ElementListenerMap extends NodeMap {
                             .equals(JsonConstants.EVENT_DATA_PREVENT_DEFAULT)
                     && !eventData
                             .equals(JsonConstants.EVENT_DATA_STOP_PROPAGATION)
-                    && !PROPERTY_PATH.matcher(expression).matches();
+                    && !isPropertyPath(expression);
+        }
+
+        private static boolean isPropertyPath(String expression) {
+            return PROPERTY_PATH.matcher(expression).matches();
         }
 
         private boolean isPropertySynchronized(String propertyName) {
