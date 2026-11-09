@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.StringNode;
 
@@ -537,6 +538,61 @@ class PendingJavaScriptInvocationTest {
                 () -> invocation.complete(fooJsonString));
 
         assertSame(original, exception);
+    }
+
+    @Test
+    void typedFuture_conversionFails_completesExceptionally() {
+        CompletableFuture<Integer> future = invocation
+                .toCompletableFuture(Integer.class);
+
+        invocation.complete(fooJsonString);
+
+        assertConversionFailure(future);
+    }
+
+    @Test
+    void typeReferenceFuture_conversionFails_completesExceptionally() {
+        CompletableFuture<List<Integer>> future = invocation
+                .toCompletableFuture(new TypeReference<List<Integer>>() {
+                });
+
+        invocation.complete(fooJsonString);
+
+        assertConversionFailure(future);
+    }
+
+    @Test
+    void typedCaptureErrors_conversionFails_errorHandlerCalled() {
+        SingleCaptureConsumer<Integer> classHandler = new SingleCaptureConsumer<>();
+        SingleCaptureConsumer<String> extraErrorHandler = new SingleCaptureConsumer<>();
+        invocation.then(Integer.class, classHandler, errorConsumer);
+        invocation.then(new TypeReference<Integer>() {
+        }, value -> fail("Should not be called"), extraErrorHandler);
+
+        invocation.complete(fooJsonString);
+
+        assertFalse(classHandler.isCaptured());
+        assertTrue(errorConsumer.getCapturedValue().contains("Integer"),
+                errorConsumer.getCapturedValue());
+        assertTrue(extraErrorHandler.getCapturedValue().contains("Integer"),
+                extraErrorHandler.getCapturedValue());
+    }
+
+    @Test
+    void typedIgnoreErrors_conversionFails_laterHandlersRun() {
+        invocation.then(Integer.class, value -> fail("Should not be called"));
+        invocation.then(jsonSuccessConsumer, errorConsumer);
+
+        invocation.complete(fooJsonString);
+
+        assertJsonSuccess();
+    }
+
+    private static void assertConversionFailure(CompletableFuture<?> future) {
+        assertTrue(future.isCompletedExceptionally());
+        CompletionException exception = assertThrows(CompletionException.class,
+                future::join);
+        assertInstanceOf(JavaScriptException.class, exception.getCause());
     }
 
     private void assertStringSuccess() {

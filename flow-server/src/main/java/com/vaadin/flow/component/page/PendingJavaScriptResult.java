@@ -18,11 +18,13 @@ package com.vaadin.flow.component.page;
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 
+import org.slf4j.LoggerFactory;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.internal.DeadlockDetectingCompletableFuture;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.server.VaadinSession;
 
@@ -103,8 +105,9 @@ public interface PendingJavaScriptResult extends Serializable {
      *            a handler for the return value from a successful execution,
      *            not <code>null</code>
      * @param errorHandler
-     *            a handler for an error message in case the execution failed,
-     *            or <code>null</code> to ignore errors
+     *            a handler for an error message in case the execution failed or
+     *            its return value can not be converted, or <code>null</code> to
+     *            ignore errors
      */
     default <T> void then(Class<T> targetType,
             SerializableConsumer<T> resultHandler,
@@ -116,10 +119,8 @@ public interface PendingJavaScriptResult extends Serializable {
             throw new IllegalArgumentException("Result handler cannot be null");
         }
 
-        SerializableConsumer<JsonNode> convertingResultHandler = value -> resultHandler
-                .accept(JacksonCodec.decodeAs(value, targetType));
-
-        then(convertingResultHandler, errorHandler);
+        then(decodingHandler(value -> JacksonCodec.decodeAs(value, targetType),
+                resultHandler, errorHandler), errorHandler);
     }
 
     /**
@@ -160,6 +161,10 @@ public interface PendingJavaScriptResult extends Serializable {
      * specified target type. All types supported by Jackson for JSON
      * deserialization are supported, including custom bean classes.
      * <p>
+     * If the execution fails, or its return value can not be converted to the
+     * target type, the future is completed exceptionally with a
+     * {@link JavaScriptException}.
+     * <p>
      * A completable future can only be created before the execution has been
      * sent to the browser.
      *
@@ -191,13 +196,9 @@ public interface PendingJavaScriptResult extends Serializable {
         CompletableFuture<T> completableFuture = new DeadlockDetectingCompletableFuture<>(
                 session);
 
-        then(value -> {
-            T convertedValue = JacksonCodec.decodeAs(value, targetType);
-            completableFuture.complete(convertedValue);
-        }, errorValue -> {
-            JavaScriptException exception = new JavaScriptException(errorValue);
-            completableFuture.completeExceptionally(exception);
-        });
+        then(targetType, completableFuture::complete,
+                errorValue -> completableFuture.completeExceptionally(
+                        new JavaScriptException(errorValue)));
 
         return completableFuture;
     }
@@ -232,8 +233,9 @@ public interface PendingJavaScriptResult extends Serializable {
      *            a handler for the return value from a successful execution,
      *            not <code>null</code>
      * @param errorHandler
-     *            a handler for an error message in case the execution failed,
-     *            or <code>null</code> to ignore errors
+     *            a handler for an error message in case the execution failed or
+     *            its return value can not be converted, or <code>null</code> to
+     *            ignore errors
      * @since 25.0
      */
     default <T> void then(TypeReference<T> typeReference,
@@ -246,10 +248,9 @@ public interface PendingJavaScriptResult extends Serializable {
             throw new IllegalArgumentException("Result handler cannot be null");
         }
 
-        SerializableConsumer<JsonNode> convertingResultHandler = value -> resultHandler
-                .accept(JacksonCodec.decodeAs(value, typeReference));
-
-        then(convertingResultHandler, errorHandler);
+        then(decodingHandler(
+                value -> JacksonCodec.decodeAs(value, typeReference),
+                resultHandler, errorHandler), errorHandler);
     }
 
     /**
@@ -288,6 +289,10 @@ public interface PendingJavaScriptResult extends Serializable {
      * specified by the {@link TypeReference}. This method supports generic
      * types such as {@code List<MyBean>} and {@code Map<String, MyBean>}.
      * <p>
+     * If the execution fails, or its return value can not be converted to the
+     * target type, the future is completed exceptionally with a
+     * {@link JavaScriptException}.
+     * <p>
      * A completable future can only be created before the execution has been
      * sent to the browser.
      *
@@ -311,13 +316,9 @@ public interface PendingJavaScriptResult extends Serializable {
         CompletableFuture<T> completableFuture = new DeadlockDetectingCompletableFuture<>(
                 session);
 
-        then(value -> {
-            T convertedValue = JacksonCodec.decodeAs(value, typeReference);
-            completableFuture.complete(convertedValue);
-        }, errorValue -> {
-            JavaScriptException exception = new JavaScriptException(errorValue);
-            completableFuture.completeExceptionally(exception);
-        });
+        then(typeReference, completableFuture::complete,
+                errorValue -> completableFuture.completeExceptionally(
+                        new JavaScriptException(errorValue)));
 
         return completableFuture;
     }
@@ -373,5 +374,31 @@ public interface PendingJavaScriptResult extends Serializable {
      */
     default CompletableFuture<JsonNode> toCompletableFuture() {
         return toCompletableFuture(JsonNode.class);
+    }
+
+    private static <T> SerializableConsumer<JsonNode> decodingHandler(
+            SerializableFunction<JsonNode, T> decoder,
+            SerializableConsumer<T> resultHandler,
+            SerializableConsumer<String> errorHandler) {
+        return value -> {
+            T decodedValue;
+            try {
+                decodedValue = decoder.apply(value);
+            } catch (IllegalArgumentException e) {
+                // Not thrown, since the pending result chains the handlers
+                // added to it, so throwing would also skip any added after
+                // this one, and a future waiting for the value would never
+                // complete
+                if (errorHandler != null) {
+                    errorHandler.accept(e.getMessage());
+                } else {
+                    LoggerFactory.getLogger(PendingJavaScriptResult.class)
+                            .warn("Ignored a JavaScript result that can not be"
+                                    + " converted: {}", e.getMessage());
+                }
+                return;
+            }
+            resultHandler.accept(decodedValue);
+        };
     }
 }

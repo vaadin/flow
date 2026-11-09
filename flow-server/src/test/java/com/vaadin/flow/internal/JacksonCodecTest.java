@@ -293,11 +293,14 @@ class JacksonCodecTest {
     }
 
     @Test
-    void decodeAs_jsonValueWrongType_classCastException() {
+    void decodeAs_jsonValueWrongType_illegalArgumentException() {
         ObjectNode json = objectMapper.createObjectNode();
         json.put("foo", "bar");
-        assertThrows(ClassCastException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> JacksonCodec.decodeAs(json, NumericNode.class));
+        assertTrue(exception.getMessage().contains("OBJECT"),
+                exception.getMessage());
     }
 
     @Test
