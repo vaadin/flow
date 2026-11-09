@@ -26,13 +26,15 @@ permissions:
 
 jobs:
   reconcile:
-    # Only in vaadin/flow: a schedule also fires in forks, which would open
-    # pull requests of their own.
-    if: github.repository == 'vaadin/flow'
+    # Scheduled only in vaadin/flow: a schedule also fires in forks, which
+    # would open pull requests of their own.
+    if: github.event_name != 'schedule' || github.repository == 'vaadin/flow'
     runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
+        # Scheduled runs cover main and the newest maintenance branch; bump the
+        # latter when a new minor branch is cut.
         branch: ${{ fromJSON(github.event_name == 'schedule' && '["main", "25.3"]' || format('["{0}"]', inputs.branch)) }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
