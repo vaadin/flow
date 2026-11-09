@@ -411,15 +411,13 @@ public class VaadinQuarkusNativeProcessor {
      * image only builds a proxy that is registered at build time. The interface
      * and the interfaces it extends are registered for reflection as well, as
      * that is how the annotations the definition is validated against are read,
-     * and how the generic return type of a method returning a typed
-     * JavaScriptResult is resolved. The types that such a result is converted
-     * to are registered for Jackson.
+     * and how the generic return type of an inherited method returning a typed
+     * JavaScriptResult is resolved.
      */
     @BuildStep(onlyIf = IsNativeBuild.class)
     void registerJsDefinitionProxies(CombinedIndexBuildItem combinedIndex,
             BuildProducer<NativeImageProxyDefinitionBuildItem> proxyDefinition,
-            BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
-            BuildProducer<ReflectiveHierarchyBuildItem> reflectiveHierarchy) {
+            BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
         IndexView index = combinedIndex.getIndex();
         Set<ClassInfo> definitions = getJsDefinitions(index);
         if (definitions.isEmpty()) {
@@ -430,54 +428,64 @@ public class VaadinQuarkusNativeProcessor {
                         definition.name().toString()))
                 .forEach(proxyDefinition::produce);
         Set<String> interfaces = new HashSet<>();
-        Set<ClassInfo> resultTypes = new HashSet<>();
-        definitions.forEach(definition -> collectJsDefinitionInterfaces(
-                definition.name(), index, interfaces, resultTypes));
+        definitions.forEach(definition -> collectInterfaces(definition.name(),
+                index, interfaces));
         reflectiveClass.produce(ReflectiveClassBuildItem
                 .builder(interfaces.toArray(String[]::new)).methods().build());
-        resultTypes.stream().filter(
-                type -> !type.name().toString().startsWith("tools.jackson."))
-                .map(type -> ReflectiveHierarchyBuildItem.builder(type.name())
-                        .build())
-                .forEach(reflectiveHierarchy::produce);
     }
 
     /**
-     * Collects the given interface and the interfaces it extends, and the types
-     * that a typed JavaScript result may be converted to: the type argument of
-     * a method returning one, and the type arguments given to a generic
-     * super-interface, which can be what an inherited method returns. The names
-     * of interfaces that are not in the index are collected too, but their
-     * super-interfaces and methods can not be inspected.
+     * Collects the name of the given interface and of the interfaces it
+     * extends. The names of interfaces that are not in the index are collected
+     * too, but their super-interfaces can not be inspected.
      */
-    private static void collectJsDefinitionInterfaces(DotName name,
-            IndexView index, Set<String> interfaces,
-            Set<ClassInfo> resultTypes) {
-        if (!interfaces.add(name.toString())) {
-            return;
-        }
+    private static void collectInterfaces(DotName name, IndexView index,
+            Set<String> interfaces) {
         ClassInfo type = index.getClassByName(name);
-        if (type == null) {
-            return;
+        if (interfaces.add(name.toString()) && type != null) {
+            type.interfaceNames()
+                    .forEach(superInterface -> collectInterfaces(superInterface,
+                            index, interfaces));
         }
-        for (MethodInfo method : type.methods()) {
-            Type returnType = method.returnType();
-            if (returnType.kind() == Type.Kind.PARAMETERIZED_TYPE
-                    && returnType.name().equals(JAVASCRIPT_RESULT)) {
-                returnType.asParameterizedType().arguments()
-                        .forEach(argument -> resultTypes.addAll(
-                                TypeInspector.collectTypes(argument, index)));
+    }
+
+    /**
+     * Detects the types that Jackson converts the value of a typed
+     * {@link JavaScriptResult} to, for the JavaScript definitions and the
+     * interfaces they extend: the type argument of a method returning one, and
+     * the type arguments given to a generic super-interface, which can be what
+     * an inherited method returns. The latter is an over-approximation, as a
+     * type argument is registered even when the super-interface does not use it
+     * for a result.
+     */
+    Set<ClassInfo> detectJsResultTypes(IndexView index) {
+        Set<String> interfaces = new HashSet<>();
+        getJsDefinitions(index)
+                .forEach(definition -> collectInterfaces(definition.name(),
+                        index, interfaces));
+        Set<ClassInfo> resultTypes = new HashSet<>();
+        for (String name : interfaces) {
+            ClassInfo type = index.getClassByName(name);
+            if (type == null) {
+                continue;
             }
+            Stream<Type> resultTypeArguments = type.methods().stream()
+                    .map(MethodInfo::returnType).filter(returnType -> returnType
+                            .name().equals(JAVASCRIPT_RESULT));
+            Stream.concat(resultTypeArguments, type.interfaceTypes().stream())
+                    .filter(generic -> generic
+                            .kind() == Type.Kind.PARAMETERIZED_TYPE)
+                    .flatMap(generic -> generic.asParameterizedType()
+                            .arguments().stream())
+                    .forEach(argument -> resultTypes.addAll(
+                            TypeInspector.collectTypes(argument, index)));
         }
-        for (Type superInterface : type.interfaceTypes()) {
-            if (superInterface.kind() == Type.Kind.PARAMETERIZED_TYPE) {
-                superInterface.asParameterizedType().arguments()
-                        .forEach(argument -> resultTypes.addAll(
-                                TypeInspector.collectTypes(argument, index)));
-            }
-            collectJsDefinitionInterfaces(superInterface.name(), index,
-                    interfaces, resultTypes);
-        }
+        resultTypes.removeIf(VaadinQuarkusNativeProcessor::isJacksonType);
+        return resultTypes;
+    }
+
+    private static boolean isJacksonType(ClassInfo type) {
+        return type.name().toString().startsWith("tools.jackson.");
     }
 
     // Visible for testing
@@ -562,6 +570,7 @@ public class VaadinQuarkusNativeProcessor {
         classesWithHierarchy.addAll(getJsonClasses(index));
         classesWithHierarchy.addAll(detectClientCallablesTypes(index));
         classesWithHierarchy.addAll(detectEventDataTypes(index));
+        classesWithHierarchy.addAll(detectJsResultTypes(index));
         classesWithHierarchy.stream().map(
                 c -> ReflectiveHierarchyBuildItem.builder(c.name()).build())
                 .forEach(reflectiveHierarchy::produce);
@@ -622,7 +631,7 @@ public class VaadinQuarkusNativeProcessor {
                     return index.getClassByName(type.name());
                 }).filter(Objects::nonNull)
                 .filter(type -> !componentClasses.contains(type.name())
-                        && !type.name().toString().startsWith("tools.jackson."))
+                        && !isJacksonType(type))
                 .collect(Collectors.toSet());
     }
 
