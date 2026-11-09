@@ -105,6 +105,7 @@ import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
@@ -153,6 +154,9 @@ public class VaadinQuarkusNativeProcessor {
 
     private static final DotName JS_DEFINITION = DotName
             .createSimple(JsDefinition.class);
+
+    private static final DotName JAVASCRIPT_RESULT = DotName
+            .createSimple(JavaScriptResult.class);
 
     // Visible for testing
     static final List<String> NATIVE_RESOURCE_GLOBS = List.of(
@@ -405,23 +409,75 @@ public class VaadinQuarkusNativeProcessor {
      * Element.executeJs(Class) hands a JavaScript definition to
      * JsDefinitionProxy, which implements it with a JDK proxy, and a native
      * image only builds a proxy that is registered at build time. The interface
-     * itself is registered for reflection as well, as that is how the
-     * annotations the definition is validated against are read.
+     * and the interfaces it extends are registered for reflection as well, as
+     * that is how the annotations the definition is validated against are read,
+     * and how the generic return type of a method returning a typed
+     * JavaScriptResult is resolved. The types that such a result is converted
+     * to are registered for Jackson.
      */
     @BuildStep(onlyIf = IsNativeBuild.class)
     void registerJsDefinitionProxies(CombinedIndexBuildItem combinedIndex,
             BuildProducer<NativeImageProxyDefinitionBuildItem> proxyDefinition,
-            BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
-        Set<String> definitions = getJsDefinitions(combinedIndex.getIndex())
-                .stream().map(classInfo -> classInfo.name().toString())
-                .collect(Collectors.toSet());
+            BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
+            BuildProducer<ReflectiveHierarchyBuildItem> reflectiveHierarchy) {
+        IndexView index = combinedIndex.getIndex();
+        Set<ClassInfo> definitions = getJsDefinitions(index);
         if (definitions.isEmpty()) {
             return;
         }
-        definitions.stream().map(NativeImageProxyDefinitionBuildItem::new)
+        definitions.stream()
+                .map(definition -> new NativeImageProxyDefinitionBuildItem(
+                        definition.name().toString()))
                 .forEach(proxyDefinition::produce);
+        Set<String> interfaces = new HashSet<>();
+        Set<ClassInfo> resultTypes = new HashSet<>();
+        definitions.forEach(definition -> collectJsDefinitionInterfaces(
+                definition.name(), index, interfaces, resultTypes));
         reflectiveClass.produce(ReflectiveClassBuildItem
-                .builder(definitions.toArray(String[]::new)).methods().build());
+                .builder(interfaces.toArray(String[]::new)).methods().build());
+        resultTypes.stream().filter(
+                type -> !type.name().toString().startsWith("tools.jackson."))
+                .map(type -> ReflectiveHierarchyBuildItem.builder(type.name())
+                        .build())
+                .forEach(reflectiveHierarchy::produce);
+    }
+
+    /**
+     * Collects the given interface and the interfaces it extends, and the types
+     * that a typed JavaScript result may be converted to: the type argument of
+     * a method returning one, and the type arguments given to a generic
+     * super-interface, which can be what an inherited method returns. The names
+     * of interfaces that are not in the index are collected too, but their
+     * super-interfaces and methods can not be inspected.
+     */
+    private static void collectJsDefinitionInterfaces(DotName name,
+            IndexView index, Set<String> interfaces,
+            Set<ClassInfo> resultTypes) {
+        if (!interfaces.add(name.toString())) {
+            return;
+        }
+        ClassInfo type = index.getClassByName(name);
+        if (type == null) {
+            return;
+        }
+        for (MethodInfo method : type.methods()) {
+            Type returnType = method.returnType();
+            if (returnType.kind() == Type.Kind.PARAMETERIZED_TYPE
+                    && returnType.name().equals(JAVASCRIPT_RESULT)) {
+                returnType.asParameterizedType().arguments()
+                        .forEach(argument -> resultTypes.addAll(
+                                TypeInspector.collectTypes(argument, index)));
+            }
+        }
+        for (Type superInterface : type.interfaceTypes()) {
+            if (superInterface.kind() == Type.Kind.PARAMETERIZED_TYPE) {
+                superInterface.asParameterizedType().arguments()
+                        .forEach(argument -> resultTypes.addAll(
+                                TypeInspector.collectTypes(argument, index)));
+            }
+            collectJsDefinitionInterfaces(superInterface.name(), index,
+                    interfaces, resultTypes);
+        }
     }
 
     // Visible for testing

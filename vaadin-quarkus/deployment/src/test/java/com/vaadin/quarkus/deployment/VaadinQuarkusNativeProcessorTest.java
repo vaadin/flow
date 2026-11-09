@@ -33,6 +33,7 @@ import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageProxyDefinitionBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourcePatternsBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
 import io.quarkus.paths.PathTree;
 import io.quarkus.undertow.deployment.ServletDeploymentManagerBuildItem;
 import io.undertow.servlet.api.DeploymentManager;
@@ -50,6 +51,7 @@ import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.Converter;
@@ -365,7 +367,8 @@ class VaadinQuarkusNativeProcessorTest {
 
         processor.registerJsDefinitionProxies(
                 new CombinedIndexBuildItem(jsIndex, jsIndex), proxies::add,
-                reflective::add);
+                reflective::add, item -> {
+                });
 
         // Only an interface can be implemented by a JDK proxy, so the
         // annotated class has to be left out of both registrations.
@@ -386,6 +389,37 @@ class VaadinQuarkusNativeProcessorTest {
     }
 
     @Test
+    void testRegisterJsDefinitionProxies_registersTypedResultTypes()
+            throws IOException {
+        Indexer indexer = new Indexer();
+        indexer.indexClass(SimpleDtoJs.class);
+        indexer.indexClass(ValueJs.class);
+        indexer.indexClass(SimpleDto.class);
+        indexer.indexClass(OtherDto.class);
+        Index jsIndex = indexer.complete();
+        List<ReflectiveClassBuildItem> reflective = new ArrayList<>();
+        List<ReflectiveHierarchyBuildItem> hierarchy = new ArrayList<>();
+
+        processor.registerJsDefinitionProxies(
+                new CombinedIndexBuildItem(jsIndex, jsIndex), item -> {
+                }, reflective::add, hierarchy::add);
+
+        assertEquals(
+                Set.of(SimpleDtoJs.class.getName(), ValueJs.class.getName()),
+                reflective.stream()
+                        .flatMap(item -> item.getClassNames().stream())
+                        .collect(Collectors.toSet()),
+                "Should register the inherited interface, whose generic return"
+                        + " type is resolved by reflection");
+        assertEquals(
+                Set.of(SimpleDto.class.getName(), OtherDto.class.getName()),
+                hierarchy.stream().map(item -> item.getType().name().toString())
+                        .collect(Collectors.toSet()),
+                "Should register the types that the results are converted to,"
+                        + " also one bound to an inherited type variable");
+    }
+
+    @Test
     void testRegisterJsDefinitionProxies_noDefinitions_registersNothing()
             throws IOException {
         Indexer indexer = new Indexer();
@@ -396,7 +430,8 @@ class VaadinQuarkusNativeProcessorTest {
 
         processor.registerJsDefinitionProxies(
                 new CombinedIndexBuildItem(emptyIndex, emptyIndex),
-                proxies::add, reflective::add);
+                proxies::add, reflective::add, item -> {
+                });
 
         assertTrue(proxies.isEmpty());
         assertTrue(reflective.isEmpty(),
@@ -427,6 +462,15 @@ class VaadinQuarkusNativeProcessorTest {
 
     @JsDefinition
     public static class Greeter {
+    }
+
+    public interface ValueJs<T> {
+        JavaScriptResult<T> readValue();
+    }
+
+    @JsDefinition
+    public interface SimpleDtoJs extends ValueJs<SimpleDto> {
+        JavaScriptResult<List<OtherDto>> readOthers();
     }
 
     public static class CustomException extends RuntimeException {
