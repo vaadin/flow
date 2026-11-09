@@ -95,10 +95,11 @@ class WebPushMessageBuilderTest {
 
     @Test
     void withRoute_routeParameters_urlOfRouteInMessage() {
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         VaadinService service = mock(VaadinService.class);
         when(service.getContext()).thenReturn(new MapVaadinContext());
-        when(service.getDeploymentConfiguration())
-                .thenReturn(mock(DeploymentConfiguration.class));
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
         CurrentInstance.set(VaadinService.class, service);
         RouteConfiguration.forApplicationScope().setRoute("device/:id",
                 DeviceView.class);
