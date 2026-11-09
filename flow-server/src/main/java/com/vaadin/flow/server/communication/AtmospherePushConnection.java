@@ -56,6 +56,9 @@ public class AtmospherePushConnection
     private transient FragmentedMessage incomingMessage;
     private transient Future<Object> outgoingMessage;
     private transient Object lock = new Object();
+    // The client ignores regular messages while it waits for a resync
+    // response, so a deferred resync response must keep its resync flag.
+    private transient boolean resyncPending;
     private AtomicBoolean disconnecting = new AtomicBoolean(false);
 
     /**
@@ -222,7 +225,7 @@ public class AtmospherePushConnection
                 }
                 try {
                     JsonNode response = new UidlWriter().createUidl(getUI(),
-                            async);
+                            async, resyncPending);
                     String responseString = response.toString();
                     if (!async) {
                         // Only the response to a client message can be sent
@@ -231,11 +234,22 @@ public class AtmospherePushConnection
                                 .setLastRequestResponse(responseString);
                     }
                     sendMessage(responseString);
+                    resyncPending = false;
                 } catch (Exception e) {
                     throw new RuntimeException("Push failed", e);
                 }
             }
         }
+    }
+
+    /**
+     * Sends the full UI state to the client, as a response to a client request
+     * to resynchronize. If not connected, defers it until a connection is
+     * established, like {@link #push(boolean)} does.
+     */
+    void pushResync() {
+        resyncPending = true;
+        push(false);
     }
 
     /**

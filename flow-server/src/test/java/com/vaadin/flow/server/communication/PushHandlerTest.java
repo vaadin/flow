@@ -15,11 +15,14 @@
  */
 package com.vaadin.flow.server.communication;
 
+import jakarta.servlet.http.HttpSession;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +36,9 @@ import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
 import org.atmosphere.cpr.AtmosphereResourceImpl;
 import org.atmosphere.cpr.AtmosphereResponse;
+import org.atmosphere.cpr.Broadcaster;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
@@ -51,6 +56,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.AtmospherePushConnection.PushMessage;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -67,6 +73,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.atLeastOnce;
@@ -146,6 +153,70 @@ class PushHandlerTest {
         // error handler and the client would get an "Internal error" instead of
         // the response it is waiting for.
         verify(connection).resendLastResponse();
+    }
+
+    @Test
+    void onMessage_clientAsksToResynchronize_fullStateIsPushedWithResyncFlag()
+            throws Exception {
+        AtomicReference<UI> currentUi = new AtomicReference<>();
+        AtomicReference<VaadinSession> currentSession = new AtomicReference<>();
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinSession findVaadinSession(VaadinRequest request) {
+                VaadinSession session = currentSession.get();
+                VaadinSession.setCurrent(session);
+                return session;
+            }
+
+            @Override
+            public UI findUI(VaadinRequest request) {
+                UI ui = currentUi.get();
+                UI.setCurrent(ui);
+                return ui;
+            }
+        };
+        MockVaadinSession session = new MockVaadinSession(service);
+        currentSession.set(session);
+
+        AtmosphereResource resource = mock(AtmosphereResource.class);
+        AtmosphereRequest request = mock(AtmosphereRequest.class);
+        HttpSession httpSession = mock(HttpSession.class);
+        when(httpSession.getAttributeNames())
+                .thenReturn(Collections.emptyEnumeration());
+        when(request.getSession(true)).thenReturn(httpSession);
+        Broadcaster broadcaster = mock(Broadcaster.class);
+        when(resource.getRequest()).thenReturn(request);
+        when(resource.getBroadcaster()).thenReturn(broadcaster);
+        when(resource.uuid()).thenReturn("1");
+        when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
+
+        session.runWithLock(() -> {
+            UI ui = new MockUI(session);
+            currentUi.set(ui);
+            ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+            AtmospherePushConnection pushConnection = new AtmospherePushConnection(
+                    ui);
+            pushConnection.connect(resource);
+            ui.getInternals().setPushConnection(pushConnection);
+
+            String message = "{\"csrfToken\":\"" + ui.getCsrfToken()
+                    + "\",\"rpc\":[],\"syncId\":0,\"clientId\":0,\""
+                    + ApplicationConstants.RESYNCHRONIZE_ID + "\":true}";
+            when(request.getReader())
+                    .thenReturn(reader(message.length() + "|" + message));
+            return null;
+        });
+
+        new PushHandler(service).onMessage(resource);
+
+        // Without the resync flag the client ignores the response while it
+        // waits for the resync, and the UI stops updating.
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        verify(broadcaster).broadcast(captor.capture(), eq(resource));
+        String pushed = ((PushMessage) captor.getValue()).message;
+        assertTrue(pushed.contains(
+                "\"" + ApplicationConstants.RESYNCHRONIZE_ID + "\":true"),
+                pushed);
     }
 
     @Test

@@ -42,9 +42,11 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.PushMessage;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -259,6 +261,35 @@ class AtmospherePushConnectionTest {
         });
 
         verify(broadcaster).broadcast(any(), eq(resource));
+    }
+
+    @Test
+    void connect_deferredResync_isSentOnReconnectWithResyncFlag()
+            throws Exception {
+        connection.connectionLost();
+
+        vaadinSession.runWithLock(() -> {
+            connection.pushResync();
+            return null;
+        });
+        verifyNoInteractions(broadcaster);
+
+        vaadinSession.runWithLock(() -> {
+            connection.connect(resource);
+            connection.push(true);
+            return null;
+        });
+
+        // The client ignores anything but a resync response while it waits
+        // for one, so the deferred response must still be a resync.
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        verify(broadcaster, times(2)).broadcast(captor.capture(), eq(resource));
+        String resync = "\"" + ApplicationConstants.RESYNCHRONIZE_ID
+                + "\":true";
+        assertTrue(((PushMessage) captor.getAllValues().get(0)).message
+                .contains(resync));
+        assertFalse(((PushMessage) captor.getAllValues().get(1)).message
+                .contains(resync), "Only the resync response is flagged");
     }
 
     @Test
