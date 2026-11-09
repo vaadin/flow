@@ -1,0 +1,91 @@
+name: Client Bundle Size
+
+# Measures the size of the Flow client as an application's production build
+# bundles it, on the head of a pull request and on the commit it branches
+# from, and reports the difference in a pull request comment. A comment is
+# only posted once a change affects the minified size, see
+# scripts/bundleSize.js. After that the comment is updated on every push, also
+# when the difference goes away again.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  # Only the newest commit is worth measuring
+  group: ${{ github.workflow }}-${{ github.event.number }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  _BASE_SHA: ${{ github.event.pull_request.base.sha }}
+  _PR_NUMBER: ${{ github.event.number }}
+
+jobs:
+  measure:
+    # Commenting needs a token that can write, which GitHub does not hand to
+    # pull requests from forks
+    if: ${{ !github.event.pull_request.head.repo.fork }}
+    timeout-minutes: 10
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: ${{ env._HEAD_SHA }}
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-frontend-tools
+        with:
+          cache: npm
+          cache-dependency-path: flow-client/package-lock.json
+      - name: Install esbuild
+        # The head's esbuild bundles both sides. No install scripts are needed
+        # for that, nor for anything else that flow-client depends on here.
+        run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: flow-client
+      - name: Find the base commit
+        id: base
+        # The commit the pull request branches from, so that changes merged to
+        # the base branch since then are not attributed to it
+        run: echo "sha=$(git merge-base "$_BASE_SHA" "$_HEAD_SHA")" >> "$GITHUB_OUTPUT"
+      - name: Measure the head
+        run: node scripts/bundleSize.js measure flow-client/src/main/frontend bundle-size-head.json
+      - name: Measure the base
+        env:
+          BASE: ${{ steps.base.outputs.sha }}
+        # Before the client was written in TypeScript the base has nothing to
+        # bundle, which the comment says instead of comparing
+        run: |
+          git worktree add "$RUNNER_TEMP/base" "$BASE"
+          if [ -f "$RUNNER_TEMP/base/flow-client/src/main/frontend/FlowClient.js" ]; then
+            node scripts/bundleSize.js measure "$RUNNER_TEMP/base/flow-client/src/main/frontend" bundle-size-base.json
+          fi
+      - name: Compare
+        id: compare
+        run: |
+          node scripts/bundleSize.js compare bundle-size-base.json bundle-size-head.json "${{ steps.base.outputs.sha }}"
+          cat bundle-size-comment.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Comment the difference on the pull request
+        # GitHub hands runs that Dependabot triggers a read-only token, so
+        # those measure and leave the comparison in the job summary only
+        if: github.actor != 'dependabot[bot]'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANGED: ${{ steps.compare.outputs.changed }}
+        run: |
+          marker='<!-- flow-bundle-size -->'
+          existing=$(gh api "repos/${{ github.repository }}/issues/$_PR_NUMBER/comments" --paginate \
+            --jq "[.[] | select(.body | startswith(\"$marker\")) | .id] | first // empty")
+          existing=${existing%%$'\n'*}
+          if [ -n "$existing" ]; then
+            gh api --method PATCH "repos/${{ github.repository }}/issues/comments/$existing" -F body=@bundle-size-comment.md
+          elif [ "$CHANGED" = "true" ]; then
+            gh api "repos/${{ github.repository }}/issues/$_PR_NUMBER/comments" -F body=@bundle-size-comment.md
+          else
+            echo "No change in client bundle size, and no earlier comment to update"
+          fi

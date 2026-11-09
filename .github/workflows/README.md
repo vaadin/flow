@@ -292,6 +292,35 @@ reports whatever it finds, so adding or changing one only takes a change to the
 test. Keep an id as long as it measures the same thing, so that the base and
 the head can be compared.
 
+## Client bundle size
+
+`bundle-size.yml` reports how a pull request changes the size of the Flow
+client in an application's production bundle. The client ships as TypeScript
+sources that the application's Vite build bundles, so
+`scripts/bundleSize.js` bundles the same sources in `flow-client` with
+esbuild: minified, split at dynamic imports, starting from `Flow.ts` and the
+modules it loads. Packages such as Lit are left out, as the application
+bundles them for its own code anyway. The sizes are close to what Vite
+produces rather than the same; the difference between the base and the head is
+what counts.
+
+The workflow bundles the head of the pull request and the commit it branches
+from, both with the head's esbuild, and comments the minified and gzipped size
+of each chunk and the total. A collapsed table lists the source files whose
+share of the minified bundle changed. Bundling takes seconds, so nothing is
+cached.
+
+As with the memory footprint, the comment is posted once a pull request changes
+the minified size and then updated on every push, also when the difference goes
+away again. Pull requests from forks are skipped, and runs that Dependabot
+triggers only write the comparison to the job summary.
+
+To run it locally, run `npm ci` in `flow-client`, then
+`node scripts/bundleSize.js measure <dir> <report>` once with
+`flow-client/src/main/frontend` and once with the same directory of a checkout
+of the base, and compare the reports with
+`node scripts/bundleSize.js compare <base report> <head report> <base commit>`.
+
 ## Code review
 
 `code-review.yml` has Claude review a pull request and post the findings as
