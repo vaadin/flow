@@ -38,6 +38,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.dom.DomEventData;
+import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
@@ -68,6 +70,15 @@ class CspModeTest {
         @JsExpression("console.log($0, value);")
         @JsCalledWith("value")
         JsFunction createLogger(String prefix);
+    }
+
+    @JsDefinition
+    interface EventJs extends Serializable {
+        @JsExpression("return event.x == $0;")
+        DomEventFilter isX(int x);
+
+        @JsExpression("return event.x * $0;")
+        DomEventData<Integer> scaledX(int factor);
     }
 
     @Tag("div")
@@ -164,8 +175,16 @@ class CspModeTest {
                             JsonConstants.MAP_STATE_NODE_EVENT_DATA));
             registration.synchronizeProperty("value");
             registration.mapEventTargetElement();
+            // The client runs these without compiling them, also when Flow
+            // adds the always-true filter for the debounce
+            registration.preventDefault();
+            registration.stopPropagation();
+            registration.debounce(300);
             // Its JavaScript is in the bundle rather than in a string
             JsSnippets.of(LoggerJs.class).createLogger("Greeting:");
+            EventJs eventJs = JsSnippets.of(EventJs.class);
+            registration.setFilterExpression(eventJs.isX(2))
+                    .addEventData(eventJs.scaledX(2));
             // Loads the chunk of the route with a function from the bundle
             ui.getInternals().addComponentDependencies(RouteView.class);
         });
