@@ -82,6 +82,19 @@ public record WebPushMessage(String title,
         this(title, (ObjectNode) null);
     }
 
+    /**
+     * Starts building a Web Push message with the given title, for setting the
+     * common notification options such as the body, the tag or the view that
+     * opens when the notification is tapped.
+     *
+     * @param title
+     *            the notification title, not {@code null}
+     * @return a new builder, not {@code null}
+     */
+    public static WebPushMessageBuilder builder(String title) {
+        return new WebPushMessageBuilder(title);
+    }
+
     @Override
     public String toString() {
         return toJson();
