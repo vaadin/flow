@@ -259,6 +259,14 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
     expect(harness.collectedEventData[0]).to.deep.equal({ '@first': true, '@second': false });
   });
 
+  it('sends null for a declared snippet missing from the bundle and still sends the event', () => {
+    bindWithClickSettings({ 'event.type': false, '@missing': { f: 'missing-fn-id', d: false } });
+
+    element.click();
+
+    expect(harness.collectedEventData[0]).to.deep.equal({ 'event.type': 'click', '@missing': null });
+  });
+
   it('runs expressions and declared snippets of the same listener', () => {
     snippets()['fn-id'] = () => (event) => event.type;
     bindWithClickSettings({ 'event.type': false, '@type': { f: 'fn-id', d: false } });

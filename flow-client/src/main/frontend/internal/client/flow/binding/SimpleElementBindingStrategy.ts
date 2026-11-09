@@ -73,6 +73,7 @@ import { Debouncer } from './Debouncer';
 import { bindServerEventHandlerNames } from './ServerEventHandlerBinder';
 import { Console } from '../../Console';
 import { decodeCopyWithTypeInfo, evaluateDeclaredSnippet } from '../util/ClientJsonCodec';
+import { describeMissingFunction, findDeclaredSnippet } from '../util/DeclaredJavaScript';
 
 // com.vaadin.client.flow.binding.SimpleElementBindingStrategy.HIDDEN_ATTRIBUTE
 const HIDDEN_ATTRIBUTE = 'hidden';
@@ -1491,15 +1492,28 @@ function updateAttributeValue(
  * sent. If the server has removed that node since, the function gets null for
  * it, and the event is still sent.
  *
+ * If the bundle has no function for the snippet, the error goes to the console
+ * and the value is null, so the event is still sent for the other entries of
+ * the listener.
+ *
  * A snippet can have a side effect, `preventDefault` or `stopPropagation`. Then
  * the method of the event is called only if the value is truthy. This way, the
  * method is called only when the filter of the listener passes.
  */
 function evaluateSnippet(settings: SnippetSettings, tree: StateTree, event: Event, element: Element): unknown {
+  const functionId = settings[JsonConstants.EVENT_SETTINGS_FUNCTION];
+  if (findDeclaredSnippet(functionId) === undefined) {
+    // Checked here, because the value that evaluateDeclaredSnippet returns
+    // for a missing function throws when it is called, inside the handler
+    // of the DOM event
+    Console.error(describeMissingFunction(functionId));
+    return null;
+  }
+
   const captures = (settings[JsonConstants.EVENT_SETTINGS_CAPTURES] ?? []).map((capture) =>
     decodeCopyWithTypeInfo(tree, capture)
   );
-  const snippet = evaluateDeclaredSnippet(settings[JsonConstants.EVENT_SETTINGS_FUNCTION], captures);
+  const snippet = evaluateDeclaredSnippet(functionId, captures);
   const value = (snippet as EventExpression)(event, element);
 
   const sideEffect = settings[JsonConstants.EVENT_SETTINGS_SIDE_EFFECT];
