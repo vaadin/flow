@@ -101,7 +101,9 @@ public interface JavaScriptResult<T> extends Serializable {
      * @param errorHandler
      *            a handler for an error message in case the execution failed or
      *            its value could not be converted to {@code T}, or
-     *            <code>null</code> to ignore failed executions
+     *            <code>null</code> to ignore failed executions. Without an
+     *            error handler, a value that can not be converted is thrown as
+     *            an exception rather than ignored
      */
     void then(SerializableConsumer<T> resultHandler,
             SerializableConsumer<String> errorHandler);
@@ -112,7 +114,8 @@ public interface JavaScriptResult<T> extends Serializable {
      * the execution fails, the error is silently ignored: no handler is run and
      * nothing is logged or thrown. Use
      * {@link #then(SerializableConsumer, SerializableConsumer)} to find out
-     * about a failed execution.
+     * about a failed execution. A value that can not be converted to {@code T}
+     * is not ignored, but thrown as an exception when the result arrives.
      * <p>
      * A handler can only be added before the execution has been sent to the
      * browser.
@@ -133,8 +136,8 @@ public interface JavaScriptResult<T> extends Serializable {
      * the request handling thread that makes the result available will also
      * need to lock the session.
      * <p>
-     * If the execution fails, the future is completed exceptionally with a
-     * {@link JavaScriptException}.
+     * If the execution fails, or its value can not be converted to {@code T},
+     * the future is completed exceptionally with a {@link JavaScriptException}.
      * <p>
      * A completable future can only be created before the execution has been
      * sent to the browser.

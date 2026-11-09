@@ -77,6 +77,9 @@ class JsDefinitionProxyTest {
     interface ListJs<T> extends ValueJs<List<T>> {
     }
 
+    interface ArrayJs<T> extends ValueJs<T[]> {
+    }
+
     @JsDefinition
     interface CounterJs extends ValueJs<Integer> {
     }
@@ -86,8 +89,16 @@ class JsDefinitionProxyTest {
     }
 
     @JsDefinition
+    interface IntsJs extends ArrayJs<Integer> {
+    }
+
+    @JsDefinition
     @SuppressWarnings("rawtypes")
     interface RawValueJs extends ValueJs {
+    }
+
+    @JsDefinition
+    interface StillGenericJs<T> extends ValueJs<T> {
     }
 
     @JsDefinition
@@ -296,7 +307,7 @@ class JsDefinitionProxyTest {
         assertTrue(errors.get(0).contains("Integer"), errors.get(0));
         CompletionException exception = assertThrows(CompletionException.class,
                 () -> future.getNow(null));
-        assertInstanceOf(IllegalArgumentException.class, exception.getCause());
+        assertInstanceOf(JavaScriptException.class, exception.getCause());
     }
 
     @Test
@@ -320,6 +331,13 @@ class JsDefinitionProxyTest {
         proxy(NumbersJs.class).readValue().then(numbers::addAll);
         result.complete("[4, 2]");
         assertEquals(List.of(4, 2), numbers);
+
+        result.resultHandlers.clear();
+        List<Integer> ints = new ArrayList<>();
+        proxy(IntsJs.class).readValue()
+                .then(array -> ints.addAll(List.of(array)));
+        result.complete("[4, 2]");
+        assertEquals(List.of(4, 2), ints);
     }
 
     @Test
@@ -353,9 +371,15 @@ class JsDefinitionProxyTest {
                 "the message should name every method: " + message);
         assertTrue(message.contains("PendingJavaScriptResult"),
                 "the message should say what to declare instead: " + message);
-        assertThrows(IllegalArgumentException.class,
-                () -> proxy(RawValueJs.class),
-                "a type variable that raw inheritance leaves unbound");
+        for (Class<?> unbound : List.of(RawValueJs.class,
+                StillGenericJs.class)) {
+            String unboundMessage = assertThrows(IllegalArgumentException.class,
+                    () -> proxy(unbound)).getMessage();
+            assertTrue(unboundMessage.contains("readValue"),
+                    unbound.getSimpleName()
+                            + " leaves the type variable unbound: "
+                            + unboundMessage);
+        }
     }
 
     @Test

@@ -31,17 +31,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.type.TypeFactory;
 
-import com.vaadin.flow.component.internal.DeadlockDetectingCompletableFuture;
 import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
-import com.vaadin.flow.component.page.PendingJavaScriptResult.JavaScriptException;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -50,7 +47,6 @@ import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
-import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Hands out implementations of {@link JsDefinition} interfaces, which turn a
@@ -373,9 +369,7 @@ public final class JsDefinitionProxy {
                 TypeVariable<?>[] variables = raw.getTypeParameters();
                 Type[] arguments = parameterized.getActualTypeArguments();
                 for (int i = 0; i < variables.length; i++) {
-                    JavaType argument = arguments[i] instanceof WildcardType
-                            ? null
-                            : resolve(arguments[i], typeArguments);
+                    JavaType argument = resolve(arguments[i], typeArguments);
                     if (argument != null) {
                         typeArguments.put(variables[i], argument);
                     }
@@ -514,25 +508,6 @@ public final class JsDefinitionProxy {
                 }
                 resultHandler.accept(value);
             }, errorHandler);
-        }
-
-        @Override
-        public CompletableFuture<T> toCompletableFuture() {
-            // The session that is locked when subscribing is the one that
-            // will complete the future, since subscribing is only possible
-            // before the execution is sent to the browser
-            CompletableFuture<T> completableFuture = new DeadlockDetectingCompletableFuture<>(
-                    VaadinSession.getCurrent());
-            pending.then(json -> {
-                try {
-                    completableFuture
-                            .complete(JacksonCodec.decodeAs(json, valueType));
-                } catch (IllegalArgumentException e) {
-                    completableFuture.completeExceptionally(e);
-                }
-            }, errorValue -> completableFuture.completeExceptionally(
-                    new JavaScriptException(errorValue)));
-            return completableFuture;
         }
     }
 
