@@ -313,16 +313,7 @@ public class ElementListenerMap extends NodeMap {
 
         @Override
         public DomListenerRegistration addEventData(List<String> eventData) {
-            if (eventData == null) {
-                throw new IllegalArgumentException(
-                        "The event data expressions must not be null");
-            }
-            for (String expression : eventData) {
-                if (expression == null) {
-                    throw new IllegalArgumentException(
-                            "The event data expression must not be null");
-                }
-            }
+            requireEventData(eventData);
             if (eventData.stream()
                     .anyMatch(DomEventListenerWrapper::isCompiledByClient)) {
                 CspViolationReporter.reportStringJavaScript();
@@ -333,6 +324,27 @@ public class ElementListenerMap extends NodeMap {
             listenerMap.updateEventSettings(type);
 
             return this;
+        }
+
+        private void addEventDataWithoutCspReport(List<String> eventData) {
+            requireEventData(eventData);
+
+            appendEventData(eventData);
+
+            listenerMap.updateEventSettings(type);
+        }
+
+        private static void requireEventData(List<String> eventData) {
+            if (eventData == null) {
+                throw new IllegalArgumentException(
+                        "The event data expressions must not be null");
+            }
+            for (String expression : eventData) {
+                if (expression == null) {
+                    throw new IllegalArgumentException(
+                            "The event data expression must not be null");
+                }
+            }
         }
 
         private void appendEventData(List<String> eventData) {
@@ -820,6 +832,29 @@ public class ElementListenerMap extends NodeMap {
                 .map(settings -> settings.entry)
                 .filter(ExpressionEntry.class::isInstance).map(Entry::key)
                 .collect(Collectors.toUnmodifiableSet());
+    }
+
+    /**
+     * Adds event data to a registration of this map like
+     * {@link DomListenerRegistration#addEventData(List)}, but without reporting
+     * them as JavaScript sent as a string. For the keys of data that client
+     * code builds and sends with <code>sendEventMessage</code>, which the
+     * client never compiles.
+     *
+     * @param registration
+     *            a registration returned by
+     *            {@link #add(String, DomEventListener)}, not <code>null</code>
+     * @param eventData
+     *            the keys of the event data, not <code>null</code> and not
+     *            containing <code>null</code>
+     */
+    public static void addEventDataWithoutCspReport(
+            DomListenerRegistration registration, List<String> eventData) {
+        if (!(registration instanceof DomEventListenerWrapper wrapper)) {
+            throw new IllegalArgumentException(
+                    "The registration must be one returned by an ElementListenerMap");
+        }
+        wrapper.addEventDataWithoutCspReport(eventData);
     }
 
     /**

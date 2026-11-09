@@ -35,9 +35,14 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.dom.DomEventData;
 import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -89,6 +94,14 @@ class CspModeTest {
     @Route("csp")
     @Tag("div")
     private static class RouteView extends Component {
+    }
+
+    @DomEvent("custom-event")
+    public static class KeyedEvent extends ComponentEvent<UI> {
+        public KeyedEvent(UI source, boolean fromClient,
+                @EventData("key") String key) {
+            super(source, fromClient);
+        }
     }
 
     private MockServletServiceSessionSetup setup;
@@ -147,6 +160,11 @@ class CspModeTest {
                 call(DomListenerRegistration.class, "setFilter",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).setFilter("event.x == 1")),
+                // A key of client-built data only for Flow's own events
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ComponentUtil.addListener(ui, KeyedEvent.class,
+                                e -> {
+                                })),
                 // Vaadin code sending a filter on its own, with event data
                 // that are property paths
                 call(DomListenerRegistration.class, "setFilter",
@@ -209,6 +227,20 @@ class CspModeTest {
                     .addEventData(eventJs.scaledX(2));
             // Loads the chunk of the route with a function from the bundle
             ui.getInternals().addComponentDependencies(RouteView.class);
+        });
+    }
+
+    @Test
+    void strict_uiStartsWithoutViolation() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+
+        // The events of the navigation and of connecting a web component
+        // carry keys of data that client code builds, not expressions
+        assertDoesNotThrow(() -> {
+            new MockUI(setup.getSession()).doInit(null, 1, "app");
+            WebComponentUI webComponentUI = new WebComponentUI();
+            webComponentUI.getInternals().setSession(setup.getSession());
+            webComponentUI.doInit(null, 2, "app");
         });
     }
 
