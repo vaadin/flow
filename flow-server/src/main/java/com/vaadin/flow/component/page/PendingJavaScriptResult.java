@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.page;
 
-import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.LoggerFactory;
@@ -45,7 +44,7 @@ import com.vaadin.flow.server.VaadinSession;
  * @author Vaadin Ltd
  * @since 2.0
  */
-public interface PendingJavaScriptResult extends Serializable {
+public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
 
     /**
      * Exception used when a {@link CompletableFuture} returned from
@@ -73,6 +72,7 @@ public interface PendingJavaScriptResult extends Serializable {
      * @return <code>true</code> if the execution was canceled,
      *         <code>false</code> if not
      */
+    @Override
     boolean cancelExecution();
 
     /**
@@ -83,6 +83,7 @@ public interface PendingJavaScriptResult extends Serializable {
      * @return <code>true</code> if the execution is sent to the browser,
      *         <code>false</code> if it's still pending
      */
+    @Override
     boolean isSentToBrowser();
 
     /**
@@ -351,6 +352,7 @@ public interface PendingJavaScriptResult extends Serializable {
      *            a handler for an error message in case the execution failed,
      *            or <code>null</code> to ignore errors
      */
+    @Override
     void then(SerializableConsumer<JsonNode> resultHandler,
             SerializableConsumer<String> errorHandler);
 
@@ -366,6 +368,7 @@ public interface PendingJavaScriptResult extends Serializable {
      *            a handler for the JSON representation of the return value from
      *            a successful execution, not <code>null</code>
      */
+    @Override
     default void then(SerializableConsumer<JsonNode> resultHandler) {
         then(resultHandler, null);
     }
@@ -381,6 +384,7 @@ public interface PendingJavaScriptResult extends Serializable {
      * @return a completable future that will be completed based on the
      *         execution results, not <code>null</code>
      */
+    @Override
     default CompletableFuture<JsonNode> toCompletableFuture() {
         return toCompletableFuture(JsonNode.class);
     }
