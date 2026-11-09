@@ -252,6 +252,9 @@ public final class JsDefinitionProxy {
         List<String> unanswerable = new ArrayList<>();
         List<String> untyped = new ArrayList<>();
         List<String> inJava = new ArrayList<>();
+        // Not the shared mapper's factory, whose cache would keep the classes
+        // of the project that the build checks reachable after the build
+        TypeFactory types = TypeFactory.createDefaultInstance();
         for (Method method : definitionType.getMethods()) {
             if (method.isDefault()
                     || Modifier.isStatic(method.getModifiers())) {
@@ -267,7 +270,7 @@ public final class JsDefinitionProxy {
                 continue;
             }
             if (!snippets && method.getReturnType() == JavaScriptResult.class
-                    && typedResultType(method, definitionType) == null) {
+                    && typedResultType(method, definitionType, types) == null) {
                 untyped.add(method.getName());
             } else if (snippets ? !returnsSnippet(method)
                     : !returnsInvocationResult(method)) {
@@ -329,10 +332,12 @@ public final class JsDefinitionProxy {
 
     private static Map<Method, JavaType> collectResultTypes(
             Class<?> definitionType) {
+        TypeFactory typeFactory = JacksonUtils.getMapper().getTypeFactory();
         Map<Method, JavaType> types = new HashMap<>();
         for (Method method : definitionType.getMethods()) {
             if (method.getReturnType() == JavaScriptResult.class) {
-                JavaType type = typedResultType(method, definitionType);
+                JavaType type = typedResultType(method, definitionType,
+                        typeFactory);
                 if (type != null) {
                     types.put(method, type);
                 }
@@ -348,12 +353,12 @@ public final class JsDefinitionProxy {
      * bind to a type, none of which tells what to convert the result to.
      */
     private static JavaType typedResultType(Method method,
-            Class<?> definitionType) {
+            Class<?> definitionType, TypeFactory types) {
         if (method
                 .getGenericReturnType() instanceof ParameterizedType parameterized) {
             Type argument = parameterized.getActualTypeArguments()[0];
             return argument instanceof WildcardType ? null
-                    : resolve(argument, definitionType);
+                    : resolve(argument, definitionType, types);
         }
         return null;
     }
@@ -365,8 +370,8 @@ public final class JsDefinitionProxy {
      * interface it inherits as a raw type. A wildcard within a type argument
      * resolves to its upper bound, as Jackson does.
      */
-    private static JavaType resolve(Type type, Class<?> definitionType) {
-        TypeFactory types = JacksonUtils.getMapper().getTypeFactory();
+    private static JavaType resolve(Type type, Class<?> definitionType,
+            TypeFactory types) {
         return switch (type) {
         case Class<?> plain -> types.constructType(plain);
         case TypeVariable<?> variable -> {
@@ -379,7 +384,7 @@ public final class JsDefinitionProxy {
             // A variable nested in the bound type, as in List<T>, belongs to
             // an interface between the definition and the one declaring this
             // variable, so it is resolved the same way
-            yield bound == null ? null : resolve(bound, definitionType);
+            yield bound == null ? null : resolve(bound, definitionType, types);
         }
         case ParameterizedType parameterized -> {
             Type[] arguments = parameterized.getActualTypeArguments();
@@ -388,7 +393,7 @@ public final class JsDefinitionProxy {
                 Type argument = arguments[i] instanceof WildcardType wildcard
                         ? wildcard.getUpperBounds()[0]
                         : arguments[i];
-                resolved[i] = resolve(argument, definitionType);
+                resolved[i] = resolve(argument, definitionType, types);
                 if (resolved[i] == null) {
                     yield null;
                 }
@@ -398,7 +403,7 @@ public final class JsDefinitionProxy {
         }
         case GenericArrayType array -> {
             JavaType component = resolve(array.getGenericComponentType(),
-                    definitionType);
+                    definitionType, types);
             yield component == null ? null
                     : types.constructArrayType(component);
         }
