@@ -20,24 +20,34 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.page.PendingJavaScriptResult.JavaScriptException;
+import com.vaadin.flow.dom.DomEvent;
+import com.vaadin.flow.dom.DomEventData;
+import com.vaadin.flow.dom.DomEventFilter;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -101,6 +111,14 @@ class JsDefinitionProxyTest {
     interface StillGenericJs<T> extends ValueJs<T> {
     }
 
+    interface UnusedVariableJs<U> extends ValueJs<Integer> {
+    }
+
+    @JsDefinition
+    @SuppressWarnings("rawtypes")
+    interface RawUnusedVariableJs extends UnusedVariableJs {
+    }
+
     @JsDefinition
     interface UntypedJs<T> extends Serializable {
         @SuppressWarnings("rawtypes")
@@ -157,6 +175,30 @@ class JsDefinitionProxyTest {
     }
 
     @JsDefinition
+    interface EventJs extends Serializable {
+        @JsExpression("return event.key === $0;")
+        DomEventFilter isKey(String key);
+
+        @JsExpression("return element.getAttribute($0);")
+        DomEventData<String> attribute(String name);
+
+        @JsExpression("return event.detail === $0;")
+        DomEventFilter isDetail(Object detail);
+
+        @JsExpression("return $0;")
+        DomEventData<Object> echo(Object value);
+    }
+
+    /**
+     * A bean that cannot be encoded since it refers to itself.
+     */
+    public static class SelfReference {
+        public SelfReference getSelf() {
+            return this;
+        }
+    }
+
+    @JsDefinition
     interface CalledWithInvalidNameJs extends Serializable {
         @JsExpression("console.log(value);")
         @JsCalledWith("not-a-name")
@@ -165,6 +207,13 @@ class JsDefinitionProxyTest {
 
     @JsDefinition
     interface EmptyJs extends Serializable {
+    }
+
+    @JsDefinition
+    @JsCalledWith("value")
+    interface CalledWithOnDefinitionJs extends Serializable {
+        @JsExpression("console.log(value);")
+        JsFunction createLogger();
     }
 
     @JsDefinition
@@ -311,12 +360,15 @@ class JsDefinitionProxyTest {
     }
 
     @Test
-    void create_valueThatCanNotBeConvertedWithoutAnErrorHandler_throws() {
-        proxy(TypedJs.class).readAnswer().then(value -> {
+    void create_valueThatCanNotBeConvertedWithoutAnErrorHandler_runsLaterHandlers() {
+        JavaScriptResult<Integer> answer = proxy(TypedJs.class).readAnswer();
+        answer.then(value -> {
         });
+        CompletableFuture<Integer> future = answer.toCompletableFuture();
 
-        assertThrows(IllegalArgumentException.class,
-                () -> result.complete("\"forty-two\""));
+        result.complete("\"forty-two\"");
+
+        assertThrows(CompletionException.class, () -> future.getNow(null));
     }
 
     @Test
@@ -371,8 +423,8 @@ class JsDefinitionProxyTest {
                 "the message should name every method: " + message);
         assertTrue(message.contains("PendingJavaScriptResult"),
                 "the message should say what to declare instead: " + message);
-        for (Class<?> unbound : List.of(RawValueJs.class,
-                StillGenericJs.class)) {
+        for (Class<?> unbound : List.of(RawValueJs.class, StillGenericJs.class,
+                RawUnusedVariableJs.class)) {
             String unboundMessage = assertThrows(IllegalArgumentException.class,
                     () -> proxy(unbound)).getMessage();
             assertTrue(unboundMessage.contains("readValue"),
@@ -452,6 +504,67 @@ class JsDefinitionProxyTest {
     }
 
     @Test
+    void createSnippets_domEventSnippets_answerWithTheTypeTheyDeclare() {
+        EventJs events = JsDefinitionProxy.createSnippets(EventJs.class);
+
+        assertEquals(new JsCall(EventJs.class, "isKey", List.of("Enter")),
+                events.isKey("Enter").getDeclaredCall());
+        assertEquals(new JsCall(EventJs.class, "attribute", List.of("id")),
+                events.attribute("id").getDeclaredCall());
+    }
+
+    @Test
+    void createSnippets_domEventSnippetCaptureTheClientCanNotReceive_throwsWhenDeclared() {
+        EventJs events = JsDefinitionProxy.createSnippets(EventJs.class);
+        SelfReference unencodable = new SelfReference();
+
+        assertThrows(RuntimeException.class,
+                () -> events.isDetail(unencodable));
+        assertThrows(RuntimeException.class, () -> events.echo(unencodable));
+    }
+
+    @Test
+    void createSnippets_plainCaptures_equalKeysForEqualValues() {
+        EventJs events = JsDefinitionProxy.createSnippets(EventJs.class);
+
+        assertEquals(events.echo(42).getSnippetKey(),
+                events.echo(42).getSnippetKey());
+        assertEquals(events.echo(new BigDecimal("1.5")).getSnippetKey(),
+                events.echo(new BigDecimal("1.5")).getSnippetKey());
+        // A number that can change later is not a plain value
+        AtomicInteger counter = new AtomicInteger(42);
+        assertNotEquals(events.echo(counter).getSnippetKey(),
+                events.echo(counter).getSnippetKey());
+    }
+
+    @Test
+    void createSnippets_domEventSnippets_surviveSerialization() {
+        EventJs events = JsDefinitionProxy.createSnippets(EventJs.class);
+        DomEventFilter filter = events.isKey("Enter");
+        DomEventData<String> data = events.attribute("id");
+        // An element capture has a random key, which must be kept
+        DomEventData<Object> elementData = events.echo(new Element("span"));
+
+        DomEventFilter filterCopy = SerializationUtils.roundtrip(filter);
+        DomEventData<String> dataCopy = SerializationUtils.roundtrip(data);
+        DomEventData<Object> elementDataCopy = SerializationUtils
+                .roundtrip(elementData);
+
+        assertEquals(filter.getDeclaredCall(), filterCopy.getDeclaredCall());
+        assertEquals(filter.getSnippetKey(), filterCopy.getSnippetKey());
+        assertEquals(ElementListenerMap.getEventDataKey(elementData),
+                ElementListenerMap.getEventDataKey(elementDataCopy));
+        // Still read by the same key, as the type the method declares
+        assertEquals(ElementListenerMap.getEventDataKey(data),
+                ElementListenerMap.getEventDataKey(dataCopy));
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put(ElementListenerMap.getEventDataKey(data), "value");
+        assertEquals("value",
+                new DomEvent(new Element("div"), "click", eventData)
+                        .getEventData(dataCopy));
+    }
+
+    @Test
     void createSnippets_methodRunningJavaScript_throws() {
         // Nothing to run it on, since a snippet is not bound to an element
         IllegalArgumentException exception = assertThrows(
@@ -479,6 +592,18 @@ class JsDefinitionProxyTest {
         // is evaluated and the browser reports a syntax error
         assertThrows(IllegalArgumentException.class, () -> JsDefinitionProxy
                 .createSnippets(CalledWithInvalidNameJs.class));
+    }
+
+    @Test
+    void checkDefinition_calledWithOnTheDefinition_throws() {
+        // The names would otherwise be ignored, and the expression would fail
+        // in the browser on the first call
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> JsDefinitionProxy
+                        .checkDefinition(CalledWithOnDefinitionJs.class));
+
+        assertTrue(exception.getMessage().contains("@JsCalledWith"),
+                exception.getMessage());
     }
 
     @Test

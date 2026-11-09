@@ -31,20 +31,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.type.TypeFactory;
 
 import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.dom.DomEventData;
+import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
@@ -105,8 +110,9 @@ public final class JsDefinitionProxy {
 
     private static final String RETURN_TYPES = "An interface declares either"
             + " JavaScript to run, with methods returning void,"
-            + " JavaScriptResult or PendingJavaScriptResult, or snippets, with methods returning"
-            + " JsFunction or JsSnippet, but not both";
+            + " JavaScriptResult or PendingJavaScriptResult, or snippets, with"
+            + " methods returning JsFunction, JsSnippet, DomEventFilter or"
+            + " DomEventData, but not both";
 
     private JsDefinitionProxy() {
         // Only static members
@@ -195,8 +201,9 @@ public final class JsDefinitionProxy {
      * @return what the definition declares, not <code>null</code>
      * @throws IllegalArgumentException
      *             if the type is not an interface, is not annotated with
-     *             {@link JsDefinition}, or has a method that does not fit what
-     *             the definition declares
+     *             {@link JsDefinition}, is annotated with {@link JsCalledWith},
+     *             or has a method that does not fit what the definition
+     *             declares
      */
     public static Kind checkDefinition(Class<?> definitionType) {
         if (!definitionType.isInterface()) {
@@ -207,6 +214,14 @@ public final class JsDefinitionProxy {
             throw new IllegalArgumentException(definitionType.getName()
                     + " is not annotated with @JsDefinition, so the build does not"
                     + " collect its JavaScript into the bundle");
+        }
+        if (definitionType.isAnnotationPresent(JsCalledWith.class)) {
+            // Only the methods and the snippet types they return are read
+            throw new IllegalArgumentException(definitionType.getName()
+                    + " is annotated with @JsCalledWith, which applies to a"
+                    + " method that returns a JsSnippet or to a snippet type,"
+                    + " not to a JavaScript definition. Annotate each method"
+                    + " instead");
         }
         // One snippet makes it a definition of snippets, so that a method
         // running JavaScript beside it is reported as the odd one out
@@ -237,8 +252,6 @@ public final class JsDefinitionProxy {
         List<String> unanswerable = new ArrayList<>();
         List<String> untyped = new ArrayList<>();
         List<String> inJava = new ArrayList<>();
-        Map<TypeVariable<?>, JavaType> typeArguments = collectTypeArguments(
-                definitionType);
         for (Method method : definitionType.getMethods()) {
             if (method.isDefault()
                     || Modifier.isStatic(method.getModifiers())) {
@@ -254,9 +267,9 @@ public final class JsDefinitionProxy {
                 continue;
             }
             if (!snippets && method.getReturnType() == JavaScriptResult.class
-                    && typedResultType(method, typeArguments) == null) {
+                    && typedResultType(method, definitionType) == null) {
                 untyped.add(method.getName());
-            } else if (snippets ? !returnsFunction(method)
+            } else if (snippets ? !returnsSnippet(method)
                     : !returnsInvocationResult(method)) {
                 unanswerable.add(method.getName());
             } else if (snippets) {
@@ -316,12 +329,10 @@ public final class JsDefinitionProxy {
 
     private static Map<Method, JavaType> collectResultTypes(
             Class<?> definitionType) {
-        Map<TypeVariable<?>, JavaType> typeArguments = collectTypeArguments(
-                definitionType);
         Map<Method, JavaType> types = new HashMap<>();
         for (Method method : definitionType.getMethods()) {
             if (method.getReturnType() == JavaScriptResult.class) {
-                JavaType type = typedResultType(method, typeArguments);
+                JavaType type = typedResultType(method, definitionType);
                 if (type != null) {
                     types.put(method, type);
                 }
@@ -337,62 +348,39 @@ public final class JsDefinitionProxy {
      * bind to a type, none of which tells what to convert the result to.
      */
     private static JavaType typedResultType(Method method,
-            Map<TypeVariable<?>, JavaType> typeArguments) {
+            Class<?> definitionType) {
         if (method
                 .getGenericReturnType() instanceof ParameterizedType parameterized) {
             Type argument = parameterized.getActualTypeArguments()[0];
             return argument instanceof WildcardType ? null
-                    : resolve(argument, typeArguments);
+                    : resolve(argument, definitionType);
         }
         return null;
     }
 
     /**
-     * Collects the types that the given interface binds the type variables of
-     * the interfaces it extends to, directly or through other ones, such as
-     * {@code Integer} for {@code T} of {@code ValueJs<T>} when it extends
-     * {@code ValueJs<Integer>}. A variable that is bound to nothing concrete,
-     * by raw inheritance or to a variable of the interface itself, is left out.
+     * Resolves a type as seen from the given JavaScript definition, or answers
+     * <code>null</code> if it refers to a type variable that the definition
+     * does not bind to a type, such as one of its own, of a method, or of an
+     * interface it inherits as a raw type. A wildcard within a type argument
+     * resolves to its upper bound, as Jackson does.
      */
-    private static Map<TypeVariable<?>, JavaType> collectTypeArguments(
-            Class<?> type) {
-        Map<TypeVariable<?>, JavaType> typeArguments = new HashMap<>();
-        collectTypeArguments(type, typeArguments);
-        return typeArguments;
-    }
-
-    private static void collectTypeArguments(Class<?> type,
-            Map<TypeVariable<?>, JavaType> typeArguments) {
-        for (Type superInterface : type.getGenericInterfaces()) {
-            if (superInterface instanceof ParameterizedType parameterized) {
-                Class<?> raw = (Class<?>) parameterized.getRawType();
-                TypeVariable<?>[] variables = raw.getTypeParameters();
-                Type[] arguments = parameterized.getActualTypeArguments();
-                for (int i = 0; i < variables.length; i++) {
-                    JavaType argument = resolve(arguments[i], typeArguments);
-                    if (argument != null) {
-                        typeArguments.put(variables[i], argument);
-                    }
-                }
-                collectTypeArguments(raw, typeArguments);
-            } else if (superInterface instanceof Class<?> raw) {
-                collectTypeArguments(raw, typeArguments);
-            }
-        }
-    }
-
-    /**
-     * Resolves a type with the given type variable bindings, or answers
-     * <code>null</code> if it refers to a type variable that is not bound. A
-     * wildcard within a type argument resolves to its upper bound, as Jackson
-     * does.
-     */
-    private static JavaType resolve(Type type,
-            Map<TypeVariable<?>, JavaType> typeArguments) {
+    private static JavaType resolve(Type type, Class<?> definitionType) {
         TypeFactory types = JacksonUtils.getMapper().getTypeFactory();
         return switch (type) {
         case Class<?> plain -> types.constructType(plain);
-        case TypeVariable<?> variable -> typeArguments.get(variable);
+        case TypeVariable<?> variable -> {
+            if (!(variable.getGenericDeclaration() instanceof Class<?>)) {
+                yield null;
+            }
+            @SuppressWarnings("unchecked")
+            Type bound = ReflectTools.getTypeParameter(definitionType,
+                    (TypeVariable<? extends Class<?>>) variable);
+            // A variable nested in the bound type, as in List<T>, belongs to
+            // an interface between the definition and the one declaring this
+            // variable, so it is resolved the same way
+            yield bound == null ? null : resolve(bound, definitionType);
+        }
         case ParameterizedType parameterized -> {
             Type[] arguments = parameterized.getActualTypeArguments();
             JavaType[] resolved = new JavaType[arguments.length];
@@ -400,17 +388,17 @@ public final class JsDefinitionProxy {
                 Type argument = arguments[i] instanceof WildcardType wildcard
                         ? wildcard.getUpperBounds()[0]
                         : arguments[i];
-                resolved[i] = resolve(argument, typeArguments);
+                resolved[i] = resolve(argument, definitionType);
                 if (resolved[i] == null) {
                     yield null;
                 }
             }
             yield types.constructParametricType(
-                    (Class<?>) parameterized.getRawType(), resolved);
+                    ReflectTools.erase(parameterized), resolved);
         }
         case GenericArrayType array -> {
             JavaType component = resolve(array.getGenericComponentType(),
-                    typeArguments);
+                    definitionType);
             yield component == null ? null
                     : types.constructArrayType(component);
         }
@@ -419,13 +407,37 @@ public final class JsDefinitionProxy {
     }
 
     /**
-     * Whether the method returns a snippet type that a {@link JsFunction} is,
-     * which is the only kind of snippet there is to answer with.
+     * Checks whether the method returns a snippet type that this class can
+     * create.
      */
-    private static boolean returnsFunction(Method method) {
-        Class<?> returnType = method.getReturnType();
-        return JsSnippet.class.isAssignableFrom(returnType)
-                && returnType.isAssignableFrom(JsFunction.class);
+    private static boolean returnsSnippet(Method method) {
+        return snippetFactory(method.getReturnType()) != null;
+    }
+
+    /**
+     * Gets the factory that creates a snippet for a method with the given
+     * return type. The factory gets the call and the generic return type of the
+     * method. It creates one of these:
+     * <ul>
+     * <li>a {@link JsFunction}, if the return type allows it, or</li>
+     * <li>a {@link DomEventFilter} or a {@link DomEventData}, which a DOM event
+     * listener runs.</li>
+     * </ul>
+     *
+     * @return the factory, or <code>null</code> if the type is not a snippet
+     *         type that this class can create
+     */
+    private static BiFunction<JsCall, Type, JsSnippet> snippetFactory(
+            Class<?> returnType) {
+        if (returnType == DomEventFilter.class) {
+            return (call, genericType) -> DomEventFilter.ofDeclaredCall(call);
+        } else if (returnType == DomEventData.class) {
+            return DomEventData::ofDeclaredCall;
+        } else if (JsSnippet.class.isAssignableFrom(returnType)
+                && returnType.isAssignableFrom(JsFunction.class)) {
+            return (call, genericType) -> JsFunction.ofDeclaredCall(call);
+        }
+        return null;
     }
 
     /**
@@ -497,13 +509,17 @@ public final class JsDefinitionProxy {
                 try {
                     value = JacksonCodec.decodeAs(json, valueType);
                 } catch (IllegalArgumentException e) {
-                    // A value that can not be converted is a failure of the
-                    // execution as far as the caller can tell, but is not
-                    // silently dropped when there is no one to tell
-                    if (errorHandler == null) {
-                        throw e;
+                    // Not thrown, since the pending result chains the handlers
+                    // added to it, so throwing would also skip any added after
+                    // this one, such as one completing a future
+                    if (errorHandler != null) {
+                        errorHandler.accept(e.getMessage());
+                    } else {
+                        LoggerFactory.getLogger(JsDefinitionProxy.class).warn(
+                                "Ignored a JavaScript result that can not be"
+                                        + " converted: {}",
+                                e.getMessage());
                     }
-                    errorHandler.accept(e.getMessage());
                     return;
                 }
                 resultHandler.accept(value);
@@ -512,8 +528,8 @@ public final class JsDefinitionProxy {
     }
 
     /**
-     * Answers a call of a JavaScript definition with the function that the call
-     * declares, which runs nothing on the server.
+     * Answers a call of a JavaScript definition with the snippet that the call
+     * declares. Nothing runs on the server.
      */
     private record JsSnippetHandler(Class<?> definitionType)
             implements
@@ -528,8 +544,9 @@ public final class JsDefinitionProxy {
             }
             List<Object> arguments = args == null ? List.of()
                     : Arrays.asList(args);
-            return JsFunction.ofDeclaredCall(
-                    new JsCall(definitionType, method.getName(), arguments));
+            return snippetFactory(method.getReturnType()).apply(
+                    new JsCall(definitionType, method.getName(), arguments),
+                    method.getGenericReturnType());
         }
     }
 }

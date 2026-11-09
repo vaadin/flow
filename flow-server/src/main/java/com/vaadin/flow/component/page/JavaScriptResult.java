@@ -102,8 +102,8 @@ public interface JavaScriptResult<T> extends Serializable {
      *            a handler for an error message in case the execution failed or
      *            its value could not be converted to {@code T}, or
      *            <code>null</code> to ignore failed executions. Without an
-     *            error handler, a value that can not be converted is thrown as
-     *            an exception rather than ignored
+     *            error handler, a value that can not be converted is logged as
+     *            a warning
      */
     void then(SerializableConsumer<T> resultHandler,
             SerializableConsumer<String> errorHandler);
@@ -115,7 +115,7 @@ public interface JavaScriptResult<T> extends Serializable {
      * nothing is logged or thrown. Use
      * {@link #then(SerializableConsumer, SerializableConsumer)} to find out
      * about a failed execution. A value that can not be converted to {@code T}
-     * is not ignored, but thrown as an exception when the result arrives.
+     * is logged as a warning.
      * <p>
      * A handler can only be added before the execution has been sent to the
      * browser.

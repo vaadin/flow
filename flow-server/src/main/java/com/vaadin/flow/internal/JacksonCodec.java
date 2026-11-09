@@ -161,8 +161,9 @@ public class JacksonCodec {
 
     /**
      * Encodes a "primitive" value or a constant pool reference to JSON. This
-     * methods supports {@link ConstantPoolKey} in addition to the types
-     * supported by {@link #encodeWithoutTypeInfo(Object)}.
+     * methods supports {@link ConstantPoolKey} and
+     * {@link ParameterizedConstantPoolKey} in addition to the types supported
+     * by {@link #encodeWithoutTypeInfo(Object)}.
      *
      * @param value
      *            the value to encode
@@ -176,6 +177,8 @@ public class JacksonCodec {
             ConstantPoolKey reference = (ConstantPoolKey) value;
             return JacksonUtils.getMapper()
                     .valueToTree(constantPool.getConstantId(reference));
+        } else if (value instanceof ParameterizedConstantPoolKey reference) {
+            return reference.encode(constantPool);
         } else {
             return encodeWithoutTypeInfo(value);
         }
@@ -284,6 +287,45 @@ public class JacksonCodec {
     }
 
     /**
+     * Decodes a JSON value as an instance of the given type. The type can be a
+     * generic type, for example {@code List<MyBean>}.
+     *
+     * @param <T>
+     *            the type to decode as
+     * @param json
+     *            the JSON value to decode
+     * @param type
+     *            the type to decode as
+     * @return the value decoded as the given type
+     * @throws IllegalArgumentException
+     *             if deserialization failed, or if the type is a JSON node type
+     *             that the value is not, such as an object node for an array
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T decodeAs(JsonNode json, JavaType type) {
+        Objects.requireNonNull(json, "JSON cannot be null");
+        Objects.requireNonNull(type, "Type cannot be null");
+        if (json.getNodeType() == JsonNodeType.NULL) {
+            return null;
+        }
+        if (type.isTypeOrSubTypeOf(JsonNode.class)) {
+            if (!type.getRawClass().isInstance(json)) {
+                throw new IllegalArgumentException("Cannot decode JSON of type "
+                        + json.getNodeType() + " as " + type.toCanonical());
+            }
+            return (T) json;
+        }
+        try {
+            return JacksonUtils.getMapper().treeToValue(json, type);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(
+                    "Cannot deserialize JSON to type " + type.toCanonical()
+                            + ": " + e.getMessage(),
+                    e);
+        }
+    }
+
+    /**
      * Decodes a JSON value as an instance of the given type reference. This
      * method supports generic types such as {@code List<MyBean>} and
      * {@code Map<String, MyBean>} through Jackson's TypeReference mechanism.
@@ -323,47 +365,6 @@ public class JacksonCodec {
                     "Cannot deserialize JSON to type "
                             + typeReference.getType().getTypeName() + ": "
                             + e.getMessage(),
-                    e);
-        }
-    }
-
-    /**
-     * Decodes a JSON value as an instance of the given Jackson type. This
-     * method supports generic types such as {@code List<MyBean>}, for a type
-     * that is only known through reflection.
-     *
-     * @param <T>
-     *            the decoded type
-     * @param json
-     *            the JSON value to decode, not <code>null</code>
-     * @param type
-     *            the type to decode to, not <code>null</code>
-     * @return the value decoded as the given type
-     * @throws IllegalArgumentException
-     *             if deserialization failed, or if the type is a JSON node type
-     *             that the value is not, such as an object node for an array
-     */
-    public static <T> T decodeAs(JsonNode json, JavaType type) {
-        Objects.requireNonNull(json, "JSON cannot be null");
-        Objects.requireNonNull(type, "Type cannot be null");
-        if (json.getNodeType() == JsonNodeType.NULL && !type.isPrimitive()) {
-            return null;
-        }
-        if (type.isTypeOrSubTypeOf(JsonNode.class)) {
-            if (!type.getRawClass().isInstance(json)) {
-                throw new IllegalArgumentException("Cannot decode JSON of type "
-                        + json.getNodeType() + " as " + type.toCanonical());
-            }
-            @SuppressWarnings("unchecked")
-            T node = (T) json;
-            return node;
-        }
-        try {
-            return JacksonUtils.getMapper().treeToValue(json, type);
-        } catch (Exception e) {
-            throw new IllegalArgumentException(
-                    "Cannot deserialize JSON to type " + type.toCanonical()
-                            + ": " + e.getMessage(),
                     e);
         }
     }
