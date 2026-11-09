@@ -380,7 +380,7 @@ public final class JsDefinitionProxy {
             }
             @SuppressWarnings("unchecked")
             Type bound = ReflectTools.getTypeParameter(definitionType,
-                    (TypeVariable<? extends Class<?>>) variable);
+                    (TypeVariable<Class<?>>) variable);
             // A variable nested in the bound type, as in List<T>, belongs to
             // an interface between the definition and the one declaring this
             // variable, so it is resolved the same way
