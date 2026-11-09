@@ -31,8 +31,11 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
@@ -540,10 +543,12 @@ class PendingJavaScriptInvocationTest {
         assertSame(original, exception);
     }
 
-    @Test
-    void typedFuture_conversionFails_completesExceptionally() {
-        CompletableFuture<Integer> future = invocation
-                .toCompletableFuture(Integer.class);
+    @ParameterizedTest
+    @ValueSource(classes = { Integer.class, ObjectNode.class })
+    void typedFuture_conversionFails_completesExceptionally(
+            Class<?> targetType) {
+        CompletableFuture<?> future = invocation
+                .toCompletableFuture(targetType);
 
         invocation.complete(fooJsonString);
 
@@ -593,6 +598,21 @@ class PendingJavaScriptInvocationTest {
         CompletionException exception = assertThrows(CompletionException.class,
                 future::join);
         assertInstanceOf(JavaScriptException.class, exception.getCause());
+    }
+
+    @Test
+    void typedSuccessHandlerThrowsIllegalArgument_rethrownNotRoutedToErrorHandler() {
+        IllegalArgumentException original = new IllegalArgumentException();
+        invocation.then(String.class, value -> {
+            throw original;
+        }, errorConsumer);
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> invocation.complete(fooJsonString));
+
+        assertSame(original, exception);
+        assertNoErrorValue();
     }
 
     private void assertStringSuccess() {
