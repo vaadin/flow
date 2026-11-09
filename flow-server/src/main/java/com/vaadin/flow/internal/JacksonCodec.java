@@ -63,6 +63,8 @@ public class JacksonCodec {
 
     /**
      * The key of the JSON object that a {@link JsFunction} is encoded as.
+     * 
+     * @since 25.4
      */
     public static final String FUNCTION_KEY = "@v-fn";
 
