@@ -1,11 +1,17 @@
-name: Client Bundle Size
+name: Bundle Size
 
-# Measures the size of the Flow client as an application's production build
-# bundles it, on the head of a pull request and on the commit it branches
-# from, and reports the difference in a pull request comment. A comment is
-# only posted once a change affects the minified size, see
+# Measures the production bundle of an application with no code of its own,
+# flow-tests/test-express-build/test-prod-bundle, on the head of a pull request
+# and on the commit it branches from, and reports the difference in a pull
+# request comment. The bundle holds what Flow adds to every application: the
+# client, the files Flow generates and the npm packages it brings in. A comment
+# is only posted once a change affects the size of a file in the bundle, see
 # scripts/bundleSize.js. After that the comment is updated on every push, also
 # when the difference goes away again.
+#
+# Both sides are built in the same run, rather than the base being cached:
+# the build resolves the npm packages without a lock file, so a base built
+# days earlier could hold other versions of the packages Flow depends on.
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -22,13 +28,25 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   _BASE_SHA: ${{ github.event.pull_request.base.sha }}
+  # The same flags validation.yml sets, for the same reason: a 403 from Central
+  # is retried rather than failing the build outright. See the note there.
+  MAVEN_ARGS: >-
+    -Daether.connector.http.retryHandler.count=3
+    -Daether.connector.http.retryHandler.serviceUnavailable=429,500,502,503,504,403
+    -Daether.connector.http.connectionMaxTtl=25
+  # Builds only the application and the modules it needs, including the Maven
+  # plugin that runs its production build
+  BUILD: >-
+    mvn package -B -ntp -pl flow-tests/test-express-build/test-prod-bundle -am
+    -DskipTests -Djacoco.skip
+  BUNDLE: flow-tests/test-express-build/test-prod-bundle/target/classes/vaadin-prod-bundle
 
 jobs:
   measure:
     # Commenting needs a token that can write, which GitHub does not hand to
     # pull requests from forks
     if: ${{ !github.event.pull_request.head.repo.fork }}
-    timeout-minutes: 10
+    timeout-minutes: 45
     runs-on: ubuntu-26.04
     permissions:
       contents: read
@@ -38,31 +56,38 @@ jobs:
         with:
           ref: ${{ env._HEAD_SHA }}
           fetch-depth: 0
-      - uses: ./.github/actions/setup-frontend-tools
+      - name: Set up JDK
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
-          cache: npm
-          cache-dependency-path: flow-client/package-lock.json
-      - name: Install esbuild
-        # The head's esbuild bundles both sides. No install scripts are needed
-        # for that, nor for anything else that flow-client depends on here.
-        run: npm ci --ignore-scripts --no-audit --no-fund
-        working-directory: flow-client
+          java-version-file: .tool-versions
+          distribution: 'temurin'
+      - uses: ./.github/actions/setup-frontend-tools
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
       - name: Find the base commit
         id: base
         # The commit the pull request branches from, so that changes merged to
         # the base branch since then are not attributed to it
         run: echo "sha=$(git merge-base "$_BASE_SHA" "$_HEAD_SHA")" >> "$GITHUB_OUTPUT"
       - name: Measure the head
-        run: node scripts/bundleSize.js measure flow-client/src/main/frontend bundle-size-head.json
+        run: |
+          $BUILD
+          node scripts/bundleSize.js measure "$BUNDLE" bundle-size-head.json
       - name: Measure the base
         env:
           BASE: ${{ steps.base.outputs.sha }}
-        # Before the client was written in TypeScript the base has nothing to
-        # bundle, which the comment says instead of comparing
+        # The head's script measures both sides. A base without the
+        # application has nothing to measure, which the comment says instead
+        # of comparing
         run: |
           git worktree add "$RUNNER_TEMP/base" "$BASE"
-          if [ -f "$RUNNER_TEMP/base/flow-client/src/main/frontend/FlowClient.js" ]; then
-            node scripts/bundleSize.js measure "$RUNNER_TEMP/base/flow-client/src/main/frontend" bundle-size-base.json
+          cd "$RUNNER_TEMP/base"
+          if [ -f flow-tests/test-express-build/test-prod-bundle/pom.xml ]; then
+            $BUILD
+            node "$GITHUB_WORKSPACE/scripts/bundleSize.js" measure "$BUNDLE" "$GITHUB_WORKSPACE/bundle-size-base.json"
           fi
       - name: Compare
         id: compare

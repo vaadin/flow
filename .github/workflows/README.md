@@ -292,33 +292,40 @@ reports whatever it finds, so adding or changing one only takes a change to the
 test. Keep an id as long as it measures the same thing, so that the base and
 the head can be compared.
 
-## Client bundle size
+## Bundle size
 
-`bundle-size.yml` reports how a pull request changes the size of the Flow
-client in an application's production bundle. The client ships as TypeScript
-sources that the application's Vite build bundles, so
-`scripts/bundleSize.js` bundles the same sources in `flow-client` with
-esbuild: minified, split at dynamic imports, starting from `Flow.ts` and the
-modules it loads. Packages such as Lit are left out, as the application
-bundles them for its own code anyway. The sizes are close to what Vite
-produces rather than the same; the difference between the base and the head is
-what counts.
+`bundle-size.yml` reports how a pull request changes what Flow adds to the
+production bundle of every application. It runs the production build of
+`flow-tests/test-express-build/test-prod-bundle`, an application with no code
+of its own, on the head of the pull request and on the commit it branches
+from, and `scripts/bundleSize.js` compares the two. The bundle holds the Flow
+client, the files Flow generates, such as the functions of every
+`@JsDefinition`, and the npm packages Flow brings in, as the application's Vite
+build bundles and minifies them.
 
-The workflow bundles the head of the pull request and the commit it branches
-from, both with the head's esbuild, and comments the minified and gzipped size
-of each chunk and the total. A collapsed table lists the source files whose
-share of the minified bundle changed. Bundling takes seconds, so nothing is
-cached.
+The comment lists every JavaScript and CSS file of the bundle with its
+minified size and its size compressed with Brotli, which is what the build
+precompresses the files with, and the total. The content hashes in the file
+names are left out, so that a file can be compared with itself. A collapsed
+table lists the modules whose size in the bundle changed, as the build reports
+them in `config/bundle-size.html`; those are sizes before minification, which
+tell what changed rather than by how much.
+
+The base is built in the same run instead of being cached: the build resolves
+npm packages without a lock file, so a base built days earlier could hold
+other versions of the packages Flow depends on, and their difference would be
+reported as the pull request's.
 
 As with the memory footprint, the comment is posted once a pull request changes
-the minified size and then updated on every push, also when the difference goes
-away again. Pull requests from forks are skipped, and runs that Dependabot
+the size of a file and then updated on every push, also when the difference
+goes away again. Pull requests from forks are skipped, and runs that Dependabot
 triggers only write the comparison to the job summary.
 
-To run it locally, run `npm ci` in `flow-client`, then
-`node scripts/bundleSize.js measure <dir> <report>` once with
-`flow-client/src/main/frontend` and once with the same directory of a checkout
-of the base, and compare the reports with
+To run it locally, build the application with
+`mvn package -pl flow-tests/test-express-build/test-prod-bundle -am -DskipTests`
+in both checkouts, measure each with
+`node scripts/bundleSize.js measure flow-tests/test-express-build/test-prod-bundle/target/classes/vaadin-prod-bundle <report>`,
+and compare the reports with
 `node scripts/bundleSize.js compare <base report> <head report> <base commit>`.
 
 ## Code review

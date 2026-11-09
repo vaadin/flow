@@ -8,19 +8,19 @@ const { measure, compare, comment, inputDifferences, readReport } = require('./b
 
 const BASE = {
   chunks: [
-    { name: 'Flow.ts', minified: 30000, gzip: 10000 },
-    { name: 'FlowClient.js', minified: 4000, gzip: 1400 },
-    { name: 'Shared chunks', minified: 8000, gzip: 3700 }
+    { name: 'VAADIN/build/frontend.js', minified: 30000, brotli: 10000 },
+    { name: 'VAADIN/build/FlowClient.js', minified: 4000, brotli: 1400 },
+    { name: 'sw.js', minified: 8000, brotli: 3700 }
   ],
   inputs: { 'Flow.ts': 20000, 'Shortcut.ts': 1000, 'FlowClient.js': 4000, 'internal/Timer.ts': 8000 }
 };
 
-test('reports the chunks and source files that changed', () => {
+test('reports the files and modules that changed', () => {
   const head = {
     chunks: [
-      { name: 'Flow.ts', minified: 30500, gzip: 10100 },
-      { name: 'FlowClient.js', minified: 4000, gzip: 1400 },
-      { name: 'Shared chunks', minified: 7900, gzip: 3650 }
+      { name: 'VAADIN/build/frontend.js', minified: 30500, brotli: 10100 },
+      { name: 'VAADIN/build/FlowClient.js', minified: 4000, brotli: 1400 },
+      { name: 'sw.js', minified: 7900, brotli: 3650 }
     ],
     inputs: { 'Flow.ts': 20000, 'Shortcut.ts': 1500, 'FlowClient.js': 4000, 'internal/Timer.ts': 7900 }
   };
@@ -31,10 +31,10 @@ test('reports the chunks and source files that changed', () => {
   assert.match(body, /Compared with the base commit abc1234/);
   assert.ok(
     body.includes(
-      '| `Flow.ts` | 30,500 B | $\\color{red}\\textbf{+500 B}$ (+1.7%) | 10,100 B | $\\color{red}\\textbf{+100 B}$ (+1.0%) |'
+      '| `VAADIN/build/frontend.js` | 30,500 B | $\\color{red}\\textbf{+500 B}$ (+1.7%) | 10,100 B | $\\color{red}\\textbf{+100 B}$ (+1.0%) |'
     )
   );
-  assert.ok(body.includes('| `FlowClient.js` | 4,000 B | no change | 1,400 B | no change |'));
+  assert.ok(body.includes('| `VAADIN/build/FlowClient.js` | 4,000 B | no change | 1,400 B | no change |'));
   assert.ok(
     body.includes(
       '| **Total** | 42,400 B | $\\color{red}\\textbf{+400 B}$ (+1.0%) | 15,150 B | $\\color{red}\\textbf{+50 B}$ (+0.3%) |'
@@ -45,8 +45,11 @@ test('reports the chunks and source files that changed', () => {
 });
 
 test('reports no change without a table when no minified size differs', () => {
-  // The gzipped size alone does not count, as it follows the minified one
-  const same = { chunks: BASE.chunks.map((chunk) => ({ ...chunk, gzip: chunk.gzip + 1 })), inputs: { ...BASE.inputs } };
+  // The compressed size alone does not count, as it follows the minified one
+  const same = {
+    chunks: BASE.chunks.map((chunk) => ({ ...chunk, brotli: chunk.brotli + 1 })),
+    inputs: { ...BASE.inputs }
+  };
 
   assert.strictEqual(compare(BASE, same).changed, false);
   const body = comment(BASE, same, 'abc1234');
@@ -54,28 +57,34 @@ test('reports no change without a table when no minified size differs', () => {
   assert.doesNotMatch(body, /\| Chunk \|/);
 });
 
-test('reports chunks that only one side has', () => {
+test('reports files that only one side has', () => {
   const head = {
     chunks: [
-      { name: 'Flow.ts', minified: 30000, gzip: 10000 },
-      { name: 'Lazy.ts', minified: 500, gzip: 300 }
+      { name: 'VAADIN/build/frontend.js', minified: 30000, brotli: 10000 },
+      { name: 'VAADIN/build/Lazy.js', minified: 500, brotli: 300 }
     ],
     inputs: { 'Flow.ts': 30000, 'Lazy.ts': 500 }
   };
 
   const body = comment(BASE, head, 'abc1234');
-  assert.match(body, /\| `Lazy.ts` \| 500 B \| new \| 300 B \| new \|/);
-  assert.match(body, /\| `FlowClient.js` \| — \| removed \| — \| removed \|/);
+  assert.match(body, /\| `VAADIN\/build\/Lazy.js` \| 500 B \| new \| 300 B \| new \|/);
+  assert.match(body, /\| `VAADIN\/build\/FlowClient.js` \| — \| removed \| — \| removed \|/);
   assert.deepStrictEqual(inputDifferences(BASE.inputs, head.inputs).slice(0, 2), [
     { name: 'Flow.ts', bytes: 10000 },
     { name: 'internal/Timer.ts', bytes: -8000 }
   ]);
 });
 
-test('lists the largest source file differences only', () => {
+test('lists the largest module differences only', () => {
   const inputs = (bytes) => Object.fromEntries(Array.from({ length: 20 }, (_, i) => [`File${i}.ts`, bytes(i)]));
-  const base = { chunks: [{ name: 'Flow.ts', minified: 1000, gzip: 500 }], inputs: inputs(() => 100) };
-  const head = { chunks: [{ name: 'Flow.ts', minified: 1210, gzip: 550 }], inputs: inputs((i) => 100 + i + 1) };
+  const base = {
+    chunks: [{ name: 'VAADIN/build/frontend.js', minified: 1000, brotli: 500 }],
+    inputs: inputs(() => 100)
+  };
+  const head = {
+    chunks: [{ name: 'VAADIN/build/frontend.js', minified: 1210, brotli: 550 }],
+    inputs: inputs((i) => 100 + i + 1)
+  };
 
   const body = comment(base, head, 'abc1234');
   assert.match(body, /\| `File19.ts` \| \+20 B \|/);
@@ -87,40 +96,56 @@ test('lists the largest source file differences only', () => {
 test('reports the head alone when the base has nothing to compare with', () => {
   assert.strictEqual(compare(undefined, BASE).changed, true);
   const body = comment(undefined, BASE, 'abc1234');
-  assert.match(body, /The base commit abc1234 has no client to compare with/);
-  assert.match(body, /\| `Flow.ts` \| 30,000 B \| — \| 10,000 B \| — \|/);
+  assert.match(body, /The base commit abc1234 has no bundle to compare with/);
+  assert.match(body, /\| `VAADIN\/build\/frontend.js` \| 30,000 B \| — \| 10,000 B \| — \|/);
   assert.doesNotMatch(body, /by source file/);
 });
 
-test('bundles the entry points, the engine alias and dynamic imports, leaving packages out', () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bundle-size-'));
-  try {
-    const write = (name, content) => fs.writeFileSync(path.join(dir, name), content);
-    write(
-      'Flow.ts',
-      "import { html } from 'lit';\nimport { share } from './Shared';\nexport const flow = async () => [html, share(), await import('vaadin-flow-client')];\n"
-    );
-    write(
-      'FlowClient.js',
-      "import { share } from './Shared';\nexport const init = () => import('./Lazy').then((m) => m.lazy(share()));\n"
-    );
-    write('Lazy.ts', 'export const lazy = (value: unknown) => [value, 42];\n');
-    write('Shared.ts', "export const share = () => 'shared between the entry points';\n");
+function writeBundle(dir, flowHash, frontendHash, revision) {
+  const write = (name, content) => {
+    fs.mkdirSync(path.dirname(path.join(dir, name)), { recursive: true });
+    fs.writeFileSync(path.join(dir, name), content);
+  };
+  write(`webapp/VAADIN/build/FlowClient-${flowHash}.js`, 'export const flow = 1;');
+  write(`webapp/VAADIN/build/frontend-${frontendHash}.js`, `import('./FlowClient-${flowHash}.js');`);
+  write(`webapp/VAADIN/build/frontend-${frontendHash}.css`, 'html{}');
+  write('webapp/sw.js', `[{url:\`VAADIN/build/FlowClient-${flowHash}.js\`,revision:\`${revision}\`}]`);
+  write('webapp/index.html', '<html></html>');
+  const data = {
+    nodeParts: { p1: { renderedLength: 30 }, p2: { renderedLength: 12 }, p3: { renderedLength: 5 } },
+    nodeMetas: {
+      m1: { id: '/src/main/frontend/generated/jar-resources/FlowClient.js', moduleParts: { a: 'p1' } },
+      m2: { id: '/node_modules/lit/index.js', moduleParts: { a: 'p2', b: 'p3' } }
+    }
+  };
+  write('config/bundle-size.html', `<script>\nconst data = ${JSON.stringify(data)};\n</script>`);
+}
 
-    const report = measure(dir);
+test('measures the files of the bundle, without their content hashes', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'bundle-size-'));
+  try {
+    writeBundle(path.join(root, 'a'), 'CLdr9-o5', '0t8eFnqu', 'a'.repeat(32));
+    writeBundle(path.join(root, 'b'), 'Zz_9-AbC', '1u9fGovv', 'b'.repeat(32));
+
+    const report = measure(path.join(root, 'a'));
     assert.deepStrictEqual(
       report.chunks.map((chunk) => chunk.name),
-      ['Flow.ts', 'FlowClient.js', 'Lazy.ts', 'Shared chunks']
+      ['sw.js', 'VAADIN/build/FlowClient.js', 'VAADIN/build/frontend.css', 'VAADIN/build/frontend.js']
     );
-    assert.ok(report.chunks.every((chunk) => chunk.minified > 0 && chunk.gzip > 0));
-    assert.deepStrictEqual(Object.keys(report.inputs).sort(), ['Flow.ts', 'FlowClient.js', 'Lazy.ts', 'Shared.ts']);
+    assert.ok(report.chunks.every((chunk) => chunk.minified > 0 && chunk.brotli > 0));
+    assert.deepStrictEqual(report.inputs, {
+      'src/main/frontend/generated/jar-resources/FlowClient.js': 30,
+      'node_modules/lit/index.js': 17
+    });
+    // Other hashes and revisions are no change
+    assert.deepStrictEqual(measure(path.join(root, 'b')), report);
 
-    const file = path.join(dir, 'report.json');
+    const file = path.join(root, 'report.json');
     fs.writeFileSync(file, JSON.stringify(report));
     assert.deepStrictEqual(readReport(file), report);
-    assert.strictEqual(readReport(path.join(dir, 'missing.json')), undefined);
+    assert.strictEqual(readReport(path.join(root, 'missing.json')), undefined);
   } finally {
-    fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(root, { recursive: true, force: true });
   }
 });
 

@@ -1,35 +1,35 @@
 #!/usr/bin/env node
 /**
- * Measures the size of the Flow client as an application's production build
- * ships it, and compares the sizes measured on the base and the head of a pull
- * request in the pull request comment that reports them.
+ * Measures the production bundle of a default Flow application, and compares
+ * the sizes measured on the base and the head of a pull request in the pull
+ * request comment that reports them.
  *
- * The client ships as TypeScript sources that the application's Vite build
- * bundles. This bundles the same sources with esbuild, minified and split at
- * the dynamic imports the way a production build splits them, starting from
- * Flow.ts, which the application imports, and the modules Flow.ts loads
- * dynamically. Bare imports such as Lit are left out, as the application
- * bundles them for its own code anyway. The sizes are close to, not the same
- * as, what Vite produces; the difference between base and head is what
- * counts.
+ * The bundle is the one the production build of
+ * flow-tests/test-express-build/test-prod-bundle writes, an application with
+ * no code of its own. It holds what Flow adds to every application: the
+ * client, the files Flow generates, such as the functions of every
+ * JsDefinition, and the npm packages Flow brings in, bundled and minified by
+ * the application's Vite build.
  *
  * Usage:
- *   node scripts/bundleSize.js measure <client sources dir> <report file>
+ *   node scripts/bundleSize.js measure <prod bundle dir> <report file>
  *   node scripts/bundleSize.js compare <base report> <head report> <base commit>
  *
- * The report written by measure:
+ * The prod bundle dir holds the files the browser loads under webapp, and the
+ * module sizes the build reports in config/bundle-size.html. The report
+ * written by measure:
  *
  *   {
- *     "chunks": [{ "name": "Flow.ts", "minified": 123, "gzip": 45 }],
- *     "inputs": { "<source file>": <bytes it adds to the minified bundle> }
+ *     "chunks": [{ "name": "VAADIN/build/FlowClient.js", "minified": 123, "brotli": 45 }],
+ *     "inputs": { "<module>": <bytes it renders to before minification> }
  *   }
  *
  * A missing base report means the base has nothing to compare with.
  *
  * Outputs of compare:
  * - `changed=true|false` appended to $GITHUB_OUTPUT (printed if not set):
- *   whether the minified size of any chunk differs, or the base has nothing
- *   to compare with
+ *   whether the size of any chunk differs, or the base has nothing to compare
+ *   with
  * - bundle-size-comment.md: the sticky pull request comment body
  */
 const fs = require('fs');
@@ -41,60 +41,82 @@ const { formatValue, formatDifference } = require('./prCommentFormat');
 // instead of adding another
 const COMMENT_MARKER = '<!-- flow-bundle-size -->';
 
-// Modules that are loaded, statically or dynamically, when an application
-// starts Flow. Flow.ts imports the engine through the vaadin-flow-client
-// specifier, which the generated Vite config aliases to FlowClient.js.
-const ENTRY_POINTS = ['Flow.ts', 'FlowBootstrap.js', 'FlowClient.js'];
+// Vite names a chunk after its first module and a content hash, which changes
+// with every change and would make every chunk look new
+const CONTENT_HASH = /-[\w-]{8}(?=\.(js|css)$)/;
 
-// Chunks that more than one entry point or dynamic import share have a name
-// made of a content hash, so they are reported together
-const SHARED_CHUNKS = 'Shared chunks';
+// Where the module sizes are in the report rollup-plugin-visualizer writes
+const VISUALIZER_DATA = /const data = (\{.*?\});\n/s;
 
-// Caps the source files listed, which a large change could otherwise grow
-// past what anyone reads
+// Caps the modules listed, which a large change could otherwise grow past
+// what anyone reads
 const MAX_FILES = 15;
 
-function measure(sourcesDir) {
-  // The head's esbuild measures both sides, so that both are bundled alike
-  const esbuild = require(path.join(__dirname, '..', 'flow-client', 'node_modules', 'esbuild'));
-  const result = esbuild.buildSync({
-    absWorkingDir: path.resolve(sourcesDir),
-    entryPoints: ENTRY_POINTS.filter((entry) => fs.existsSync(path.join(sourcesDir, entry))),
-    alias: { 'vaadin-flow-client': './FlowClient.js' },
-    packages: 'external',
-    bundle: true,
-    splitting: true,
-    format: 'esm',
-    target: 'es2023',
-    minify: true,
-    legalComments: 'none',
-    outdir: 'out',
-    entryNames: '[name]',
-    chunkNames: 'chunk-[hash]',
-    write: false,
-    metafile: true,
-    logLevel: 'error'
-  });
-  const contents = new Map(
-    result.outputFiles.map((file) => [path.relative(path.resolve(sourcesDir), file.path), file])
-  );
-  const chunks = new Map();
-  const inputs = {};
-  for (const [output, meta] of Object.entries(result.metafile.outputs)) {
-    const name = meta.entryPoint || SHARED_CHUNKS;
-    const gzip = zlib.gzipSync(contents.get(output).contents, { level: 9 }).length;
-    const chunk = chunks.get(name) || { name, minified: 0, gzip: 0 };
-    chunk.minified += meta.bytes;
-    chunk.gzip += gzip;
-    chunks.set(name, chunk);
-    for (const [input, { bytesInOutput }] of Object.entries(meta.inputs)) {
-      inputs[input] = (inputs[input] || 0) + bytesInOutput;
-    }
+function filesUnder(dir) {
+  return fs
+    .readdirSync(dir, { withFileTypes: true, recursive: true })
+    .filter((entry) => entry.isFile())
+    .map((entry) => path.join(entry.parentPath, entry.name));
+}
+
+/**
+ * The size each module renders to in the bundle, before minification, as
+ * the build reports it. Only tells which modules changed: the minified sizes
+ * of single modules are not known.
+ */
+function moduleSizes(reportFile) {
+  if (!fs.existsSync(reportFile)) {
+    return {};
   }
-  const order = (chunk) => (chunk.name === SHARED_CHUNKS ? 1 : 0);
+  const match = fs.readFileSync(reportFile, 'utf8').match(VISUALIZER_DATA);
+  if (!match) {
+    throw new Error(`${reportFile} has no module sizes`);
+  }
+  const { nodeParts, nodeMetas } = JSON.parse(match[1]);
+  const sizes = {};
+  for (const meta of Object.values(nodeMetas)) {
+    const name = meta.id.replace(/^\//, '');
+    sizes[name] = Object.values(meta.moduleParts).reduce((sum, uid) => sum + nodeParts[uid].renderedLength, 0);
+  }
+  return sizes;
+}
+
+/**
+ * The content of a file with the content hashes of the bundle and the
+ * revisions in the service worker's precache manifest replaced. They change
+ * with every change to the file they name, which changes how well another
+ * file that names it compresses, while its length stays the same.
+ */
+function withoutHashes(content, hashes) {
+  let result = content.replace(/(revision:\W?)[0-9a-f]{32}/g, (_, prefix) => prefix + '0'.repeat(32));
+  for (const hash of hashes) {
+    result = result.replaceAll(hash, 'x'.repeat(hash.length));
+  }
+  return result;
+}
+
+function measure(bundleDir) {
+  const webapp = path.join(bundleDir, 'webapp');
+  const files = filesUnder(webapp).filter((name) => /\.(js|css)$/.test(name));
+  if (files.length === 0) {
+    throw new Error(`No bundle found in ${webapp}`);
+  }
+  const hashes = files.map((file) => path.basename(file).match(CONTENT_HASH)?.[0]).filter(Boolean);
+  const chunks = new Map();
+  for (const file of files) {
+    const name = path.relative(webapp, file).split(path.sep).join('/').replace(CONTENT_HASH, '');
+    const content = withoutHashes(fs.readFileSync(file, 'utf8'), hashes);
+    const chunk = chunks.get(name) || { name, minified: 0, brotli: 0 };
+    chunk.minified += Buffer.byteLength(content);
+    // What the build precompresses the bundle with, and what a browser gets
+    chunk.brotli += zlib.brotliCompressSync(content, {
+      params: { [zlib.constants.BROTLI_PARAM_QUALITY]: zlib.constants.BROTLI_MAX_QUALITY }
+    }).length;
+    chunks.set(name, chunk);
+  }
   return {
-    chunks: [...chunks.values()].sort((a, b) => order(a) - order(b) || a.name.localeCompare(b.name)),
-    inputs
+    chunks: [...chunks.values()].sort((a, b) => a.name.localeCompare(b.name)),
+    inputs: moduleSizes(path.join(bundleDir, 'config', 'bundle-size.html'))
   };
 }
 
@@ -103,17 +125,17 @@ function readReport(file) {
     return undefined;
   }
   const report = JSON.parse(fs.readFileSync(file, 'utf8'));
-  const validChunk = (c) => typeof c.name === 'string' && Number.isFinite(c.minified) && Number.isFinite(c.gzip);
+  const validChunk = (c) => typeof c.name === 'string' && Number.isFinite(c.minified) && Number.isFinite(c.brotli);
   if (!report.chunks?.length || !report.chunks.every(validChunk) || typeof report.inputs !== 'object') {
-    throw new Error(`${file} needs chunks with a name, a minified and a gzip size, and inputs`);
+    throw new Error(`${file} needs chunks with a name, a minified and a brotli size, and inputs`);
   }
   return report;
 }
 
 function total(report) {
   return report.chunks.reduce(
-    (sum, chunk) => ({ minified: sum.minified + chunk.minified, gzip: sum.gzip + chunk.gzip }),
-    { minified: 0, gzip: 0 }
+    (sum, chunk) => ({ minified: sum.minified + chunk.minified, brotli: sum.brotli + chunk.brotli }),
+    { minified: 0, brotli: 0 }
   );
 }
 
@@ -171,20 +193,20 @@ function compare(base, head) {
 
 function comment(base, head, baseCommit) {
   const { hasBase, changed } = compare(base, head);
-  const lines = [COMMENT_MARKER, '', '## Client bundle size', ''];
+  const lines = [COMMENT_MARKER, '', '## Bundle size', ''];
   if (!hasBase) {
-    lines.push(`The base commit ${baseCommit} has no client to compare with.`, '');
+    lines.push(`The base commit ${baseCommit} has no bundle to compare with.`, '');
   } else if (!changed) {
     lines.push(`No change compared with the base commit ${baseCommit}.`, '');
     return lines.join('\n');
   } else {
     lines.push(`Compared with the base commit ${baseCommit}.`, '');
   }
-  lines.push('| Chunk | Minified | Change | Gzip | Change |', '| --- | ---: | ---: | ---: | ---: |');
+  lines.push('| File | Minified | Change | Brotli | Change |', '| --- | ---: | ---: | ---: | ---: |');
   const row = (name, before, after) => {
     const value = (side) => (side === undefined ? '—' : formatBytes(side));
     const change = (key) => (hasBase ? formatChange(before?.[key], after?.[key]) : '—');
-    return `| ${name} | ${value(after?.minified)} | ${change('minified')} | ${value(after?.gzip)} | ${change('gzip')} |`;
+    return `| ${name} | ${value(after?.minified)} | ${change('minified')} | ${value(after?.brotli)} | ${change('brotli')} |`;
   };
   for (const { name, base: before, head: after } of rows(base, head)) {
     lines.push(row(`\`${name}\``, before, after));
@@ -192,8 +214,8 @@ function comment(base, head, baseCommit) {
   lines.push(row('**Total**', hasBase ? total(base) : undefined, total(head)));
   const differences = hasBase ? inputDifferences(base.inputs, head.inputs) : [];
   if (differences.length > 0) {
-    lines.push('', '<details><summary>Minified size by source file</summary>', '');
-    lines.push('| Source file | Change |', '| --- | ---: |');
+    lines.push('', '<details><summary>Size by module, before minification</summary>', '');
+    lines.push('| Module | Change |', '| --- | ---: |');
     for (const { name, bytes } of differences.slice(0, MAX_FILES)) {
       const sign = bytes > 0 ? '+' : '−';
       lines.push(`| \`${name}\` | ${sign}${formatBytes(Math.abs(bytes))} |`);
@@ -205,9 +227,8 @@ function comment(base, head, baseCommit) {
   }
   lines.push(
     '',
-    '_The `flow-client` sources bundled with esbuild, minified and split at dynamic imports, from `Flow.ts` and the ' +
-      'modules it loads. Lit and other packages are left out, as the application bundles them anyway. Shared chunks ' +
-      'are those more than one of these modules loads._',
+    '_The production bundle of `test-prod-bundle`, an application with no code of its own: the Flow client, the ' +
+      'files Flow generates and the npm packages it brings in. Brotli is what the build precompresses the files with._',
     ''
   );
   return lines.join('\n');
@@ -237,7 +258,7 @@ function main() {
     return;
   }
   console.error(
-    'Usage: node scripts/bundleSize.js measure <client sources dir> <report file>\n' +
+    'Usage: node scripts/bundleSize.js measure <prod bundle dir> <report file>\n' +
       '       node scripts/bundleSize.js compare <base report> <head report> <base commit>'
   );
   process.exit(1);
