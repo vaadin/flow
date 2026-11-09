@@ -164,8 +164,8 @@ class GenerateNpmBOMMojoTest {
         assertEquals(node, properties.getProperty("exec.executable"));
         assertTrue(
                 properties.getProperty("exec.args")
-                        .startsWith("\"" + npxCli
-                                + "\" --yes @cyclonedx/cyclonedx-npm@6.0.1 "),
+                        .startsWith("\"" + npxCli + "\" --yes "
+                                + GenerateNpmBOMMojo.CYCLONEDX_NPM + " "),
                 properties.getProperty("exec.args"));
     }
 
@@ -177,8 +177,8 @@ class GenerateNpmBOMMojoTest {
 
         assertEquals(npx, properties.getProperty("exec.executable"));
         assertTrue(
-                properties.getProperty("exec.args")
-                        .startsWith("--yes @cyclonedx/cyclonedx-npm@6.0.1 "),
+                properties.getProperty("exec.args").startsWith(
+                        "--yes " + GenerateNpmBOMMojo.CYCLONEDX_NPM + " "),
                 properties.getProperty("exec.args"));
     }
 

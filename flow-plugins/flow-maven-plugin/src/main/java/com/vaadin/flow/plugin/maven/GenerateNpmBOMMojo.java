@@ -54,7 +54,7 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
     private static final String GOAL = "exec";
     // npx would otherwise run the latest release: 7.0.0 no longer brings what
     // --validate needs and fails with "cannot validate BOM"
-    private static final String CYCLONEDX_NPM = "@cyclonedx/cyclonedx-npm@6.0.1";
+    static final String CYCLONEDX_NPM = "@cyclonedx/cyclonedx-npm@6.0.1";
 
     /**
      * Whether to ignore errors of NPM. This might be used, if "npm install" was
