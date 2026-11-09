@@ -120,23 +120,24 @@ class CspModeTest {
                 call(JsFunction.class, "of", ui -> JsFunction.of("return 1")),
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
-                        }).addEventData("event.x")),
+                        }).addEventData("event.x * 2")),
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
-                        }).addEventData(List.of("event.x"))),
+                        }).addEventData(List.of("event.x()"))),
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).addEventData(
                                 List.of(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN
-                                        + "value", "event.x"))),
+                                        + "value", "event.x[0]"))),
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
-                        }).addEventDataElement("event.target.parentElement")),
+                        }).addEventDataElement("event.composedPath()[0]")),
                 call(DomListenerRegistration.class, "setFilter",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).setFilter("event.x")),
-                // Vaadin code sending event data and a filter on its own
-                call(DomListenerRegistration.class, "addEventData",
+                // Vaadin code sending a filter on its own, with event data
+                // that are property paths
+                call(DomListenerRegistration.class, "setFilter",
                         ui -> new Clickable().addDoubleClickListener(e -> {
                         })));
     }
@@ -175,6 +176,13 @@ class CspModeTest {
                             JsonConstants.MAP_STATE_NODE_EVENT_DATA));
             registration.synchronizeProperty("value");
             registration.mapEventTargetElement();
+            // The client reads property paths without compiling them
+            registration.addEventData("event.detail.value");
+            registration.addEventData(List.of("element.value", "event"));
+            registration.addEventDetail();
+            registration.addEventDataElement("event.target.parentElement");
+            // The constructor of Page adds the detail of an event
+            new MockUI(setup.getSession());
             // The client runs these without compiling them, also when Flow
             // adds the always-true filter for the debounce
             registration.preventDefault();

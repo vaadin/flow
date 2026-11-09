@@ -27,6 +27,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -81,6 +82,14 @@ public class ElementListenerMap extends NodeMap {
      * an expression.
      */
     private static final String SNIPPET_KEY_PREFIX = "@";
+
+    /**
+     * {@code event} or {@code element}, followed by any number of {@code .name}
+     * segments. The client reads such a path without compiling it, see
+     * {@code PropertyPathExpression.ts}, which has the same pattern.
+     */
+    private static final Pattern PROPERTY_PATH = Pattern
+            .compile("(event|element)(\\.[A-Za-z_$][\\w$]*)*");
 
     private static final Entry ALWAYS_TRUE_ENTRY = new ExpressionEntry(
             ALWAYS_TRUE_FILTER);
@@ -463,10 +472,17 @@ public class ElementListenerMap extends NodeMap {
             return this;
         }
 
-        // The client reads a synchronized property or the state node closest
-        // to the event target, and calls preventDefault() or stopPropagation(),
-        // without compiling anything
+        // The client reads a synchronized property, the state node closest
+        // to the event target or a property path, also one that leads to the
+        // element to map to a state node, and calls preventDefault() or
+        // stopPropagation(), without compiling anything
         private static boolean isCompiledByClient(String eventData) {
+            String expression = eventData
+                    .startsWith(JsonConstants.MAP_STATE_NODE_EVENT_DATA)
+                            ? eventData.substring(
+                                    JsonConstants.MAP_STATE_NODE_EVENT_DATA
+                                            .length())
+                            : eventData;
             return !eventData
                     .startsWith(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN)
                     && !eventData
@@ -474,7 +490,8 @@ public class ElementListenerMap extends NodeMap {
                     && !eventData
                             .equals(JsonConstants.EVENT_DATA_PREVENT_DEFAULT)
                     && !eventData
-                            .equals(JsonConstants.EVENT_DATA_STOP_PROPAGATION);
+                            .equals(JsonConstants.EVENT_DATA_STOP_PROPAGATION)
+                    && !PROPERTY_PATH.matcher(expression).matches();
         }
 
         private boolean isPropertySynchronized(String propertyName) {

@@ -198,6 +198,22 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
       expect(harness.collectedEventData[0]).to.deep.equal({ [JsonConstants.EVENT_FILTER_ALWAYS_TRUE]: 1 });
     });
 
+    it('reads property paths without compiling them', () => {
+      bindWithClickExpressions({
+        'event.type': false,
+        'element.tagName.length': false,
+        [`${MAP_STATE_NODE_EVENT_DATA}event.target`]: false
+      });
+
+      element.click();
+
+      expect(harness.collectedEventData[0]).to.deep.equal({
+        'event.type': 'click',
+        'element.tagName.length': 3,
+        [`${MAP_STATE_NODE_EVENT_DATA}event.target`]: node.getId()
+      });
+    });
+
     it('calls preventDefault without compiling it', () => {
       bindWithClickExpressions({ [JsonConstants.EVENT_DATA_PREVENT_DEFAULT]: false });
 
