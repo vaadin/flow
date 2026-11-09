@@ -157,9 +157,9 @@ public class GenerateNpmBOMMojoTest {
     }
 
     @Test
-    public void cycloneDxNpm_isPinnedToExactVersion() {
-        Assert.assertTrue(GenerateNpmBOMMojo.CYCLONEDX_NPM,
-                GenerateNpmBOMMojo.CYCLONEDX_NPM.matches(
-                        "@cyclonedx/cyclonedx-npm@\\d+\\.\\d+\\.\\d+"));
+    public void getProperties_runsCycloneDxNpmPinnedToExactVersion() {
+        String args = mojo.getProperties().getProperty("exec.args");
+        Assert.assertTrue(args,
+                args.matches("@cyclonedx/cyclonedx-npm@\\d+\\.\\d+\\.\\d+ .*"));
     }
 }
