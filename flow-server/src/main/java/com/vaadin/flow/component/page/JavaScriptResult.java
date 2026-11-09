@@ -46,6 +46,13 @@ import com.vaadin.flow.server.VaadinSession;
  * deserialize works, including beans and generic types such as
  * {@code List<Person>}.
  * <p>
+ * A JavaScript <code>null</code> is handed to the handlers as a Java
+ * <code>null</code>, also when {@code T} is a JSON node type such as
+ * {@code ObjectNode}. The one exception is {@code JavaScriptResult<JsonNode>},
+ * which hands over the JSON as the browser sent it, the same way as
+ * {@link PendingJavaScriptResult}: there, a JavaScript <code>null</code> is a
+ * {@code NullNode}.
+ * <p>
  * If any of the <code>then</code> or <code>toCompletableFuture</code> methods
  * have been invoked before the JavaScript is sent to the browser, then there
  * will be an additional round trip for sending the result back to any

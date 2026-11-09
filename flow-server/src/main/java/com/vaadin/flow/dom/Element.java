@@ -2003,9 +2003,16 @@ public class Element extends Node<Element> {
      * or run it on its own implementation of the same interface.
      * <p>
      * Every method of the interface declares JavaScript and returns
-     * <code>void</code>, {@link JavaScriptResult} with a type argument that
-     * does not depend on a type variable, or {@link PendingJavaScriptResult}.
-     * One that is implemented in Java instead - a <code>default</code> or a
+     * <code>void</code>, {@link JavaScriptResult} with a type argument that is
+     * known from the interface, or {@link PendingJavaScriptResult}. The type
+     * argument is known when it is a concrete type, such as
+     * <code>JavaScriptResult&lt;Integer&gt;</code>, or a type variable of an
+     * interface that the definition extends and binds to a concrete type, such
+     * as <code>T</code> in <code>JavaScriptResult&lt;T&gt;</code> when the
+     * definition extends <code>ValueJs&lt;Integer&gt;</code>. A type variable
+     * of the method itself, a wildcard or a raw {@link JavaScriptResult} does
+     * not say what to convert the value to, so such a method is refused. One
+     * that is implemented in Java instead - a <code>default</code> or a
      * <code>static</code> method - is not what such an interface is for, so the
      * interface is refused rather than partly run in the browser.
      * <p>
