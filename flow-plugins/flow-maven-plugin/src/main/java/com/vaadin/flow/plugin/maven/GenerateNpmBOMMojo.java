@@ -201,7 +201,7 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
         }
     }
 
-    private Properties getProperties() {
+    Properties getProperties() {
         Properties properties = new Properties();
         properties.setProperty("exec.executable", "npx");
         properties.setProperty("exec.args",
