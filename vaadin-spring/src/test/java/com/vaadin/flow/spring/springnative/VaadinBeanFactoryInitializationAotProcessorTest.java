@@ -769,6 +769,12 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
         assertThat(RuntimeHintsPredicates.reflection().onType(TestJsItem.class))
                 .as("Type argument of a typed result should be registered for Jackson")
                 .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(TestJsArrayItem.class))
+                .as("Component type of an array result should be registered for Jackson")
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection().onType(ObjectNode.class))
+                .as("Jackson node types need no hints").rejects(hints);
     }
 
     @Test
@@ -1190,6 +1196,12 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
 
         @JsExpression("return []")
         JavaScriptResult<List<TestJsItem>> readItems();
+
+        @JsExpression("return []")
+        JavaScriptResult<TestJsArrayItem[]> readArray();
+
+        @JsExpression("return {}")
+        JavaScriptResult<ObjectNode> readNode();
     }
 
     public interface TestValueJs<T> {
@@ -1201,6 +1213,9 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     }
 
     public record TestJsItem(String name) {
+    }
+
+    public record TestJsArrayItem(String name) {
     }
 
     public static class TestMenuAccessControl implements MenuAccessControl {
