@@ -45,7 +45,8 @@ test('reports the chunks and source files that changed', () => {
 });
 
 test('reports no change without a table when no minified size differs', () => {
-  const same = { chunks: BASE.chunks.map((chunk) => ({ ...chunk })), inputs: { ...BASE.inputs } };
+  // The gzipped size alone does not count, as it follows the minified one
+  const same = { chunks: BASE.chunks.map((chunk) => ({ ...chunk, gzip: chunk.gzip + 1 })), inputs: { ...BASE.inputs } };
 
   assert.strictEqual(compare(BASE, same).changed, false);
   const body = comment(BASE, same, 'abc1234');
@@ -69,6 +70,18 @@ test('reports chunks that only one side has', () => {
     { name: 'Flow.ts', bytes: 10000 },
     { name: 'internal/Timer.ts', bytes: -8000 }
   ]);
+});
+
+test('lists the largest source file differences only', () => {
+  const inputs = (bytes) => Object.fromEntries(Array.from({ length: 20 }, (_, i) => [`File${i}.ts`, bytes(i)]));
+  const base = { chunks: [{ name: 'Flow.ts', minified: 1000, gzip: 500 }], inputs: inputs(() => 100) };
+  const head = { chunks: [{ name: 'Flow.ts', minified: 1210, gzip: 550 }], inputs: inputs((i) => 100 + i + 1) };
+
+  const body = comment(base, head, 'abc1234');
+  assert.match(body, /\| `File19.ts` \| \+20 B \|/);
+  assert.match(body, /\| `File5.ts` \| \+6 B \|/);
+  assert.doesNotMatch(body, /`File4.ts`/);
+  assert.match(body, /\| …and 5 more \| \|/);
 });
 
 test('reports the head alone when the base has nothing to compare with', () => {

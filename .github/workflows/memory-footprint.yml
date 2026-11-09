@@ -29,7 +29,6 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   _HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
   _BASE_SHA: ${{ github.event.pull_request.base.sha }}
-  _PR_NUMBER: ${{ github.event.number }}
   # The same flags validation.yml sets, for the same reason: a 403 from Central
   # is retried rather than failing the build outright. See the note there.
   MAVEN_ARGS: >-
@@ -120,18 +119,8 @@ jobs:
         # GitHub hands runs that Dependabot triggers a read-only token, so
         # those measure and leave the comparison in the job summary only
         if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CHANGED: ${{ steps.compare.outputs.changed }}
-        run: |
-          marker='<!-- flow-memory-footprint -->'
-          existing=$(gh api "repos/${{ github.repository }}/issues/$_PR_NUMBER/comments" --paginate \
-            --jq "[.[] | select(.body | startswith(\"$marker\")) | .id] | first // empty")
-          existing=${existing%%$'\n'*}
-          if [ -n "$existing" ]; then
-            gh api --method PATCH "repos/${{ github.repository }}/issues/comments/$existing" -F body=@memory-comment.md
-          elif [ "$CHANGED" = "true" ]; then
-            gh api "repos/${{ github.repository }}/issues/$_PR_NUMBER/comments" -F body=@memory-comment.md
-          else
-            echo "No change in memory footprint, and no earlier comment to update"
-          fi
+        uses: ./.github/actions/sticky-pr-comment
+        with:
+          marker: '<!-- flow-memory-footprint -->'
+          body-file: memory-comment.md
+          changed: ${{ steps.compare.outputs.changed }}

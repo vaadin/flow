@@ -22,7 +22,6 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   _BASE_SHA: ${{ github.event.pull_request.base.sha }}
-  _PR_NUMBER: ${{ github.event.number }}
 
 jobs:
   measure:
@@ -74,18 +73,8 @@ jobs:
         # GitHub hands runs that Dependabot triggers a read-only token, so
         # those measure and leave the comparison in the job summary only
         if: github.actor != 'dependabot[bot]'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CHANGED: ${{ steps.compare.outputs.changed }}
-        run: |
-          marker='<!-- flow-bundle-size -->'
-          existing=$(gh api "repos/${{ github.repository }}/issues/$_PR_NUMBER/comments" --paginate \
-            --jq "[.[] | select(.body | startswith(\"$marker\")) | .id] | first // empty")
-          existing=${existing%%$'\n'*}
-          if [ -n "$existing" ]; then
-            gh api --method PATCH "repos/${{ github.repository }}/issues/comments/$existing" -F body=@bundle-size-comment.md
-          elif [ "$CHANGED" = "true" ]; then
-            gh api "repos/${{ github.repository }}/issues/$_PR_NUMBER/comments" -F body=@bundle-size-comment.md
-          else
-            echo "No change in client bundle size, and no earlier comment to update"
-          fi
+        uses: ./.github/actions/sticky-pr-comment
+        with:
+          marker: '<!-- flow-bundle-size -->'
+          body-file: bundle-size-comment.md
+          changed: ${{ steps.compare.outputs.changed }}

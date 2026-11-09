@@ -35,6 +35,7 @@
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const { formatValue, formatDifference } = require('./prCommentFormat');
 
 // Starts the pull request comment, so that each run updates the one comment
 // instead of adding another
@@ -117,13 +118,9 @@ function total(report) {
 }
 
 function formatBytes(value) {
-  return `${value.toLocaleString('en-US')} B`;
+  return formatValue(value, 'bytes');
 }
 
-/**
- * The difference from base to head, in bold and colored green when the
- * client shrinks and red when it grows.
- */
 function formatChange(base, head) {
   if (base === undefined) {
     return 'new';
@@ -131,16 +128,7 @@ function formatChange(base, head) {
   if (head === undefined) {
     return 'removed';
   }
-  if (base === head) {
-    return 'no change';
-  }
-  const difference = head - base;
-  const sign = difference > 0 ? '+' : '−';
-  const percent = ((Math.abs(difference) / base) * 100).toFixed(1);
-  const color = difference > 0 ? 'red' : 'green';
-  // GitHub colors text only in math, where \textbf keeps the spaces. The
-  // percentage stays outside, as Markdown would unescape the \% math needs
-  return `$\\color{${color}}\\textbf{${sign}${formatBytes(Math.abs(difference))}}$ (${sign}${percent}%)`;
+  return base === head ? 'no change' : formatDifference(base, head, 'bytes');
 }
 
 /**
