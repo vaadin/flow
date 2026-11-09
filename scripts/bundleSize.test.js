@@ -4,7 +4,7 @@ const assert = require('node:assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { measure, compare, comment, inputDifferences, readReport } = require('./bundleSize');
+const { measure, withoutHashes, compare, comment, inputDifferences, readReport } = require('./bundleSize');
 
 const BASE = {
   chunks: [
@@ -54,7 +54,7 @@ test('reports no change without a table when no minified size differs', () => {
   assert.strictEqual(compare(BASE, same).changed, false);
   const body = comment(BASE, same, 'abc1234');
   assert.match(body, /No change compared with the base commit abc1234/);
-  assert.doesNotMatch(body, /\| Chunk \|/);
+  assert.doesNotMatch(body, /\| File \|/);
 });
 
 test('reports files that only one side has', () => {
@@ -98,7 +98,7 @@ test('reports the head alone when the base has nothing to compare with', () => {
   const body = comment(undefined, BASE, 'abc1234');
   assert.match(body, /The base commit abc1234 has no bundle to compare with/);
   assert.match(body, /\| `VAADIN\/build\/frontend.js` \| 30,000 B \| — \| 10,000 B \| — \|/);
-  assert.doesNotMatch(body, /by source file/);
+  assert.doesNotMatch(body, /Size by module/);
 });
 
 function writeBundle(dir, flowHash, frontendHash, revision) {
@@ -109,6 +109,9 @@ function writeBundle(dir, flowHash, frontendHash, revision) {
   write(`webapp/VAADIN/build/FlowClient-${flowHash}.js`, 'export const flow = 1;');
   write(`webapp/VAADIN/build/frontend-${frontendHash}.js`, `import('./FlowClient-${flowHash}.js');`);
   write(`webapp/VAADIN/build/frontend-${frontendHash}.css`, 'html{}');
+  write(`webapp/VAADIN/build/index-${flowHash}.js`, 'export const a = 1;');
+  write(`webapp/VAADIN/build/index-${frontendHash}.js`, 'export const bb = 2;');
+  write('webapp/sw-precache-helper.js', 'export {};');
   write('webapp/sw.js', `[{url:\`VAADIN/build/FlowClient-${flowHash}.js\`,revision:\`${revision}\`}]`);
   write('webapp/index.html', '<html></html>');
   const data = {
@@ -124,14 +127,23 @@ function writeBundle(dir, flowHash, frontendHash, revision) {
 test('measures the files of the bundle, without their content hashes', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'bundle-size-'));
   try {
-    writeBundle(path.join(root, 'a'), 'CLdr9-o5', '0t8eFnqu', 'a'.repeat(32));
-    writeBundle(path.join(root, 'b'), 'Zz_9-AbC', '1u9fGovv', 'b'.repeat(32));
+    writeBundle(path.join(root, 'a'), 'CLdr9-o5', '0t8eFnqu', 'fa3a7c534add2c23216aa9b03072c637');
+    writeBundle(path.join(root, 'b'), 'Zz_9-AbC', '1u9fGovv', '8ae2962cf316013f6ddea757e12d20cb');
 
     const report = measure(path.join(root, 'a'));
     assert.deepStrictEqual(
       report.chunks.map((chunk) => chunk.name),
-      ['sw.js', 'VAADIN/build/FlowClient.js', 'VAADIN/build/frontend.css', 'VAADIN/build/frontend.js']
+      [
+        'sw-precache-helper.js',
+        'sw.js',
+        'VAADIN/build/FlowClient.js',
+        'VAADIN/build/frontend.css',
+        'VAADIN/build/frontend.js',
+        'VAADIN/build/index.js'
+      ]
     );
+    // Chunks named after the same module are reported together
+    assert.strictEqual(report.chunks.find((chunk) => chunk.name === 'VAADIN/build/index.js').minified, 39);
     assert.ok(report.chunks.every((chunk) => chunk.minified > 0 && chunk.brotli > 0));
     assert.deepStrictEqual(report.inputs, {
       'src/main/frontend/generated/jar-resources/FlowClient.js': 30,
@@ -149,8 +161,21 @@ test('measures the files of the bundle, without their content hashes', () => {
   }
 });
 
+test('masks content hashes and precache revisions without changing the length', () => {
+  const content = (hash, revision) =>
+    `import('./FlowClient-${hash}.js');[{url:\`VAADIN/build/FlowClient-${hash}.js\`,revision:\`${revision}\`}]`;
+  const before = content('CLdr9-o5', 'fa3a7c534add2c23216aa9b03072c637');
+  const after = content('Zz_9-AbC', '8ae2962cf316013f6ddea757e12d20cb');
+
+  assert.strictEqual(withoutHashes(before, ['CLdr9-o5']), withoutHashes(after, ['Zz_9-AbC']));
+  assert.strictEqual(withoutHashes(before, ['CLdr9-o5']).length, before.length);
+});
+
 test('rejects a report without chunks', () => {
   const file = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'bundle-size-')), 'report.json');
   fs.writeFileSync(file, JSON.stringify({ chunks: [], inputs: {} }));
+  assert.throws(() => readReport(file), /needs chunks/);
+  // A report of the earlier format, with gzipped sizes
+  fs.writeFileSync(file, JSON.stringify({ chunks: [{ name: 'x', minified: 1, gzip: 1 }], inputs: {} }));
   assert.throws(() => readReport(file), /needs chunks/);
 });

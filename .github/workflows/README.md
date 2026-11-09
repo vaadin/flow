@@ -317,7 +317,7 @@ other versions of the packages Flow depends on, and their difference would be
 reported as the pull request's.
 
 As with the memory footprint, the comment is posted once a pull request changes
-the size of a file and then updated on every push, also when the difference
+the minified size of a file and then updated on every push, also when the difference
 goes away again. Pull requests from forks are skipped, and runs that Dependabot
 triggers only write the comparison to the job summary.
 

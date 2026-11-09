@@ -5,9 +5,9 @@ name: Bundle Size
 # and on the commit it branches from, and reports the difference in a pull
 # request comment. The bundle holds what Flow adds to every application: the
 # client, the files Flow generates and the npm packages it brings in. A comment
-# is only posted once a change affects the size of a file in the bundle, see
-# scripts/bundleSize.js. After that the comment is updated on every push, also
-# when the difference goes away again.
+# is only posted once a change affects the minified size of a file in the
+# bundle, see scripts/bundleSize.js. After that the comment is updated on every
+# push, also when the difference goes away again.
 #
 # Both sides are built in the same run, rather than the base being cached:
 # the build resolves the npm packages without a lock file, so a base built

@@ -28,7 +28,7 @@
  *
  * Outputs of compare:
  * - `changed=true|false` appended to $GITHUB_OUTPUT (printed if not set):
- *   whether the size of any chunk differs, or the base has nothing to compare
+ *   whether the minified size of any file differs, or the base has nothing to compare
  *   with
  * - bundle-size-comment.md: the sticky pull request comment body
  */
@@ -41,9 +41,10 @@ const { formatValue, formatDifference } = require('./prCommentFormat');
 // instead of adding another
 const COMMENT_MARKER = '<!-- flow-bundle-size -->';
 
-// Vite names a chunk after its first module and a content hash, which changes
-// with every change and would make every chunk look new
-const CONTENT_HASH = /-[\w-]{8}(?=\.(js|css)$)/;
+// Vite names a chunk in VAADIN/build after its first module and a content
+// hash, which changes with every change and would make every chunk look new.
+// Files outside it, such as the service worker, have no hash.
+const CONTENT_HASH = /^(VAADIN\/build\/.+)(-[\w-]{8})(?=\.(js|css)$)/;
 
 // Where the module sizes are in the report rollup-plugin-visualizer writes
 const VISUALIZER_DATA = /const data = (\{.*?\});\n/s;
@@ -65,9 +66,6 @@ function filesUnder(dir) {
  * of single modules are not known.
  */
 function moduleSizes(reportFile) {
-  if (!fs.existsSync(reportFile)) {
-    return {};
-  }
   const match = fs.readFileSync(reportFile, 'utf8').match(VISUALIZER_DATA);
   if (!match) {
     throw new Error(`${reportFile} has no module sizes`);
@@ -101,10 +99,11 @@ function measure(bundleDir) {
   if (files.length === 0) {
     throw new Error(`No bundle found in ${webapp}`);
   }
-  const hashes = files.map((file) => path.basename(file).match(CONTENT_HASH)?.[0]).filter(Boolean);
+  const names = files.map((file) => path.relative(webapp, file).split(path.sep).join('/'));
+  const hashes = names.map((name) => name.match(CONTENT_HASH)?.[2]).filter(Boolean);
   const chunks = new Map();
-  for (const file of files) {
-    const name = path.relative(webapp, file).split(path.sep).join('/').replace(CONTENT_HASH, '');
+  for (const [index, file] of files.entries()) {
+    const name = names[index].replace(CONTENT_HASH, '$1');
     const content = withoutHashes(fs.readFileSync(file, 'utf8'), hashes);
     const chunk = chunks.get(name) || { name, minified: 0, brotli: 0 };
     chunk.minified += Buffer.byteLength(content);
@@ -268,4 +267,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { measure, compare, comment, inputDifferences, readReport };
+module.exports = { measure, withoutHashes, compare, comment, inputDifferences, readReport };
