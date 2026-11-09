@@ -293,11 +293,14 @@ self.addEventListener('notificationclick', (e) => {
  * Without a target, a window that already shows the application is focused as
  * it is, or one is opened at the service worker's scope, which is the
  * application's root URL including any context path. A target set as
- * `data.url` in the notification options is resolved against that scope; an
- * open application window is focused and navigated to it rather than opening
- * a second one. A target outside the application opens in a window of its own.
+ * `data.url` in the notification options is resolved against that scope, so a
+ * relative path such as `orders/42` works under any context path, while one
+ * starting with `/` is relative to the origin, as in a link. An open
+ * application window is focused and navigated to the target rather than
+ * opening a second one. A target outside the application opens in a window of
+ * its own.
  *
- * @param path the notification's target URL, relative to the scope
+ * @param path the notification's target URL, resolved against the scope
  */
 async function focusOrOpenWindow(path?: string) {
   const scope = self.registration.scope;

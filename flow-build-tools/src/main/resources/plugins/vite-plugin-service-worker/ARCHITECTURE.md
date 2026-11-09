@@ -108,8 +108,9 @@ knows everything:
   cache starts as "connection lost".
 - **Web push.** `push` events show a notification, and `notificationclick`
   focuses or opens the application window. When the notification options
-  carry `data.url`, it is resolved against the scope, and an open application
-  window is navigated to it instead of opening a second one.
+  carry `data.url`, it is resolved against the scope like a link (`orders/42`
+  stays within the context path, `/orders/42` does not), and an open
+  application window is navigated to it instead of opening a second one.
 
 ## Development mode
 

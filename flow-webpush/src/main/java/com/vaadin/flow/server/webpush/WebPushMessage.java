@@ -23,6 +23,11 @@ import tools.jackson.databind.node.ObjectNode;
 /**
  * Web Push message object containing an information to be shown in the
  * notification.
+ * <p>
+ * Tapping the notification opens the application, or focuses it when it is
+ * already open. To open a specific view instead, set {@code data.url} in the
+ * options to its URL relative to the application's root, such as
+ * {@code "orders/42"}. An open application window is then navigated to it.
  *
  * @param title
  *            the notification title
