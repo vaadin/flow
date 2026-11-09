@@ -597,7 +597,10 @@ class PendingJavaScriptInvocationTest {
         assertTrue(future.isCompletedExceptionally());
         CompletionException exception = assertThrows(CompletionException.class,
                 future::join);
-        assertInstanceOf(JavaScriptException.class, exception.getCause());
+        JavaScriptException javaScriptException = assertInstanceOf(
+                JavaScriptException.class, exception.getCause());
+        assertInstanceOf(IllegalArgumentException.class,
+                javaScriptException.getCause());
     }
 
     @Test

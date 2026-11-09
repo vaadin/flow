@@ -50,7 +50,9 @@ public interface PendingJavaScriptResult extends Serializable {
     /**
      * Exception used when a {@link CompletableFuture} returned from
      * {@link PendingJavaScriptResult} is completed exceptionally because of a
-     * client-side error.
+     * client-side error, or because the result can not be converted to the
+     * requested type. In the latter case, the cause is the
+     * {@link IllegalArgumentException} describing the conversion failure.
      */
     public class JavaScriptException extends RuntimeException {
         /**
@@ -120,7 +122,8 @@ public interface PendingJavaScriptResult extends Serializable {
         }
 
         then(decodingHandler(value -> JacksonCodec.decodeAs(value, targetType),
-                resultHandler, errorHandler), errorHandler);
+                resultHandler, conversionErrorHandler(errorHandler)),
+                errorHandler);
     }
 
     /**
@@ -196,7 +199,11 @@ public interface PendingJavaScriptResult extends Serializable {
         CompletableFuture<T> completableFuture = new DeadlockDetectingCompletableFuture<>(
                 session);
 
-        then(targetType, completableFuture::complete,
+        then(decodingHandler(value -> JacksonCodec.decodeAs(value, targetType),
+                completableFuture::complete,
+                conversionError -> completableFuture.completeExceptionally(
+                        new JavaScriptException(conversionError.getMessage())
+                                .initCause(conversionError))),
                 errorValue -> completableFuture.completeExceptionally(
                         new JavaScriptException(errorValue)));
 
@@ -250,7 +257,8 @@ public interface PendingJavaScriptResult extends Serializable {
 
         then(decodingHandler(
                 value -> JacksonCodec.decodeAs(value, typeReference),
-                resultHandler, errorHandler), errorHandler);
+                resultHandler, conversionErrorHandler(errorHandler)),
+                errorHandler);
     }
 
     /**
@@ -316,7 +324,12 @@ public interface PendingJavaScriptResult extends Serializable {
         CompletableFuture<T> completableFuture = new DeadlockDetectingCompletableFuture<>(
                 session);
 
-        then(typeReference, completableFuture::complete,
+        then(decodingHandler(
+                value -> JacksonCodec.decodeAs(value, typeReference),
+                completableFuture::complete,
+                conversionError -> completableFuture.completeExceptionally(
+                        new JavaScriptException(conversionError.getMessage())
+                                .initCause(conversionError))),
                 errorValue -> completableFuture.completeExceptionally(
                         new JavaScriptException(errorValue)));
 
@@ -378,8 +391,9 @@ public interface PendingJavaScriptResult extends Serializable {
 
     /**
      * Wraps a typed result handler into a JSON handler that decodes the value
-     * first. A decoding failure is passed to the error handler, or logged if
-     * there is none, instead of being thrown.
+     * first. A decoding failure is passed to the conversion error handler
+     * instead of being thrown, since the pending result chains the handlers
+     * added to it, so throwing would also skip any added after this one.
      *
      * @param <T>
      *            the decoded type
@@ -388,35 +402,43 @@ public interface PendingJavaScriptResult extends Serializable {
      *            <code>null</code>
      * @param resultHandler
      *            the handler for the decoded value, not <code>null</code>
-     * @param errorHandler
-     *            the handler for a decoding error message, or <code>null</code>
-     *            to log it
+     * @param conversionErrorHandler
+     *            the handler for a decoding failure, not <code>null</code>
      * @return a JSON handler that decodes the value and passes it on, not
      *         <code>null</code>
      */
     private static <T> SerializableConsumer<JsonNode> decodingHandler(
             SerializableFunction<JsonNode, T> decoder,
             SerializableConsumer<T> resultHandler,
-            SerializableConsumer<String> errorHandler) {
+            SerializableConsumer<IllegalArgumentException> conversionErrorHandler) {
         return value -> {
             T decodedValue;
             try {
                 decodedValue = decoder.apply(value);
             } catch (IllegalArgumentException e) {
-                // Not thrown, since the pending result chains the handlers
-                // added to it, so throwing would also skip any added after
-                // this one, and a future waiting for the value would never
-                // complete
-                if (errorHandler != null) {
-                    errorHandler.accept(e.getMessage());
-                } else {
-                    LoggerFactory.getLogger(PendingJavaScriptResult.class)
-                            .warn("Ignored a JavaScript result that can not be"
-                                    + " converted: {}", e.getMessage());
-                }
+                conversionErrorHandler.accept(e);
                 return;
             }
             resultHandler.accept(decodedValue);
         };
+    }
+
+    /**
+     * Creates a conversion error handler that passes the failure message to the
+     * given error handler, or logs it if there is no error handler.
+     *
+     * @param errorHandler
+     *            the handler for an error message, or <code>null</code> to log
+     *            the failure
+     * @return a conversion error handler, not <code>null</code>
+     */
+    private static SerializableConsumer<IllegalArgumentException> conversionErrorHandler(
+            SerializableConsumer<String> errorHandler) {
+        if (errorHandler != null) {
+            return e -> errorHandler.accept(e.getMessage());
+        }
+        return e -> LoggerFactory.getLogger(PendingJavaScriptResult.class).warn(
+                "Ignored a JavaScript result that can not be converted: {}",
+                e.getMessage());
     }
 }
