@@ -23,7 +23,6 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -38,6 +37,7 @@ import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.web.context.ServletContextAware;
 
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.server.auth.AccessPathChecker;
 
 /**
@@ -106,7 +106,7 @@ public class SpringAccessPathChecker
      * Supplies the filter chain proxy to read the configured anonymous
      * authentication from, or {@literal null} to use the default one.
      */
-    private final transient Supplier<FilterChainProxy> filterChainProxy;
+    private final transient SerializableSupplier<FilterChainProxy> filterChainProxy;
     /**
      * Transforms the request built for the path before matching the filter
      * chains, {@literal null} when the proxy is not given.
@@ -223,7 +223,7 @@ public class SpringAccessPathChecker
     public SpringAccessPathChecker(WebInvocationPrivilegeEvaluator evaluator,
             String urlMapping,
             SecurityContextHolderStrategy securityContextHolderStrategy,
-            Supplier<FilterChainProxy> filterChainProxy,
+            SerializableSupplier<FilterChainProxy> filterChainProxy,
             HttpServletRequestTransformer requestTransformer) {
         this.urlMapping = urlMapping;
         this.evaluator = evaluator;
