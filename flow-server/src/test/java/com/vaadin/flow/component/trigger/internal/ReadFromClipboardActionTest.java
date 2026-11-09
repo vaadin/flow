@@ -36,6 +36,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+// Asserts on the generated JavaScript, which only the deprecated JsFunction
+// getters expose
+@SuppressWarnings("removal")
 class ReadFromClipboardActionTest {
 
     @Test

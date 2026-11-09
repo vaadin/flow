@@ -28,6 +28,9 @@ import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleI
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
+// Asserts on the generated JavaScript, which only the deprecated JsFunction
+// getters expose
+@SuppressWarnings("removal")
 class DomEventTriggerTest {
 
     @Test

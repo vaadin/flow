@@ -49,6 +49,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * component, so a renderer can fire it once per element it renders on the
  * client while the server holds a single binding.
  */
+// Asserts on the generated JavaScript, which only the deprecated JsFunction
+// getters expose
+@SuppressWarnings("removal")
 class ClientActionTest {
 
     private static class Div extends Component {

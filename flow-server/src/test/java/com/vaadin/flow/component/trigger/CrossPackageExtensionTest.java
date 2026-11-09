@@ -40,6 +40,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * handler-scoped event properties instead of subclassing {@code Action.Input}
  * by hand.
  */
+// Asserts on the generated JavaScript, which only the deprecated JsFunction
+// getters expose
+@SuppressWarnings("removal")
 class CrossPackageExtensionTest {
 
     private static class Div extends Component {

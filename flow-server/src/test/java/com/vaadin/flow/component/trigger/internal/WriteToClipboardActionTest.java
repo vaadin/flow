@@ -36,6 +36,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+// Asserts on the generated JavaScript, which only the deprecated JsFunction
+// getters expose
+@SuppressWarnings("removal")
 class WriteToClipboardActionTest {
 
     private static final String HELPER_BODY = "return window.Vaadin.Flow.clipboard.writePayload($0(event, context), $1(event, context), $2(event, context))";
