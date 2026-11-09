@@ -213,8 +213,6 @@ class CspModeTest {
             registration.addEventDetail();
             registration.addEventDataElement("event.target.parentElement");
             registration.setFilter("event.isTrusted");
-            // The constructor of Page adds the detail of an event
-            new MockUI(setup.getSession());
             // The client runs these without compiling them, also when Flow
             // adds the always-true filter for the debounce
             registration.preventDefault();
@@ -234,8 +232,9 @@ class CspModeTest {
     void strict_uiStartsWithoutViolation() {
         setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
 
-        // The events of the navigation and of connecting a web component
-        // carry keys of data that client code builds, not expressions
+        // The constructor of Page adds the detail of an event, and the events
+        // of the navigation and of connecting a web component carry keys of
+        // data that client code builds, not expressions
         assertDoesNotThrow(() -> {
             new MockUI(setup.getSession()).doInit(null, 1, "app");
             WebComponentUI webComponentUI = new WebComponentUI();
