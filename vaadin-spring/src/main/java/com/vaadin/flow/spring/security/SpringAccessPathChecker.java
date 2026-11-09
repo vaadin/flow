@@ -18,11 +18,10 @@ package com.vaadin.flow.spring.security;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.io.Serializable;
 import java.security.Principal;
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -68,9 +67,9 @@ import com.vaadin.flow.server.auth.AccessPathChecker;
  * an anonymous authentication from the strategy is kept and any other
  * authentication is replaced by a default {@code ROLE_ANONYMOUS} one.
  * <p>
- * The filter chain proxy is resolved on the first check and the anonymous
- * authentication of each chain is computed once. The chains are matched against
- * a request bound to the {@link ServletContext} set with
+ * The filter chain proxy is read on each check and the anonymous authentication
+ * of a chain is computed on the first check it handles. The chains are matched
+ * against a request bound to the {@link ServletContext} set with
  * {@link #setServletContext(ServletContext)}, which Spring calls when the
  * checker is a bean of a web application context. The proxy and the servlet
  * context are not serialized with the checker: after deserialization the
@@ -114,11 +113,11 @@ public class SpringAccessPathChecker
      */
     private final transient HttpServletRequestTransformer requestTransformer;
     /**
-     * The anonymous authentication of each filter chain, in proxy order,
-     * computed on first use. Only read when the proxy supplier is set, so it is
-     * never reached after deserialization.
+     * The anonymous authentication of each filter chain, computed on the first
+     * check handled by the chain. Only read when the proxy supplier is set, so
+     * it is never reached after deserialization.
      */
-    private final transient AtomicReference<List<ChainAnonymousAuthentication>> chainAnonymousAuthentications = new AtomicReference<>();
+    private final transient Map<SecurityFilterChain, Authentication> chainAnonymousAuthentications = new ConcurrentHashMap<>();
     /**
      * The servlet context of the request built for the path, or {@literal null}
      * if not set.
@@ -281,7 +280,9 @@ public class SpringAccessPathChecker
         Authentication fallback = current instanceof AnonymousAuthenticationToken
                 ? current
                 : ANONYMOUS_AUTHENTICATION;
-        if (filterChainProxy == null) {
+        FilterChainProxy proxy = filterChainProxy == null ? null
+                : filterChainProxy.get();
+        if (proxy == null) {
             return fallback;
         }
         // The chains are matched against the same kind of request the
@@ -289,29 +290,12 @@ public class SpringAccessPathChecker
         HttpServletRequest request = requestTransformer.transform(
                 new FilterInvocation(null, path, null, servletContext)
                         .getHttpRequest());
-        return getChainAnonymousAuthentications().stream()
-                .filter(entry -> entry.chain().matches(request)).findFirst()
-                .map(ChainAnonymousAuthentication::authentication)
+        return proxy.getFilterChains().stream()
+                .filter(chain -> chain.matches(request)).findFirst()
+                .map(chain -> chainAnonymousAuthentications.computeIfAbsent(
+                        chain,
+                        SpringAccessPathChecker::createAnonymousAuthentication))
                 .orElse(fallback);
-    }
-
-    private List<ChainAnonymousAuthentication> getChainAnonymousAuthentications() {
-        // The chains are fixed once the proxy is built, so the mapping is
-        // computed once. A race computes the same list twice, which is
-        // harmless.
-        List<ChainAnonymousAuthentication> result = chainAnonymousAuthentications
-                .get();
-        if (result == null) {
-            FilterChainProxy proxy = filterChainProxy.get();
-            result = proxy == null ? List.of()
-                    : proxy.getFilterChains().stream()
-                            .map(chain -> new ChainAnonymousAuthentication(
-                                    chain,
-                                    createAnonymousAuthentication(chain)))
-                            .toList();
-            chainAnonymousAuthentications.set(result);
-        }
-        return result;
     }
 
     private static Authentication createAnonymousAuthentication(
@@ -327,10 +311,6 @@ public class SpringAccessPathChecker
                         "anonymous", filter.getPrincipal(),
                         filter.getAuthorities()))
                 .orElse(ANONYMOUS_AUTHENTICATION);
-    }
-
-    private record ChainAnonymousAuthentication(SecurityFilterChain chain,
-            Authentication authentication) implements Serializable {
     }
 
     private SecurityContextHolderStrategy getSecurityContextHolderStrategy() {

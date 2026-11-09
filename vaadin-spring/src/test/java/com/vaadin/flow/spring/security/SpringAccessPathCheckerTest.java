@@ -22,7 +22,6 @@ import jakarta.servlet.http.HttpServletRequestWrapper;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -56,7 +55,6 @@ import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
 
 import com.vaadin.flow.spring.AuthenticationUtil;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -254,23 +252,6 @@ class SpringAccessPathCheckerTest {
 
         assertFalse(checker.hasAccess("guest", null, role -> false),
                 "Access to guest only path should not be allowed when the transformed request selects the api filter chain");
-    }
-
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    void checkAccess_nullPrincipalWithFilterChainProxy_proxyResolvedOnce() {
-        var lookups = new AtomicInteger();
-        var checker = new SpringAccessPathChecker(evaluator, null,
-                SecurityContextHolder.getContextHolderStrategy(), () -> {
-                    lookups.incrementAndGet();
-                    return (FilterChainProxy) springSecurityFilterChain;
-                }, new PathPatternRequestTransformer());
-        checker.setServletContext(servletContext);
-
-        assertTrue(checker.hasAccess("guest", null, role -> false));
-        assertTrue(checker.hasAccess("api", null, role -> false));
-        assertEquals(1, lookups.get(),
-                "The filter chain proxy should be resolved once");
     }
 
     @Test
