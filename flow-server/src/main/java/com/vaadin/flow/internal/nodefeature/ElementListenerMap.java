@@ -47,6 +47,7 @@ import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.ParameterizedConstantPoolKey;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.MapPutChange;
@@ -410,11 +411,10 @@ public class ElementListenerMap extends NodeMap {
                 return false;
             }
 
-            if (eventData.has(filter.key())) {
-                return eventData.get(filter.key()).booleanValue();
-            } else {
-                return false;
-            }
+            // The browser sends the value that the filter returned, which does
+            // not have to be a boolean. The value of a filter that did not
+            // pass is also sent when another filter of the event passed.
+            return JavaScriptSemantics.isTrueish(eventData.get(filter.key()));
         }
 
         @Override

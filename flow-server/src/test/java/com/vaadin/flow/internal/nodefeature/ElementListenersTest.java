@@ -463,6 +463,52 @@ public class ElementListenersTest
     }
 
     @Test
+    void declaredFiltersReturnOtherValues_checkedWithJavaScriptTruthiness() {
+        AtomicInteger enterCount = new AtomicInteger();
+        AtomicInteger escapeCount = new AtomicInteger();
+        ns.add("keydown", e -> enterCount.incrementAndGet())
+                .setFilterExpression(JS.isKey("Enter"));
+        ns.add("keydown", e -> escapeCount.incrementAndGet())
+                .setFilterExpression(JS.isKey("Escape"));
+
+        // The browser sends what each filter returned. The value of a filter
+        // that did not pass is sent too, because another filter passed.
+        ObjectNode settings = eventSettings(ns, "keydown");
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put(keyWithCapture(settings, "Enter"), "Enter");
+        fromClient.put(keyWithCapture(settings, "Escape"), 0);
+        ns.fireEvent(
+                new DomEvent(new Element("element"), "keydown", fromClient));
+
+        assertEquals(1, enterCount.get());
+        assertEquals(0, escapeCount.get());
+    }
+
+    @Test
+    void stringFiltersReturnOtherValues_checkedWithJavaScriptTruthiness() {
+        AtomicInteger keyCount = new AtomicInteger();
+        AtomicInteger emptyCount = new AtomicInteger();
+        AtomicInteger nullCount = new AtomicInteger();
+        ns.add("keydown", e -> keyCount.incrementAndGet())
+                .setFilter("event.key");
+        ns.add("keydown", e -> emptyCount.incrementAndGet())
+                .setFilter("event.code");
+        ns.add("keydown", e -> nullCount.incrementAndGet())
+                .setFilter("event.target.value");
+
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put("event.key", "Enter");
+        fromClient.put("event.code", "");
+        fromClient.putNull("event.target.value");
+        ns.fireEvent(
+                new DomEvent(new Element("element"), "keydown", fromClient));
+
+        assertEquals(1, keyCount.get());
+        assertEquals(0, emptyCount.get());
+        assertEquals(0, nullCount.get());
+    }
+
+    @Test
     void sameDeclaredFilterDifferentCaptures_ownDebounceSettings() {
         ns.add("keydown", noOp).setFilterExpression(JS.isKey("Enter"));
         ns.add("keydown", noOp).setFilterExpression(JS.isKey("Escape"))
