@@ -259,59 +259,49 @@ public class JacksonCodec {
      * @param json
      *            the JSON value
      * @param type
-     *            the type to decode as
-     * @return the value decoded as the given type
+     *            the type to decode as, not {@code null}
+     * @return the value decoded as the given type, or {@code null} for a JSON
+     *         null and a non-primitive type
      * @throws IllegalArgumentException
      *             if the type was unsupported or deserialization failed, or if
      *             the type is a JSON node type that the value is not, such as
      *             an object node for an array
+     * @throws NullPointerException
+     *             if the JSON value or the type is {@code null}
      */
     public static <T> T decodeAs(JsonNode json, Class<T> type) {
-        assert json != null;
-        if (json.getNodeType() == JsonNodeType.NULL && !type.isPrimitive()) {
-            return null;
-        }
-        if (JsonNode.class.isAssignableFrom(type)) {
-            if (!type.isInstance(json)) {
-                throw new IllegalArgumentException("Cannot decode JSON of type "
-                        + json.getNodeType() + " as " + type.getName());
-            }
-            return type.cast(json);
-        } else {
-            // Use Jackson for all deserialization - it handles primitives,
-            // strings, and complex objects uniformly
-            try {
-                return JacksonUtils.getMapper().treeToValue(json, type);
-            } catch (Exception e) {
-                throw new IllegalArgumentException(
-                        "Cannot deserialize JSON to type " + type.getName()
-                                + ": " + e.getMessage(),
-                        e);
-            }
-        }
-
+        Objects.requireNonNull(type, "Type cannot be null");
+        return decodeAs(json,
+                JacksonUtils.getMapper().getTypeFactory().constructType(type));
     }
 
     /**
      * Decodes a JSON value as an instance of the given type. The type can be a
      * generic type, for example {@code List<MyBean>}.
+     * <p>
+     * A JSON null is decoded as {@code null}, except for a primitive type,
+     * which gets the primitive's default value. A JSON node type, such as
+     * {@link tools.jackson.databind.node.ObjectNode}, returns the value as is
+     * if it is of that node type.
      *
      * @param <T>
      *            the type to decode as
      * @param json
      *            the JSON value to decode
      * @param type
-     *            the type to decode as
+     *            the type to decode as, not {@code null}
      * @return the value decoded as the given type
      * @throws IllegalArgumentException
      *             if deserialization failed, or if the type is a JSON node type
      *             that the value is not, such as an object node for an array
+     * @throws NullPointerException
+     *             if the JSON value or the type is {@code null}
      */
     @SuppressWarnings("unchecked")
     public static <T> T decodeAs(JsonNode json, JavaType type) {
         Objects.requireNonNull(json, "JSON cannot be null");
         Objects.requireNonNull(type, "Type cannot be null");
-        if (json.getNodeType() == JsonNodeType.NULL) {
+        if (json.getNodeType() == JsonNodeType.NULL && !type.isPrimitive()) {
             return null;
         }
         if (type.isTypeOrSubTypeOf(JsonNode.class)) {
@@ -349,30 +339,21 @@ public class JacksonCodec {
      * @param json
      *            the JSON value to decode
      * @param typeReference
-     *            the type reference describing the target type
+     *            the type reference describing the target type, not
+     *            {@code null}
      * @return the value decoded as the given type
      * @throws IllegalArgumentException
-     *             if deserialization failed
+     *             if deserialization failed, or if the type is a JSON node type
+     *             that the value is not, such as an object node for an array
+     * @throws NullPointerException
+     *             if the JSON value or the type reference is {@code null}
      * @since 25.0
      */
     public static <T> T decodeAs(JsonNode json,
             TypeReference<T> typeReference) {
-        assert json != null;
-        assert typeReference != null;
-
-        if (json.getNodeType() == JsonNodeType.NULL) {
-            return null;
-        }
-
-        try {
-            return JacksonUtils.getMapper().treeToValue(json, typeReference);
-        } catch (Exception e) {
-            throw new IllegalArgumentException(
-                    "Cannot deserialize JSON to type "
-                            + typeReference.getType().getTypeName() + ": "
-                            + e.getMessage(),
-                    e);
-        }
+        Objects.requireNonNull(typeReference, "Type reference cannot be null");
+        return decodeAs(json, JacksonUtils.getMapper().getTypeFactory()
+                .constructType(typeReference));
     }
 
 }
