@@ -306,6 +306,7 @@ class JacksonCodecTest {
         JavaType objectNode = types.constructType(ObjectNode.class);
         assertThrows(IllegalArgumentException.class,
                 () -> JacksonCodec.decodeAs(json, objectNode));
+        assertNull(JacksonCodec.decodeAs(objectMapper.nullNode(), objectNode));
     }
 
     @Test
