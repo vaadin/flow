@@ -183,6 +183,14 @@ class GenerateNpmBOMMojoTest {
     }
 
     @Test
+    void cycloneDxNpm_isPinnedToExactVersion() {
+        assertTrue(
+                GenerateNpmBOMMojo.CYCLONEDX_NPM
+                        .matches("@cyclonedx/cyclonedx-npm@\\d+\\.\\d+\\.\\d+"),
+                GenerateNpmBOMMojo.CYCLONEDX_NPM);
+    }
+
+    @Test
     void addNodeToPath_putsNodeDirectoryFirst() {
         File nodeDir = new File("node-dir").getAbsoluteFile();
         InvocationRequest request = new DefaultInvocationRequest();
