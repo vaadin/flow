@@ -2925,15 +2925,19 @@ class BundleValidationTest {
 
     @ParameterizedTest
     @MethodSource("modes")
-    void offlineDisabled_customServiceWorkerAdded_noCompilationRequired(
+    void offlineDisabled_customServiceWorkerChanged_noCompilationRequired(
             Mode mode) throws IOException {
         setupMode(mode);
         when(depScanner.getPwaConfiguration())
                 .thenReturn(pwaConfiguration("", false));
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         writeFrontendFile(FrontendUtils.SERVICE_WORKER_SRC,
-                "self.skipWaiting();");
-        setupFrontendUtilsMock(getBasicStats());
+                "self.clients.claim();");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
+                FrontendUtils.SERVICE_WORKER_SRC,
+                BundleValidationUtil.calculateHash("self.skipWaiting();"));
+        setupFrontendUtilsMock(stats);
 
         assertFalse(BundleValidationUtil.needsBuild(options, depScanner, mode),
                 "Without offline support no service worker is built, so its source cannot make the bundle stale");

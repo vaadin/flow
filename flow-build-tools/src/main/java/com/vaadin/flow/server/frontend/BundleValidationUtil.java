@@ -988,7 +988,8 @@ public final class BundleValidationUtil {
      * A {@code sw.ts} or {@code sw.js} in the frontend folder replaces the
      * default service worker. It is built separately from the application's
      * modules, so none of the import checks look at it, and adding, changing or
-     * removing it only reaches the application through a new bundle.
+     * removing it only reaches the application through a new bundle. Only that
+     * file is compared, not the modules it imports.
      */
     private static boolean customServiceWorkerChanged(Options options,
             JsonNode statsJson,
