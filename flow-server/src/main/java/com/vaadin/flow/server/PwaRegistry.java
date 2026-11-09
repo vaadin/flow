@@ -128,6 +128,15 @@ public class PwaRegistry implements Serializable {
             } catch (IOException ex) {
                 getLogger().error("Image is not found or can't be loaded: {}",
                         baseImageUrl);
+            } catch (LinkageError ex) {
+                // The java.desktop module is not available, as in a jlink
+                // image without it: the icons that the frontend build did
+                // not generate are left out
+                getLogger().warn(
+                        "PWA icons cannot be generated at run time without the java.desktop module. "
+                                + "Generate them in the frontend build, or add the module. "
+                                + "The icons that are not generated are left out.",
+                        ex);
             } finally {
                 baseImageUrl = null;
             }

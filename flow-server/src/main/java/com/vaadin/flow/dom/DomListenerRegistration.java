@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.dom;
 
-import java.beans.IntrospectionException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -484,14 +483,8 @@ public interface DomListenerRegistration extends Registration {
         if (type == null) {
             throw new IllegalArgumentException("Type cannot be null");
         }
-        try {
-            List<String> propertyPaths = BeanUtil.getBeanPropertyPaths(type);
-            for (String path : propertyPaths) {
-                addEventData(path);
-            }
-        } catch (IntrospectionException e) {
-            throw new IllegalArgumentException(
-                    "Failed to introspect type: " + type.getName(), e);
+        for (String path : BeanUtil.getBeanPropertyPaths(type)) {
+            addEventData(path);
         }
         return this;
     }
@@ -617,14 +610,8 @@ public interface DomListenerRegistration extends Registration {
         if (type == null) {
             throw new IllegalArgumentException("Type cannot be null");
         }
-        try {
-            List<String> propertyPaths = BeanUtil.getBeanPropertyPaths(type);
-            for (String path : propertyPaths) {
-                addEventData("event.detail." + path);
-            }
-        } catch (IntrospectionException e) {
-            throw new IllegalArgumentException(
-                    "Failed to introspect type: " + type.getName(), e);
+        for (String path : BeanUtil.getBeanPropertyPaths(type)) {
+            addEventData("event.detail." + path);
         }
         return this;
     }

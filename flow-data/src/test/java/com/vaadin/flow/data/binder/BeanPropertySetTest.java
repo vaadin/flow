@@ -541,9 +541,11 @@ class BeanPropertySetTest {
                 .collect(Collectors.toList());
 
         assertEquals(4, defs.size());
-        assertEquals("firstName", defs.get(0).getName());
+        // The fields in their order, then the properties of the default
+        // methods, which have no field
+        assertEquals("lastName", defs.get(0).getName());
         assertEquals(String.class, defs.get(0).getType());
-        assertEquals("lastName", defs.get(1).getName());
+        assertEquals("firstName", defs.get(1).getName());
         assertEquals(String.class, defs.get(1).getType());
         assertEquals("name", defs.get(2).getName());
         assertEquals(String.class, defs.get(2).getType());
