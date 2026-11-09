@@ -112,11 +112,12 @@ public final class WebPushMessageBuilder implements Serializable {
     }
 
     /**
-     * Sets the URL that opens when the user taps the notification. A relative
-     * URL is resolved against the application's root URL, so
-     * {@code "device/SAUN"} works the same with any context path. If the
-     * application is already open, its window is focused and navigated to the
-     * URL instead of opening a second one.
+     * Sets the URL that opens when the user taps the notification. The URL is
+     * resolved against the application's root URL like a link, so
+     * {@code "device/SAUN"} works the same with any context path, while
+     * {@code "/device/SAUN"} is relative to the server root. If the application
+     * is already open, its window is focused and navigated to the URL instead
+     * of opening a second one.
      * <p>
      * Without a URL, tapping the notification opens the application at its root
      * URL, or focuses it as it is when it is already open.
