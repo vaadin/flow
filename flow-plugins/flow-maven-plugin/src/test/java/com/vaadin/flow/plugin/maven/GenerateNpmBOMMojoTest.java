@@ -156,4 +156,10 @@ public class GenerateNpmBOMMojoTest {
                 newContent.toArray());
     }
 
+    @Test
+    public void cycloneDxNpm_isPinnedToExactVersion() {
+        Assert.assertTrue(GenerateNpmBOMMojo.CYCLONEDX_NPM,
+                GenerateNpmBOMMojo.CYCLONEDX_NPM.matches(
+                        "@cyclonedx/cyclonedx-npm@\\d+\\.\\d+\\.\\d+"));
+    }
 }
