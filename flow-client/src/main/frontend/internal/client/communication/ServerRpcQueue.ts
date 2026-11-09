@@ -59,6 +59,9 @@ export class ServerRpcQueue {
       return;
     }
     this.#pendingInvocations.push(invocation);
+    if (this.#pendingInvocations.length === 1) {
+      this.#registry.getMessageSender().openRequest();
+    }
   }
 
   /** Clears the queue and cancels any scheduled flush. */

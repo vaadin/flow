@@ -163,6 +163,7 @@ public final class Clipboard implements Serializable {
      *            {@code null}
      * @return a binding for chaining the clipboard action to perform on click
      * @see ClipboardBinding
+     * @since 25.4
      */
     public static ClipboardBinding onClick(Component component) {
         Objects.requireNonNull(component, "component must not be null");

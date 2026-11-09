@@ -283,8 +283,8 @@ public class NavigationAccessControl implements BeforeEnterListener {
             return context.allow();
         }
 
-        getLogger().debug("Checking access for view {}",
-                navigationTarget.getName());
+        getLogger().debug("{}Checking access for view {}",
+                context.getLogPrefix(), navigationTarget.getName());
         if (loginView != null && navigationTarget == loginView) {
             getLogger().debug("Allowing access for login view {}",
                     navigationTarget.getName());
@@ -298,8 +298,8 @@ public class NavigationAccessControl implements BeforeEnterListener {
         List<AccessCheckResult> results = checkerList.stream()
                 .map(checker -> checker.check(context)).toList();
         AccessCheckResult decision = decisionResolver.resolve(results, context);
-        getLogger().debug("Decision against {} checker results: {}",
-                results.size(), decision);
+        getLogger().debug("{}Decision against {} checker results: {}",
+                context.getLogPrefix(), results.size(), decision);
 
         if (decision.decision() == AccessCheckDecision.REJECT
                 && !productionMode) {
@@ -450,6 +450,6 @@ public class NavigationAccessControl implements BeforeEnterListener {
         return new NavigationContext(vaadinService.getRouter(),
                 navigationTarget, new Location(path), RouteParameters.empty(),
                 getPrincipal(vaadinRequest), getRolesChecker(vaadinRequest),
-                false, false);
+                false, NavigationContext.Phase.EVALUATION);
     }
 }

@@ -38,6 +38,12 @@ import { assert } from '../../assert';
 import { needsRebind } from './binding/SimpleElementBindingStrategy';
 import { decodeStateNode, decodeWithTypeInfo } from './util/ClientJsonCodec';
 import {
+  describeMissingFunction,
+  findDeclaredFunction,
+  findDeclaredFunctionWithExecutionContext,
+  getNameOf
+} from './util/DeclaredJavaScript';
+import {
   attachExistingElement,
   disposeInitializer,
   populateModelProperties,
@@ -67,8 +73,6 @@ interface ContextCallbacks {
   disposeInitializer: (node: StateNode, id: number) => void;
 }
 
-type JsDefinitionFunction = (this: unknown, ...args: unknown[]) => unknown;
-
 /**
  * What an invocation of declared JavaScript names instead of an expression:
  * the function of the bundle to run, identified by a hash of the JavaScript it
@@ -91,44 +95,6 @@ function reportThroughChannel(parameters: unknown[], message: string): void {
   if (typeof lastParameter === 'function') {
     (lastParameter as ReturnChannel)(message);
   }
-}
-
-/**
- * What the generated bundle registers on the page: a function per declared
- * expression, and, outside production, what a developer wrote for each of
- * them.
- */
-function getDeclaredJavaScript(): {
-  jsDefinitions?: Record<string, JsDefinitionFunction>;
-  jsDefinitionNames?: Record<string, string>;
-} {
-  return (
-    (
-      window as unknown as {
-        Vaadin?: {
-          Flow?: { jsDefinitions?: Record<string, JsDefinitionFunction>; jsDefinitionNames?: Record<string, string> };
-        };
-      }
-    ).Vaadin?.Flow ?? {}
-  );
-}
-
-/**
- * Looks up the function that the build generated for declared JavaScript. The
- * registry is populated by the generated bundle, so the function is ordinary
- * bundled code and nothing has to be compiled from a string here.
- */
-function findDeclaredFunction(functionId: string): JsDefinitionFunction | undefined {
-  return getDeclaredJavaScript().jsDefinitions?.[functionId];
-}
-
-/**
- * What to call a function in a message: what a developer wrote, which a
- * development bundle registers next to the function itself, and the identifier
- * of the function when it does not, as in production.
- */
-function getNameOf(functionId: string): string {
-  return getDeclaredJavaScript().jsDefinitionNames?.[functionId] ?? functionId;
 }
 
 /**
@@ -205,13 +171,14 @@ export class ExecuteJavaScriptProcessor {
     if (typeof whatToRun === 'object') {
       // A call of declared JavaScript: the bundle has the function, the
       // server sent only which one to run. The node parameters are for the
-      // context object an expression runs against, whose `getNode` maps an
-      // element back to its state node; a declared function runs against the
-      // element itself and has no context, so there is nothing that could ask.
+      // execution context, whose `getNode` maps an element back to its state
+      // node, and which a declared function gets only when the bundle
+      // registers it as one that does.
       this.invokeFromBundle(
         whatToRun[JsonConstants.UIDL_KEY_JS_FUNCTION],
         parameters,
-        whatToRun[JsonConstants.UIDL_KEY_JS_ARGUMENT_COUNT]
+        whatToRun[JsonConstants.UIDL_KEY_JS_ARGUMENT_COUNT],
+        nodeParameters
       );
       return;
     }
@@ -263,7 +230,17 @@ export class ExecuteJavaScriptProcessor {
     parameters: unknown[],
     nodeParameters: Map<unknown, StateNode>
   ): void {
-    const configuration = this.#registry.getApplicationConfiguration();
+    invokeJavaScript(
+      parameterNamesAndCode,
+      parameters,
+      this.#createExecutionContext(nodeParameters),
+      this.#registry.getApplicationConfiguration().isProductionMode()
+    );
+  }
+
+  // The object an expression runs against, which a declared function that
+  // gets the execution context is passed as its first argument instead.
+  #createExecutionContext(nodeParameters: Map<unknown, StateNode>): Record<string, unknown> {
     const getNode = (element: unknown): StateNode => {
       const node = nodeParameters.get(element);
       if (node === undefined) {
@@ -271,7 +248,7 @@ export class ExecuteJavaScriptProcessor {
       }
       return node;
     };
-    const context = getContextExecutionObject(configuration.getApplicationId(), this.#registry, {
+    return getContextExecutionObject(this.#registry.getApplicationConfiguration().getApplicationId(), this.#registry, {
       getNode,
       attachExistingElement,
       populateModelProperties,
@@ -285,13 +262,13 @@ export class ExecuteJavaScriptProcessor {
       registerInitializer,
       disposeInitializer
     });
-    invokeJavaScript(parameterNamesAndCode, parameters, context, configuration.isProductionMode());
   }
 
   /**
    * Executes a call made through a JavaScript definition: looks the function up
    * in the registry that the generated bundle populates and applies it to the
-   * element, with the arguments of the call. Nothing is compiled from a string,
+   * element, with the arguments of the call, preceded by the execution context
+   * for a function that the bundle registers as one that gets it. Nothing is compiled from a string,
    * which is what makes this path work under a content security policy that
    * does not allow `unsafe-eval`.
    *
@@ -304,12 +281,20 @@ export class ExecuteJavaScriptProcessor {
    * @param sentArgumentCount - how many arguments the call carries, sent for a
    *          function that collects them into a rest parameter and does not
    *          report them in its length
+   * @param nodeParameters - the state nodes of the parameters that are
+   *          elements, for the execution context of a function that gets it
    */
-  protected invokeFromBundle(functionId: string, parameters: unknown[], sentArgumentCount?: number): void {
+  protected invokeFromBundle(
+    functionId: string,
+    parameters: unknown[],
+    sentArgumentCount: number | undefined,
+    nodeParameters: Map<unknown, StateNode>
+  ): void {
     const name = getNameOf(functionId);
-    const fn = findDeclaredFunction(functionId);
+    const withExecutionContext = findDeclaredFunctionWithExecutionContext(functionId);
+    const fn = withExecutionContext ?? findDeclaredFunction(functionId);
     if (fn === undefined) {
-      const message = `No JavaScript in the bundle for ${name}. The JavaScript definition is annotated with @JsDefinition, but the build did not collect it.`;
+      const message = describeMissingFunction(functionId);
       Console.error(message);
       // The server appends the two channels after everything else, or neither
       // of them, so the error channel is the last parameter. Report through it
@@ -325,7 +310,10 @@ export class ExecuteJavaScriptProcessor {
     // does not add up means the invocation was not built for this function,
     // and reading the element out of it by index would bind an argument as
     // `this`. Say so instead of running the call.
-    const argumentCount = sentArgumentCount ?? fn.length;
+    // A function that gets the execution context takes it as its first
+    // parameter, which counts towards its length but is not sent. A rest
+    // parameter does not count, so a sent count is used as it is.
+    const argumentCount = sentArgumentCount ?? (withExecutionContext === undefined ? fn.length : fn.length - 1);
     const afterTheArguments = parameters.length - argumentCount;
     if (afterTheArguments !== 1 && afterTheArguments !== 3) {
       const message = `Expected ${argumentCount} arguments and the element for ${name} but the invocation carries ${parameters.length} parameters. Reload the page to pick up the current signature.`;
@@ -342,7 +330,11 @@ export class ExecuteJavaScriptProcessor {
     // arguments, and it is what the function runs against.
     const thisArg = parameters[argumentCount];
     try {
-      const result = fn.apply(thisArg, parameters.slice(0, argumentCount));
+      const args = parameters.slice(0, argumentCount);
+      const result = fn.apply(
+        thisArg,
+        withExecutionContext === undefined ? args : [this.#createExecutionContext(nodeParameters), ...args]
+      );
       if (onSuccess !== undefined) {
         Promise.resolve(result).then(onSuccess, (error: unknown) => onError?.(`${error}`));
       }
