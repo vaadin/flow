@@ -35,9 +35,14 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.dom.DomEventData;
 import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -91,6 +96,14 @@ class CspModeTest {
     private static class RouteView extends Component {
     }
 
+    @DomEvent("custom-event")
+    public static class KeyedEvent extends ComponentEvent<UI> {
+        public KeyedEvent(UI source, boolean fromClient,
+                @EventData("key") String key) {
+            super(source, fromClient);
+        }
+    }
+
     private MockServletServiceSessionSetup setup;
     private MockUI ui;
 
@@ -120,23 +133,41 @@ class CspModeTest {
                 call(JsFunction.class, "of", ui -> JsFunction.of("return 1")),
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
-                        }).addEventData("event.x")),
+                        }).addEventData("event.x * 2")),
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
-                        }).addEventData(List.of("event.x"))),
+                        }).addEventData(List.of("event?.x()"))),
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).addEventData(
                                 List.of(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN
-                                        + "value", "event.x"))),
+                                        + "value", "event.x[0]"))),
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
-                        }).addEventDataElement("event.target.parentElement")),
+                        }).addEventDataElement("event.composedPath()[0]")),
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ui.getElement().addEventListener("click", e -> {
+                        }).addEventData("window.location")),
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ui.getElement().addEventListener("click", e -> {
+                        }).addEventData("event??.x")),
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ui.getElement().addEventListener("click", e -> {
+                        }).addEventData("event.?x")),
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ui.getElement().addEventListener("click", e -> {
+                        }).addEventDataElement("document.head")),
                 call(DomListenerRegistration.class, "setFilter",
                         ui -> ui.getElement().addEventListener("click", e -> {
-                        }).setFilter("event.x")),
-                // Vaadin code sending event data and a filter on its own
+                        }).setFilter("event.x == 1")),
+                // A key of client-built data only for Flow's own events
                 call(DomListenerRegistration.class, "addEventData",
+                        ui -> ComponentUtil.addListener(ui, KeyedEvent.class,
+                                e -> {
+                                })),
+                // Vaadin code sending a filter on its own, with event data
+                // that are property paths
+                call(DomListenerRegistration.class, "setFilter",
                         ui -> new Clickable().addDoubleClickListener(e -> {
                         })));
     }
@@ -175,6 +206,13 @@ class CspModeTest {
                             JsonConstants.MAP_STATE_NODE_EVENT_DATA));
             registration.synchronizeProperty("value");
             registration.mapEventTargetElement();
+            // The client reads property paths without compiling them
+            registration.addEventData("event.detail.value");
+            registration.addEventData("event.detail?.value");
+            registration.addEventData(List.of("element.value", "event"));
+            registration.addEventDetail();
+            registration.addEventDataElement("event.target.parentElement");
+            registration.setFilter("event.isTrusted");
             // The client runs these without compiling them, also when Flow
             // adds the always-true filter for the debounce
             registration.preventDefault();
@@ -187,6 +225,21 @@ class CspModeTest {
                     .addEventData(eventJs.scaledX(2));
             // Loads the chunk of the route with a function from the bundle
             ui.getInternals().addComponentDependencies(RouteView.class);
+        });
+    }
+
+    @Test
+    void strict_uiStartsWithoutViolation() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+
+        // The constructor of Page adds the detail of an event, and the events
+        // of the navigation and of connecting a web component carry keys of
+        // data that client code builds, not expressions
+        assertDoesNotThrow(() -> {
+            new MockUI(setup.getSession()).doInit(null, 1, "app");
+            WebComponentUI webComponentUI = new WebComponentUI();
+            webComponentUI.getInternals().setSession(setup.getSession());
+            webComponentUI.doInit(null, 2, "app");
         });
     }
 
