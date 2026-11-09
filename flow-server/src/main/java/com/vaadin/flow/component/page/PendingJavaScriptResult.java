@@ -201,9 +201,7 @@ public interface PendingJavaScriptResult extends Serializable {
 
         then(decodingHandler(value -> JacksonCodec.decodeAs(value, targetType),
                 completableFuture::complete,
-                conversionError -> completableFuture.completeExceptionally(
-                        new JavaScriptException(conversionError.getMessage())
-                                .initCause(conversionError))),
+                futureConversionErrorHandler(completableFuture)),
                 errorValue -> completableFuture.completeExceptionally(
                         new JavaScriptException(errorValue)));
 
@@ -327,9 +325,7 @@ public interface PendingJavaScriptResult extends Serializable {
         then(decodingHandler(
                 value -> JacksonCodec.decodeAs(value, typeReference),
                 completableFuture::complete,
-                conversionError -> completableFuture.completeExceptionally(
-                        new JavaScriptException(conversionError.getMessage())
-                                .initCause(conversionError))),
+                futureConversionErrorHandler(completableFuture)),
                 errorValue -> completableFuture.completeExceptionally(
                         new JavaScriptException(errorValue)));
 
@@ -440,5 +436,20 @@ public interface PendingJavaScriptResult extends Serializable {
         return e -> LoggerFactory.getLogger(PendingJavaScriptResult.class).warn(
                 "Ignored a JavaScript result that can not be converted: {}",
                 e.getMessage());
+    }
+
+    /**
+     * Creates a conversion error handler that completes the given future
+     * exceptionally with a {@link JavaScriptException} caused by the conversion
+     * failure.
+     *
+     * @param completableFuture
+     *            the future to complete, not <code>null</code>
+     * @return a conversion error handler, not <code>null</code>
+     */
+    private static SerializableConsumer<IllegalArgumentException> futureConversionErrorHandler(
+            CompletableFuture<?> completableFuture) {
+        return e -> completableFuture.completeExceptionally(
+                new JavaScriptException(e.getMessage()).initCause(e));
     }
 }
