@@ -137,6 +137,12 @@ class CspModeTest {
                         }).addEventData("window.location")),
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
+                        }).addEventData("event??.x")),
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ui.getElement().addEventListener("click", e -> {
+                        }).addEventData("event.?x")),
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ui.getElement().addEventListener("click", e -> {
                         }).addEventDataElement("document.head")),
                 call(DomListenerRegistration.class, "setFilter",
                         ui -> ui.getElement().addEventListener("click", e -> {
