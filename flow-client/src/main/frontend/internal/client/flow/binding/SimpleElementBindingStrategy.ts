@@ -74,6 +74,7 @@ import { bindServerEventHandlerNames } from './ServerEventHandlerBinder';
 import { Console } from '../../Console';
 import { decodeCopyWithTypeInfo, evaluateDeclaredSnippet } from '../util/ClientJsonCodec';
 import { describeMissingFunction, findDeclaredSnippet } from '../util/DeclaredJavaScript';
+import { createPropertyPathExpression } from '../util/PropertyPathExpression';
 
 // com.vaadin.client.flow.binding.SimpleElementBindingStrategy.HIDDEN_ATTRIBUTE
 const HIDDEN_ATTRIBUTE = 'hidden';
@@ -1539,7 +1540,8 @@ const BUILT_IN_EXPRESSIONS = new Map<string, EventExpression>([
  * Parses an event-data expression into a function `(event, element) => value`,
  * caching the result per expression string; mirrors getOrCreateExpression.
  * The expressions that Flow itself sends are not compiled, see
- * BUILT_IN_EXPRESSIONS.
+ * BUILT_IN_EXPRESSIONS, and neither are property paths, see
+ * createPropertyPathExpression.
  */
 function getOrCreateExpression(expressionString: string): EventExpression {
   const builtIn = BUILT_IN_EXPRESSIONS.get(expressionString);
@@ -1553,7 +1555,9 @@ function getOrCreateExpression(expressionString: string): EventExpression {
 
   if (expression === undefined) {
     // Mirrors NativeFunction.create; the server controls these expressions.
-    expression = new Function('event', 'element', `return (${expressionString})`) as EventExpression;
+    expression =
+      createPropertyPathExpression(expressionString) ??
+      (new Function('event', 'element', `return (${expressionString})`) as EventExpression);
     expressionCache.set(expressionString, expression);
   }
 

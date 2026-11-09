@@ -27,6 +27,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -81,6 +82,15 @@ public class ElementListenerMap extends NodeMap {
      * an expression.
      */
     private static final String SNIPPET_KEY_PREFIX = "@";
+
+    /**
+     * {@code event} or {@code element}, followed by any number of {@code .name}
+     * or {@code ?.name} segments. The client reads such a path without
+     * compiling it, see {@code PropertyPathExpression.ts}, which has the same
+     * pattern.
+     */
+    private static final Pattern PROPERTY_PATH = Pattern
+            .compile("(event|element)(\\??\\.[A-Za-z_$][\\w$]*)*");
 
     private static final Entry ALWAYS_TRUE_ENTRY = new ExpressionEntry(
             ALWAYS_TRUE_FILTER);
@@ -303,16 +313,7 @@ public class ElementListenerMap extends NodeMap {
 
         @Override
         public DomListenerRegistration addEventData(List<String> eventData) {
-            if (eventData == null) {
-                throw new IllegalArgumentException(
-                        "The event data expressions must not be null");
-            }
-            for (String expression : eventData) {
-                if (expression == null) {
-                    throw new IllegalArgumentException(
-                            "The event data expression must not be null");
-                }
-            }
+            requireEventData(eventData);
             if (eventData.stream()
                     .anyMatch(DomEventListenerWrapper::isCompiledByClient)) {
                 CspViolationReporter.reportStringJavaScript();
@@ -323,6 +324,27 @@ public class ElementListenerMap extends NodeMap {
             listenerMap.updateEventSettings(type);
 
             return this;
+        }
+
+        private void addEventDataWithoutCspReport(List<String> eventData) {
+            requireEventData(eventData);
+
+            appendEventData(eventData);
+
+            listenerMap.updateEventSettings(type);
+        }
+
+        private static void requireEventData(List<String> eventData) {
+            if (eventData == null) {
+                throw new IllegalArgumentException(
+                        "The event data expressions must not be null");
+            }
+            for (String expression : eventData) {
+                if (expression == null) {
+                    throw new IllegalArgumentException(
+                            "The event data expression must not be null");
+                }
+            }
         }
 
         private void appendEventData(List<String> eventData) {
@@ -370,7 +392,7 @@ public class ElementListenerMap extends NodeMap {
 
         @Override
         public DomListenerRegistration setFilter(String filter) {
-            if (filter != null) {
+            if (filter != null && !isPropertyPath(filter)) {
                 CspViolationReporter.reportStringJavaScript();
             }
             return updateFilter(
@@ -463,10 +485,17 @@ public class ElementListenerMap extends NodeMap {
             return this;
         }
 
-        // The client reads a synchronized property or the state node closest
-        // to the event target, and calls preventDefault() or stopPropagation(),
-        // without compiling anything
+        // The client reads a synchronized property, the state node closest
+        // to the event target or a property path, also one that leads to the
+        // element to map to a state node, and calls preventDefault() or
+        // stopPropagation(), without compiling anything
         private static boolean isCompiledByClient(String eventData) {
+            String expression = eventData
+                    .startsWith(JsonConstants.MAP_STATE_NODE_EVENT_DATA)
+                            ? eventData.substring(
+                                    JsonConstants.MAP_STATE_NODE_EVENT_DATA
+                                            .length())
+                            : eventData;
             return !eventData
                     .startsWith(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN)
                     && !eventData
@@ -474,7 +503,12 @@ public class ElementListenerMap extends NodeMap {
                     && !eventData
                             .equals(JsonConstants.EVENT_DATA_PREVENT_DEFAULT)
                     && !eventData
-                            .equals(JsonConstants.EVENT_DATA_STOP_PROPAGATION);
+                            .equals(JsonConstants.EVENT_DATA_STOP_PROPAGATION)
+                    && !isPropertyPath(expression);
+        }
+
+        private static boolean isPropertyPath(String expression) {
+            return PROPERTY_PATH.matcher(expression).matches();
         }
 
         private boolean isPropertySynchronized(String propertyName) {
@@ -798,6 +832,29 @@ public class ElementListenerMap extends NodeMap {
                 .map(settings -> settings.entry)
                 .filter(ExpressionEntry.class::isInstance).map(Entry::key)
                 .collect(Collectors.toUnmodifiableSet());
+    }
+
+    /**
+     * Adds event data to a registration of this map like
+     * {@link DomListenerRegistration#addEventData(List)}, but without reporting
+     * them as JavaScript sent as a string. For the keys of data that client
+     * code builds and sends with <code>sendEventMessage</code>, which the
+     * client never compiles.
+     *
+     * @param registration
+     *            a registration returned by
+     *            {@link #add(String, DomEventListener)}, not <code>null</code>
+     * @param eventData
+     *            the keys of the event data, not <code>null</code> and not
+     *            containing <code>null</code>
+     */
+    public static void addEventDataWithoutCspReport(
+            DomListenerRegistration registration, List<String> eventData) {
+        if (!(registration instanceof DomEventListenerWrapper wrapper)) {
+            throw new IllegalArgumentException(
+                    "The registration must be one returned by an ElementListenerMap");
+        }
+        wrapper.addEventDataWithoutCspReport(eventData);
     }
 
     /**

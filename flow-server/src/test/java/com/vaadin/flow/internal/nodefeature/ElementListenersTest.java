@@ -155,6 +155,17 @@ public class ElementListenersTest
     }
 
     @Test
+    void addEventDataWithoutCspReport_addsKeysLikeAddEventData() {
+        DomListenerRegistration registration = ns.add("eventType", noOp)
+                .addEventData("data1");
+
+        ElementListenerMap.addEventDataWithoutCspReport(registration,
+                List.of("data1", "data2"));
+
+        assertEquals(Set.of("data1", "data2"), getExpressions("eventType"));
+    }
+
+    @Test
     void addEventDataList_existingExpressions_merged() {
         ns.add("eventType", noOp).addEventData("data1")
                 .addEventData(List.of("data1", "data2"));
