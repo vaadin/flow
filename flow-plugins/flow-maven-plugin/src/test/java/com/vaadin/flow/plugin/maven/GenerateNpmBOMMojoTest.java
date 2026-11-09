@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.maven.plugin.MojoFailureException;
@@ -41,6 +42,7 @@ import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -137,6 +139,25 @@ class GenerateNpmBOMMojoTest {
         assertFalse(Files.exists(Paths.get(bomFilename)));
         mojo.execute();
         assertTrue(Files.exists(Paths.get(bomFilename)));
+    }
+
+    @Test
+    void getProperties_runsPinnedCycloneDxNpm() {
+        Properties properties = mojo.getProperties();
+
+        assertEquals("npx", properties.getProperty("exec.executable"));
+        assertTrue(
+                properties.getProperty("exec.args")
+                        .startsWith(GenerateNpmBOMMojo.CYCLONEDX_NPM + " "),
+                properties.getProperty("exec.args"));
+    }
+
+    @Test
+    void cycloneDxNpm_isPinnedToExactVersion() {
+        assertTrue(
+                GenerateNpmBOMMojo.CYCLONEDX_NPM
+                        .matches("@cyclonedx/cyclonedx-npm@\\d+\\.\\d+\\.\\d+"),
+                GenerateNpmBOMMojo.CYCLONEDX_NPM);
     }
 
     @Test
