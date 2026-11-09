@@ -232,8 +232,10 @@ public class NodeUpdaterTest {
                 "7.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("13.0.6", packageJson
-                .get(NodeUpdater.DEV_DEPENDENCIES).get("glob").textValue());
+        Assert.assertEquals(
+                nodeUpdater.getDefaultDevDependencies().get("glob"),
+                packageJson.get(NodeUpdater.DEV_DEPENDENCIES).get("glob")
+                        .textValue());
     }
 
     @Test // #6907 test when user has set newer versions
