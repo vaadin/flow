@@ -69,6 +69,27 @@ class JsDefinitionProxyTest {
         JavaScriptResult<JsonNode> readJson();
     }
 
+    interface ValueJs<T> extends Serializable {
+        @JsExpression("return this.value;")
+        JavaScriptResult<T> readValue();
+    }
+
+    interface ListJs<T> extends ValueJs<List<T>> {
+    }
+
+    @JsDefinition
+    interface CounterJs extends ValueJs<Integer> {
+    }
+
+    @JsDefinition
+    interface NumbersJs extends ListJs<Integer> {
+    }
+
+    @JsDefinition
+    @SuppressWarnings("rawtypes")
+    interface RawValueJs extends ValueJs {
+    }
+
     @JsDefinition
     interface UntypedJs<T> extends Serializable {
         @SuppressWarnings("rawtypes")
@@ -263,6 +284,45 @@ class JsDefinitionProxyTest {
     }
 
     @Test
+    void create_valueThatCanNotBeConverted_failsWithTheConversionError() {
+        List<String> errors = new ArrayList<>();
+        JavaScriptResult<Integer> answer = proxy(TypedJs.class).readAnswer();
+        answer.then(value -> errors.add("converted " + value), errors::add);
+        CompletableFuture<Integer> future = answer.toCompletableFuture();
+
+        result.complete("\"forty-two\"");
+
+        assertEquals(1, errors.size());
+        assertTrue(errors.get(0).contains("Integer"), errors.get(0));
+        CompletionException exception = assertThrows(CompletionException.class,
+                () -> future.getNow(null));
+        assertInstanceOf(IllegalArgumentException.class, exception.getCause());
+    }
+
+    @Test
+    void create_valueThatCanNotBeConvertedWithoutAnErrorHandler_throws() {
+        proxy(TypedJs.class).readAnswer().then(value -> {
+        });
+
+        assertThrows(IllegalArgumentException.class,
+                () -> result.complete("\"forty-two\""));
+    }
+
+    @Test
+    void create_typedResultFromAGenericInterface_convertsToTheBoundType() {
+        List<Integer> counts = new ArrayList<>();
+        proxy(CounterJs.class).readValue().then(counts::add);
+        result.complete("7");
+        assertEquals(List.of(7), counts);
+
+        result.resultHandlers.clear();
+        List<Integer> numbers = new ArrayList<>();
+        proxy(NumbersJs.class).readValue().then(numbers::addAll);
+        result.complete("[4, 2]");
+        assertEquals(List.of(4, 2), numbers);
+    }
+
+    @Test
     void create_methodDeclaringATypedResult_isSerializable() throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (ObjectOutputStream out = new ObjectOutputStream(bytes)) {
@@ -293,6 +353,9 @@ class JsDefinitionProxyTest {
                 "the message should name every method: " + message);
         assertTrue(message.contains("PendingJavaScriptResult"),
                 "the message should say what to declare instead: " + message);
+        assertThrows(IllegalArgumentException.class,
+                () -> proxy(RawValueJs.class),
+                "a type variable that raw inheritance leaves unbound");
     }
 
     @Test

@@ -340,7 +340,8 @@ public class JacksonCodec {
      *            the type to decode to, not <code>null</code>
      * @return the value decoded as the given type
      * @throws IllegalArgumentException
-     *             if deserialization failed
+     *             if deserialization failed, or if the type is a JSON node type
+     *             that the value is not, such as an object node for an array
      */
     public static <T> T decodeAs(JsonNode json, JavaType type) {
         Objects.requireNonNull(json, "JSON cannot be null");
@@ -349,6 +350,10 @@ public class JacksonCodec {
             return null;
         }
         if (type.isTypeOrSubTypeOf(JsonNode.class)) {
+            if (!type.getRawClass().isInstance(json)) {
+                throw new IllegalArgumentException("Cannot decode JSON of type "
+                        + json.getNodeType() + " as " + type.toCanonical());
+            }
             @SuppressWarnings("unchecked")
             T node = (T) json;
             return node;

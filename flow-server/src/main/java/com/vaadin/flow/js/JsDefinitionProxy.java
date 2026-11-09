@@ -27,15 +27,21 @@ import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.type.TypeFactory;
 
+import com.vaadin.flow.component.internal.DeadlockDetectingCompletableFuture;
 import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.component.page.PendingJavaScriptResult.JavaScriptException;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -44,6 +50,7 @@ import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
+import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Hands out implementations of {@link JsDefinition} interfaces, which turn a
@@ -90,6 +97,15 @@ public final class JsDefinitionProxy {
      */
     private static final ReflectionCache<Object, Kind> checkedDefinitions = ReflectionCache
             .clearedBeforeHotswap(JsDefinitionProxy::checkDefinition);
+
+    /**
+     * The type that every method of a checked JavaScript definition returning
+     * {@link JavaScriptResult} converts its value to, so that the generic
+     * return type is resolved once per definition rather than on every call.
+     * Cleared before a redefined class is hotswapped.
+     */
+    private static final ReflectionCache<Object, Map<Method, JavaType>> resultTypes = ReflectionCache
+            .clearedBeforeHotswap(JsDefinitionProxy::collectResultTypes);
 
     private static final String RETURN_TYPES = "An interface declares either"
             + " JavaScript to run, with methods returning void,"
@@ -225,6 +241,8 @@ public final class JsDefinitionProxy {
         List<String> unanswerable = new ArrayList<>();
         List<String> untyped = new ArrayList<>();
         List<String> inJava = new ArrayList<>();
+        Map<TypeVariable<?>, JavaType> typeArguments = collectTypeArguments(
+                definitionType);
         for (Method method : definitionType.getMethods()) {
             if (method.isDefault()
                     || Modifier.isStatic(method.getModifiers())) {
@@ -240,7 +258,7 @@ public final class JsDefinitionProxy {
                 continue;
             }
             if (!snippets && method.getReturnType() == JavaScriptResult.class
-                    && typedResultType(method) == null) {
+                    && typedResultType(method, typeArguments) == null) {
                 untyped.add(method.getName());
             } else if (snippets ? !returnsFunction(method)
                     : !returnsInvocationResult(method)) {
@@ -300,36 +318,109 @@ public final class JsDefinitionProxy {
                 || returnType.isAssignableFrom(PendingJavaScriptResult.class);
     }
 
+    private static Map<Method, JavaType> collectResultTypes(
+            Class<?> definitionType) {
+        Map<TypeVariable<?>, JavaType> typeArguments = collectTypeArguments(
+                definitionType);
+        Map<Method, JavaType> types = new HashMap<>();
+        for (Method method : definitionType.getMethods()) {
+            if (method.getReturnType() == JavaScriptResult.class) {
+                JavaType type = typedResultType(method, typeArguments);
+                if (type != null) {
+                    types.put(method, type);
+                }
+            }
+        }
+        return Map.copyOf(types);
+    }
+
     /**
-     * Gets the type argument of a method returning {@link JavaScriptResult}, or
-     * <code>null</code> if it is raw, a wildcard or refers to a type variable,
-     * none of which tells what to convert the result to.
+     * Gets the type to convert the value of a method returning
+     * {@link JavaScriptResult} to, or <code>null</code> if its type argument is
+     * raw, a wildcard or refers to a type variable that the definition does not
+     * bind to a type, none of which tells what to convert the result to.
      */
-    private static Type typedResultType(Method method) {
+    private static JavaType typedResultType(Method method,
+            Map<TypeVariable<?>, JavaType> typeArguments) {
         if (method
                 .getGenericReturnType() instanceof ParameterizedType parameterized) {
             Type argument = parameterized.getActualTypeArguments()[0];
-            if (!(argument instanceof WildcardType)
-                    && !refersToTypeVariable(argument)) {
-                return argument;
-            }
+            return argument instanceof WildcardType ? null
+                    : resolve(argument, typeArguments);
         }
         return null;
     }
 
-    private static boolean refersToTypeVariable(Type type) {
+    /**
+     * Collects the types that the given interface binds the type variables of
+     * the interfaces it extends to, directly or through other ones, such as
+     * {@code Integer} for {@code T} of {@code ValueJs<T>} when it extends
+     * {@code ValueJs<Integer>}. A variable that is bound to nothing concrete,
+     * by raw inheritance or to a variable of the interface itself, is left out.
+     */
+    private static Map<TypeVariable<?>, JavaType> collectTypeArguments(
+            Class<?> type) {
+        Map<TypeVariable<?>, JavaType> typeArguments = new HashMap<>();
+        collectTypeArguments(type, typeArguments);
+        return typeArguments;
+    }
+
+    private static void collectTypeArguments(Class<?> type,
+            Map<TypeVariable<?>, JavaType> typeArguments) {
+        for (Type superInterface : type.getGenericInterfaces()) {
+            if (superInterface instanceof ParameterizedType parameterized) {
+                Class<?> raw = (Class<?>) parameterized.getRawType();
+                TypeVariable<?>[] variables = raw.getTypeParameters();
+                Type[] arguments = parameterized.getActualTypeArguments();
+                for (int i = 0; i < variables.length; i++) {
+                    JavaType argument = arguments[i] instanceof WildcardType
+                            ? null
+                            : resolve(arguments[i], typeArguments);
+                    if (argument != null) {
+                        typeArguments.put(variables[i], argument);
+                    }
+                }
+                collectTypeArguments(raw, typeArguments);
+            } else if (superInterface instanceof Class<?> raw) {
+                collectTypeArguments(raw, typeArguments);
+            }
+        }
+    }
+
+    /**
+     * Resolves a type with the given type variable bindings, or answers
+     * <code>null</code> if it refers to a type variable that is not bound. A
+     * wildcard within a type argument resolves to its upper bound, as Jackson
+     * does.
+     */
+    private static JavaType resolve(Type type,
+            Map<TypeVariable<?>, JavaType> typeArguments) {
+        TypeFactory types = JacksonUtils.getMapper().getTypeFactory();
         return switch (type) {
-        case TypeVariable<?> variable -> true;
-        case ParameterizedType parameterized ->
-            Stream.of(parameterized.getActualTypeArguments())
-                    .anyMatch(JsDefinitionProxy::refersToTypeVariable);
-        case GenericArrayType array ->
-            refersToTypeVariable(array.getGenericComponentType());
-        case WildcardType wildcard -> Stream
-                .concat(Stream.of(wildcard.getUpperBounds()),
-                        Stream.of(wildcard.getLowerBounds()))
-                .anyMatch(JsDefinitionProxy::refersToTypeVariable);
-        default -> false;
+        case Class<?> plain -> types.constructType(plain);
+        case TypeVariable<?> variable -> typeArguments.get(variable);
+        case ParameterizedType parameterized -> {
+            Type[] arguments = parameterized.getActualTypeArguments();
+            JavaType[] resolved = new JavaType[arguments.length];
+            for (int i = 0; i < arguments.length; i++) {
+                Type argument = arguments[i] instanceof WildcardType wildcard
+                        ? wildcard.getUpperBounds()[0]
+                        : arguments[i];
+                resolved[i] = resolve(argument, typeArguments);
+                if (resolved[i] == null) {
+                    yield null;
+                }
+            }
+            yield types.constructParametricType(
+                    (Class<?>) parameterized.getRawType(), resolved);
+        }
+        case GenericArrayType array -> {
+            JavaType component = resolve(array.getGenericComponentType(),
+                    typeArguments);
+            yield component == null ? null
+                    : types.constructArrayType(component);
+        }
+        default -> null;
         };
     }
 
@@ -366,12 +457,16 @@ public final class JsDefinitionProxy {
                     new JsCall(definitionType, method.getName(), arguments));
             Class<?> returnType = method.getReturnType();
             if (returnType == JavaScriptResult.class) {
-                Type valueType = typedResultType(method);
-                // The pending result already is a JavaScriptResult<JsonNode>
-                return valueType == JsonNode.class ? result
-                        : new TypedJavaScriptResult<>(result,
-                                JacksonUtils.getMapper().getTypeFactory()
-                                        .constructType(valueType));
+                JavaType valueType = resultTypes.get(definitionType)
+                        .get(method);
+                // Not wrapped, because the pending result already is a
+                // JavaScriptResult<JsonNode> and hands a JavaScript null over
+                // as a NullNode, like its own then(Consumer<JsonNode>).
+                // Decoding turns null into a Java null instead, which is right
+                // for other node types such as ObjectNode, as with
+                // then(Class, Consumer), but would change what JsonNode gets.
+                return valueType.hasRawClass(JsonNode.class) ? result
+                        : new TypedJavaScriptResult<>(result, valueType);
             }
             return returnType == void.class ? null : result;
         }
@@ -403,10 +498,41 @@ public final class JsDefinitionProxy {
                 throw new IllegalArgumentException(
                         "Result handler cannot be null");
             }
-            pending.then(
-                    json -> resultHandler
-                            .accept(JacksonCodec.decodeAs(json, valueType)),
-                    errorHandler);
+            pending.then(json -> {
+                T value;
+                try {
+                    value = JacksonCodec.decodeAs(json, valueType);
+                } catch (IllegalArgumentException e) {
+                    // A value that can not be converted is a failure of the
+                    // execution as far as the caller can tell, but is not
+                    // silently dropped when there is no one to tell
+                    if (errorHandler == null) {
+                        throw e;
+                    }
+                    errorHandler.accept(e.getMessage());
+                    return;
+                }
+                resultHandler.accept(value);
+            }, errorHandler);
+        }
+
+        @Override
+        public CompletableFuture<T> toCompletableFuture() {
+            // The session that is locked when subscribing is the one that
+            // will complete the future, since subscribing is only possible
+            // before the execution is sent to the browser
+            CompletableFuture<T> completableFuture = new DeadlockDetectingCompletableFuture<>(
+                    VaadinSession.getCurrent());
+            pending.then(json -> {
+                try {
+                    completableFuture
+                            .complete(JacksonCodec.decodeAs(json, valueType));
+                } catch (IllegalArgumentException e) {
+                    completableFuture.completeExceptionally(e);
+                }
+            }, errorValue -> completableFuture.completeExceptionally(
+                    new JavaScriptException(errorValue)));
+            return completableFuture;
         }
     }
 
