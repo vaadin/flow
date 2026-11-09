@@ -376,6 +376,11 @@ public interface PendingJavaScriptResult extends Serializable {
         return toCompletableFuture(JsonNode.class);
     }
 
+    /**
+     * Wraps a typed result handler into a JSON handler that decodes the value
+     * first. A decoding failure is passed to the error handler, or logged if
+     * there is none, instead of being thrown.
+     */
     private static <T> SerializableConsumer<JsonNode> decodingHandler(
             SerializableFunction<JsonNode, T> decoder,
             SerializableConsumer<T> resultHandler,
