@@ -486,6 +486,7 @@ public class Page implements Serializable {
      * @throws IllegalArgumentException
      *             if the function captures an element or a component, as
      *             described above
+     * @since 25.4
      */
     public void addDynamicImport(JsFunction dynamicImport) {
         addDependency(new Dependency(dynamicImport));
@@ -1104,6 +1105,8 @@ public class Page implements Serializable {
      * which {@link #open(String, String)} does before calling it.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface NavigationJs extends Serializable {

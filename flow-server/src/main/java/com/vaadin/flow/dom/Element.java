@@ -2521,6 +2521,8 @@ public class Element extends Node<Element> {
     /**
      * JavaScript that Flow runs on an element, as a JavaScript definition for
      * {@link #executeJs(Class)}.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface ElementJs extends Serializable {
