@@ -156,4 +156,10 @@ public class GenerateNpmBOMMojoTest {
                 newContent.toArray());
     }
 
+    @Test
+    public void getProperties_runsCycloneDxNpmPinnedToExactVersion() {
+        String args = mojo.getProperties().getProperty("exec.args");
+        Assert.assertTrue(args,
+                args.matches("@cyclonedx/cyclonedx-npm@\\d+\\.\\d+\\.\\d+ .*"));
+    }
 }

@@ -41,6 +41,9 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
     private static final String ARTIFACT = "exec-maven-plugin";
     private static final String VERSION = "1.3.2";
     private static final String GOAL = "exec";
+    // npx would otherwise run the latest release: 7.0.0 no longer brings what
+    // --validate needs and fails with "cannot validate BOM"
+    static final String CYCLONEDX_NPM = "@cyclonedx/cyclonedx-npm@6.0.1";
 
     /**
      * Whether to ignore errors of NPM. This might be used, if "npm install" was
@@ -193,19 +196,20 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
         }
     }
 
-    private Properties getProperties() {
+    Properties getProperties() {
         Properties properties = new Properties();
         properties.setProperty("exec.executable", "npx");
-        properties.setProperty("exec.args", "@cyclonedx/cyclonedx-npm"
-                + (ignoreNpmErrors ? " --ignore-npm-errors" : "")
-                + (packageLockOnly ? " --package-lock-only" : "")
-                + (flattenComponents ? " --flatten-components" : "")
-                + (shortPURLs ? " --short-PURLs" : "")
-                + (outputReproducible ? " --output-reproducible" : "")
-                + (validate ? " --validate" : " --no-validate") + " --mc-type "
-                + mcType + " --omit " + omit + " --spec-version " + specVersion
-                + " --output-file " + outputFilePath + " --output-format "
-                + outputFormat + " -- " + packageManifest);
+        properties.setProperty("exec.args",
+                CYCLONEDX_NPM + (ignoreNpmErrors ? " --ignore-npm-errors" : "")
+                        + (packageLockOnly ? " --package-lock-only" : "")
+                        + (flattenComponents ? " --flatten-components" : "")
+                        + (shortPURLs ? " --short-PURLs" : "")
+                        + (outputReproducible ? " --output-reproducible" : "")
+                        + (validate ? " --validate" : " --no-validate")
+                        + " --mc-type " + mcType + " --omit " + omit
+                        + " --spec-version " + specVersion + " --output-file "
+                        + outputFilePath + " --output-format " + outputFormat
+                        + " -- " + packageManifest);
         return properties;
     }
 
