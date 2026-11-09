@@ -144,8 +144,8 @@ public final class WebPushMessageBuilder implements Serializable {
      * @param navigationTarget
      *            the view to open, not {@code null}
      * @return this builder
-     * @throws IllegalArgumentException
-     *             if the view requires route parameters
+     * @throws com.vaadin.flow.router.NotFoundException
+     *             if the view has no route without parameters
      * @see #withRoute(Class, RouteParameters)
      */
     public WebPushMessageBuilder withRoute(
