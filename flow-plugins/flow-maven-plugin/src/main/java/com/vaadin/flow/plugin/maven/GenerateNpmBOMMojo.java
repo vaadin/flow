@@ -244,9 +244,12 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
         String npxArgs = npxCommand.stream().skip(1)
                 .map(GenerateNpmBOMMojo::quote)
                 .collect(Collectors.joining(" "));
+        // Pinned to a major version, as npx otherwise runs the latest release:
+        // 7.0.0 no longer brings what --validate needs and fails with "cannot
+        // validate BOM"
         properties.setProperty("exec.args",
                 npxArgs + (npxArgs.isEmpty() ? "" : " ")
-                        + "--yes @cyclonedx/cyclonedx-npm"
+                        + "--yes @cyclonedx/cyclonedx-npm@6"
                         + (ignoreNpmErrors ? " --ignore-npm-errors" : "")
                         + (packageLockOnly ? " --package-lock-only" : "")
                         + (flattenComponents ? " --flatten-components" : "")
