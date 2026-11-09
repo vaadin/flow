@@ -15,32 +15,43 @@
  */
 package com.vaadin.flow.js;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.component.page.PendingJavaScriptResult.JavaScriptException;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventData;
 import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 
 class JsDefinitionProxyTest {
 
@@ -51,6 +62,74 @@ class JsDefinitionProxyTest {
 
         @JsExpression("return this.value;")
         PendingJavaScriptResult readValue();
+    }
+
+    public record Person(String name, int age) implements Serializable {
+    }
+
+    @JsDefinition
+    interface TypedJs extends Serializable {
+        @JsExpression("return 42;")
+        JavaScriptResult<Integer> readAnswer();
+
+        @JsExpression("return [{name: 'Ada', age: 36}];")
+        JavaScriptResult<List<Person>> readPeople();
+
+        @JsExpression("return this.dataset;")
+        JavaScriptResult<JsonNode> readJson();
+    }
+
+    interface ValueJs<T> extends Serializable {
+        @JsExpression("return this.value;")
+        JavaScriptResult<T> readValue();
+    }
+
+    interface ListJs<T> extends ValueJs<List<T>> {
+    }
+
+    interface ArrayJs<T> extends ValueJs<T[]> {
+    }
+
+    @JsDefinition
+    interface CounterJs extends ValueJs<Integer> {
+    }
+
+    @JsDefinition
+    interface NumbersJs extends ListJs<Integer> {
+    }
+
+    @JsDefinition
+    interface IntsJs extends ArrayJs<Integer> {
+    }
+
+    @JsDefinition
+    @SuppressWarnings("rawtypes")
+    interface RawValueJs extends ValueJs {
+    }
+
+    @JsDefinition
+    interface StillGenericJs<T> extends ValueJs<T> {
+    }
+
+    interface UnusedVariableJs<U> extends ValueJs<Integer> {
+    }
+
+    @JsDefinition
+    @SuppressWarnings("rawtypes")
+    interface RawUnusedVariableJs extends UnusedVariableJs {
+    }
+
+    @JsDefinition
+    interface UntypedJs<T> extends Serializable {
+        @SuppressWarnings("rawtypes")
+        @JsExpression("return 1;")
+        JavaScriptResult readRaw();
+
+        @JsExpression("return 1;")
+        JavaScriptResult<?> readWildcard();
+
+        @JsExpression("return [1];")
+        JavaScriptResult<List<T>> readVariable();
     }
 
     @JsDefinition
@@ -163,8 +242,41 @@ class JsDefinitionProxyTest {
 
     private final List<JsCall> calls = new ArrayList<>();
 
-    private final PendingJavaScriptResult result = mock(
-            PendingJavaScriptResult.class);
+    private final RecordingResult result = new RecordingResult();
+
+    /** A pending result that keeps its handlers for a test to complete. */
+    private static class RecordingResult implements PendingJavaScriptResult {
+        private final List<SerializableConsumer<JsonNode>> resultHandlers = new ArrayList<>();
+        private final List<SerializableConsumer<String>> errorHandlers = new ArrayList<>();
+
+        @Override
+        public boolean cancelExecution() {
+            return false;
+        }
+
+        @Override
+        public boolean isSentToBrowser() {
+            return false;
+        }
+
+        @Override
+        public void then(SerializableConsumer<JsonNode> resultHandler,
+                SerializableConsumer<String> errorHandler) {
+            resultHandlers.add(resultHandler);
+            if (errorHandler != null) {
+                errorHandlers.add(errorHandler);
+            }
+        }
+
+        private void complete(String json) {
+            JsonNode value = JacksonUtils.getMapper().readTree(json);
+            resultHandlers.forEach(handler -> handler.accept(value));
+        }
+
+        private void fail(String message) {
+            errorHandlers.forEach(handler -> handler.accept(message));
+        }
+    }
 
     private <T> T proxy(Class<T> definitionType) {
         return JsDefinitionProxy.create(definitionType, call -> {
@@ -188,8 +300,138 @@ class JsDefinitionProxyTest {
 
     @Test
     void create_methodDeclaringAResult_answersWithWhatRanIt() {
-        assertEquals(result, proxy(GreeterJs.class).readValue(),
+        assertSame(result, proxy(GreeterJs.class).readValue(),
                 "a method that declares a result answers with the pending one");
+        assertSame(result, proxy(TypedJs.class).readJson(),
+                "the pending result already is a result of JSON");
+    }
+
+    @Test
+    void create_methodDeclaringATypedResult_convertsTheValue() {
+        List<Person> people = new ArrayList<>();
+        JavaScriptResult<List<Person>> typed = proxy(TypedJs.class)
+                .readPeople();
+        assertTrue(result.resultHandlers.isEmpty(),
+                "a result nobody reads should not be sent back");
+
+        typed.then(people::addAll);
+        result.complete("[{\"name\":\"Ada\",\"age\":36}]");
+
+        assertEquals(List.of(new Person("Ada", 36)), people);
+    }
+
+    @Test
+    void create_methodDeclaringATypedResult_completesTheFutureWithTheValue() {
+        CompletableFuture<Integer> answer = proxy(TypedJs.class).readAnswer()
+                .toCompletableFuture();
+
+        result.complete("42");
+
+        assertEquals(42, answer.getNow(null));
+    }
+
+    @Test
+    void create_methodDeclaringATypedResult_failsTheFutureWithTheError() {
+        CompletableFuture<Integer> answer = proxy(TypedJs.class).readAnswer()
+                .toCompletableFuture();
+
+        result.fail("not thinking");
+
+        CompletionException exception = assertThrows(CompletionException.class,
+                () -> answer.getNow(null));
+        assertInstanceOf(JavaScriptException.class, exception.getCause());
+        assertEquals("not thinking", exception.getCause().getMessage());
+    }
+
+    @Test
+    void create_valueThatCanNotBeConverted_failsWithTheConversionError() {
+        List<String> errors = new ArrayList<>();
+        JavaScriptResult<Integer> answer = proxy(TypedJs.class).readAnswer();
+        answer.then(value -> errors.add("converted " + value), errors::add);
+        CompletableFuture<Integer> future = answer.toCompletableFuture();
+
+        result.complete("\"forty-two\"");
+
+        assertEquals(1, errors.size());
+        assertTrue(errors.get(0).contains("Integer"), errors.get(0));
+        CompletionException exception = assertThrows(CompletionException.class,
+                () -> future.getNow(null));
+        assertInstanceOf(JavaScriptException.class, exception.getCause());
+    }
+
+    @Test
+    void create_valueThatCanNotBeConvertedWithoutAnErrorHandler_runsLaterHandlers() {
+        JavaScriptResult<Integer> answer = proxy(TypedJs.class).readAnswer();
+        answer.then(value -> {
+        });
+        CompletableFuture<Integer> future = answer.toCompletableFuture();
+
+        result.complete("\"forty-two\"");
+
+        assertThrows(CompletionException.class, () -> future.getNow(null));
+    }
+
+    @Test
+    void create_typedResultFromAGenericInterface_convertsToTheBoundType() {
+        List<Integer> counts = new ArrayList<>();
+        proxy(CounterJs.class).readValue().then(counts::add);
+        result.complete("7");
+        assertEquals(List.of(7), counts);
+
+        result.resultHandlers.clear();
+        List<Integer> numbers = new ArrayList<>();
+        proxy(NumbersJs.class).readValue().then(numbers::addAll);
+        result.complete("[4, 2]");
+        assertEquals(List.of(4, 2), numbers);
+
+        result.resultHandlers.clear();
+        List<Integer> ints = new ArrayList<>();
+        proxy(IntsJs.class).readValue()
+                .then(array -> ints.addAll(List.of(array)));
+        result.complete("[4, 2]");
+        assertEquals(List.of(4, 2), ints);
+    }
+
+    @Test
+    void create_methodDeclaringATypedResult_isSerializable() throws Exception {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (ObjectOutputStream out = new ObjectOutputStream(bytes)) {
+            out.writeObject(proxy(TypedJs.class).readPeople());
+        }
+        try (ObjectInputStream in = new ObjectInputStream(
+                new ByteArrayInputStream(bytes.toByteArray()))) {
+            assertInstanceOf(JavaScriptResult.class, in.readObject());
+        }
+    }
+
+    @Test
+    void create_typedResultWithoutAHandler_throws() {
+        JavaScriptResult<Integer> answer = proxy(TypedJs.class).readAnswer();
+
+        assertThrows(IllegalArgumentException.class, () -> answer.then(null));
+    }
+
+    @Test
+    void create_typedResultWithoutAConcreteType_throws() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> proxy(UntypedJs.class));
+
+        String message = exception.getMessage();
+        assertTrue(
+                message.contains("readRaw") && message.contains("readWildcard")
+                        && message.contains("readVariable"),
+                "the message should name every method: " + message);
+        assertTrue(message.contains("PendingJavaScriptResult"),
+                "the message should say what to declare instead: " + message);
+        for (Class<?> unbound : List.of(RawValueJs.class, StillGenericJs.class,
+                RawUnusedVariableJs.class)) {
+            String unboundMessage = assertThrows(IllegalArgumentException.class,
+                    () -> proxy(unbound)).getMessage();
+            assertTrue(unboundMessage.contains("readValue"),
+                    unbound.getSimpleName()
+                            + " leaves the type variable unbound: "
+                            + unboundMessage);
+        }
     }
 
     @Test
