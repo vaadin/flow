@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -114,9 +115,10 @@ public class SpringAccessPathChecker
     private final transient HttpServletRequestTransformer requestTransformer;
     /**
      * The anonymous authentication of each filter chain, in proxy order,
-     * computed on first use.
+     * computed on first use. Only read when the proxy supplier is set, so it is
+     * never reached after deserialization.
      */
-    private transient volatile List<ChainAnonymousAuthentication> chainAnonymousAuthentications;
+    private final transient AtomicReference<List<ChainAnonymousAuthentication>> chainAnonymousAuthentications = new AtomicReference<>();
     /**
      * The servlet context of the request built for the path, or {@literal null}
      * if not set.
@@ -297,7 +299,8 @@ public class SpringAccessPathChecker
         // The chains are fixed once the proxy is built, so the mapping is
         // computed once. A race computes the same list twice, which is
         // harmless.
-        List<ChainAnonymousAuthentication> result = chainAnonymousAuthentications;
+        List<ChainAnonymousAuthentication> result = chainAnonymousAuthentications
+                .get();
         if (result == null) {
             FilterChainProxy proxy = filterChainProxy.get();
             result = proxy == null ? List.of()
@@ -306,7 +309,7 @@ public class SpringAccessPathChecker
                                     chain,
                                     createAnonymousAuthentication(chain)))
                             .toList();
-            chainAnonymousAuthentications = result;
+            chainAnonymousAuthentications.set(result);
         }
         return result;
     }
