@@ -85,11 +85,12 @@ public class ElementListenerMap extends NodeMap {
 
     /**
      * {@code event} or {@code element}, followed by any number of {@code .name}
-     * segments. The client reads such a path without compiling it, see
-     * {@code PropertyPathExpression.ts}, which has the same pattern.
+     * or {@code ?.name} segments. The client reads such a path without
+     * compiling it, see {@code PropertyPathExpression.ts}, which has the same
+     * pattern.
      */
     private static final Pattern PROPERTY_PATH = Pattern
-            .compile("(event|element)(\\.[A-Za-z_$][\\w$]*)*");
+            .compile("(event|element)(\\??\\.[A-Za-z_$][\\w$]*)*");
 
     private static final Entry ALWAYS_TRUE_ENTRY = new ExpressionEntry(
             ALWAYS_TRUE_FILTER);

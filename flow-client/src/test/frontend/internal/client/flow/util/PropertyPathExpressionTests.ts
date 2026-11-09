@@ -36,7 +36,21 @@ describe('PropertyPathExpression', () => {
     expect(() => evaluate('event.missing.value')).to.throw(TypeError);
   });
 
+  it('returns undefined for the whole path after an optional segment of null or undefined', () => {
+    expect(evaluate('event.detail.nothing?.value')).to.be.undefined;
+    expect(evaluate('event.missing?.value.deeper')).to.be.undefined;
+    expect(evaluate('event.detail?.value')).to.equal('v');
+    expect(evaluate('event.zero?.toFixed')).to.equal(Number.prototype.toFixed);
+    expect(() => evaluate('event.missing?.value')).to.not.throw();
+    expect(() => evaluate('event.detail?.missing.value')).to.throw(TypeError);
+  });
+
   [
+    'event?.[0]',
+    'event?.x()',
+    'event.?x',
+    'event??.x',
+    'event?x',
     'event.x * 2',
     'event.x()',
     "event['x']",

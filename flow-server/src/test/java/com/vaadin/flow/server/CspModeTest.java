@@ -123,7 +123,7 @@ class CspModeTest {
                         }).addEventData("event.x * 2")),
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
-                        }).addEventData(List.of("event.x()"))),
+                        }).addEventData(List.of("event?.x()"))),
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).addEventData(
@@ -184,6 +184,7 @@ class CspModeTest {
             registration.mapEventTargetElement();
             // The client reads property paths without compiling them
             registration.addEventData("event.detail.value");
+            registration.addEventData("event.detail?.value");
             registration.addEventData(List.of("element.value", "event"));
             registration.addEventDetail();
             registration.addEventDataElement("event.target.parentElement");

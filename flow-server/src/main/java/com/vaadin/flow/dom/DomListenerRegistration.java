@@ -60,13 +60,13 @@ public interface DomListenerRegistration extends Registration {
      * </ul>
      * <p>
      * A property path, which is <code>event</code> or <code>element</code>
-     * followed by property names separated with dots, such as
-     * <code>event.detail.value</code>, is read in the browser without compiling
-     * it. Any other expression is compiled by the browser from a string, so it
-     * does not work with a Content Security Policy that does not allow
-     * <code>unsafe-eval</code>. To get such event data without that, declare it
-     * in a {@link com.vaadin.flow.js.JsDefinition} interface and use
-     * {@link #addEventData(DomEventData)}.
+     * followed by property names separated with <code>.</code> or
+     * <code>?.</code>, such as <code>event.detail.value</code>, is read in the
+     * browser without compiling it. Any other expression is compiled by the
+     * browser from a string, so it does not work with a Content Security Policy
+     * that does not allow <code>unsafe-eval</code>. To get such event data
+     * without that, declare it in a {@link com.vaadin.flow.js.JsDefinition}
+     * interface and use {@link #addEventData(DomEventData)}.
      *
      * @param eventData
      *            definition for data that should be passed back to the server
@@ -157,13 +157,13 @@ public interface DomListenerRegistration extends Registration {
      * {@link #setFilterExpression(DomEventFilter)}.
      * <p>
      * A property path, which is <code>event</code> or <code>element</code>
-     * followed by property names separated with dots, such as
-     * <code>event.isTrusted</code>, is read in the browser without compiling
-     * it. Any other expression is compiled by the browser from a string, so it
-     * does not work with a Content Security Policy that does not allow
-     * <code>unsafe-eval</code>. To filter events without that, declare the
-     * filter in a {@link com.vaadin.flow.js.JsDefinition} interface and use
-     * {@link #setFilterExpression(DomEventFilter)}.
+     * followed by property names separated with <code>.</code> or
+     * <code>?.</code>, such as <code>event.isTrusted</code>, is read in the
+     * browser without compiling it. Any other expression is compiled by the
+     * browser from a string, so it does not work with a Content Security Policy
+     * that does not allow <code>unsafe-eval</code>. To filter events without
+     * that, declare the filter in a {@link com.vaadin.flow.js.JsDefinition}
+     * interface and use {@link #setFilterExpression(DomEventFilter)}.
      *
      * @param filter
      *            the JavaScript filter expression, or <code>null</code> to

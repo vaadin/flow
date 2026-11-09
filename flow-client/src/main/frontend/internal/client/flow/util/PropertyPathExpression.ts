@@ -22,16 +22,20 @@
  */
 
 /**
- * `event` or `element`, followed by any number of `.name` segments. The same
- * pattern as `ElementListenerMap.PROPERTY_PATH` on the server.
+ * `event` or `element`, followed by any number of `.name` or `?.name`
+ * segments. The same pattern as `ElementListenerMap.PROPERTY_PATH` on the
+ * server.
  */
-const PROPERTY_PATH = /^(event|element)((?:\.[A-Za-z_$][\w$]*)*)$/;
+const PROPERTY_PATH = /^(event|element)((?:\??\.[A-Za-z_$][\w$]*)*)$/;
+
+const SEGMENT = /(\?)?\.([A-Za-z_$][\w$]*)/g;
 
 /**
  * Creates a function that reads the given property path from the event or the
  * element, or returns `undefined` when the expression is not such a path. The
- * function returns what the compiled expression would, and like it throws a
- * `TypeError` when a segment before the last one is `null` or `undefined`.
+ * function returns what the compiled expression would: like it, it throws a
+ * `TypeError` when a `.name` segment is read from `null` or `undefined`, and
+ * returns `undefined` for the whole path when a `?.name` segment is.
  */
 export function createPropertyPathExpression(
   expression: string
@@ -41,7 +45,15 @@ export function createPropertyPathExpression(
     return undefined;
   }
   const fromEvent = match[1] === 'event';
-  const names = match[2] === '' ? [] : match[2].substring(1).split('.');
-  return (event, element) =>
-    names.reduce((value, name) => (value as Record<string, unknown>)[name], fromEvent ? event : element);
+  const segments = [...match[2].matchAll(SEGMENT)].map(([, optional, name]) => ({ optional: optional === '?', name }));
+  return (event, element) => {
+    let value = fromEvent ? event : element;
+    for (const { optional, name } of segments) {
+      if (optional && (value === null || value === undefined)) {
+        return undefined;
+      }
+      value = (value as Record<string, unknown>)[name];
+    }
+    return value;
+  };
 }
