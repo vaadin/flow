@@ -167,4 +167,11 @@ class GenerateNpmBOMMojoTest {
         assertArrayEquals(originalContent.toArray(), newContent.toArray());
     }
 
+    @Test
+    void getProperties_runsCycloneDxNpmPinnedToExactVersion() {
+        String args = mojo.getProperties().getProperty("exec.args");
+        assertTrue(
+                args.matches("@cyclonedx/cyclonedx-npm@\\d+\\.\\d+\\.\\d+ .*"),
+                args);
+    }
 }
