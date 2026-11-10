@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -138,6 +139,49 @@ class DevLoopCliContractIT {
                     .assertOutputDoesNotContain("no daemon running");
             assertTrue(Files.exists(handshake),
                     command + " reaped the record of a live daemon");
+        }
+    }
+
+    @Test
+    void status_rightAfterADaemonShutDown_reportsNoDaemon(@TempDir Path app)
+            throws IOException, InterruptedException {
+        // A daemon that has answered a shutdown has closed its port but takes
+        // a moment to exit and remove its handshake. A command landing in that
+        // moment must wait for it rather than call it wedged or killed. A
+        // short-lived process that removes the handshake on its way out stands
+        // in for the exiting daemon.
+        Files.writeString(app.resolve("pom.xml"), "<project/>");
+        Path handshake = app.resolve(".vaadin/daemon.properties");
+        Files.createDirectories(handshake.getParent());
+        Path exiting = app.resolve("Exiting.java");
+        Files.writeString(exiting,
+                """
+                        public class Exiting {
+                            public static void main(String[] args) throws Exception {
+                                Thread.sleep(1500);
+                                java.nio.file.Files.delete(java.nio.file.Path.of(args[0]));
+                            }
+                        }
+                        """);
+        Process daemon = new ProcessBuilder(
+                ProcessHandle.current().info().command().orElseThrow(),
+                exiting.toString(), handshake.toString()).start();
+        try {
+            Files.writeString(handshake, "port=" + unusedPort()
+                    + "\ntoken=stale\npid=" + daemon.pid()
+                    + "\nstartEpochMillis="
+                    + daemon.info().startInstant().orElseThrow().toEpochMilli()
+                    + "\n");
+
+            VaadinDevCli.of(AbstractDevLoopIT.APP)
+                    .run("--app", app.toString(), "status").assertExitCode(0)
+                    .assertOutputContains("no daemon running")
+                    .assertOutputDoesNotContain("not answering")
+                    .assertOutputDoesNotContain("left its handshake behind");
+            assertTrue(daemon.waitFor(10, TimeUnit.SECONDS),
+                    "the stand-in daemon did not exit");
+        } finally {
+            daemon.destroyForcibly();
         }
     }
 

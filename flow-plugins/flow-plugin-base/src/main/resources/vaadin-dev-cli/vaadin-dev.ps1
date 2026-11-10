@@ -238,6 +238,18 @@ function Test-RecordedDaemonAlive([int] $processId) {
     return [Math]::Abs($actual - $recorded) -lt 2000
 }
 
+# Whether the recorded daemon is still running once it has had a moment to
+# exit. A daemon that has just answered a shutdown, or shut itself down when
+# idle, has closed its port but not yet exited and removed its handshake, and
+# is not wedged.
+function Test-RecordedDaemonLingers([int] $processId) {
+    for ($waited = 0; (Test-RecordedDaemonAlive $processId); $waited++) {
+        if ($waited -ge 50) { return $true }
+        Start-Sleep -Milliseconds 100
+    }
+    return $false
+}
+
 function Get-JavaBinary {
     if ($env:JAVA_HOME) {
         $candidate = Join-Path $env:JAVA_HOME 'bin\java.exe'
@@ -667,13 +679,24 @@ try {
 
     $status = Send-Command ([int]$port) $token $words
 
-    # 99 means the recorded daemon is not answering. Whether there is still a
-    # daemon is decided from its process. A live one keeps its record whatever
-    # the command: it still holds the daemon lock, so a fresh daemon could not
-    # come up beside it, and without the record nothing names the pid to kill.
-    # A gone daemon leaves a stale record, which is reaped; a command that only
-    # reports then answers that there is none, any other tries once more with a
-    # fresh daemon.
+        if [[ -n "$recorded" ]] && recorded_daemon_lingers "$recorded"; then
+            echo "vaadin-dev: the daemon recorded for $ROOT (pid $recorded)" \
+                 "is running but not answering. Kill pid $recorded, then" \
+                 "'vaadin-dev start' spawns a fresh one." >&2
+            exit 70
+        fi
+        if [[ -f "$HANDSHAKE" ]]; then
+            echo "vaadin-dev: the daemon recorded for $ROOT (pid" \
+                 "${recorded:-unknown}) is gone and left its handshake behind," \
+                 "so it was killed rather than shut down - the application it" \
+                 "owned stopped with it. The app needs 'vaadin-dev start'" \
+                 "again." >&2
+            echo "vaadin-dev: if that repeats on every command, whatever runs" \
+                 "vaadin-dev is killing the process group each command runs in;" \
+                 "see \"When it goes wrong\" in the vaadin-devloop skill" \
+                 "reference." >&2
+            rm -f "$HANDSHAKE"
+        fi
     #
     # Said out loud, because the application went with it. A daemon that shuts
     # down deletes its own handshake, so a handshake still naming a process that
@@ -684,7 +707,7 @@ try {
         $recorded = Read-Handshake 'pid'
         $alive = $false
         if ($recorded) {
-            $alive = Test-RecordedDaemonAlive ([int]$recorded)
+            $alive = Test-RecordedDaemonLingers ([int]$recorded)
         }
         if ($alive) {
             [Console]::Error.WriteLine("vaadin-dev: the daemon recorded for " +
@@ -692,17 +715,19 @@ try {
                 "$recorded, then 'vaadin-dev start' spawns a fresh one.")
             exit 70
         }
-        $named = if ($recorded) { $recorded } else { 'unknown' }
-        [Console]::Error.WriteLine("vaadin-dev: the daemon recorded for " +
-            "$root (pid $named) is gone and left its handshake behind, so " +
-            "it was killed rather than shut down - the application it " +
-            "owned stopped with it. The app needs 'vaadin-dev start' " +
-            "again.")
-        [Console]::Error.WriteLine("vaadin-dev: if that repeats on every " +
-            "command, whatever runs vaadin-dev is killing the processes " +
-            "each command created; see ""When it goes wrong"" in the " +
-            "vaadin-devloop skill reference.")
-        Remove-Item -LiteralPath $handshake -Force -ErrorAction SilentlyContinue
+        if (Test-Path -LiteralPath $handshake) {
+            $named = if ($recorded) { $recorded } else { 'unknown' }
+            [Console]::Error.WriteLine("vaadin-dev: the daemon recorded for " +
+                "$root (pid $named) is gone and left its handshake behind, so " +
+                "it was killed rather than shut down - the application it " +
+                "owned stopped with it. The app needs 'vaadin-dev start' " +
+                "again.")
+            [Console]::Error.WriteLine("vaadin-dev: if that repeats on every " +
+                "command, whatever runs vaadin-dev is killing the processes " +
+                "each command created; see ""When it goes wrong"" in the " +
+                "vaadin-devloop skill reference.")
+            Remove-Item -LiteralPath $handshake -Force -ErrorAction SilentlyContinue
+        }
         if (Test-ReportsOnly $command) { exit (Write-NoDaemon $command $commandArgs) }
         if (-not (Start-Daemon)) { exit 70 }
         $port = Read-Handshake 'port'
