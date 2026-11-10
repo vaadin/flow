@@ -70,7 +70,7 @@ public interface ClickNotifier<T extends Component> extends Serializable {
             return ComponentUtil.addListener((Component) this, ClickEvent.class,
                     (ComponentEventListener) listener,
                     d -> d.setFilterExpression(JsSnippets
-                            .of(ClickFiltersJs.class).clickCountBetween(2, 2)));
+                            .of(ClickFiltersJs.class).isClickCountBetween(2, 2)));
         } else {
             throw new IllegalStateException(String.format(
                     "The class '%s' doesn't extend '%s'. "
@@ -95,7 +95,7 @@ public interface ClickNotifier<T extends Component> extends Serializable {
             return ComponentUtil.addListener((Component) this, ClickEvent.class,
                     (ComponentEventListener) listener,
                     d -> d.setFilterExpression(JsSnippets
-                            .of(ClickFiltersJs.class).clickCountBetween(0, 1)));
+                            .of(ClickFiltersJs.class).isClickCountBetween(0, 1)));
         } else {
             throw new IllegalStateException(String.format(
                     "The class '%s' doesn't extend '%s'. "
@@ -181,6 +181,6 @@ public interface ClickNotifier<T extends Component> extends Serializable {
          * @return the filter, not <code>null</code>
          */
         @JsExpression("return event.detail >= $0 && event.detail <= $1;")
-        DomEventFilter clickCountBetween(int min, int max);
+        DomEventFilter isClickCountBetween(int min, int max);
     }
 }

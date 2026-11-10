@@ -45,6 +45,21 @@ public class ImageClickIT extends AbstractDefaultIT {
     }
 
     @BrowserTest
+    public void testScriptClickOnImage() {
+        open();
+
+        WebElement message2 = findElement(By.id("message2"));
+        WebElement message3 = findElement(By.id("message3"));
+        WebElement image = findElement(By.id("image"));
+
+        // A click from the click() function has a click count of 0
+        executeScript("arguments[0].click()", image);
+
+        Assertions.assertEquals("Single click 1", message2.getText());
+        Assertions.assertEquals("", message3.getText());
+    }
+
+    @BrowserTest
     public void testDoubleClickOnImage() {
         open();
 
