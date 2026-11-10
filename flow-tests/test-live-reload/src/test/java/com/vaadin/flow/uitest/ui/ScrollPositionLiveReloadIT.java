@@ -75,6 +75,30 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
 
     @Test
     public void scrollPositionPreservedAfterFullPageReload_reloadInterruptsRestore() {
+        reloadThenInterruptRestore(() -> {
+            markDocument();
+            executeScript(
+                    "document.querySelector('vaadin-dev-tools').frontendConnection.onReload('reload')");
+            waitForNewDocument();
+        });
+    }
+
+    @Test
+    public void scrollPositionPreservedAfterFullPageReload_uiRefreshInterruptsRestore() {
+        reloadThenInterruptRestore(() -> {
+            String attachIdBefore = getAttachId();
+            executeScript(
+                    "document.querySelector('vaadin-dev-tools').frontendConnection.onReload('full-refresh')");
+            waitUntil(d -> !attachIdBefore.equals(getAttachId()), 10);
+        });
+    }
+
+    /**
+     * Reloads the page and runs the given hot-swap once the window is back in
+     * place, while the containers have not rendered yet and are still waiting
+     * to be restored. Then checks that every position comes back.
+     */
+    private void reloadThenInterruptRestore(Runnable interruptingHotSwap) {
         openAndWaitForContent(
                 ScrollPositionLiveReloadView.RENDER_LATE_PARAMETER);
 
@@ -85,14 +109,9 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
                 "document.querySelector('vaadin-dev-tools').frontendConnection.onReload('reload')");
         waitForNewDocument();
 
-        // Reload again once the window is back in place, while the containers
-        // have not rendered yet and are still waiting to be restored
         waitUntil(d -> Math.abs(getScrollPositions().get(0)
                 - scrollBefore.get(0)) < TOLERANCE_PX, 10);
-        markDocument();
-        executeScript(
-                "document.querySelector('vaadin-dev-tools').frontendConnection.onReload('reload')");
-        waitForNewDocument();
+        interruptingHotSwap.run();
 
         waitForScrollRestoration(scrollBefore);
     }

@@ -114,13 +114,25 @@ export function captureScrollPositions(): ScrollSnapshot {
 }
 
 /**
+ * Captures the scroll positions to bring back after a refresh or a reload.
+ * Either can interrupt a restore that is still in progress, for example while
+ * the page is hidden and no animation frames run. The positions that restore
+ * has not applied yet are either missing from the page or clamped short of
+ * their target, so a new capture alone would lose them, and they win over the
+ * captured values.
+ */
+function captureScrollPositionsToKeep(): ScrollSnapshot {
+  return { ...captureScrollPositions(), ...unrestoredPositions() };
+}
+
+/**
  * Captures scroll positions, sends a ui-refresh event to all Flow clients,
  * and restores scroll positions once the clients are idle.
  * Used by both the Push-based (vaadin-refresh-ui event) and WebSocket-based
  * hot-swap paths.
  */
 export function refreshWithScrollPreservation(fullRefresh: boolean): void {
-  const snapshot = captureScrollPositions();
+  const snapshot = captureScrollPositionsToKeep();
   getFlowClients().forEach((client: any) => {
     if (client.sendEventMessage) {
       client.sendEventMessage(ROOT_NODE_ID, 'ui-refresh', { fullRefresh });
@@ -312,12 +324,7 @@ export function restoreScrollPositions(snapshot: ScrollSnapshot, onSettled?: () 
  * cases where the browser has already given up.
  */
 export function saveScrollPositionsForReload(): void {
-  // A reload can interrupt a restore that is still in progress, for example
-  // while the page is hidden and no animation frames run. The positions it has
-  // not applied yet are either missing from the page or clamped short of their
-  // target, so a new capture alone would lose them, and they win over the
-  // captured values.
-  const positions: ScrollSnapshot = { ...captureScrollPositions(), ...unrestoredPositions() };
+  const positions = captureScrollPositionsToKeep();
   if (Object.keys(positions).length === 0) {
     window.sessionStorage.removeItem(SNAPSHOT_KEY);
     // Nothing is taken over for the next load, so a restore of this one that
