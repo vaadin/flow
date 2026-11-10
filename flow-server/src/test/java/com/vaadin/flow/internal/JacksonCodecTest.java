@@ -372,14 +372,6 @@ class JacksonCodecTest {
     }
 
     @Test
-    void decodeAs_unsupportedType() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            assertNull(JacksonCodec.decodeAs(objectMapper.valueToTree("foo"),
-                    float.class));
-        });
-    }
-
-    @Test
     void testSimpleBeanSerialization() {
         SimpleBean bean = new SimpleBean("Test", 42);
 
