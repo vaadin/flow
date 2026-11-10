@@ -343,8 +343,22 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
         } else if (second == null) {
             return first;
         } else {
+            // A handler that throws must not prevent the handlers added after
+            // it from running, since one of them may be completing a future
+            // that another thread is waiting for
             return value -> {
-                first.accept(value);
+                try {
+                    first.accept(value);
+                } catch (RuntimeException | Error firstFailure) {
+                    try {
+                        second.accept(value);
+                    } catch (RuntimeException | Error secondFailure) {
+                        if (secondFailure != firstFailure) {
+                            firstFailure.addSuppressed(secondFailure);
+                        }
+                    }
+                    throw firstFailure;
+                }
                 second.accept(value);
             };
         }

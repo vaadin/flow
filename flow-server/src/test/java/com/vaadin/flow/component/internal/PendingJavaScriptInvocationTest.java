@@ -231,6 +231,47 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
+    void throwingSuccessHandlers_laterHandlersRunAndFirstExceptionIsThrown() {
+        IllegalStateException first = new IllegalStateException("first");
+        IllegalStateException second = new IllegalStateException("second");
+        invocation.then(json -> {
+            throw first;
+        });
+        invocation.then(json -> {
+            throw second;
+        });
+        invocation.then(jsonSuccessConsumer);
+        CompletableFuture<JsonNode> future = invocation.toCompletableFuture();
+
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> invocation.complete(fooJsonString));
+
+        assertSame(first, thrown);
+        assertEquals(List.of(second), Arrays.asList(thrown.getSuppressed()));
+        assertSame(fooJsonString, jsonSuccessConsumer.getCapturedValue());
+        assertSame(fooJsonString, future.getNow(null));
+    }
+
+    @Test
+    void throwingErrorHandler_laterHandlersRunAndExceptionIsThrown() {
+        IllegalStateException failure = new IllegalStateException("failure");
+        invocation.then(jsonSuccessConsumer, error -> {
+            throw failure;
+        });
+        invocation.then(jsonSuccessConsumer, errorConsumer);
+        CompletableFuture<JsonNode> future = invocation.toCompletableFuture();
+
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> invocation.completeExceptionally(fooJsonString));
+
+        assertSame(failure, thrown);
+        assertSame("foo", errorConsumer.getCapturedValue());
+        ExecutionException futureFailure = assertThrows(
+                ExecutionException.class, future::get);
+        assertInstanceOf(JavaScriptException.class, futureFailure.getCause());
+    }
+
+    @Test
     void thenAfterSend_throws() {
         invocation.setSentToBrowser();
 
