@@ -158,6 +158,10 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
         waitForElementPresent(By.id("item-50"));
 
         waitForScrollRestoration(scrollBefore);
+
+        // Restoration is taken over from the browser only for the reload
+        waitUntil(d -> "auto"
+                .equals(executeScript("return history.scrollRestoration")), 10);
     }
 
     private void openAndWaitForContent(String... parameters) {

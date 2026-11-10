@@ -320,6 +320,11 @@ export function saveScrollPositionsForReload(): void {
   const positions: ScrollSnapshot = { ...captureScrollPositions(), ...unrestoredPositions() };
   if (Object.keys(positions).length === 0) {
     window.sessionStorage.removeItem(SNAPSHOT_KEY);
+    // Nothing is taken over for the next load, so a restore of this one that
+    // has not handed restoration back yet must not leave it taken over
+    if (scrollRestorationToHandBack) {
+      history.scrollRestoration = scrollRestorationToHandBack;
+    }
     return;
   }
   const stored: StoredScrollSnapshot = {
