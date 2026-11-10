@@ -15,12 +15,23 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.NativeForm.Enctype;
 import com.vaadin.flow.component.html.NativeForm.Method;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.ErrorEvent;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.signals.local.ListSignal;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
+import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -109,5 +120,36 @@ class NativeFormTest extends ComponentTest {
         NativeForm form = new NativeForm(wrapper);
 
         assertEquals(wrapper, form.getComponentAt(0));
+    }
+
+    @Test
+    void bindChildren_factoryCreatesForm_reportsErrorAndSkipsIt() {
+        AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
+                new MockVaadinServletService());
+        List<ErrorEvent> errors = new ArrayList<>();
+        session.setErrorHandler(errors::add);
+        UI ui = new MockUI(session);
+        try {
+            NativeForm form = new NativeForm();
+            ui.add(form);
+            ListSignal<String> values = new ListSignal<>();
+            form.bindChildren(values,
+                    value -> "form".equals(value.peek()) ? new NativeForm()
+                            : new Span(value.peek()));
+
+            values.insertLast("field");
+            assertEquals(1, form.getComponentCount());
+
+            values.insertLast("form");
+
+            // the binding runs in an effect, which reports the failure to the
+            // session error handler instead of throwing to the caller
+            assertEquals(1, errors.size());
+            assertInstanceOf(IllegalArgumentException.class,
+                    errors.get(0).getThrowable());
+            assertEquals(1, form.getComponentCount());
+        } finally {
+            CurrentInstance.clearAll();
+        }
     }
 }
