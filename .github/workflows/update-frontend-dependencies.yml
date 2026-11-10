@@ -99,13 +99,15 @@ jobs:
           packages=()
           modules=flow-plugins/flow-maven-plugin
           has_vaadin_block() {
-            node -e 'process.exit(require(process.argv[1]).vaadin ? 0 : 1)' "./$1"
+            local package=$1
+            node -e 'process.exit(require(process.argv[1]).vaadin ? 0 : 1)' "./$package"
           }
           module_of() {
-            if [ -f "$1/pom-production.xml" ]; then
-              echo "$1/pom-production.xml"
-            elif [ -f "$1/pom.xml" ]; then
-              echo "$1"
+            local dir=$1
+            if [ -f "$dir/pom-production.xml" ]; then
+              echo "$dir/pom-production.xml"
+            elif [ -f "$dir/pom.xml" ]; then
+              echo "$dir"
             fi
           }
           for lock in $(git ls-files ':(glob)**/package-lock.json'); do
