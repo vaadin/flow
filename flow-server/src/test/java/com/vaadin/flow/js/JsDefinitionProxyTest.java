@@ -564,8 +564,8 @@ class JsDefinitionProxyTest {
         assertTrue(label.toString().contains("TemplateSnippet"),
                 label.toString());
         assertEquals(label, SerializationUtils.roundtrip(label));
-        assertThrows(RuntimeException.class,
-                () -> templates.echo(new SelfReference()),
+        SelfReference unencodable = new SelfReference();
+        assertThrows(RuntimeException.class, () -> templates.echo(unencodable),
                 "a capture the client can not receive should fail when declared");
     }
 
