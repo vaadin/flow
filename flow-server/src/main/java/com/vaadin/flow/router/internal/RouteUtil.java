@@ -632,6 +632,7 @@ public class RouteUtil {
      *            the path the route target was resolved from, not {@code null}
      * @return the parent layouts, starting from the one closest to the route
      *         target, or an empty list if there are none
+     * @since 25.3.6
      */
     public static List<Class<? extends RouterLayout>> getTargetParentLayouts(
             RouteTarget routeTarget, RouteRegistry registry, String path) {
@@ -662,6 +663,7 @@ public class RouteUtil {
      *            the path to resolve, not {@code null}
      * @return the parent layouts, starting from the one closest to the
      *         navigation target, or an empty list if there are none
+     * @since 25.3.6
      */
     public static List<Class<? extends RouterLayout>> resolveTargetParentLayouts(
             RouteRegistry registry, Class<?> navigationTarget, String path) {
@@ -871,17 +873,48 @@ public class RouteUtil {
         RouteParent annotation = navigationTarget
                 .getAnnotation(RouteParent.class);
         if (annotation != null) {
-            if (!RouteParentResolver.class.equals(annotation.resolver())) {
+            if (definesResolver(annotation)) {
                 return instantiateResolver(annotation.resolver()).resolveParent(
                         new RouteParentContext(navigationTarget, parameters));
             }
-            if (!Component.class.equals(annotation.value())) {
+            if (definesStaticParent(annotation)) {
                 return Optional.of(new RouteReference(annotation.value(),
                         narrowParametersToTemplate(registry, annotation.value(),
                                 parameters)));
             }
         }
         return getUrlBasedRouteParent(registry, navigationTarget, parameters);
+    }
+
+    /**
+     * Checks whether the given navigation target defines its logical parent
+     * explicitly with a {@link RouteParent} annotation, i.e. whether
+     * {@link #getRouteParent(RouteRegistry, Class, RouteParameters)} resolves
+     * the parent from the annotation rather than from the route URL.
+     *
+     * @param navigationTarget
+     *            the navigation target to check, not {@code null}
+     * @return {@code true} if a {@link RouteParent#value()} or
+     *         {@link RouteParent#resolver()} is defined for the target,
+     *         {@code false} otherwise
+     * @since 25.4
+     */
+    public static boolean hasExplicitRouteParent(
+            Class<? extends Component> navigationTarget) {
+        RouteParent annotation = navigationTarget
+                .getAnnotation(RouteParent.class);
+        return annotation != null && (definesResolver(annotation)
+                || definesStaticParent(annotation));
+    }
+
+    private static boolean definesResolver(RouteParent annotation) {
+        // RouteParentResolver itself is the "not defined" marker
+        return !RouteParentResolver.class.equals(annotation.resolver());
+    }
+
+    private static boolean definesStaticParent(RouteParent annotation) {
+        // Component itself is the "not defined" marker
+        return !Component.class.equals(annotation.value());
     }
 
     /**

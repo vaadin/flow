@@ -24,6 +24,7 @@ import { getScheduler } from './TrackingScheduler';
 import { UIState } from './UILifecycle';
 import { redirect } from './WidgetUtil';
 import { Console } from './Console';
+import { dispatchMessageEnd } from './communication/VaadinServerMessage';
 
 // com.vaadin.flow.shared.ApplicationConstants
 const REQUEST_TYPE_PARAMETER = 'v-r';
@@ -229,8 +230,14 @@ export class SystemErrorHandler {
         // heartbeat requests for different UIs.
         this.#registry.getHeartbeat().setInterval(-1);
 
+        const message = this.#registry.getMessageHandler().announceMessage();
         const uiId = configuration.getUIId();
-        const json = parseJson(responseText)!;
+        const json = parseJson(responseText);
+        if (json === null) {
+          dispatchMessageEnd(message, 'discarded');
+          this.#abortResynchronization('Ignored unparseable session resynchronization message');
+          return;
+        }
         const newUiId = json[UI_ID] as number;
         if (newUiId !== uiId) {
           Console.debug(`UI ID switched from ${uiId} to ${newUiId} after resynchronization`);
@@ -239,7 +246,7 @@ export class SystemErrorHandler {
         this.#registry.reset();
 
         this.#registry.getUILifecycle().setState(UIState.RUNNING);
-        this.#registry.getMessageHandler().handleMessage(json);
+        this.#registry.getMessageHandler().handleMessage(json, message);
 
         if (this.#registry.getPushConfiguration().isPushEnabled()) {
           // The push connection may have been closed in response to server
@@ -255,11 +262,19 @@ export class SystemErrorHandler {
           getScheduler().scheduleDeferred(() => this.#recreateWebComponents());
         }
       },
-      (error) => {
-        this.#registry.getHeartbeat().setInterval(configuration.getHeartbeatInterval());
-        this.handleError(error.message);
-      }
+      (error) => this.#abortResynchronization(error.message)
     );
+  }
+
+  /**
+   * Gives up on a failed resynchronization. The heartbeat is restarted so the
+   * next one that finds the session expired starts a new attempt, which the
+   * in-progress flag would otherwise block for good.
+   */
+  #abortResynchronization(errorMessage: string): void {
+    this.#registry.getHeartbeat().setInterval(this.#registry.getApplicationConfiguration().getHeartbeatInterval());
+    this.#resyncInProgress = false;
+    this.handleError(errorMessage);
   }
 
   /** Recreates every exported web component's elements (detaching stale ones). */
