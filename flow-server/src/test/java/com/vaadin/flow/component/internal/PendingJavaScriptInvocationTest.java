@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -240,6 +241,57 @@ class PendingJavaScriptInvocationTest {
 
         assertSame("foo", errorConsumer.getCapturedValue());
         assertSame("foo", extraErrorHandler.getCapturedValue());
+    }
+
+    @Test
+    void throwingSuccessHandlers_laterHandlersRunAndFirstExceptionIsThrown() {
+        IllegalStateException first = new IllegalStateException("first");
+        IOException second = new IOException("second");
+        AssertionError third = new AssertionError("third");
+        invocation.then(json -> {
+            throw first;
+        });
+        invocation.then(json -> sneakyThrow(second));
+        invocation.then(json -> {
+            throw first;
+        });
+        invocation.then(json -> {
+            throw third;
+        });
+        invocation.then(jsonSuccessConsumer);
+        CompletableFuture<JsonNode> future = invocation.toCompletableFuture();
+
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> invocation.complete(fooJsonString));
+
+        assertSame(first, thrown);
+        assertEquals(List.of(second, third),
+                Arrays.asList(thrown.getSuppressed()));
+        assertSame(fooJsonString, jsonSuccessConsumer.getCapturedValue());
+        assertSame(fooJsonString, future.getNow(null));
+    }
+
+    @Test
+    void throwingErrorHandler_laterHandlersRunAndExceptionIsThrown() {
+        IOException failure = new IOException("failure");
+        invocation.then(jsonSuccessConsumer, error -> sneakyThrow(failure));
+        invocation.then(jsonSuccessConsumer, errorConsumer);
+        CompletableFuture<JsonNode> future = invocation.toCompletableFuture();
+
+        IOException thrown = assertThrows(IOException.class,
+                () -> invocation.completeExceptionally(fooJsonString));
+
+        assertSame(failure, thrown);
+        assertSame("foo", errorConsumer.getCapturedValue());
+        ExecutionException futureFailure = assertThrows(
+                ExecutionException.class, future::get);
+        assertInstanceOf(JavaScriptException.class, futureFailure.getCause());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <E extends Throwable> void sneakyThrow(Throwable throwable)
+            throws E {
+        throw (E) throwable;
     }
 
     @Test
