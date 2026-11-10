@@ -91,7 +91,10 @@ class InvocationRequestBuilder {
      * @return this builder
      */
     InvocationRequestBuilder properties(Properties properties) {
-        this.properties = properties;
+        this.properties = new Properties();
+        if (properties != null) {
+            this.properties.putAll(properties);
+        }
         return this;
     }
 
