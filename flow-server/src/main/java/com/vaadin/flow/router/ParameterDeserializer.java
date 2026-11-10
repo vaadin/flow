@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.ReflectTools;
@@ -202,7 +201,7 @@ public final class ParameterDeserializer {
                     "Parameter type of the given navigationTarget '%s' could not be resolved.",
                     navigationTarget.getName()));
         }
-        return GenericTypeReflector.erase(type);
+        return ReflectTools.erase(type);
     }
 
     /**
@@ -231,7 +230,7 @@ public final class ParameterDeserializer {
 
         // Raw method has no parameter annotations if compiled by Eclipse
         Type parameterType = findParameterType(navigationTarget);
-        Class<?> parameterClass = GenericTypeReflector.erase(parameterType);
+        Class<?> parameterClass = ReflectTools.erase(parameterType);
 
         return Stream.of(navigationTarget.getMethods())
                 .filter(method -> methodName.equals(method.getName()))
@@ -244,16 +243,16 @@ public final class ParameterDeserializer {
     }
 
     private static Type findParameterType(Class<?> navigationTarget) {
-        Type parameterType = GenericTypeReflector.getTypeParameter(
-                navigationTarget, HasUrlParameter.class.getTypeParameters()[0]);
+        Type parameterType = ReflectTools.getTypeParameter(navigationTarget,
+                HasUrlParameter.class.getTypeParameters()[0]);
         if (parameterType == null) {
-            parameterType = GenericTypeReflector.getTypeParameter(
+            parameterType = ReflectTools.getTypeParameter(
                     navigationTarget.getGenericSuperclass(),
                     HasUrlParameter.class.getTypeParameters()[0]);
         }
         if (parameterType == null) {
             for (Type iface : navigationTarget.getGenericInterfaces()) {
-                parameterType = GenericTypeReflector.getTypeParameter(iface,
+                parameterType = ReflectTools.getTypeParameter(iface,
                         HasUrlParameter.class.getTypeParameters()[0]);
                 if (parameterType != null) {
                     break;

@@ -8,6 +8,7 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
+import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -18,14 +19,18 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.template.internal.DeprecatedPolymerTemplate;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.templatemodel.BeanModelType;
 import com.vaadin.flow.templatemodel.ListModelType;
 import com.vaadin.flow.templatemodel.ModelDescriptor;
@@ -82,11 +87,11 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      */
     @SuppressWarnings("unchecked")
     protected Class<? extends M> getModelType() {
-        Type type = GenericTypeReflector.getTypeParameter(
+        Type type = ReflectTools.getTypeParameter(
                 getClass().getGenericSuperclass(),
                 AbstractTemplate.class.getTypeParameters()[0]);
         if (type instanceof Class || type instanceof ParameterizedType) {
-            return (Class<M>) GenericTypeReflector.erase(type);
+            return (Class<M>) ReflectTools.erase(type);
         }
         throw new IllegalStateException(getExceptionMessage(type));
     }
@@ -234,10 +239,9 @@ public abstract class AbstractTemplate<M extends TemplateModel>
         // This has to be executed BEFORE model population to be able to know
         // which properties needs update to the server
         getStateNode().runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(getStateNode(),
-                        context -> context.getUI().getPage().executeJs(
-                                "this.registerUpdatableModelProperties($0, $1)",
-                                getElement(),
+                .beforeClientResponse(getStateNode(), context -> context.getUI()
+                        .getPage().executeJs(TemplateModelJs.class)
+                        .registerUpdatableModelProperties(getElement(),
                                 filterUpdatableProperties(allowedProperties))));
 
         /*
@@ -252,10 +256,10 @@ public abstract class AbstractTemplate<M extends TemplateModel>
          */
         getStateNode().runWhenAttached(ui -> ui.getInternals().getStateTree()
                 .beforeClientResponse(getStateNode(),
-                        context -> context.getUI().getPage().executeJs(
-                                "this.populateModelProperties($0, $1)",
-                                getElement(),
-                                filterUnsetProperties(propertyNames))));
+                        context -> context.getUI().getPage()
+                                .executeJs(TemplateModelJs.class)
+                                .populateModelProperties(getElement(),
+                                        filterUnsetProperties(propertyNames))));
     }
 
     private ArrayNode filterUnsetProperties(List<String> properties) {
@@ -294,4 +298,44 @@ public abstract class AbstractTemplate<M extends TemplateModel>
         return props;
     }
 
+    /**
+     * What a template asks of the client to keep its model in sync, as a
+     * JavaScript definition for
+     * {@link com.vaadin.flow.component.page.Page#executeJs(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface TemplateModelJs extends Serializable {
+
+        /**
+         * Tells the client which properties of the template element are sent to
+         * the server when they change on the client.
+         *
+         * @param template
+         *            the template element
+         * @param properties
+         *            the names of the properties
+         */
+        @JsExpression("$executionContext.registerUpdatableModelProperties($0, $1)")
+        @JsWithExecutionContext
+        void registerUpdatableModelProperties(Element template,
+                ArrayNode properties);
+
+        /**
+         * Asks the client to send the values the template element has for the
+         * given properties to the server.
+         *
+         * @param template
+         *            the template element
+         * @param properties
+         *            the names of the properties that the server has no value
+         *            for
+         */
+        @JsExpression("$executionContext.populateModelProperties($0, $1)")
+        @JsWithExecutionContext
+        void populateModelProperties(Element template, ArrayNode properties);
+    }
 }

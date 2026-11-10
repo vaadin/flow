@@ -82,6 +82,7 @@ public class ServiceInitEvent extends EventObject {
      *
      * @param sessionlessRequestHandler
      *            the sessionless request handler to add, not <code>null</code>
+     * @since 25.4
      */
     public void addSessionlessRequestHandler(
             SessionlessRequestHandler sessionlessRequestHandler) {
@@ -171,6 +172,7 @@ public class ServiceInitEvent extends EventObject {
      * added for the service.
      *
      * @return the stream of added sessionless request handlers
+     * @since 25.4
      */
     public Stream<SessionlessRequestHandler> getAddedSessionlessRequestHandlers() {
         return addedSessionlessRequestHandlers.stream();

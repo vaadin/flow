@@ -97,7 +97,11 @@ describe('ExecuteJavaScriptProcessor', () => {
 
     type DefinitionWindow = Window & {
       Vaadin?: {
-        Flow?: { jsDefinitions?: Record<string, DefinitionFunction>; jsDefinitionNames?: Record<string, string> };
+        Flow?: {
+          jsDefinitions?: Record<string, DefinitionFunction>;
+          jsDefinitionsWithExecutionContext?: Record<string, DefinitionFunction>;
+          jsDefinitionNames?: Record<string, string>;
+        };
       };
     };
 
@@ -113,6 +117,16 @@ describe('ExecuteJavaScriptProcessor', () => {
         vaadin.Flow.jsDefinitionNames = vaadin.Flow.jsDefinitionNames ?? {};
         vaadin.Flow.jsDefinitionNames[functionId] = name;
       }
+    }
+
+    // Registers a function the way the generated bundle does for a method
+    // that gets the execution context.
+    function registerDefinitionWithExecutionContext(functionId: string, fn: DefinitionFunction): void {
+      const vaadin = (window as DefinitionWindow).Vaadin ?? {};
+      (window as DefinitionWindow).Vaadin = vaadin;
+      vaadin.Flow = vaadin.Flow ?? {};
+      vaadin.Flow.jsDefinitionsWithExecutionContext = vaadin.Flow.jsDefinitionsWithExecutionContext ?? {};
+      vaadin.Flow.jsDefinitionsWithExecutionContext[functionId] = fn;
     }
 
     function fixture(): { processor: ExecuteJavaScriptProcessor; registry: TestRegistry } {
@@ -133,6 +147,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       const flow = (window as DefinitionWindow).Vaadin?.Flow;
       for (const functionId of [GREETING, VALUE]) {
         delete flow?.jsDefinitions?.[functionId];
+        delete flow?.jsDefinitionsWithExecutionContext?.[functionId];
         delete flow?.jsDefinitionNames?.[functionId];
       }
     });
@@ -149,6 +164,45 @@ describe('ExecuteJavaScriptProcessor', () => {
       expect(calls).to.have.lengthOf(1);
       expect(calls[0].thisArg).to.equal(element);
       expect(calls[0].args).to.eql(['Hello']);
+    });
+
+    it('runs a call with a declared function argument without compiling a string', () => {
+      // What a page without unsafe-eval allows: both the call and its function
+      // argument come from the bundle, so neither Function nor eval is needed
+      const SNIPPET = 'c'.repeat(64);
+      registerDefinition(GREETING, function (this: unknown, greeter: unknown) {
+        (greeter as (this: unknown, name: string) => void).call(this, 'World');
+      });
+      const vaadinFlow = (window as DefinitionWindow).Vaadin!.Flow as Record<string, unknown>;
+      const snippets = (vaadinFlow.jsSnippets ?? {}) as Record<string, DefinitionFunction>;
+      vaadinFlow.jsSnippets = snippets;
+      snippets[SNIPPET] = function (greeting: unknown) {
+        return function (this: { text?: string }, name: unknown) {
+          this.text = `${greeting} ${name}`;
+        };
+      };
+      const originalFunction = window.Function;
+      const originalEval = window.eval;
+      const compiled: string[] = [];
+      window.Function = function (...args: string[]) {
+        compiled.push(args.join(','));
+        throw new EvalError('Refused to compile a string');
+      } as unknown as FunctionConstructor;
+      window.eval = (code: string) => {
+        compiled.push(code);
+        throw new EvalError('Refused to evaluate a string');
+      };
+      const element: { tagName: string; text?: string } = { tagName: 'div' };
+      try {
+        run([{ '@v-fn': { id: SNIPPET, captures: ['Hello'] } }, element, greeting]);
+      } finally {
+        window.Function = originalFunction;
+        window.eval = originalEval;
+        Reflect.deleteProperty(snippets, SNIPPET);
+      }
+
+      expect(compiled).to.eql([]);
+      expect(element.text).to.equal('Hello World');
     });
 
     it('runs a call that has nothing to run on without a this', () => {
@@ -235,6 +289,60 @@ describe('ExecuteJavaScriptProcessor', () => {
       expect(calls[0].args).to.eql(['greet', ['Alice', 'Bob']]);
     });
 
+    it('passes the execution context ahead of the arguments to a function registered as getting it', () => {
+      const lifecycleStates: UIState[] = [];
+      const registry = treeRegistry();
+      registry.register('ApplicationConfiguration', {
+        getApplicationId: () => 'ROOT-1',
+        isProductionMode: () => false
+      });
+      registry.register('UILifecycle', {
+        isTerminated: () => false,
+        setState: (state: UIState) => lifecycleStates.push(state)
+      });
+      const node = registeredNode(registry, 10);
+      const element = document.createElement('div');
+      node.setDomNode(element);
+      const calls: Array<{ thisArg: unknown; args: unknown[]; nodeOfElement: unknown }> = [];
+      registerDefinitionWithExecutionContext(
+        GREETING,
+        function (this: unknown, $executionContext: unknown, target: unknown, greeting: unknown) {
+          const context = $executionContext as { getNode: (element: unknown) => unknown; stopApplication: () => void };
+          calls.push({ thisArg: this, args: [target, greeting], nodeOfElement: context.getNode(target) });
+          context.stopApplication();
+        }
+      );
+
+      execute(new ExecuteJavaScriptProcessor(registry), registry, [
+        [{ '@v-node': node.getId() }, 'Hello', null, greeting]
+      ]);
+
+      expect(calls).to.have.lengthOf(1);
+      expect(calls[0].thisArg).to.equal(null);
+      expect(calls[0].args).to.eql([element, 'Hello']);
+      // The same context an expression runs against: an element parameter
+      // maps back to its node, and the callbacks reach the application
+      expect(calls[0].nodeOfElement).to.equal(node);
+      expect(lifecycleStates).to.eql([UIState.TERMINATED]);
+    });
+
+    it('splits the parameters of a variadic call that gets the execution context by the count the server sent', () => {
+      const calls: Array<{ thisArg: unknown; args: unknown[] }> = [];
+      registerDefinitionWithExecutionContext(
+        GREETING,
+        function (this: unknown, _executionContext: unknown, name: unknown, ...rest: unknown[]) {
+          calls.push({ thisArg: this, args: [name, rest] });
+        }
+      );
+      const element = { tagName: 'div' };
+
+      run(['greet', 'Alice', 'Bob', element, { f: GREETING, n: 3 }]);
+
+      expect(calls).to.have.lengthOf(1);
+      expect(calls[0].thisArg).to.equal(element);
+      expect(calls[0].args).to.eql(['greet', ['Alice', 'Bob']]);
+    });
+
     it('reports a function that is not in the bundle to the error channel', () => {
       const errors: unknown[] = [];
       const element = { tagName: 'div' };
@@ -244,6 +352,20 @@ describe('ExecuteJavaScriptProcessor', () => {
       expect(errors).to.have.lengthOf(1);
       // Nothing registered it, so the message has only the identifier
       expect(String(errors[0])).to.contain(VALUE);
+    });
+
+    it('does not resolve a function or its name to what the registry inherits', () => {
+      const flow = ((window as DefinitionWindow).Vaadin ??= {});
+      flow.Flow = flow.Flow ?? {};
+      flow.Flow.jsDefinitions = flow.Flow.jsDefinitions ?? {};
+      flow.Flow.jsDefinitionNames = flow.Flow.jsDefinitionNames ?? {};
+      const errors: unknown[] = [];
+      const element = { tagName: 'div' };
+
+      run([element, () => {}, (error: unknown) => errors.push(error), { f: 'constructor' }]);
+
+      expect(errors).to.have.lengthOf(1);
+      expect(String(errors[0])).to.contain('No JavaScript in the bundle for constructor.');
     });
   });
 

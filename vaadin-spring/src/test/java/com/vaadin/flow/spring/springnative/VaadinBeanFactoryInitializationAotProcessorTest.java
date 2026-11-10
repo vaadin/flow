@@ -53,6 +53,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.i18n.I18NProvider;
@@ -756,6 +757,23 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 .onMethodInvocation(TestJsDefinition.class, "addClass"))
                 .as("JavaScript definition methods should be invokable through reflection")
                 .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onMethodInvocation(TestValueJs.class, "readValue"))
+                .as("Inherited interface should be registered to resolve its generic return types")
+                .accepts(hints);
+        assertThat(
+                RuntimeHintsPredicates.reflection().onType(TestJsValue.class))
+                .as("Type bound to an inherited typed result should be registered for Jackson")
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection().onType(TestJsItem.class))
+                .as("Type argument of a typed result should be registered for Jackson")
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(TestJsArrayItem.class))
+                .as("Component type of an array result should be registered for Jackson")
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection().onType(ObjectNode.class))
+                .as("Jackson node types need no hints").rejects(hints);
     }
 
     @Test
@@ -1170,9 +1188,32 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     }
 
     @JsDefinition
-    public interface TestJsDefinition {
+    public interface TestJsDefinition extends TestValueJs<TestJsValue> {
         @JsExpression("this.classList.add($0)")
         void addClass(String className);
+
+        @JsExpression("return []")
+        JavaScriptResult<List<TestJsItem>> readItems();
+
+        @JsExpression("return []")
+        JavaScriptResult<TestJsArrayItem[]> readArray();
+
+        @JsExpression("return {}")
+        JavaScriptResult<ObjectNode> readNode();
+    }
+
+    public interface TestValueJs<T> {
+        @JsExpression("return this.value")
+        JavaScriptResult<T> readValue();
+    }
+
+    public record TestJsValue(String value) {
+    }
+
+    public record TestJsItem(String name) {
+    }
+
+    public record TestJsArrayItem(String name) {
     }
 
     public static class TestMenuAccessControl implements MenuAccessControl {

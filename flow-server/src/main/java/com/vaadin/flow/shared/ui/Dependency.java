@@ -16,10 +16,21 @@
 package com.vaadin.flow.shared.ui;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.dom.Node;
+import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JsonDecodingException;
 
 /**
  * Represents an html import, stylesheet or JavaScript to include on the page.
@@ -58,7 +69,7 @@ public class Dependency implements Serializable {
     private final Type type;
     private final String url;
     private final LoadMode loadMode;
-    private String id;
+    private final String id;
     private final String layer;
 
     /**
@@ -172,6 +183,83 @@ public class Dependency implements Serializable {
     }
 
     /**
+     * Creates a new {@link Type#DYNAMIC_IMPORT} dependency, loaded by calling
+     * the given function, which is supposed to return a {@code Promise}.
+     * <p>
+     * The created instance dependency mode is {@link LoadMode#LAZY}. Its URL is
+     * the JSON the function is sent to the browser as, which tells apart
+     * dependencies that load different things, and which a copy made from the
+     * type and the URL keeps.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param dynamicImport
+     *            the function that loads the dependency, not {@code null}
+     * @throws IllegalArgumentException
+     *             if the function captures an element or a component, attached
+     *             or not, directly or in a collection, a map, an array or a
+     *             captured function, or an attached one in a bean property: the
+     *             browser loads dependencies before it applies the changes of
+     *             the same round trip, and a detached element cannot be
+     *             referenced
+     * @since 25.4
+     */
+    public Dependency(JsFunction dynamicImport) {
+        // LAZY for the same reason as in Dependency(Type, String)
+        this(Type.DYNAMIC_IMPORT, encodeDynamicImport(dynamicImport),
+                LoadMode.LAZY);
+    }
+
+    private static String encodeDynamicImport(JsFunction dynamicImport) {
+        Objects.requireNonNull(dynamicImport, "dynamicImport cannot be null");
+        // Checked on the Java values, as JacksonCodec encodes a detached
+        // element as null, which the check below cannot see
+        if (capturesElement(dynamicImport)) {
+            throw elementCaptured();
+        }
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(dynamicImport);
+        // How JacksonCodec references an attached element, such as one in a
+        // bean property, which capturesElement does not look into
+        if (encoded.findValue("@v-node") != null) {
+            throw elementCaptured();
+        }
+        return JacksonUtils.getMapper().writeValueAsString(encoded);
+    }
+
+    private static boolean capturesElement(Object value) {
+        if (value instanceof Node<?> || value instanceof Component) {
+            return true;
+        }
+        if (value instanceof JsFunction function) {
+            return function.getCaptures().stream()
+                    .anyMatch(Dependency::capturesElement);
+        }
+        if (value instanceof Iterable<?> iterable) {
+            for (Object item : iterable) {
+                if (capturesElement(item)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (value instanceof Map<?, ?> map) {
+            return map.values().stream().anyMatch(Dependency::capturesElement);
+        }
+        if (value instanceof Object[] array) {
+            return Stream.of(array).anyMatch(Dependency::capturesElement);
+        }
+        return false;
+    }
+
+    private static IllegalArgumentException elementCaptured() {
+        return new IllegalArgumentException(
+                "A dynamic import cannot capture an element or a component,"
+                        + " attached or not: the browser loads dependencies"
+                        + " before it applies the changes of the same round"
+                        + " trip, and a detached element cannot be referenced");
+    }
+
+    /**
      * Gets the untranslated URL for the dependency.
      *
      * @return the URL for the dependency
@@ -222,6 +310,38 @@ public class Dependency implements Serializable {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getLayer() {
         return layer;
+    }
+
+    /**
+     * Gets the function that loads a {@link Type#DYNAMIC_IMPORT} dependency
+     * created with {@link #Dependency(JsFunction)}, as the JSON it is sent to
+     * the browser as.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @return the encoded function, or {@code null} for a dependency that is
+     *         loaded from its URL or a JavaScript expression
+     * @since 25.4
+     */
+    @JsonIgnore
+    public JsonNode getEncodedDynamicImport() {
+        // Read from the URL alone, so that a copy made from the type and the
+        // URL loads the function too. An expression can start with '{' (a
+        // block), so one that is not JSON is an expression. A JSON object
+        // with the function key never is one: it does not compile as the
+        // body of a function.
+        if (type != Type.DYNAMIC_IMPORT || !url.startsWith("{")) {
+            return null;
+        }
+        try {
+            JsonNode node = JacksonUtils.readTree(url);
+            return node.has(JacksonCodec.FUNCTION_KEY) ? node : null;
+        } catch (JsonDecodingException e) {
+            LoggerFactory.getLogger(Dependency.class).debug(
+                    "Loading dynamic import '{}' as an expression, as it is not JSON",
+                    url, e);
+            return null;
+        }
     }
 
     @Override

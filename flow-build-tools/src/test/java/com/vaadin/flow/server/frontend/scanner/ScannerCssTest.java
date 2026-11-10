@@ -43,13 +43,12 @@ class ScannerCssTest {
             assertEquals(4, entryPoint.getCss().size(),
                     "Wrong amount of css in " + entryPoint.getName());
 
-            assertThat(
-                    entryPoint.getCss().stream().map(CssData::toString)
-                            .toList(),
-                    containsInAnyOrder("value: ./foo.css",
-                            "value: ./foo.css include:bar",
-                            "value: ./foo.css id:bar",
-                            "value: ./foo.css themefor:bar"));
+            assertThat(entryPoint.getCss(),
+                    containsInAnyOrder(
+                            new CssData("./foo.css", null, null, null),
+                            new CssData("./foo.css", null, "bar", null),
+                            new CssData("./foo.css", "bar", null, null),
+                            new CssData("./foo.css", null, null, "bar")));
         }
         ;
     }
@@ -66,11 +65,11 @@ class ScannerCssTest {
                     "Wrong amount of css in " + entryPoint.getName());
 
             // verifies #6523 as sufficiently complex names can get mixed up
-            assertThat(
-                    entryPoint.getCss().stream().map(CssData::toString)
-                            .toList(),
-                    contains("value: ./foo.css", "value: ./bar.css",
-                            "value: ./foofoo.css", "value: ./foobar.css"));
+            assertThat(entryPoint.getCss(),
+                    contains(new CssData("./foo.css", null, null, null),
+                            new CssData("./bar.css", null, null, null),
+                            new CssData("./foofoo.css", null, null, null),
+                            new CssData("./foobar.css", null, null, null)));
         }
         ;
     }

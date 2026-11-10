@@ -18,14 +18,15 @@ package com.vaadin.flow.dom;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -562,6 +563,7 @@ abstract class AbstractNodeTest {
         assertFalse(parent.getChildren().anyMatch(el -> el.equals(child)));
     }
 
+    @SuppressWarnings("unchecked")
     protected void assertMethodsReturnType(Class<? extends Node<?>> clazz,
             Set<String> ignore) {
         for (Method method : clazz.getMethods()) {
@@ -584,8 +586,12 @@ abstract class AbstractNodeTest {
                 // Ignore
             } else {
                 // Setters and such
-                Type returnType = GenericTypeReflector
-                        .getExactReturnType(method, clazz);
+                Type returnType = method.getGenericReturnType();
+                if (returnType instanceof TypeVariable<?> variable
+                        && variable.getGenericDeclaration() instanceof Class) {
+                    returnType = ReflectTools.getTypeParameter(clazz,
+                            (TypeVariable<? extends Class<?>>) variable);
+                }
                 assertEquals(clazz, returnType, "Method " + method.getName()
                         + " has invalid return type");
             }
