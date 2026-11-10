@@ -176,6 +176,10 @@ class JsDefinitionProxyTest {
 
     @JsCalledWith({ "html", "item" })
     interface TemplateSnippet extends JsSnippet {
+        // Allowed, as it is not something the snippet has to implement
+        static String describe() {
+            return "template";
+        }
     }
 
     @JsDefinition
@@ -189,6 +193,11 @@ class JsDefinitionProxyTest {
 
     interface ActionSnippet extends JsSnippet {
         void run();
+
+        default void runTwice() {
+            run();
+            run();
+        }
     }
 
     @JsDefinition
@@ -570,7 +579,7 @@ class JsDefinitionProxyTest {
 
         assertTrue(
                 exception.getMessage().contains(ActionSnippet.class.getName())
-                        && exception.getMessage().contains("run"),
+                        && exception.getMessage().contains("run, runTwice"),
                 exception.getMessage());
     }
 
