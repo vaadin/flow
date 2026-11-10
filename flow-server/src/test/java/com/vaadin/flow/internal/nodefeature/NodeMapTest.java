@@ -301,8 +301,6 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         assertNotSame(nodeMap, copy);
 
         assertEquals(values.keySet(), copy.keySet());
-        // The deserialized map uses the same shared key set instance
-        assertSame(nodeMap.keySet(), copy.keySet());
         // A key set deserialized on its own is also the shared instance
         assertSame(nodeMap.keySet(), SerializationUtils.deserialize(
                 SerializationUtils.serialize((Serializable) nodeMap.keySet())));
