@@ -28,6 +28,7 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.DomEvent;
@@ -41,6 +42,7 @@ import com.vaadin.flow.signals.Signal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -97,6 +99,15 @@ class WebNotificationTest {
         when(session.hasLock()).thenReturn(false);
         WebNotification.permissionSignal(ui);
         verify(session).access(any());
+    }
+
+    @Test
+    void permissionSignal_detachedUI_throws() {
+        UI ui = new UI();
+
+        assertThrows(UIDetachedException.class,
+                () -> WebNotification.permissionSignal(ui));
+        assertFalse(ui.getInternals().isWebNotificationPermissionWired());
     }
 
     // JsFunction.getBody() is the only way to see the JavaScript a

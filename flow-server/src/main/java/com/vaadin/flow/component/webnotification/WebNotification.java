@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
@@ -141,6 +142,8 @@ public final class WebNotification implements Serializable {
      * @return the read-only permission signal
      * @throws IllegalStateException
      *             if there is no current UI
+     * @throws UIDetachedException
+     *             if the current UI is not attached to a session
      */
     public static Signal<WebNotificationPermission> permissionSignal() {
         return permissionSignal(UI.getCurrentOrThrow());
@@ -155,6 +158,8 @@ public final class WebNotification implements Serializable {
      * @param ui
      *            the UI to read the signal from, not {@code null}
      * @return the read-only permission signal
+     * @throws UIDetachedException
+     *             if the UI is not attached to a session
      */
     public static Signal<WebNotificationPermission> permissionSignal(UI ui) {
         Objects.requireNonNull(ui, UI_NOT_NULL);
@@ -162,7 +167,10 @@ public final class WebNotification implements Serializable {
         // Checking the flag first keeps polling from background jobs cheap
         if (!internals.isWebNotificationPermissionWired()) {
             VaadinSession session = internals.getSession();
-            if (session != null && !session.hasLock()) {
+            if (session == null) {
+                throw new UIDetachedException();
+            }
+            if (!session.hasLock()) {
                 // The listener that keeps the signal up to date changes the
                 // UI, so a background thread installs it under the lock
                 ui.access(internals::ensureWebNotificationPermissionWired);
