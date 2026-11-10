@@ -72,9 +72,9 @@ class EncodeUtilTest {
 
     @Test
     void rfc2047Encode_asciiCharacters() {
-        String input = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&'*+-.^_`|~ ?=\"";
+        String input = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&'*+-.^_`|~ ?=\"\\";
         assertEquals(
-                "=?UTF-8?Q?abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&'*+-.^=5F`|~_=3F=3D=22?=",
+                "=?UTF-8?Q?abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&'*+-.^=5F`|~_=3F=3D=22=5C?=",
                 EncodeUtil.rfc2047Encode(input));
     }
 
@@ -84,6 +84,24 @@ class EncodeUtilTest {
         assertEquals(
                 "=?UTF-8?Q?=C5=98=C5=99=C3=BC=C3=B1=C3=AE=C3=A7=C3=B8d=C3=AB_1=E4=B8=AD=E6=96=87_=E2=82=AC_=C3=BF=C4=80=C4=81?=",
                 EncodeUtil.rfc2047Encode(input));
+    }
+
+    @Test
+    void quotedStringEscape_escapesQuotesAndBackslashes() {
+        assertEquals("a\\\"b\\\\c d.txt",
+                EncodeUtil.quotedStringEscape("a\"b\\c d.txt"));
+    }
+
+    @Test
+    void quotedStringEscape_removesControlCharacters() {
+        assertEquals("ab.txt",
+                EncodeUtil.quotedStringEscape("a\r\n\t\u0000b\u007F.txt"));
+    }
+
+    @Test
+    void removeControlCharacters_removesC0AndC1ControlCharacters() {
+        assertEquals("äb.txt", EncodeUtil
+                .removeControlCharacters("ä\r\n\t\u0000\u007F\u0085b.txt"));
     }
 
     @Test

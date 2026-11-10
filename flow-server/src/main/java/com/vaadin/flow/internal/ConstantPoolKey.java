@@ -91,7 +91,22 @@ public class ConstantPoolKey implements Serializable {
      * @return the key uniquely identifying the given JSON value
      */
     private static String calculateHash(JsonNode json) {
-        byte[] digest = MessageDigestUtil.sha256(json.toString());
+        return calculateHash(json.toString());
+    }
+
+    /**
+     * Calculates a short key for a string, in the same way as the id of a
+     * constant: the first 64 bits of the SHA-256 digest of the string, encoded
+     * as Base 64. The key is 11 ASCII characters long.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param content
+     *            the string to get a key for, not <code>null</code>
+     * @return the key of the string, not <code>null</code>
+     */
+    public static String calculateHash(String content) {
+        byte[] digest = MessageDigestUtil.sha256(content);
 
         /*
          * Only use first 64 bits to keep id string short (1 in 100 000 000

@@ -44,6 +44,7 @@ import com.vaadin.flow.component.Size;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.trigger.internal.SetSignalAction;
@@ -55,6 +56,7 @@ import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.DiscardAwareExecution;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -69,6 +71,8 @@ import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.CspMode;
+import com.vaadin.flow.server.CspViolationException;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.ElementRequestHandler;
@@ -1566,7 +1570,7 @@ public class Element extends Node<Element> {
      */
     public void flashClass(String className) {
         Objects.requireNonNull(className, "className cannot be null");
-        executeJs("window.Vaadin.Flow.flashClass(this, $0)", className);
+        executeJs(ElementJs.class).flashClass(className);
     }
 
     /**
@@ -1933,7 +1937,8 @@ public class Element extends Node<Element> {
      * deferred until the element is attached and visible.
      * <p>
      * The expression is sent to the browser and compiled there, which a content
-     * security policy without <code>unsafe-eval</code> does not allow.
+     * security policy without <code>unsafe-eval</code> does not allow, so the
+     * {@link CspMode} of the application reports or refuses the call.
      * {@link #executeJs(Class)} runs JavaScript that is declared in Java and
      * collected into the bundle instead, and sends no expression.
      *
@@ -1945,9 +1950,12 @@ public class Element extends Node<Element> {
      *         the expression
      * @see #executeJs(Class)
      * @since 25.0
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
+        CspViolationReporter.reportStringJavaScript();
         return scheduleExecuteJs(expression, parameters);
     }
 
@@ -1977,7 +1985,10 @@ public class Element extends Node<Element> {
      * the arguments of the call as <code>$0</code>, <code>$1</code>, and so on,
      * after pending DOM updates, and deferred while the element is not attached
      * or not visible. A method that returns {@link PendingJavaScriptResult} can
-     * be used to retrieve the <code>return</code> value the same way.
+     * be used to retrieve the <code>return</code> value the same way. A method
+     * that returns {@link JavaScriptResult} with a type argument, such as
+     * <code>JavaScriptResult&lt;Integer&gt;</code>, hands the value to its
+     * handlers already converted to that type.
      * <p>
      * What differs is that nothing about the JavaScript is decided at the call
      * site: the build collects the declarations of every JavaScript definition
@@ -1991,9 +2002,17 @@ public class Element extends Node<Element> {
      * driver of the client side that can not run JavaScript can recognize it,
      * or run it on its own implementation of the same interface.
      * <p>
-     * Every method of the interface declares JavaScript and returns either
-     * <code>void</code> or {@link PendingJavaScriptResult}. One that is
-     * implemented in Java instead - a <code>default</code> or a
+     * Every method of the interface declares JavaScript and returns
+     * <code>void</code>, {@link JavaScriptResult} with a type argument that is
+     * known from the interface, or {@link PendingJavaScriptResult}. The type
+     * argument is known when it is a concrete type, such as
+     * <code>JavaScriptResult&lt;Integer&gt;</code>, or a type variable of an
+     * interface that the definition extends and binds to a concrete type, such
+     * as <code>T</code> in <code>JavaScriptResult&lt;T&gt;</code> when the
+     * definition extends <code>ValueJs&lt;Integer&gt;</code>. A type variable
+     * of the method itself, a wildcard or a raw {@link JavaScriptResult} does
+     * not say what to convert the value to, so such a method is refused. One
+     * that is implemented in Java instead - a <code>default</code> or a
      * <code>static</code> method - is not what such an interface is for, so the
      * interface is refused rather than partly run in the browser.
      * <p>
@@ -2102,6 +2121,8 @@ public class Element extends Node<Element> {
      * @return a registration that, when removed, invokes the cleanup callback
      *         on the client
      * @since 25.2
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode
      */
     public Registration addJsInitializer(String expression,
             Object... parameters) {
@@ -2507,5 +2528,44 @@ public class Element extends Node<Element> {
          */
         @JsExpression("setTimeout(() => this.scrollIntoView($0), 0)")
         void scrollIntoView(ObjectNode options);
+    }
+
+    /**
+     * JavaScript that Flow runs on an element, as a JavaScript definition for
+     * {@link #executeJs(Class)}.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface ElementJs extends Serializable {
+
+        /**
+         * Adds the CSS class to the element and removes it again when the
+         * animation it starts has ended.
+         *
+         * @param className
+         *            the CSS class name to flash
+         * @see Element#flashClass(String)
+         */
+        @JsExpression("window.Vaadin.Flow.flashClass(this, $0)")
+        void flashClass(String className);
+
+        /**
+         * Dispatches a <code>window-resize</code> event on the element whenever
+         * the browser window is resized, with the new browser window width and
+         * height (the viewport size, excluding scrollbars) as its
+         * <code>w</code> and <code>h</code> properties, so that a resize can be
+         * listened to on the element.
+         */
+        @JsExpression("""
+                const el = this;
+                window.addEventListener('resize', evt => {
+                    const event = new Event("window-resize");
+                    event.w = document.documentElement.clientWidth;
+                    event.h = document.documentElement.clientHeight;
+                    el.dispatchEvent(event);
+                });
+                """)
+        void forwardWindowResize();
     }
 }

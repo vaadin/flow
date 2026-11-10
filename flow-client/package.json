@@ -43,7 +43,6 @@
     "typescript": "^6.0.3"
   },
   "dependencies": {
-    "@vaadin/common-frontend": "0.0.24",
     "lit": "3.3.3"
   }
 }

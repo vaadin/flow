@@ -18,8 +18,11 @@ package com.vaadin.flow.shared.ui;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import tools.jackson.databind.JsonNode;
 
+import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -28,6 +31,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -56,6 +60,54 @@ class DependencyTest {
         // adding an element into the document head right away (no client side
         // processing is involved).
         assertThat(dependency.getLoadMode(), equalTo(LoadMode.LAZY));
+    }
+
+    @Test
+    void functionDependency_lazyDynamicImportKeptByCopy() {
+        Dependency dependency = new Dependency(
+                JsFunction.of("return Promise.resolve($0)", "a"));
+
+        assertEquals(Dependency.Type.DYNAMIC_IMPORT, dependency.getType());
+        // Lazy for the same reason as dynamicDependency_hasLazyMode
+        assertEquals(LoadMode.LAZY, dependency.getLoadMode());
+        assertDependency(dependency);
+        // The function is sent once, as the url
+        assertFalse(JacksonUtils.createNode(dependency)
+                .has("encodedDynamicImport"));
+        // As a dependency filter or DependencyList copies a dependency
+        Dependency copy = new Dependency(dependency.getType(),
+                dependency.getUrl(), dependency.getLoadMode());
+        assertEquals("a", copy.getEncodedDynamicImport().get("@v-fn")
+                .get("captures").get(0).asString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "return import('a.js')",
+            // A block is a valid function body that starts like JSON
+            "{ return import('a.js'); }",
+            // JSON, but not an encoded function
+            "{\"other\":1}" })
+    void expression_hasNoEncodedFunction(String expression) {
+        assertNull(new Dependency(Dependency.Type.DYNAMIC_IMPORT, expression)
+                .getEncodedDynamicImport());
+    }
+
+    @Test
+    void encodedFunctionWithWhitespace_isRecognized() {
+        // Depends only on the key, not on how the JSON is written
+        Dependency dependency = new Dependency(Dependency.Type.DYNAMIC_IMPORT,
+                "{ \"" + JacksonCodec.FUNCTION_KEY
+                        + "\" : { \"id\": \"f\", \"captures\": [] } }");
+
+        assertEquals("f", dependency.getEncodedDynamicImport()
+                .get(JacksonCodec.FUNCTION_KEY).get("id").asString());
+    }
+
+    @Test
+    void otherTypeWithEncodedFunctionUrl_hasNoEncodedFunction() {
+        assertNull(new Dependency(Dependency.Type.JAVASCRIPT,
+                "{\"" + JacksonCodec.FUNCTION_KEY + "\":{}}")
+                .getEncodedDynamicImport());
     }
 
     @Test

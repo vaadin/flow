@@ -24,6 +24,7 @@ import { getScheduler } from './TrackingScheduler';
 import { UIState } from './UILifecycle';
 import { redirect } from './WidgetUtil';
 import { Console } from './Console';
+import { dispatchMessageEnd } from './communication/VaadinServerMessage';
 
 // com.vaadin.flow.shared.ApplicationConstants
 const REQUEST_TYPE_PARAMETER = 'v-r';
@@ -68,6 +69,11 @@ export class SystemErrorHandler {
 
   #resyncInProgress = false;
 
+  // Set when the browser starts leaving the page, until the page is used again.
+  #leavingPage = false;
+
+  #deferredSessionExpiration: (() => void) | null = null;
+
   /**
    * Creates a new instance connected to the given registry.
    *
@@ -75,15 +81,48 @@ export class SystemErrorHandler {
    */
   constructor(registry: Registry) {
     this.#registry = registry;
+    window.addEventListener('beforeunload', (event) => {
+      // vite-devmode dispatches a synthetic beforeunload when its HMR socket is
+      // closed with 1008, which does not mean the page is being left.
+      if (event.isTrusted) {
+        this.#leavingPage = true;
+      }
+    });
+    // A navigation that does not replace the page, such as a download, leaves
+    // the page in use. The session expiration is handled once it is used.
+    // Whether the navigation is still pending cannot be known, so input while
+    // a slow response loads still handles the expiration and may cancel it.
+    const handlePageInUse = (): void => {
+      this.#leavingPage = false;
+      const deferred = this.#deferredSessionExpiration;
+      this.#deferredSessionExpiration = null;
+      deferred?.();
+    };
+    window.addEventListener('pointerdown', handlePageInUse, true);
+    window.addEventListener('keydown', handlePageInUse, true);
   }
 
   /**
-   * Shows the session expiration notification.
+   * Shows the session expiration notification, or defers it while the browser
+   * is leaving the page.
+   *
+   * The request that ended the session, such as a logout URL, typically
+   * responds with the page the browser is navigating to. Going to the session
+   * expired URL meanwhile would cancel that navigation. In web-component mode
+   * the session is resynchronized instead, which does not navigate, so it is
+   * not deferred.
    *
    * @param details - message details or null if there are no details
    */
   handleSessionExpiredError(details: string | null): void {
-    this.handleUnrecoverableErrorFor(details, this.#registry.getApplicationConfiguration().getSessionExpiredError());
+    const handle = (): void =>
+      this.handleUnrecoverableErrorFor(details, this.#registry.getApplicationConfiguration().getSessionExpiredError());
+    if (this.#leavingPage && !this.#isWebComponentMode()) {
+      Console.debug('Session expiration deferred while leaving the page');
+      this.#deferredSessionExpiration = handle;
+      return;
+    }
+    handle();
   }
 
   /**
@@ -191,8 +230,14 @@ export class SystemErrorHandler {
         // heartbeat requests for different UIs.
         this.#registry.getHeartbeat().setInterval(-1);
 
+        const message = this.#registry.getMessageHandler().announceMessage();
         const uiId = configuration.getUIId();
-        const json = parseJson(responseText)!;
+        const json = parseJson(responseText);
+        if (json === null) {
+          dispatchMessageEnd(message, 'discarded');
+          this.#abortResynchronization('Ignored unparseable session resynchronization message');
+          return;
+        }
         const newUiId = json[UI_ID] as number;
         if (newUiId !== uiId) {
           Console.debug(`UI ID switched from ${uiId} to ${newUiId} after resynchronization`);
@@ -201,7 +246,7 @@ export class SystemErrorHandler {
         this.#registry.reset();
 
         this.#registry.getUILifecycle().setState(UIState.RUNNING);
-        this.#registry.getMessageHandler().handleMessage(json);
+        this.#registry.getMessageHandler().handleMessage(json, message);
 
         if (this.#registry.getPushConfiguration().isPushEnabled()) {
           // The push connection may have been closed in response to server
@@ -217,11 +262,19 @@ export class SystemErrorHandler {
           getScheduler().scheduleDeferred(() => this.#recreateWebComponents());
         }
       },
-      (error) => {
-        this.#registry.getHeartbeat().setInterval(configuration.getHeartbeatInterval());
-        this.handleError(error.message);
-      }
+      (error) => this.#abortResynchronization(error.message)
     );
+  }
+
+  /**
+   * Gives up on a failed resynchronization. The heartbeat is restarted so the
+   * next one that finds the session expired starts a new attempt, which the
+   * in-progress flag would otherwise block for good.
+   */
+  #abortResynchronization(errorMessage: string): void {
+    this.#registry.getHeartbeat().setInterval(this.#registry.getApplicationConfiguration().getHeartbeatInterval());
+    this.#resyncInProgress = false;
+    this.handleError(errorMessage);
   }
 
   /** Recreates every exported web component's elements (detaching stale ones). */

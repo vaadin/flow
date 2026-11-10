@@ -7,6 +7,7 @@ import {
   FragmentedMessage
 } from '../../../../../main/frontend/internal/client/communication/AtmospherePushConnection';
 import { URIResolver } from '../../../../../main/frontend/internal/client/URIResolver';
+import { VaadinServerMessage } from '../../../../../main/frontend/internal/client/communication/VaadinServerMessage';
 
 const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -24,8 +25,9 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/', pushParameters = 
     pushClosed: 0,
     pushReconnectPending: 0,
     pushInvalidContent: [] as string[],
+    announced: [] as VaadinServerMessage[],
     pushNotConnected: 0,
-    handled: [] as unknown[],
+    handled: [] as Array<{ json: unknown; message: VaadinServerMessage }>,
     pushed: [] as string[],
     closed: 0,
     pushClientTimeout: 0,
@@ -90,7 +92,12 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/', pushParameters = 
     MessageHandler: {
       getPushId: () => null,
       getLastSeenServerSyncId: () => log.lastSeenServerSyncId,
-      handleMessage: (json: unknown) => log.handled.push(json)
+      announceMessage: () => {
+        const message = new VaadinServerMessage();
+        log.announced.push(message);
+        return message;
+      },
+      handleMessage: (json: unknown, message: VaadinServerMessage) => log.handled.push({ json, message })
     },
     ResourceLoader: { loadScript: () => {} }
   });
@@ -238,10 +245,13 @@ describe('AtmospherePushConnection', () => {
       capture.handlers!.open(response('websocket'));
 
       capture.handlers!.message(response('websocket', '{"syncId":0}'));
-      expect(log.handled).to.deep.equal([{ syncId: 0 }]);
+      // Handed on with the message announced for it.
+      expect(log.handled).to.deep.equal([{ json: { syncId: 0 }, message: log.announced[0] }]);
 
       capture.handlers!.message(response('websocket', 'not json'));
       expect(log.pushInvalidContent).to.deep.equal(['not json']);
+      // Each message is announced; the one that does not parse ends as discarded.
+      expect(log.announced.map((message) => message.outcome)).to.deep.equal([undefined, 'discarded']);
     });
 
     it('reports closes, and closes the subscription of an open connection', async () => {
@@ -384,7 +394,7 @@ describe('AtmospherePushConnection', () => {
       expect(socket.sent).to.deep.equal(['7|{"a":1}']);
 
       socket.receive('12|{"syncId":0}');
-      expect(log.handled).to.deep.equal([{ syncId: 0 }]);
+      expect(log.handled.map(({ json }) => json)).to.deep.equal([{ syncId: 0 }]);
     });
 
     it('does not reconnect when it closes the connection', async () => {
@@ -447,7 +457,7 @@ describe('AtmospherePushConnection', () => {
       const message = '{"a":"x|y|z|"}';
       sockets[1].receive(`${message.length}|${message}`);
 
-      expect(log.handled).to.deep.equal([{ a: 'x|y|z|' }]);
+      expect(log.handled.map(({ json }) => json)).to.deep.equal([{ a: 'x|y|z|' }]);
       expect(connection.isActive()).to.be.true;
     });
 

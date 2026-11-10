@@ -28,6 +28,7 @@ import { assert } from '../../assert';
 import { stringify } from '../WidgetUtil';
 import { parseJson } from './MessageHandler';
 import { loadAtmosphere } from './AtmosphereLoader';
+import { dispatchMessageEnd } from './VaadinServerMessage';
 import { addGetParameter } from '../../flow/shared/util/SharedUtil';
 import type { Command } from '../Command';
 import type { PushConnection } from './PushConnection';
@@ -423,13 +424,15 @@ export class AtmospherePushConnection implements PushConnection {
    */
   protected onMessage(response: AtmosphereResponse): void {
     const message = String(response.responseBody);
+    const serverMessage = this.#registry.getMessageHandler().announceMessage();
     const json = parseJson(message);
     if (json === null) {
       // Invalid JSON string
+      dispatchMessageEnd(serverMessage, 'discarded');
       this.#getConnectionStateHandler().pushInvalidContent(this, message);
     } else {
       Console.debug(`Received push (${this.getTransportType()}) message: ${message}`);
-      this.#registry.getMessageHandler().handleMessage(json);
+      this.#registry.getMessageHandler().handleMessage(json, serverMessage);
     }
   }
 

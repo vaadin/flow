@@ -76,7 +76,7 @@ public class FrontendTools {
      * 
      * @since 4.0
      */
-    public static final String DEFAULT_NODE_VERSION = "v26.12.1";
+    public static final String DEFAULT_NODE_VERSION = "v26.13.0";
     /**
      * This is the version shipped with the default Node version.
      * 
@@ -84,7 +84,7 @@ public class FrontendTools {
      */
     public static final String DEFAULT_NPM_VERSION = "11.20.0";
 
-    public static final String DEFAULT_PNPM_VERSION = "11.26.0";
+    public static final String DEFAULT_PNPM_VERSION = "11.28.9";
 
     private static final String MSG_PREFIX = "%n%n======================================================================================================";
     private static final String MSG_SUFFIX = "%n======================================================================================================%n";
@@ -441,6 +441,20 @@ public class FrontendTools {
      */
     public List<String> getNpmExecutable() {
         return getNpmExecutable(true);
+    }
+
+    /**
+     * Locate <code>npx</code> executable.
+     * <p>
+     * Unlike {@link #getNpmExecutable()}, this leaves the project files
+     * untouched, so it can also be used in projects that use pnpm.
+     *
+     * @return the list of all commands in sequence that need to be executed to
+     *         have npx running
+     * @since 25.4
+     */
+    public List<String> getNpxExecutable() {
+        return getNpmCliToolExecutable(BuildTool.NPX);
     }
 
     /**
