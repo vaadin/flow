@@ -173,8 +173,9 @@ Make `toString()` cheap, free of side effects and unable to throw. Read a
 signal with `peek()` in it, never `get()`.
 
 Start `toString()` with `getClass().getSimpleName()` rather than a literal
-class name, and follow the `SimpleName[…]` shape. Keep `super.toString()` when
-the identity hash is what tells instances apart.
+class name, and follow the `SimpleName[…]` shape; `ToStringBuilder` in
+`com.vaadin.flow.internal` builds that shape. Keep `super.toString()` when the
+identity hash is what tells instances apart.
 
 Never put a password, token or other credential in `toString()`.
 
