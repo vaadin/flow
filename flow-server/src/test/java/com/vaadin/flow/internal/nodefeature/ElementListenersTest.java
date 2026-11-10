@@ -565,6 +565,53 @@ public class ElementListenersTest
     }
 
     @Test
+    void getSnippetEntries_eventSimulatedFromEntries() {
+        AtomicReference<DomEvent> eventReference = new AtomicReference<>();
+        DomListenerRegistration registration = ns.add("keydown",
+                eventReference::set);
+        registration.setFilterExpression(JS.isKey("Enter"));
+        registration.addEventData(JS.closestTag(".container"));
+        registration.preventDefault();
+
+        ElementListenerMap.SnippetEntry filter = ns.getSnippetEntries("keydown")
+                .stream().filter(ElementListenerMap.SnippetEntry::filter)
+                .findFirst().orElseThrow();
+        ElementListenerMap.SnippetEntry sideEffect = ns
+                .getSnippetEntries("keydown").stream()
+                .filter(entry -> entry.sideEffect() != null).findFirst()
+                .orElseThrow();
+        ElementListenerMap.SnippetEntry data = ns.getSnippetEntries("keydown")
+                .stream()
+                .filter(entry -> !entry.filter() && entry.sideEffect() == null)
+                .findFirst().orElseThrow();
+        assertEquals(3, ns.getSnippetEntries("keydown").size());
+
+        // The keys and calls are the ones sent to the client
+        ObjectNode settings = eventSettings(ns, "keydown");
+        assertEquals(Set.of(filter.key(), sideEffect.key(), data.key()),
+                Set.copyOf(JacksonUtils.getKeys(settings)));
+        assertEquals("return event.key === $0;", filter.call().getExpression());
+        assertEquals(List.of("Enter"), filter.call().flattenArguments());
+        assertEquals("preventDefault", sideEffect.sideEffect());
+        assertEquals(filter.key() + ".preventDefault", sideEffect.key());
+        assertEquals(filter.call(), sideEffect.call());
+        assertEquals(
+                ElementListenerMap.getEventDataKey(JS.closestTag(".container")),
+                data.key());
+
+        // The values the client would send are enough to notify the listener
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put(filter.key(), true);
+        fromClient.put(sideEffect.key(), true);
+        fromClient.put(data.key(), "DIV");
+        ns.fireEvent(
+                new DomEvent(new Element("element"), "keydown", fromClient));
+
+        assertEquals("DIV",
+                eventReference.get().getEventData(JS.closestTag(".container")));
+    }
+
+    @Test
     void declaredEventData_elementCapture_sentForThisElementOnly() {
         Element child = new Element("span");
         new UI().getElement().appendChild(child);
