@@ -56,6 +56,9 @@ public class ShortcutRegistration implements Registration, Serializable {
     static final String LISTEN_ON_COMPONENTS_SHOULD_NOT_CONTAIN_NULL = "listenOnComponents should not contain null!";
     static final String LISTEN_ON_COMPONENTS_SHOULD_NOT_HAVE_DUPLICATE_ENTRIES = "listenOnComponents should not have duplicate entries!";
 
+    private static final ShortcutFilterJs FILTERS = JsSnippets
+            .of(ShortcutFilterJs.class);
+
     private boolean allowDefaultBehavior = false;
     private boolean allowEventPropagation = false;
 
@@ -73,9 +76,6 @@ public class ShortcutRegistration implements Registration, Serializable {
     private boolean resetFocusOnActiveElement = false;
 
     static final String LISTEN_ON_INITIALIZED = "_initialized_listen_on_for_component";
-
-    private static final ShortcutFilterJs FILTERS = JsSnippets
-            .of(ShortcutFilterJs.class);
 
     private final Set<Key> modifiers = HashSet.newHashSet(2);
     private Key primaryKey = null;
