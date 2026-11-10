@@ -31,8 +31,6 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
-import com.vaadin.flow.component.internal.ShortcutFilterJs;
-import com.vaadin.flow.component.internal.ShortcutJs;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
@@ -1066,8 +1064,8 @@ class ShortcutRegistrationTest {
     private static List<JsCall> delegateCalls(
             List<PendingJavaScriptInvocation> invocations) {
         return invocations.stream().map(i -> i.getInvocation().getJsCall())
-                .filter(call -> call != null
-                        && call.definitionType() == ShortcutJs.class)
+                .filter(call -> call != null && call
+                        .definitionType() == ShortcutRegistration.ShortcutJs.class)
                 .toList();
     }
 
@@ -1098,7 +1096,8 @@ class ShortcutRegistrationTest {
      */
     private static ArrayNode shortcutFilterCaptures(Component component) {
         final String functionId = JsCall.functionId(Arrays
-                .stream(ShortcutFilterJs.class.getMethods())
+                .stream(ShortcutRegistration.ShortcutFilterJs.class
+                        .getMethods())
                 .filter(method -> method.getName().equals("matchKeydown"))
                 .findFirst().orElseThrow());
         final ObjectNode settings = keydownSettings(component);

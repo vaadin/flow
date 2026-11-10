@@ -30,8 +30,6 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.component.internal.ShortcutFilterJs;
-import com.vaadin.flow.component.internal.ShortcutJs;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEventFilter;
@@ -42,6 +40,8 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.shared.Registration;
 
@@ -1249,5 +1249,126 @@ public class ShortcutRegistration implements Registration, Serializable {
                 registrations = null;
             }
         }
+    }
+
+    /**
+     * The keydown delegate of a keyboard shortcut, as a JavaScript definition
+     * for {@link Element#executeJs(Class)}. The function it calls is installed
+     * by the shortcut helper that the client bundle carries.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @see ShortcutFilterJs
+     */
+    @JsDefinition
+    public interface ShortcutJs extends Serializable {
+
+        /**
+         * Relays the keydown events of an element that only exists in the
+         * browser to the element this definition was obtained from, the
+         * listen-on component of a shortcut. A keydown that matches the given
+         * key and modifiers is re-dispatched to the listen-on element, and its
+         * propagation is stopped.
+         *
+         * @param locateDelegate
+         *            the function that returns the element to listen on, called
+         *            with the listen-on element as <code>this</code>, see
+         *            {@link Shortcuts#setShortcutListenOnElementLocator(JsFunction, Component)}
+         * @param requiredModifiers
+         *            the names of the modifiers that have to be pressed,
+         *            separated by spaces
+         * @param forbiddenModifiers
+         *            the names of the modifiers that must not be pressed,
+         *            separated by spaces
+         * @param checkBoundary
+         *            whether to ignore a keydown from an open popover or modal
+         *            inside the element to listen on
+         * @param resetFocus
+         *            whether to reset the focus of the active element before
+         *            the keydown is relayed
+         * @param allowDefault
+         *            whether to allow the default behavior of a matching
+         *            keydown
+         * @param keys
+         *            the key codes and key values that the keydown matches
+         */
+        @JsExpression("""
+                window.Vaadin.Flow.shortcut.registerKeydownDelegate(this, $0, {
+                  keys: $6,
+                  requiredModifiers: $1,
+                  forbiddenModifiers: $2,
+                  checkBoundary: $3,
+                  resetFocus: $4,
+                  allowDefault: $5
+                });""")
+        void registerKeydownDelegate(JsFunction locateDelegate,
+                String requiredModifiers, String forbiddenModifiers,
+                boolean checkBoundary, boolean resetFocus, boolean allowDefault,
+                String... keys);
+    }
+
+    /**
+     * The filter of the keydown listener of a keyboard shortcut, as a
+     * JavaScript definition for {@link JsSnippets#of(Class)}. The function it
+     * calls is installed by the shortcut helper that the client bundle carries.
+     * <p>
+     * The keys, modifiers and options of a shortcut are captured values rather
+     * than part of the JavaScript, so every shortcut runs the same function,
+     * and shortcuts with the same settings share them through the constant
+     * pool.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @see ShortcutJs
+     */
+    @JsDefinition
+    public interface ShortcutFilterJs extends Serializable {
+
+        /**
+         * Creates the filter for
+         * {@link DomListenerRegistration#setFilterExpression(DomEventFilter)}
+         * that passes a keydown that matches the given key and modifiers. A
+         * keydown that passes gets the side effects that are asked for.
+         *
+         * @param requiredModifiers
+         *            the names of the modifiers that have to be pressed,
+         *            separated by spaces
+         * @param forbiddenModifiers
+         *            the names of the modifiers that must not be pressed,
+         *            separated by spaces
+         * @param checkOwnerScope
+         *            whether to ignore a keydown that does not originate from
+         *            the popover or modal scope of the shortcut owner
+         * @param ownerSelector
+         *            the selector that finds the owner element when the scope
+         *            is checked, or <code>null</code> when the owner is the UI,
+         *            which is never inside a popover or modal
+         * @param preventDefault
+         *            whether to prevent the default behavior of a matching
+         *            keydown
+         * @param stopPropagation
+         *            whether to stop the propagation of a matching keydown
+         * @param resetFocus
+         *            whether to reset the focus of the active element for a
+         *            matching keydown
+         * @param keys
+         *            the key codes and key values that the keydown matches
+         * @return the filter, not <code>null</code>
+         */
+        @JsExpression("""
+                return window.Vaadin.Flow.shortcut.matchKeydown(event, {
+                  keys: $7,
+                  requiredModifiers: $0,
+                  forbiddenModifiers: $1,
+                  checkOwnerScope: $2,
+                  ownerSelector: $3,
+                  preventDefault: $4,
+                  stopPropagation: $5,
+                  resetFocus: $6
+                });""")
+        DomEventFilter matchKeydown(String requiredModifiers,
+                String forbiddenModifiers, boolean checkOwnerScope,
+                String ownerSelector, boolean preventDefault,
+                boolean stopPropagation, boolean resetFocus, String... keys);
     }
 }
