@@ -164,12 +164,7 @@ class CspModeTest {
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ComponentUtil.addListener(ui, KeyedEvent.class,
                                 e -> {
-                                })),
-                // Vaadin code sending a filter on its own, with event data
-                // that are property paths
-                call(DomListenerRegistration.class, "setFilter",
-                        ui -> new Clickable().addDoubleClickListener(e -> {
-                        })));
+                                })));
     }
 
     private static Arguments call(Class<?> api, String method,
@@ -223,6 +218,12 @@ class CspModeTest {
             EventJs eventJs = JsSnippets.of(EventJs.class);
             registration.setFilterExpression(eventJs.isX(2))
                     .addEventData(eventJs.scaledX(2));
+            // The click count filters are declared snippets too
+            Clickable clickable = new Clickable();
+            clickable.addSingleClickListener(e -> {
+            });
+            clickable.addDoubleClickListener(e -> {
+            });
             // Loads the chunk of the route with a function from the bundle
             ui.getInternals().addComponentDependencies(RouteView.class);
         });

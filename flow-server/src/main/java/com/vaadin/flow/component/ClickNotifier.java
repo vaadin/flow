@@ -17,6 +17,10 @@ package com.vaadin.flow.component;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.dom.DomEventFilter;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -65,7 +69,8 @@ public interface ClickNotifier<T extends Component> extends Serializable {
         if (this instanceof Component) {
             return ComponentUtil.addListener((Component) this, ClickEvent.class,
                     (ComponentEventListener) listener,
-                    d -> d.setFilter("event.detail == 2"));
+                    d -> d.setFilterExpression(JsSnippets
+                            .of(ClickFiltersJs.class).clickCountBetween(2, 2)));
         } else {
             throw new IllegalStateException(String.format(
                     "The class '%s' doesn't extend '%s'. "
@@ -89,7 +94,8 @@ public interface ClickNotifier<T extends Component> extends Serializable {
             // If JavaScript click() function was used detail is < 1
             return ComponentUtil.addListener((Component) this, ClickEvent.class,
                     (ComponentEventListener) listener,
-                    d -> d.setFilter("event.detail <= 1"));
+                    d -> d.setFilterExpression(JsSnippets
+                            .of(ClickFiltersJs.class).clickCountBetween(0, 1)));
         } else {
             throw new IllegalStateException(String.format(
                     "The class '%s' doesn't extend '%s'. "
@@ -152,5 +158,29 @@ public interface ClickNotifier<T extends Component> extends Serializable {
                 event -> ComponentUtil.fireEvent(thisComponent,
                         new ClickEvent<>(thisComponent)),
                 key).withModifiers(keyModifiers).allowBrowserDefault();
+    }
+
+    /**
+     * The click count filters of {@link ClickNotifier}, as JavaScript snippets
+     * for {@link JsSnippets#of(Class)}, so that the browser does not compile
+     * them from a string.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    @JsDefinition
+    interface ClickFiltersJs extends Serializable {
+
+        /**
+         * Accepts a click whose click count, the <code>detail</code> of the
+         * event, is within the given range.
+         *
+         * @param min
+         *            the lowest click count to accept
+         * @param max
+         *            the highest click count to accept
+         * @return the filter, not <code>null</code>
+         */
+        @JsExpression("return event.detail >= $0 && event.detail <= $1;")
+        DomEventFilter clickCountBetween(int min, int max);
     }
 }
