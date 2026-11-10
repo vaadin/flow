@@ -113,7 +113,7 @@ public class ElementListenerMap extends NodeMap {
      * expression or a declared snippet. The client sends the value of the entry
      * to the server under the key of the entry.
      */
-    private sealed interface Entry extends Serializable
+    sealed interface Entry extends Serializable
             permits ExpressionEntry, SnippetEntry {
         String key();
     }
@@ -159,8 +159,9 @@ public class ElementListenerMap extends NodeMap {
      *            is no side effect
      * @param filter
      *            <code>true</code> if the entry is the filter of a listener,
-     *            which is notified only when the value is truthy;
-     *            <code>false</code> if it is event data or has a side effect
+     *            which is notified only when the value is truthy, even if the
+     *            same call is also event data; <code>false</code> if it is only
+     *            event data or has a side effect
      * @see #getSnippetEntries(String)
      */
     public record SnippetEntry(String key, JsCall call,
@@ -186,7 +187,7 @@ public class ElementListenerMap extends NodeMap {
      * settings.
      */
     private static class ExpressionSettings implements Serializable {
-        private final Entry entry;
+        private Entry entry;
         private final Map<Integer, Set<DebouncePhase>> debounceSettings = new HashMap<>();
 
         private ExpressionSettings(Entry entry) {
@@ -625,9 +626,17 @@ public class ElementListenerMap extends NodeMap {
         boolean hasUnfilteredListener = false;
         boolean hasFilteredListener = false;
 
-        Function<Entry, ExpressionSettings> ensureExpression = entry -> expressions
-                .computeIfAbsent(entry.key(),
-                        key -> new ExpressionSettings(entry));
+        Function<Entry, ExpressionSettings> ensureExpression = entry -> {
+            ExpressionSettings settings = expressions.computeIfAbsent(
+                    entry.key(), key -> new ExpressionSettings(entry));
+            // The same call can be the filter of one listener and event data
+            // of another, which share a key. The value then still decides
+            // whether the filtered listener is notified.
+            if (entry instanceof SnippetEntry snippet && snippet.filter()) {
+                settings.entry = snippet;
+            }
+            return settings;
+        };
 
         Collection<DomEventListenerWrapper> wrappers = getWrappers(eventType);
 
