@@ -327,8 +327,9 @@ class JacksonCodecTest {
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
                 () -> JacksonCodec.decodeAs(array, objectNode));
-        assertTrue(exception.getMessage().contains("ARRAY"),
-                exception.getMessage());
+        assertEquals("Cannot decode JSON of type ARRAY as "
+                + ObjectNode.class.getName(), exception.getMessage());
+        assertNull(JacksonCodec.decodeAs(objectMapper.nullNode(), objectNode));
     }
 
     @Test
