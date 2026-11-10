@@ -39,7 +39,7 @@ import tools.jackson.databind.JavaType;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.type.TypeFactory;
 
-import com.vaadin.flow.component.internal.TypedJavaScriptResults;
+import com.vaadin.flow.component.internal.TypedJavaScriptResultUtil;
 import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.DomEventData;
@@ -510,14 +510,14 @@ public final class JsDefinitionProxy {
                 throw new IllegalArgumentException(
                         "Result handler cannot be null");
             }
-            TypedJavaScriptResults.then(pending,
+            TypedJavaScriptResultUtil.then(pending,
                     json -> JacksonCodec.decodeAs(json, valueType),
                     resultHandler, errorHandler);
         }
 
         @Override
         public CompletableFuture<T> toCompletableFuture() {
-            return TypedJavaScriptResults.toCompletableFuture(pending,
+            return TypedJavaScriptResultUtil.toCompletableFuture(pending,
                     json -> JacksonCodec.decodeAs(json, valueType));
         }
     }

@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 
-import com.vaadin.flow.component.internal.TypedJavaScriptResults;
+import com.vaadin.flow.component.internal.TypedJavaScriptResultUtil;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonCodec;
 
@@ -120,7 +120,7 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
             throw new IllegalArgumentException("Result handler cannot be null");
         }
 
-        TypedJavaScriptResults.then(this,
+        TypedJavaScriptResultUtil.then(this,
                 value -> JacksonCodec.decodeAs(value, targetType),
                 resultHandler, errorHandler);
     }
@@ -184,7 +184,7 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
             throw new IllegalArgumentException("Target type cannot be null");
         }
 
-        return TypedJavaScriptResults.toCompletableFuture(this,
+        return TypedJavaScriptResultUtil.toCompletableFuture(this,
                 value -> JacksonCodec.decodeAs(value, targetType));
     }
 
@@ -233,7 +233,7 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
             throw new IllegalArgumentException("Result handler cannot be null");
         }
 
-        TypedJavaScriptResults.then(this,
+        TypedJavaScriptResultUtil.then(this,
                 value -> JacksonCodec.decodeAs(value, typeReference),
                 resultHandler, errorHandler);
     }
@@ -296,7 +296,7 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
             throw new IllegalArgumentException("Type reference cannot be null");
         }
 
-        return TypedJavaScriptResults.toCompletableFuture(this,
+        return TypedJavaScriptResultUtil.toCompletableFuture(this,
                 value -> JacksonCodec.decodeAs(value, typeReference));
     }
 

@@ -35,9 +35,9 @@ import com.vaadin.flow.server.VaadinSession;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-public final class TypedJavaScriptResults {
+public final class TypedJavaScriptResultUtil {
 
-    private TypedJavaScriptResults() {
+    private TypedJavaScriptResultUtil() {
         // Only static helpers
     }
 
@@ -70,7 +70,7 @@ public final class TypedJavaScriptResults {
             conversionErrorHandler = e -> errorHandler.accept(e.getMessage());
         } else {
             conversionErrorHandler = e -> LoggerFactory
-                    .getLogger(TypedJavaScriptResults.class)
+                    .getLogger(TypedJavaScriptResultUtil.class)
                     .warn("Ignored a JavaScript result that can not be"
                             + " converted: {}", e.getMessage());
         }
