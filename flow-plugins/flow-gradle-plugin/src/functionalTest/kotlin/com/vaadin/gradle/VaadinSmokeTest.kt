@@ -20,6 +20,7 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
+import java.util.zip.ZipFile
 import kotlin.io.path.div
 import kotlin.io.path.writeText
 import kotlin.test.assertContains
@@ -131,7 +132,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         expect(true, buildInfo.toString()) { buildInfo.get(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE).booleanValue() }
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
-        ), buildInfo.toString()) { buildInfo.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+        ), buildInfo.toString()) { buildInfo.get(InitParameters.APPLICATION_IDENTIFIER).stringValue() }
     }
 
     @Test
@@ -143,7 +144,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         // Read from cached copy since the task deletes the original
         val tokenFile = File(testProject.dir, "build/${VaadinBuildFrontendTask.CACHED_BUILD_INFO_FILE}")
         val buildInfo: JsonNode = JacksonUtils.readTree(tokenFile.readText())
-        expect("MY_APP_ID", buildInfo.toString()) { buildInfo.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+        expect("MY_APP_ID", buildInfo.toString()) { buildInfo.get(InitParameters.APPLICATION_IDENTIFIER).stringValue() }
     }
 
     @Test
@@ -800,6 +801,70 @@ class VaadinSmokeTest : AbstractGradleTest() {
 
         val result2 = testProject.build("--configuration-cache", "-Pvaadin.productionMode", "war", checkTasksSuccessful = false)
         assertContains(result2.output, "Reusing configuration cache")
+    }
+
+    @Test
+    fun testBuildFrontend_rebuild_removesChunksOfPreviousBuild() {
+        // Vite does not empty its output folder in production builds, and
+        // chunk names contain a content hash, so the chunks of earlier builds
+        // used to pile up in the output folder, the archive and prod.bundle.
+        // Deleting them must not break the build cache or the configuration
+        // cache of vaadinBuildFrontend.
+        testProject.newFile("src/main/java/org/vaadin/example/MainView.java", """
+            package org.vaadin.example;
+
+            import com.vaadin.flow.component.dependency.JsModule;
+            import com.vaadin.flow.component.html.Div;
+            import com.vaadin.flow.router.Route;
+
+            @JsModule("./marker.js")
+            @Route("")
+            public class MainView extends Div {
+            }
+        """.trimIndent())
+        val marker = testProject.newFile("src/main/frontend/marker.js",
+            "window.chunkMarker = 'MARK-one';")
+        val args = arrayOf("--build-cache", "--configuration-cache",
+            "-Pvaadin.productionMode", "vaadinBuildFrontend")
+
+        testProject.build(*args)
+        marker.writeText("window.chunkMarker = 'MARK-two';")
+        testProject.build(*args)
+        expectOnlyChunksOfCurrentBuild("MARK-two", "MARK-one")
+
+        val result = testProject.build(*args, checkTasksSuccessful = false)
+        result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.UP_TO_DATE)
+        assertContains(result.output, "Reusing configuration cache")
+
+        File(testProject.dir, "build/vaadin-build-frontend").deleteRecursively()
+        File(testProject.dir, "build/cached-flow-build-info.json").delete()
+        val restored = testProject.build(*args, checkTasksSuccessful = false)
+        restored.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.FROM_CACHE)
+        expectOnlyChunksOfCurrentBuild("MARK-two", "MARK-one")
+    }
+
+    private fun expectOnlyChunksOfCurrentBuild(currentMarker: String,
+                                               staleMarker: String) {
+        val buildFolder = File(testProject.dir,
+            "build/vaadin-build-frontend/META-INF/VAADIN/webapp/VAADIN/build")
+        buildFolder.find("indexhtml-*.js")
+        val chunks = buildFolder.find("*.js", 1..Int.MAX_VALUE)
+        expect(true, "No chunk contains $currentMarker") {
+            chunks.any { it.readText().contains(currentMarker) }
+        }
+        expect(listOf(), "Chunks of the previous build found") {
+            chunks.filter { it.readText().contains(staleMarker) }
+        }
+
+        val prodBundle = File(testProject.dir, "src/main/bundles/prod.bundle")
+        val indexHtmlChunks = ZipFile(prodBundle).use { zip ->
+            zip.entries().asSequence().map { it.name }
+                .filter { it.contains("/indexhtml-") && it.endsWith(".js") }
+                .toList()
+        }
+        expect(1, "indexhtml chunks in $prodBundle: $indexHtmlChunks") {
+            indexHtmlChunks.size
+        }
     }
 
     private fun enableHilla() {

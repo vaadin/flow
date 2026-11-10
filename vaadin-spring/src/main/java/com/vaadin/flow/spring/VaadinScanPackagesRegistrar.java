@@ -17,9 +17,10 @@ package com.vaadin.flow.spring;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -46,20 +47,7 @@ public class VaadinScanPackagesRegistrar
         // Default constructor
     }
 
-    static class VaadinScanPackages {
-
-        private final List<String> scanPackages;
-
-        private VaadinScanPackages(String[] scanPackages) {
-            assert scanPackages != null;
-            this.scanPackages = Collections
-                    .unmodifiableList(Arrays.asList(scanPackages));
-        }
-
-        List<String> getScanPackages() {
-            return scanPackages;
-        }
-
+    record VaadinScanPackages(List<String> scanPackages) {
     }
 
     @Override
@@ -67,15 +55,31 @@ public class VaadinScanPackagesRegistrar
             BeanDefinitionRegistry registry) {
         String[] packages = getPackages(annotationMetadata, EnableVaadin.class,
                 "value");
-        if (packages.length > 0) {
-            GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
-            beanDefinition.setBeanClass(VaadinScanPackages.class);
-            beanDefinition.getConstructorArgumentValues()
-                    .addIndexedArgumentValue(0, packages);
-            beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-            registry.registerBeanDefinition(VaadinScanPackages.class.getName(),
-                    beanDefinition);
+        if (packages.length == 0) {
+            return;
         }
+        String beanName = VaadinScanPackages.class.getName();
+        Set<String> scanPackages = new LinkedHashSet<>();
+        BeanDefinition beanDefinition;
+        if (registry.containsBeanDefinition(beanName)) {
+            // Another @EnableVaadin annotation has registered the bean
+            // already, so its packages are kept and the new ones added
+            beanDefinition = registry.getBeanDefinition(beanName);
+            @SuppressWarnings("unchecked")
+            List<String> registeredPackages = (List<String>) beanDefinition
+                    .getConstructorArgumentValues()
+                    .getIndexedArgumentValue(0, List.class).getValue();
+            scanPackages.addAll(registeredPackages);
+        } else {
+            GenericBeanDefinition newBeanDefinition = new GenericBeanDefinition();
+            newBeanDefinition.setBeanClass(VaadinScanPackages.class);
+            newBeanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+            registry.registerBeanDefinition(beanName, newBeanDefinition);
+            beanDefinition = newBeanDefinition;
+        }
+        scanPackages.addAll(Arrays.asList(packages));
+        beanDefinition.getConstructorArgumentValues().addIndexedArgumentValue(0,
+                List.copyOf(scanPackages));
     }
 
     private <T> T getPackages(Class<T> clazz,

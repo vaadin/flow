@@ -59,8 +59,6 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
 import com.vaadin.flow.shared.Registration;
 
-import static java.util.stream.Collectors.toList;
-
 /**
  * AbstractRouteRegistry with locking support and configuration.
  * <p>
@@ -281,7 +279,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
         routePathMap.entrySet().stream()
                 .filter(entry -> entry.getValue().containsTarget(target))
-                .map(Map.Entry::getKey).collect(toList()).stream()
+                .map(Map.Entry::getKey).toList().stream()
                 .peek(routePathMap::remove)
                 .filter(routePathTemplate -> !routePathTemplate
                         .equals(template))
@@ -488,8 +486,11 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      */
     protected void addErrorTarget(Class<? extends Component> target,
             Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap) {
-        Class<? extends Exception> exceptionType = ReflectTools
-                .getGenericInterfaceType(target, HasErrorParameter.class)
+        Class<? extends Exception> exceptionType = Objects.requireNonNull(
+                ReflectTools.getGenericInterfaceType(target,
+                        HasErrorParameter.class),
+                () -> "Cannot resolve the HasErrorParameter exception type of "
+                        + target.getName())
                 .asSubclass(Exception.class);
 
         if (exceptionTargetsMap.containsKey(exceptionType)) {
@@ -644,23 +645,19 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     private boolean pathMatches(String path, String layoutPath) {
-        String[] pathSplit = removeStartSlash(path).split("/");
-        String[] layoutSplit = removeStartSlash(layoutPath).split("/");
-
-        if (layoutSplit.length == 1 && layoutSplit[0].isEmpty()) {
+        List<String> layoutSegments = PathUtil
+                .getSegmentsList(removeStartSlash(layoutPath));
+        if (layoutSegments.isEmpty()) {
             return true;
         }
-
-        if (layoutSplit.length > pathSplit.length) {
-            return false;
-        }
-
-        for (int i = 0; i < layoutSplit.length; i++) {
-            if (!pathSplit[i].equals(layoutSplit[i])) {
-                return false;
-            }
-        }
-        return true;
+        // Decode like route matching does, so that a path with
+        // percent-encoded characters gets the layout of the route it resolves
+        // to. Otherwise the view would be shown without its layout, and
+        // access checks would skip the layout.
+        List<String> pathSegments = PathUtil
+                .getSegmentsListWithDecoding(removeStartSlash(path));
+        return layoutSegments.size() <= pathSegments.size() && pathSegments
+                .subList(0, layoutSegments.size()).equals(layoutSegments);
     }
 
     private String removeStartSlash(String path) {

@@ -24,8 +24,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.googlecode.gentyref.GenericTypeReflector;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.OneTimeInitializerPredicate;
@@ -112,7 +110,7 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
         List<Class<?>> faultyLayouts = routesSet.stream()
                 .filter(clazz -> clazz.isAnnotationPresent(Layout.class))
                 .filter(clazz -> !RouterLayout.class.isAssignableFrom(clazz))
-                .collect(Collectors.toList());
+                .toList();
         if (!faultyLayouts.isEmpty()) {
             String message = "Found @Layout on classes { %s } not implementing RouterLayout.";
             String faultyLayoutsString = faultyLayouts.stream()
@@ -202,11 +200,10 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
     private boolean handleAmbiguousRoute(RouteConfiguration routeConfiguration,
             Class<? extends Component> configuredNavigationTarget,
             Class<? extends Component> navigationTarget) {
-        if (GenericTypeReflector.isSuperType(navigationTarget,
-                configuredNavigationTarget)) {
+        if (navigationTarget.isAssignableFrom(configuredNavigationTarget)) {
             return true;
-        } else if (GenericTypeReflector.isSuperType(configuredNavigationTarget,
-                navigationTarget)) {
+        } else if (configuredNavigationTarget
+                .isAssignableFrom(navigationTarget)) {
             routeConfiguration.removeRoute(configuredNavigationTarget);
             routeConfiguration.setAnnotatedRoute(navigationTarget);
             return true;

@@ -231,8 +231,9 @@ public class PushHandler {
             // Refresh on client side
             sendRefreshAndDisconnect(resource);
         } catch (InvalidUIDLSecurityKeyException e) {
-            getLogger().warn("Invalid security key received from {}",
-                    resource.getRequest().getRemoteHost());
+            getLogger().debug(
+                    "Invalid cross-site request forgery protection key received from {}: {}",
+                    resource.getRequest().getRemoteHost(), e.getMessage());
             // Refresh on client side
             sendRefreshAndDisconnect(resource);
         } catch (MessageIdSyncException e) {
@@ -563,6 +564,17 @@ public class PushHandler {
             if (pushConnection == null) {
                 getLogger().warn(
                         "Could not find push connection to close: {} with transport {}",
+                        id, resource.transport());
+            } else if (pushConnection.getResource() != null
+                    && pushConnection.getResource() != resource) {
+                /*
+                 * The client has already reconnected and the connection uses a
+                 * newer resource, so this is a late event for the old one.
+                 * Atmosphere reuses the tracking id on reconnect, so the
+                 * resources are told apart by identity, not by uuid.
+                 */
+                getLogger().debug(
+                        "Ignoring disconnect of stale resource {} with transport {}",
                         id, resource.transport());
             } else {
                 if (!pushMode.isEnabled()) {

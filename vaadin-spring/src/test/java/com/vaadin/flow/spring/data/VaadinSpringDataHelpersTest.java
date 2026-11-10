@@ -17,7 +17,6 @@ package com.vaadin.flow.spring.data;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -109,7 +108,7 @@ class VaadinSpringDataHelpersTest {
             // given string items 'Item XYZ' ordered according to a given query
             List<String> items = itemsStream.skip(from)
                     .limit(pageRequest.getPageSize()).map(i -> "Item " + i)
-                    .collect(Collectors.toList());
+                    .toList();
             return new PageImpl<>(items);
         }).when(repo).findAll(any(PageRequest.class));
 
@@ -119,8 +118,7 @@ class VaadinSpringDataHelpersTest {
         // when items with indexes 100..149 and descending order are fetched
         Query<String, Void> query = new Query<>(100, 50,
                 QuerySortOrder.desc("someSortField").build(), null, null);
-        List<String> result = callback.fetch(query)
-                .collect(Collectors.toList());
+        List<String> result = callback.fetch(query).toList();
 
         // then the result should contain items 'Item 399'...'Item 350'.
         assertEquals(50, result.size());

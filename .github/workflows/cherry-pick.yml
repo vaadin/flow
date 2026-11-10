@@ -22,6 +22,9 @@ env:
 
 jobs:
   cherry-pick:
+    # Only in vaadin/flow: a copy of this repository that has the organization
+    # secrets would otherwise open cherry-pick pull requests of its own.
+    if: github.repository == 'vaadin/flow'
     runs-on: ubuntu-26.04
     timeout-minutes: 180
     permissions:
@@ -69,3 +72,6 @@ jobs:
             - Do not run the tests, the validation workflow of the pull request
               runs them.
           extra-allowed-tools: Bash(mvn:*)
+          # Trial of the cherry-pick changes from vaadin/platform-build-script#214
+          # (resolution notes, stop reasons, chained picks); remove once it is merged.
+          script-ref: 4d80fb3a528ef91d68db19171f473abbc47dddf4
