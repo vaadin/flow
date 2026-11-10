@@ -34,11 +34,10 @@ public class ScrollPositionLiveReloadView extends AbstractLiveReloadView
     public static final String RENDER_LATE_PARAMETER = "render-late";
 
     // Long enough for the Flow client to have processed the initial UIDL and
-    // reported being idle before anything can be scrolled
+    // reported being idle before the containers can be scrolled
     private static final int RENDER_LATE_DELAY_MS = 2000;
 
-    // Holds everything that scrolls, so that it can be rendered late
-    private final Div content = new Div();
+    private final Div outerScroll = new Div();
 
     public ScrollPositionLiveReloadView() {
         // Button to trigger full-refresh (DOM patching, no full page reload)
@@ -70,7 +69,6 @@ public class ScrollPositionLiveReloadView extends AbstractLiveReloadView
         add(reloadButton);
 
         // Outer scrollable container
-        Div outerScroll = new Div();
         outerScroll.setId("outer-scroll");
         outerScroll.getStyle().set("height", "400px");
         outerScroll.getStyle().set("overflow", "auto");
@@ -106,7 +104,7 @@ public class ScrollPositionLiveReloadView extends AbstractLiveReloadView
             outerScroll.add(item);
         }
 
-        content.add(outerScroll);
+        add(outerScroll);
 
         // Items below the scrollable containers for window-level scroll
         for (int i = 0; i < 100; i++) {
@@ -115,9 +113,8 @@ public class ScrollPositionLiveReloadView extends AbstractLiveReloadView
             item.setId("item-" + i);
             item.getStyle().set("padding", "10px");
             item.getStyle().set("border-bottom", "1px solid #ccc");
-            content.add(item);
+            add(item);
         }
-        add(content);
 
         Span bottomMarker = new Span("Bottom of page");
         bottomMarker.setId("bottom-marker");
@@ -128,12 +125,15 @@ public class ScrollPositionLiveReloadView extends AbstractLiveReloadView
     public void beforeEnter(BeforeEnterEvent event) {
         if (event.getLocation().getQueryParameters()
                 .getSingleParameter(RENDER_LATE_PARAMETER).isPresent()) {
-            // Simulates a view that renders after the initial UIDL, so that
-            // the scroll positions cannot be restored as soon as the client
-            // is idle
-            content.getStyle().setDisplay(Style.Display.NONE);
-            content.getElement().executeJs(
-                    "setTimeout(() => this.style.display = '', $0)",
+            // Simulates a view that renders after the initial UIDL. The
+            // containers cannot be scrolled until their content shows up,
+            // while the window can, so that a restore is left half done.
+            // Their own height is fixed, so the window position does not
+            // move when the content appears.
+            outerScroll.getChildren().forEach(child -> child.getElement()
+                    .getStyle().setDisplay(Style.Display.NONE));
+            outerScroll.getElement().executeJs(
+                    "setTimeout(() => Array.from(this.children).forEach(child => child.style.display = ''), $0)",
                     RENDER_LATE_DELAY_MS);
         }
     }

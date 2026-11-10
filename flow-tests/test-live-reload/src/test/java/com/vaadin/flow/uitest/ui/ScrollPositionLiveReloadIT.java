@@ -73,10 +73,33 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
                 ScrollPositionLiveReloadView.RENDER_LATE_PARAMETER);
     }
 
+    @Test
+    public void scrollPositionPreservedAfterFullPageReload_reloadInterruptsRestore() {
+        openAndWaitForContent(
+                ScrollPositionLiveReloadView.RENDER_LATE_PARAMETER);
+
+        List<Integer> scrollBefore = scrollAllContainers();
+
+        markDocument();
+        executeScript(
+                "document.querySelector('vaadin-dev-tools').frontendConnection.onReload('reload')");
+        waitForNewDocument();
+
+        // Reload again once the window is back in place, while the containers
+        // have not rendered yet and are still waiting to be restored
+        waitUntil(d -> Math.abs(getScrollPositions().get(0)
+                - scrollBefore.get(0)) < TOLERANCE_PX, 10);
+        markDocument();
+        executeScript(
+                "document.querySelector('vaadin-dev-tools').frontendConnection.onReload('reload')");
+        waitForNewDocument();
+
+        waitForScrollRestoration(scrollBefore);
+    }
+
     private void assertScrollPositionPreservedAfterUIRefresh(
             String... parameters) {
-        open(parameters);
-        waitForElementVisible(By.id("item-50"));
+        openAndWaitForContent(parameters);
 
         List<Integer> scrollBefore = scrollAllContainers();
 
@@ -96,8 +119,7 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
 
     private void assertScrollPositionPreservedAfterFullPageReload(
             String... parameters) {
-        open(parameters);
-        waitForElementVisible(By.id("item-50"));
+        openAndWaitForContent(parameters);
 
         List<Integer> scrollBefore = scrollAllContainers();
 
@@ -112,6 +134,11 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
         waitForElementPresent(By.id("item-50"));
 
         waitForScrollRestoration(scrollBefore);
+    }
+
+    private void openAndWaitForContent(String... parameters) {
+        open(parameters);
+        waitForElementVisible(By.id("outer-item-0"));
     }
 
     /**
