@@ -97,6 +97,30 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
         waitForScrollRestoration(scrollBefore);
     }
 
+    @Test
+    public void scrollRestorationSetByApplicationKeptAfterFullPageReload() {
+        openAndWaitForContent();
+        List<Integer> scrollBefore = scrollAllContainers();
+        executeScript("history.scrollRestoration = 'manual'");
+
+        markDocument();
+        executeScript(
+                "document.querySelector('vaadin-dev-tools').frontendConnection.onReload('reload')");
+        waitForNewDocument();
+        waitForScrollRestoration(scrollBefore);
+
+        // The value persists on the history entry across reloads, so a plain
+        // reload shows both what the restore handed it back as and whether
+        // a load without a stored snapshot leaves it alone
+        markDocument();
+        executeScript("location.reload()");
+        waitForNewDocument();
+        waitUntil(d -> executeScript("return !!window.Vaadin?.devTools")
+                .equals(Boolean.TRUE), 10);
+        Assert.assertEquals("manual",
+                executeScript("return history.scrollRestoration"));
+    }
+
     private void assertScrollPositionPreservedAfterUIRefresh(
             String... parameters) {
         openAndWaitForContent(parameters);

@@ -35,6 +35,9 @@ const USER_SCROLL_EVENTS = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
 interface StoredScrollSnapshot {
   timestamp: number;
   positions: ScrollSnapshot;
+  // The value history.scrollRestoration had before it was taken over for the
+  // reload, which is what it is handed back as afterwards
+  scrollRestoration: ScrollRestoration;
 }
 
 interface PendingPosition {
@@ -181,6 +184,15 @@ function isAt(actual: number, expected: number): boolean {
 // earlier one stops instead of fighting it frame by frame
 let latestRestoreId = 0;
 
+// Tells which positions the latest restore has not applied yet and is still
+// trying to
+let unrestoredPositions: () => ScrollSnapshot = () => ({});
+
+// The value history.scrollRestoration is handed back as once the restore of
+// the reload that produced this page load is done, or undefined when nothing
+// on this page has taken it over
+let scrollRestorationToHandBack: ScrollRestoration | undefined;
+
 /**
  * Applies one pending position for a frame and tells whether it is done with,
  * either because it has read back correctly for long enough or because the
@@ -243,8 +255,11 @@ export function restoreScrollPositions(snapshot: ScrollSnapshot, onSettled?: () 
   const stopped = () => cancelled || restoreId !== latestRestoreId;
   const settle = () => {
     USER_SCROLL_EVENTS.forEach((type) => window.removeEventListener(type, cancel));
+    pending.length = 0;
     onSettled?.();
   };
+  unrestoredPositions = () =>
+    stopped() ? {} : Object.fromEntries(pending.map((entry) => [entry.key, entry.position]));
 
   const applyUntilRestored = () => {
     let remaining = RESTORE_TIMEOUT_MS;
@@ -297,26 +312,30 @@ export function restoreScrollPositions(snapshot: ScrollSnapshot, onSettled?: () 
  * cases where the browser has already given up.
  */
 export function saveScrollPositionsForReload(): void {
-  // A stored snapshot that is still fresh means that this reload interrupted
-  // the restore of the previous one. The positions not restored yet are either
-  // missing from the page or clamped short of their target, so a new capture
-  // alone would lose them, and the stored values win over the captured ones.
-  // A snapshot whose restore finished, or was cancelled by the user scrolling,
-  // has already been removed.
-  const positions: ScrollSnapshot = { ...captureScrollPositions(), ...readStoredSnapshot()?.positions };
+  // A reload can interrupt a restore that is still in progress, for example
+  // while the page is hidden and no animation frames run. The positions it has
+  // not applied yet are either missing from the page or clamped short of their
+  // target, so a new capture alone would lose them, and they win over the
+  // captured values.
+  const positions: ScrollSnapshot = { ...captureScrollPositions(), ...unrestoredPositions() };
   if (Object.keys(positions).length === 0) {
     window.sessionStorage.removeItem(SNAPSHOT_KEY);
     return;
   }
-  const stored: StoredScrollSnapshot = { timestamp: Date.now(), positions };
+  const stored: StoredScrollSnapshot = {
+    timestamp: Date.now(),
+    positions,
+    scrollRestoration: scrollRestorationToHandBack ?? history.scrollRestoration
+  };
   window.sessionStorage.setItem(SNAPSHOT_KEY, JSON.stringify(stored));
   history.scrollRestoration = 'manual';
 }
 
 /**
  * Restores the scroll positions stored by {@link saveScrollPositionsForReload}
- * before the page was reloaded, if any. The snapshot is kept until the restore
- * is done so that a page load interrupted by another reload does not lose it.
+ * before the page was reloaded, if any, and then hands scroll restoration back
+ * as it was before the reload, so that a value the application set itself is
+ * kept.
  *
  * @param triggeredByReload
  *          whether this page load is the one the reload produced. The
@@ -325,40 +344,41 @@ export function saveScrollPositionsForReload(): void {
  *          restore was still running.
  */
 export function restoreScrollPositionsAfterReload(triggeredByReload: boolean): void {
-  if (window.sessionStorage.getItem(SNAPSHOT_KEY) === null) {
-    // Restoration is taken over from the browser before a reload, which leaves
-    // it disabled for this history entry when the reload had nothing to store.
-    // Hand it back rather than leaving the page with neither mechanism.
-    history.scrollRestoration = 'auto';
-    return;
-  }
-  const snapshot = triggeredByReload ? readStoredSnapshot() : undefined;
-  if (!snapshot) {
-    forgetStoredScrollPositions();
-    return;
-  }
-  restoreScrollPositions(snapshot.positions, forgetStoredScrollPositions);
-}
-
-/**
- * Reads the stored snapshot, if there is one that is recent enough to still
- * belong to the current reload.
- */
-function readStoredSnapshot(): StoredScrollSnapshot | undefined {
   const stored = window.sessionStorage.getItem(SNAPSHOT_KEY);
   if (stored === null) {
-    return undefined;
+    return;
   }
+  window.sessionStorage.removeItem(SNAPSHOT_KEY);
+  if (!triggeredByReload) {
+    // Scroll restoration was taken over for the history entry of the page
+    // that was reloaded, not for this one
+    return;
+  }
+  const snapshot = parseSnapshot(stored);
+  if (!snapshot) {
+    return;
+  }
+  scrollRestorationToHandBack = snapshot.scrollRestoration;
+  const handBack = () => {
+    history.scrollRestoration = snapshot.scrollRestoration;
+    scrollRestorationToHandBack = undefined;
+  };
+  if (Date.now() - snapshot.timestamp > SNAPSHOT_MAX_AGE_MS) {
+    handBack();
+    return;
+  }
+  restoreScrollPositions(snapshot.positions, handBack);
+}
+
+function parseSnapshot(stored: string): StoredScrollSnapshot | undefined {
   try {
     const snapshot = JSON.parse(stored) as StoredScrollSnapshot;
-    const valid = snapshot?.positions && typeof snapshot.timestamp === 'number';
-    return valid && Date.now() - snapshot.timestamp <= SNAPSHOT_MAX_AGE_MS ? snapshot : undefined;
+    const valid =
+      snapshot?.positions &&
+      typeof snapshot.timestamp === 'number' &&
+      ['auto', 'manual'].includes(snapshot.scrollRestoration);
+    return valid ? snapshot : undefined;
   } catch {
     return undefined;
   }
-}
-
-function forgetStoredScrollPositions(): void {
-  window.sessionStorage.removeItem(SNAPSHOT_KEY);
-  history.scrollRestoration = 'auto';
 }
