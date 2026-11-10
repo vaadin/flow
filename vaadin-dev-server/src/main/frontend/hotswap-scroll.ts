@@ -6,8 +6,9 @@ const REFRESH_UI_EVENT = 'vaadin-refresh-ui';
 const WINDOW_KEY = '__window__';
 const SNAPSHOT_KEY = 'vaadin-hotswap-scroll';
 // A stored snapshot belongs to the page load immediately following the reload
-// that wrote it. An older one is from a load that never restored it and is
-// ignored so that it cannot be applied to an unrelated page.
+// that wrote it. An older one is from a load that never restored it, such as a
+// reload that ended up on a page without dev tools, and is ignored so that it
+// cannot be applied to a later, unrelated page load.
 const SNAPSHOT_MAX_AGE_MS = 30000;
 // How long waiting for the Flow clients to become idle is given before
 // applying the positions anyway. Kept separate from the budget for applying so
@@ -29,11 +30,18 @@ const CONFIRMATION_FRAMES = 3;
 // usable criterion for "restored".
 const SCROLL_TOLERANCE_PX = 1;
 // Scrolling the page by hand means the restored position is no longer wanted.
-// Includes pointerdown so that dragging the scrollbar counts as well.
+// Pressing a key or the pointer only scrolls in some cases, see
+// isUserScroll. Clicking the page to focus it after saving in the IDE must not
+// count, or the positions still waiting for the view to render would be lost.
 const USER_SCROLL_EVENTS = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
+const SCROLL_KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', 'Home', 'End', ' '];
 
 interface StoredScrollSnapshot {
   timestamp: number;
+  // The page the positions were captured on. The reload can end up on another
+  // one, for example when the view forwards elsewhere or a login redirect
+  // follows a server restart, and the positions do not describe that page.
+  location: string;
   positions: ScrollSnapshot;
   // The value history.scrollRestoration had before it was taken over for the
   // reload, which is what it is handed back as afterwards
@@ -168,7 +176,7 @@ export function registerRefreshUIHandler(): void {
  * back the value it started from.
  */
 function applyScrollPosition(key: string, pos: { scrollTop: number; scrollLeft: number }): ApplyOutcome {
-  const el = key === WINDOW_KEY ? document.scrollingElement : document.querySelector(key);
+  const el = resolveScroller(key);
   if (!el) {
     return 'unreachable';
   }
@@ -205,6 +213,46 @@ let unrestoredPositions: () => ScrollSnapshot = () => ({});
 // on this page has taken it over
 let scrollRestorationToHandBack: ScrollRestoration | undefined;
 
+function resolveScroller(key: string): Element | null {
+  return key === WINDOW_KEY ? document.scrollingElement : document.querySelector(key);
+}
+
+/**
+ * Tells whether an input event scrolls the page, as opposed to merely focusing
+ * or clicking it.
+ *
+ * @param event
+ *          the event to check
+ * @param pendingKeys
+ *          the keys of the positions that are still being restored. Dragging
+ *          the scrollbar of one of them presses the pointer on that element
+ *          itself.
+ */
+function isUserScroll(event: Event, pendingKeys: string[]): boolean {
+  if (event instanceof KeyboardEvent) {
+    return SCROLL_KEYS.includes(event.key) && !isEditable(event.target);
+  }
+  if (event.type === 'pointerdown') {
+    return pendingKeys.some((key) => {
+      try {
+        return event.target === resolveScroller(key);
+      } catch {
+        return false;
+      }
+    });
+  }
+  return true;
+}
+
+// Scroll keys move the caret or type in an editable element instead of
+// scrolling
+function isEditable(target: EventTarget | null): boolean {
+  return (
+    target instanceof HTMLElement &&
+    (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
+  );
+}
+
 /**
  * Applies one pending position for a frame and tells whether it is done with,
  * either because it has read back correctly for long enough or because the
@@ -239,13 +287,23 @@ function applyPendingPosition(entry: PendingPosition): boolean {
  * after the UIDL has been processed. Positions that never become reachable are
  * given up on after a timeout.
  *
+ * The positions are dropped once the page has another address than the one
+ * they were captured on, as when the view forwards elsewhere, since they do
+ * not describe that page.
+ *
  * @param snapshot
  *          the captured positions to restore
  * @param onSettled
- *          called once every position has been restored or the timeout has
- *          been reached
+ *          called once every position has been restored or dropped, or the
+ *          timeout has been reached
+ * @param capturedOn
+ *          the address of the page the positions were captured on
  */
-export function restoreScrollPositions(snapshot: ScrollSnapshot, onSettled?: () => void): void {
+export function restoreScrollPositions(
+  snapshot: ScrollSnapshot,
+  onSettled?: () => void,
+  capturedOn = window.location.href
+): void {
   const pending: PendingPosition[] = Object.entries(snapshot).map(([key, position]) => ({
     key,
     position,
@@ -262,9 +320,14 @@ export function restoreScrollPositions(snapshot: ScrollSnapshot, onSettled?: () 
   // this one for the same reason.
   const restoreId = ++latestRestoreId;
   let cancelled = false;
-  const cancel = () => (cancelled = true);
-  USER_SCROLL_EVENTS.forEach((type) => window.addEventListener(type, cancel, { once: true, passive: true }));
-  const stopped = () => cancelled || restoreId !== latestRestoreId;
+  const cancel = (event: Event) => {
+    const pendingKeys = pending.map((entry) => entry.key);
+    if (isUserScroll(event, pendingKeys)) {
+      cancelled = true;
+    }
+  };
+  USER_SCROLL_EVENTS.forEach((type) => window.addEventListener(type, cancel, { passive: true }));
+  const stopped = () => cancelled || restoreId !== latestRestoreId || window.location.href !== capturedOn;
   const settle = () => {
     USER_SCROLL_EVENTS.forEach((type) => window.removeEventListener(type, cancel));
     pending.length = 0;
@@ -301,12 +364,18 @@ export function restoreScrollPositions(snapshot: ScrollSnapshot, onSettled?: () 
   };
 
   const idleDeadline = performance.now() + IDLE_TIMEOUT_MS;
+  let idleBefore = false;
   const waitForIdleClients = () => {
     const clients = getFlowClients();
-    const allIdle = clients.length > 0 && clients.every((c: any) => !c.isActive());
+    const idle = clients.length > 0 && clients.every((c: any) => !c.isActive());
+    // A navigation that a response started, such as a forward, updates the
+    // address only after the response has been processed, so the clients
+    // have to stay idle for another poll before the address can be trusted
+    const ready = (idle && idleBefore) || performance.now() > idleDeadline;
+    idleBefore = idle;
     if (stopped()) {
       settle();
-    } else if (allIdle || performance.now() > idleDeadline) {
+    } else if (ready) {
       applyUntilRestored();
     } else {
       setTimeout(waitForIdleClients, IDLE_POLL_INTERVAL_MS);
@@ -336,6 +405,7 @@ export function saveScrollPositionsForReload(): void {
   }
   const stored: StoredScrollSnapshot = {
     timestamp: Date.now(),
+    location: window.location.href,
     positions,
     scrollRestoration: scrollRestorationToHandBack ?? history.scrollRestoration
   };
@@ -353,7 +423,9 @@ export function saveScrollPositionsForReload(): void {
  *          whether this page load is the one the reload produced. The
  *          positions describe the page that was reloaded and are discarded
  *          for any other load, such as one the developer navigated to while a
- *          restore was still running.
+ *          restore was still running. They are also discarded when the
+ *          reload itself ended up on another page, or when the snapshot is
+ *          too old to have been written for this load.
  */
 export function restoreScrollPositionsAfterReload(triggeredByReload: boolean): void {
   const stored = window.sessionStorage.getItem(SNAPSHOT_KEY);
@@ -379,7 +451,7 @@ export function restoreScrollPositionsAfterReload(triggeredByReload: boolean): v
     handBack();
     return;
   }
-  restoreScrollPositions(snapshot.positions, handBack);
+  restoreScrollPositions(snapshot.positions, handBack, snapshot.location);
 }
 
 function parseSnapshot(stored: string): StoredScrollSnapshot | undefined {
@@ -388,6 +460,7 @@ function parseSnapshot(stored: string): StoredScrollSnapshot | undefined {
     const valid =
       snapshot?.positions &&
       typeof snapshot.timestamp === 'number' &&
+      typeof snapshot.location === 'string' &&
       ['auto', 'manual'].includes(snapshot.scrollRestoration);
     return valid ? snapshot : undefined;
   } catch {

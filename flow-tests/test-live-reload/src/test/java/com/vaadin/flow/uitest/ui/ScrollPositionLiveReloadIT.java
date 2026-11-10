@@ -93,12 +93,24 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
         });
     }
 
+    @Test
+    public void scrollPositionPreservedAfterFullPageReload_pageClickedDuringRestore() {
+        // Focusing the page after saving in the IDE presses the pointer and
+        // possibly a key, neither of which scrolls anything
+        reloadThenInterruptRestore(() -> executeScript(
+                """
+                        const target = document.getElementById('bottom-marker');
+                        target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+                        target.dispatchEvent(new KeyboardEvent('keydown', { key: 'Control', bubbles: true }));
+                        """));
+    }
+
     /**
-     * Reloads the page and runs the given hot-swap once the window is back in
-     * place, while the containers have not rendered yet and are still waiting
-     * to be restored. Then checks that every position comes back.
+     * Reloads the page and runs the given interruption once the window is back
+     * in place, while the containers have not rendered yet and are still
+     * waiting to be restored. Then checks that every position comes back.
      */
-    private void reloadThenInterruptRestore(Runnable interruptingHotSwap) {
+    private void reloadThenInterruptRestore(Runnable interruption) {
         openAndWaitForContent(
                 ScrollPositionLiveReloadView.RENDER_LATE_PARAMETER);
 
@@ -111,9 +123,37 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
 
         waitUntil(d -> Math.abs(getScrollPositions().get(0)
                 - scrollBefore.get(0)) < TOLERANCE_PX, 10);
-        interruptingHotSwap.run();
+        // Once the content has rendered, the restore can finish without
+        // anything left for the interruption to affect
+        Assert.assertEquals(
+                "The containers should still be waiting for their content when the restore is interrupted",
+                "none", executeScript(
+                        "return getComputedStyle(document.getElementById('outer-item-0')).display"));
+        interruption.run();
 
         waitForScrollRestoration(scrollBefore);
+    }
+
+    @Test
+    public void scrollPositionNotRestoredWhenFullPageReloadEndsUpElsewhere() {
+        openAndWaitForContent();
+        scrollAllContainers();
+        $("*").id("forward-next-load-button").click();
+
+        markDocument();
+        executeScript(
+                "document.querySelector('vaadin-dev-tools').frontendConnection.onReload('reload')");
+        waitForNewDocument();
+        waitUntil(d -> getDriver().getCurrentUrl()
+                .contains(ScrollPositionLiveReloadView.FORWARDED_PARAMETER),
+                10);
+        waitForElementVisible(By.id("outer-item-0"));
+
+        // Restoration is handed back once the restore is done with, whether
+        // it applied the positions or discarded them
+        waitUntil(d -> "auto"
+                .equals(executeScript("return history.scrollRestoration")), 10);
+        Assert.assertEquals(List.of(0, 0, 0), getScrollPositions());
     }
 
     @Test

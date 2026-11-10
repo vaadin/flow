@@ -23,8 +23,10 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ScrollPositionLiveReloadView", layout = ViewTestLayout.class)
@@ -32,6 +34,11 @@ public class ScrollPositionLiveReloadView extends AbstractLiveReloadView
         implements BeforeEnterObserver {
 
     public static final String RENDER_LATE_PARAMETER = "render-late";
+
+    public static final String FORWARDED_PARAMETER = "forwarded";
+
+    private static final String FORWARD_NEXT_LOAD_ATTRIBUTE = ScrollPositionLiveReloadView.class
+            .getName() + ".forwardNextLoad";
 
     // Long enough for the Flow client to have processed the initial UIDL and
     // reported being idle before the containers can be scrolled
@@ -67,6 +74,14 @@ public class ScrollPositionLiveReloadView extends AbstractLiveReloadView
         });
         reloadButton.setId("reload-button");
         add(reloadButton);
+
+        // Makes the next load of the view forward to another URL, as a
+        // reload that ends up on another page would
+        NativeButton forwardButton = new NativeButton("Forward the next load",
+                e -> VaadinSession.getCurrent()
+                        .setAttribute(FORWARD_NEXT_LOAD_ATTRIBUTE, true));
+        forwardButton.setId("forward-next-load-button");
+        add(forwardButton);
 
         // Outer scrollable container
         outerScroll.setId("outer-scroll");
@@ -123,6 +138,13 @@ public class ScrollPositionLiveReloadView extends AbstractLiveReloadView
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
+        VaadinSession session = event.getUI().getSession();
+        if (session.getAttribute(FORWARD_NEXT_LOAD_ATTRIBUTE) != null) {
+            session.setAttribute(FORWARD_NEXT_LOAD_ATTRIBUTE, null);
+            event.forwardTo(event.getLocation().getPath(),
+                    QueryParameters.of(FORWARDED_PARAMETER, "true"));
+            return;
+        }
         if (event.getLocation().getQueryParameters()
                 .getSingleParameter(RENDER_LATE_PARAMETER).isPresent()) {
             // Simulates a view that renders after the initial UIDL. The
