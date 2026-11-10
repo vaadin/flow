@@ -241,11 +241,10 @@ recorded_daemon_alive() { # $1=pid
 # idle, has closed its port but not yet exited and removed its handshake, and
 # is not wedged.
 recorded_daemon_lingers() { # $1=pid
-    local waited=0
+    local end=$(( SECONDS + 5 ))
     while recorded_daemon_alive "$1"; do
-        (( waited >= 50 )) && return 0
+        (( SECONDS >= end )) && return 0
         sleep 0.1
-        (( waited++ ))
     done
     return 1
 }

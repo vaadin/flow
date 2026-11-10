@@ -129,8 +129,10 @@ class DevLoopCliContractIT {
         VaadinDevCli cli = VaadinDevCli.of(AbstractDevLoopIT.APP);
 
         String pid = Long.toString(ProcessHandle.current().pid());
-        for (String command : new String[] { "apply", "start", "shutdown",
-                "status", "ping" }) {
+        // Each command waits out the grace an exiting daemon gets, so one that
+        // only reports and one that would otherwise spawn a daemon stand in
+        // for the rest.
+        for (String command : new String[] { "status", "apply" }) {
             cli.run("--app", app.toString(), command).assertExitCode(70)
                     .assertOutputContains("running but not answering")
                     .assertOutputContains("Kill pid " + pid)
@@ -148,7 +150,7 @@ class DevLoopCliContractIT {
         // a moment to exit and remove its handshake. A command landing in that
         // moment must wait for it rather than call it wedged, and only call it
         // killed if it exits without removing its handshake. A process that
-        // lives on for two seconds after the CLI starts stands in for it.
+        // lives on for a few seconds after the CLI starts stands in for it.
         Files.writeString(app.resolve("pom.xml"), "<project/>");
         Path handshake = app.resolve(".vaadin/daemon.properties");
         Files.createDirectories(handshake.getParent());
@@ -161,7 +163,7 @@ class DevLoopCliContractIT {
                 public class Exiting {
                     public static void main(String[] args) throws Exception {
                         Files.createFile(Path.of(args[1]));
-                        Thread.sleep(2000);
+                        Thread.sleep(3500);
                         if (args[2].equals("remove")) {
                             Files.delete(Path.of(args[0]));
                         }

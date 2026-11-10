@@ -243,8 +243,9 @@ function Test-RecordedDaemonAlive([int] $processId) {
 # idle, has closed its port but not yet exited and removed its handshake, and
 # is not wedged.
 function Test-RecordedDaemonLingers([int] $processId) {
-    for ($waited = 0; (Test-RecordedDaemonAlive $processId); $waited++) {
-        if ($waited -ge 50) { return $true }
+    $clock = [Diagnostics.Stopwatch]::StartNew()
+    while (Test-RecordedDaemonAlive $processId) {
+        if ($clock.Elapsed.TotalSeconds -ge 5) { return $true }
         Start-Sleep -Milliseconds 100
     }
     return $false
