@@ -16,149 +16,93 @@
 package com.vaadin.flow.component;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ShortCutRegistrationFilterTest {
 
     /**
-     * This method is used to test the generateEventModifierFilter method in the
-     * ShortcutRegistration class. This method is private, so we need to use
-     * reflection to invoke it.
-     *
-     * @param list
-     * @return
-     * @throws NoSuchMethodException
-     * @throws InvocationTargetException
-     * @throws IllegalAccessException
+     * Invokes the private getModifierNames method of ShortcutRegistration,
+     * which lists the modifiers the shortcut filter requires to be pressed or
+     * released.
      */
-    private static String invokeGenerateEventModifierFilter(List<Key> list)
-            throws NoSuchMethodException, InvocationTargetException,
-            IllegalAccessException {
+    private static String invokeGetModifierNames(boolean pressed,
+            KeyModifier... modifiers) throws ReflectiveOperationException {
         Method privateMethod = ShortcutRegistration.class.getDeclaredMethod(
-                "generateEventModifierFilter", Collection.class);
+                "getModifierNames", Collection.class, boolean.class);
         privateMethod.setAccessible(true);
-        // invoke the private method for testing
-        String result = (String) privateMethod.invoke(null, list);
-        return result;
+        List<Key> keys = Arrays.stream(modifiers).map(modifier -> {
+            try {
+                return getHashableKey(modifier);
+            } catch (ReflectiveOperationException e) {
+                throw new AssertionError(e);
+            }
+        }).toList();
+        return (String) privateMethod.invoke(null, keys, pressed);
     }
 
     /**
-     * This method is used to get the HashableKey object from the
-     * ShortcutRegistration class. This is needed because the HashableKey class
-     * is private, and we need to create an instance of it to test the
-     * generateEventModifierFilter method.
-     *
-     * @param keyModifier
-     * @return
-     * @throws ClassNotFoundException
-     * @throws InvocationTargetException
-     * @throws InstantiationException
-     * @throws IllegalAccessException
+     * Wraps the modifier like ShortcutRegistration stores it, in its private
+     * HashableKey class.
      */
-    private static Object getHashableKey(KeyModifier keyModifier)
-            throws ClassNotFoundException, InvocationTargetException,
-            InstantiationException, IllegalAccessException {
+    private static Key getHashableKey(KeyModifier keyModifier)
+            throws ReflectiveOperationException {
         final Class<?> nestedClass = Class.forName(
                 "com.vaadin.flow.component.ShortcutRegistration$HashableKey");
         final Constructor<?> ctor = nestedClass.getDeclaredConstructors()[0];
         ctor.setAccessible(true);
-        return ctor.newInstance(keyModifier);
-    }
-
-    private static ArrayList<String> getModifierFilterConditions(
-            String eventModifierFilter, int expectedFilterCount) {
-        ArrayList<String> filterConditions = new ArrayList<>(Arrays
-                .asList(eventModifierFilter.split(" && ", Integer.MAX_VALUE)));
-        assertTrue(
-                filterConditions.stream()
-                        .filter(c -> c.contains("&") || StringUtils.isBlank(c))
-                        .collect(Collectors.toList()).isEmpty(),
-                "Split filter conditions should not contain '&' character or blank strings.");
-        assertEquals(expectedFilterCount, filterConditions.size());
-        return filterConditions;
+        return (Key) ctor.newInstance(keyModifier);
     }
 
     @Test
     void testGenerateEventModifierFilterWithModifierKeyAlt()
-            throws InvocationTargetException, NoSuchMethodException,
-            IllegalAccessException, ClassNotFoundException,
-            InstantiationException {
-        String result = invokeGenerateEventModifierFilter(Collections
-                .singletonList(((Key) getHashableKey(KeyModifier.ALT))));
-        ArrayList<String> conditions = getModifierFilterConditions(result, 4);
-        assertTrue(conditions.contains("event.getModifierState('Alt')"));
-        assertTrue(conditions.contains("!event.getModifierState('Control')"));
-        assertFalse(conditions.contains("event.getModifierState('AltGraph')"));
-        assertFalse(conditions.contains("!event.getModifierState('AltGraph')"));
+            throws ReflectiveOperationException {
+        assertEquals("Alt", invokeGetModifierNames(true, KeyModifier.ALT));
+        // AltGraph is neither required nor forbidden, as browsers differ
+        // in reporting it for the Option key
+        assertEquals("Shift Control Meta",
+                invokeGetModifierNames(false, KeyModifier.ALT));
     }
 
     @Test
     void testGenerateEventModifierFilterWithModifierKeyAltGr()
-            throws InvocationTargetException, NoSuchMethodException,
-            IllegalAccessException, ClassNotFoundException,
-            InstantiationException {
-        String result = invokeGenerateEventModifierFilter(Collections
-                .singletonList(((Key) getHashableKey(KeyModifier.ALT_GRAPH))));
-        ArrayList<String> conditions = getModifierFilterConditions(result, 5);
-        assertTrue(conditions.contains("event.getModifierState('AltGraph')"));
-        assertTrue(conditions.contains("!event.getModifierState('Alt')"));
-        assertTrue(conditions.contains("!event.getModifierState('Control')"));
+            throws ReflectiveOperationException {
+        assertEquals("AltGraph",
+                invokeGetModifierNames(true, KeyModifier.ALT_GRAPH));
+        assertEquals("Shift Control Alt Meta",
+                invokeGetModifierNames(false, KeyModifier.ALT_GRAPH));
     }
 
     @Test
     void testGenerateEventModifierFilterWithModifierKeyAltAndAltGr()
-            throws InvocationTargetException, NoSuchMethodException,
-            IllegalAccessException, ClassNotFoundException,
-            InstantiationException {
-        String result = invokeGenerateEventModifierFilter(
-                Arrays.asList((Key) getHashableKey(KeyModifier.ALT),
-                        (Key) getHashableKey(KeyModifier.ALT_GRAPH)));
-        ArrayList<String> conditions = getModifierFilterConditions(result, 5);
-        assertTrue(conditions.contains("event.getModifierState('Alt')"));
-        assertTrue(conditions.contains("event.getModifierState('AltGraph')"));
-        assertTrue(conditions.contains("!event.getModifierState('Control')"));
+            throws ReflectiveOperationException {
+        assertEquals("Alt AltGraph", invokeGetModifierNames(true,
+                KeyModifier.ALT, KeyModifier.ALT_GRAPH));
+        assertEquals("Shift Control Meta", invokeGetModifierNames(false,
+                KeyModifier.ALT, KeyModifier.ALT_GRAPH));
     }
 
     @Test
     void testGenerateEventModifierFilterWithModifierKeyAltGrAndCtrl()
-            throws InvocationTargetException, NoSuchMethodException,
-            IllegalAccessException, ClassNotFoundException,
-            InstantiationException {
-        String result = invokeGenerateEventModifierFilter(
-                Arrays.asList((Key) getHashableKey(KeyModifier.ALT_GRAPH),
-                        (Key) getHashableKey(KeyModifier.CONTROL)));
-        ArrayList<String> conditions = getModifierFilterConditions(result, 5);
-        assertTrue(conditions.contains("event.getModifierState('AltGraph')"));
-        assertTrue(conditions.contains("event.getModifierState('Control')"));
-        assertTrue(conditions.contains("!event.getModifierState('Alt')"));
+            throws ReflectiveOperationException {
+        assertEquals("Control AltGraph", invokeGetModifierNames(true,
+                KeyModifier.ALT_GRAPH, KeyModifier.CONTROL));
+        assertEquals("Shift Alt Meta", invokeGetModifierNames(false,
+                KeyModifier.ALT_GRAPH, KeyModifier.CONTROL));
     }
 
     @Test
     void testGenerateEventModifierFilterWithModifierKeyAltAndCtrl()
-            throws InvocationTargetException, NoSuchMethodException,
-            IllegalAccessException, ClassNotFoundException,
-            InstantiationException {
-        String result = invokeGenerateEventModifierFilter(
-                Arrays.asList((Key) getHashableKey(KeyModifier.ALT),
-                        (Key) getHashableKey(KeyModifier.CONTROL)));
-        ArrayList<String> conditions = getModifierFilterConditions(result, 4);
-        assertTrue(conditions.contains("event.getModifierState('Alt')"));
-        assertTrue(conditions.contains("event.getModifierState('Control')"));
-        assertFalse(conditions.contains("event.getModifierState('AltGraph')"));
-        assertFalse(conditions.contains("!event.getModifierState('AltGraph')"));
+            throws ReflectiveOperationException {
+        assertEquals("Control Alt", invokeGetModifierNames(true,
+                KeyModifier.ALT, KeyModifier.CONTROL));
+        assertEquals("Shift Meta", invokeGetModifierNames(false,
+                KeyModifier.ALT, KeyModifier.CONTROL));
     }
 }

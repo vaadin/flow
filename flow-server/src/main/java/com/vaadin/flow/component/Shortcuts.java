@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.shared.Registration;
 
@@ -135,8 +137,8 @@ public final class Shortcuts {
     /**
      * Setup an element, that is only accessible on the browser (not server
      * side), to listen for shortcut events on and delegate to the given
-     * component. The element will be located in the browser by executing the
-     * given JS statement. This needs to be set for each listen-on component
+     * component. The element will be located in the browser by evaluating the
+     * given JS expression. This needs to be set for each listen-on component
      * instance.
      * <p>
      * <b>This should be only used by component developers</b>, when their
@@ -147,6 +149,13 @@ public final class Shortcuts {
      * {@code myButton.addClickShortcut(Key.ENTER).listenOn(dialog);} <br>
      * the framework will automatically make sure the events are passed from the
      * browser only element to the listenOn component (dialog in this case).
+     * <p>
+     * The expression is evaluated with the element of the listen-on component
+     * as {@code this}. The browser compiles it from a string, so it does not
+     * work with a Content Security Policy that does not allow
+     * {@code unsafe-eval}. Use
+     * {@link #setShortcutListenOnElement(JsFunction, Component)} with a
+     * declared function instead.
      *
      * @param elementLocatorJs
      *            js execution string that references the desired element in DOM
@@ -158,17 +167,78 @@ public final class Shortcuts {
      *         shortcuts or if the locator has changed from what was set for
      *         this registration
      * @since 6.0.2
+     * @deprecated The browser compiles the locator from a string. Use
+     *             {@link #setShortcutListenOnElement(JsFunction, Component)}
+     *             with a function declared in a {@link JsDefinition} interface.
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public static Registration setShortcutListenOnElement(
             String elementLocatorJs, Component listenOnComponent) {
+        return setElementLocator(elementLocatorJs, listenOnComponent);
+    }
+
+    /**
+     * Setup an element, that is only accessible on the browser (not server
+     * side), to listen for shortcut events on and delegate to the given
+     * component. The element will be located in the browser by calling the
+     * given function. This needs to be set for each listen-on component
+     * instance.
+     * <p>
+     * <b>This should be only used by component developers</b>, when their
+     * component is used as the {@code listenOn} component for shortcuts, and
+     * their component does some magic on the browser which means that the
+     * shortcut events are not coming through from the actual element. Thus when
+     * an application developer calls e.g. <br>
+     * {@code myButton.addClickShortcut(Key.ENTER).listenOn(dialog);} <br>
+     * the framework will automatically make sure the events are passed from the
+     * browser only element to the listenOn component (dialog in this case).
+     * <p>
+     * The function is called without arguments and with the element of the
+     * listen-on component as {@code this}, and returns the element to listen
+     * on. Declare it in a {@link JsDefinition} interface, so that the browser
+     * does not compile it from a string, which also works with a Content
+     * Security Policy that does not allow {@code unsafe-eval}:
+     *
+     * <pre>
+     * &#64;JsDefinition
+     * public interface OverlayJs extends Serializable {
+     *
+     *     &#64;JsExpression("return this.$.overlay;")
+     *     JsFunction locateOverlay();
+     * }
+     *
+     * Shortcuts.setShortcutListenOnElement(
+     *         JsSnippets.of(OverlayJs.class).locateOverlay(), this);
+     * </pre>
+     * <p>
+     * Unlike {@link #setShortcutListenOnElement(String, Component)}, which
+     * takes a JavaScript expression that the browser compiles, this takes a
+     * function that the build adds to the bundle.
+     *
+     * @param elementLocator
+     *            the function that returns the desired element in DOM, or
+     *            {@code null} to remove any existing locator
+     * @param listenOnComponent
+     *            the component that is setup for listening shortcuts on
+     *            {@link ShortcutRegistration#listenOn(Component...)}
+     * @return a registration for removing the locator, does not affect active
+     *         shortcuts or if the locator has changed from what was set for
+     *         this registration
+     */
+    public static Registration setShortcutListenOnElement(
+            JsFunction elementLocator, Component listenOnComponent) {
+        return setElementLocator(elementLocator, listenOnComponent);
+    }
+
+    private static Registration setElementLocator(Object elementLocator,
+            Component listenOnComponent) {
         // a bit wasteful to store this for each component instance, but it
         // stays in memory only as long as the component itself does
         ComponentUtil.setData(listenOnComponent, ELEMENT_LOCATOR_JS_KEY,
-                elementLocatorJs);
+                elementLocator);
         return () -> {
-            if (elementLocatorJs != null
-                    && elementLocatorJs.equals(ComponentUtil.getData(
-                            listenOnComponent, ELEMENT_LOCATOR_JS_KEY))) {
+            if (elementLocator != null && elementLocator.equals(ComponentUtil
+                    .getData(listenOnComponent, ELEMENT_LOCATOR_JS_KEY))) {
                 ComponentUtil.setData(listenOnComponent, ELEMENT_LOCATOR_JS_KEY,
                         null);
             }
