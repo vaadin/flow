@@ -120,6 +120,9 @@ public class ElementListenerMap extends NodeMap {
     /**
      * A JavaScript expression. The key is the expression itself, for example
      * <code>event.clientX</code>.
+     *
+     * @param key
+     *            the expression
      */
     private record ExpressionEntry(String key) implements Entry {
     }
@@ -136,6 +139,14 @@ public class ElementListenerMap extends NodeMap {
      * listener with a declared filter: the event is prevented only when the
      * filter passes. The key then ends with the name of the method, so it is
      * different from the key of the filter itself.
+     *
+     * @param key
+     *            the key the client sends the value under
+     * @param call
+     *            the call of the snippet
+     * @param sideEffect
+     *            the name of the event method to call when the snippet returns
+     *            a truthy value, or <code>null</code> for none
      */
     private record SnippetEntry(String key, JsCall call,
             String sideEffect) implements Entry {

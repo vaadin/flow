@@ -59,6 +59,13 @@ public class CleanFrontendUtil {
      * <li>pnpm-lock.yaml
      * <li>package-lock.json
      * </ul>
+     *
+     * @param adapter
+     *            the plugin adapter to get the project settings from
+     * @param options
+     *            the options that select what to clean
+     * @throws CleanFrontendException
+     *             if cleaning fails
      */
     public static void runCleaning(PluginAdapterBase adapter,
             CleanOptions options) throws CleanFrontendException {

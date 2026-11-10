@@ -45,6 +45,8 @@ public class ContextualInstanceInfo<T> implements Serializable {
     private CreationalContext<T> creationalContext;
 
     /**
+     * Gets the creational context of the bean.
+     *
      * @return the CreationalContext of the bean
      */
     public CreationalContext<T> getCreationalContext() {
@@ -52,6 +54,8 @@ public class ContextualInstanceInfo<T> implements Serializable {
     }
 
     /**
+     * Sets the creational context of the bean.
+     *
      * @param creationalContext
      *            the CreationalContext of the bean
      */
@@ -60,6 +64,8 @@ public class ContextualInstanceInfo<T> implements Serializable {
     }
 
     /**
+     * Gets the contextual instance.
+     *
      * @return the contextual instance itself
      */
     public T getContextualInstance() {
@@ -67,6 +73,8 @@ public class ContextualInstanceInfo<T> implements Serializable {
     }
 
     /**
+     * Sets the contextual instance.
+     *
      * @param contextualInstance
      *            the contextual instance itself
      */

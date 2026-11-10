@@ -112,6 +112,8 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
     }
 
     /**
+     * Reads the JSON value of the {@code detail} property as a string.
+     *
      * @since 24.8
      */
     public static class DetailDeserializer extends ValueDeserializer<String> {
@@ -126,6 +128,8 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
     }
 
     /**
+     * Writes the {@code detail} property as raw JSON.
+     *
      * @since 24.8
      */
     public static class DetailSerializer extends ValueSerializer<String> {

@@ -175,6 +175,7 @@ public interface HasStyle extends HasElement {
      *            the CSS class name to toggle, not {@code null} or blank
      * @param signal
      *            the boolean signal to bind to, not {@code null}
+     * @return the binding, which can be used to react to updates
      * @see ClassList#bind(String, Signal)
      * @since 25.1
      */
@@ -195,6 +196,7 @@ public interface HasStyle extends HasElement {
      *
      * @param names
      *            the signal providing the list of class names, not {@code null}
+     * @return the binding, which can be used to react to updates
      * @see ClassList#bind(Signal)
      * @since 25.1
      */
