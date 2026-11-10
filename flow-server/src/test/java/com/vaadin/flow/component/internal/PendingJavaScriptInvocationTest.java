@@ -240,6 +240,9 @@ class PendingJavaScriptInvocationTest {
         invocation.then(json -> {
             throw second;
         });
+        invocation.then(json -> {
+            throw first;
+        });
         invocation.then(jsonSuccessConsumer);
         CompletableFuture<JsonNode> future = invocation.toCompletableFuture();
 

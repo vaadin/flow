@@ -349,10 +349,10 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
             return value -> {
                 try {
                     first.accept(value);
-                } catch (RuntimeException | Error firstFailure) {
+                } catch (Throwable firstFailure) {
                     try {
                         second.accept(value);
-                    } catch (RuntimeException | Error secondFailure) {
+                    } catch (Throwable secondFailure) {
                         if (secondFailure != firstFailure) {
                             firstFailure.addSuppressed(secondFailure);
                         }
