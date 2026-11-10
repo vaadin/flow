@@ -936,7 +936,7 @@ public class ShortcutRegistration implements Registration, Serializable {
             boolean pressed) {
 
         final List<Key> realMods = modifiers.stream().filter(Key::isModifier)
-                .collect(Collectors.toList());
+                .toList();
 
         /*
          * Due to https://github.com/vaadin/flow/issues/15906. Browsers having

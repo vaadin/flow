@@ -33,7 +33,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -463,7 +462,7 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .compile(".*moduleId: '(flow_css_mod_[^']*)'.*");
         List<String> moduleIds = mergedOutput.stream()
                 .map(moduleIdPattern::matcher).filter(Matcher::matches)
-                .map(m -> m.group(1)).collect(Collectors.toList());
+                .map(m -> m.group(1)).toList();
         long uniqueModuleIds = moduleIds.stream().distinct().count();
         assertTrue(moduleIds.size() > 0, "expected modules");
         assertEquals(moduleIds.size(), uniqueModuleIds,
@@ -583,7 +582,7 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                     Matcher matcher = injectGlobalCssPattern.matcher(line);
                     matcher.find();
                     return matcher.group(1);
-                }).collect(Collectors.toList());
+                }).toList();
 
         assertTrue(
                 updater.webComponentImports.stream()
