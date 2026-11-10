@@ -17,6 +17,7 @@ package com.vaadin.flow.test.components;
 
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
@@ -54,8 +55,14 @@ public class ImageClickIT extends AbstractDefaultIT {
 
         // A click from the click() function has a click count of 0
         executeScript("arguments[0].click()", image);
+        try {
+            waitUntil(driver -> "Single click 1".equals(message2.getText()));
+        } catch (TimeoutException e) {
+            Assertions.fail("Expected 'Single click 1' but was '"
+                    + message2.getText() + "'");
+        }
+        checkLogsForErrors();
 
-        Assertions.assertEquals("Single click 1", message2.getText());
         Assertions.assertEquals("", message3.getText());
     }
 
