@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.ToStringBuilder;
 
 /**
  * Data collection of information for a specific registered route target.
@@ -135,11 +136,12 @@ public class RouteData extends RouteBaseData<RouteData> {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "{" + "parentLayout="
-                + getParentLayout() + ", url='" + getTemplate() + '\''
-                + ", parameters=" + getRouteParameters() + ", navigationTarget="
-                + getNavigationTarget() + ", routeAliases=" + routeAliases
-                + ", menuData=" + menuData + '}';
+        return ToStringBuilder.of(this).add("parentLayout", getParentLayout())
+                .add("url", getTemplate())
+                .add("parameters", getRouteParameters())
+                .add("navigationTarget", getNavigationTarget())
+                .add("routeAliases", routeAliases).add("menuData", menuData)
+                .toString();
     }
 
     @Override

@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.ToStringBuilder;
 
 /**
  * Route data for an 'alias' route. An alias route is a route that will get
@@ -87,10 +88,10 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "{" + "parentLayout="
-                + getParentLayout() + ", url='" + getTemplate() + '\''
-                + ", parameters=" + getRouteParameters() + ", navigationTarget="
-                + getNavigationTarget() + '}';
+        return ToStringBuilder.of(this).add("parentLayout", getParentLayout())
+                .add("url", getTemplate())
+                .add("parameters", getRouteParameters())
+                .add("navigationTarget", getNavigationTarget()).toString();
     }
 
     @Override
