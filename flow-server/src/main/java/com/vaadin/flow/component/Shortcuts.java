@@ -154,7 +154,7 @@ public final class Shortcuts {
      * as {@code this}. The browser compiles it from a string, so it does not
      * work with a Content Security Policy that does not allow
      * {@code unsafe-eval}. Use
-     * {@link #setShortcutListenOnElement(JsFunction, Component)} with a
+     * {@link #setShortcutListenOnElementLocator(JsFunction, Component)} with a
      * declared function instead.
      *
      * @param elementLocatorJs
@@ -168,7 +168,7 @@ public final class Shortcuts {
      *         this registration
      * @since 6.0.2
      * @deprecated The browser compiles the locator from a string. Use
-     *             {@link #setShortcutListenOnElement(JsFunction, Component)}
+     *             {@link #setShortcutListenOnElementLocator(JsFunction, Component)}
      *             with a function declared in a {@link JsDefinition} interface.
      */
     @Deprecated(since = "25.4", forRemoval = true)
@@ -207,7 +207,7 @@ public final class Shortcuts {
      *     JsFunction locateOverlay();
      * }
      *
-     * Shortcuts.setShortcutListenOnElement(
+     * Shortcuts.setShortcutListenOnElementLocator(
      *         JsSnippets.of(OverlayJs.class).locateOverlay(), this);
      * </pre>
      * <p>
@@ -217,8 +217,7 @@ public final class Shortcuts {
      *
      * @param elementLocator
      *            the function that returns the desired element in DOM, or
-     *            {@code null} to remove any existing locator, passed as
-     *            {@code (JsFunction) null} to tell the overloads apart
+     *            {@code null} to remove any existing locator
      * @param listenOnComponent
      *            the component that is setup for listening shortcuts on
      *            {@link ShortcutRegistration#listenOn(Component...)}
@@ -226,7 +225,7 @@ public final class Shortcuts {
      *         shortcuts or if the locator has changed from what was set for
      *         this registration
      */
-    public static Registration setShortcutListenOnElement(
+    public static Registration setShortcutListenOnElementLocator(
             JsFunction elementLocator, Component listenOnComponent) {
         return setElementLocator(elementLocator, listenOnComponent);
     }

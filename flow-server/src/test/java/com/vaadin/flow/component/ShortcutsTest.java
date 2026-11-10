@@ -89,7 +89,7 @@ class ShortcutsTest {
         final JsFunction declaredLocator = JsSnippets.of(LocatorJs.class)
                 .locateFirstChild();
         final Registration declaredRegistration = Shortcuts
-                .setShortcutListenOnElement(declaredLocator, routerLink);
+                .setShortcutListenOnElementLocator(declaredLocator, routerLink);
 
         registration.remove();
 
@@ -103,7 +103,7 @@ class ShortcutsTest {
 
         Shortcuts.setShortcutListenOnElement("another", routerLink);
         final Registration nullRegistration = Shortcuts
-                .setShortcutListenOnElement((JsFunction) null, routerLink);
+                .setShortcutListenOnElement(null, routerLink);
 
         assertNull(ComponentUtil.getData(routerLink,
                 Shortcuts.ELEMENT_LOCATOR_JS_KEY));

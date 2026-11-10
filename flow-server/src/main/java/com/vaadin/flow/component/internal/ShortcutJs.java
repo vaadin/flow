@@ -44,7 +44,7 @@ public interface ShortcutJs extends Serializable {
      * @param locateDelegate
      *            the function that returns the element to listen on, called
      *            with the listen-on element as <code>this</code>, see
-     *            {@link Shortcuts#setShortcutListenOnElement(JsFunction, com.vaadin.flow.component.Component)}
+     *            {@link Shortcuts#setShortcutListenOnElementLocator(JsFunction, com.vaadin.flow.component.Component)}
      * @param requiredModifiers
      *            the names of the modifiers that have to be pressed, separated
      *            by spaces

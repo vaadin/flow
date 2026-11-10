@@ -243,7 +243,7 @@ class CspModeTest {
             }, Key.KEY_A, KeyModifier.CONTROL);
             Clickable owner = new Clickable();
             ui.add(owner);
-            Shortcuts.setShortcutListenOnElement(
+            Shortcuts.setShortcutListenOnElementLocator(
                     JsSnippets.of(LocatorJs.class).locateFirstChild(), owner);
             owner.addClickShortcut(Key.ENTER).listenOn(owner);
             ui.getInternals().getStateTree()

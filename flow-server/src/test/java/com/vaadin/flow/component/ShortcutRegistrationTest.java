@@ -467,7 +467,7 @@ class ShortcutRegistrationTest {
         assertEquals(1, delegateCalls(fixture.writeResponse()).size());
 
         // Setting an equal locator again does not relay keydowns twice
-        Shortcuts.setShortcutListenOnElement(
+        Shortcuts.setShortcutListenOnElementLocator(
                 JsSnippets.of(LocatorJs.class).locateOverlay(),
                 fixture.components[0]);
         fixture.createNewShortcut(Key.KEY_A);
@@ -993,8 +993,8 @@ class ShortcutRegistrationTest {
             registration = declaredLocator == null
                     ? Shortcuts.setShortcutListenOnElement(elementLocatorJs,
                             initialComponentToListenOn)
-                    : Shortcuts.setShortcutListenOnElement(declaredLocator,
-                            initialComponentToListenOn);
+                    : Shortcuts.setShortcutListenOnElementLocator(
+                            declaredLocator, initialComponentToListenOn);
         }
 
         List<PendingJavaScriptInvocation> writeResponse() {

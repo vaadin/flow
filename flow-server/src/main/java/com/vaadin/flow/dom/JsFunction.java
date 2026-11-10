@@ -272,4 +272,44 @@ public final class JsFunction implements JsSnippet {
     public List<String> getArgumentNames() {
         return argumentNames;
     }
+
+    /**
+     * Checks whether the given object is a function that runs the same
+     * JavaScript with the same captures: the same declaring method of a
+     * {@link JsDefinition} interface, or the same body, together with the same
+     * argument names and captures. Captured arrays are compared by their
+     * contents.
+     *
+     * @param obj
+     *            the object to compare with
+     * @return <code>true</code> if the object is an equal function
+     */
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        return obj instanceof JsFunction other
+                && Objects.equals(body, other.body)
+                && Objects.equals(getDeclaringType(), other.getDeclaringType())
+                && Objects.equals(getDeclaringMethodName(),
+                        other.getDeclaringMethodName())
+                && argumentNames.equals(other.argumentNames)
+                && Arrays.deepEquals(captures.toArray(),
+                        other.captures.toArray());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(body, getDeclaringType(), getDeclaringMethodName(),
+                argumentNames, Arrays.deepHashCode(captures.toArray()));
+    }
+
+    private @Nullable Class<?> getDeclaringType() {
+        return declaredCall == null ? null : declaredCall.definitionType();
+    }
+
+    private @Nullable String getDeclaringMethodName() {
+        return declaredCall == null ? null : declaredCall.methodName();
+    }
 }

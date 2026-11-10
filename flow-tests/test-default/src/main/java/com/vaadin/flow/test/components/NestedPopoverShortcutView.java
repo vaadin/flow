@@ -35,7 +35,7 @@ import com.vaadin.flow.router.Route;
  * Reproduces issue #24974 using the same shortcut wiring as the real
  * {@code Dialog} component: the shortcut listens on a server-side component
  * ({@code parentDialog}) while a browser-only overlay element relays keydown
- * events to it via {@link Shortcuts#setShortcutListenOnElement} (the
+ * events to it via {@link Shortcuts#setShortcutListenOnElementLocator} (the
  * {@code ELEMENT_LOCATOR_JS} delegate), here with a declared locator function.
  * <p>
  * In Vaadin 25 the nested overlay is a native popover and a real DOM descendant
@@ -106,7 +106,7 @@ public class NestedPopoverShortcutView extends Div {
 
         // Relay keydown events from the parent overlay element to parentDialog,
         // matching how Dialog wires shortcuts to its overlay.
-        Shortcuts.setShortcutListenOnElement(JsSnippets
+        Shortcuts.setShortcutListenOnElementLocator(JsSnippets
                 .of(OverlayLocatorJs.class).locateById(PARENT_OVERLAY_ID),
                 parentDialog);
         Shortcuts.addShortcutListener(parentDialog, () -> log(PARENT_SHORTCUT),
