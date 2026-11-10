@@ -443,6 +443,9 @@ public class PluginEffectiveConfiguration(
             }
 
 
+    // Falls back to the deprecated webpackOutputDirectory so builds that
+    // still set it keep working.
+    @Suppress("DEPRECATION")
     public val frontendOutputDirectory: Provider<File> =
         extension.frontendOutputDirectory.convention(
             extension.webpackOutputDirectory

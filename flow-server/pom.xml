@@ -92,13 +92,6 @@
       <artifactId>jsoup</artifactId>
       <version>${jsoup.version}</version>
     </dependency>
-    <!-- Small reflection library -->
-    <dependency>
-      <groupId>com.vaadin.external</groupId>
-      <artifactId>gentyref</artifactId>
-      <version>1.2.0.vaadin1</version>
-    </dependency>
-
     <!-- TESTING DEPENDENCIES -->
     <dependency>
       <groupId>com.vaadin</groupId>

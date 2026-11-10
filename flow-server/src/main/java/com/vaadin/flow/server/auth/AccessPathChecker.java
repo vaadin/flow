@@ -49,7 +49,11 @@ public interface AccessPathChecker extends Serializable {
      * @param path
      *            the path to check access to
      * @param principal
-     *            the principal of the user
+     *            the principal of the user, or {@literal null} if the check
+     *            must be done for an anonymous user. A {@literal null} value
+     *            must be treated as anonymous even if an authenticated user is
+     *            bound to the current thread, e.g. when checking whether a path
+     *            is public
      * @param roleChecker
      *            a function that can answer if a user has a given role
      * @return {@code true} if the user has access to the given path,

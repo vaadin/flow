@@ -33,8 +33,16 @@ import com.vaadin.flow.dom.Element;
  * was obtained from is <code>this</code> — the same contract as
  * {@link Element#executeJs(String, Object...)}, except that the expression is a
  * constant of the interface instead of a string built at the call site.
+ * <p>
+ * A method that returns a {@link JsSnippet} is called through
+ * {@link JsSnippets#of(Class)} instead, and runs nothing when it is called. Its
+ * arguments are still <code>$0</code>, <code>$1</code>, &hellip;, but the
+ * expression is evaluated later by what the snippet is passed to, and
+ * <code>this</code> is whatever that invoker supplies. See {@link JsCalledWith}
+ * for the parameters it is called with.
  *
  * @see Element#executeJs(Class)
+ * @see JsSnippets#of(Class)
  * @since 25.4
  */
 @Documented
