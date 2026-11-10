@@ -111,11 +111,12 @@ class DevLoopCliContractIT {
     }
 
     @Test
-    void statusAndPing_withALiveDaemonNotAnswering_keepItsRecord(
+    void anyCommand_withALiveDaemonNotAnswering_keepsItsRecord(
             @TempDir Path app) throws IOException {
         // The recorded process is alive, so there is a daemon even though it
-        // does not answer: reporting none, or reaping its record, would let
-        // the next start spawn a second daemon beside it.
+        // does not answer. It still holds the daemon lock, so a fresh daemon
+        // cannot come up, and reaping its record would leave nothing naming
+        // the pid to kill: no command may report none or reap the record.
         Files.writeString(app.resolve("pom.xml"), "<project/>");
         Path handshake = app.resolve(".vaadin/daemon.properties");
         Files.createDirectories(handshake.getParent());
@@ -127,9 +128,13 @@ class DevLoopCliContractIT {
                         + "\n");
         VaadinDevCli cli = VaadinDevCli.of(AbstractDevLoopIT.APP);
 
-        for (String command : new String[] { "status", "ping" }) {
+        String pid = Long.toString(ProcessHandle.current().pid());
+        for (String command : new String[] { "apply", "start", "shutdown",
+                "status", "ping" }) {
             cli.run("--app", app.toString(), command).assertExitCode(70)
                     .assertOutputContains("running but not answering")
+                    .assertOutputContains("Kill pid " + pid)
+                    .assertOutputDoesNotContain("daemon did not come up")
                     .assertOutputDoesNotContain("no daemon running");
             assertTrue(Files.exists(handshake),
                     command + " reaped the record of a live daemon");
