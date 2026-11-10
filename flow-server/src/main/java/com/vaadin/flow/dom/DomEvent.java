@@ -34,6 +34,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -246,6 +247,41 @@ public class DomEvent extends EventObject {
                 getEventDataForType(
                         JacksonUtils.getMapper().constructType(typeReference)),
                 typeReference);
+    }
+
+    /**
+     * Gets the value of the given event data. The browser sends the value
+     * together with this event. The value has the type that the declaring
+     * method defines. For example, for a method that returns
+     * <code>DomEventData&lt;String&gt;</code>, the value is a
+     * <code>String</code>.
+     * <p>
+     * Pass the instance that you added to the listener. If all arguments of the
+     * event data are plain values (strings, numbers, booleans, characters,
+     * enums or <code>null</code>), another instance created with the same
+     * method and equal arguments also works. With any other argument, such as
+     * an element, a record or a list, another instance gets <code>null</code>.
+     *
+     * @param <T>
+     *            the type of the value
+     * @param eventData
+     *            event data added to the listener with
+     *            {@link DomListenerRegistration#addEventData(DomEventData)},
+     *            not <code>null</code>
+     * @return the value, or <code>null</code> if the browser sent no value for
+     *         the event data, or if the event data was not added to the
+     *         listener
+     * @throws IllegalArgumentException
+     *             if the value cannot be read as the declared type
+     */
+    public <T> T getEventData(DomEventData<T> eventData) {
+        Objects.requireNonNull(eventData, "Event data cannot be null");
+        JsonNode value = this.eventData
+                .get(ElementListenerMap.getEventDataKey(eventData));
+        if (value == null) {
+            return null;
+        }
+        return JacksonCodec.decodeAs(value, eventData.getValueType());
     }
 
     /**

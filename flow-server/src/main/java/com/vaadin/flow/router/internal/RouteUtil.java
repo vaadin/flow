@@ -897,6 +897,7 @@ public class RouteUtil {
      * @return {@code true} if a {@link RouteParent#value()} or
      *         {@link RouteParent#resolver()} is defined for the target,
      *         {@code false} otherwise
+     * @since 25.4
      */
     public static boolean hasExplicitRouteParent(
             Class<? extends Component> navigationTarget) {
