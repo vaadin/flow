@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -233,13 +234,11 @@ class PendingJavaScriptInvocationTest {
     @Test
     void throwingSuccessHandlers_laterHandlersRunAndFirstExceptionIsThrown() {
         IllegalStateException first = new IllegalStateException("first");
-        IllegalStateException second = new IllegalStateException("second");
+        IOException second = new IOException("second");
         invocation.then(json -> {
             throw first;
         });
-        invocation.then(json -> {
-            throw second;
-        });
+        invocation.then(json -> sneakyThrow(second));
         invocation.then(json -> {
             throw first;
         });
@@ -257,14 +256,12 @@ class PendingJavaScriptInvocationTest {
 
     @Test
     void throwingErrorHandler_laterHandlersRunAndExceptionIsThrown() {
-        IllegalStateException failure = new IllegalStateException("failure");
-        invocation.then(jsonSuccessConsumer, error -> {
-            throw failure;
-        });
+        IOException failure = new IOException("failure");
+        invocation.then(jsonSuccessConsumer, error -> sneakyThrow(failure));
         invocation.then(jsonSuccessConsumer, errorConsumer);
         CompletableFuture<JsonNode> future = invocation.toCompletableFuture();
 
-        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+        IOException thrown = assertThrows(IOException.class,
                 () -> invocation.completeExceptionally(fooJsonString));
 
         assertSame(failure, thrown);
@@ -272,6 +269,12 @@ class PendingJavaScriptInvocationTest {
         ExecutionException futureFailure = assertThrows(
                 ExecutionException.class, future::get);
         assertInstanceOf(JavaScriptException.class, futureFailure.getCause());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <E extends Throwable> void sneakyThrow(Throwable throwable)
+            throws E {
+        throw (E) throwable;
     }
 
     @Test
