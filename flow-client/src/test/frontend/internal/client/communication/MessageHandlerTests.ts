@@ -5,6 +5,8 @@ import type {
   ResourceLoadListener
 } from '../../../../../main/frontend/internal/client/ResourceRegistry';
 import { expect } from '@open-wc/testing';
+import sinon from 'sinon';
+import { Console } from '../../../../../main/frontend/internal/client/Console';
 import {
   MessageHandler,
   parseJson,
@@ -660,16 +662,28 @@ describe('MessageHandler', () => {
 
       // Like the real API, the stub returns before running the update callback;
       // the test runs it through pendingUpdate once the snapshot would be taken.
-      // By default the returned transition is one the browser skips, so its
-      // ready promise rejects.
+      // An error thrown by the callback rejects updateCallbackDone and finished
+      // instead of propagating. The returned transition is one the browser
+      // skips, so its ready promise rejects.
       function stubStartViewTransition(supported: boolean): void {
         const value = supported
           ? (callback: () => void) => {
-              pendingUpdate = callback;
+              let settle!: (error?: unknown) => void;
+              const updateCallbackDone = new Promise<void>((resolve, reject) => {
+                settle = (error) => (error === undefined ? resolve() : reject(error));
+              });
+              pendingUpdate = () => {
+                try {
+                  callback();
+                  settle();
+                } catch (e) {
+                  settle(e);
+                }
+              };
               return {
                 ready: Promise.reject(new DOMException('Transition was skipped', 'AbortError')),
-                updateCallbackDone: Promise.resolve(),
-                finished: Promise.resolve()
+                updateCallbackDone,
+                finished: updateCallbackDone.then(() => {})
               };
             }
           : undefined;
@@ -741,33 +755,48 @@ describe('MessageHandler', () => {
       });
 
       for (const supported of [true, false]) {
-        it(`ends the request once when applying the changes throws (view transitions ${supported ? 'supported' : 'unsupported'})`, () => {
+        it(`ends the request once and reports the error when applying the changes throws (view transitions ${supported ? 'supported' : 'unsupported'})`, async () => {
           stubStartViewTransition(supported);
           const registry = makeRegistry();
           const handler = new MessageHandler(registry.registry);
+          const reportStacktrace = sinon.stub(Console, 'reportStacktrace');
+          const unhandled: unknown[] = [];
+          const listener = (e: PromiseRejectionEvent) => {
+            unhandled.push(e.reason);
+            e.preventDefault();
+          };
+          window.addEventListener('unhandledrejection', listener);
+          try {
+            // Reactive keeps a listener that throws, so only throw for the first message
+            const error = new Error('boom');
+            let thrown = false;
+            Reactive.addFlushListener(() => {
+              if (!thrown) {
+                thrown = true;
+                throw error;
+              }
+            });
 
-          // Reactive keeps a listener that throws, so only throw for the first message
-          let thrown = false;
-          Reactive.addFlushListener(() => {
-            if (!thrown) {
-              thrown = true;
-              throw new Error('boom');
+            const first = () => handle(handler, { syncId: 0, meta: { viewTransition: true } });
+            if (supported) {
+              first();
+              handle(handler, { syncId: 1, meta: { async: true } });
+              runPendingUpdate();
+              await new Promise((resolve) => setTimeout(resolve, 10));
+              expect(reportStacktrace.calledOnceWithExactly(error)).to.be.true;
+            } else {
+              expect(first).to.throw('boom');
+              handle(handler, { syncId: 1, meta: { async: true } });
             }
-          });
 
-          const first = () => handle(handler, { syncId: 0, meta: { viewTransition: true } });
-          if (supported) {
-            first();
-            handle(handler, { syncId: 1, meta: { async: true } });
-            expect(runPendingUpdate).to.throw('boom');
-          } else {
-            expect(first).to.throw('boom');
-            handle(handler, { syncId: 1, meta: { async: true } });
+            expect(unhandled).to.deep.equal([]);
+            expect(registry.log.endRequests).to.equal(1);
+            expect(registry.log.stopLoadings).to.equal(1);
+            expect(handler.getLastSeenServerSyncId()).to.equal(1);
+          } finally {
+            window.removeEventListener('unhandledrejection', listener);
+            reportStacktrace.restore();
           }
-
-          expect(registry.log.endRequests).to.equal(1);
-          expect(registry.log.stopLoadings).to.equal(1);
-          expect(handler.getLastSeenServerSyncId()).to.equal(1);
         });
       }
 

@@ -489,10 +489,12 @@ export class MessageHandler {
         // ready rejects when the browser skips the animation (e.g. hidden
         // tab, or another transition starting); the changes are still
         // applied, so that is not an error. finished only rejects when
-        // applying the changes failed.
+        // applying the changes failed: the browser swallows what the update
+        // callback throws, so report it like an error thrown without a
+        // transition would be.
         transition.ready.catch(() => {});
         transition.updateCallbackDone.catch(() => {});
-        transition.finished.catch((e: unknown) => Console.error(e));
+        transition.finished.catch((e: unknown) => Console.reportStacktrace(e));
       } else {
         // #applyChanges finishes processing itself, also when it throws
         finishDelegated = true;
