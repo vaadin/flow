@@ -259,8 +259,8 @@ public class ElementListenerMap extends NodeMap {
                 // [[timeout1, phase1, phase2, ...], [timeout2, phase1, ...]]
                 return debounceSettings.entrySet().stream()
                         .map(debounce -> Stream.concat(
-                                Stream.of(JacksonUtils.createNode(
-                                        debounce.getKey().intValue())),
+                                Stream.of(JacksonUtils
+                                        .createNode(debounce.getKey())),
                                 debounce.getValue().stream()
                                         .map(DebouncePhase::getIdentifier)
                                         .map(JacksonUtils::createNode))
