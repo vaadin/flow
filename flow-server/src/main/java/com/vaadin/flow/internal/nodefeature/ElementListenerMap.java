@@ -860,7 +860,7 @@ public class ElementListenerMap extends NodeMap {
      * @since 3.0
      */
     public Set<String> getExpressions(String eventName) {
-        assert eventName != null;
+        Objects.requireNonNull(eventName, "Event name cannot be null");
         // Declared snippets have no expression
         return collectEventExpressions(eventName).values().stream()
                 .map(settings -> settings.entry)
@@ -882,7 +882,7 @@ public class ElementListenerMap extends NodeMap {
      *         <code>null</code>
      */
     public Set<SnippetEntry> getSnippetEntries(String eventName) {
-        Objects.requireNonNull(eventName, "eventName");
+        Objects.requireNonNull(eventName, "Event name cannot be null");
         return collectEventExpressions(eventName).values().stream()
                 .map(settings -> settings.entry)
                 .filter(SnippetEntry.class::isInstance)

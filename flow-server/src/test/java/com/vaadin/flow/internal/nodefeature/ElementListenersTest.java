@@ -616,14 +616,21 @@ public class ElementListenersTest
     @Test
     void getSnippetEntries_sameCallAsEventDataAndFilter_isFilter() {
         DomEventFilter isEnter = JS.isKey("Enter");
-        ns.add("keydown", noOp).addEventData(DomEventData
-                .ofDeclaredCall(isEnter.getDeclaredCall(), Boolean.class));
+        DomEventData<Boolean> isEnterData = DomEventData
+                .ofDeclaredCall(isEnter.getDeclaredCall(), Boolean.class);
+        // Event data first, then the filter
+        ns.add("keydown", noOp).addEventData(isEnterData);
         ns.add("keydown", noOp).setFilterExpression(isEnter);
+        // The filter first, then event data
+        ns.add("keyup", noOp).setFilterExpression(isEnter);
+        ns.add("keyup", noOp).addEventData(isEnterData);
 
-        Set<ElementListenerMap.SnippetEntry> entries = ns
-                .getSnippetEntries("keydown");
-        assertEquals(1, entries.size());
-        assertTrue(entries.iterator().next().filter());
+        for (String eventType : List.of("keydown", "keyup")) {
+            Set<ElementListenerMap.SnippetEntry> entries = ns
+                    .getSnippetEntries(eventType);
+            assertEquals(1, entries.size());
+            assertTrue(entries.iterator().next().filter());
+        }
     }
 
     private static ElementListenerMap.SnippetEntry findEntry(
