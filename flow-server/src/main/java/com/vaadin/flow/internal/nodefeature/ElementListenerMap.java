@@ -87,11 +87,13 @@ public class ElementListenerMap extends NodeMap {
     /**
      * {@code event} or {@code element}, followed by any number of {@code .name}
      * or {@code ?.name} segments. The client reads such a path without
-     * compiling it, see {@code PropertyPathExpression.ts}, which has the same
-     * pattern.
+     * compiling it, see {@code PropertyPathExpression.ts}, which matches the
+     * same paths. The quantifiers are possessive so that a long input can't
+     * cause deep backtracking; a segment always starts with a dot, so nothing
+     * needs to be backtracked.
      */
     private static final Pattern PROPERTY_PATH = Pattern
-            .compile("(event|element)(\\??\\.[A-Za-z_$][\\w$]*)*");
+            .compile("(event|element)(\\??\\.[A-Za-z_$][\\w$]*+)*+");
 
     private static final Entry ALWAYS_TRUE_ENTRY = new ExpressionEntry(
             ALWAYS_TRUE_FILTER);
@@ -186,7 +188,7 @@ public class ElementListenerMap extends NodeMap {
      * The settings of one entry for an event type: the entry and its debounce
      * settings.
      */
-    private static class ExpressionSettings implements Serializable {
+    private static final class ExpressionSettings implements Serializable {
         private Entry entry;
         private final Map<Integer, Set<DebouncePhase>> debounceSettings = new HashMap<>();
 
@@ -256,10 +258,10 @@ public class ElementListenerMap extends NodeMap {
             } else {
                 // [[timeout1, phase1, phase2, ...], [timeout2, phase1, ...]]
                 return debounceSettings.entrySet().stream()
-                        .map(entry -> Stream.concat(
-                                Stream.of(JacksonUtils
-                                        .createNode(entry.getKey().intValue())),
-                                entry.getValue().stream()
+                        .map(debounce -> Stream.concat(
+                                Stream.of(JacksonUtils.createNode(
+                                        debounce.getKey().intValue())),
+                                debounce.getValue().stream()
                                         .map(DebouncePhase::getIdentifier)
                                         .map(JacksonUtils::createNode))
                                 .collect(JacksonUtils.asArray()))
@@ -444,9 +446,7 @@ public class ElementListenerMap extends NodeMap {
         @Override
         public String getFilter() {
             // A declared filter has no expression to return
-            return filter instanceof ExpressionEntry expression
-                    ? expression.key()
-                    : null;
+            return filter instanceof ExpressionEntry(String key) ? key : null;
         }
 
         boolean matchesFilter(JsonNode eventData) {
@@ -717,11 +717,10 @@ public class ElementListenerMap extends NodeMap {
             return new ExpressionEntry(expression);
         }
         return switch (filter) {
-        case ExpressionEntry filterExpression when filterExpression.key()
-                .isEmpty() ->
+        case ExpressionEntry(String key) when key.isEmpty() ->
             new ExpressionEntry(expression);
-        case ExpressionEntry filterExpression -> new ExpressionEntry(
-                "(" + filterExpression.key() + ") && event." + method + "()");
+        case ExpressionEntry(String key) ->
+            new ExpressionEntry("(" + key + ") && event." + method + "()");
         case SnippetEntry snippet -> snippet.withSideEffect(method);
         };
     }
@@ -883,7 +882,7 @@ public class ElementListenerMap extends NodeMap {
      *         <code>null</code>
      */
     public Set<SnippetEntry> getSnippetEntries(String eventName) {
-        assert eventName != null;
+        Objects.requireNonNull(eventName, "eventName");
         return collectEventExpressions(eventName).values().stream()
                 .map(settings -> settings.entry)
                 .filter(SnippetEntry.class::isInstance)
