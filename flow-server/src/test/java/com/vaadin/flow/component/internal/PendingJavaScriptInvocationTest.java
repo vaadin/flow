@@ -33,6 +33,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.MockedStatic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -56,6 +59,12 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
 
 class PendingJavaScriptInvocationTest {
     private static final JsonNode fooJsonString = JacksonUtils
@@ -584,13 +593,23 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    void typedIgnoreErrors_conversionFails_laterHandlersRun() {
-        invocation.then(Integer.class, value -> fail("Should not be called"));
-        invocation.then(jsonSuccessConsumer, errorConsumer);
+    void typedIgnoreErrors_conversionFails_warningLoggedAndLaterHandlersRun() {
+        Logger logger = mock(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class, CALLS_REAL_METHODS)) {
+            loggerFactory
+                    .when(() -> LoggerFactory
+                            .getLogger(TypedJavaScriptResultUtil.class))
+                    .thenReturn(logger);
+            invocation.then(Integer.class,
+                    value -> fail("Should not be called"));
+            invocation.then(jsonSuccessConsumer, errorConsumer);
 
-        invocation.complete(fooJsonString);
+            invocation.complete(fooJsonString);
+        }
 
         assertJsonSuccess();
+        verify(logger).warn(anyString(), any(IllegalArgumentException.class));
     }
 
     private static void assertConversionFailure(CompletableFuture<?> future) {

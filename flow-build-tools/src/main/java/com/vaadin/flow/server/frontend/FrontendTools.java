@@ -451,6 +451,7 @@ public class FrontendTools {
      *
      * @return the list of all commands in sequence that need to be executed to
      *         have npx running
+     * @since 25.4
      */
     public List<String> getNpxExecutable() {
         return getNpmCliToolExecutable(BuildTool.NPX);
