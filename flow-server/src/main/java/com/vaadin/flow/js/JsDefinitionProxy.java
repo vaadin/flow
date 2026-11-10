@@ -31,14 +31,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
-import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.type.TypeFactory;
 
+import com.vaadin.flow.component.internal.TypedJavaScriptResults;
 import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.DomEventData;
@@ -509,26 +510,15 @@ public final class JsDefinitionProxy {
                 throw new IllegalArgumentException(
                         "Result handler cannot be null");
             }
-            pending.then(json -> {
-                T value;
-                try {
-                    value = JacksonCodec.decodeAs(json, valueType);
-                } catch (IllegalArgumentException e) {
-                    // Not thrown, since the pending result chains the handlers
-                    // added to it, so throwing would also skip any added after
-                    // this one, such as one completing a future
-                    if (errorHandler != null) {
-                        errorHandler.accept(e.getMessage());
-                    } else {
-                        LoggerFactory.getLogger(JsDefinitionProxy.class).warn(
-                                "Ignored a JavaScript result that can not be"
-                                        + " converted: {}",
-                                e.getMessage());
-                    }
-                    return;
-                }
-                resultHandler.accept(value);
-            }, errorHandler);
+            TypedJavaScriptResults.then(pending,
+                    json -> JacksonCodec.decodeAs(json, valueType),
+                    resultHandler, errorHandler);
+        }
+
+        @Override
+        public CompletableFuture<T> toCompletableFuture() {
+            return TypedJavaScriptResults.toCompletableFuture(pending,
+                    json -> JacksonCodec.decodeAs(json, valueType));
         }
     }
 

@@ -356,7 +356,10 @@ class JsDefinitionProxyTest {
         assertTrue(errors.get(0).contains("Integer"), errors.get(0));
         CompletionException exception = assertThrows(CompletionException.class,
                 () -> future.getNow(null));
-        assertInstanceOf(JavaScriptException.class, exception.getCause());
+        JavaScriptException javaScriptException = assertInstanceOf(
+                JavaScriptException.class, exception.getCause());
+        assertInstanceOf(IllegalArgumentException.class,
+                javaScriptException.getCause());
     }
 
     @Test

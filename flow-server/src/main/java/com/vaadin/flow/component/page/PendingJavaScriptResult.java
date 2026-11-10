@@ -17,15 +17,12 @@ package com.vaadin.flow.component.page;
 
 import java.util.concurrent.CompletableFuture;
 
-import org.slf4j.LoggerFactory;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 
-import com.vaadin.flow.component.internal.DeadlockDetectingCompletableFuture;
+import com.vaadin.flow.component.internal.TypedJavaScriptResults;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.JacksonCodec;
-import com.vaadin.flow.server.VaadinSession;
 
 /**
  * A pending result from a JavaScript snippet sent to the browser for
@@ -48,10 +45,11 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
 
     /**
      * Exception used when a {@link CompletableFuture} returned from
-     * {@link PendingJavaScriptResult} is completed exceptionally because of a
-     * client-side error, or because the result can not be converted to the
-     * requested type. In the latter case, the cause is the
-     * {@link IllegalArgumentException} describing the conversion failure.
+     * {@link PendingJavaScriptResult} or another {@link JavaScriptResult} is
+     * completed exceptionally because of a client-side error, or because the
+     * result can not be converted to the requested type. In the latter case,
+     * the cause is the {@link IllegalArgumentException} describing the
+     * conversion failure.
      */
     public class JavaScriptException extends RuntimeException {
         /**
@@ -122,9 +120,9 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
             throw new IllegalArgumentException("Result handler cannot be null");
         }
 
-        then(decodingHandler(value -> JacksonCodec.decodeAs(value, targetType),
-                resultHandler, conversionErrorHandler(errorHandler)),
-                errorHandler);
+        TypedJavaScriptResults.then(this,
+                value -> JacksonCodec.decodeAs(value, targetType),
+                resultHandler, errorHandler);
     }
 
     /**
@@ -186,27 +184,8 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
             throw new IllegalArgumentException("Target type cannot be null");
         }
 
-        /*
-         * Assuming that subscription is only done for the currently locked
-         * session. This is quite safe since you cannot subscribe any more after
-         * the request has been sent to the client.
-         *
-         * This is the only way of catching the potentially common case of
-         * blocking on a pending result for an element that hasn't yet even been
-         * attached to a session.
-         */
-        VaadinSession session = VaadinSession.getCurrent();
-
-        CompletableFuture<T> completableFuture = new DeadlockDetectingCompletableFuture<>(
-                session);
-
-        then(decodingHandler(value -> JacksonCodec.decodeAs(value, targetType),
-                completableFuture::complete,
-                futureConversionErrorHandler(completableFuture)),
-                errorValue -> completableFuture.completeExceptionally(
-                        new JavaScriptException(errorValue)));
-
-        return completableFuture;
+        return TypedJavaScriptResults.toCompletableFuture(this,
+                value -> JacksonCodec.decodeAs(value, targetType));
     }
 
     /**
@@ -254,10 +233,9 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
             throw new IllegalArgumentException("Result handler cannot be null");
         }
 
-        then(decodingHandler(
+        TypedJavaScriptResults.then(this,
                 value -> JacksonCodec.decodeAs(value, typeReference),
-                resultHandler, conversionErrorHandler(errorHandler)),
-                errorHandler);
+                resultHandler, errorHandler);
     }
 
     /**
@@ -318,19 +296,8 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
             throw new IllegalArgumentException("Type reference cannot be null");
         }
 
-        VaadinSession session = VaadinSession.getCurrent();
-
-        CompletableFuture<T> completableFuture = new DeadlockDetectingCompletableFuture<>(
-                session);
-
-        then(decodingHandler(
-                value -> JacksonCodec.decodeAs(value, typeReference),
-                completableFuture::complete,
-                futureConversionErrorHandler(completableFuture)),
-                errorValue -> completableFuture.completeExceptionally(
-                        new JavaScriptException(errorValue)));
-
-        return completableFuture;
+        return TypedJavaScriptResults.toCompletableFuture(this,
+                value -> JacksonCodec.decodeAs(value, typeReference));
     }
 
     /**
@@ -387,73 +354,5 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
     @Override
     default CompletableFuture<JsonNode> toCompletableFuture() {
         return toCompletableFuture(JsonNode.class);
-    }
-
-    /**
-     * Wraps a typed result handler into a JSON handler that decodes the value
-     * first. A decoding failure is passed to the conversion error handler
-     * instead of being thrown, since the pending result chains the handlers
-     * added to it, so throwing would also skip any added after this one.
-     *
-     * @param <T>
-     *            the decoded type
-     * @param decoder
-     *            the function that decodes the JSON value, not
-     *            <code>null</code>
-     * @param resultHandler
-     *            the handler for the decoded value, not <code>null</code>
-     * @param conversionErrorHandler
-     *            the handler for a decoding failure, not <code>null</code>
-     * @return a JSON handler that decodes the value and passes it on, not
-     *         <code>null</code>
-     */
-    private static <T> SerializableConsumer<JsonNode> decodingHandler(
-            SerializableFunction<JsonNode, T> decoder,
-            SerializableConsumer<T> resultHandler,
-            SerializableConsumer<IllegalArgumentException> conversionErrorHandler) {
-        return value -> {
-            T decodedValue;
-            try {
-                decodedValue = decoder.apply(value);
-            } catch (IllegalArgumentException e) {
-                conversionErrorHandler.accept(e);
-                return;
-            }
-            resultHandler.accept(decodedValue);
-        };
-    }
-
-    /**
-     * Creates a conversion error handler that passes the failure message to the
-     * given error handler, or logs it if there is no error handler.
-     *
-     * @param errorHandler
-     *            the handler for an error message, or <code>null</code> to log
-     *            the failure
-     * @return a conversion error handler, not <code>null</code>
-     */
-    private static SerializableConsumer<IllegalArgumentException> conversionErrorHandler(
-            SerializableConsumer<String> errorHandler) {
-        if (errorHandler != null) {
-            return e -> errorHandler.accept(e.getMessage());
-        }
-        return e -> LoggerFactory.getLogger(PendingJavaScriptResult.class).warn(
-                "Ignored a JavaScript result that can not be converted: {}",
-                e.getMessage());
-    }
-
-    /**
-     * Creates a conversion error handler that completes the given future
-     * exceptionally with a {@link JavaScriptException} caused by the conversion
-     * failure.
-     *
-     * @param completableFuture
-     *            the future to complete, not <code>null</code>
-     * @return a conversion error handler, not <code>null</code>
-     */
-    private static SerializableConsumer<IllegalArgumentException> futureConversionErrorHandler(
-            CompletableFuture<?> completableFuture) {
-        return e -> completableFuture.completeExceptionally(
-                new JavaScriptException(e.getMessage()).initCause(e));
     }
 }
