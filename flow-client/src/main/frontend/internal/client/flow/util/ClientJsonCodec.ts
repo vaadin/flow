@@ -26,7 +26,7 @@
 
 import type { StateNode } from '../StateNode';
 import type { StateTree } from '../StateTree';
-import { describeMissingFunction, findDeclaredSnippet, getNameOf } from './DeclaredJavaScript';
+import { describeMissingFunction, findDeclaredSnippet } from './DeclaredJavaScript';
 
 type JsFunction = (...args: unknown[]) => unknown;
 
@@ -152,21 +152,13 @@ function decodeArrayWithTypeInfo(tree: StateTree, jsonArray: unknown[]): unknown
  * is compiled from a string. Each decode evaluates it again, so every
  * invocation that is passed the snippet gets a value of its own.
  *
- * A snippet declared without the parameters it is called with is one whose
- * expression returns the function itself, which the bundle marks as lazy.
- * Running it runs declared JavaScript, so it is deferred to the first call of
- * the value: nothing declared runs while the parameters of an invocation are
- * decoded, decoding a deferred invocation again has no effect, and an
- * expression that returns no function fails on that call with an error naming
- * it.
- *
  * A function missing from the bundle is reported when the value is called
  * rather than when it is decoded, instead of failing the decoding of everything
  * else the invocation is sent with. The error goes wherever the call is made:
  * to the error channel of an invocation that calls the value, or only to the
  * console when, for instance, an event listener calls it.
  */
-function evaluateDeclaredSnippet(functionId: string, captures: unknown[]): unknown {
+export function evaluateDeclaredSnippet(functionId: string, captures: unknown[]): unknown {
   const snippet = findDeclaredSnippet(functionId);
   if (snippet === undefined) {
     const message = describeMissingFunction(functionId);
@@ -174,22 +166,7 @@ function evaluateDeclaredSnippet(functionId: string, captures: unknown[]): unkno
       throw new Error(message);
     };
   }
-  if (!(snippet as { lazy?: boolean }).lazy) {
-    return snippet(...captures);
-  }
-  let declared: ((...args: unknown[]) => unknown) | undefined;
-  return function (this: unknown, ...args: unknown[]): unknown {
-    if (declared === undefined) {
-      const value = snippet(...captures);
-      if (typeof value !== 'function') {
-        throw new TypeError(
-          `${getNameOf(functionId)} returned ${typeof value} instead of a function. Return the function from the expression, or declare the parameters it is called with in @JsCalledWith.`
-        );
-      }
-      declared = value as (...args: unknown[]) => unknown;
-    }
-    return declared.apply(this, args);
-  };
+  return snippet(...captures);
 }
 
 function decodeJsFunction(tree: StateTree, fnObject: Record<string, unknown>, originalJson: string): unknown {
@@ -239,6 +216,41 @@ function decodeJsFunction(tree: StateTree, fnObject: Record<string, unknown>, or
   // Manifests a server-sent JS function, mirroring the Java NativeFunction.
   const fn = new Function(...paramsAndCode) as JsFunction;
   return applyCaptures(fn, captures);
+}
+
+/**
+ * Returns a copy of the value where each `@v-node` reference to a state node
+ * that is not in the tree is replaced by null.
+ */
+function copyWithoutRemovedNodes(tree: StateTree, value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map((item) => copyWithoutRemovedNodes(tree, item));
+  }
+  if (!isPlainObject(value)) {
+    return value;
+  }
+  const nodeId = value['@v-node'];
+  if (typeof nodeId === 'number' && tree.getNode(nodeId) === null) {
+    return null;
+  }
+  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, copyWithoutRemovedNodes(tree, item)]));
+}
+
+/**
+ * Decodes a copy of a value encoded on the server, like
+ * {@link decodeWithTypeInfo}, with two differences:
+ * - A reference to a state node that is not in the tree decodes to null. It
+ *   does not throw.
+ * - The given value is not changed. Use this for a value that is decoded more
+ *   than once, for example the captures of an event listener, which are
+ *   decoded for every event.
+ *
+ * @param tree - the state tree to use for resolving nodes and elements
+ * @param json - the JSON value to decode
+ * @returns the decoded value
+ */
+export function decodeCopyWithTypeInfo(tree: StateTree, json: unknown): unknown {
+  return decodeWithTypeInfo(tree, copyWithoutRemovedNodes(tree, json));
 }
 
 /**

@@ -159,23 +159,14 @@ public final class JsFunction implements JsSnippet {
      * @throws RuntimeException
      *             if any argument of the call cannot be encoded to be sent to
      *             the client
+     * @since 25.4
      */
     public static JsFunction ofDeclaredCall(JsCall call) {
         Objects.requireNonNull(call, "call");
-        if (!call.isSnippet()) {
-            throw new IllegalArgumentException("Method " + call.methodName()
-                    + " of " + call.definitionType().getName()
-                    + " does not declare a JsSnippet, so a call of it runs"
-                    + " JavaScript rather than declaring a function");
-        }
-        List<Object> captures = call.flattenArguments();
         // Fail fast at the call that captures an unsupported value, as of does
-        for (Object capture : captures) {
-            JacksonCodec.encodeWithTypeInfo(capture);
-        }
-        List<String> names = call.getCalledWithNames();
-        return new JsFunction(null, call, captures,
-                names == null ? List.of() : names);
+        call.encodeSnippetCaptures();
+        List<Object> captures = call.flattenArguments();
+        return new JsFunction(null, call, captures, call.getCalledWithNames());
     }
 
     /**
@@ -186,6 +177,7 @@ public final class JsFunction implements JsSnippet {
      *
      * @return the declaring call, or <code>null</code> for a function created
      *         from a body with {@link #of(String, Object...)}
+     * @since 25.4
      */
     public @Nullable JsCall getDeclaredCall() {
         return declaredCall;

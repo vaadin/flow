@@ -129,13 +129,66 @@ over `json.toString()` — the compact form, without the spaces the
 snippet is pretty-printed with. Anything that changes the serialized
 form, key order included, changes the id.
 
+#### Declared event data and filters
+
+`addEventData(DomEventData)` and `setFilterExpression(DomEventFilter)` use a
+function that a `@JsDefinition` method declares, so the client compiles
+nothing from a string. Such an entry is keyed by `@` followed by a short
+hash of the function and its captured values (`JsCall.createSnippetKey()`).
+No JavaScript expression starts with `@`, so this key never equals the
+key of an expression. Its value is an object, not one of the three
+debounce forms above, which is how the client tells the two apart:
+
+- `f` — the id of the declared function. The client calls
+  `window.Vaadin.Flow.jsSnippets[id]` with the captures, and calls what
+  that returns with the event and the element.
+- `d` — the debounce settings, in the same three forms as above.
+- `c` — the captured values, left out when there are none.
+- `s` — `preventDefault` or `stopPropagation`, for
+  `preventDefault()` or `stopPropagation()` on a listener with a declared
+  filter. The entry runs the filter, and the client calls that method of
+  the event only when the filter passes. Its key is the key of the filter
+  followed by `.` and the method name.
+
+```json
+{
+  "event.clientX": false,
+  "@<key of the filter>": { "f": "8f66…a044", "d": true, "c": ["Enter"] }
+}
+```
+
+Here `<key of the filter>` stands for the 11 characters of the hash, and
+`8f66…a044` for the 64 characters of the function id.
+
+When all captured values are plain (strings, numbers, booleans, enums or
+`null`), the entry is the same for every element, so it is pooled with the
+other entries. A snippet that captures anything else, such as an element,
+is sent for this element only, because an element is encoded with its
+node id at the time the settings are sent. The `put` value is then a
+`ParameterizedConstantPoolKey`, encoded as `[poolId, settings]`, where
+`settings` holds the entries of this element in the same form. Pooled
+captures are part of the pooled value, so each distinct captured value
+adds one pool entry, like a value concatenated into an expression (see
+the constraints below). Captures sent for one element only do not:
+
+```json
+["RBNvo1WzZ4o=", { "@<key>": { "f": "…", "d": false, "c": [{ "@v-node": 12 }] } }]
+```
+
+The client merges the two before it runs the entries. The value of a
+declared entry is sent back under its key, and
+`DomEvent.getEventData(DomEventData)` reads it with
+`ElementListenerMap.getEventDataKey(DomEventData)`.
+
 ### Constraints this puts on new code
 
 - **Nothing is ever evicted, on either side.** The pool grows for the
   lifetime of the UI. A constant pool key is right for a value with few
   distinct shapes repeated over many nodes, and wrong for anything that
   varies per node or per interaction — that just leaks a JSON value per
-  interaction into a map that is never cleaned.
+  interaction into a map that is never cleaned. Declared event data and
+  filters with plain captures are pooled too, so a capture that varies
+  per node, such as a row id, adds one entry per value.
 - **An id names one value, forever.** The client's
   `ConstantPool.importFromJson` accepts a key it already holds only with
   the value it already holds — the same message can legitimately be read
@@ -252,15 +305,13 @@ travels as a single-key wrapper object whose key is reserved:
   `JsSnippet` by a `@JsDefinition` method. The client looks the id up in
   `window.Vaadin.Flow.jsSnippets` and calls that function with the
   captures; what it returns is the decoded value, so nothing is compiled
-  from a string. For a snippet with `@JsCalledWith` that is a function
-  whose body is the declared expression. One without it is marked `lazy`
-  in the bundle, because its expression returns the function: the client
-  hands out a wrapper that runs it on the first call, so no declared
-  JavaScript runs while decoding. The registry is separate from
-  `jsDefinitions` because a snippet function is not `async`: whatever it
-  is passed to may need its value synchronously. A missing id decodes to
-  a function that throws when it is called rather than failing the
-  decoding of the whole invocation. Where the error ends up depends on
+  from a string. That is a function whose body is the declared expression
+  and whose parameters are the names of `@JsCalledWith`, or none without
+  it, so no declared JavaScript runs while decoding. The registry is
+  separate from `jsDefinitions` because a snippet function is not
+  `async`: whatever it is passed to may need its value synchronously. A
+  missing id decodes to a function that throws when it is called rather
+  than failing the decoding of the whole invocation. Where the error ends up depends on
   the caller: an invocation that calls it reports it through its error
   channel, while a call from an event listener only reaches the browser
   console.
@@ -285,10 +336,19 @@ invocation dropped.
   `stopApplication`, …) that framework-authored expressions rely on.
 - For an object it looks the function up in
   `window.Vaadin.Flow.jsDefinitions`, which the generated bundle fills,
-  and applies it to the element with the arguments. There is no context
-  object on this path. A function missing from the bundle, or a
-  parameter count that does not match it, is reported through the error
-  channel rather than run.
+  and applies it to the element with the arguments. A function missing
+  from the bundle, or a parameter count that does not match it, is
+  reported through the error channel rather than run.
+- A method annotated with the internal `@JsWithExecutionContext` is
+  generated into `window.Vaadin.Flow.jsDefinitionsWithExecutionContext`
+  instead, as a function taking the same context object an expression
+  runs against as its first parameter, `$executionContext`, ahead of the
+  arguments; `this` is still the element. The client passes the context
+  only to a function it finds in that registry, so the bundle decides
+  which functions get it and nothing on the wire can ask for it. The
+  marker is part of the function id, so the same JavaScript with and
+  without it is two functions. It is for framework code that needs the
+  callbacks of the context, such as `stopApplication`, and not an API.
 
 **An invocation referencing a node that is not bound yet is deferred, not
 dropped**: the processor registers a DOM-node listener and retries the

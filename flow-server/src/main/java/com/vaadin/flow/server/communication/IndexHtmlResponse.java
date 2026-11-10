@@ -132,6 +132,7 @@ public class IndexHtmlResponse {
      *
      * @return the nonce, or {@code null} if the mode is not
      *         {@link CspMode#STRICT}
+     * @since 25.4
      */
     public @Nullable String getCspNonce() {
         return cspNonce;
@@ -166,6 +167,7 @@ public class IndexHtmlResponse {
      *
      * @return the mutable policy, or {@code null} if the mode is not
      *         {@link CspMode#STRICT}
+     * @since 25.4
      */
     public @Nullable ContentSecurityPolicy getContentSecurityPolicy() {
         return contentSecurityPolicy;

@@ -27,6 +27,8 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.internal.ToStringBuilder;
+
 /**
  * A mutable Content Security Policy, i.e. a set of directives and the sources
  * of each directive, that is serialized as the value of a
@@ -45,6 +47,8 @@ import java.util.stream.Collectors;
  * adjust it before the header is sent. In that policy, {@code script-src} holds
  * the nonce of the response and should be left unchanged, see
  * {@link com.vaadin.flow.server.communication.IndexHtmlResponse#getContentSecurityPolicy()}.
+ * 
+ * @since 25.4
  */
 public class ContentSecurityPolicy implements Serializable {
 
@@ -143,7 +147,7 @@ public class ContentSecurityPolicy implements Serializable {
 
     @Override
     public String toString() {
-        return toHeaderValue();
+        return ToStringBuilder.of(this).addValue(toHeaderValue()).toString();
     }
 
     private static String normalizeDirective(String directive) {

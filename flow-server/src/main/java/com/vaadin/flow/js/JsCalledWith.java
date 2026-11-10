@@ -58,36 +58,29 @@ import com.vaadin.flow.dom.JsFunction;
  * what the invoker passes when it calls the function. Inside the function,
  * <code>this</code> is whatever the invoker calls it with.
  * <p>
- * Without this annotation no function is wrapped around the expression, which
- * then has to <code>return</code> the function itself, for an invoker whose
- * calling convention a list of parameters can not express, or for setup that
- * runs once for the function rather than on every call:
+ * Without this annotation the function takes no parameters, and the expression
+ * is its body all the same:
  *
  * <pre>
- * &#64;JsExpression("return ({ point }) =&gt; `${point.y} ${$0}`;")
- * JsFunction formatTooltip(String unit);
+ * &#64;JsExpression("return import('Frontend/report-editor.js');")
+ * JsFunction loadEditor();
  * </pre>
  * <p>
- * The expression itself has no <code>this</code>, as the generated module runs
- * in strict mode. The function it returns gets the <code>this</code> of the
- * invoker only when it is a <code>function</code> rather than an arrow
- * function.
- * <p>
- * The client runs such an expression on the first call of the function rather
- * than when it receives the snippet, so it never runs while the parameters of
- * an invocation are decoded, and an expression that does not return a function
- * fails with an error that names the method on that first call. What the
- * invoker gets is a function that forwards to the returned one, so its
- * <code>length</code> is 0.
+ * A snippet type that is always called in the same way can declare the names
+ * once, on the type. The names then apply to all methods that return the type.
+ * A method can still declare its own names, and they are used instead. For
+ * example, {@link com.vaadin.flow.dom.DomEventFilter} is always called with the
+ * DOM <code>event</code> and the <code>element</code> of the listener.
  * <p>
  * The names are part of the generated JavaScript, so a change to them is a
  * change to the function the client runs, as a change to the expression is.
  *
  * @see JsSnippet
  * @see JsFunction
+ * @since 25.4
  */
 @Documented
-@Target(ElementType.METHOD)
+@Target({ ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface JsCalledWith {
 

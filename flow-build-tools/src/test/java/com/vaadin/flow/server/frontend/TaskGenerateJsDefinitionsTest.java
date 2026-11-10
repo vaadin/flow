@@ -28,12 +28,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
 import static com.vaadin.flow.internal.FrontendUtils.FRONTEND;
@@ -56,11 +58,13 @@ class TaskGenerateJsDefinitionsTest {
 
     private static final String LOG_EXPRESSION = "console.log($0, value);";
 
-    private static final String FORMAT_EXPRESSION = "return (point) => point.y + $0;";
-
     private static final String TICK_EXPRESSION = "console.log($0, Date.now());";
 
+    private static final String KEY_EXPRESSION = "return event.key === $0;";
+
     private static final String SNIPPETS_REGISTRY = "window.Vaadin.Flow.jsSnippets = window.Vaadin.Flow.jsSnippets || {};";
+
+    private static final String CONTEXT_REGISTRY = "window.Vaadin.Flow.jsDefinitionsWithExecutionContext = window.Vaadin.Flow.jsDefinitionsWithExecutionContext || {};";
 
     private static final String NAMES_REGISTRY = "window.Vaadin.Flow.jsDefinitionNames = window.Vaadin.Flow.jsDefinitionNames || {};";
 
@@ -79,12 +83,14 @@ class TaskGenerateJsDefinitionsTest {
         @JsCalledWith("value")
         JsFunction createLogger(String prefix);
 
-        @JsExpression(FORMAT_EXPRESSION)
-        JsFunction createFormatter(String unit);
-
         @JsExpression(TICK_EXPRESSION)
-        @JsCalledWith({})
         JsFunction createTicker(String label);
+    }
+
+    @JsDefinition
+    public interface EventJs extends Serializable {
+        @JsExpression(KEY_EXPRESSION)
+        DomEventFilter isKey(String key);
     }
 
     @JsDefinition
@@ -109,6 +115,17 @@ class TaskGenerateJsDefinitionsTest {
     public interface ShouterJs extends Serializable {
         @JsExpression(SHOUT_EXPRESSION)
         void shout(String greeting, Object... names);
+    }
+
+    @JsDefinition
+    public interface StopperJs extends Serializable {
+        @JsExpression(GREETING_EXPRESSION)
+        @JsWithExecutionContext
+        void stop(String greeting);
+
+        @JsExpression("$executionContext.stopApplication()")
+        @JsWithExecutionContext
+        void stop();
     }
 
     @TempDir
@@ -167,6 +184,33 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @Test
+    void executionContextMethod_registersAFunctionTakingTheContextFirst()
+            throws NoSuchMethodException {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(StopperJs.class), false);
+
+        assertTrue(content.contains(CONTEXT_REGISTRY),
+                "the registry the function is assigned into has to be there, or the module throws: "
+                        + content);
+        assertTrue(content.contains(
+                "window.Vaadin.Flow.jsDefinitionsWithExecutionContext[\""
+                        + JsCall.functionId(
+                                StopperJs.class.getMethod("stop", String.class))
+                        + "\"] = async function ($executionContext, $0) {"),
+                "the context should lead the arguments of the call: "
+                        + content);
+        assertTrue(content.contains(
+                "window.Vaadin.Flow.jsDefinitionsWithExecutionContext[\""
+                        + JsCall.functionId(StopperJs.class.getMethod("stop"))
+                        + "\"] = async function ($executionContext) {"),
+                "a method without arguments should take only the context: "
+                        + content);
+        assertFalse(content.contains("jsDefinitions[\""),
+                "the client tells a function that gets the context by the registry it is in: "
+                        + content);
+    }
+
+    @Test
     void snippetMethod_registersASynchronousFunctionOfTheCaptures()
             throws NoSuchMethodException {
         String content = TaskGenerateJsDefinitions
@@ -186,17 +230,6 @@ class TaskGenerateJsDefinitionsTest {
                         "};")),
                 "the expression should be the body of a function of the declared parameters, returned by one of the captures: "
                         + content);
-        String formatterId = JsCall.functionId(
-                LoggerJs.class.getMethod("createFormatter", String.class));
-        assertTrue(
-                content.contains(String.join(separator,
-                        "window.Vaadin.Flow.jsSnippets[\"" + formatterId
-                                + "\"] = function ($0) {",
-                        FORMAT_EXPRESSION, "};",
-                        "window.Vaadin.Flow.jsSnippets[\"" + formatterId
-                                + "\"].lazy = true;")),
-                "without declared parameters the expression should return the function itself, marked for the client to run it on the first call rather than when decoding: "
-                        + content);
         String tickerId = JsCall.functionId(
                 LoggerJs.class.getMethod("createTicker", String.class));
         assertTrue(
@@ -205,13 +238,28 @@ class TaskGenerateJsDefinitionsTest {
                                 + "\"] = function ($0) {",
                         "  return function () {", TICK_EXPRESSION, "  };",
                         "};")),
-                "an empty list of parameters should still wrap a function around the expression: "
-                        + content);
-        assertFalse(content.contains(tickerId + "\"].lazy"),
-                "and the expression of that function only runs when it is called: "
+                "without declared parameters the expression should be the body of a function without parameters: "
                         + content);
         assertFalse(content.contains("jsDefinitions[\""),
                 "a snippet is not run by a call: " + content);
+    }
+
+    @Test
+    void domEventSnippet_isCalledWithTheNamesItsTypeDeclares()
+            throws NoSuchMethodException {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(EventJs.class), false);
+
+        assertTrue(
+                content.contains(String.join(System.lineSeparator(),
+                        "window.Vaadin.Flow.jsSnippets[\""
+                                + JsCall.functionId(EventJs.class
+                                        .getMethod("isKey", String.class))
+                                + "\"] = function ($0) {",
+                        "  return function (event, element) {", KEY_EXPRESSION,
+                        "  };", "};")),
+                "a DOM event filter should be a function of the event and the element: "
+                        + content);
     }
 
     @Test
@@ -283,19 +331,21 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @Test
-    void updateJsDefinitions_snippetIntoAFileWithoutTheirRegistry_addsIt()
+    void updateJsDefinitions_intoAFileWithoutTheirRegistries_addsThem()
             throws IOException {
-        // A file that a build wrote before snippets were generated at all
+        // A file that a build wrote before snippets and functions that get
+        // the execution context were generated at all
         File generated = new File(
                 FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
                 FrontendUtils.JS_DEFINITIONS_FILE_NAME);
         generated.getParentFile().mkdirs();
         Files.writeString(generated.toPath(), TaskGenerateJsDefinitions
                 .renderFileContent(List.of(GreeterJs.class), true)
-                .replace(SNIPPETS_REGISTRY + System.lineSeparator(), ""));
+                .replace(SNIPPETS_REGISTRY + System.lineSeparator(), "")
+                .replace(CONTEXT_REGISTRY + System.lineSeparator(), ""));
 
         TaskGenerateJsDefinitions.updateJsDefinitions(options,
-                List.of(LoggerJs.class));
+                List.of(LoggerJs.class, StopperJs.class));
 
         String written = Files.readString(generated.toPath());
         assertTrue(written.contains(SNIPPETS_REGISTRY),
@@ -305,6 +355,11 @@ class TaskGenerateJsDefinitionsTest {
                 written.indexOf(SNIPPETS_REGISTRY) < written
                         .indexOf("window.Vaadin.Flow.jsSnippets[\""),
                 "and it should come before the snippets it holds: " + written);
+        assertTrue(written.indexOf(CONTEXT_REGISTRY) >= 0
+                && written.indexOf(CONTEXT_REGISTRY) < written.indexOf(
+                        "window.Vaadin.Flow.jsDefinitionsWithExecutionContext[\""),
+                "the registry of functions that get the context should be added before them: "
+                        + written);
     }
 
     @Test
