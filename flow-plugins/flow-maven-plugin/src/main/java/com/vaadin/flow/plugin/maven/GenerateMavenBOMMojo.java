@@ -162,6 +162,21 @@ public class GenerateMavenBOMMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        InvocationRequest request = createInvocationRequest();
+        Invoker invoker = new DefaultInvoker();
+        try {
+            InvocationResult result = invoker.execute(request);
+            if (result.getExitCode() != 0) {
+                throw new MojoFailureException("Maven SBOM generation failed.",
+                        result.getExecutionException());
+            }
+        } catch (MavenInvocationException e) {
+            throw new MojoExecutionException(
+                    "Error during Maven SBOM generation", e);
+        }
+    }
+
+    InvocationRequest createInvocationRequest() {
         Properties properties = new Properties();
         properties.setProperty(PROJECT_TYPE, projectType);
         properties.setProperty(SCHEMA_VERSION, schemaVersion);
@@ -192,22 +207,10 @@ public class GenerateMavenBOMMojo extends AbstractMojo {
         properties.setProperty(EXCLUDE_TEST_PROJECT,
                 String.valueOf(excludeTestProject));
         properties.setProperty(CYCLONEDX_VERBOSE, String.valueOf(verbose));
-        InvocationRequest request = new InvocationRequestBuilder()
-                .groupId(GROUP).artifactId(ARTIFACT).version(VERSION).goal(GOAL)
+        return new InvocationRequestBuilder().groupId(GROUP)
+                .artifactId(ARTIFACT).version(VERSION).goal(GOAL)
                 .session(session).properties(properties)
                 .createInvocationRequest();
-
-        Invoker invoker = new DefaultInvoker();
-        try {
-            InvocationResult result = invoker.execute(request);
-            if (result.getExitCode() != 0) {
-                throw new MojoFailureException("Maven SBOM generation failed.",
-                        result.getExecutionException());
-            }
-        } catch (MavenInvocationException e) {
-            throw new MojoExecutionException(
-                    "Error during Maven SBOM generation", e);
-        }
     }
 
 }

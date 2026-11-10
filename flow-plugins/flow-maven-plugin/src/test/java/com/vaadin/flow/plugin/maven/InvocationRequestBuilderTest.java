@@ -65,56 +65,70 @@ class InvocationRequestBuilderTest {
     void createInvocationRequest_inheritsSessionConfiguration()
             throws IOException {
         File localRepository = tempDir.resolve("repository").toFile();
-        File userSettings = Files.createFile(tempDir.resolve("settings.xml"))
-                .toFile();
-        File toolchains = Files.createFile(tempDir.resolve("toolchains.xml"))
-                .toFile();
+        File userSettings = createFile("settings.xml");
+        File globalSettings = createFile("global-settings.xml");
+        File globalToolchains = createFile("global-toolchains.xml");
         MavenExecutionRequest executionRequest = new DefaultMavenExecutionRequest()
                 .setOffline(true).setInteractiveMode(false)
                 .setLocalRepositoryPath(localRepository)
                 .setUserSettingsFile(userSettings)
-                .setGlobalSettingsFile(
-                        tempDir.resolve("missing-settings.xml").toFile())
-                .setUserToolchainsFile(toolchains)
+                .setGlobalSettingsFile(globalSettings)
+                .setUserToolchainsFile(
+                        tempDir.resolve("missing-toolchains.xml").toFile())
+                .setGlobalToolchainsFile(globalToolchains)
                 .setActiveProfiles(List.of("active"))
                 .setInactiveProfiles(List.of("inactive"));
         Properties userProperties = new Properties();
         userProperties.setProperty("user.only", "user");
         userProperties.setProperty("overridden", "user");
-        MavenSession session = mock(MavenSession.class);
-        when(session.getRequest()).thenReturn(executionRequest);
-        when(session.getUserProperties()).thenReturn(userProperties);
         Properties properties = new Properties();
         properties.setProperty("overridden", "mojo");
 
         InvocationRequest request = new InvocationRequestBuilder()
                 .groupId(groupId).artifactId(artifactId).version(version)
-                .goal(goal).session(session).properties(properties)
-                .createInvocationRequest();
+                .goal(goal).session(session(executionRequest, userProperties))
+                .properties(properties).createInvocationRequest();
 
         assertTrue(request.isOffline());
         assertTrue(request.isBatchMode());
         assertEquals(localRepository,
                 request.getLocalRepositoryDirectory(null));
         assertEquals(userSettings, request.getUserSettingsFile());
-        assertNull(request.getGlobalSettingsFile());
-        assertEquals(toolchains, request.getToolchainsFile());
+        assertEquals(globalSettings, request.getGlobalSettingsFile());
+        assertNull(request.getToolchainsFile());
+        assertEquals(globalToolchains, request.getGlobalToolchainsFile());
         assertEquals(List.of("active", "!inactive"), request.getProfiles());
         assertEquals("user", request.getProperties().getProperty("user.only"));
         assertEquals("mojo", request.getProperties().getProperty("overridden"));
     }
 
     @Test
-    void createInvocationRequest_withoutSession_usesGivenProperties() {
-        Properties properties = new Properties();
-        properties.setProperty("key", "value");
+    void createInvocationRequest_onlineInteractiveSession_inheritsUserProperties() {
+        MavenExecutionRequest executionRequest = new DefaultMavenExecutionRequest()
+                .setOffline(false).setInteractiveMode(true);
+        Properties userProperties = new Properties();
+        userProperties.setProperty("key", "value");
 
         InvocationRequest request = new InvocationRequestBuilder()
                 .groupId(groupId).artifactId(artifactId).version(version)
-                .goal(goal).properties(properties).createInvocationRequest();
+                .goal(goal).session(session(executionRequest, userProperties))
+                .createInvocationRequest();
 
         assertFalse(request.isOffline());
-        assertEquals(properties, request.getProperties());
+        assertFalse(request.isBatchMode());
+        assertEquals(userProperties, request.getProperties());
+    }
+
+    static MavenSession session(MavenExecutionRequest executionRequest,
+            Properties userProperties) {
+        MavenSession session = mock(MavenSession.class);
+        when(session.getRequest()).thenReturn(executionRequest);
+        when(session.getUserProperties()).thenReturn(userProperties);
+        return session;
+    }
+
+    private File createFile(String name) throws IOException {
+        return Files.createFile(tempDir.resolve(name)).toFile();
     }
 
 }
