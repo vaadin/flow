@@ -31,24 +31,27 @@ jobs:
     # repository. The pre-filter allows CONTRIBUTOR because on pull_request
     # events the author_association of a private org member is reported as
     # CONTRIBUTOR; the permission API call in the job is what actually
-    # confirms access.
+    # confirms access. The whole job only runs in vaadin/flow, so a copy of
+    # this repository that has the organization secrets does not start reviews
+    # of its own.
     if: |
-      (github.event_name == 'issue_comment' &&
-       github.event.issue.pull_request &&
-       github.event.comment.body == '/code-review' &&
-       contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)) ||
-      (github.event_name == 'pull_request' &&
-       !github.event.pull_request.head.repo.fork &&
-       github.event.action == 'review_requested' &&
-       github.event.requested_reviewer.login == 'vaadin-review-bot') ||
-      (github.event_name == 'pull_request' &&
-       !github.event.pull_request.head.repo.fork &&
-       contains(fromJSON('["opened", "ready_for_review"]'), github.event.action) &&
-       github.event.pull_request.draft == false &&
-       !contains(fromJSON('["dependabot[bot]", "vaadin-bot"]'), github.event.pull_request.user.login) &&
-       contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR", "CONTRIBUTOR"]'), github.event.pull_request.author_association) &&
-       !startsWith(github.event.pull_request.title, 'chore:') &&
-       !startsWith(github.event.pull_request.title, 'chore('))
+      github.repository == 'vaadin/flow' &&
+      ((github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request &&
+        github.event.comment.body == '/code-review' &&
+        contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)) ||
+       (github.event_name == 'pull_request' &&
+        !github.event.pull_request.head.repo.fork &&
+        github.event.action == 'review_requested' &&
+        github.event.requested_reviewer.login == 'vaadin-review-bot') ||
+       (github.event_name == 'pull_request' &&
+        !github.event.pull_request.head.repo.fork &&
+        contains(fromJSON('["opened", "ready_for_review"]'), github.event.action) &&
+        github.event.pull_request.draft == false &&
+        !contains(fromJSON('["dependabot[bot]", "vaadin-bot"]'), github.event.pull_request.user.login) &&
+        contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR", "CONTRIBUTOR"]'), github.event.pull_request.author_association) &&
+        !startsWith(github.event.pull_request.title, 'chore:') &&
+        !startsWith(github.event.pull_request.title, 'chore(')))
     runs-on: ubuntu-26.04
     permissions:
       contents: read
@@ -114,10 +117,10 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '26.12.1'
+          node-version: '26.13.0'
 
       - name: Run code review
-        uses: vaadin/github-actions/code-review@59a2b266652f9b0d68afcaa4775022da99b6d07c # main
+        uses: vaadin/github-actions/code-review@5e91962ee15f7602a7366238d92375429afaa0d1 # main
         with:
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           pr-number: ${{ env.PR_NUMBER }}

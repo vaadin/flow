@@ -17,7 +17,9 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -33,7 +35,9 @@ import org.apache.maven.shared.invoker.MavenInvocationException;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.server.frontend.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -48,6 +52,9 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
     private static final String ARTIFACT = "exec-maven-plugin";
     private static final String VERSION = "3.6.2";
     private static final String GOAL = "exec";
+    // npx would otherwise run the latest release: 7.0.0 no longer brings what
+    // --validate needs and fails with "cannot validate BOM"
+    static final String CYCLONEDX_NPM = "@cyclonedx/cyclonedx-npm@6.0.1";
 
     /**
      * Whether to ignore errors of NPM. This might be used, if "npm install" was
@@ -145,18 +152,24 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
                 .artifactId(ARTIFACT).version(VERSION).goal(GOAL)
                 .createInvocationRequest();
 
-        var properties = getProperties();
-        request.setProperties(properties);
-
         Invoker invoker = new DefaultInvoker();
         try {
+            // Use the same Node.js and npm as the rest of the frontend build,
+            // not whatever happens to be first on the PATH. The CycloneDX tool
+            // reads the dependency tree with npm, whichever package manager
+            // installed it.
+            FrontendTools tools = new FrontendTools(
+                    BuildFrontendUtil.getFrontendToolsSettings(this));
+            request.setProperties(getProperties(tools.getNpxExecutable()));
+            addNodeToPath(request, tools.getNodeExecutable());
+
             // the execution will fail if the directory does not exist
             createDirectoryIfNotExists();
 
             // node_modules dir is required
             File nodeModulesDir = new File(this.npmFolder(), "/node_modules");
             if (!nodeModulesDir.exists()) {
-                logInfo("No node_modules directory found. Running npm install.");
+                logInfo("No node_modules directory found. Installing frontend dependencies.");
                 ClassFinder classFinder = getClassFinder();
                 Lookup lookup = createLookup(classFinder);
                 File jarFrontendResourcesFolder = new File(
@@ -173,6 +186,12 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
                         .withFrontendGeneratedFolder(generatedTsFolder())
                         .withNodeVersion(nodeVersion())
                         .withNodeDownloadRoot(nodeDownloadRoot())
+                        // Install with the project's package manager, so that
+                        // node_modules, and thus the SBOM, follows the
+                        // project's lock file. npm would resolve the versions
+                        // anew and remove pnpm-lock.yaml.
+                        .withEnablePnpm(pnpmEnable()).withEnableBun(bunEnable())
+                        .useGlobalPnpm(useGlobalPnpm())
                         .withHomeNodeExecRequired(requireHomeNodeExec())
                         .setJavaResourceFolder(javaResourceFolder())
                         .withProductionMode(productionMode)
@@ -199,10 +218,37 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
         }
     }
 
-    private Properties getProperties() {
+    /**
+     * Puts the directory of the given Node.js executable first on the PATH, so
+     * that the CycloneDX tool, which starts with {@code #!/usr/bin/env node},
+     * runs on the same Node.js as npm.
+     */
+    static void addNodeToPath(InvocationRequest request,
+            String nodeExecutable) {
+        String nodeDir = new File(nodeExecutable).getParent();
+        // The variable is named "Path" on Windows
+        String pathKey = System.getenv().keySet().stream()
+                .filter("PATH"::equalsIgnoreCase).findFirst().orElse("PATH");
+        String path = System.getenv(pathKey);
+        request.addShellEnvironment(pathKey,
+                path == null ? nodeDir : (nodeDir + File.pathSeparator + path));
+    }
+
+    // The npx command can contain paths with spaces, e.g. the user home.
+    // Quotes inside a path are not escaped, as the paths come from the
+    // resolved Node.js installation.
+    private static String quote(String arg) {
+        return arg.contains(" ") ? ("\"" + arg + "\"") : arg;
+    }
+
+    Properties getProperties(List<String> npxCommand) {
         Properties properties = new Properties();
-        properties.setProperty("exec.executable", "npx");
-        properties.setProperty("exec.args", "@cyclonedx/cyclonedx-npm"
+        properties.setProperty("exec.executable", npxCommand.get(0));
+        String npxArgs = npxCommand.stream().skip(1)
+                .map(GenerateNpmBOMMojo::quote)
+                .collect(Collectors.joining(" "));
+        properties.setProperty("exec.args", npxArgs
+                + (npxArgs.isEmpty() ? "" : " ") + "--yes " + CYCLONEDX_NPM
                 + (ignoreNpmErrors ? " --ignore-npm-errors" : "")
                 + (packageLockOnly ? " --package-lock-only" : "")
                 + (flattenComponents ? " --flatten-components" : "")
