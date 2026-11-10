@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class WebPushMessageBuilderTest {
+class WebPushMessageTest {
 
     @Tag("div")
     private static class DeviceView extends Component {
@@ -54,9 +54,8 @@ class WebPushMessageBuilderTest {
     @Test
     void build_optionsSet_optionsInMessage() {
         WebPushMessage message = WebPushMessage.builder("Sauna is ready")
-                .withBody("80 °C").withIcon("icons/sauna.png")
-                .withTag("device-SAUN").withRenotify(true)
-                .withUrl("device/SAUN").build();
+                .body("80 °C").icon("icons/sauna.png").tag("device-SAUN")
+                .renotify(true).url("device/SAUN").build();
 
         assertEquals(JacksonUtils.readTree("""
                 {
@@ -84,8 +83,8 @@ class WebPushMessageBuilderTest {
 
     @Test
     void build_renotifyWithoutTag_throws() {
-        WebPushMessageBuilder builder = WebPushMessage.builder("Sauna is ready")
-                .withRenotify(true);
+        WebPushMessage.Builder builder = WebPushMessage
+                .builder("Sauna is ready").renotify(true);
 
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class, builder::build);
@@ -94,7 +93,7 @@ class WebPushMessageBuilderTest {
     }
 
     @Test
-    void withRoute_routeParameters_urlOfRouteInMessage() {
+    void route_routeParameters_urlOfRouteInMessage() {
         DeploymentConfiguration configuration = mock(
                 DeploymentConfiguration.class);
         VaadinService service = mock(VaadinService.class);
@@ -105,7 +104,7 @@ class WebPushMessageBuilderTest {
                 DeviceView.class);
 
         WebPushMessage message = WebPushMessage.builder("Sauna is ready")
-                .withRoute(DeviceView.class, new RouteParameters("id", "SAUN"))
+                .route(DeviceView.class, new RouteParameters("id", "SAUN"))
                 .build();
 
         assertEquals("device/SAUN",
