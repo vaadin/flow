@@ -20,10 +20,9 @@ import java.util.concurrent.CompletableFuture;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 
-import com.vaadin.flow.component.internal.DeadlockDetectingCompletableFuture;
+import com.vaadin.flow.component.internal.TypedJavaScriptResultUtil;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonCodec;
-import com.vaadin.flow.server.VaadinSession;
 
 /**
  * A pending result from a JavaScript snippet sent to the browser for
@@ -46,8 +45,11 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
 
     /**
      * Exception used when a {@link CompletableFuture} returned from
-     * {@link PendingJavaScriptResult} is completed exceptionally because of a
-     * client-side error.
+     * {@link PendingJavaScriptResult} or another {@link JavaScriptResult} is
+     * completed exceptionally because of a client-side error, or because the
+     * result can not be converted to the requested type. In the latter case,
+     * the cause is the {@link IllegalArgumentException} describing the
+     * conversion failure.
      */
     public class JavaScriptException extends RuntimeException {
         /**
@@ -84,9 +86,9 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
 
     /**
      * Adds a typed handler that will be run for a successful execution and a
-     * handler that will be run for a failed execution. One of the handlers will
-     * be invoked asynchronously when the result of the execution is sent back
-     * to the server.
+     * handler that will be run for a failed execution or a return value that
+     * can not be converted. One of the handlers will be invoked asynchronously
+     * when the result of the execution is sent back to the server.
      * <p>
      * The JavaScript return value will be automatically converted to the
      * specified target type. All types supported by Jackson for JSON
@@ -104,8 +106,10 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
      *            a handler for the return value from a successful execution,
      *            not <code>null</code>
      * @param errorHandler
-     *            a handler for an error message in case the execution failed,
-     *            or <code>null</code> to ignore errors
+     *            a handler for an error message in case the execution failed or
+     *            its return value can not be converted, or <code>null</code> to
+     *            ignore failed executions. Without an error handler, a return
+     *            value that can not be converted is logged as a warning
      */
     default <T> void then(Class<T> targetType,
             SerializableConsumer<T> resultHandler,
@@ -117,16 +121,16 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
             throw new IllegalArgumentException("Result handler cannot be null");
         }
 
-        SerializableConsumer<JsonNode> convertingResultHandler = value -> resultHandler
-                .accept(JacksonCodec.decodeAs(value, targetType));
-
-        then(convertingResultHandler, errorHandler);
+        TypedJavaScriptResultUtil.then(this,
+                value -> JacksonCodec.decodeAs(value, targetType),
+                resultHandler, errorHandler);
     }
 
     /**
      * Adds a typed handler that will be run for a successful execution. The
      * handler will be invoked asynchronously if the execution was successful.
-     * In case of a failure, no handler will be run.
+     * In case the execution fails, no handler will be run. A return value that
+     * can not be converted is logged as a warning, and no handler will be run.
      * <p>
      * The JavaScript return value will be automatically converted to the
      * specified target type. All types supported by Jackson for JSON
@@ -161,6 +165,10 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
      * specified target type. All types supported by Jackson for JSON
      * deserialization are supported, including custom bean classes.
      * <p>
+     * If the execution fails, or its return value can not be converted to the
+     * target type, the future is completed exceptionally with a
+     * {@link JavaScriptException}.
+     * <p>
      * A completable future can only be created before the execution has been
      * sent to the browser.
      *
@@ -178,36 +186,15 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
             throw new IllegalArgumentException("Target type cannot be null");
         }
 
-        /*
-         * Assuming that subscription is only done for the currently locked
-         * session. This is quite safe since you cannot subscribe any more after
-         * the request has been sent to the client.
-         *
-         * This is the only way of catching the potentially common case of
-         * blocking on a pending result for an element that hasn't yet even been
-         * attached to a session.
-         */
-        VaadinSession session = VaadinSession.getCurrent();
-
-        CompletableFuture<T> completableFuture = new DeadlockDetectingCompletableFuture<>(
-                session);
-
-        then(value -> {
-            T convertedValue = JacksonCodec.decodeAs(value, targetType);
-            completableFuture.complete(convertedValue);
-        }, errorValue -> {
-            JavaScriptException exception = new JavaScriptException(errorValue);
-            completableFuture.completeExceptionally(exception);
-        });
-
-        return completableFuture;
+        return TypedJavaScriptResultUtil.toCompletableFuture(this,
+                value -> JacksonCodec.decodeAs(value, targetType));
     }
 
     /**
      * Adds a typed handler that will be run for a successful execution and a
-     * handler that will be run for a failed execution. One of the handlers will
-     * be invoked asynchronously when the result of the execution is sent back
-     * to the server.
+     * handler that will be run for a failed execution or a return value that
+     * can not be converted. One of the handlers will be invoked asynchronously
+     * when the result of the execution is sent back to the server.
      * <p>
      * The JavaScript return value will be automatically converted to the type
      * specified by the {@link TypeReference}. This method supports generic
@@ -233,8 +220,10 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
      *            a handler for the return value from a successful execution,
      *            not <code>null</code>
      * @param errorHandler
-     *            a handler for an error message in case the execution failed,
-     *            or <code>null</code> to ignore errors
+     *            a handler for an error message in case the execution failed or
+     *            its return value can not be converted, or <code>null</code> to
+     *            ignore failed executions. Without an error handler, a return
+     *            value that can not be converted is logged as a warning
      * @since 25.0
      */
     default <T> void then(TypeReference<T> typeReference,
@@ -247,16 +236,16 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
             throw new IllegalArgumentException("Result handler cannot be null");
         }
 
-        SerializableConsumer<JsonNode> convertingResultHandler = value -> resultHandler
-                .accept(JacksonCodec.decodeAs(value, typeReference));
-
-        then(convertingResultHandler, errorHandler);
+        TypedJavaScriptResultUtil.then(this,
+                value -> JacksonCodec.decodeAs(value, typeReference),
+                resultHandler, errorHandler);
     }
 
     /**
      * Adds a typed handler that will be run for a successful execution. The
      * handler will be invoked asynchronously if the execution was successful.
-     * In case of a failure, no handler will be run.
+     * In case the execution fails, no handler will be run. A return value that
+     * can not be converted is logged as a warning, and no handler will be run.
      * <p>
      * The JavaScript return value will be automatically converted to the type
      * specified by the {@link TypeReference}. This method supports generic
@@ -289,6 +278,10 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
      * specified by the {@link TypeReference}. This method supports generic
      * types such as {@code List<MyBean>} and {@code Map<String, MyBean>}.
      * <p>
+     * If the execution fails, or its return value can not be converted to the
+     * target type, the future is completed exceptionally with a
+     * {@link JavaScriptException}.
+     * <p>
      * A completable future can only be created before the execution has been
      * sent to the browser.
      *
@@ -307,20 +300,8 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
             throw new IllegalArgumentException("Type reference cannot be null");
         }
 
-        VaadinSession session = VaadinSession.getCurrent();
-
-        CompletableFuture<T> completableFuture = new DeadlockDetectingCompletableFuture<>(
-                session);
-
-        then(value -> {
-            T convertedValue = JacksonCodec.decodeAs(value, typeReference);
-            completableFuture.complete(convertedValue);
-        }, errorValue -> {
-            JavaScriptException exception = new JavaScriptException(errorValue);
-            completableFuture.completeExceptionally(exception);
-        });
-
-        return completableFuture;
+        return TypedJavaScriptResultUtil.toCompletableFuture(this,
+                value -> JacksonCodec.decodeAs(value, typeReference));
     }
 
     /**

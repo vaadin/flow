@@ -264,7 +264,9 @@ public class JacksonCodec {
      *            the type to decode as
      * @return the value decoded as the given type
      * @throws IllegalArgumentException
-     *             if the type was unsupported or deserialization failed
+     *             if the type was unsupported or deserialization failed, or if
+     *             the type is a JSON node type that the value is not, such as
+     *             an object node for an array
      */
     public static <T> T decodeAs(JsonNode json, Class<T> type) {
         assert json != null;
@@ -272,6 +274,10 @@ public class JacksonCodec {
             return null;
         }
         if (JsonNode.class.isAssignableFrom(type)) {
+            if (!type.isInstance(json)) {
+                throw new IllegalArgumentException("Cannot decode JSON of type "
+                        + json.getNodeType() + " as " + type.getName());
+            }
             return type.cast(json);
         } else {
             // Use Jackson for all deserialization - it handles primitives,

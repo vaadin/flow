@@ -31,7 +31,14 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.MockedStatic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
@@ -52,6 +59,12 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
 
 class PendingJavaScriptInvocationTest {
     private static final JsonNode fooJsonString = JacksonUtils
@@ -537,6 +550,91 @@ class PendingJavaScriptInvocationTest {
                 () -> invocation.complete(fooJsonString));
 
         assertSame(original, exception);
+    }
+
+    @ParameterizedTest
+    @ValueSource(classes = { Integer.class, ObjectNode.class })
+    void typedFuture_conversionFails_completesExceptionally(
+            Class<?> targetType) {
+        CompletableFuture<?> future = invocation
+                .toCompletableFuture(targetType);
+
+        invocation.complete(fooJsonString);
+
+        assertConversionFailure(future);
+    }
+
+    @Test
+    void typeReferenceFuture_conversionFails_completesExceptionally() {
+        CompletableFuture<List<Integer>> future = invocation
+                .toCompletableFuture(new TypeReference<List<Integer>>() {
+                });
+
+        invocation.complete(fooJsonString);
+
+        assertConversionFailure(future);
+    }
+
+    @Test
+    void typedCaptureErrors_conversionFails_errorHandlerCalled() {
+        SingleCaptureConsumer<Integer> classHandler = new SingleCaptureConsumer<>();
+        SingleCaptureConsumer<String> extraErrorHandler = new SingleCaptureConsumer<>();
+        invocation.then(Integer.class, classHandler, errorConsumer);
+        invocation.then(new TypeReference<Integer>() {
+        }, value -> fail("Should not be called"), extraErrorHandler);
+
+        invocation.complete(fooJsonString);
+
+        assertFalse(classHandler.isCaptured());
+        assertTrue(errorConsumer.getCapturedValue().contains("Integer"),
+                errorConsumer.getCapturedValue());
+        assertTrue(extraErrorHandler.getCapturedValue().contains("Integer"),
+                extraErrorHandler.getCapturedValue());
+    }
+
+    @Test
+    void typedIgnoreErrors_conversionFails_warningLoggedAndLaterHandlersRun() {
+        Logger logger = mock(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class, CALLS_REAL_METHODS)) {
+            loggerFactory
+                    .when(() -> LoggerFactory
+                            .getLogger(TypedJavaScriptResultUtil.class))
+                    .thenReturn(logger);
+            invocation.then(Integer.class,
+                    value -> fail("Should not be called"));
+            invocation.then(jsonSuccessConsumer, errorConsumer);
+
+            invocation.complete(fooJsonString);
+        }
+
+        assertJsonSuccess();
+        verify(logger).warn(anyString(), any(IllegalArgumentException.class));
+    }
+
+    private static void assertConversionFailure(CompletableFuture<?> future) {
+        assertTrue(future.isCompletedExceptionally());
+        CompletionException exception = assertThrows(CompletionException.class,
+                future::join);
+        JavaScriptException javaScriptException = assertInstanceOf(
+                JavaScriptException.class, exception.getCause());
+        assertInstanceOf(IllegalArgumentException.class,
+                javaScriptException.getCause());
+    }
+
+    @Test
+    void typedSuccessHandlerThrowsIllegalArgument_rethrownNotRoutedToErrorHandler() {
+        IllegalArgumentException original = new IllegalArgumentException();
+        invocation.then(String.class, value -> {
+            throw original;
+        }, errorConsumer);
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> invocation.complete(fooJsonString));
+
+        assertSame(original, exception);
+        assertNoErrorValue();
     }
 
     private void assertStringSuccess() {
