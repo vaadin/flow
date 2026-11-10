@@ -64,7 +64,7 @@ class HotswapAgentJarTest {
         System.setProperty(HotswapAgentJar.OVERRIDE_PROPERTY, own.toString());
 
         // No checksum on an override: the point of it is a jar the developer
-        // vouches for, which is not required to be the pinned release asset.
+        // vouches for, which is not required to be the pinned artifact.
         assertEquals(own, HotswapAgentJar.provision(progress::add));
         assertTrue(progress.isEmpty(),
                 "nothing was downloaded, so nothing should be reported");

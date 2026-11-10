@@ -115,6 +115,7 @@ public final class FrontendDependencyUrlResolver implements Serializable {
      * @param value
      *            the raw annotation value
      * @return {@code true} if the value is a runtime URL
+     * @since 25.4
      */
     public static boolean isRuntimeDependencyUrl(String value) {
         if (value == null || value.isBlank()) {
@@ -136,6 +137,7 @@ public final class FrontendDependencyUrlResolver implements Serializable {
      * @param javaScript
      *            the annotation to check, not {@code null}
      * @return {@code true} if the value is loaded at runtime
+     * @since 25.4
      */
     public static boolean isRuntimeJavaScript(JavaScript javaScript) {
         return javaScript.type() == JavaScript.Type.MODULE
@@ -155,6 +157,7 @@ public final class FrontendDependencyUrlResolver implements Serializable {
      * @param value
      *            the raw annotation value
      * @return the normalized value, or {@code null} if the value was rejected
+     * @since 25.4
      */
     public static String resolveRuntimeJavaScript(String value) {
         if (UrlUtil.isExternal(value)) {

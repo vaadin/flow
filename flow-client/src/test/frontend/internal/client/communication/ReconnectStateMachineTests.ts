@@ -2,14 +2,14 @@
 // it is a TypeScript-only split of DefaultConnectionStateHandler, whose Gwt cases drive the handler — so every case here is beyond the Java suite.
 import { testRegistry } from '../testRegistry';
 import { expect } from '@open-wc/testing';
-import { ConnectionState, ConnectionStateStore } from '@vaadin/common-frontend';
+import { ConnectionState, ConnectionStateStore } from '../../../../../main/frontend/ConnectionState';
 import { getState } from '../../../../../main/frontend/internal/client/ConnectionIndicator';
 import { LoadingIndicatorStateHandler } from '../../../../../main/frontend/internal/client/communication/LoadingIndicatorStateHandler';
 import { ConnectionMessageType } from '../../../../../main/frontend/internal/client/communication/ConnectionMessageType';
 import { ReconnectStateMachine } from '../../../../../main/frontend/internal/client/communication/ReconnectStateMachine';
 
 function makeRegistry(reconnectAttempts = 3) {
-  const log = { endRequests: 0, restoreLoadings: 0, heartbeatIntervals: [] as number[] };
+  const log = { endRequests: 0, restoreLoadings: 0, heartbeatIntervals: [] as number[], discards: 0 };
   let activeRequest = true;
   return {
     log,
@@ -21,7 +21,8 @@ function makeRegistry(reconnectAttempts = 3) {
       ReconnectConfiguration: { getReconnectAttempts: () => reconnectAttempts },
       RequestResponseTracker: { hasActiveRequest: () => activeRequest, endRequest: () => log.endRequests++ },
       LoadingIndicatorStateHandler: { restoreLoading: () => log.restoreLoadings++ },
-      Heartbeat: { setInterval: (i: number) => log.heartbeatIntervals.push(i) }
+      Heartbeat: { setInterval: (i: number) => log.heartbeatIntervals.push(i) },
+      MessageSender: { discardSentRequests: () => log.discards++ }
     })
   };
 }
@@ -67,6 +68,8 @@ describe('ReconnectStateMachine', () => {
     expect(scheduled).to.have.length(1);
     expect(registry.log.heartbeatIntervals).to.deep.equal([0]); // heartbeats paused (resumable)
     expect(registry.log.endRequests).to.equal(1);
+    // The requests sent but not confirmed end as discarded.
+    expect(registry.log.discards).to.equal(1);
   });
 
   it('resolves a temporary error only for the active cause', () => {
@@ -120,7 +123,8 @@ describe('ReconnectStateMachine', () => {
         UILifecycle: { isRunning: () => true },
         ReconnectConfiguration: { getReconnectAttempts: () => 5 },
         RequestResponseTracker: { hasActiveRequest: () => activeRequest, endRequest: () => {} },
-        Heartbeat: { setInterval: () => {} }
+        Heartbeat: { setInterval: () => {} },
+        MessageSender: { discardSentRequests: () => {} }
       });
       const loadingIndicatorStateHandler = new LoadingIndicatorStateHandler(registry);
       registry.register('LoadingIndicatorStateHandler', loadingIndicatorStateHandler);

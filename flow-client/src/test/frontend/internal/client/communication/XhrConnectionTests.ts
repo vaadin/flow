@@ -5,12 +5,15 @@ import {
   XhrConnection,
   XhrResponseHandler
 } from '../../../../../main/frontend/internal/client/communication/XhrConnection';
+import { VaadinServerMessage } from '../../../../../main/frontend/internal/client/communication/VaadinServerMessage';
 
 function makeRegistry() {
   const calls: string[] = [];
-  let handled: unknown = undefined;
+  const message = new VaadinServerMessage();
+  let handled: unknown[] = [];
   const registry: any = {
     calls,
+    message,
     getHandled: () => handled,
     getConnectionStateHandler: () => ({
       xhrInvalidStatusCode: () => calls.push('invalidStatus'),
@@ -19,8 +22,12 @@ function makeRegistry() {
       xhrOk: () => calls.push('ok')
     }),
     getMessageHandler: () => ({
-      handleMessage: (json: unknown) => {
-        handled = json;
+      announceMessage: () => {
+        calls.push('announced');
+        return message;
+      },
+      handleMessage: (...args: unknown[]) => {
+        handled = args;
         calls.push('handled');
       }
     }),
@@ -39,10 +46,16 @@ describe('XhrConnection', () => {
     it('routes a valid 200 response to the message handler', () => {
       const registry = makeRegistry();
       const handler = new XhrResponseHandler(registry);
-      handler.setPayload({ rpc: [] });
+      const payload = { rpc: [] };
+      handler.setPayload(payload);
       handler.onSuccess({ responseText: '{"syncId":3}' } as any);
-      expect(registry.calls).to.deep.equal(['ok', 'handled']);
-      expect(registry.getHandled()).to.deep.equal({ syncId: 3 });
+      // The message is announced before parsing, and handed on with the payload
+      // the response replies to.
+      expect(registry.calls).to.deep.equal(['announced', 'ok', 'handled']);
+      const [json, message, repliedTo] = registry.getHandled();
+      expect(json).to.deep.equal({ syncId: 3 });
+      expect(message).to.equal(registry.message);
+      expect(repliedTo).to.equal(payload);
     });
 
     it('reports invalid content when the response is not JSON', () => {
@@ -50,7 +63,8 @@ describe('XhrConnection', () => {
       const handler = new XhrResponseHandler(registry);
       handler.setPayload({ rpc: [] });
       handler.onSuccess({ responseText: 'not json' } as any);
-      expect(registry.calls).to.deep.equal(['invalidContent']);
+      expect(registry.calls).to.deep.equal(['announced', 'invalidContent']);
+      expect(registry.message.outcome).to.equal('discarded');
     });
 
     it('routes an invalid status code (no exception) to xhrInvalidStatusCode', () => {

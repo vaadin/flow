@@ -39,6 +39,10 @@
     <plugins>
       <plugin>
         <groupId>com.vaadin</groupId>
+        <artifactId>flow-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.vaadin</groupId>
         <artifactId>flow-dev-bundle-plugin</artifactId>
         <version>${project.version}</version>
         <executions>
@@ -48,6 +52,15 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <vaadin.test.devBundle>true</vaadin.test.devBundle>
+          </systemPropertyVariables>
+        </configuration>
       </plugin>
       <!-- This module is mapped to default web context -->
       <plugin>

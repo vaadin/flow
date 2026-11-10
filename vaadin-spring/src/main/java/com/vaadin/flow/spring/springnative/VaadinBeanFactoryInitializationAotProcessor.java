@@ -17,6 +17,7 @@ package com.vaadin.flow.spring.springnative;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -41,6 +42,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
@@ -50,6 +52,7 @@ import com.vaadin.flow.component.ComponentEventBusUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.ReflectTools;
@@ -227,7 +230,7 @@ public class VaadinBeanFactoryInitializationAotProcessor
                 while (type.isArray()) {
                     type = type.getComponentType();
                 }
-                if (isDecodedEventDataType(type)) {
+                if (isDecodedThroughReflection(type)) {
                     types.add(type);
                 }
             }
@@ -236,11 +239,11 @@ public class VaadinBeanFactoryInitializationAotProcessor
     }
 
     /**
-     * Checks whether Jackson decodes event data of the given type through
-     * reflection. Components and elements are looked up from the state tree
-     * instead, and JDK and Jackson types need no hints.
+     * Checks whether Jackson decodes event data or a JavaScript result of the
+     * given type through reflection. Components and elements are looked up from
+     * the state tree instead, and JDK and Jackson types need no hints.
      */
-    private static boolean isDecodedEventDataType(Class<?> type) {
+    private static boolean isDecodedThroughReflection(Class<?> type) {
         if (type.isPrimitive() || Component.class.isAssignableFrom(type)
                 || type == Element.class) {
             return false;
@@ -363,13 +366,65 @@ public class VaadinBeanFactoryInitializationAotProcessor
      * Registers what a JavaScript definition needs at runtime: the dynamic
      * proxy Flow creates for the interface, which a native image only builds
      * for a proxy that is known at build time, and reflection on the interface
-     * itself, which is how the annotations it is validated against are read.
+     * and the interfaces it extends, which is how the annotations it is
+     * validated against and the generic return types of its methods are read.
+     * The types that its typed results are converted to are registered for
+     * Jackson.
      */
     private void registerJsDefinition(RuntimeHints hints,
             Class<?> definitionType) {
         hints.proxies().registerJdkProxy(definitionType);
-        hints.reflection().registerType(definitionType,
+        registerInterfaceHierarchy(hints, definitionType);
+        Set<Class<?>> resultTypes = getJsResultTypes(definitionType);
+        if (!resultTypes.isEmpty()) {
+            new BindingReflectionHintsRegistrar().registerReflectionHints(
+                    hints.reflection(), resultTypes.toArray(new Class[0]));
+        }
+    }
+
+    private static void registerInterfaceHierarchy(RuntimeHints hints,
+            Class<?> type) {
+        hints.reflection().registerType(type,
                 MemberCategory.INVOKE_PUBLIC_METHODS);
+        for (Class<?> superInterface : type.getInterfaces()) {
+            registerInterfaceHierarchy(hints, superInterface);
+        }
+    }
+
+    private static Set<Class<?>> getJsResultTypes(Class<?> definitionType) {
+        Set<Class<?>> types = new HashSet<>();
+        for (Method method : definitionType.getMethods()) {
+            if (method.getReturnType() == JavaScriptResult.class) {
+                collectDecodedTypes(ResolvableType
+                        .forMethodReturnType(method, definitionType)
+                        .getGeneric(0), types);
+            }
+        }
+        return types;
+    }
+
+    /**
+     * Collects the classes in a type that Jackson decodes through reflection,
+     * including the type arguments and array components within it, such as
+     * {@code Person} in {@code List<Person>}.
+     */
+    private static void collectDecodedTypes(ResolvableType type,
+            Set<Class<?>> types) {
+        if (type.isArray()) {
+            collectDecodedTypes(type.getComponentType(), types);
+            return;
+        }
+        Class<?> resolved = type.resolve();
+        if (resolved == null) {
+            // Not bound to a type, which the definition check refuses
+            return;
+        }
+        if (isDecodedThroughReflection(resolved)) {
+            types.add(resolved);
+        }
+        for (ResolvableType generic : type.getGenerics()) {
+            collectDecodedTypes(generic, types);
+        }
     }
 
     private void registerResources(RuntimeHints hints, Class<?> c) {
