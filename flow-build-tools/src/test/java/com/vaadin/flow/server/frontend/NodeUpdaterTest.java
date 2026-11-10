@@ -26,14 +26,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -51,12 +49,24 @@ import com.vaadin.tests.util.MockOptions;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 class NodeUpdaterTest {
 
@@ -77,12 +87,12 @@ class NodeUpdaterTest {
     void setUp() throws IOException {
         npmFolder = Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
                 .toFile();
-        FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
-        finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
+        FeatureFlags featureFlags = mock(FeatureFlags.class);
+        finder = spy(new ClassFinder.DefaultClassFinder(
                 this.getClass().getClassLoader()));
         options = new MockOptions(finder, npmFolder).withBuildDirectory(TARGET)
                 .withFeatureFlags(featureFlags).withFrontendDependenciesScanner(
-                        Mockito.mock(FrontendDependencies.class));
+                        mock(FrontendDependencies.class));
 
         nodeUpdater = new NodeUpdater(options) {
 
@@ -127,7 +137,6 @@ class NodeUpdaterTest {
         Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
         Set<String> expectedDependencies = new HashSet<>();
         expectedDependencies.add("@polymer/polymer");
-        expectedDependencies.add("@vaadin/common-frontend");
         expectedDependencies.add("lit");
         expectedDependencies.add("react");
         expectedDependencies.add("react-dom");
@@ -142,7 +151,6 @@ class NodeUpdaterTest {
     void getDefaultDependencies_includesAllDependencies() {
         Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
         Set<String> expectedDependencies = new HashSet<>();
-        expectedDependencies.add("@vaadin/common-frontend");
         expectedDependencies.add("lit");
         expectedDependencies.add("react");
         expectedDependencies.add("react-dom");
@@ -163,8 +171,6 @@ class NodeUpdaterTest {
         expectedDependencies.add("vite");
         expectedDependencies.add("@vitejs/plugin-react");
         expectedDependencies.add("rollup-plugin-brotli");
-        expectedDependencies.add("@rollup/plugin-replace");
-        expectedDependencies.add("@rollup/pluginutils");
         expectedDependencies.add("rollup-plugin-visualizer");
         expectedDependencies.add("vite-plugin-checker");
         // Note: workbox-build is now only included when PWA offline is enabled
@@ -174,11 +180,13 @@ class NodeUpdaterTest {
         expectedDependencies.add("@babel/types");
         expectedDependencies
                 .add("@babel/plugin-transform-react-jsx-development");
-        expectedDependencies.add("@babel/preset-react");
         expectedDependencies.add("@rolldown/plugin-babel");
         expectedDependencies.add("@types/react");
         expectedDependencies.add("@types/react-dom");
         expectedDependencies.add("@preact/signals-react-transform");
+        // the transform injects imports from the signals runtime into the
+        // application sources, so the runtime must be declared too
+        expectedDependencies.add("@preact/signals-react");
         expectedDependencies.add("magic-string");
         expectedDependencies.add("@types/node");
 
@@ -189,6 +197,9 @@ class NodeUpdaterTest {
 
     private Set<String> getCommonDevDeps() {
         Set<String> expectedDependencies = new HashSet<>();
+        // Native TypeScript for Flow's checker and classic TypeScript for
+        // tooling that needs the compiler API.
+        expectedDependencies.add("@typescript/native");
         expectedDependencies.add("typescript");
         return expectedDependencies;
     }
@@ -243,12 +254,12 @@ class NodeUpdaterTest {
                 JacksonUtils.createObjectNode());
         packageJson.set(NodeUpdater.DEV_DEPENDENCIES,
                 JacksonUtils.createObjectNode());
-        ((ObjectNode) packageJson.get(NodeUpdater.DEV_DEPENDENCIES))
-                .put("typescript", "1.0.0");
+        ((ObjectNode) packageJson.get(NodeUpdater.DEV_DEPENDENCIES)).put("vite",
+                "1.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
         assertNotEquals("1.0.0", packageJson.get(NodeUpdater.DEV_DEPENDENCIES)
-                .get("typescript").stringValue());
+                .get("vite").stringValue());
     }
 
     @Test // #6907 test when user has set newer versions
@@ -337,6 +348,37 @@ class NodeUpdaterTest {
     }
 
     @Test
+    void managedNpmAlias_isUpdatedAndRetainsTarget() throws IOException {
+        ObjectNode json = nodeUpdater.getPackageJson();
+        String oldVersion = "npm:@typescript/typescript6@6.0.2";
+        String newVersion = "npm:@typescript/typescript6@6.0.3";
+        nodeUpdater.addDependency(json, NodeUpdater.DEV_DEPENDENCIES,
+                "compiler", oldVersion);
+
+        assertEquals(1, nodeUpdater.addDependency(json,
+                NodeUpdater.DEV_DEPENDENCIES, "compiler", newVersion));
+        assertEquals(newVersion, json.get(NodeUpdater.DEV_DEPENDENCIES)
+                .get("compiler").asString());
+        assertEquals(0, nodeUpdater.addDependency(json,
+                NodeUpdater.DEV_DEPENDENCIES, "compiler", newVersion));
+    }
+
+    @Test
+    void managedNpmAlias_userChangesTarget_sameVersionIsPreserved()
+            throws IOException {
+        ObjectNode json = nodeUpdater.getPackageJson();
+        nodeUpdater.addDependency(json, NodeUpdater.DEV_DEPENDENCIES,
+                "compiler", "npm:@typescript/typescript6@6.0.2");
+        ((ObjectNode) json.get(NodeUpdater.DEV_DEPENDENCIES)).put("compiler",
+                "npm:custom-compiler@6.0.2");
+
+        nodeUpdater.addDependency(json, NodeUpdater.DEV_DEPENDENCIES,
+                "compiler", "npm:@typescript/typescript6@6.0.3");
+        assertEquals("npm:custom-compiler@6.0.2", json
+                .get(NodeUpdater.DEV_DEPENDENCIES).get("compiler").asString());
+    }
+
+    @Test
     void getJsonFileContent_incorrectPackageJsonContent_throwsExceptionWithFileName()
             throws IOException {
         File brokenPackageJsonFile = new File(temporaryFolder,
@@ -348,9 +390,9 @@ class NodeUpdaterTest {
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> NodeUpdater.getJsonFileContent(brokenPackageJsonFile));
 
-        MatcherAssert.assertThat(exception.getMessage(),
+        assertThat(exception.getMessage(),
                 StringContains.containsString("Cannot parse package file "));
-        MatcherAssert.assertThat(exception.getMessage(),
+        assertThat(exception.getMessage(),
                 StringContains.containsString("broken-package.json"));
     }
 
@@ -428,34 +470,33 @@ class NodeUpdaterTest {
     @Test
     void testGetPinnedNpmVersions_versionsFilesAreReadOnceForTheBuild()
             throws IOException {
-        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of());
 
         assertSame(options.getPinnedNpmVersions(),
                 nodeUpdater.getPinnedNpmVersions(),
                 "The updater should take the versions the build has read");
-        Mockito.verify(finder, Mockito.times(1))
+        verify(finder, times(1))
                 .getResources(Constants.PINNED_NPM_VERSIONS_FOLDER);
     }
 
     @Test
     void testGetPinnedNpmDependencies_noVersionsFileIsPresent_outputIsEmptyJson()
             throws IOException {
-        Logger logger = Mockito.spy(Logger.class);
-        try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
-                .mockStatic(LoggerFactory.class)) {
+        Logger logger = spy(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactoryMocked = mockStatic(
+                LoggerFactory.class)) {
             loggerFactoryMocked
                     .when(() -> LoggerFactory.getLogger(nodeUpdater.getClass()))
                     .thenReturn(logger);
 
-            Mockito.when(
-                    finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+            when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                     .thenReturn(List.of());
 
             ObjectNode pinnedVersions = nodeUpdater.getPinnedNpmDependencies();
             assertEquals(0, JacksonUtils.getKeys(pinnedVersions).size());
 
-            Mockito.verify(logger, Mockito.times(1)).info(
+            verify(logger, times(1)).info(
                     "Couldn't find any versions file in {} to pin npm dependency versions."
                             + " Transitive dependencies won't be pinned for npm/pnpm/bun.",
                     Constants.PINNED_NPM_VERSIONS_FOLDER);
@@ -476,7 +517,7 @@ class NodeUpdaterTest {
 
         FileUtils.write(coreVersionsFile, mockedCoreJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List
                         .of(coreVersionsFile.getParentFile().toURI().toURL()));
 
@@ -511,7 +552,7 @@ class NodeUpdaterTest {
 
         FileUtils.write(coreVersionsFile, mockedCoreJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List
                         .of(coreVersionsFile.getParentFile().toURI().toURL()));
 
@@ -604,13 +645,13 @@ class NodeUpdaterTest {
                 StandardCharsets.UTF_8);
         FileUtils.write(commercialVersionsFile, mockedCommercialJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(
                         coreVersionsFile.getParentFile().toURI().toURL(),
                         commercialVersionsFile.getParentFile().toURI()
                                 .toURL()));
         Class clazz = FeatureFlags.class; // actual class doesn't matter
-        Mockito.doReturn(clazz).when(finder).loadClass(
+        doReturn(clazz).when(finder).loadClass(
                 "com.vaadin.flow.component.react.ReactAdapterComponent");
     }
 
@@ -641,7 +682,7 @@ class NodeUpdaterTest {
 
         FileUtils.write(commercialVersionsFile, mockedCommercialJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(
                         coreVersionsFile.getParentFile().toURI().toURL(),
                         commercialVersionsFile.getParentFile().toURI()
@@ -657,17 +698,16 @@ class NodeUpdaterTest {
     @Test
     void getDefaultDependencies_reactIsUsed_addsHillaReactComponents() {
         boolean reactEnabled = options.isReactEnabled();
-        MockedStatic<FrontendUtils> mockFrontendUtils = Mockito
-                .mockStatic(FrontendUtils.class);
-        MockedStatic<FrontendBuildUtils> mockFrontendBuildUtils = Mockito
-                .mockStatic(FrontendBuildUtils.class);
+        MockedStatic<FrontendUtils> mockFrontendUtils = mockStatic(
+                FrontendUtils.class);
+        MockedStatic<FrontendBuildUtils> mockFrontendBuildUtils = mockStatic(
+                FrontendBuildUtils.class);
         try {
-            mockFrontendBuildUtils.when(() -> FrontendBuildUtils.isHillaUsed(
-                    Mockito.any(File.class), Mockito.any(ClassFinder.class)))
+            mockFrontendBuildUtils.when(() -> FrontendBuildUtils
+                    .isHillaUsed(any(File.class), any(ClassFinder.class)))
                     .thenReturn(true);
-            mockFrontendUtils
-                    .when(() -> FrontendUtils
-                            .isReactRouterRequired(Mockito.any(File.class)))
+            mockFrontendUtils.when(
+                    () -> FrontendUtils.isReactRouterRequired(any(File.class)))
                     .thenReturn(true);
             options.withReact(true);
             Map<String, String> defaultDeps = nodeUpdater
@@ -695,11 +735,10 @@ class NodeUpdaterTest {
     @Test
     void getDefaultDependencies_vaadinRouterIsUsed_addsHillaLitComponents() {
         boolean reactEnabled = options.isReactEnabled();
-        try (MockedStatic<FrontendBuildUtils> mock = Mockito
-                .mockStatic(FrontendBuildUtils.class)) {
-            mock.when(() -> FrontendBuildUtils.isHillaUsed(
-                    Mockito.any(File.class), Mockito.any(ClassFinder.class)))
-                    .thenReturn(true);
+        try (MockedStatic<FrontendBuildUtils> mock = mockStatic(
+                FrontendBuildUtils.class)) {
+            mock.when(() -> FrontendBuildUtils.isHillaUsed(any(File.class),
+                    any(ClassFinder.class))).thenReturn(true);
             options.withReact(false);
             Map<String, String> defaultDeps = nodeUpdater
                     .getDefaultDependencies();
@@ -738,11 +777,10 @@ class NodeUpdaterTest {
     @Test
     void getDefaultDevDependencies_includesWorkbox_whenPwaOfflineEnabled() {
         // Create a mock PwaConfiguration with PWA offline enabled
-        com.vaadin.flow.server.PwaConfiguration pwaConfig = Mockito
-                .mock(com.vaadin.flow.server.PwaConfiguration.class);
-        Mockito.when(pwaConfig.isOfflineEnabled()).thenReturn(true);
-        Mockito.when(
-                options.getFrontendDependenciesScanner().getPwaConfiguration())
+        com.vaadin.flow.server.PwaConfiguration pwaConfig = mock(
+                com.vaadin.flow.server.PwaConfiguration.class);
+        when(pwaConfig.isOfflineEnabled()).thenReturn(true);
+        when(options.getFrontendDependenciesScanner().getPwaConfiguration())
                 .thenReturn(pwaConfig);
 
         nodeUpdater = new NodeUpdater(options) {
@@ -763,11 +801,10 @@ class NodeUpdaterTest {
     @Test
     void getDefaultDevDependencies_excludesWorkbox_whenPwaOfflineDisabled() {
         // Create a mock PwaConfiguration with PWA offline disabled
-        com.vaadin.flow.server.PwaConfiguration pwaConfig = Mockito
-                .mock(com.vaadin.flow.server.PwaConfiguration.class);
-        Mockito.when(pwaConfig.isOfflineEnabled()).thenReturn(false);
-        Mockito.when(
-                options.getFrontendDependenciesScanner().getPwaConfiguration())
+        com.vaadin.flow.server.PwaConfiguration pwaConfig = mock(
+                com.vaadin.flow.server.PwaConfiguration.class);
+        when(pwaConfig.isOfflineEnabled()).thenReturn(false);
+        when(options.getFrontendDependenciesScanner().getPwaConfiguration())
                 .thenReturn(pwaConfig);
 
         nodeUpdater = new NodeUpdater(options) {
@@ -788,8 +825,7 @@ class NodeUpdaterTest {
     @Test
     void getDefaultDevDependencies_excludesWorkbox_whenPwaNull() {
         // No PWA configuration
-        Mockito.when(
-                options.getFrontendDependenciesScanner().getPwaConfiguration())
+        when(options.getFrontendDependenciesScanner().getPwaConfiguration())
                 .thenReturn(null);
 
         nodeUpdater = new NodeUpdater(options) {
@@ -810,11 +846,10 @@ class NodeUpdaterTest {
     @Test
     void getDefaultOverrides_includesWorkboxOverrides_whenPwaOfflineEnabled() {
         // Create a mock PwaConfiguration with PWA offline enabled
-        com.vaadin.flow.server.PwaConfiguration pwaConfig = Mockito
-                .mock(com.vaadin.flow.server.PwaConfiguration.class);
-        Mockito.when(pwaConfig.isOfflineEnabled()).thenReturn(true);
-        Mockito.when(
-                options.getFrontendDependenciesScanner().getPwaConfiguration())
+        com.vaadin.flow.server.PwaConfiguration pwaConfig = mock(
+                com.vaadin.flow.server.PwaConfiguration.class);
+        when(pwaConfig.isOfflineEnabled()).thenReturn(true);
+        when(options.getFrontendDependenciesScanner().getPwaConfiguration())
                 .thenReturn(pwaConfig);
 
         nodeUpdater = new NodeUpdater(options) {
@@ -838,11 +873,10 @@ class NodeUpdaterTest {
     @Test
     void getDefaultOverrides_returnsEmpty_whenPwaOfflineDisabled() {
         // Create a mock PwaConfiguration with PWA offline enabled
-        com.vaadin.flow.server.PwaConfiguration pwaConfig = Mockito
-                .mock(com.vaadin.flow.server.PwaConfiguration.class);
-        Mockito.when(pwaConfig.isOfflineEnabled()).thenReturn(false);
-        Mockito.when(
-                options.getFrontendDependenciesScanner().getPwaConfiguration())
+        com.vaadin.flow.server.PwaConfiguration pwaConfig = mock(
+                com.vaadin.flow.server.PwaConfiguration.class);
+        when(pwaConfig.isOfflineEnabled()).thenReturn(false);
+        when(options.getFrontendDependenciesScanner().getPwaConfiguration())
                 .thenReturn(pwaConfig);
 
         nodeUpdater = new NodeUpdater(options) {
@@ -860,8 +894,7 @@ class NodeUpdaterTest {
     @Test
     void getDefaultOverrides_returnsEmpty_whenPwaNull() {
         // No PWA configuration
-        Mockito.when(
-                options.getFrontendDependenciesScanner().getPwaConfiguration())
+        when(options.getFrontendDependenciesScanner().getPwaConfiguration())
                 .thenReturn(null);
 
         nodeUpdater = new NodeUpdater(options) {
@@ -898,7 +931,7 @@ class NodeUpdaterTest {
 
     @Test
     void readPackageJsonIfAvailable_nonExistingFile_noErrorLog() {
-        Logger log = Mockito.mock(Logger.class);
+        Logger log = mock(Logger.class);
         nodeUpdater = new NodeUpdater(options) {
 
             @Override
@@ -913,43 +946,41 @@ class NodeUpdaterTest {
         };
         nodeUpdater.readDependenciesIfAvailable("non-existing-folder",
                 "dependencies");
-        Mockito.verifyNoInteractions(log);
+        verifyNoInteractions(log);
 
         nodeUpdater.readDependenciesIfAvailable("non-existing-folder",
                 "devDpendencies");
-        Mockito.verifyNoInteractions(log);
+        verifyNoInteractions(log);
     }
 
     @Test
     void getDefaultDependencies_hillaAvailableButNotUsed_addsGeneratorDependencies() {
         boolean reactEnabled = options.isReactEnabled();
-        try (MockedStatic<FrontendBuildUtils> frontendBuildUtilsMock = Mockito
-                .mockStatic(FrontendBuildUtils.class);
-                MockedStatic<FrontendUtils> frontendUtilsMock = Mockito
-                        .mockStatic(FrontendUtils.class);
+        try (MockedStatic<FrontendBuildUtils> frontendBuildUtilsMock = mockStatic(
+                FrontendBuildUtils.class);
+                MockedStatic<FrontendUtils> frontendUtilsMock = mockStatic(
+                        FrontendUtils.class);
 
-                MockedStatic<EndpointRequestUtil> endpointUtilMock = Mockito
-                        .mockStatic(EndpointRequestUtil.class)) {
+                MockedStatic<EndpointRequestUtil> endpointUtilMock = mockStatic(
+                        EndpointRequestUtil.class)) {
 
             // Hilla is available in classpath but not used
-            frontendBuildUtilsMock.when(() -> FrontendBuildUtils.isHillaUsed(
-                    Mockito.any(File.class), Mockito.any(ClassFinder.class)))
+            frontendBuildUtilsMock.when(() -> FrontendBuildUtils
+                    .isHillaUsed(any(File.class), any(ClassFinder.class)))
                     .thenReturn(false);
             endpointUtilMock.when(EndpointRequestUtil::isHillaAvailable)
                     .thenReturn(true);
-            frontendUtilsMock
-                    .when(() -> FrontendUtils
-                            .isReactRouterRequired(Mockito.any(File.class)))
+            frontendUtilsMock.when(
+                    () -> FrontendUtils.isReactRouterRequired(any(File.class)))
                     .thenReturn(true);
 
             // Create a spy to mock the readDependenciesIfAvailable method
-            NodeUpdater spyNodeUpdater = Mockito.spy(nodeUpdater);
+            NodeUpdater spyNodeUpdater = spy(nodeUpdater);
             Map<String, String> mockGeneratorDeps = Map
                     .of("@vaadin/hilla-generator-core", "2.0.0");
-            Mockito.doReturn(mockGeneratorDeps).when(spyNodeUpdater)
-                    .readDependenciesIfAvailable(Mockito.anyString(),
-                            Mockito.eq("dependencies"),
-                            Mockito.eq("@vaadin/hilla-generator-"));
+            doReturn(mockGeneratorDeps).when(spyNodeUpdater)
+                    .readDependenciesIfAvailable(anyString(),
+                            eq("dependencies"), eq("@vaadin/hilla-generator-"));
 
             // Test with React enabled
             options.withReact(true);
@@ -980,7 +1011,7 @@ class NodeUpdaterTest {
     private void fakePolymerTemplateInClasspath() {
         Class clazz = FeatureFlags.class; // actual class doesn't matter
         try {
-            Mockito.doReturn(clazz).when(finder).loadClass(
+            doReturn(clazz).when(finder).loadClass(
                     "com.vaadin.flow.component.polymertemplate.PolymerTemplate");
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
@@ -989,7 +1020,7 @@ class NodeUpdaterTest {
 
     private ObjectNode getMockCoreVersionsJson() {
         // @formatter:off
-        return (ObjectNode) JacksonUtils.readTree(
+        return JacksonUtils.readTree(
                 """
                 {
                     "core": {
@@ -1027,7 +1058,7 @@ class NodeUpdaterTest {
 
     private ObjectNode getMockCommercialVersionsJson() {
         // @formatter:off
-        return (ObjectNode) JacksonUtils.readTree(
+        return JacksonUtils.readTree(
                 """
                 {
                     "vaadin": {

@@ -17,6 +17,7 @@ package com.vaadin.flow.internal;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -147,6 +148,10 @@ public class UrlUtil {
      * space character, making it suitable for decoding strings encoded with
      * JavaScript's {@code encodeURIComponent()} or
      * {@link #encodeURIComponent(String)}.
+     * <p>
+     * Only percent-encoded escapes are decoded. Characters that are not escaped
+     * are kept as they are, so an already decoded string containing for example
+     * {@code ü} is returned unchanged.
      *
      * @param encoded
      *            the percent-encoded string
@@ -159,40 +164,47 @@ public class UrlUtil {
         }
 
         Matcher matcher = PERCENT_ENCODED.matcher(encoded);
+        if (!matcher.find()) {
+            // Nothing is percent-encoded, so the input is already decoded
+            return encoded;
+        }
+
         StringBuilder result = new StringBuilder();
+        // Consecutive escapes are collected so that a multi-byte UTF-8
+        // character split over several escapes is decoded as one character
+        ByteArrayOutputStream escapedBytes = new ByteArrayOutputStream();
         int lastEnd = 0;
 
-        while (matcher.find()) {
-            // Append text before the match
-            result.append(encoded, lastEnd, matcher.start());
-
-            // Decode the hex value
-            String hex = matcher.group(1);
-            int value = Integer.parseInt(hex, 16);
-            result.append((char) value);
-
+        do {
+            if (matcher.start() != lastEnd) {
+                // Text between two escapes ends the current byte sequence
+                appendDecoded(result, escapedBytes);
+                result.append(encoded, lastEnd, matcher.start());
+            }
+            escapedBytes.write(Integer.parseInt(matcher.group(1), 16));
             lastEnd = matcher.end();
-        }
+        } while (matcher.find());
 
-        // Append remaining text
+        appendDecoded(result, escapedBytes);
+
+        // Append remaining text, which is not encoded and thus kept as-is
         result.append(encoded, lastEnd, encoded.length());
 
-        // Handle multi-byte UTF-8 sequences
-        byte[] bytes = new byte[result.length()];
-        boolean hasMultibyte = false;
-        for (int i = 0; i < result.length(); i++) {
-            char c = result.charAt(i);
-            if (c > 127) {
-                hasMultibyte = true;
-            }
-            bytes[i] = (byte) c;
-        }
-
-        if (hasMultibyte) {
-            return new String(bytes, StandardCharsets.UTF_8);
-        }
-
         return result.toString();
+    }
+
+    /**
+     * Decodes the collected percent-encoded bytes as UTF-8 into the given
+     * builder and resets the byte sequence. Characters that were not
+     * percent-encoded are appended separately so that they are not mistaken for
+     * UTF-8 bytes.
+     */
+    private static void appendDecoded(StringBuilder result,
+            ByteArrayOutputStream escapedBytes) {
+        if (escapedBytes.size() > 0) {
+            result.append(escapedBytes.toString(StandardCharsets.UTF_8));
+            escapedBytes.reset();
+        }
     }
 
     /**

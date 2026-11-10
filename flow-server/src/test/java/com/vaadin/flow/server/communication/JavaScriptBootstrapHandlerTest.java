@@ -22,7 +22,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.PushConfiguration;
@@ -42,12 +41,16 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.Transport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 @Isolated
 class JavaScriptBootstrapHandlerTest {
@@ -60,6 +63,12 @@ class JavaScriptBootstrapHandlerTest {
 
     @Push
     static public class PushAppShell implements AppShellConfigurator {
+    }
+
+    // Transport differs from the default the UI is created with, so that
+    // applying the annotation is observable
+    @Push(transport = Transport.WEBSOCKET)
+    static public class WebSocketPushAppShell implements AppShellConfigurator {
     }
 
     @BeforeEach
@@ -195,15 +204,14 @@ class JavaScriptBootstrapHandlerTest {
 
     @Test
     void should_invoke_modifyPushConfiguration() throws Exception {
-        AppShellRegistry registry = Mockito.mock(AppShellRegistry.class);
+        AppShellRegistry registry = mock(AppShellRegistry.class);
         mocks.setAppShellRegistry(registry);
 
         VaadinRequest request = mocks.createRequest(mocks, "/",
                 "v-r=init&foo&location=");
         jsInitHandler.handleRequest(session, request, response);
 
-        Mockito.verify(registry)
-                .modifyPushConfiguration(Mockito.any(PushConfiguration.class));
+        verify(registry).modifyPushConfiguration(any(PushConfiguration.class));
     }
 
     @Test
@@ -225,6 +233,35 @@ class JavaScriptBootstrapHandlerTest {
         // Using regex, because version depends on the build
         assertTrue(json.get("pushScript").asString().matches(
                 "^VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
+    }
+
+    @Test
+    void uiInitListener_shouldOverridePushConfigFromAppShellAnnotation()
+            throws Exception {
+        VaadinServletContext context = new VaadinServletContext(
+                mocks.getServletContext());
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(WebSocketPushAppShell.class);
+        mocks.setAppShellRegistry(registry);
+
+        mocks.getService().addUIInitListener(event -> {
+            PushConfiguration push = event.getUI().getPushConfiguration();
+            // The app shell annotation must already have been applied when
+            // the listener runs, so that it can be inspected and overridden
+            assertEquals(PushMode.AUTOMATIC, push.getPushMode());
+            assertEquals(Transport.WEBSOCKET, push.getTransport());
+
+            push.setPushMode(PushMode.MANUAL);
+            push.setTransport(Transport.LONG_POLLING);
+        });
+
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location=");
+        jsInitHandler.handleRequest(session, request, response);
+
+        PushConfiguration push = UI.getCurrent().getPushConfiguration();
+        assertEquals(PushMode.MANUAL, push.getPushMode());
+        assertEquals(Transport.LONG_POLLING, push.getTransport());
     }
 
     @Test

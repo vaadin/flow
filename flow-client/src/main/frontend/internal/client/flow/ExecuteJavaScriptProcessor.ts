@@ -38,6 +38,12 @@ import { assert } from '../../assert';
 import { needsRebind } from './binding/SimpleElementBindingStrategy';
 import { decodeStateNode, decodeWithTypeInfo } from './util/ClientJsonCodec';
 import {
+  describeMissingFunction,
+  findDeclaredFunction,
+  findDeclaredFunctionWithExecutionContext,
+  getNameOf
+} from './util/DeclaredJavaScript';
+import {
   attachExistingElement,
   disposeInitializer,
   populateModelProperties,
@@ -48,6 +54,7 @@ import { Reactive } from './reactive/Reactive';
 import type { StateNode } from './StateNode';
 import { UIState } from '../UILifecycle';
 import { Console } from '../Console';
+import { JsonConstants } from '../../flow/shared/JsonConstants';
 
 // NodeFeatures.NodeFeatures.ELEMENT_DATA / NodeProperties
 
@@ -64,6 +71,30 @@ interface ContextCallbacks {
   stopApplication: () => void;
   registerInitializer: (node: StateNode, id: number, cleanup: () => void) => void;
   disposeInitializer: (node: StateNode, id: number) => void;
+}
+
+/**
+ * What an invocation of declared JavaScript names instead of an expression:
+ * the function of the bundle to run, identified by a hash of the JavaScript it
+ * runs. An invocation that runs an expression names the expression itself, a
+ * string, so the two are told apart by what the constant is rather than by
+ * what it says.
+ */
+type JsFunctionConstant = Record<typeof JsonConstants.UIDL_KEY_JS_FUNCTION, string> &
+  Partial<Record<typeof JsonConstants.UIDL_KEY_JS_ARGUMENT_COUNT, number>>;
+
+type ReturnChannel = (value: unknown) => void;
+
+/**
+ * Reports the given message through the error channel of an invocation, which
+ * is its last parameter when it was subscribed to, so that the pending result
+ * of the call is completed rather than left hanging on the server.
+ */
+function reportThroughChannel(parameters: unknown[], message: string): void {
+  const lastParameter = parameters[parameters.length - 1];
+  if (typeof lastParameter === 'function') {
+    (lastParameter as ReturnChannel)(message);
+  }
 }
 
 /**
@@ -95,7 +126,7 @@ export class ExecuteJavaScriptProcessor {
 
   #handleInvocation(invocation: unknown[]): void {
     const tree = this.#registry.getStateTree();
-    // Last item is the script, the rest are parameters.
+    // Last item names what to run in the constant pool, the rest are parameters.
     const parameterCount = invocation.length - 1;
 
     const parameterNamesAndCode: string[] = [];
@@ -124,7 +155,35 @@ export class ExecuteJavaScriptProcessor {
       }
     }
 
-    parameterNamesAndCode.push(invocation[invocation.length - 1] as string);
+    // What to run is a constant of the message, the same way for an
+    // expression and for a call of declared JavaScript, so an expression the
+    // server runs again costs a reference rather than its own text.
+    const whatToRun = this.#registry
+      .getConstantPool()
+      .get<string | JsFunctionConstant | null>(invocation[invocation.length - 1] as string);
+    if (whatToRun === null) {
+      Console.error(
+        `No constant for the invocation ${JSON.stringify(invocation)}. Reload the page to pick up the current state.`
+      );
+      return;
+    }
+
+    if (typeof whatToRun === 'object') {
+      // A call of declared JavaScript: the bundle has the function, the
+      // server sent only which one to run. The node parameters are for the
+      // execution context, whose `getNode` maps an element back to its state
+      // node, and which a declared function gets only when the bundle
+      // registers it as one that does.
+      this.invokeFromBundle(
+        whatToRun[JsonConstants.UIDL_KEY_JS_FUNCTION],
+        parameters,
+        whatToRun[JsonConstants.UIDL_KEY_JS_ARGUMENT_COUNT],
+        nodeParameters
+      );
+      return;
+    }
+
+    parameterNamesAndCode.push(whatToRun);
     this.invoke(parameterNamesAndCode, parameters, nodeParameters);
   }
 
@@ -171,7 +230,17 @@ export class ExecuteJavaScriptProcessor {
     parameters: unknown[],
     nodeParameters: Map<unknown, StateNode>
   ): void {
-    const configuration = this.#registry.getApplicationConfiguration();
+    invokeJavaScript(
+      parameterNamesAndCode,
+      parameters,
+      this.#createExecutionContext(nodeParameters),
+      this.#registry.getApplicationConfiguration().isProductionMode()
+    );
+  }
+
+  // The object an expression runs against, which a declared function that
+  // gets the execution context is passed as its first argument instead.
+  #createExecutionContext(nodeParameters: Map<unknown, StateNode>): Record<string, unknown> {
     const getNode = (element: unknown): StateNode => {
       const node = nodeParameters.get(element);
       if (node === undefined) {
@@ -179,7 +248,7 @@ export class ExecuteJavaScriptProcessor {
       }
       return node;
     };
-    const context = getContextExecutionObject(configuration.getApplicationId(), this.#registry, {
+    return getContextExecutionObject(this.#registry.getApplicationConfiguration().getApplicationId(), this.#registry, {
       getNode,
       attachExistingElement,
       populateModelProperties,
@@ -193,7 +262,87 @@ export class ExecuteJavaScriptProcessor {
       registerInitializer,
       disposeInitializer
     });
-    invokeJavaScript(parameterNamesAndCode, parameters, context, configuration.isProductionMode());
+  }
+
+  /**
+   * Executes a call made through a JavaScript definition: looks the function up
+   * in the registry that the generated bundle populates and applies it to the
+   * element, with the arguments of the call, preceded by the execution context
+   * for a function that the bundle registers as one that gets it. Nothing is compiled from a string,
+   * which is what makes this path work under a content security policy that
+   * does not allow `unsafe-eval`.
+   *
+   * Protected instead of private for testing purposes, as `invoke` is.
+   *
+   * @param functionId - the identifier of the function to run
+   * @param parameters - the decoded parameters: the arguments of the call, the
+   *          element to apply the function to, and the return value channels
+   *          when the call is subscribed to
+   * @param sentArgumentCount - how many arguments the call carries, sent for a
+   *          function that collects them into a rest parameter and does not
+   *          report them in its length
+   * @param nodeParameters - the state nodes of the parameters that are
+   *          elements, for the execution context of a function that gets it
+   */
+  protected invokeFromBundle(
+    functionId: string,
+    parameters: unknown[],
+    sentArgumentCount: number | undefined,
+    nodeParameters: Map<unknown, StateNode>
+  ): void {
+    const name = getNameOf(functionId);
+    const withExecutionContext = findDeclaredFunctionWithExecutionContext(functionId);
+    const fn = withExecutionContext ?? findDeclaredFunction(functionId);
+    if (fn === undefined) {
+      const message = describeMissingFunction(functionId);
+      Console.error(message);
+      // The server appends the two channels after everything else, or neither
+      // of them, so the error channel is the last parameter. Report through it
+      // when there is one, or the pending result of the call is never
+      // completed on the server.
+      reportThroughChannel(parameters, message);
+      return;
+    }
+
+    // The function takes the arguments of the call, so what follows them is
+    // the element to apply it to, and then the two return value channels when
+    // the call is subscribed to. Nothing else may be in there, so a count that
+    // does not add up means the invocation was not built for this function,
+    // and reading the element out of it by index would bind an argument as
+    // `this`. Say so instead of running the call.
+    // A function that gets the execution context takes it as its first
+    // parameter, which counts towards its length but is not sent. A rest
+    // parameter does not count, so a sent count is used as it is.
+    const argumentCount = sentArgumentCount ?? (withExecutionContext === undefined ? fn.length : fn.length - 1);
+    const afterTheArguments = parameters.length - argumentCount;
+    if (afterTheArguments !== 1 && afterTheArguments !== 3) {
+      const message = `Expected ${argumentCount} arguments and the element for ${name} but the invocation carries ${parameters.length} parameters. Reload the page to pick up the current signature.`;
+      Console.error(message);
+      reportThroughChannel(parameters, message);
+      return;
+    }
+
+    const returns = afterTheArguments === 3;
+    const onSuccess = returns ? (parameters[argumentCount + 1] as ReturnChannel) : undefined;
+    const onError = returns ? (parameters[argumentCount + 2] as ReturnChannel) : undefined;
+
+    // The element the definition was obtained from is the parameter after the
+    // arguments, and it is what the function runs against.
+    const thisArg = parameters[argumentCount];
+    try {
+      const args = parameters.slice(0, argumentCount);
+      const result = fn.apply(
+        thisArg,
+        withExecutionContext === undefined ? args : [this.#createExecutionContext(nodeParameters), ...args]
+      );
+      if (onSuccess !== undefined) {
+        Promise.resolve(result).then(onSuccess, (error: unknown) => onError?.(`${error}`));
+      }
+    } catch (exception) {
+      Console.reportStacktrace(exception);
+      Console.error(`Exception is thrown while running ${name}. Stacktrace will be dumped separately.`);
+      onError?.(`${exception}`);
+    }
   }
 }
 

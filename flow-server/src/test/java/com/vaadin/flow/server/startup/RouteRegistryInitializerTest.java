@@ -34,7 +34,6 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -80,6 +79,10 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for RouteRegistryInitializer and RouteRegistry.
@@ -95,30 +98,29 @@ class RouteRegistryInitializerTest {
 
     @BeforeEach
     void init() {
-        pathProvider = Mockito.mock(RoutePathProvider.class);
+        pathProvider = mock(RoutePathProvider.class);
         routeRegistryInitializer = new RouteRegistryInitializer();
         registry = new TestRouteRegistry();
-        servletContext = Mockito.mock(ServletContext.class);
-        lookup = Mockito.mock(Lookup.class);
-        Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
+        servletContext = mock(ServletContext.class);
+        lookup = mock(Lookup.class);
+        when(servletContext.getAttribute(Lookup.class.getName()))
                 .thenReturn(lookup);
         vaadinContext = new VaadinServletContext(servletContext);
         registry = ApplicationRouteRegistry.getInstance(vaadinContext);
 
-        Mockito.when(vaadinContext.getAttribute(
+        when(vaadinContext.getAttribute(
                 ApplicationRouteRegistry.ApplicationRouteRegistryWrapper.class))
                 .thenReturn(
                         new ApplicationRouteRegistry.ApplicationRouteRegistryWrapper(
                                 registry));
 
-        Mockito.when(lookup.lookup(RoutePathProvider.class))
-                .thenReturn(pathProvider);
+        when(lookup.lookup(RoutePathProvider.class)).thenReturn(pathProvider);
 
-        Mockito.doAnswer(invocation -> {
+        doAnswer(invocation -> {
             Class clazz = invocation.getArgument(0, Class.class);
             Annotation route = clazz.getAnnotation(Route.class);
             return ((Route) route).value();
-        }).when(pathProvider).getRoutePath(Mockito.any());
+        }).when(pathProvider).getRoutePath(any());
     }
 
     @Test
@@ -137,6 +139,25 @@ class RouteRegistryInitializerTest {
         assertEquals(NavigationTargetBar.class,
                 registry.getNavigationTarget("bar").get(),
                 "Route 'bar' registered to NavigationTargetBar.class");
+    }
+
+    @Test
+    void process_productionMode_developmentOnlyRouteNotRegistered()
+            throws ServletException {
+        ApplicationConfiguration configuration = mock(
+                ApplicationConfiguration.class);
+        when(configuration.isProductionMode()).thenReturn(true);
+        when(servletContext
+                .getAttribute(ApplicationConfiguration.class.getName()))
+                .thenReturn(configuration);
+
+        routeRegistryInitializer.process(
+                Set.of(NavigationTargetFoo.class, DevelopmentOnlyTarget.class),
+                servletContext);
+
+        assertEquals(Optional.of(NavigationTargetFoo.class),
+                registry.getNavigationTarget("foo"));
+        assertFalse(registry.getNavigationTarget("dev").isPresent());
     }
 
     @Test
@@ -416,6 +437,10 @@ class RouteRegistryInitializerTest {
 
     @Route("bar")
     private static class NavigationTargetBar extends Component {
+    }
+
+    @Route(value = "dev", developmentOnly = true)
+    private static class DevelopmentOnlyTarget extends Component {
     }
 
     @Route("bar2")
@@ -1387,11 +1412,10 @@ class RouteRegistryInitializerTest {
     @Test
     void initialize_predicateReturnsTrue_noPrevopusStaticRoutes_cleanIsNotCalled_removeMethodIsNotCalled()
             throws VaadinInitializerException {
-        Mockito.when(lookup.lookup(OneTimeInitializerPredicate.class))
+        when(lookup.lookup(OneTimeInitializerPredicate.class))
                 .thenReturn(() -> true);
         TestApplicationRouteRegistry registry = new TestApplicationRouteRegistry();
-        Mockito.when(servletContext
-                .getAttribute(registry.wrapper.getClass().getName()))
+        when(servletContext.getAttribute(registry.wrapper.getClass().getName()))
                 .thenReturn(registry.wrapper);
 
         routeRegistryInitializer.initialize(
@@ -1403,7 +1427,7 @@ class RouteRegistryInitializerTest {
     @Test
     void initialize_predicateReturnsTrue_sameRouteIsReadded_eventHasNoReaddedRoute()
             throws VaadinInitializerException {
-        Mockito.when(lookup.lookup(OneTimeInitializerPredicate.class))
+        when(lookup.lookup(OneTimeInitializerPredicate.class))
                 .thenReturn(() -> true);
 
         routeRegistryInitializer.initialize(
@@ -1430,8 +1454,7 @@ class RouteRegistryInitializerTest {
     void initialize_noPredicate_noPrevopusStaticRoutes_cleanIsNotCalled_removeMethodIsNotCalled()
             throws VaadinInitializerException {
         TestApplicationRouteRegistry registry = new TestApplicationRouteRegistry();
-        Mockito.when(servletContext
-                .getAttribute(registry.wrapper.getClass().getName()))
+        when(servletContext.getAttribute(registry.wrapper.getClass().getName()))
                 .thenReturn(registry.wrapper);
 
         routeRegistryInitializer.initialize(

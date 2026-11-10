@@ -1,0 +1,137 @@
+name: Memory Footprint
+
+# Measures the memory a UI uses, with UIMemoryFootprintTest, on the head of a
+# pull request and on the commit it branches from, and reports the difference
+# in a pull request comment. A comment is only posted once a change affects
+# them by at least MIN_CHANGE bytes, see scripts/memoryFootprint.js.
+# After that the comment is updated on every push, also when the difference
+# goes away again.
+#
+# Every push to main is measured too, and the measurements of each base commit
+# are cached under a key made of the commit and the JDK. A pull request can
+# read what runs on its base branch cached, so its base is usually restored
+# and only its head is measured.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  # Only the newest commit is worth measuring
+  group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  _HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  _BASE_SHA: ${{ github.event.pull_request.base.sha }}
+  _PR_NUMBER: ${{ github.event.number }}
+  # The same flags validation.yml sets, for the same reason: a 403 from Central
+  # is retried rather than failing the build outright. See the note there.
+  MAVEN_ARGS: >-
+    -Daether.connector.http.retryHandler.count=3
+    -Daether.connector.http.retryHandler.serviceUnavailable=429,500,502,503,504,403
+    -Daether.connector.http.connectionMaxTtl=25
+  # Builds only the modules the test needs, and runs only the test
+  MEASURE: >-
+    mvn package -B -ntp -pl flow-html-components -am
+    -Dtest=UIMemoryFootprintTest -Dsurefire.failIfNoSpecifiedTests=false
+    -Djacoco.skip
+
+jobs:
+  measure:
+    # Commenting needs a token that can write, which GitHub does not hand to
+    # pull requests from forks
+    if: ${{ !github.event.pull_request.head.repo.fork }}
+    timeout-minutes: 30
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: ${{ env._HEAD_SHA }}
+          fetch-depth: 0
+      - name: Set up JDK
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version-file: .tool-versions
+          distribution: 'temurin'
+      - name: Find the base commit
+        id: base
+        # For a pull request, the commit it branches from, so that changes
+        # merged to the base branch since then are not attributed to it. A
+        # push to main measures the pushed commit, as the base of the pull
+        # requests that branch from it. The key holds the exact JDK version, as
+        # object sizes can differ between JDK versions.
+        run: |
+          if [ -n "$_BASE_SHA" ]; then
+            base=$(git merge-base "$_BASE_SHA" "$_HEAD_SHA")
+          else
+            base=$_HEAD_SHA
+          fi
+          runtime=$(java -XshowSettings:properties -version 2>&1 | sed -n 's/^ *java.runtime.version = //p')
+          echo "sha=$base" >> "$GITHUB_OUTPUT"
+          echo "key=memory-footprint-$runtime-$base" >> "$GITHUB_OUTPUT"
+      - name: Restore the base measurements
+        id: cache
+        # Saved at the end of the job when it was not found
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: memory-footprint-base
+          key: ${{ steps.base.outputs.key }}
+      - uses: ./.github/actions/setup-frontend-tools
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - name: Measure the head
+        if: github.event_name == 'pull_request'
+        run: |
+          $MEASURE
+          mv flow-html-components/target/memory-footprint memory-footprint-head
+      - name: Measure the base
+        if: steps.cache.outputs.cache-hit != 'true'
+        env:
+          BASE: ${{ steps.base.outputs.sha }}
+        # Before UIMemoryFootprintTest was added the base has nothing to
+        # measure, which the comment says instead of comparing
+        run: |
+          mkdir memory-footprint-base
+          git worktree add "$RUNNER_TEMP/base" "$BASE"
+          cd "$RUNNER_TEMP/base"
+          if [ -f flow-html-components/src/test/java/com/vaadin/flow/memory/UIMemoryFootprintTest.java ]; then
+            $MEASURE
+            mv flow-html-components/target/memory-footprint/* "$GITHUB_WORKSPACE/memory-footprint-base/"
+          fi
+      - name: Compare
+        id: compare
+        if: github.event_name == 'pull_request'
+        run: |
+          node scripts/memoryFootprint.js memory-footprint-base memory-footprint-head "${{ steps.base.outputs.sha }}"
+          cat memory-comment.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Comment the difference on the pull request
+        # GitHub hands runs that Dependabot triggers a read-only token, so
+        # those measure and leave the comparison in the job summary only
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANGED: ${{ steps.compare.outputs.changed }}
+        run: |
+          marker='<!-- flow-memory-footprint -->'
+          existing=$(gh api "repos/${{ github.repository }}/issues/$_PR_NUMBER/comments" --paginate \
+            --jq "[.[] | select(.body | startswith(\"$marker\")) | .id] | first // empty")
+          existing=${existing%%$'\n'*}
+          if [ -n "$existing" ]; then
+            gh api --method PATCH "repos/${{ github.repository }}/issues/comments/$existing" -F body=@memory-comment.md
+          elif [ "$CHANGED" = "true" ]; then
+            gh api "repos/${{ github.repository }}/issues/$_PR_NUMBER/comments" -F body=@memory-comment.md
+          else
+            echo "No change in memory footprint, and no earlier comment to update"
+          fi

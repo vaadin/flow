@@ -23,8 +23,10 @@
 // session-expired/error handling). It composes the ported MessageOrdering
 // (PendingMessageQueue), TreeChangeProcessor, Reactive,
 // EagerDependencyTracker, and the helpers above; everything else is a
-// Registry contract.
+// Registry contract. Beyond the Java version, it tells the VaadinRequest a reply
+// answers that the reply has arrived.
 
+import type { ConstantPool } from '../flow/ConstantPool';
 import type { StateNode } from '../flow/StateNode';
 import type { Registry } from '../Registry';
 import type { Command } from '../Command';
@@ -47,6 +49,7 @@ import { Reactive } from '../flow/reactive/Reactive';
 import { processChanges as applyTreeChanges } from '../flow/TreeChangeProcessor';
 import { UIState } from '../UILifecycle';
 import { Console } from '../Console';
+import { dispatchResponse } from './VaadinRequest';
 
 /** Removes the link and style elements with the given dependency id. */
 function removeStylesheetByIdFromDom(dependencyId: string): void {
@@ -94,6 +97,7 @@ const UIDL_PUSH_ID = 'Vaadin-Push-ID';
 const UIDL_KEY_EXECUTE = 'execute';
 const META_SESSION_EXPIRED = 'sessionExpired';
 const META_ASYNC = 'async';
+const META_APP_ERROR = 'appError';
 
 const SESSION_EXPIRED_HANDLING_DELAY = 250;
 
@@ -151,8 +155,12 @@ export class MessageHandler {
    * appropriate handlers, while logging timing information.
    *
    * @param json - The JSON to handle
+   * @param payload - the payload whose XHR the JSON replies to, or `null` if the
+   *          JSON arrived over push or was not received at all
    */
-  handleMessage(json: ValueMap): void {
+  handleMessage(json: ValueMap, payload: Record<string, unknown> | null = null): void {
+    this.#settleRepliedRequest(json, payload);
+
     if (getServerId(json) === -1) {
       const meta = json.meta as ValueMap | undefined;
       // Log the error only if session didn't expire.
@@ -177,9 +185,39 @@ export class MessageHandler {
     }
   }
 
+  // Tells the request a reply answers that the reply has arrived. A message the
+  // server pushes on its own answers no request.
+  #settleRepliedRequest(json: ValueMap, payload: Record<string, unknown> | null): void {
+    if (!this.#isResponse(json)) {
+      return;
+    }
+    const messageSender = this.#registry.getMessageSender();
+    const request =
+      payload !== null
+        ? messageSender.getRequest(payload)
+        : messageSender.findRequest(json[CLIENT_TO_SERVER_ID] as number | undefined);
+    if (request) {
+      // A reply with an application error is what the server sends when it
+      // refuses the request, e.g. for a bad security key or a message id out
+      // of sync, or fails to process it.
+      const meta = json.meta as ValueMap | undefined;
+      const refused = meta && (META_SESSION_EXPIRED in meta || META_APP_ERROR in meta);
+      dispatchResponse(request, refused ? 'rejected' : 'acknowledged');
+    }
+  }
+
   protected handleJSON(valueMap: ValueMap): void {
     const serverId = getServerId(valueMap);
     const hasResynchronize = isResynchronize(valueMap);
+
+    // Before anything decides what to do with the message, since what an
+    // invocation of it runs is a constant of it, and that decides whether a
+    // forced reload is what arrived. A message read more than once - queued
+    // and handled later, or re-sent by the server - carries the constants it
+    // carried before, which the pool takes as the values it already holds.
+    if ('constants' in valueMap) {
+      this.#registry.getConstantPool().importFromJson(valueMap.constants as Record<string, unknown>);
+    }
 
     if (
       !hasResynchronize &&
@@ -188,7 +226,7 @@ export class MessageHandler {
       if (UIDL_KEY_EXECUTE in valueMap) {
         const commands = valueMap[UIDL_KEY_EXECUTE] as unknown[][];
         for (const command of commands) {
-          if (command.length > 0 && command[0] === 'window.location.reload();') {
+          if (resolveWhatRuns(command, this.#registry.getConstantPool()) === 'window.location.reload();') {
             Console.warn('Executing forced page reload while a resync request is ongoing.');
             window.location.reload();
             return;
@@ -261,7 +299,6 @@ export class MessageHandler {
     this.suspendReponseHandling(lock);
 
     Console.debug('Handling message from server');
-    this.#registry.getRequestResponseTracker().fireResponseHandlingStarted();
     // Client id must be updated before server id (a server-id update can trigger
     // a resync that must use the updated client id).
     if (CLIENT_TO_SERVER_ID in valueMap) {
@@ -338,9 +375,6 @@ export class MessageHandler {
     }
     try {
       const processUidlStart = performance.now();
-      if ('constants' in valueMap) {
-        this.#registry.getConstantPool().importFromJson(valueMap.constants as Record<string, unknown>);
-      }
       if ('changes' in valueMap) {
         this.#processChanges(valueMap);
       }
@@ -371,8 +405,8 @@ export class MessageHandler {
               SESSION_EXPIRED_HANDLING_DELAY
             );
           }
-        } else if ('appError' in meta && this.#registry.getUILifecycle().getState() !== UIState.TERMINATED) {
-          const error = meta.appError as ValueMap;
+        } else if (META_APP_ERROR in meta && this.#registry.getUILifecycle().getState() !== UIState.TERMINATED) {
+          const error = meta[META_APP_ERROR] as ValueMap;
           this.#registry
             .getSystemErrorHandler()
             .handleUnrecoverableError(
@@ -657,6 +691,22 @@ export class MessageHandler {
  * @param jsonText - The JSON to parse
  * @returns A ValueMap created from the JSON
  */
+/**
+ * Resolves what an invocation runs, which the invocation names rather than
+ * carries.
+ *
+ * @param invocation - the invocation, whose last element is the name
+ * @param constantPool - the constants the client has been sent
+ * @returns what to run, or `null` when nothing is named
+ */
+export function resolveWhatRuns(invocation: unknown[], constantPool: ConstantPool): unknown {
+  const name = invocation[invocation.length - 1];
+  if (typeof name !== 'string') {
+    return null;
+  }
+  return constantPool.get<unknown>(name);
+}
+
 export function parseJson(jsonText: string | null): ValueMap | null {
   if (jsonText === null) {
     return null;

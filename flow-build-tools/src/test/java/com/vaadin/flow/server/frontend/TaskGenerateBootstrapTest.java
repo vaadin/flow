@@ -73,7 +73,7 @@ class TaskGenerateBootstrapTest {
         ClassFinder.DefaultClassFinder finder = new ClassFinder.DefaultClassFinder(
                 Set.of(this.getClass(), CustomModifier.class));
         frontDeps = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(false, finder, false, null, true);
+                .createScanner(false, finder, false, null, true, false);
 
         frontendFolder = new File(temporaryFolder, FRONTEND);
         frontendFolder.mkdirs();

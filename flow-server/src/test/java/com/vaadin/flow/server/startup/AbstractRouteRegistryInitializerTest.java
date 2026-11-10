@@ -19,10 +19,10 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -36,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class AbstractRouteRegistryInitializerTest {
 
@@ -43,7 +44,7 @@ class AbstractRouteRegistryInitializerTest {
 
     };
 
-    VaadinContext context = Mockito.mock(VaadinContext.class);
+    VaadinContext context = mock(VaadinContext.class);
 
     @Tag(Tag.DIV)
     public static class TestParentLayout extends Component
@@ -126,6 +127,12 @@ class AbstractRouteRegistryInitializerTest {
 
     }
 
+    @Route("foo")
+    @Menu(parent = OwnMenuParent.class)
+    public static class OwnMenuParent extends Component {
+
+    }
+
     @Test
     void routeAndParentLayout_notRouterLayout_throws() {
         assertThrows(InvalidRouteLayoutConfigurationException.class, () -> {
@@ -144,6 +151,18 @@ class AbstractRouteRegistryInitializerTest {
                 Route.class));
         assertTrue(exception.getMessage()
                 .contains("not extend '" + Component.class.getCanonicalName()));
+    }
+
+    @Test
+    void validateRouteClasses_menuParentIsTheRouteItself_throws() {
+        Stream<Class<?>> routeClasses = Stream.of(OwnMenuParent.class);
+        InvalidRouteConfigurationException exception = assertThrows(
+                InvalidRouteConfigurationException.class,
+                () -> initializer.validateRouteClasses(context, routeClasses));
+        assertTrue(containsQuotedAnnotationName(exception.getMessage(),
+                Menu.class));
+        assertTrue(exception.getMessage()
+                .contains(OwnMenuParent.class.getCanonicalName()));
     }
 
     @Test

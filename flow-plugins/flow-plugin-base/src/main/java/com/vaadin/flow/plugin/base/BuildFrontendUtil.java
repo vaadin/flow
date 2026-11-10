@@ -199,7 +199,17 @@ public class BuildFrontendUtil {
                 FrontendUtils.JAR_RESOURCES_FOLDER);
     }
 
-    private static FrontendToolsSettings getFrontendToolsSettings(
+    /**
+     * Creates the settings for locating Node.js and npm the same way as the
+     * frontend build does.
+     *
+     * @param adapter
+     *            - the PluginAdapterBase.
+     * @return the frontend tools settings
+     * @throws URISyntaxException
+     *             - Could not build an URI from nodeDownloadRoot().
+     */
+    public static FrontendToolsSettings getFrontendToolsSettings(
             PluginAdapterBase adapter) throws URISyntaxException {
         FrontendToolsSettings settings = new FrontendToolsSettings(
                 adapter.npmFolder().getAbsolutePath(),
@@ -538,7 +548,11 @@ public class BuildFrontendUtil {
     }
 
     /**
-     * Runs the Vite build
+     * Runs the Vite build.
+     * <p>
+     * Removes the bundle files of an earlier build from the frontend output
+     * directory first, so that only the files of this build end up in the
+     * application archive and in the compressed production bundle.
      *
      * @param adapter
      *            - the PluginAdapterBase.
@@ -547,8 +561,26 @@ public class BuildFrontendUtil {
      */
     public static void runVite(PluginAdapterBase adapter,
             FrontendTools frontendTools) {
+        deletePreviousBundleFiles(adapter);
         runFrontendBuildTool(adapter, frontendTools, "Vite", "vite", "vite",
                 Collections.emptyMap(), "build");
+    }
+
+    /**
+     * Vite does not empty its output directory in a production build, because
+     * other tasks write theme and static resources there before Vite runs. As
+     * the bundle file names contain a content hash, the files of earlier builds
+     * would otherwise accumulate next to the new ones. Only the Vite assets
+     * directory is cleared, as nothing else writes to it.
+     */
+    private static void deletePreviousBundleFiles(PluginAdapterBase adapter) {
+        File buildFolder = new File(adapter.frontendOutputDirectory(),
+                Constants.VAADIN_BUILD_FILES_PATH);
+        try {
+            FileIOUtils.delete(buildFolder);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     private static void runFrontendBuildTool(PluginAdapterBase adapter,
@@ -1009,6 +1041,7 @@ public class BuildFrontendUtil {
             buildInfo.remove(InitParameters.SERVLET_PARAMETER_ENABLE_BUN);
             buildInfo.remove(InitParameters.CI_BUILD);
             buildInfo.remove(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE);
+            buildInfo.remove(InitParameters.NODE_FOLDER);
             buildInfo.remove(
                     InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);
             buildInfo.remove(Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
@@ -1018,6 +1051,7 @@ public class BuildFrontendUtil {
             buildInfo.remove(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN);
             buildInfo.remove(InitParameters.BUILD_FOLDER);
             buildInfo.remove(InitParameters.NPM_EXCLUDE_WEB_COMPONENTS);
+            buildInfo.remove(DISABLE_PREPARE_FRONTEND_CACHE);
             // Premium features flag is always true, because Vaadin CI server
             // uses Enterprise sub, thus it's always true.
             // Thus, resets the premium feature flag and DAU flag before asking

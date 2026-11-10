@@ -19,6 +19,10 @@ read the W3C spec or the `.ts` source.
   examples consistent with the real platform APIs (e.g. if you show
   `map.setCenter(...)`, use the real Vaadin Map `Coordinate(longitude,
   latitude)` shape).
+- A new overload opens with the same sentence as its siblings and then says
+  what is different about it. Javadoc that starts with the difference — or that
+  only walks through the parameters and the return value — leaves out the
+  sentence that says what the method does.
 - Javadoc describes the code today, not what changed. Change history
   belongs in commit messages.
 

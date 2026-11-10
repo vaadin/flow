@@ -24,6 +24,8 @@ import tools.jackson.core.type.TypeReference;
 
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.BeanUtil;
+import com.vaadin.flow.server.CspMode;
+import com.vaadin.flow.server.CspViolationException;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 
@@ -56,16 +58,89 @@ public interface DomListenerRegistration extends Registration {
      * <li><code>event.button === 0</code> to get true for click events
      * triggered by the primary mouse button.
      * </ul>
+     * <p>
+     * A property path, which is <code>event</code> or <code>element</code>
+     * followed by property names separated with <code>.</code> or
+     * <code>?.</code>, such as <code>event.detail.value</code>, is read in the
+     * browser without compiling it. Any other expression is compiled by the
+     * browser from a string, so it does not work with a Content Security Policy
+     * that does not allow <code>unsafe-eval</code>. To get such event data
+     * without that, declare it in a {@link com.vaadin.flow.js.JsDefinition}
+     * interface and use {@link #addEventData(DomEventData)}.
      *
      * @param eventData
      *            definition for data that should be passed back to the server
      *            together with the event, not <code>null</code>
      * @return this registration, for chaining
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode,
+     *             unless the expression is a property path
      * @see #addEventDataElement(String) for mapping an element
      * @see #mapEventTargetElement() to map the {@code event.target} to an
      *      element
      */
     DomListenerRegistration addEventData(String eventData);
+
+    /**
+     * Adds JavaScript expressions for extracting event data, like calling
+     * {@link #addEventData(String)} for each of them.
+     * <p>
+     * Like with {@link #addEventData(String)}, the browser compiles the
+     * expressions from strings, unless they are property paths. See
+     * {@link #addEventData(DomEventData)} for event data that works with a
+     * Content Security Policy that does not allow <code>unsafe-eval</code>.
+     *
+     * @param eventData
+     *            definitions for data that should be passed back to the server
+     *            together with the event, not <code>null</code> and not
+     *            containing <code>null</code>
+     * @return this registration, for chaining
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode,
+     *             unless every expression is a property path
+     * @see #addEventData(String)
+     * @since 25.4
+     */
+    default DomListenerRegistration addEventData(List<String> eventData) {
+        if (eventData == null) {
+            throw new IllegalArgumentException(
+                    "The event data expressions must not be null");
+        }
+        eventData.forEach(this::addEventData);
+        return this;
+    }
+
+    /**
+     * Adds declared JavaScript that gets data from the event. When the event
+     * occurs in the browser, the browser runs the declared expression with the
+     * DOM <code>event</code> and this <code>element</code>. It sends the value
+     * to the server together with the event. Read the value with
+     * {@link DomEvent#getEventData(DomEventData)}:
+     *
+     * <pre>
+     * DomEventData&lt;String&gt; label = JS.attribute("data-label");
+     * button.getElement()
+     *         .addEventListener("click",
+     *                 event -&gt; show(event.getEventData(label)))
+     *         .addEventData(label);
+     * </pre>
+     * <p>
+     * The browser does not compile any JavaScript from a string, unlike with
+     * {@link #addEventData(String)}. So this also works with a Content Security
+     * Policy that does not allow <code>unsafe-eval</code>.
+     *
+     * @param eventData
+     *            the event data to send, not <code>null</code>
+     * @return this registration, for chaining
+     * @see DomEventData
+     */
+    default DomListenerRegistration addEventData(DomEventData<?> eventData) {
+        /*
+         * Dummy backwards compatibility implementation to keep old custom code
+         * compiling.
+         */
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Sets a JavaScript expression that is used for filtering events to this
@@ -78,17 +153,65 @@ public interface DomListenerRegistration extends Registration {
      * An expression might be e.g. <code>event.button === 0</code> to only
      * forward events triggered by the primary mouse button.
      * <p>
-     * Any previous filter for this registration is discarded.
+     * Any previous filter for this registration is discarded, also one set with
+     * {@link #setFilterExpression(DomEventFilter)}.
+     * <p>
+     * A property path, which is <code>event</code> or <code>element</code>
+     * followed by property names separated with <code>.</code> or
+     * <code>?.</code>, such as <code>event.isTrusted</code>, is read in the
+     * browser without compiling it. Any other expression is compiled by the
+     * browser from a string, so it does not work with a Content Security Policy
+     * that does not allow <code>unsafe-eval</code>. To filter events without
+     * that, declare the filter in a {@link com.vaadin.flow.js.JsDefinition}
+     * interface and use {@link #setFilterExpression(DomEventFilter)}.
      *
      * @param filter
      *            the JavaScript filter expression, or <code>null</code> to
      *            clear the filter
      * @return this registration, for chaining
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode,
+     *             unless the filter is a property path
      */
     DomListenerRegistration setFilter(String filter);
 
     /**
+     * Sets declared JavaScript that filters the events for this listener. When
+     * the event occurs in the browser, the browser runs the declared expression
+     * with the DOM <code>event</code> and this <code>element</code>. It sends
+     * the event to the server only if the expression returns a truthy value:
+     *
+     * <pre>
+     * field.getElement().addEventListener("keydown", event -&gt; submit())
+     *         .setFilterExpression(JS.isKey("Enter"));
+     * </pre>
+     * <p>
+     * The browser does not compile any JavaScript from a string, unlike with
+     * {@link #setFilter(String)}. So this also works with a Content Security
+     * Policy that does not allow <code>unsafe-eval</code>.
+     * <p>
+     * Any previous filter for this registration is discarded, also one set with
+     * {@link #setFilter(String)}.
+     *
+     * @param filter
+     *            the filter, or <code>null</code> to clear the filter
+     * @return this registration, for chaining
+     * @see DomEventFilter
+     */
+    default DomListenerRegistration setFilterExpression(DomEventFilter filter) {
+        /*
+         * Dummy backwards compatibility implementation to keep old custom code
+         * compiling.
+         */
+        throw new UnsupportedOperationException();
+    }
+
+    /**
      * Gets the currently set filter expression.
+     * <p>
+     * Returns <code>null</code> for a filter set with
+     * {@link #setFilterExpression(DomEventFilter)}, because such a filter has
+     * no expression.
      *
      * @see #setFilter(String)
      *
@@ -359,6 +482,8 @@ public interface DomListenerRegistration extends Registration {
      */
     default DomListenerRegistration addEventDataElement(String eventData) {
         Objects.requireNonNull(eventData);
+        // ComponentEventBusUtil has a copy of this mapping for component event
+        // data, update it as well when changing the mapping here
         // optimizing this case as it is quite trivial
         if (Objects.equals(eventData, "event.target")) {
             return mapEventTargetElement();
@@ -371,9 +496,15 @@ public interface DomListenerRegistration extends Registration {
     /**
      * Stops propagation of the event to upper level DOM elements.
      * <p>
-     * When used with {@link #setFilter(String)}, stopPropagation will only be
-     * called when the filter condition is met. For example, if you set a filter
-     * for specific keys, stopPropagation will only apply to those keys.
+     * When used with {@link #setFilter(String)} or
+     * {@link #setFilterExpression(DomEventFilter)}, stopPropagation will only
+     * be called when the filter condition is met. For example, if you set a
+     * filter for specific keys, stopPropagation will only apply to those keys.
+     * <p>
+     * Nothing is compiled from a string in the browser, unless the filter is
+     * set with {@link #setFilter(String)}. So without a filter, or with a
+     * {@link DomEventFilter}, this works under a Content Security Policy
+     * without <code>unsafe-eval</code>.
      *
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation">MDN
@@ -383,7 +514,7 @@ public interface DomListenerRegistration extends Registration {
      * @since 24.2
      */
     default public DomListenerRegistration stopPropagation() {
-        addEventData("event.stopPropagation()");
+        addEventData(JsonConstants.EVENT_DATA_STOP_PROPAGATION);
         return this;
     };
 
@@ -392,9 +523,15 @@ public interface DomListenerRegistration extends Registration {
      * as shortcut action on key press or context menu on "right click". This
      * might not be possible for some events.
      * <p>
-     * When used with {@link #setFilter(String)}, preventDefault will only be
+     * When used with {@link #setFilter(String)} or
+     * {@link #setFilterExpression(DomEventFilter)}, preventDefault will only be
      * called when the filter condition is met. For example, if you set a filter
      * for specific keys, preventDefault will only apply to those keys.
+     * <p>
+     * Nothing is compiled from a string in the browser, unless the filter is
+     * set with {@link #setFilter(String)}. So without a filter, or with a
+     * {@link DomEventFilter}, this works under a Content Security Policy
+     * without <code>unsafe-eval</code>.
      *
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault">MDN
@@ -404,7 +541,7 @@ public interface DomListenerRegistration extends Registration {
      * @since 24.2
      */
     default public DomListenerRegistration preventDefault() {
-        addEventData("event.preventDefault()");
+        addEventData(JsonConstants.EVENT_DATA_PREVENT_DEFAULT);
         return this;
     }
 
@@ -430,8 +567,17 @@ public interface DomListenerRegistration extends Registration {
      * </pre>
      *
      * The above will automatically add event data expressions for
-     * {@code event.button}, {@code event.clientX}, {@code event.clientY}, and
-     * {@code type}.
+     * {@code event.button}, {@code event.clientX} and {@code event.clientY}.
+     * {@link DomEvent#getEventData(Class)} decodes the values of these
+     * expressions back into the nested structure of the class.
+     * <p>
+     * Each property path is evaluated as a JavaScript expression in the
+     * browser, where {@code event} and {@code element} are the only local
+     * variables besides the browser's global objects such as {@code window}. If
+     * a top-level property is none of these, such as {@code type}, its
+     * expression throws an error in the browser and the event is not sent to
+     * the server at all. The event type does not need an expression, it is
+     * available through {@link DomEvent#getType()}.
      *
      * @param type
      *            the class whose properties should be captured from the event
@@ -560,7 +706,10 @@ public interface DomListenerRegistration extends Registration {
      *
      * This will add expressions for {@code event.detail.r},
      * {@code event.detail.g}, and {@code event.detail.b}, rather than sending
-     * the entire {@code event.detail} object.
+     * the entire {@code event.detail} object. Nested properties get nested
+     * paths, e.g. {@code event.detail.color.r} for a {@code color} property of
+     * type {@code RgbColor}, and {@link DomEvent#getEventDetail(Class)} decodes
+     * them back into the nested structure of the class.
      *
      * @param type
      *            the class whose properties should be captured from

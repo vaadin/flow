@@ -28,7 +28,10 @@ permissions:
 
 jobs:
   digest:
-    runs-on: ubuntu-latest
+    # Only in vaadin/flow: a copy of this repository that has the organization
+    # secrets would otherwise post its digest to the shared Slack channel.
+    if: github.repository == 'vaadin/flow'
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1

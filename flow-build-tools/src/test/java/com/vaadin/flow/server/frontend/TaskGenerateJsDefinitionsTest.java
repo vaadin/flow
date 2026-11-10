@@ -1,0 +1,584 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.server.frontend;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.file.Files;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.dom.DomEventFilter;
+import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsCalledWith;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.internal.JsWithExecutionContext;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
+
+import static com.vaadin.flow.internal.FrontendUtils.FRONTEND;
+import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
+import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.Mockito.mock;
+
+class TaskGenerateJsDefinitionsTest {
+
+    private static final String GREETING_EXPRESSION = "window.alert({ text: $0, kind: 'greeting' })";
+
+    private static final String COUNT_EXPRESSION = "this.count = ($0 || 0) + 1";
+
+    private static final String SHOUT_EXPRESSION = "window.alert([$0, ...$1].join(' '))";
+
+    private static final String LOG_EXPRESSION = "console.log($0, value);";
+
+    private static final String TICK_EXPRESSION = "console.log($0, Date.now());";
+
+    private static final String KEY_EXPRESSION = "return event.key === $0;";
+
+    private static final String SNIPPETS_REGISTRY = "window.Vaadin.Flow.jsSnippets = window.Vaadin.Flow.jsSnippets || {};";
+
+    private static final String CONTEXT_REGISTRY = "window.Vaadin.Flow.jsDefinitionsWithExecutionContext = window.Vaadin.Flow.jsDefinitionsWithExecutionContext || {};";
+
+    private static final String NAMES_REGISTRY = "window.Vaadin.Flow.jsDefinitionNames = window.Vaadin.Flow.jsDefinitionNames || {};";
+
+    @JsDefinition
+    public interface GreeterJs extends Serializable {
+        @JsExpression(GREETING_EXPRESSION)
+        void showGreeting(String greeting);
+
+        @JsExpression("window.alert('Hello')")
+        void showGreeting();
+    }
+
+    @JsDefinition
+    public interface LoggerJs extends Serializable {
+        @JsExpression(LOG_EXPRESSION)
+        @JsCalledWith("value")
+        JsFunction createLogger(String prefix);
+
+        @JsExpression(TICK_EXPRESSION)
+        JsFunction createTicker(String label);
+    }
+
+    @JsDefinition
+    public interface EventJs extends Serializable {
+        @JsExpression(KEY_EXPRESSION)
+        DomEventFilter isKey(String key);
+    }
+
+    @JsDefinition
+    public interface InvalidNameJs extends Serializable {
+        @JsExpression(LOG_EXPRESSION)
+        @JsCalledWith("class")
+        JsFunction createLogger(String prefix);
+    }
+
+    @JsDefinition
+    public interface CounterJs extends Serializable {
+        @JsExpression(COUNT_EXPRESSION)
+        void count(Integer from);
+    }
+
+    @JsDefinition
+    public interface NothingJs extends Serializable {
+        void notDeclared();
+    }
+
+    @JsDefinition
+    public interface ShouterJs extends Serializable {
+        @JsExpression(SHOUT_EXPRESSION)
+        void shout(String greeting, Object... names);
+    }
+
+    @JsDefinition
+    public interface StopperJs extends Serializable {
+        @JsExpression(GREETING_EXPRESSION)
+        @JsWithExecutionContext
+        void stop(String greeting);
+
+        @JsExpression("$executionContext.stopApplication()")
+        @JsWithExecutionContext
+        void stop();
+    }
+
+    @TempDir
+    File temporaryFolder;
+
+    private TaskGenerateJsDefinitions task;
+    private Options options;
+    private File frontendFolder;
+
+    @BeforeEach
+    void setUp() {
+        frontendFolder = new File(temporaryFolder, FRONTEND);
+        frontendFolder.mkdirs();
+        options = new Options(mock(Lookup.class),
+                new DefaultClassFinder(
+                        Set.of(GreeterJs.class, NothingJs.class)),
+                null).withFrontendDirectory(frontendFolder)
+                .withProductionMode(false);
+        task = new TaskGenerateJsDefinitions(options);
+    }
+
+    @Test
+    void generatesAFunctionPerDeclaredExpression()
+            throws ExecutionFailedException {
+        task.execute();
+        String content = task.getFileContent();
+
+        assertTrue(
+                content.contains("window.Vaadin.Flow.jsDefinitions[\""
+                        + JsCall.functionId(GREETING_EXPRESSION, 1, false)
+                        + "\"] = async function ($0) {"),
+                "a function should be registered under the identifier of the JavaScript it runs: "
+                        + content);
+        assertTrue(content.contains(GREETING_EXPRESSION),
+                "the declared expression should be the body of the function, as it was written: "
+                        + content);
+        assertTrue(
+                content.contains("window.Vaadin.Flow.jsDefinitions[\""
+                        + JsCall.functionId("window.alert('Hello')", 0, false)
+                        + "\"] = async function () {"),
+                "the overload that takes no arguments is another function: "
+                        + content);
+    }
+
+    @Test
+    void variadicMethod_collectsItsTrailingArgumentsIntoARestParameter() {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(ShouterJs.class), false);
+
+        assertTrue(
+                content.contains("window.Vaadin.Flow.jsDefinitions[\""
+                        + JsCall.functionId(SHOUT_EXPRESSION, 2, true)
+                        + "\"] = async function ($0, ...$1) {"),
+                "the last parameter should collect the arguments that follow the fixed ones, as it does in Java: "
+                        + content);
+    }
+
+    @Test
+    void executionContextMethod_registersAFunctionTakingTheContextFirst()
+            throws NoSuchMethodException {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(StopperJs.class), false);
+
+        assertTrue(content.contains(CONTEXT_REGISTRY),
+                "the registry the function is assigned into has to be there, or the module throws: "
+                        + content);
+        assertTrue(content.contains(
+                "window.Vaadin.Flow.jsDefinitionsWithExecutionContext[\""
+                        + JsCall.functionId(
+                                StopperJs.class.getMethod("stop", String.class))
+                        + "\"] = async function ($executionContext, $0) {"),
+                "the context should lead the arguments of the call: "
+                        + content);
+        assertTrue(content.contains(
+                "window.Vaadin.Flow.jsDefinitionsWithExecutionContext[\""
+                        + JsCall.functionId(StopperJs.class.getMethod("stop"))
+                        + "\"] = async function ($executionContext) {"),
+                "a method without arguments should take only the context: "
+                        + content);
+        assertFalse(content.contains("jsDefinitions[\""),
+                "the client tells a function that gets the context by the registry it is in: "
+                        + content);
+    }
+
+    @Test
+    void snippetMethod_registersASynchronousFunctionOfTheCaptures()
+            throws NoSuchMethodException {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(LoggerJs.class), false);
+        String separator = System.lineSeparator();
+
+        assertTrue(content.contains(SNIPPETS_REGISTRY),
+                "the registry a snippet is assigned into has to be there, or the module throws: "
+                        + content);
+        assertTrue(
+                content.contains(String.join(separator,
+                        "window.Vaadin.Flow.jsSnippets[\""
+                                + JsCall.functionId(LoggerJs.class.getMethod(
+                                        "createLogger", String.class))
+                                + "\"] = function ($0) {",
+                        "  return function (value) {", LOG_EXPRESSION, "  };",
+                        "};")),
+                "the expression should be the body of a function of the declared parameters, returned by one of the captures: "
+                        + content);
+        String tickerId = JsCall.functionId(
+                LoggerJs.class.getMethod("createTicker", String.class));
+        assertTrue(
+                content.contains(String.join(separator,
+                        "window.Vaadin.Flow.jsSnippets[\"" + tickerId
+                                + "\"] = function ($0) {",
+                        "  return function () {", TICK_EXPRESSION, "  };",
+                        "};")),
+                "without declared parameters the expression should be the body of a function without parameters: "
+                        + content);
+        assertFalse(content.contains("jsDefinitions[\""),
+                "a snippet is not run by a call: " + content);
+    }
+
+    @Test
+    void domEventSnippet_isCalledWithTheNamesItsTypeDeclares()
+            throws NoSuchMethodException {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(EventJs.class), false);
+
+        assertTrue(
+                content.contains(String.join(System.lineSeparator(),
+                        "window.Vaadin.Flow.jsSnippets[\""
+                                + JsCall.functionId(EventJs.class
+                                        .getMethod("isKey", String.class))
+                                + "\"] = function ($0) {",
+                        "  return function (event, element) {", KEY_EXPRESSION,
+                        "  };", "};")),
+                "a DOM event filter should be a function of the event and the element: "
+                        + content);
+    }
+
+    @Test
+    void definitionThatCanNotWork_isLeftOutWithoutFailingTheBuild()
+            throws NoSuchMethodException {
+        // A bad name would be a syntax error that breaks every function in
+        // the module, and the definition may be in an add-on that the
+        // application can not fix, so it is left out and fails when used
+        String content = TaskGenerateJsDefinitions.renderFileContent(
+                List.of(InvalidNameJs.class, LoggerJs.class), false);
+
+        assertFalse(content.contains("function (class)"), content);
+        assertTrue(
+                content.contains(JsCall.functionId(LoggerJs.class
+                        .getMethod("createLogger", String.class))),
+                "the other definitions should still be generated: " + content);
+    }
+
+    @Test
+    void generatedFile_developmentMode_namesWhatDeclaredTheJavaScript()
+            throws ExecutionFailedException {
+        // Which is what a message about a call says instead of a hash, and is
+        // of no use to a browser running the application
+        task.execute();
+        String content = task.getFileContent();
+
+        assertTrue(content.contains(NAMES_REGISTRY),
+                "the registry a name is assigned into has to be there, or the module throws: "
+                        + content);
+        assertTrue(content.contains("window.Vaadin.Flow.jsDefinitionNames[\""
+                + JsCall.functionId(GREETING_EXPRESSION, 1, false) + "\"] = \""
+                + GreeterJs.class.getName() + ".showGreeting/1\";"),
+                "and the name should be registered next to the function: "
+                        + content);
+    }
+
+    @Test
+    void updateJsDefinitions_writesTheNamesAndWhatHoldsThem()
+            throws IOException {
+        // Into a file that a build wrote before names were rendered at all
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+        generated.getParentFile().mkdirs();
+        Files.writeString(generated.toPath(), TaskGenerateJsDefinitions
+                .renderFileContent(List.of(GreeterJs.class), false));
+
+        List<Class<?>> missing = TaskGenerateJsDefinitions
+                .updateJsDefinitions(options, List.of(CounterJs.class));
+
+        assertTrue(missing.isEmpty());
+        String written = Files.readString(generated.toPath());
+        assertTrue(written.contains(NAMES_REGISTRY),
+                "the registry the names are assigned into should be added to a file that has none: "
+                        + written);
+        assertTrue(
+                written.indexOf(NAMES_REGISTRY) < written
+                        .indexOf("window.Vaadin.Flow.jsDefinitionNames[\""),
+                "and it should come before the name it holds: " + written);
+        assertTrue(written.contains("window.Vaadin.Flow.jsDefinitionNames[\""
+                + JsCall.functionId(COUNT_EXPRESSION, 1, false) + "\"] = \""
+                + CounterJs.class.getName() + ".count/1\";"),
+                "the name of what was asked for should be in the file: "
+                        + written);
+        assertTrue(
+                written.contains(
+                        JsCall.functionId(GREETING_EXPRESSION, 1, false)),
+                "and what the file held should still be in it: " + written);
+    }
+
+    @Test
+    void updateJsDefinitions_intoAFileWithoutTheirRegistries_addsThem()
+            throws IOException {
+        // A file that a build wrote before snippets and functions that get
+        // the execution context were generated at all
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+        generated.getParentFile().mkdirs();
+        Files.writeString(generated.toPath(), TaskGenerateJsDefinitions
+                .renderFileContent(List.of(GreeterJs.class), true)
+                .replace(SNIPPETS_REGISTRY + System.lineSeparator(), "")
+                .replace(CONTEXT_REGISTRY + System.lineSeparator(), ""));
+
+        TaskGenerateJsDefinitions.updateJsDefinitions(options,
+                List.of(LoggerJs.class, StopperJs.class));
+
+        String written = Files.readString(generated.toPath());
+        assertTrue(written.contains(SNIPPETS_REGISTRY),
+                "the registry should be added to a file that has none: "
+                        + written);
+        assertTrue(
+                written.indexOf(SNIPPETS_REGISTRY) < written
+                        .indexOf("window.Vaadin.Flow.jsSnippets[\""),
+                "and it should come before the snippets it holds: " + written);
+        assertTrue(written.indexOf(CONTEXT_REGISTRY) >= 0
+                && written.indexOf(CONTEXT_REGISTRY) < written.indexOf(
+                        "window.Vaadin.Flow.jsDefinitionsWithExecutionContext[\""),
+                "the registry of functions that get the context should be added before them: "
+                        + written);
+    }
+
+    @Test
+    void updateJsDefinitions_nothingMissing_leavesTheFileAlone()
+            throws IOException {
+        // The same file a build writes: everything it is asked for is in it,
+        // names and all, so there is nothing to add
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+        generated.getParentFile().mkdirs();
+        String carried = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(GreeterJs.class), true);
+        Files.writeString(generated.toPath(), carried);
+
+        TaskGenerateJsDefinitions.updateJsDefinitions(options,
+                List.of(GreeterJs.class));
+
+        assertEquals(carried, Files.readString(generated.toPath()),
+                "a definition the file carries should not be written into it again");
+    }
+
+    @Test
+    void generatedFile_productionMode_namesNothingOfTheJava() {
+        String content = new TaskGenerateJsDefinitions(
+                options.withProductionMode(true)).getFileContent();
+
+        assertFalse(content.contains(GreeterJs.class.getName()),
+                "a production bundle should not tell a browser what declared the JavaScript: "
+                        + content);
+        assertFalse(content.contains("showGreeting"),
+                "and not what the methods are called either: " + content);
+    }
+
+    @Test
+    void definitionWithoutDeclaredJavaScript_isNotRegistered()
+            throws ExecutionFailedException {
+        task.execute();
+        String content = task.getFileContent();
+
+        assertEquals(2,
+                content.split("window.Vaadin.Flow.jsDefinitions\\[\"",
+                        -1).length - 1,
+                "only the two methods that declare JavaScript should be registered: "
+                        + content);
+    }
+
+    @Test
+    void updateJsDefinitions_fileNotWritable_answersWithWhatItDoesNotCarry()
+            throws ExecutionFailedException {
+        // A file that carries one of the two interfaces, and a folder nothing
+        // can be written into
+        task.execute();
+        File generatedFolder = FrontendUtils
+                .getFrontendGeneratedFolder(frontendFolder);
+        assumeTrue(generatedFolder.setWritable(false),
+                "the folder has to be made read only for this");
+
+        try {
+            List<Class<?>> missing = TaskGenerateJsDefinitions
+                    .updateJsDefinitions(options,
+                            List.of(GreeterJs.class, CounterJs.class));
+
+            assertEquals(List.of(CounterJs.class), missing,
+                    "the interface the file carries is not missing because the write failed");
+        } finally {
+            generatedFolder.setWritable(true);
+        }
+    }
+
+    @Test
+    void findMissingFromGeneratedFile_answersForWhatTheFileCarries()
+            throws ExecutionFailedException, IOException {
+        task.execute();
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+        String carried = Files.readString(generated.toPath());
+
+        assertTrue(
+                TaskGenerateJsDefinitions.findMissingFromGeneratedFile(options,
+                        List.of(GreeterJs.class)).isEmpty(),
+                "the file was written from this interface");
+
+        // The JavaScript it declared before it was shortened: the browser
+        // would keep running the extra statement
+        Files.writeString(generated.toPath(),
+                carried.replace("window.alert({ text: $0, kind: 'greeting' })",
+                        "window.alert($0)"));
+        assertEquals(List.of(GreeterJs.class),
+                TaskGenerateJsDefinitions.findMissingFromGeneratedFile(options,
+                        List.of(GreeterJs.class)),
+                "another version of the declarations is not the declarations");
+
+        Files.delete(generated.toPath());
+        assertEquals(List.of(GreeterJs.class),
+                TaskGenerateJsDefinitions.findMissingFromGeneratedFile(options,
+                        List.of(GreeterJs.class)),
+                "no file carries nothing");
+    }
+
+    @Test
+    void updateJsDefinitions_writesWhatIsAskedForBesideWhatTheFileHolds()
+            throws ExecutionFailedException, IOException {
+        // A file written before the other interface was annotated: nothing has
+        // scanned for it, and what the file holds has to stay in it
+        task.execute();
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+
+        List<Class<?>> missing = TaskGenerateJsDefinitions
+                .updateJsDefinitions(options, List.of(CounterJs.class));
+
+        assertTrue(missing.isEmpty());
+        String written = Files.readString(generated.toPath());
+        assertTrue(
+                written.contains(JsCall.functionId(COUNT_EXPRESSION, 1, false)),
+                "the interface that was asked for should be in the file: "
+                        + written);
+        assertTrue(
+                written.contains(
+                        JsCall.functionId(GREETING_EXPRESSION, 1, false)),
+                "what the file held should still be in it: " + written);
+        assertTrue(
+                written.indexOf("import.meta.hot") > written
+                        .indexOf(JsCall.functionId(COUNT_EXPRESSION, 1, false)),
+                "and what was added should be part of the module: " + written);
+    }
+
+    @Test
+    void updateJsDefinitions_fileWrittenByAnotherVersion_keepsWhatItHolds()
+            throws IOException {
+        // What a file written by another version of this class looks like:
+        // functions a browser has, and nothing this one recognizes to write
+        // around
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+        generated.getParentFile().mkdirs();
+        Files.writeString(generated.toPath(),
+                "window.Vaadin.Flow.jsDefinitions = {\n  \"fromsomewhereelse\": async function () {}\n};\n");
+
+        List<Class<?>> missing = TaskGenerateJsDefinitions
+                .updateJsDefinitions(options, List.of(CounterJs.class));
+
+        assertTrue(missing.isEmpty());
+        String written = Files.readString(generated.toPath());
+        assertTrue(written.contains("fromsomewhereelse"),
+                "a function a browser has should not be taken out of the file: "
+                        + written);
+        assertTrue(
+                written.contains(JsCall.functionId(COUNT_EXPRESSION, 1, false)),
+                "and the one that was asked for should be in it: " + written);
+    }
+
+    @Test
+    void updateJsDefinitions_oneMethodEdited_writesOnlyThatFunction()
+            throws ExecutionFailedException, IOException {
+        // An interface of two methods, of which one declares something else
+        // than what the file was written with
+        task.execute();
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+        String unchanged = "window.Vaadin.Flow.jsDefinitions[\""
+                + JsCall.functionId("window.alert('Hello')", 0, false) + "\"]";
+        Files.writeString(generated.toPath(),
+                Files.readString(generated.toPath()).replace(
+                        GREETING_EXPRESSION, "window.alert('what it was')"));
+
+        TaskGenerateJsDefinitions.updateJsDefinitions(options,
+                List.of(GreeterJs.class));
+
+        String written = Files.readString(generated.toPath());
+        assertEquals(1, countOf(written, unchanged),
+                "the method that was not edited should not be written again: "
+                        + written);
+        assertTrue(written.contains(GREETING_EXPRESSION),
+                "and the edited one should be in the file: " + written);
+    }
+
+    private static int countOf(String content, String value) {
+        return content.split(Pattern.quote(value), -1).length - 1;
+    }
+
+    @Test
+    void acceptsItsOwnUpdate() throws ExecutionFailedException {
+        task.execute();
+        String content = task.getFileContent();
+
+        assertTrue(content.contains("import.meta.hot.accept()"),
+                "the file should accept its own update, or writing it again while the application runs is ignored by the browser instead of replacing the module: "
+                        + content);
+    }
+
+    @Test
+    void getFileContent_noClassFinder_saysWhatItIsFor() {
+        // The options a caller that writes the file again while the
+        // application runs builds: it knows the definitions, so it has nothing
+        // to scan with, and going through the generating side is a mistake
+        // that should say so
+        Options withoutAClassFinder = new Options(mock(Lookup.class), null,
+                null).withFrontendDirectory(frontendFolder);
+
+        assertTrue(
+                assertThrows(NullPointerException.class,
+                        () -> new TaskGenerateJsDefinitions(withoutAClassFinder)
+                                .getFileContent())
+                        .getMessage().contains("scan"));
+    }
+
+    @Test
+    void writesTheFileTheBootstrapImports() throws ExecutionFailedException {
+        task.execute();
+
+        assertTrue(
+                new File(new File(frontendFolder, GENERATED),
+                        JS_DEFINITIONS_FILE_NAME).exists(),
+                "the generated file should be where the bootstrap imports it from");
+    }
+}

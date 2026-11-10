@@ -19,7 +19,6 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
@@ -40,10 +39,11 @@ class MetadataWriterTest {
 
     @BeforeEach
     void setup() {
-        ui = Mockito.mock(UI.class);
-        session = Mockito.mock(VaadinSession.class);
-        Mockito.when(ui.getSession()).thenReturn(session);
-        messages = Mockito.mock(SystemMessages.class);
+        ui = mock(UI.class);
+        session = mock(VaadinSession.class);
+        when(ui.getSession()).thenReturn(session);
+        when(ui.getSessionOrThrow()).thenCallRealMethod();
+        messages = mock(SystemMessages.class);
     }
 
     private void disableSessionExpirationMessages(SystemMessages messages) {
@@ -99,22 +99,22 @@ class MetadataWriterTest {
 
     @Test
     void writeSessionExpiredTag_sessionIsOpen() throws Exception {
-        Mockito.when(session.getState()).thenReturn(VaadinSessionState.OPEN);
+        when(session.getState()).thenReturn(VaadinSessionState.OPEN);
         assertMetadataOutput(false, false, "{}");
     }
 
     @Test
     void writeSessionExpiredTag_sessionIsClosing() throws Exception {
-        Mockito.when(session.getState()).thenReturn(VaadinSessionState.CLOSING);
+        when(session.getState()).thenReturn(VaadinSessionState.CLOSING);
         assertMetadataOutput(false, false, "{\"sessionExpired\":true}");
 
-        Mockito.when(session.getState()).thenReturn(VaadinSessionState.CLOSED);
+        when(session.getState()).thenReturn(VaadinSessionState.CLOSED);
         assertMetadataOutput(false, false, "{\"sessionExpired\":true}");
     }
 
     @Test
     void writeSessionExpiredTag_sessionIsClosed() throws Exception {
-        Mockito.when(session.getState()).thenReturn(VaadinSessionState.CLOSED);
+        when(session.getState()).thenReturn(VaadinSessionState.CLOSED);
         assertMetadataOutput(false, false, "{\"sessionExpired\":true}");
     }
 

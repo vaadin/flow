@@ -25,7 +25,6 @@ import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
@@ -38,6 +37,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class StreamResourceRegistryTest {
 
@@ -55,8 +56,8 @@ class StreamResourceRegistryTest {
             }
         };
 
-        ui = Mockito.mock(UI.class);
-        Mockito.when(ui.getUIId()).thenReturn(1);
+        ui = mock(UI.class);
+        when(ui.getUIId()).thenReturn(1);
         UI.setCurrent(ui);
     }
 
@@ -92,7 +93,7 @@ class StreamResourceRegistryTest {
         ElementRequestHandler handler = (request, response, session, owner) -> {
             // nop
         };
-        Element owner = Mockito.mock(Element.class);
+        Element owner = mock(Element.class);
         StreamRegistration registration = registry.registerResource(handler,
                 owner);
         assertNotNull(registration);
@@ -133,7 +134,7 @@ class StreamResourceRegistryTest {
         ElementRequestHandler handler = (request, response, session, owner) -> {
             // nop
         };
-        Element owner = Mockito.mock(Element.class);
+        Element owner = mock(Element.class);
         StreamRegistration registration = registry.registerResource(handler,
                 owner);
 

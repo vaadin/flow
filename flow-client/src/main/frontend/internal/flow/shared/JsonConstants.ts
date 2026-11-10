@@ -149,6 +149,20 @@ export const JsonConstants = {
   RPC_EVENT_DATA: 'data',
 
   /**
+   * Key of the function to run in the constant that an invocation of declared
+   * JavaScript names, in place of the expression that an invocation of an
+   * expression names.
+   */
+  UIDL_KEY_JS_FUNCTION: 'f',
+
+  /**
+   * Key of the number of arguments an invocation of declared JavaScript
+   * carries, present only when the function collects them into a rest
+   * parameter and their number therefore cannot be read off the function.
+   */
+  UIDL_KEY_JS_ARGUMENT_COUNT: 'n',
+
+  /**
    * Key used to hold the feature id when synchronizing node values.
    */
   RPC_FEATURE: 'feature',
@@ -301,6 +315,57 @@ export const JsonConstants = {
    * expression.
    */
   MAP_STATE_NODE_EVENT_DATA: ']',
+
+  /**
+   * Event filter that always passes. Flow sends it for a listener that has a
+   * debounce but no filter, and when an element has both filtered and
+   * unfiltered listeners for one event type. The client runs it without
+   * compiling it, so it works under a Content Security Policy without
+   * `unsafe-eval`.
+   */
+  EVENT_FILTER_ALWAYS_TRUE: '1',
+
+  /**
+   * Event data expression that calls `preventDefault()` on the event. The
+   * client runs it without compiling it.
+   */
+  EVENT_DATA_PREVENT_DEFAULT: 'event.preventDefault()',
+
+  /**
+   * Event data expression that calls `stopPropagation()` on the event. The
+   * client runs it without compiling it.
+   */
+  EVENT_DATA_STOP_PROPAGATION: 'event.stopPropagation()',
+
+  /**
+   * Key in the settings of a declared snippet that the client runs when an
+   * event occurs. The value is the id of the declared function. The settings
+   * of a JavaScript expression are only its debounce settings, so they are
+   * not an object and have no such key.
+   */
+  EVENT_SETTINGS_FUNCTION: 'f',
+
+  /**
+   * Key in the settings of a declared snippet that the client runs when an
+   * event occurs. The value is the debounce settings: `false`, `true` or
+   * `[[timeout, phase, ...], ...]`.
+   */
+  EVENT_SETTINGS_DEBOUNCE: 'd',
+
+  /**
+   * Key in the settings of a declared snippet that the client runs when an
+   * event occurs. The value is the array of captured values that the function
+   * is called with. A snippet without captures does not have this key.
+   */
+  EVENT_SETTINGS_CAPTURES: 'c',
+
+  /**
+   * Key in the settings of a declared snippet that the client runs when an
+   * event occurs. The value is the name of a method of the event:
+   * `preventDefault` or `stopPropagation`. The client calls the method when
+   * the snippet returns a truthy value.
+   */
+  EVENT_SETTINGS_SIDE_EFFECT: 's',
 
   /**
    * RPC type value used for return channel messages.

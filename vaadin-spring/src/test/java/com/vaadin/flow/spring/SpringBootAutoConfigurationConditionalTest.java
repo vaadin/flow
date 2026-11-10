@@ -17,11 +17,13 @@ package com.vaadin.flow.spring;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,6 +39,23 @@ class SpringBootAutoConfigurationConditionalTest {
                 .run(context -> assertThat(context)
                         .getBean(ServletRegistrationBean.class).isInstanceOf(
                                 ServletRegistrationBeanConfiguration.MockServletRegistrationBean.class));
+    }
+
+    @Test
+    void websocketEndpointExporter_onlyWithSpringWebsocket() {
+        WebApplicationContextRunner runner = new WebApplicationContextRunner()
+                .withConfiguration(AutoConfigurations
+                        .of(SpringBootAutoConfiguration.class));
+        runner.run(context -> assertThat(context)
+                .hasSingleBean(VaadinWebsocketEndpointExporter.class)
+                .doesNotHaveBean(
+                        SpringBootAutoConfiguration.MissingWebsocketConfiguration.class));
+        runner.withClassLoader(
+                new FilteredClassLoader(ServerEndpointExporter.class))
+                .run(context -> assertThat(context).hasNotFailed()
+                        .doesNotHaveBean(ServerEndpointExporter.class)
+                        .hasSingleBean(
+                                SpringBootAutoConfiguration.MissingWebsocketConfiguration.class));
     }
 
     @Configuration(proxyBeanMethods = false)

@@ -1,0 +1,12 @@
+name: vaadin-flow-codestart
+ref: vaadin-flow
+type: code
+tags: extension-codestart
+metadata:
+  title: Vaadin Flow example
+  description: This is an example application to get started with Vaadin Flow. It generates a simple view interacting with an injected service
+  related-guide-section: https://vaadin.com/docs/latest/flow/integrations/quarkus
+language:
+  base:
+    data:
+      vaadinVersion: ${vaadin.version}

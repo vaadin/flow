@@ -81,6 +81,8 @@ public class ResourceContentHash {
      * The cache is static and keyed by resource path only, so it outlives the
      * service that filled it. Tests that assert on hashed URLs need to reset it
      * to avoid observing a hash computed for the same path by another test.
+     * 
+     * @since 25.2.9
      */
     public static void clearCache() {
         cache.clear();

@@ -47,6 +47,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
@@ -109,10 +110,19 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger(Hotswapper.class);
+    /** The sessions that have at least one UI, so that they can be updated. */
     private final Set<VaadinSession> sessions = ConcurrentHashMap.newKeySet();
+
+    /** The service this hotswapper is registered on. */
     private final VaadinService vaadinService;
+
+    /** Used to tell the browser to refresh or reload, may be {@code null}. */
     private final BrowserLiveReload liveReload;
+
+    /** The hotswappers the events are delegated to, in priority order. */
     private final Collection<VaadinHotswapper> hotSwappers;
+
+    /** Set when the service is destroyed, so that late events are ignored. */
     private volatile boolean serviceDestroyed = false;
 
     Hotswapper(VaadinService vaadinService) {
@@ -154,7 +164,6 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     /**
      * Called by hotswap tools when one or more application classes have been
      * updated.
-     * <p>
      * <p>
      * This method delegates update operations to registered
      * {@link VaadinHotswapper} implementors. invoking first
@@ -275,6 +284,11 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                     "Hotswap event ignored because Hotswapper has been called without changes to apply.");
             return;
         }
+
+        // Caches needed up to date by hotswappers must be cleared before they
+        // run; all other reflection caches are cleared by
+        // ReflectionCacheHotswapper after them
+        classes.forEach(ReflectionCache::clearBeforeHotswap);
 
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 redefined);
@@ -457,9 +471,12 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                 .distinct().toList();
 
         if (redefined) {
-            // A full chain refresh should be triggered if there are modal
-            // components, since they could be attached to UI or parent layouts
-            if (ui.hasModalComponent()) {
+            // A full chain refresh should be triggered if there are components
+            // with modality, since they could be attached to UI or parent
+            // layouts. Both strictly and visually modal components are taken
+            // into account, as for example dialogs are visually modal by
+            // default.
+            if (ui.getInternals().hasModalityComponent()) {
                 refreshStrategy = UIRefreshStrategy.PUSH_REFRESH_CHAIN;
             } else if (!targetChainChangedItems.isEmpty()) {
                 refreshStrategy = targetChainChangedItems.stream()
@@ -620,12 +637,11 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     @Override
     public void uiInit(UIInitEvent event) {
         UI ui = event.getUI();
-        sessions.add(ui.getSession());
+        sessions.add(ui.getSessionOrThrow());
     }
 
     /**
      * Register the hotwsapper entry point for the given {@link VaadinService}.
-     * <p>
      * <p>
      * The hotswapper is registered only in development mode.
      * <p>

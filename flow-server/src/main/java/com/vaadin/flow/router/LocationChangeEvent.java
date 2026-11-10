@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
@@ -40,6 +42,7 @@ public class LocationChangeEvent extends EventObject {
 
     private int statusCode = HttpStatusCode.OK.getCode();
     private NavigationHandler rerouteTarget;
+    private boolean navigationCommitted;
 
     private List<HasElement> routeTargetChain;
 
@@ -146,6 +149,10 @@ public class LocationChangeEvent extends EventObject {
     /**
      * Gets the HTTP status code that will be returned for the client if this
      * location change is an initial rendering request.
+     * <p>
+     * The router reads this value right after the route target has been shown
+     * and before the after-navigation events are fired, so a value set from an
+     * {@link AfterNavigationEvent} is never returned to the client.
      *
      * @return the http status code
      */
@@ -156,11 +163,26 @@ public class LocationChangeEvent extends EventObject {
     /**
      * Sets the HTTP status code that will be returned for the client if this
      * location change is an initial rendering request.
+     * <p>
+     * Only effective while the navigation is still being resolved, i.e. from
+     * {@link HasErrorParameter#setErrorParameter(BeforeEnterEvent, ErrorParameter)}.
+     * The router has already read the status code by the time the
+     * after-navigation events are fired, so a value set from an
+     * {@link AfterNavigationEvent} never reaches the client. It is still
+     * returned by {@link #getStatusCode()}, and setting it that late logs a
+     * warning.
      *
      * @param statusCode
      *            the http status code
      */
     public void setStatusCode(int statusCode) {
+        if (navigationCommitted) {
+            LoggerFactory.getLogger(LocationChangeEvent.class).warn(
+                    """
+                            setStatusCode({}) for location '{}' has no effect on the response: the navigation has already been committed and status code {} has been returned to the client. \
+                            Set the status code from HasErrorParameter.setErrorParameter(..), or reroute with BeforeEvent.rerouteToError(..) from a BeforeEnterObserver.""",
+                    statusCode, location.getPath(), this.statusCode);
+        }
         this.statusCode = statusCode;
     }
 
@@ -170,7 +192,10 @@ public class LocationChangeEvent extends EventObject {
      *
      * @return and optional navigation handler, or an empty optional if no
      *         reroute target has been set
+     * @deprecated the router never reads this value; use
+     *             {@link BeforeEvent#getRerouteTarget()} instead
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public Optional<NavigationHandler> getRerouteTarget() {
         return Optional.ofNullable(rerouteTarget);
     }
@@ -179,13 +204,29 @@ public class LocationChangeEvent extends EventObject {
      * Reroutes the navigation to use the provided navigation handler instead of
      * the currently used handler.
      * <p>
-     * This function doesn't change the browser URL.
+     * This method has no effect on the navigation: the router does not read the
+     * reroute target of a {@code LocationChangeEvent}, and the only event
+     * handing one out, {@link AfterNavigationEvent}, fires when the navigation
+     * can no longer be changed. The target is still returned by
+     * {@link #getRerouteTarget()}, and setting it logs a warning.
      *
      * @param rerouteTarget
      *            the navigation handler to use, or {@code null} to clear a
      *            previously set reroute target
+     * @deprecated reroute from a {@link BeforeEnterObserver} or
+     *             {@link BeforeLeaveObserver} with
+     *             {@link BeforeEvent#rerouteTo(NavigationHandler, NavigationState)}
+     *             instead
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public void rerouteTo(NavigationHandler rerouteTarget) {
+        if (rerouteTarget != null) {
+            LoggerFactory.getLogger(LocationChangeEvent.class).warn(
+                    """
+                            rerouteTo({}) for location '{}' has no effect: LocationChangeEvent cannot reroute a navigation, and the target is never read. \
+                            Reroute from a BeforeEnterObserver or BeforeLeaveObserver using BeforeEvent.rerouteTo(..) or forwardTo(..) instead.""",
+                    rerouteTarget.getClass().getName(), location.getPath());
+        }
         this.rerouteTarget = rerouteTarget;
     }
 
@@ -193,14 +234,28 @@ public class LocationChangeEvent extends EventObject {
      * Reroutes the navigation to show the given component instead of the
      * component that is currently about to be displayed.
      * <p>
-     * This function doesn't change the browser URL.
+     * This method has no effect on the navigation, see
+     * {@link #rerouteTo(NavigationHandler)}.
      *
      * @param rerouteTargetState
      *            the target navigation state of the rerouting, not {@code null}
+     * @deprecated reroute from a {@link BeforeEnterObserver} or
+     *             {@link BeforeLeaveObserver} with
+     *             {@link BeforeEvent#rerouteTo(NavigationState)} instead
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public void rerouteTo(NavigationState rerouteTargetState) {
         Objects.requireNonNull(rerouteTargetState,
                 "rerouteTargetState cannot be null");
         rerouteTo(new NavigationStateRenderer(rerouteTargetState));
+    }
+
+    /**
+     * Marks the navigation as committed, i.e. the route target has been shown
+     * and the status code has been read, so that mutating this event is
+     * reported as a no-op instead of failing silently.
+     */
+    void markNavigationCommitted() {
+        navigationCommitted = true;
     }
 }

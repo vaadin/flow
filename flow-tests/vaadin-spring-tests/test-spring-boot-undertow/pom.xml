@@ -15,6 +15,16 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- A BOM imported here outranks the one inherited from flow-project,
+                 so junit-bom goes before spring-boot-dependencies to keep the
+                 JUnit version that Flow manages -->
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit.jupiter.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>

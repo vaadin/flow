@@ -40,7 +40,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -64,6 +63,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -92,29 +96,27 @@ class UploadTransferProgressTest {
             }
         };
         streamResourceRegistry = new StreamResourceRegistry(session);
-        request = Mockito.mock(VaadinServletRequest.class);
-        ServletContext servletContext = Mockito.mock(ServletContext.class);
-        Mockito.when(servletContext.getMimeType(Mockito.anyString()))
-                .thenReturn(null);
-        Mockito.when(request.getServletContext()).thenReturn(servletContext);
-        element = Mockito.mock(Element.class);
-        response = Mockito.mock(VaadinResponse.class);
+        request = mock(VaadinServletRequest.class);
+        ServletContext servletContext = mock(ServletContext.class);
+        when(servletContext.getMimeType(anyString())).thenReturn(null);
+        when(request.getServletContext()).thenReturn(servletContext);
+        element = mock(Element.class);
+        response = mock(VaadinResponse.class);
         // The upload content is served through the multipart Part; individual
         // tests re-stub this to control the bytes and reads they need.
-        part = Mockito.mock(Part.class);
-        Mockito.when(part.getInputStream())
+        part = mock(Part.class);
+        when(part.getInputStream())
                 .thenReturn(createRandomBytes(DUMMY_CONTENT_LENGTH));
-        Component componentOwner = Mockito.mock(Component.class);
-        Mockito.when(element.getComponent())
-                .thenReturn(Optional.of(componentOwner));
-        ui = Mockito.mock(UI.class);
+        Component componentOwner = mock(Component.class);
+        when(element.getComponent()).thenReturn(Optional.of(componentOwner));
+        ui = mock(UI.class);
         // run the command immediately
-        Mockito.doAnswer(invocation -> {
+        doAnswer(invocation -> {
             Command command = invocation.getArgument(0);
             command.execute();
             return null;
-        }).when(ui).access(Mockito.any(Command.class));
-        Mockito.when(componentOwner.getUI()).thenReturn(Optional.of(ui));
+        }).when(ui).access(any(Command.class));
+        when(componentOwner.getUI()).thenReturn(Optional.of(ui));
 
         uploadEvent = new UploadEvent(request, response, session,
                 DUMMY_FILE_NAME, DUMMY_CONTENT_LENGTH,
@@ -187,10 +189,9 @@ class UploadTransferProgressTest {
         List<String> invocations = new ArrayList<>();
 
         InputStream inputStream = mock(InputStream.class);
-        Mockito.doThrow(new IOException("Test exception")).when(inputStream)
-                .read(Mockito.any(byte[].class), Mockito.anyInt(),
-                        Mockito.anyInt());
-        Mockito.when(part.getInputStream()).thenReturn(inputStream);
+        doThrow(new IOException("Test exception")).when(inputStream)
+                .read(any(byte[].class), anyInt(), anyInt());
+        when(part.getInputStream()).thenReturn(inputStream);
 
         UploadHandler handler = UploadHandler.toTempFile((meta, file) -> {
         }, createErrorTransferProgressListener(invocations));
@@ -224,10 +225,9 @@ class UploadTransferProgressTest {
         List<String> invocations = new ArrayList<>();
 
         InputStream inputStream = mock(InputStream.class);
-        Mockito.doThrow(new IOException("Test exception")).when(inputStream)
-                .read(Mockito.any(byte[].class), Mockito.anyInt(),
-                        Mockito.anyInt());
-        Mockito.when(part.getInputStream()).thenReturn(inputStream);
+        doThrow(new IOException("Test exception")).when(inputStream)
+                .read(any(byte[].class), anyInt(), anyInt());
+        when(part.getInputStream()).thenReturn(inputStream);
 
         UploadHandler handler = UploadHandler.inMemory((meta, bytes) -> {
         }, createErrorTransferProgressListener(invocations));

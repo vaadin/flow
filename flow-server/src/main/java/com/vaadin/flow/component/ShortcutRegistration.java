@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,11 +52,6 @@ public class ShortcutRegistration implements Registration, Serializable {
     static final String LISTEN_ON_COMPONENTS_SHOULD_NOT_CONTAIN_NULL = "listenOnComponents should not contain null!";
     static final String LISTEN_ON_COMPONENTS_SHOULD_NOT_HAVE_DUPLICATE_ENTRIES = "listenOnComponents should not have duplicate entries!";
 
-    // Client helper resource lazily loaded per UI (see initShortcutClient),
-    // holding the origin guards and the keydown delegate (#24974).
-    static final String SHORTCUT_CLIENT_JS = "META-INF/frontend/FlowShortcut.js";
-    static final String SHORTCUT_CLIENT_INITIALIZED = "_shortcut_client_initialized";
-
     private boolean allowDefaultBehavior = false;
     private boolean allowEventPropagation = false;
 
@@ -71,13 +64,13 @@ public class ShortcutRegistration implements Registration, Serializable {
     // where a counter would restart and new shortcuts could reuse a restored
     // token.
     static final String SHORTCUT_OWNER_ATTRIBUTE = "data-vaadin-shortcut-owner";
-    private final String ownerToken = "sc-" + UUID.randomUUID();
+    private String ownerToken;
 
     private boolean resetFocusOnActiveElement = false;
 
     static final String LISTEN_ON_INITIALIZED = "_initialized_listen_on_for_component";
 
-    private Set<Key> modifiers = new HashSet<>(2);
+    private final Set<Key> modifiers = HashSet.newHashSet(2);
     private Key primaryKey = null;
 
     private StateTree.ExecutionRegistration executionRegistration;
@@ -95,11 +88,11 @@ public class ShortcutRegistration implements Registration, Serializable {
     private SerializableSupplier<Component[]> listenOnSuppliers;
 
     // used to determine, if we need to do something before client response
-    private AtomicBoolean isDirty = new AtomicBoolean(false);
+    private final AtomicBoolean isDirty = new AtomicBoolean(false);
 
     private ShortcutEventListener eventListener;
 
-    private List<Registration> registrations = new ArrayList<>();
+    private final List<Registration> registrations = new ArrayList<>();
 
     private DisabledUpdateMode mode = DisabledUpdateMode.ONLY_WHEN_ENABLED;
 
@@ -135,11 +128,6 @@ public class ShortcutRegistration implements Registration, Serializable {
                 initListenOnComponent();
                 addListenOnDetachListeners();
             }
-
-            // Load the client helpers before the shortcut listeners/filters
-            // that reference them are queued for this response.
-            lifecycleOwner.getUI()
-                    .ifPresent(ShortcutRegistration.this::initShortcutClient);
 
             for (int i = 0; i < listenOnComponents.length; i++) {
                 updateHandlerListenerRegistration(i);
@@ -921,7 +909,7 @@ public class ShortcutRegistration implements Registration, Serializable {
             executionRegistration.remove();
         }
 
-        executionRegistration = lifecycleOwner.getUI().get()
+        executionRegistration = lifecycleOwner.getUIOrThrow()
                 .beforeClientResponse(lifecycleOwner,
                         beforeClientResponseConsumer);
     }
@@ -990,7 +978,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     private static String generateNestedModalOriginFilter(String boundaryExpr) {
         // Delegate path: the boundary element is the listener element the
         // delegate re-dispatches to. Evaluated on the original event, so its
-        // composedPath is correct. Helper defined in FlowShortcut.js.
+        // composedPath is correct. Helper defined in Shortcut.ts.
         return "window.Vaadin.Flow.shortcut.eventWithinBoundary(event, "
                 + boundaryExpr + ")";
     }
@@ -1010,11 +998,43 @@ public class ShortcutRegistration implements Registration, Serializable {
      * @return the guard expression
      */
     private String generateOwnerScopeFilter() {
+        final String token = getOwnerToken();
+        if (token == null) {
+            // Only reached while the guard is on, so the owner is the UI, i.e.
+            // <body>, which can never be inside an open popover/modal. Sharing
+            // its scope therefore just means the event did not originate inside
+            // one, which needs no owner token and so keeps the filter text
+            // identical for every UI-owned shortcut (#25624).
+            return "window.Vaadin.Flow.shortcut.eventInTopLevelScope(event)";
+        }
         // Normal path: locate the owner element via its marker attribute and
         // fire only when it shares the event's popover/modal scope. Helper
-        // defined in FlowShortcut.js.
+        // defined in Shortcut.ts.
         return "window.Vaadin.Flow.shortcut.eventInOwnerScope(event, '["
-                + SHORTCUT_OWNER_ATTRIBUTE + "~=\"" + ownerToken + "\"]')";
+                + SHORTCUT_OWNER_ATTRIBUTE + "~=\"" + token + "\"]')";
+    }
+
+    /**
+     * The marker token of this registration, generated on first use.
+     * <p>
+     * A token is needed only when the owner element has to be marked for the
+     * client-side origin guard to locate it, which is the case unless the guard
+     * is off ({@link #allowEventsFromNestedModals}) or the lifecycle owner is
+     * the UI, which the guard locates without a marker. Skipping the token
+     * matters: it makes the listener filter text unique per registration, and
+     * that text is kept for the lifetime of the UI by the client's compiled
+     * expression cache and by both constant pools (#25624).
+     *
+     * @return the marker token, or {@code null} if none is needed
+     */
+    private String getOwnerToken() {
+        if (allowEventsFromNestedModals || lifecycleOwner instanceof UI) {
+            return null;
+        }
+        if (ownerToken == null) {
+            ownerToken = "sc-" + UUID.randomUUID();
+        }
+        return ownerToken;
     }
 
     /**
@@ -1030,28 +1050,33 @@ public class ShortcutRegistration implements Registration, Serializable {
         if (element == null) {
             return;
         }
-        if (allowEventsFromNestedModals) {
+        final String token = getOwnerToken();
+        if (token == null) {
             removeOwnerToken(element);
         } else {
-            addOwnerToken(element);
+            addOwnerToken(element, token);
         }
     }
 
-    private void addOwnerToken(Element element) {
+    private void addOwnerToken(Element element, String token) {
         final String current = element.getAttribute(SHORTCUT_OWNER_ATTRIBUTE);
         if (current == null || current.isBlank()) {
-            element.setAttribute(SHORTCUT_OWNER_ATTRIBUTE, ownerToken);
+            element.setAttribute(SHORTCUT_OWNER_ATTRIBUTE, token);
             return;
         }
         final Set<String> tokens = new LinkedHashSet<>(
                 Arrays.asList(current.trim().split("\\s+")));
-        if (tokens.add(ownerToken)) {
+        if (tokens.add(token)) {
             element.setAttribute(SHORTCUT_OWNER_ATTRIBUTE,
                     String.join(" ", tokens));
         }
     }
 
     private void removeOwnerToken(Element element) {
+        if (ownerToken == null) {
+            // No token was ever created, so nothing was ever marked.
+            return;
+        }
         final String current = element.getAttribute(SHORTCUT_OWNER_ATTRIBUTE);
         if (current == null || current.isBlank()) {
             return;
@@ -1109,35 +1134,6 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * Lazily loads the shortcut client helpers ({@code FlowShortcut.js}) into
-     * the given UI, once per UI, mirroring how {@code WebPush} loads its client
-     * code. The helpers back the popover/modal origin guards and the keydown
-     * delegate, so they must be present before the shortcut listeners that
-     * reference them run on the client.
-     */
-    private void initShortcutClient(UI ui) {
-        if (ComponentUtil.getData(ui, SHORTCUT_CLIENT_INITIALIZED) != null) {
-            return;
-        }
-        ComponentUtil.setData(ui, SHORTCUT_CLIENT_INITIALIZED, Boolean.TRUE);
-        try (InputStream stream = ShortcutRegistration.class.getClassLoader()
-                .getResourceAsStream(SHORTCUT_CLIENT_JS)) {
-            if (stream == null) {
-                throw new IOException("resource not found on the classpath");
-            }
-            ui.getPage().executeJs(
-                    StringUtil.removeComments(StringUtil.toUTF8String(stream)));
-        } catch (IOException e) {
-            // Loading failed: clear the flag so a later registration retries.
-            ComponentUtil.setData(ui, SHORTCUT_CLIENT_INITIALIZED, null);
-            throw new IllegalStateException(
-                    "Could not load shortcut client code from "
-                            + SHORTCUT_CLIENT_JS,
-                    e);
-        }
-    }
-
-    /**
      * Get the sent listenOn event data or initialize new listenOn data.
      *
      * @param listenOn
@@ -1162,7 +1158,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * store them by hash.
      */
     private static class HashableKey implements Key {
-        private Key key;
+        private final Key key;
         private Integer hashcode;
 
         HashableKey(Key key) {

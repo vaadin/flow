@@ -20,8 +20,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
@@ -30,6 +28,8 @@ import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.WebComponentExporterFactory.DefaultWebComponentExporterFactory;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -60,12 +60,10 @@ class WebComponentExporterUtilsTest {
         assertTrue(
                 anotherFactory instanceof DefaultWebComponentExporterFactory);
         WebComponentExporter exporter = anotherFactory.create();
-        MatcherAssert.assertThat(exporter,
-                CoreMatchers.instanceOf(GoodExporter.class));
+        assertThat(exporter, instanceOf(GoodExporter.class));
 
         exporter = factory.create();
-        MatcherAssert.assertThat(exporter,
-                CoreMatchers.instanceOf(NoDefaultCtorExporter.class));
+        assertThat(exporter, instanceOf(NoDefaultCtorExporter.class));
     }
 
     public static class GoodExporter extends WebComponentExporter<Component> {

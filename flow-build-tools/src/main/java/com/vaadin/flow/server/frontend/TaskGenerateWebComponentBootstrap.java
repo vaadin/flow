@@ -24,6 +24,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.internal.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
 import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
+import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
 import static com.vaadin.flow.internal.FrontendUtils.WEB_COMPONENT_BOOTSTRAP_FILE_NAME;
 
 /**
@@ -59,6 +60,7 @@ public class TaskGenerateWebComponentBootstrap
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
         lines.add(String.format("import './%s';%n", FEATURE_FLAGS_FILE_NAME));
+        lines.add(String.format("import './%s';%n", JS_DEFINITIONS_FILE_NAME));
         lines.add("import 'Frontend/generated/flow/"
                 + FrontendUtils.IMPORTS_WEB_COMPONENT_NAME + "';");
         // By path rather than through the `vaadin-flow-client` specifier that
@@ -68,6 +70,15 @@ public class TaskGenerateWebComponentBootstrap
         lines.add("import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT
                 + "FlowClient.js';");
         lines.add("init();");
+        // Server-side APIs such as Element.sizeSignal() rely on the browser
+        // helpers that Flow.ts installs for regular applications.
+        lines.add("import '" + FrontendUtils.JAR_RESOURCES_IMPORT
+                + "BrowserHelpers.js';");
+        // The connection state and the loading indicator, which Flow.ts also
+        // imports for regular applications. Importing it from the engine
+        // instead would pull Lit into the dev-mode pre-bundle of the engine.
+        lines.add("import '" + FrontendUtils.JAR_RESOURCES_IMPORT
+                + "ConnectionIndicator.js';");
 
         applyCssImportWhenNoTheme(lines);
         return String.join("\n", lines);

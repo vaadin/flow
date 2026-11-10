@@ -52,6 +52,12 @@ import com.vaadin.flow.router.AccessDeniedException;
  * }
  *
  * public class CustomAccessDeniedException extends RuntimeException {
+ *     public CustomAccessDeniedException() {
+ *     }
+ *
+ *     public CustomAccessDeniedException(String message) {
+ *         super(message);
+ *     }
  * }
  *
  * &#64;Tag(Tag.DIV)
@@ -61,11 +67,20 @@ import com.vaadin.flow.router.AccessDeniedException;
  *     &#64;Override
  *     public int setErrorParameter(BeforeEnterEvent event,
  *             {@code ErrorParameter<CustomAccessDeniedException>} parameter) {
- *         getElement().setText("Access denied.");
+ *         getElement().setText(parameter.hasCustomMessage()
+ *                 ? parameter.getCustomMessage() : "Access denied.");
  *         return HttpStatusCode.UNAUTHORIZED.getCode();
  *     }
  * }
  * </pre>
+ * <p>
+ * Note that the exception class named by {@link #rerouteToError()} is
+ * instantiated reflectively when access is denied, so it needs to have a public
+ * no-arg constructor. That is why {@code CustomAccessDeniedException} above
+ * declares one explicitly: giving the exception only a message constructor
+ * would remove the implicit no-arg constructor and make the access denied
+ * navigation fail with an internal server error instead of showing the error
+ * view.
  * 
  * @since 24.3
  */
@@ -79,6 +94,14 @@ public @interface AccessDeniedErrorRouter {
      * exception like {@link com.vaadin.flow.router.NotFoundException} or any
      * other exception mapped to
      * {@link com.vaadin.flow.router.HasErrorParameter} error view.
+     * <p>
+     * Exception class needs to have default no-arg constructor, since the
+     * exception is instantiated by
+     * {@link com.vaadin.flow.router.BeforeEvent#rerouteToError(Class, String)}
+     * when access is denied. The exception does not need to carry the reason
+     * for the denial: the reason is passed separately to the error view and is
+     * available there as
+     * {@link com.vaadin.flow.router.ErrorParameter#getCustomMessage()}.
      *
      * @return Type of the access denied exception for the access denied error
      *         view.

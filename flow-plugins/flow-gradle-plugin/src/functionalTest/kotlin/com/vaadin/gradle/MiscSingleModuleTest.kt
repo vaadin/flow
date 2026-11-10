@@ -23,6 +23,7 @@ import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Test
 import java.io.File
+import kotlin.io.path.createTempDirectory
 import kotlin.test.expect
 import org.junit.Ignore
 
@@ -75,7 +76,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         val tokenFileContent = JacksonUtils.readTree(tokenJson!!)
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
-        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).stringValue() }
     }
 
     @Test
@@ -86,7 +87,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         val tokenFileContent = JacksonUtils.readTree(tokenJson!!)
         expect("app-" + StringUtil.getHash("my-test-project",
             java.nio.charset.StandardCharsets.UTF_8
-        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).stringValue() }
     }
 
     /**
@@ -314,7 +315,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             repositories {
                 mavenLocal()
                 mavenCentral()
-                maven { url 'https://maven.vaadin.com/vaadin-prereleases' }
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
 
             dependencies {
@@ -767,7 +768,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             repositories {
                 mavenLocal()
                 mavenCentral()
-                maven { url 'https://maven.vaadin.com/vaadin-prereleases' }
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
 
             sourceSets {
@@ -938,7 +939,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         val tokenFileContent = JacksonUtils.readTree(tokenJson!!)
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
-        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).stringValue() }
 
         // Delete the cached token file so that Gradle's up-to-date check
         // detects a missing output and re-executes vaadinBuildFrontend.
@@ -957,7 +958,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         val newTokenFileContent = JacksonUtils.readTree(cachedTokenFile.readText())
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
-        )) { newTokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+        )) { newTokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).stringValue() }
     }
 
     @Test
@@ -1106,7 +1107,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         // A shared local build cache used by both the original and the
         // relocated copy. Declared in settings.gradle so it is independent of
         // each project's own location.
-        val buildCacheDir = createTempDir("junit-vaadin-gradle-buildcache")
+        val buildCacheDir = createTempDirectory("junit-vaadin-gradle-buildcache").toFile()
         val buildCachePath = buildCacheDir.absolutePath.replace('\\', '/')
 
         // A fixed rootProject.name keeps the generated application identifier

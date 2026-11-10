@@ -139,7 +139,7 @@ export class XhrResponseHandler {
 
     this.#registry.getConnectionStateHandler().xhrOk();
     Console.debug(`Received xhr message: ${responseText}`);
-    this.#registry.getMessageHandler().handleMessage(json);
+    this.#registry.getMessageHandler().handleMessage(json, this.#payload);
   }
 }
 
@@ -163,9 +163,14 @@ export class XhrConnection {
       },
       false
     );
-    this.#registry.getRequestResponseTracker().addResponseHandlingEndedHandler(() => {
-      this.#webkitMaybeIgnoringRequests = false;
-    });
+  }
+
+  /**
+   * Stops re-sending requests that WebKit may have ignored while the page was
+   * unloading; called when a request ends, as a response has then arrived.
+   */
+  clearWebkitMaybeIgnoringRequests(): void {
+    this.#webkitMaybeIgnoringRequests = false;
   }
 
   /**

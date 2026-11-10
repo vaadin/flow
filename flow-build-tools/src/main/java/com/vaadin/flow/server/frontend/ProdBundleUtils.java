@@ -108,6 +108,7 @@ public class ProdBundleUtils {
      * @return {@code true} if the file is part of the bundle
      * @throws IOException
      *             if an I/O exception occurs.
+     * @since 25.3
      */
     public static boolean hasBundleFile(File projectDir, ClassFinder finder,
             String filename) throws IOException {

@@ -140,6 +140,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeFeatureRegistry",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeFeatures",
                 "com\\.vaadin\\.flow\\.internal\\.CustomElementNameValidator",
+                "com\\.vaadin\\.flow\\.internal\\.CspViolationReporter",
+                "com\\.vaadin\\.flow\\.internal\\.StackTraceUtil",
                 "com\\.vaadin\\.flow\\.router\\.HighlightActions",
                 "com\\.vaadin\\.flow\\.router\\.HighlightConditions",
                 "com\\.vaadin\\.flow\\.router\\.ParameterDeserializer",
@@ -210,6 +212,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.component\\.template\\.internal\\.InjectableFieldConsumer",
                 "com\\.vaadin\\.flow\\.component\\.template\\.internal\\.ParserData",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentMetaData(\\$.*)?",
+                "com\\.vaadin\\.flow\\.js\\.JsCall\\$DeclaredMethod",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentTracker",
                 "com\\.vaadin\\.flow\\.dom\\.ElementEffect",
                 "com\\.vaadin\\.flow\\.dom\\.ElementFactory",
@@ -232,6 +235,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.communication\\.WebComponentBootstrapHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.streams\\.TransferContext",
                 "com\\.vaadin\\.flow\\.server\\.streams\\.DownloadEvent",
+                "com\\.vaadin\\.flow\\.server\\.streams\\.AbstractDownloadHandler\\$ClientOutputStream",
+                "com\\.vaadin\\.flow\\.server\\.streams\\.AbstractDownloadHandler\\$SeekableContent",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.StreamRequestHandler\\$PathData",
                 "com\\.vaadin\\.flow\\.server\\.streams\\.UploadEvent",
                 "com\\.vaadin\\.flow\\.server\\.streams\\.UploadMetadata",
@@ -268,17 +273,18 @@ public abstract class ClassesSerializableTest extends ClassFinder {
 
                 // Static Utilities
                 "com\\.vaadin\\.flow\\.component\\.wakelock\\.WakeLock",
+                "com\\.vaadin\\.flow\\.js\\.JsDefinitionProxy",
+                "com\\.vaadin\\.flow\\.js\\.JsSnippets",
 
                 // Flow client classes
                 "com\\.vaadin\\.client\\..*",
-                "com\\.vaadin\\.flow\\.linker\\.ClientEngineLinker",
-                "com\\.vaadin\\.flow\\.linker\\.ClientEngineLinker\\$Script",
 
                 // Node downloader classes
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.DefaultFileDownloader(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.FileDownloader(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.NodeInstaller",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.NodeInstaller\\$InstallData",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.NodeInstaller\\$DefaultNodeChecksums",
                 "com\\.vaadin\\.flow\\.internal\\.Platform",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.ProxyConfig\\$Proxy",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.ProxyConfig",

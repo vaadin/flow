@@ -29,11 +29,12 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -48,7 +49,7 @@ class DeprecatedPropertyMigrationTest {
     @BeforeEach
     void setup() throws Exception {
         mojo = new PrepareFrontendMojo();
-        mockLog = Mockito.mock(Log.class);
+        mockLog = mock(Log.class);
         ReflectionUtils.setVariableValueInObject(mojo, "log", mockLog);
 
         project = new MavenProject();
@@ -159,7 +160,7 @@ class DeprecatedPropertyMigrationTest {
 
         resolve();
 
-        verify(mockLog, never()).warn(Mockito.any(CharSequence.class));
+        verify(mockLog, never()).warn(any(CharSequence.class));
     }
 
     @Test
@@ -191,7 +192,7 @@ class DeprecatedPropertyMigrationTest {
         assertEquals(Boolean.FALSE,
                 ReflectionUtils.getValueIncludingSuperclasses("skip", mojo));
 
-        verify(mockLog, never()).warn(Mockito.any(CharSequence.class));
+        verify(mockLog, never()).warn(any(CharSequence.class));
     }
 
     @Test

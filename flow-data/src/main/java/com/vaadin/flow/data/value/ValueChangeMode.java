@@ -59,8 +59,8 @@ public enum ValueChangeMode {
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/Events/blur">Blur
      *      event description</a>
-     * @deprecated This mode is deprecated and will be removed in Vaadin 27. Use
-     *             {@link #ON_CHANGE} instead: it also triggers when the
+     * @deprecated This mode is deprecated and scheduled to be removed in Vaadin
+     *             26. Use {@link #ON_CHANGE} instead: it also triggers when the
      *             component loses focus, but only if the value has actually
      *             changed, and it additionally covers cases that ON_BLUR
      *             misses, for example clicking TextField's clear button while

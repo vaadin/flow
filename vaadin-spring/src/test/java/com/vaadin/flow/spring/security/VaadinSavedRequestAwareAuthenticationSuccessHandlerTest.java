@@ -17,9 +17,11 @@ package com.vaadin.flow.spring.security;
 
 import jakarta.servlet.http.HttpSession;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,6 +34,11 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
 
@@ -271,8 +278,8 @@ class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
                 "spring-csrf-header-name", "spring-csrf-parameter-name",
                 "spring-csrf-token-value");
 
-        var mockCsrfTokenRepository = Mockito.mock(CsrfTokenRepository.class);
-        Mockito.when(mockCsrfTokenRepository.generateToken(Mockito.any()))
+        var mockCsrfTokenRepository = mock(CsrfTokenRepository.class);
+        when(mockCsrfTokenRepository.generateToken(any()))
                 .thenReturn(springCsrfToken);
         vaadinSavedRequestAwareAuthenticationSuccessHandler
                 .setCsrfTokenRepository(mockCsrfTokenRepository);
@@ -293,9 +300,84 @@ class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
         assertEquals("spring-csrf-token-value",
                 loginResponse.getHeader("Spring-CSRF-token"));
 
-        Mockito.verify(mockCsrfTokenRepository, Mockito.times(1))
-                .generateToken(loginRequest);
-        Mockito.verify(mockCsrfTokenRepository, Mockito.times(1))
-                .saveToken(springCsrfToken, loginRequest, loginResponse);
+        verify(mockCsrfTokenRepository, times(1)).generateToken(loginRequest);
+        verify(mockCsrfTokenRepository, times(1)).saveToken(springCsrfToken,
+                loginRequest, loginResponse);
+    }
+
+    @Test
+    void successUrlResolver_savedUrl_nonTypescriptClients_redirectToResolvedUrl()
+            throws Exception {
+        HttpSessionRequestCache cache = new HttpSessionRequestCache();
+        MockHttpServletRequest firstRequest = RequestUtilTest
+                .createRequest("/the-saved-url");
+        HttpSession session = firstRequest.getSession();
+        cache.saveRequest(firstRequest, new MockHttpServletResponse());
+
+        MockHttpServletRequest loginRequest = RequestUtilTest
+                .createRequest("/login");
+        loginRequest.setSession(session);
+        MockHttpServletResponse loginResponse = new MockHttpServletResponse();
+        List<String> savedUrls = new ArrayList<>();
+        vaadinSavedRequestAwareAuthenticationSuccessHandler
+                .setSuccessUrlResolver((request, authentication, savedUrl) -> {
+                    savedUrls.add(savedUrl);
+                    return "/landing-" + authentication.getName();
+                });
+        vaadinSavedRequestAwareAuthenticationSuccessHandler
+                .onAuthenticationSuccess(loginRequest, loginResponse,
+                        new UsernamePasswordAuthenticationToken("foo", "bar"));
+
+        assertEquals(List.of("http://localhost/the-saved-url?continue"),
+                savedUrls);
+        assertEquals(302, loginResponse.getStatus());
+        assertEquals("/landing-foo", loginResponse.getHeader("Location"));
+        assertNull(cache.getRequest(loginRequest, loginResponse));
+    }
+
+    @Test
+    void successUrlResolver_typescriptClient_resolvedUrlSentAsSavedUrl()
+            throws Exception {
+        MockHttpServletRequest loginRequest = RequestUtilTest
+                .createRequest("/login");
+        loginRequest.addHeader("source", "typescript");
+        MockHttpServletResponse loginResponse = new MockHttpServletResponse();
+        vaadinSavedRequestAwareAuthenticationSuccessHandler
+                .setSuccessUrlResolver(
+                        (request, authentication, savedUrl) -> "/landing");
+        vaadinSavedRequestAwareAuthenticationSuccessHandler
+                .onAuthenticationSuccess(loginRequest, loginResponse,
+                        new UsernamePasswordAuthenticationToken("foo", "bar"));
+
+        assertEquals("success", loginResponse.getHeader("Result"));
+        assertEquals(200, loginResponse.getStatus());
+        assertEquals("/landing", loginResponse.getHeader("Saved-url"));
+    }
+
+    @Test
+    void successUrlResolverReturnsNull_viewAccessCheckerSavedUrl_redirectToSessionStoredUrl()
+            throws Exception {
+        MockHttpServletRequest loginRequest = RequestUtilTest
+                .createRequest("/login");
+        HttpSession session = loginRequest.getSession();
+        // Simulate NavigationAccessControl
+        session.setAttribute(
+                NavigationAccessControl.SESSION_STORED_REDIRECT_ABSOLUTE,
+                "http://localhost/last-route");
+        MockHttpServletResponse loginResponse = new MockHttpServletResponse();
+        List<String> savedUrls = new ArrayList<>();
+        vaadinSavedRequestAwareAuthenticationSuccessHandler
+                .setSuccessUrlResolver((request, authentication, savedUrl) -> {
+                    savedUrls.add(savedUrl);
+                    return null;
+                });
+        vaadinSavedRequestAwareAuthenticationSuccessHandler
+                .onAuthenticationSuccess(loginRequest, loginResponse,
+                        new UsernamePasswordAuthenticationToken("foo", "bar"));
+
+        assertEquals(List.of("http://localhost/last-route"), savedUrls);
+        assertEquals(302, loginResponse.getStatus());
+        assertEquals("http://localhost/last-route",
+                loginResponse.getHeader("Location"));
     }
 }

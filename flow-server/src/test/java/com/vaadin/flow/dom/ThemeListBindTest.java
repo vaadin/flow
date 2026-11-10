@@ -93,6 +93,10 @@ class ThemeListBindTest extends SignalsUnitTest {
         assertThrows(BindingActiveException.class,
                 () -> component.addThemeNames("locked", "open"));
         assertThrows(BindingActiveException.class,
+                () -> component.getThemeNames().add("locked open"));
+        assertFalse(component.hasThemeName("open"),
+                "A rejected space separated value should not be written at all");
+        assertThrows(BindingActiveException.class,
                 () -> component.removeThemeNames("locked", "open"));
         assertThrows(BindingActiveException.class,
                 () -> component.getThemeNames().retainAll(Set.of("open")));

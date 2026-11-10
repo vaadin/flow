@@ -28,8 +28,15 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
 public class NavigationAccessControlInitializer
         implements VaadinServiceInitListener {
 
+    /** The access control the listener installs on the service. */
     private final NavigationAccessControl accessControl;
 
+    /**
+     * Creates an initializer that installs the given access control.
+     *
+     * @param accessControl
+     *            the access control to install
+     */
     public NavigationAccessControlInitializer(
             NavigationAccessControl accessControl) {
         this.accessControl = accessControl;

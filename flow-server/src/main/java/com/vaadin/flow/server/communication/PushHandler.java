@@ -153,7 +153,7 @@ public class PushHandler {
 
         resource.getResponse().setContentType("text/plain; charset=UTF-8");
 
-        VaadinSession session = ui.getSession();
+        VaadinSession session = ui.getSessionOrThrow();
         String requestToken = resource.getRequest()
                 .getParameter(ApplicationConstants.PUSH_ID_PARAMETER);
         if (!isPushIdValid(session, requestToken)) {
@@ -231,8 +231,9 @@ public class PushHandler {
             // Refresh on client side
             sendRefreshAndDisconnect(resource);
         } catch (InvalidUIDLSecurityKeyException e) {
-            getLogger().warn("Invalid security key received from {}",
-                    resource.getRequest().getRemoteHost());
+            getLogger().debug(
+                    "Invalid cross-site request forgery protection key received from {}: {}",
+                    resource.getRequest().getRemoteHost(), e.getMessage());
             // Refresh on client side
             sendRefreshAndDisconnect(resource);
         } catch (MessageIdSyncException e) {
@@ -344,6 +345,10 @@ public class PushHandler {
                 session = service.findVaadinSession(vaadinRequest);
                 assert VaadinSession.getCurrent() == session;
             } catch (SessionExpiredException e) {
+                // Handled below in the same way as a missing session
+                getLogger().debug("Session expired for push request", e);
+            }
+            if (session == null) {
                 if (!isResourceDisconnected(resource)) {
                     sendNotificationAndDisconnect(resource,
                             VaadinService.createSessionExpiredJSON(true));
@@ -365,6 +370,7 @@ public class PushHandler {
                     callback.run(resource, ui);
                 }
             } catch (final IOException e) {
+                service.recordRequestFailure(vaadinRequest, e);
                 callErrorHandler(session, e);
             } catch (final Exception e) {
                 SystemMessages msg = service.getSystemMessages(
@@ -387,6 +393,7 @@ public class PushHandler {
                                 msg.getInternalErrorCaption(),
                                 msg.getInternalErrorMessage(), null,
                                 msg.getInternalErrorURL()));
+                service.recordRequestFailure(vaadinRequest, e);
                 callErrorHandler(session, e);
             } finally {
                 try {
@@ -512,6 +519,10 @@ public class PushHandler {
                     e);
             return session;
         }
+        if (session == null) {
+            getLogger().debug("No session found for the push disconnect event");
+            return null;
+        }
 
         UI ui;
         session.lock();
@@ -553,6 +564,17 @@ public class PushHandler {
             if (pushConnection == null) {
                 getLogger().warn(
                         "Could not find push connection to close: {} with transport {}",
+                        id, resource.transport());
+            } else if (pushConnection.getResource() != null
+                    && pushConnection.getResource() != resource) {
+                /*
+                 * The client has already reconnected and the connection uses a
+                 * newer resource, so this is a late event for the old one.
+                 * Atmosphere reuses the tracking id on reconnect, so the
+                 * resources are told apart by identity, not by uuid.
+                 */
+                getLogger().debug(
+                        "Ignoring disconnect of stale resource {} with transport {}",
                         id, resource.transport());
             } else {
                 if (!pushMode.isEnabled()) {

@@ -138,6 +138,8 @@ class ElementBindAttributeTest extends SignalsUnitTest {
 
         assertThrows(BindingActiveException.class,
                 () -> component.getElement().setAttribute("foo", "baz"));
+        assertThrows(BindingActiveException.class, () -> component.getElement()
+                .setAttribute("foo", (String) null));
         assertTrue(events.isEmpty());
     }
 
@@ -147,11 +149,15 @@ class ElementBindAttributeTest extends SignalsUnitTest {
         UI.getCurrent().add(component);
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
+        ValueSignal<String> nullSignal = new ValueSignal<>(null);
 
         component.getElement().bindAttribute("foo", signal);
+        component.getElement().bindAttribute("baz", nullSignal);
 
         assertThrows(BindingActiveException.class,
                 () -> component.getElement().removeAttribute("foo"));
+        assertThrows(BindingActiveException.class,
+                () -> component.getElement().removeAttribute("baz"));
         assertTrue(events.isEmpty());
     }
 
@@ -261,16 +267,26 @@ class ElementBindAttributeTest extends SignalsUnitTest {
 
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
 
-        component.getElement().bindAttribute("foo",
-                signal.map(value -> value ? "" : null));
+        Element element = component.getElement();
+        element.bindAttribute("foo", signal.map(value -> value ? "" : null));
 
-        assertEquals("", component.getElement().getAttribute("foo"));
+        assertEquals("", element.getAttribute("foo"));
+        assertTrue(element.getAttributeNames().anyMatch("foo"::equals));
 
         signal.set(false);
 
-        assertNull(component.getElement().getAttribute("foo"));
+        assertNull(element.getAttribute("foo"));
         // expecting whole attribute to be removed
-        assertFalse(component.getElement().hasAttribute("foo"));
+        assertFalse(element.hasAttribute("foo"));
+        assertFalse(element.getAttributeNames().anyMatch("foo"::equals),
+                "a removed attribute should not be listed among the attribute names");
+
+        // toggling the signal back adds the attribute again
+        signal.set(true);
+
+        assertEquals("", element.getAttribute("foo"));
+        assertTrue(element.hasAttribute("foo"));
+        assertTrue(element.getAttributeNames().anyMatch("foo"::equals));
         assertTrue(events.isEmpty());
     }
 

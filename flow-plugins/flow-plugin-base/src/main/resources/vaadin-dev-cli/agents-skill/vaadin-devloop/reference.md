@@ -32,6 +32,9 @@ dev server: [vite] Internal server error: Transform failed with 1 error: | [PARS
                                                               ← what and where, without opening the log
 ```
 
+A change-set that mixes Java with a stylesheet prints **both** lines, `hmr:` then
+`hot-reload:`, in the order the legs ran. Only the `hmr:` line answers for the stylesheet.
+
 A `no changes (... pom.xml changed; nothing to recompile or restart)` line is a *positive*
 answer, not a shrug: the pom edit was noticed, Maven re-resolved, and neither any module's
 compile classpath nor the app's runtime classpath moved — so the running app is already what the
@@ -60,7 +63,8 @@ logged since the last apply, which is where a failure that only appears when som
 the app turns up.
 
 `--json` gives `outcome`, `classification`, `changeSet`, `diagnostics[]`
-(`file`/`line`/`column`/`message`/`hint`), `logErrors[]`, `timings`, `nextAction`.
+(`file`/`line`/`column`/`message`/`hint`), `logErrors[]`, `timings`, `nextAction`, and a field
+per leg: `actionsTaken` for the redefine, `resourcePush` for the push.
 
 ## Which edits need a page reload
 
@@ -69,7 +73,8 @@ the app turns up.
 | CSS/icons under `META-INF/resources/` | updates in place, **no reload** |
 | Java in a **component/view** class (method bodies, string literals, most view code) | updates in place, **no reload** |
 | Java in a **plain class** (formatter, mapper, helper) called from a renderer | live immediately, but already-rendered output keeps its old values — `apply` says so and tells you to interact with the view or reload |
-| Structural Java (new fields/beans, new repository methods, changed routes or annotations) | restart → **reload the page** |
+| Structural Java — a new field, a new method, a new inner class — in an ordinary class | on a **JetBrains Runtime** enhanced class redefinition takes it like a method body: hot-swapped in place, **no reload**. On a stock JDK the JVM rejects the redefine, so `apply` **restarts** and names the reason |
+| Structural Java in a Spring bean, a Spring Data repository or any other proxied type | the live proxy was generated from the old shape, so `apply` **restarts** whatever the JVM → **reload the page** |
 | A JPA entity's mapping, or adding `@Entity` to a class | never hot-reloads; Hibernate fixes its metamodel and schema at startup, so `apply` escalates to a restart |
 | `application.properties`, or any resource outside `META-INF/resources/`, `static/`, `public/` and `resources/` | read while the app started and never re-read, so copying it changes nothing — `apply` **restarts** |
 | A deleted `src/main/resources/` file | the copy under `target/classes` is removed too, or the app would go on serving it; a public one then **reloads the page**, a startup one **restarts** |
@@ -112,6 +117,36 @@ With no browser at hand, `curl http://localhost:8080` only proves the app serves
 say so rather than reporting the UI as verified, and fall back to `./mvnw test` for the parts a
 test can cover.
 
+## WAR projects (a servlet container)
+
+A WAR has no main class, and the servlet container that runs it is a build plugin
+rather than a dependency — so the daemon starts it by running the project's own
+run goal (`jetty:run`) in the build's JVM. Everything above is unchanged: the same
+commands, the same exit codes, the same change-set rules. Once started,
+`status` names the runtime it chose, e.g. `runtime=jetty-ee10`.
+
+What is different is worth knowing:
+
+- **Nothing in the pom needs changing.** The plugin's rescanner (`<scan>`) and its
+  `<deployMode>` would both fight the loop — a rescanner redeploys the webapp
+  underneath an `apply` that has already succeeded, and a forked deploy mode makes
+  the app a grandchild of the daemon, losing its exit code. Maven gives a pom's
+  `<configuration>` precedence over the `-D` settings the daemon passes, so the
+  daemon overrides them through a build extension for its own run instead. You will
+  see a line like `[vaadin-dev] jetty-ee10-maven-plugin: using <scan>0</scan> for
+  this run (the pom says <scan>2</scan>)` in the app log. Your pom is not modified.
+- **A restart costs more**, because it is a Maven invocation rather than a bare
+  JVM launch. Edits that hot-swap are unaffected and still land in a second or
+  two; edits that escalate take longer than they would in a Spring Boot project.
+- **`src/main/webapp` is not tracked.** A servlet container serves it straight off
+  disk, so an edit there is already live — but `apply` will not mention it or
+  reload the page, and a `WEB-INF/web.xml` edit needs a `restart` you have to ask
+  for. Static files under `src/main/resources/META-INF/resources` are tracked
+  normally, and that is where a modern Vaadin WAR keeps them.
+- **There is no Spring**, so nothing has built a proxy from a class's old shape:
+  a structural edit is limited only by what the JVM itself accepts, which on a
+  JetBrains Runtime is most of them.
+
 ## When it goes wrong
 
 - `compiling → Failed` — diagnostics name file, line, column. Fix and re-apply.
@@ -133,12 +168,20 @@ test can cover.
   neither `setsid` nor `perl` exists; on Windows a runner whose job object closes over the
   command takes the daemon with it whichever launcher ran. Where it happens, `start` the app
   from a shell that stays open for as long as the loop is needed, and run `apply` from another.
+- `cannot tell how to start this application` - the daemon found no entry point (no
+  `Start-Class`, no `@SpringBootApplication`, no `public static void main`) and no server
+  plugin it knows in the pom. Build the module once so there is compiled output to look at,
+  or name the answer: `-Dvaadin.dev.mainClass=<class>` or
+  `-Dvaadin.dev.runtime=<main|jetty-ee10|jetty-ee11|wildfly|tomee|payara|payara-micro|liberty|cargo>`.
 - `this project does not depend on the dev-loop daemon` — the application's `pom.xml` is
   missing `com.vaadin:vaadin-dev` (declare it `<optional>true</optional>`, as a generated
   starter does).
 - Hot-swap coverage depends on the JVM: only a JetBrains Runtime gets enhanced class
   redefinition, so on a stock JDK more edits escalate to a restart. Nothing is wrong when they
-  do — the restart is the honest answer.
+  do — the restart is the honest answer. `target/devloop/daemon.log` names the JVM that was
+  chosen and what it cost; runtimes are looked for under `~/.jdks` and `~/.vaadin/jdk` (where
+  the Vaadin plugins for IntelliJ IDEA, VS Code and Eclipse install one), then `JAVA_HOME` and
+  `JDK_HOME`, and `-Dvaadin.dev.javaHome=<dir>` names one directly.
 
 ## Environment
 
@@ -156,7 +199,9 @@ VAADIN_DEV_DAEMON_OPTS   JVM options for the daemon, e.g. -Dvaadin.frontend.hotd
                          -Dvaadin.dev.idleSeconds=60, -Dvaadin.dev.reactorRoot=<dir>,
                          -Dvaadin.dev.modules=<dirs>, -Dvaadin.dev.maven=<path>,
                          -Dvaadin.dev.mavenArgs=<args>, -Dvaadin.dev.mainClass=<class>,
-                         -Dvaadin.dev.daemonJar=<path>.
+                         -Dvaadin.dev.runtime=<main|jetty-ee10|jetty-ee11|wildfly|tomee|payara|payara-micro|liberty|cargo>,
+                         -Dvaadin.dev.daemonJar=<path>,
+                         -Dvaadin.dev.jvmArgs=<flags> (see below).
                          Read ONLY when a daemon is spawned: a daemon that is already
                          running ignores it, so `shutdown` first when changing a value.
                          Every vaadin.* and spring.* property is passed on to the
@@ -182,6 +227,26 @@ A property set here lives as long as the daemon and appears in no file, so it is
 steering one local run. If a profile is what the project normally runs under,
 `spring.profiles.active` in `application.properties` is the better answer and needs none
 of this.
+
+JVM flags (`--add-exports`, `-Xmx`, `-XX:...`) are not properties; pass them to `start` or
+`restart` with `--jvm-args`. No `shutdown` is needed, and they reach the application JVM
+alone, after the loop's own flags:
+
+```
+.vaadin/vaadin-dev restart --jvm-args "-Xmx2g --add-exports java.base/jdk.internal.misc=ALL-UNNAMED"
+```
+
+The daemon keeps them for every later restart, including one an `apply` escalates to, until
+the next `--jvm-args` (`--jvm-args ""` clears them). The launch output shows what the app
+got: the `flags:` line, or for an embedded server (`jetty-ee10`, `jetty-ee11`) the
+`MAVEN_OPTS=` line under it. Where only the environment can be set, `-Dvaadin.dev.jvmArgs=<flags>` in
+`VAADIN_DEV_DAEMON_OPTS` does the same, but that variable is split on spaces, quotes or not,
+so join several with `|` and use the `=` form:
+`-Dvaadin.dev.jvmArgs=-Xmx2g|--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED`.
+
+`JDK_JAVA_OPTIONS` also works, but it reaches the daemon and every Maven run too, and a bad
+value surfaces only as "could not resolve flow-devloop-daemon". `JAVA_TOOL_OPTIONS` takes
+only the `=` form of `--add-exports`.
 
 `.vaadin/vaadin-dev --help` lists the rest, including the `redefine <a.b.C,...>` diagnostic.
 

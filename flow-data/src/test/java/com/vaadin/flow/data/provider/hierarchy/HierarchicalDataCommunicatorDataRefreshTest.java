@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
@@ -32,6 +31,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.only;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 class HierarchicalDataCommunicatorDataRefreshTest
         extends AbstractHierarchicalDataCommunicatorTest {
@@ -62,7 +68,7 @@ class HierarchicalDataCommunicatorDataRefreshTest
 
     @Test
     void refreshItemThroughDataProvider_refreshMethodCalled() {
-        var dataCommunicatorSpy = Mockito.spy(dataCommunicator);
+        var dataCommunicatorSpy = spy(dataCommunicator);
 
         // Set data provider again to ensure spied DataCommunicator
         // registers data provider listeners with the spied handlers,
@@ -72,16 +78,16 @@ class HierarchicalDataCommunicatorDataRefreshTest
 
         var item = new Item("Item 0");
         treeDataProvider.refreshItem(item);
-        Mockito.verify(dataCommunicatorSpy).refresh(item, false);
+        verify(dataCommunicatorSpy).refresh(item, false);
 
         treeDataProvider.refreshItem(item, true);
-        Mockito.verify(dataCommunicatorSpy).refresh(item, true);
+        verify(dataCommunicatorSpy).refresh(item, true);
     }
 
     @Test
     @SuppressWarnings("unchecked")
     void refreshAllThroughDataProvider_resetMethodCalled() {
-        var dataCommunicatorSpy = Mockito.spy(dataCommunicator);
+        var dataCommunicatorSpy = spy(dataCommunicator);
 
         // Set data provider again to ensure spied DataCommunicator
         // registers data provider listeners with the spied handlers,
@@ -91,10 +97,10 @@ class HierarchicalDataCommunicatorDataRefreshTest
 
         // setDataProvider() calls reset() internally which is not what
         // we want to test here
-        Mockito.clearInvocations(dataCommunicatorSpy);
+        clearInvocations(dataCommunicatorSpy);
 
         treeDataProvider.refreshAll();
-        Mockito.verify(dataCommunicatorSpy).reset();
+        verify(dataCommunicatorSpy).reset();
     }
 
     @Test
@@ -103,32 +109,32 @@ class HierarchicalDataCommunicatorDataRefreshTest
         // The virtual root (null) with refreshChildren maps to reset()
         // (#19377). Without refreshChildren it is not supported, as the root
         // itself is not a rendered item.
-        var dataCommunicatorSpy = Mockito.spy(dataCommunicator);
+        var dataCommunicatorSpy = spy(dataCommunicator);
         dataCommunicatorSpy.setDataProvider(treeDataProvider, null);
-        Mockito.clearInvocations(dataCommunicatorSpy);
+        clearInvocations(dataCommunicatorSpy);
 
         assertThrows(IllegalArgumentException.class,
                 () -> dataCommunicatorSpy.refresh(null, false));
-        Mockito.verify(dataCommunicatorSpy, Mockito.never()).reset();
+        verify(dataCommunicatorSpy, never()).reset();
 
-        Mockito.clearInvocations(dataCommunicatorSpy);
+        clearInvocations(dataCommunicatorSpy);
         dataCommunicatorSpy.refresh(null, true);
-        Mockito.verify(dataCommunicatorSpy).reset();
+        verify(dataCommunicatorSpy).reset();
     }
 
     @Test
     @SuppressWarnings("unchecked")
     void refreshItemNullThroughDataProvider_refreshChildrenCallsReset_withoutRefreshChildrenThrows() {
-        var dataCommunicatorSpy = Mockito.spy(dataCommunicator);
+        var dataCommunicatorSpy = spy(dataCommunicator);
         dataCommunicatorSpy.setDataProvider(treeDataProvider, null);
-        Mockito.clearInvocations(dataCommunicatorSpy);
+        clearInvocations(dataCommunicatorSpy);
 
         assertThrows(IllegalArgumentException.class,
                 () -> treeDataProvider.refreshItem(null));
-        Mockito.verify(dataCommunicatorSpy, Mockito.never()).reset();
+        verify(dataCommunicatorSpy, never()).reset();
 
         treeDataProvider.refreshItem(null, true);
-        Mockito.verify(dataCommunicatorSpy).reset();
+        verify(dataCommunicatorSpy).reset();
     }
 
     @Test
@@ -148,7 +154,7 @@ class HierarchicalDataCommunicatorDataRefreshTest
                 2, "initial", //
                 3, "initial"));
 
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         Item item0 = new Item("Item 0", "refreshed");
         dataCommunicator.refresh(item0);
@@ -184,7 +190,7 @@ class HierarchicalDataCommunicatorDataRefreshTest
                 2, "initial", //
                 3, "initial"));
 
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         Item item0_0 = new Item("Item 0-0", "refreshed");
         dataCommunicator.refresh(item0_0);
@@ -207,14 +213,14 @@ class HierarchicalDataCommunicatorDataRefreshTest
         dataCommunicator.expand(new Item("Item 49"));
         dataCommunicator.setViewportRange(0, 3);
         fakeClientCommunication();
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         var item = treeData.getRootItems().get(49);
         item.setState("refreshed");
         dataCommunicator.refresh(item);
 
         fakeClientCommunication();
-        Mockito.verifyNoInteractions(arrayUpdater, arrayUpdate);
+        verifyNoInteractions(arrayUpdater, arrayUpdate);
 
         dataCommunicator.setViewportRange(48, 3);
         fakeClientCommunication();
@@ -232,7 +238,7 @@ class HierarchicalDataCommunicatorDataRefreshTest
     void refreshItems_dataGeneratorRefreshItemCalled() {
         populateTreeData(treeData, 2, 1, 1);
 
-        var dataGenerator = Mockito.spy(new DataGenerator<Item>() {
+        var dataGenerator = spy(new DataGenerator<Item>() {
             @Override
             public void generateData(Item item, ObjectNode json) {
                 // NO-OP
@@ -242,7 +248,7 @@ class HierarchicalDataCommunicatorDataRefreshTest
 
         Item item = new Item("Item 0", "refreshed");
         dataCommunicator.refresh(item);
-        Mockito.verify(dataGenerator, Mockito.only()).refreshData(item);
+        verify(dataGenerator, only()).refreshData(item);
     }
 
     @Test
@@ -288,7 +294,7 @@ class HierarchicalDataCommunicatorDataRefreshTest
                 4, "Item 1-0", //
                 5, "Item 1-0-0"));
 
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         treeData.setParent(new Item("Item 0-0"), new Item("Item 1"));
         dataCommunicator.refresh(new Item("Item 0"), true);
@@ -313,16 +319,15 @@ class HierarchicalDataCommunicatorDataRefreshTest
         dataCommunicator.setViewportRange(0, 3);
         fakeClientCommunication();
 
-        var dataGenerator = Mockito.spy(DataGenerator.class);
+        var dataGenerator = spy(DataGenerator.class);
         compositeDataGenerator.addDataGenerator(dataGenerator);
 
         dataCommunicator.refresh(new Item("Item 0"), true);
 
-        Mockito.verify(dataGenerator, Mockito.never())
-                .destroyData(new Item("Item 0"));
-        Mockito.verify(dataGenerator) //
+        verify(dataGenerator, never()).destroyData(new Item("Item 0"));
+        verify(dataGenerator) //
                 .destroyData(new Item("Item 0-0"));
-        Mockito.verify(dataGenerator) //
+        verify(dataGenerator) //
                 .destroyData(new Item("Item 0-0-0"));
     }
 
@@ -356,7 +361,7 @@ class HierarchicalDataCommunicatorDataRefreshTest
                 4, "Item 2", //
                 5, "Item 3"));
 
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         treeData.removeItem(new Item("Item 0"));
         treeData.removeItem(new Item("Item 1-0"));
@@ -379,13 +384,12 @@ class HierarchicalDataCommunicatorDataRefreshTest
         dataCommunicator.setViewportRange(0, 6);
         fakeClientCommunication();
 
-        var dataGenerator = Mockito.spy(DataGenerator.class);
+        var dataGenerator = spy(DataGenerator.class);
         compositeDataGenerator.addDataGenerator(dataGenerator);
 
         dataCommunicator.reset();
-        Mockito.verify(dataGenerator).destroyAllData();
-        Mockito.verify(dataGenerator, Mockito.never())
-                .destroyData(Mockito.any());
+        verify(dataGenerator).destroyAllData();
+        verify(dataGenerator, never()).destroyData(any());
     }
 
     @Test
@@ -420,7 +424,7 @@ class HierarchicalDataCommunicatorDataRefreshTest
         fakeClientCommunication();
         assertArrayUpdateItems("count", "0", "0", "0", "0", "0", "0");
 
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         count.incrementAndGet();
         dataCommunicator.refreshViewport();

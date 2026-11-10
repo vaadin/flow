@@ -17,13 +17,14 @@ package com.vaadin.flow.spring;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class SpringDevToolsPortHandlerTest {
 
@@ -34,17 +35,16 @@ class SpringDevToolsPortHandlerTest {
     @BeforeEach
     void setUp() {
         handler = new SpringDevToolsPortHandler();
-        environment = Mockito.mock(ConfigurableEnvironment.class);
-        application = Mockito.mock(SpringApplication.class);
+        environment = mock(ConfigurableEnvironment.class);
+        application = mock(SpringApplication.class);
     }
 
     @Test
     void liveReloadEnabled_portIsAssigned() {
         // Arrange: livereload explicitly enabled, no port set
-        Mockito.when(environment.getProperty(
-                "spring.devtools.livereload.enabled", Boolean.class, false))
-                .thenReturn(true);
-        Mockito.when(environment.getProperty("spring.devtools.livereload.port"))
+        when(environment.getProperty("spring.devtools.livereload.enabled",
+                Boolean.class, false)).thenReturn(true);
+        when(environment.getProperty("spring.devtools.livereload.port"))
                 .thenReturn(null);
 
         // Act
@@ -68,10 +68,9 @@ class SpringDevToolsPortHandlerTest {
     @Test
     void liveReloadDisabled_portIsNotAssigned() {
         // Arrange: livereload explicitly disabled, no port set
-        Mockito.when(environment.getProperty(
-                "spring.devtools.livereload.enabled", Boolean.class, false))
-                .thenReturn(false);
-        Mockito.when(environment.getProperty("spring.devtools.livereload.port"))
+        when(environment.getProperty("spring.devtools.livereload.enabled",
+                Boolean.class, false)).thenReturn(false);
+        when(environment.getProperty("spring.devtools.livereload.port"))
                 .thenReturn(null);
 
         // Clear any previously set system property

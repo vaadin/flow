@@ -52,6 +52,21 @@ import com.vaadin.flow.server.VaadinServlet;
  */
 public class JSR356WebsocketInitializer implements ServletContextListener {
 
+    /**
+     * The name of the servlet context attribute which, when set to
+     * {@link Boolean#TRUE}, makes this listener leave Atmosphere uninitialized
+     * when the servlet context is initialized.
+     * <p>
+     * An integration sets it when it registers the push WebSocket endpoints
+     * itself and initializes Atmosphere later, with
+     * {@link #initAtmosphereForVaadinServlet(ServletRegistration, ServletContext)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
+     */
+    public static final String SKIP_INITIALIZATION_ATTRIBUTE = "com.vaadin.flow.server.communication.skipAtmosphereInitialization";
+
     private static boolean atmosphereAvailable = false;
 
     static {
@@ -125,13 +140,16 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
      * context.
      * <p>
      * For JSR 356 websockets to work properly, the initialization must be done
-     * in the servlet context initialization phase.
+     * in the servlet context initialization phase, unless the
+     * {@link #SKIP_INITIALIZATION_ATTRIBUTE} attribute of the context says that
+     * an integration takes care of the push WebSocket endpoints.
      *
      * @param servletContext
      *            The servlet context
      */
     public void init(ServletContext servletContext) {
-        if (!atmosphereAvailable) {
+        if (!atmosphereAvailable || Boolean.TRUE.equals(
+                servletContext.getAttribute(SKIP_INITIALIZATION_ATTRIBUTE))) {
             return;
         }
         getLogger().debug("Atmosphere available, initializing");
@@ -162,7 +180,11 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
      * Initializes Atmosphere for use with the given Vaadin servlet
      * <p>
      * For JSR 356 websockets to work properly, the initialization must be done
-     * in the servlet context initialization phase.
+     * in the servlet context initialization phase, unless an integration that
+     * set the {@link #SKIP_INITIALIZATION_ATTRIBUTE} attribute registers the
+     * push WebSocket endpoints itself. Such an integration calls this method
+     * later, before the Vaadin servlet is initialized, so that the servlet uses
+     * the Atmosphere instance created here.
      *
      * @param servletRegistration
      *            The servlet registration info for the servlet

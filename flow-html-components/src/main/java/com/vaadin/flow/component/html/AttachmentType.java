@@ -24,5 +24,13 @@ package com.vaadin.flow.component.html;
  * @since 24.8
  */
 public enum AttachmentType {
-    DOWNLOAD, INLINE
+    /**
+     * The linked resource is downloaded instead of being opened.
+     */
+    DOWNLOAD,
+
+    /**
+     * The linked resource is opened by the browser, which is the default.
+     */
+    INLINE
 }

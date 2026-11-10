@@ -145,13 +145,30 @@ public sealed interface Foo permits FooA, FooB, FooC {}
 
 - Apply `@NullMarked` at the package level (JSpecify). Only `@Nullable`
   what genuinely may be null.
-- Prefer sentinel values over nullable returns in the public API
-  (`UNKNOWN` enum constant, `Pending` record).
+- **Collections: return empty, never `null`.** A method returning a
+  `List`, `Set`, `Map`, `Stream` or array returns an empty one when
+  there are no values (`List.of()`, `Stream.empty()`). Callers can
+  iterate without a null check, and "no values" has a single spelling.
+- **Optional properties: return `@Nullable T`, not `Optional<T>`.** A
+  getter for a value that may simply be unset — `getLabel()`,
+  `getPlaceholder()`, `getTitle()` — returns a `@Nullable String` (or
+  other type), matching the setter that accepts `null` to clear it.
+  NullAway already makes callers handle the `null` case, so `Optional`
+  adds an allocation and a second style without adding safety. Existing
+  `Optional`-returning methods such as `Component.getUI()` stay as they
+  are for compatibility; don't add new ones.
+- **Don't encode "not set" as a fake value.** Return `null`, not `""`,
+  `-1` or `0`, when nothing is set — a stand-in value can not be told
+  apart from a value the application actually set.
+- **Signals and result types use a named state, not `null`.** When a
+  signal or "one of N things" value has a real "no data yet" state,
+  model it as an enum constant (`UNKNOWN`) or a record in the sealed
+  hierarchy (`Pending`) — see *Signals for reactive state* above — so
+  callers handle it in an exhaustive `switch`.
 - Jackson wire records (the record used to decode `executeJs` return
-  values or DOM event payloads) are the legitimate exception — their
-  fields may be `@Nullable` because the wire format permits omissions.
-  Keep the wire record private and translate to a non-null public shape
-  at the boundary.
+  values or DOM event payloads) may have `@Nullable` fields because the
+  wire format permits omissions. Keep the wire record private and
+  translate it to the public shape at the boundary.
 - `@Nullable` belongs on the declared type — `ValueSignal<@Nullable X>` —
   and NullAway infers it for the constructor, so `new ValueSignal<>(null)`
   and `Signal.cached(...)` need no repeated type argument or type witness.
@@ -174,6 +191,61 @@ client-side subscriptions — must be tied to a component's lifecycle:
   `addEventListener(...).addEventDetail().allowInert()`. Use sparingly
   — inert exists to prevent user actions while something else has
   focus; only bypass it for passive streams.
+
+### Extending an existing entry point
+
+Overloading an existing method, rather than adding a name for a second way to
+do the same thing, is a discoverability decision: the user who knows one form
+finds the other among the overloads of what they already call, while a separate
+name has to be found on its own and reads as a different feature.
+
+The cost lands in the Javadoc. Overloads that do the same thing differently
+have to open with the same sentence about what the method is for and then say
+which is which — "the version that takes a string" against "the version that
+takes an interface". That is cheaper than a name nobody finds.
+
+### Accepting a type the application writes
+
+A type the application declares and the framework interprets — an annotated
+interface, a class following a convention — is validated where it is accepted.
+The judgment call that leaves open is what happens to a member the mechanism
+does not interpret.
+
+Do not let that case through unspoken. When some members of such a type are
+interpreted and others are ordinary Java, the type carries two kinds of member
+with different rules and the user has to know which is which. That can be the
+right design, but then the line between them is a rule stated in one sentence
+in the Javadoc and enforced for everything on the interpreted side. What must
+never happen is a member that quietly does nothing because it fell between the
+two.
+
+### Naming boolean properties
+
+Name a boolean property after its positive state: `isEnabled()` /
+`setEnabled(boolean)`, `isVisible()`, `isRequired()` — not `isDisabled()`,
+`isHidden()` or `setNotRequired(boolean)`. A negative name turns every
+negated check into a double negative: `!isDisabled()` makes the reader undo
+two negations to learn that the thing is enabled, and `setHidden(false)` is
+harder to follow than `setVisible(true)`.
+
+- **The getter and the setter share one polarity.** `setEnabled(false)` is
+  read back with `isEnabled()`, never with a separate `isDisabled()`.
+- **Flip the polarity at the boundary, not in the API.** HTML boolean
+  attributes name the non-default state (`disabled`, `hidden`) because they
+  work by presence and absence; Java has no such constraint. The wrapper maps
+  `setEnabled(false)` to the `disabled` attribute so that application code
+  never sees the negative form.
+- **Words that are positive concepts are fine.** `isEmpty()`, `isInert()`,
+  `isDisposed()` and `isReadOnly()` name a state of their own, not the
+  negation of another name in the same API. The rule is about `not`, `no`,
+  `dis-`, `un-` and `hidden`-style names whose opposite is the state callers
+  actually ask about.
+- **Existing negative names stay, and new API matches them.** Renaming
+  public API is a breaking change; do not rename only to follow this rule.
+  When new API joins a family that already uses a negative name, consistency
+  with the family wins: a field implements `HasValidation` with
+  `setInvalid(boolean)` / `isInvalid()`, so a range field that adds a flag for
+  one of its parts names it `isStartInvalid()`, not `isStartValid()`.
 
 ### Naming components that wrap HTML elements
 
@@ -235,3 +307,70 @@ Decide it from the rules below rather than case by case.
   explaining what to use instead, and remove it in the next major — the way
   `Label` was replaced by `NativeLabel` in 24.1 and removed in 25.
 
+
+### `toString()`
+
+`toString()` is for people: log lines, debugger views and exception messages.
+Loggers, IDEs and string concatenation call it on their own, at moments the
+class does not choose, so it has two jobs — say enough to tell what an instance
+is — and one constraint — never get in the way of the code that called it.
+
+- **It is not a contract.** No code path, wire format, CSS value or
+  JavaScript name depends on what `toString()` returns. A string the program
+  needs gets a named method, and `toString()` may delegate to it:
+  `ScrollIntoViewOption.Behavior.getValue()`,
+  `ScreenOrientationType.getClientValue()`, `Direction.getClientName()`. Call
+  the named method, not `toString()` — `element.getOuterHTML()` rather than
+  `element.toString()`, `message.toJson()` rather than `message.toString()`.
+  Enums such as `HasText.WhiteSpace`, `WebStorage.Storage` and `Unit` predate
+  this and return their client value from `toString()`; they stay that way for
+  compatibility, but do not copy the pattern. Relying on the `toString()` of a
+  JDK or library type is fine when its Javadoc documents the format, such as
+  `Path` or `URI`.
+- **Cheap, side-effect free, never throws.** It runs on log paths, possibly
+  per request, and inside the construction of an error message, where an
+  exception from `toString()` hides the error that was being reported (which
+  is why `StateNode.describe()` catches one from a component). Do not serialize
+  a subtree, walk a large structure or load data to build it. Be careful with
+  values the application supplied: `size()` on the collection behind a
+  `ListDataProvider` can be slow or initialise a lazy JPA collection, which is
+  only acceptable as a deliberate choice.
+- **Signals use `peek()`.** A signal's `toString()` reads the value with
+  `peek()`, never `get()`, so that logging a signal inside an effect or a
+  computed signal does not register a dependency (`ValueSignal`,
+  `SharedListSignal`, …).
+- **Use the runtime class name.** Start with `getClass().getSimpleName()`, not
+  a string literal, so a subclass reports its own type (`Range`,
+  `StringLengthValidator`, `AbstractField.ComponentValueChangeEvent`). For a
+  class with many instances that wraps application data, such as a data
+  provider, keep `super.toString()` so the identity hash still tells two
+  instances apart, and append the summary to it.
+- **Shape: type name and the state that identifies the instance.** Follow
+  `SimpleName[…]`: the type name, then the state in square brackets, as
+  `name=value` pairs the way records print them when the values need a name
+  (`Name[width=100, height=50]`), and bare when they do not
+  (`StringLengthValidator[1, 10]`). Show what identifies the instance or
+  explains its behaviour, not every field. The
+  signals and `RegexpValidator` have the shape but write the class name as a
+  literal, so a subclass such as `EmailValidator` prints `RegexpValidator[…]`;
+  do not copy that part.
+- **Label numbers that can mislead.** If a value can be read two ways, say
+  which one it is: `ListDataProvider` prints `250 backend items, filtered`,
+  because a bare `250 items` suggests the data is fine when a filter hides all
+  of it.
+- **Wrappers include what they wrap.** `DataProviderWrapper` and
+  `ConfigurableFilterDataProviderWrapper` print the wrapped provider, so the
+  chain is visible in one line.
+- **No secrets, and no application content on per-request log paths.** Never
+  include a password, token or other credential — `ProxyConfig.Proxy` says
+  that authentication is used instead of printing the username and password
+  (its id-first format is not an example of the shape). A description written
+  into a server log on every request should name structure (class, id, tag),
+  not the user's data.
+- **Records already have one.** Do not override the generated `toString()` of
+  a record unless it has to hide a field or the components alone do not
+  describe it.
+
+Changing the text of an existing `toString()` is not an API break, but tests
+in other repositories and applications sometimes compare it, so mention it as a
+behaviour change in the pull request.

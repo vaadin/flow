@@ -36,7 +36,10 @@ import com.vaadin.flow.signals.Signal;
 public class NativeTableCell extends HtmlContainer
         implements ClickNotifier<NativeTableCell> {
 
+    /** Name of the attribute that spans a cell over several columns. */
     final String ATTRIBUTE_COLSPAN = "colspan";
+
+    /** Name of the attribute that spans a cell over several rows. */
     final String ATTRIBUTE_ROWSPAN = "rowspan";
 
     /**

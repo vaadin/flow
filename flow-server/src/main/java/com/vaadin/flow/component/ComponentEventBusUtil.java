@@ -19,11 +19,15 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import com.vaadin.flow.dom.DomEvent;
+import com.vaadin.flow.dom.DomListenerRegistration;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.shared.JsonConstants;
 
 /**
  * Static helpers and caching functionality for {@link ComponentEventBus}.
@@ -46,11 +50,32 @@ public class ComponentEventBusUtil {
 
     private static class EventTypeInfo {
         private final LinkedHashMap<String, Class<?>> dataExpressions;
+        private final List<String> listenerEventData;
         private final Constructor<? extends ComponentEvent<?>> eventConstructor;
 
         public EventTypeInfo(Class<? extends ComponentEvent<?>> type) {
             eventConstructor = findEventConstructor(type);
             dataExpressions = findEventDataExpressions(eventConstructor);
+            listenerEventData = toListenerEventData(dataExpressions);
+        }
+
+        private static List<String> toListenerEventData(
+                LinkedHashMap<String, Class<?>> dataExpressions) {
+            LinkedHashSet<String> eventData = new LinkedHashSet<>();
+            dataExpressions.forEach((expression, type) -> {
+                if (Component.class.isAssignableFrom(type)
+                        || type == Element.class) {
+                    // Same mapping as
+                    // DomListenerRegistration.addEventDataElement
+                    eventData.add("event.target".equals(expression)
+                            ? JsonConstants.MAP_STATE_NODE_EVENT_DATA
+                            : (JsonConstants.MAP_STATE_NODE_EVENT_DATA
+                                    + expression));
+                } else {
+                    eventData.add(expression);
+                }
+            });
+            return List.copyOf(eventData);
         }
     }
 
@@ -74,6 +99,26 @@ public class ComponentEventBusUtil {
     public static LinkedHashMap<String, Class<?>> getEventDataExpressions(
             Class<? extends ComponentEvent<?>> eventType) {
         return cache.get(eventType).dataExpressions;
+    }
+
+    /**
+     * Gets the event data expressions to add to a DOM listener registration for
+     * the given event type, with expressions for components and elements mapped
+     * like {@link DomListenerRegistration#addEventDataElement(String)} does.
+     * <p>
+     * The same unmodifiable list is returned for every call so that all
+     * listeners of the event type can share it, see
+     * {@link DomListenerRegistration#addEventData(List)}.
+     *
+     * @param eventType
+     *            the component event type
+     * @return an unmodifiable list of event data expressions for a DOM listener
+     *         registration
+     * @since 25.4
+     */
+    public static List<String> getListenerEventData(
+            Class<? extends ComponentEvent<?>> eventType) {
+        return cache.get(eventType).listenerEventData;
     }
 
     /**

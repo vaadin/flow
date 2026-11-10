@@ -22,12 +22,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ReflectTools;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class DevToolsTokenTest {
     @TempDir
@@ -39,12 +40,11 @@ class DevToolsTokenTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        configuration = Mockito.mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.getProjectFolder())
+        configuration = mock(DeploymentConfiguration.class);
+        when(configuration.getProjectFolder())
                 .thenReturn(projectFolder.toFile());
-        service = Mockito.mock(VaadinService.class);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        service = mock(VaadinService.class);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
         initialToken = DevToolsToken.getToken();
         systemTempDir = System.getProperty("java.io.tmpdir");
         System.setProperty("java.io.tmpdir",
@@ -71,7 +71,7 @@ class DevToolsTokenTest {
 
     @Test
     void init_nullProjectFolder_useInMemoryToken() {
-        Mockito.when(configuration.getProjectFolder()).thenReturn(null);
+        when(configuration.getProjectFolder()).thenReturn(null);
 
         String testToken = UUID.randomUUID().toString();
         overwriteToken(testToken);

@@ -202,6 +202,26 @@ class TriggerTest {
     }
 
     @Test
+    void deferredWiring_removedBeforeTargetAttaches_isCancelled() {
+        UI ui = new MockUI();
+        TagComponent button = new TagComponent("button");
+        TagComponent target = new TagComponent("input");
+        ui.getElement().appendChild(button.getElement());
+
+        DomEventTrigger trigger = new DomEventTrigger(button, "click");
+        trigger.triggers(target, () -> {
+            throw new AssertionError(
+                    "Action must not be built after the trigger is removed");
+        });
+        trigger.remove();
+
+        ui.getElement().appendChild(target.getElement());
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        assertTrue(installFns(ui).isEmpty(),
+                "No install expected after the trigger is removed");
+    }
+
+    @Test
     void armedTrigger_passesCheck() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");

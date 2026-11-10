@@ -3,6 +3,24 @@ import {
   UserConfigFn
 } from 'vite';
 import { overrideVaadinConfig } from './vite.generated.ts';
+import path from 'node:path';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import workerThreads from 'node:worker_threads';
+import { syncBuiltinESMExports } from 'node:module';
+
+// Observe the checker's real compiler launch inside its worker thread.
+mkdirSync('target', { recursive: true });
+writeFileSync('target/compiler-launches.jsonl', '');
+const Worker = workerThreads.Worker;
+workerThreads.Worker = class extends Worker {
+  constructor(filename: string | URL, options: workerThreads.WorkerOptions = {}) {
+    super(filename, {
+      ...options,
+      execArgv: [...(options.execArgv ?? process.execArgv), '--require', path.resolve('compiler-observer.cjs')]
+    });
+  }
+};
+syncBuiltinESMExports();
 
 /**
  * Dumps effective contents of config.optimizeDeps for tests

@@ -236,7 +236,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         if (packageFile.exists()) {
             String fileContent = Files.readString(packageFile.toPath(), UTF_8);
             try {
-                jsonContent = (ObjectNode) JacksonUtils.readTree(fileContent);
+                jsonContent = JacksonUtils.readTree(fileContent);
             } catch (JsonDecodingException e) { // NOSONAR
                 throw new RuntimeException(String
                         .format("Cannot parse package file '%s'", packageFile));
@@ -477,7 +477,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         try {
             FrontendVersion newVersion = new FrontendVersion(version);
             FrontendVersion existingVersion = toVersion(json, pkg);
-            return newVersion.isNewerThan(existingVersion);
+            return newVersion.hasSamePackageTarget(existingVersion)
+                    && newVersion.isNewerThan(existingVersion);
         } catch (NumberFormatException e) {
             if (VAADIN_FORM_PKG.equals(pkg) && json.get(pkg).asString()
                     .contains(VAADIN_FORM_PKG_LEGACY_VERSION)) {
@@ -505,14 +506,15 @@ public abstract class NodeUpdater implements FallibleCommand {
                 FrontendVersion newVersion = new FrontendVersion(version);
                 // Vaadin and package.json versions are the same, but dependency
                 // updates (can be up or down)
-                if (vaadinVersion.isEqualTo(packageVersion)
-                        && !vaadinVersion.isEqualTo(newVersion)) {
+                if (vaadinVersion.isSameDependency(packageVersion)
+                        && !vaadinVersion.isSameDependency(newVersion)) {
                     json.put(pkg, version);
                     added = true;
                     // if vaadin and package not the same, but new version is
                     // newer
                     // update package version.
-                } else if (newVersion.isNewerThan(packageVersion)) {
+                } else if (newVersion.hasSamePackageTarget(packageVersion)
+                        && newVersion.isNewerThan(packageVersion)) {
                     json.put(pkg, version);
                     added = true;
                 }

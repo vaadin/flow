@@ -58,13 +58,21 @@ public interface FrontendDependenciesScanner extends Serializable {
          * @param featureFlags
          *            available feature flags and their status
          * @param reactEnabled
-         *            {@code true} if react is enabled, {@code true otherwise}
+         *            {@code true} if react is enabled, {@code false} otherwise
+         * @param productionMode
+         *            {@code true} if scanning for a production build, in which
+         *            case the byte scanning strategy does not collect routes
+         *            marked with
+         *            {@link com.vaadin.flow.router.Route#developmentOnly()}.
+         *            The full classpath scanning strategy ignores this flag and
+         *            includes those routes.
          * @return a scanner implementation strategy
          */
         public FrontendDependenciesScanner createScanner(
                 boolean allDependenciesScan, ClassFinder finder,
                 boolean generateEmbeddableWebComponents,
-                FeatureFlags featureFlags, boolean reactEnabled) {
+                FeatureFlags featureFlags, boolean reactEnabled,
+                boolean productionMode) {
             if (allDependenciesScan) {
                 // this dep scanner can't distinguish embeddable web component
                 // frontend related annotations
@@ -73,7 +81,7 @@ public interface FrontendDependenciesScanner extends Serializable {
             } else {
                 return new FrontendDependencies(finder,
                         generateEmbeddableWebComponents, featureFlags,
-                        reactEnabled);
+                        reactEnabled, productionMode);
             }
         }
 

@@ -17,12 +17,12 @@ package com.vaadin.flow.component;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -46,6 +46,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mockStatic;
 
 class ComponentEventBusTest {
 
@@ -782,15 +784,45 @@ class ComponentEventBusTest {
     @Test // #7826
     void addListener_eventDataExpressionsPresent_constantPoolKeyNotCreatedAfterEachExpression() {
         final TestButton button = new TestButton();
-        try (MockedStatic<MessageDigestUtil> util = Mockito
-                .mockStatic(MessageDigestUtil.class)) {
-            util.when(() -> MessageDigestUtil.sha256(Mockito.anyString()))
-                    .thenReturn(
-                            new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, });
+        try (MockedStatic<MessageDigestUtil> util = mockStatic(
+                MessageDigestUtil.class)) {
+            util.when(() -> MessageDigestUtil.sha256(anyString())).thenReturn(
+                    new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, });
             button.addClickListener(event -> {
             });
             util.verifyNoInteractions();
         }
+    }
+
+    @DomEvent("element-data-event")
+    public static class ElementDataEvent extends ComponentEvent<Component> {
+        // Only the event data annotations of the parameters are used
+        public ElementDataEvent(Component source, boolean fromClient,
+                @EventData("event.target") Element target, // NOSONAR
+                @EventData("element.parentNode") Component parent,
+                @EventData("event.detail") int detail) {
+            super(source, fromClient);
+        }
+    }
+
+    @Test
+    void addListener_elementAndComponentEventData_sameExpressionsAsAddEventDataElement() {
+        TestComponent component = new TestComponent();
+        Element element = new Element("div");
+
+        component.addListener(ElementDataEvent.class, event -> {
+        });
+        element.addEventListener("element-data-event", event -> {
+        }).addEventDataElement("event.target")
+                .addEventDataElement("element.parentNode")
+                .addEventData("event.detail");
+
+        Set<String> expressions = component.getElement().getNode()
+                .getFeature(ElementListenerMap.class)
+                .getExpressions("element-data-event");
+        assertEquals(3, expressions.size());
+        assertEquals(element.getNode().getFeature(ElementListenerMap.class)
+                .getExpressions("element-data-event"), expressions);
     }
 
     @Test

@@ -24,17 +24,22 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.PrebuiltEventData;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.QueryParameters;
@@ -73,6 +78,7 @@ public class WebComponentUI extends UI {
      * @since 2.1
      */
     @DomEvent(value = "connect-web-component", allowInert = true)
+    @PrebuiltEventData
     public static class WebComponentConnectEvent extends ComponentEvent<UI> {
 
         private String tag;
@@ -238,7 +244,7 @@ public class WebComponentUI extends UI {
         getElement().getStateProvider().appendVirtualChild(
                 getElement().getNode(), child, NodeProperties.INJECT_BY_ID,
                 elementId);
-        child.executeJs("$0.serverConnected()");
+        child.callJsFunction("serverConnected");
     }
 
     private boolean isConfigurationAnnotated(
@@ -265,7 +271,7 @@ public class WebComponentUI extends UI {
 
     private SessionEmbeddedComponentRegistry getRegistry() {
         return SessionEmbeddedComponentRegistry
-                .getSessionRegistry(VaadinSession.getCurrent());
+                .getSessionRegistry(VaadinSession.getCurrentOrThrow());
     }
 
     @Override
@@ -313,21 +319,17 @@ public class WebComponentUI extends UI {
                 .forEach(config -> addAttributes(config.getTag(), attributes));
     }
 
-    private void addAttributes(String tag, Map<String, String> attributes) {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("var elements = document.querySelectorAll('").append(tag)
-                .append("');")
-                .append("for (let i = 0; i < elements.length; i++) {");
-        attributes.forEach((attribute, value) -> builder
-                .append("elements[i].setAttribute('").append(attribute)
-                .append("', '").append(value).append("');"));
-        builder.append("}");
-        getPage().executeJs(builder.toString());
+    // non-private for testing purposes
+    void addAttributes(String tag, Map<String, String> attributes) {
+        // The tag and the attributes are arguments of the call, so a quote
+        // in a value is data instead of the end of a JavaScript string
+        getPage().executeJs(ThemeAttributesJs.class).setAttributes(tag,
+                JacksonUtils.mapToJson(attributes));
     }
 
     private WebComponentConfigurationRegistry getConfigurationRegistry() {
         return WebComponentConfigurationRegistry
-                .getInstance(getSession().getService().getContext());
+                .getInstance(getSessionOrThrow().getService().getContext());
     }
 
     private static class SessionEmbeddedComponentRegistry
@@ -393,5 +395,27 @@ public class WebComponentUI extends UI {
             Objects.requireNonNull(identifier);
             return Optional.ofNullable(cache.get(identifier));
         }
+    }
+
+    /**
+     * How the attributes a theme asks for reach every exported web component on
+     * an embedding page, as a JavaScript definition for
+     * {@link com.vaadin.flow.component.page.Page#executeJs(Class)}.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface ThemeAttributesJs extends Serializable {
+
+        /**
+         * Sets the given attributes on every element of the given tag.
+         *
+         * @param tag
+         *            the tag of the elements to set the attributes on
+         * @param attributes
+         *            the attributes to set, by name
+         */
+        @JsExpression("document.querySelectorAll($0).forEach(element => Object.entries($1).forEach(([name, value]) => element.setAttribute(name, value)));")
+        void setAttributes(String tag, ObjectNode attributes);
     }
 }

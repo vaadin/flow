@@ -31,11 +31,16 @@ public class NavigationView extends Div {
     public static final String ANCHOR_QUERY_ID = "anchor-query-navigation";
     public static final String ROUTER_LINK_QUERY_ID = "router-link-query-navigation";
     public static final String ROUTER_LINK_ID = "router-link-navigation";
+    public static final String ROUTER_LINK_NEW_TAB_ID = "router-link-new-tab-navigation";
+    public static final String ROUTER_LINK_SELF_TARGET_ID = "router-link-self-target-navigation";
     public static final String POSTPONE_ID = "postpone-view-link";
 
     public static final String REACT_ANCHOR_ID = "anchor-react-navigation";
     public static final String REACT_ID = "react-navigation";
     public static final String SET_PARAMETER_COUNTER_ID = "set-parameter-counter";
+    public static final String QUEUED_FIRST_ID = "queued-first-navigation";
+    public static final String QUEUED_SECOND_ID = "queued-second-navigation";
+    public static final String QUERY_LOG_ID = "query-log";
 
     public NavigationView() {
         Anchor anchorNavigation = new Anchor("com.vaadin.flow.AnchorView",
@@ -48,13 +53,22 @@ public class NavigationView extends Div {
         serverNavigation.setId(SERVER_ID);
         RouterLink link = new RouterLink("RouterView", RouterView.class);
         link.setId(ROUTER_LINK_ID);
+        RouterLink newTabLink = new RouterLink("RouterView in new tab",
+                RouterView.class);
+        newTabLink.setOpenInNewBrowserTab(true);
+        newTabLink.setId(ROUTER_LINK_NEW_TAB_ID);
+        RouterLink selfTargetLink = new RouterLink("RouterView in this tab",
+                RouterView.class);
+        selfTargetLink.setTarget("_self");
+        selfTargetLink.setId(ROUTER_LINK_SELF_TARGET_ID);
 
         RouterLink postponeView = new RouterLink("PostponeView",
                 PostponeView.class);
         postponeView.setId(POSTPONE_ID);
 
         add(new Span("NavigationView"), new Div(), anchorNavigation, new Div(),
-                serverNavigation, new Div(), link, new Div(), postponeView);
+                serverNavigation, new Div(), link, new Div(), newTabLink,
+                new Div(), selfTargetLink, new Div(), postponeView);
 
         // React navigation
         Anchor reactAnchorNavigation = new Anchor("react",
@@ -78,6 +92,15 @@ public class NavigationView extends Div {
                 "com.vaadin.flow.AnchorView?test=anchor", "AnchorQuery");
         anchorViewQuery.setId(ANCHOR_QUERY_ID);
         add(new Div(), anchorViewQuery);
+
+        Anchor queuedFirst = new Anchor(
+                "com.vaadin.flow.ServerView/first?qp=first", "Queued first");
+        queuedFirst.setId(QUEUED_FIRST_ID);
+        Anchor queuedSecond = new Anchor(
+                "com.vaadin.flow.ServerView/second?qp=second#fragment",
+                "Queued second");
+        queuedSecond.setId(QUEUED_SECOND_ID);
+        add(new Div(), queuedFirst, new Div(), queuedSecond);
 
         getElement().executeJs(
                 "if(!window.test) { window.addEventListener('vaadin-navigated', (e) => { window.testMessage = 'navigated to ' + window.location.pathname; }); window.test = true; }");

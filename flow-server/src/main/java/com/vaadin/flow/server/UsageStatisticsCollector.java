@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.ThemeUtils;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
@@ -42,6 +43,8 @@ class UsageStatisticsCollector implements Serializable {
     private static final String STATISTIC_KOTLIN = "kotlin";
 
     private static final String KOTLIN_METADATA_ANNOTATION = "kotlin.Metadata";
+
+    private static final String STATISTIC_THEME_ANNOTATION = "flow/theme-annotation";
 
     private UsageStatisticsCollector() {
         // Only static methods here, no need to create an instance
@@ -69,6 +72,23 @@ class UsageStatisticsCollector implements Serializable {
         addAutoLayoutUsageStatistics(service);
         addKotlinUsageStatistics(routeDataList);
         addFrontendToolUsageStatistics(configuration);
+        addThemeAnnotationUsageStatistics(service);
+    }
+
+    /**
+     * Reports usage of the deprecated {@code @Theme} annotation on the
+     * application shell.
+     * <p>
+     * The theme name is not reported, as it is chosen by the application.
+     *
+     * @param service
+     *            the service to collect the statistics of
+     */
+    private static void addThemeAnnotationUsageStatistics(
+            VaadinService service) {
+        if (ThemeUtils.getThemeAnnotation(service.getContext()).isPresent()) {
+            UsageStatistics.markAsUsed(STATISTIC_THEME_ANNOTATION, null);
+        }
     }
 
     private static void addFrontendToolUsageStatistics(

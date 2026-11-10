@@ -40,6 +40,9 @@ class JvmTest {
     @TempDir
     private Path jdks;
 
+    @TempDir
+    private Path userHome;
+
     private final List<String> logged = new ArrayList<>();
 
     @Test
@@ -127,6 +130,55 @@ class JvmTest {
         assertEquals(List.of(home),
                 candidates.stream().map(Jvm.Jdk::home).toList());
         assertTrue(candidates.get(0).jbr());
+    }
+
+    @Test
+    void aRuntimeTheVaadinIdePluginsInstalledIsLookedFor() throws IOException {
+        Path fromJetBrains = Files
+                .createDirectories(userHome.resolve(".jdks").resolve("jbr-25"));
+        Path fromVaadin = Files.createDirectories(userHome.resolve(".vaadin")
+                .resolve("jdk").resolve("jbr-25.0.2-osx-aarch64"));
+
+        List<Path> homes = Jvm.homes(userHome);
+
+        assertTrue(homes.contains(fromJetBrains),
+                () -> "~/.jdks is what a JetBrains IDE downloads into: "
+                        + homes);
+        // The Vaadin plugins for IntelliJ IDEA, VS Code and Eclipse install
+        // the JBR they offer to download here, so a developer who took that
+        // offer has one and the loop must not run on a stock JDK anyway.
+        assertTrue(homes.contains(fromVaadin),
+                () -> "~/.vaadin/jdk is where Vaadin's own tooling installs a "
+                        + "JetBrains Runtime: " + homes);
+    }
+
+    @Test
+    void withNeitherInstallDirectory_nothingIsInvented() {
+        // A machine with no ~/.jdks and no ~/.vaadin/jdk is the common case on
+        // CI, and a missing directory must read as "no candidates here" rather
+        // than fail the launch that is about to happen.
+        List<Path> homes = Jvm.homes(userHome.resolve("no-such-home"));
+
+        assertTrue(homes.stream().noneMatch(home -> home.startsWith(userHome)),
+                () -> "only the environment should have contributed: " + homes);
+    }
+
+    @Test
+    void theDefaultIsTheHomeTheJvmReports() throws IOException {
+        // The no-argument overload is the one the daemon calls, so the
+        // directories have to be resolved against the user's home rather than
+        // against the working directory, which is wherever the CLI was run
+        // from.
+        Path planted = Files.createDirectories(
+                userHome.resolve(".vaadin").resolve("jdk").resolve("jbr-25"));
+        String original = System.getProperty("user.home");
+        System.setProperty("user.home", userHome.toString());
+        try {
+            assertTrue(Jvm.homes().contains(planted),
+                    () -> "expected " + planted + " among " + Jvm.homes());
+        } finally {
+            System.setProperty("user.home", original);
+        }
     }
 
     /**

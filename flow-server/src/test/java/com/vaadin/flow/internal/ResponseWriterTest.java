@@ -44,8 +44,10 @@ import java.util.zip.GZIPOutputStream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -56,6 +58,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Vaadin Ltd
@@ -157,31 +168,29 @@ public class ResponseWriterTest {
 
         responseWriter = new OverrideableResponseWriter(
                 deploymentConfiguration);
-        servletContext = Mockito.mock(ServletContext.class);
-        request = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(request.getServletContext()).thenReturn(servletContext);
+        servletContext = mock(ServletContext.class);
+        request = mock(HttpServletRequest.class);
+        when(request.getServletContext()).thenReturn(servletContext);
         // No header == getDateHeader returns -1 (Mockito default is 0)
-        Mockito.when(request.getDateHeader(ArgumentMatchers.anyString()))
-                .thenReturn(-1L);
+        when(request.getDateHeader(anyString())).thenReturn(-1L);
 
-        response = Mockito.mock(HttpServletResponse.class);
+        response = mock(HttpServletResponse.class);
         responseContentLength = new AtomicLong(-1L);
-        Mockito.doAnswer(invocation -> {
+        doAnswer(invocation -> {
             responseContentLength.set((long) invocation.getArguments()[0]);
             return null;
-        }).when(response).setContentLengthLong(ArgumentMatchers.anyLong());
+        }).when(response).setContentLengthLong(anyLong());
     }
 
     @Test
     public void contentType() {
         AtomicReference<String> contentType = new AtomicReference<>(null);
-        Mockito.doAnswer(invocation -> {
+        doAnswer(invocation -> {
             contentType.set((String) invocation.getArguments()[0]);
             return null;
-        }).when(response).setContentType(ArgumentMatchers.anyString());
+        }).when(response).setContentType(anyString());
 
-        Mockito.when(servletContext.getMimeType("/file.png"))
-                .thenReturn("image/png");
+        when(servletContext.getMimeType("/file.png")).thenReturn("image/png");
 
         responseWriter.writeContentType("/file.png", request, response);
 
@@ -191,12 +200,12 @@ public class ResponseWriterTest {
     @Test
     public void noContentType() {
         AtomicReference<String> contentType = new AtomicReference<>(null);
-        Mockito.doAnswer(invocation -> {
+        doAnswer(invocation -> {
             contentType.set((String) invocation.getArguments()[0]);
             return null;
-        }).when(response).setContentType(ArgumentMatchers.anyString());
+        }).when(response).setContentType(anyString());
 
-        Mockito.when(servletContext.getMimeType("/file")).thenReturn(null);
+        when(servletContext.getMimeType("/file")).thenReturn(null);
 
         responseWriter.writeContentType("/file", request, response);
 
@@ -225,7 +234,7 @@ public class ResponseWriterTest {
     }
 
     private boolean acceptsGzippedResource(String acceptEncodingHeader) {
-        Mockito.when(request.getHeader("Accept-Encoding"))
+        when(request.getHeader("Accept-Encoding"))
                 .thenReturn(acceptEncodingHeader);
         return responseWriter.acceptsGzippedResource(request);
     }
@@ -243,7 +252,7 @@ public class ResponseWriterTest {
     }
 
     private boolean acceptsBrotliResource(String acceptEncodingHeader) {
-        Mockito.when(request.getHeader("Accept-Encoding"))
+        when(request.getHeader("Accept-Encoding"))
                 .thenReturn(acceptEncodingHeader);
         return responseWriter.acceptsBrotliResource(request);
     }
@@ -327,7 +336,7 @@ public class ResponseWriterTest {
         Files.write(brotliFile.toPath(), fileJsBrotliContents);
 
         CapturingServletOutputStream out = new CapturingServletOutputStream();
-        Mockito.when(response.getOutputStream()).thenReturn(out);
+        when(response.getOutputStream()).thenReturn(out);
 
         // servletContext.getResource(...) is left unstubbed, so the path based
         // lookup returns null and the sibling must be resolved via the
@@ -336,7 +345,58 @@ public class ResponseWriterTest {
                 jsFile.toURI().toURL(), request, response);
 
         assertArrayEquals(fileJsBrotliContents, out.getOutput());
-        Mockito.verify(response).setHeader("Content-Encoding", "br");
+        verify(response).setHeader("Content-Encoding", "br");
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            // resource replaced after compression: plain file
+            "2000, 0, 0, ",
+            // written by the same build: brotli
+            "0, 0, 0, br",
+            // only the brotli variant is outdated: gzip
+            "2000, 0, 2000, gzip",
+            // brotli timestamp unknown (0): brotli
+            "2000, UNKNOWN, 0, br" })
+    public void writeDataBrotliAndGzip_onlyServedWhenNotOlderThanResource(
+            long resourceTime, String brotliTime, long gzipTime,
+            String expectedEncoding, @TempDir File dir) throws IOException {
+        // A production build writes the .br/.gz variants after the resource.
+        // When the resource is replaced afterwards (e.g. by an IDE build),
+        // the variants hold the old content and must not be served.
+        responseWriter.overrideAcceptsBrotliResource = Boolean.TRUE;
+        responseWriter.overrideAcceptsGzippedResource = Boolean.TRUE;
+
+        File jsFile = new File(dir, "file.js");
+        Files.write(jsFile.toPath(), fileJsContents);
+        File brotliFile = new File(dir, "file.js.br");
+        Files.write(brotliFile.toPath(), fileJsBrotliContents);
+        File gzipFile = new File(dir, "file.js.gz");
+        Files.write(gzipFile.toPath(), fileJsGzippedContents);
+
+        long base = 1_700_000_000_000L;
+        jsFile.setLastModified(base + resourceTime);
+        brotliFile.setLastModified("UNKNOWN".equals(brotliTime) ? 0
+                : base + Long.parseLong(brotliTime));
+        gzipFile.setLastModified(base + gzipTime);
+
+        CapturingServletOutputStream out = new CapturingServletOutputStream();
+        when(response.getOutputStream()).thenReturn(out);
+
+        responseWriter.writeResponseContents("/static/file.js",
+                jsFile.toURI().toURL(), request, response);
+
+        if (expectedEncoding == null) {
+            assertArrayEquals(fileJsContents, out.getOutput());
+            verify(response, never()).setHeader(eq("Content-Encoding"),
+                    anyString());
+        } else {
+            assertArrayEquals(
+                    "br".equals(expectedEncoding) ? fileJsBrotliContents
+                            : fileJsGzippedContents,
+                    out.getOutput());
+            verify(response).setHeader("Content-Encoding", expectedEncoding);
+        }
     }
 
     @Test
@@ -398,10 +458,10 @@ public class ResponseWriterTest {
     public void writeByteRangeStartOmitted() throws IOException {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range", "bytes=-10"));
-        assertResponse(Arrays.copyOfRange(fileJsContents, 0, 11));
+        assertResponse(Arrays.copyOfRange(fileJsContents, 6, 16));
         assertResponseHeaders(new Pair<>("Accept-Ranges", "bytes"), new Pair<>(
-                "Content-Range", "bytes 0-10/" + fileJsContents.length));
-        assertEquals(11L, responseContentLength.get());
+                "Content-Range", "bytes 6-15/" + fileJsContents.length));
+        assertEquals(10L, responseContentLength.get());
         assertStatus(206);
     }
 
@@ -429,28 +489,44 @@ public class ResponseWriterTest {
         assertStatus(206);
     }
 
-    @Test
-    public void writeByteRangeEmpty() throws IOException {
+    @ParameterizedTest
+    @ValueSource(strings = { "bytes=10-9", "f-d-d___", "-", "bytes=-",
+            "bytes=1-2,x", "bytes=1-2,", "bytes=0-1,,2-3", "items=0-1" })
+    public void writeByteRangeInvalid_wholeContentWritten(String range)
+            throws IOException {
         makePathsAvailable(PATH_JS);
-        mockRequestHeaders(new Pair<>("Range", "bytes=10-9"));
+        mockRequestHeaders(new Pair<>("Range", range));
+        assertResponse(fileJsContents);
+        verify(response, never()).setStatus(anyInt());
+    }
+
+    @Test
+    public void writeByteRangeUnitCaseInsensitive() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "Bytes=0-1"));
+        assertResponse(Arrays.copyOfRange(fileJsContents, 0, 2));
+        assertStatus(206);
+    }
+
+    @Test
+    public void writeByteRangeNotSatisfiable() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "bytes=16-, -0"));
         assertResponse(new byte[] {});
+        assertResponseHeaders(new Pair<>("Content-Range",
+                "bytes */" + fileJsContents.length));
         assertStatus(416);
     }
 
     @Test
-    public void writeByteRangeMalformed() throws IOException {
+    public void writeByteRangePartlySatisfiable_satisfiableRangeWritten()
+            throws IOException {
         makePathsAvailable(PATH_JS);
-        mockRequestHeaders(new Pair<>("Range", "f-d-d___"));
-        assertResponse(new byte[] {});
-        assertStatus(416);
-    }
-
-    @Test
-    public void writeByteRangeBothEndsOpen() throws IOException {
-        makePathsAvailable(PATH_JS);
-        mockRequestHeaders(new Pair<>("Range", "-"));
-        assertResponse(new byte[] {});
-        assertStatus(416);
+        mockRequestHeaders(new Pair<>("Range", "bytes=20-30, 2-3"));
+        assertResponse(Arrays.copyOfRange(fileJsContents, 2, 4));
+        assertResponseHeaders(new Pair<>("Content-Range",
+                "bytes 2-3/" + fileJsContents.length));
+        assertStatus(206);
     }
 
     @Test
@@ -569,7 +645,7 @@ public class ResponseWriterTest {
     private void assertResponse(String path, byte[] expectedResponse)
             throws IOException {
         CapturingServletOutputStream out = new CapturingServletOutputStream();
-        Mockito.when(response.getOutputStream()).thenReturn(out);
+        when(response.getOutputStream()).thenReturn(out);
         responseWriter.writeResponseContents(path, pathToUrl.get(path), request,
                 response);
 
@@ -581,13 +657,13 @@ public class ResponseWriterTest {
             List<Pair<String[], byte[]>> expectedHeadersAndBytes)
             throws IOException {
         CapturingServletOutputStream out = new CapturingServletOutputStream();
-        Mockito.when(response.getOutputStream()).thenReturn(out);
+        when(response.getOutputStream()).thenReturn(out);
 
         AtomicReference<String> contentType = new AtomicReference<>(null);
-        Mockito.doAnswer(invocation -> {
+        doAnswer(invocation -> {
             contentType.set((String) invocation.getArguments()[0]);
             return null;
-        }).when(response).setContentType(ArgumentMatchers.anyString());
+        }).when(response).setContentType(anyString());
 
         responseWriter.writeResponseContents(path, pathToUrl.get(path), request,
                 response);
@@ -630,7 +706,7 @@ public class ResponseWriterTest {
     }
 
     private void assertStatus(int status) {
-        Mockito.verify(response).setStatus(status);
+        verify(response).setStatus(status);
     }
 
     private void makePathsAvailable(String... paths)
@@ -640,7 +716,7 @@ public class ResponseWriterTest {
             if (url == null) {
                 throw new IllegalArgumentException("Unsupported path: " + path);
             }
-            Mockito.when(servletContext.getResource(path)).thenReturn(url);
+            when(servletContext.getResource(path)).thenReturn(url);
         }
     }
 
@@ -650,11 +726,9 @@ public class ResponseWriterTest {
             if (url == null) {
                 throw new IllegalArgumentException("Unsupported path: " + path);
             }
-            ClassLoader classLoader = Mockito.mock(ClassLoader.class);
-            Mockito.when(servletContext.getClassLoader())
-                    .thenReturn(classLoader);
-            Mockito.when(
-                    classLoader.getResource("META-INF/VAADIN/webapp" + path))
+            ClassLoader classLoader = mock(ClassLoader.class);
+            when(servletContext.getClassLoader()).thenReturn(classLoader);
+            when(classLoader.getResource("META-INF/VAADIN/webapp" + path))
                     .thenReturn(url);
         }
     }
@@ -662,21 +736,19 @@ public class ResponseWriterTest {
     @SafeVarargs
     private final void assertResponseHeaders(Pair<String, String>... headers) {
         for (Pair<String, String> header : headers) {
-            Mockito.verify(response).setHeader(header.getFirst(),
-                    header.getSecond());
+            verify(response).setHeader(header.getFirst(), header.getSecond());
         }
     }
 
     @SafeVarargs
     private final void mockRequestHeaders(Pair<String, String>... headers) {
         for (Pair<String, String> header : headers) {
-            Mockito.when(request.getHeader(header.getFirst()))
+            when(request.getHeader(header.getFirst()))
                     .thenReturn(header.getSecond());
-            Mockito.when(request.getHeaders(header.getFirst()))
-                    .thenReturn(Collections.enumeration(
-                            Collections.singleton(header.getSecond())));
+            when(request.getHeaders(header.getFirst())).thenReturn(Collections
+                    .enumeration(Collections.singleton(header.getSecond())));
         }
-        Mockito.when(request.getHeaderNames())
+        when(request.getHeaderNames())
                 .thenReturn(Collections.enumeration(Arrays.stream(headers)
                         .map(Pair::getFirst).collect(Collectors.toList())));
     }
@@ -703,13 +775,12 @@ public class ResponseWriterTest {
                 @Override
                 protected URLConnection openConnection(URL u)
                         throws IOException {
-                    URLConnection connection = Mockito
-                            .mock(URLConnection.class);
-                    Mockito.when(connection.getInputStream())
+                    URLConnection connection = mock(URLConnection.class);
+                    when(connection.getInputStream())
                             .thenReturn(new ByteArrayInputStream(data));
-                    Mockito.when(connection.getContentLengthLong())
+                    when(connection.getContentLengthLong())
                             .thenReturn((long) data.length);
-                    Mockito.when(connection.getLastModified())
+                    when(connection.getLastModified())
                             .thenReturn(lastModificationTime);
                     return connection;
                 }

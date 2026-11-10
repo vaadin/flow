@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Tag;
@@ -61,6 +60,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class StateTreeTest {
 
@@ -507,6 +509,72 @@ class StateTreeTest {
     }
 
     @Test
+    void beforeClientResponse_ownerDetachedByEarlierExecution_executionDiscardedAndRunWhenAttachedAgain() {
+        StateNode child = new StateNode(ElementChildrenList.class);
+        StateNodeTest.setParent(child, tree.getRootNode());
+
+        tree.beforeClientResponse(child,
+                context -> StateNodeTest.setParent(child, null));
+        TestExecution execution = new TestExecution();
+        tree.beforeClientResponse(child, execution);
+
+        tree.runExecutionsBeforeClientResponse();
+
+        assertEquals(0, execution.executed,
+                "an execution should not run for a node detached by an earlier execution");
+        assertEquals(1, execution.discarded);
+
+        StateNodeTest.setParent(child, tree.getRootNode());
+        tree.runExecutionsBeforeClientResponse();
+
+        assertEquals(1, execution.restored);
+        assertEquals(1, execution.executed,
+                "the postponed execution should be run when the node is attached again");
+    }
+
+    @Test
+    void beforeClientResponse_ownerDetachedByEarlierExecution_postponedExecutionCanBeRemoved() {
+        StateNode child = new StateNode(ElementChildrenList.class);
+        StateNodeTest.setParent(child, tree.getRootNode());
+
+        tree.beforeClientResponse(child,
+                context -> StateNodeTest.setParent(child, null));
+        TestExecution execution = new TestExecution();
+        StateTree.ExecutionRegistration registration = tree
+                .beforeClientResponse(child, execution);
+
+        tree.runExecutionsBeforeClientResponse();
+        assertEquals(1, execution.discarded);
+        registration.remove();
+
+        StateNodeTest.setParent(child, tree.getRootNode());
+        tree.runExecutionsBeforeClientResponse();
+
+        assertEquals(0, execution.restored,
+                "a removed execution should no longer be on the node");
+        assertEquals(0, execution.executed,
+                "a removed execution should not be run when the node is attached again");
+    }
+
+    @Test
+    void beforeClientResponse_removeAfterExecutionRun_noException() {
+        StateNode child = new StateNode(ElementChildrenList.class);
+        StateNodeTest.setParent(child, tree.getRootNode());
+
+        TestExecution execution = new TestExecution();
+        StateTree.ExecutionRegistration registration = tree
+                .beforeClientResponse(child, execution);
+        tree.runExecutionsBeforeClientResponse();
+        assertEquals(1, execution.executed);
+
+        registration.remove();
+        tree.runExecutionsBeforeClientResponse();
+
+        assertEquals(1, execution.executed,
+                "removing an execution that has run should not affect it");
+    }
+
+    @Test
     void beforeClientResponse_initiallyNotAttached_executedWithUI_executionRun() {
         StateTree someTree = new UI().getInternals().getStateTree();
 
@@ -612,8 +680,8 @@ class StateTreeTest {
             throw new IllegalStateException("Throw before client response");
         });
         assertNull(tree.getUI().getSession());
-        VaadinSession mockSession = Mockito.mock(VaadinSession.class);
-        Mockito.when(mockSession.getErrorHandler()).thenReturn(null);
+        VaadinSession mockSession = mock(VaadinSession.class);
+        when(mockSession.getErrorHandler()).thenReturn(null);
         try {
             tree.getUI().getInternals().setSession(mockSession);
             tree.beforeClientResponse(rootNode, context -> {
@@ -679,11 +747,11 @@ class StateTreeTest {
 
     @Test
     void collectChanges_updateActiveState() {
-        StateNode node1 = Mockito.mock(StateNode.class);
-        StateNode node2 = Mockito.mock(StateNode.class);
+        StateNode node1 = mock(StateNode.class);
+        StateNode node2 = mock(StateNode.class);
 
-        Mockito.when(node1.getOwner()).thenReturn(tree);
-        Mockito.when(node2.getOwner()).thenReturn(tree);
+        when(node1.getOwner()).thenReturn(tree);
+        when(node2.getOwner()).thenReturn(tree);
 
         tree.markAsDirty(node1);
         tree.markAsDirty(node2);
@@ -691,8 +759,8 @@ class StateTreeTest {
         tree.collectChanges(node -> {
         });
 
-        Mockito.verify(node1).updateActiveState();
-        Mockito.verify(node2).updateActiveState();
+        verify(node1).updateActiveState();
+        verify(node2).updateActiveState();
     }
 
     @Test
@@ -774,7 +842,7 @@ class StateTreeTest {
     @Test
     void pendingJavascriptExecutionForInitiallyInvisibleNode() {
         UI ui = new UI();
-        VaadinSession mockSession = Mockito.mock(VaadinSession.class);
+        VaadinSession mockSession = mock(VaadinSession.class);
         ui.getInternals().setSession(mockSession);
         StateTree initialTree = ui.getInternals().getStateTree();
 
@@ -799,7 +867,7 @@ class StateTreeTest {
     @Test
     void pendingJavascriptExecutionForVisibleAndInvisibleNode() {
         UI ui = new UI();
-        VaadinSession mockSession = Mockito.mock(VaadinSession.class);
+        VaadinSession mockSession = mock(VaadinSession.class);
         ui.getInternals().setSession(mockSession);
         StateTree initialTree = ui.getInternals().getStateTree();
 
@@ -830,7 +898,7 @@ class StateTreeTest {
     @Test
     void pendingJavascriptExecutionForVisibleAndInvisibleParentNode() {
         UI ui = new UI();
-        VaadinSession mockSession = Mockito.mock(VaadinSession.class);
+        VaadinSession mockSession = mock(VaadinSession.class);
         ui.getInternals().setSession(mockSession);
         StateTree initialTree = ui.getInternals().getStateTree();
 

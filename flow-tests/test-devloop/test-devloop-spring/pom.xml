@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-test-devloop</artifactId>
+    <version>25.4-SNAPSHOT</version>
+  </parent>
+  <artifactId>flow-test-devloop-spring</artifactId>
+  <packaging>pom</packaging>
+  <name>Flow dev loop tests: Spring Boot application</name>
+  <description>End-to-end tests for the dev loop against an application with an entry point of its own.</description>
+
+  <!-- Order matters for a plain `mvn install` here: the application resolves the
+       library. Maven reorders by the dependency graph anyway; this is for a reader. -->
+  <modules>
+    <module>devloop-shared</module>
+    <module>devloop-app</module>
+  </modules>
+
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
+
+</project>

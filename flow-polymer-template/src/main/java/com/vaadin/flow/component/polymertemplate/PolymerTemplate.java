@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Vaadin Ltd
+ * Copyright (C) 2022-2026 Vaadin Ltd
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -115,7 +115,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      * functionality.
      */
     public PolymerTemplate() {
-        this(VaadinService.getCurrent().getInstantiator()
+        this(VaadinService.getCurrentOrThrow().getInstantiator()
                 .getOrCreate(TemplateParser.TemplateParserFactory.class)
                 .createParser(), VaadinService.getCurrent());
     }

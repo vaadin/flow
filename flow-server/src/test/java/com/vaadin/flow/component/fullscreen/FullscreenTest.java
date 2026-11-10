@@ -20,7 +20,6 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
@@ -34,11 +33,12 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+// Asserts the bodies of the functions the actions are built from
+@SuppressWarnings("removal")
 class FullscreenTest {
 
     @Tag("test-button")
-    static final class TestButton extends Component
-            implements ClickNotifier<TestButton> {
+    static final class TestButton extends Component {
     }
 
     @Tag("test-panel")

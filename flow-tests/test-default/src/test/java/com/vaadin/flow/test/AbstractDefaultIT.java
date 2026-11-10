@@ -19,55 +19,27 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.function.Supplier;
 
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.testbench.BrowserTestBase;
-import com.vaadin.testbench.DriverSupplier;
+import com.vaadin.flow.testutil.junit6.AbstractBrowserIT;
 
 /**
  * Base class for the integration tests in the default configuration module.
  * <p>
- * This is the JUnit 6 (Jupiter) counterpart of the JUnit 4
- * {@code ChromeBrowserTest} used by the other test modules: it builds on
- * TestBench's {@link BrowserTestBase} and re-adds the navigation conveniences
- * ({@link #open()}, {@link #getRootURL()}, {@link #getTestPath()}) that
- * contributors expect. Tests annotate methods with
- * {@link com.vaadin.testbench.BrowserTest @BrowserTest}.
+ * Adds to the shared {@link AbstractBrowserIT} the view-based navigation
+ * ({@link #open()}, {@link #getTestURL()}, {@link #getTestPath()}) that
+ * resolves the test path from the {@link TestFor} annotation. Tests annotate
+ * methods with {@link com.vaadin.testbench.BrowserTest @BrowserTest}.
+ * <p>
+ * The tests call the JUnit assertions unqualified, through a static import, as
+ * the conventions ask. {@code assertEquals} is the exception: TestBench's base
+ * class declares {@code assertEquals(WebElement, WebElement)}, and an inherited
+ * method shadows every static import of the same name, so those calls stay
+ * written as {@code Assertions.assertEquals(...)}.
  */
-public abstract class AbstractDefaultIT extends BrowserTestBase
-        implements DriverSupplier {
-
-    /**
-     * Port the application is served on. Matches the {@code server.port} used
-     * by the Spring Boot app and can be overridden for parallel module runs via
-     * the {@code serverPort} system property.
-     */
-    public static final int SERVER_PORT = Integer
-            .parseInt(System.getProperty("serverPort", "8888"));
-
-    /**
-     * Supplies the local Chrome driver used by TestBench. The same headless
-     * options as the JUnit 4 {@code ChromeBrowserTest} are applied so the tests
-     * run reliably in CI and other headless/container environments.
-     *
-     * @return a configured Chrome {@link WebDriver}
-     */
-    @Override
-    public WebDriver createDriver() {
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless=new", "--disable-gpu",
-                "--disable-backgrounding-occluded-windows");
-        // Required when running in CI/containers that disable the Chrome
-        // sandbox (no unprivileged user namespaces) and have a small /dev/shm.
-        options.addArguments("--no-sandbox", "--disable-dev-shm-usage");
-        return new ChromeDriver(options);
-    }
+public abstract class AbstractDefaultIT extends AbstractBrowserIT {
 
     /**
      * Gets the absolute path to the test view, starting with a "/".
@@ -138,38 +110,11 @@ public abstract class AbstractDefaultIT extends BrowserTestBase
     }
 
     /**
-     * Opens the given path on the test server and waits for the dev server to
-     * be ready.
-     * <p>
-     * Waiting is required because in dev mode requests made while the frontend
-     * bundle is still being built are answered with a placeholder page. That
-     * page carries neither the view contents nor a Flow client, so navigating
-     * without waiting makes element lookups and server side navigation, such as
-     * forwarding, fail.
-     *
-     * @param path
-     *            the path to open, starting with a "/"
-     */
-    protected void open(String path) {
-        getDriver().get(getRootURL() + path);
-        waitForDevServer();
-    }
-
-    /**
      * Returns the full URL to the test view.
      *
      * @return the URL for the test
      */
     protected String getTestURL() {
         return getRootURL() + getTestPath();
-    }
-
-    /**
-     * Returns the URL to the root of the server, e.g. "http://localhost:8888".
-     *
-     * @return the URL to the root
-     */
-    protected String getRootURL() {
-        return "http://localhost:" + SERVER_PORT;
     }
 }

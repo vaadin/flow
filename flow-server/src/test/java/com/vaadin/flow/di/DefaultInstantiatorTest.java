@@ -23,7 +23,6 @@ import net.bytebuddy.description.modifier.SyntheticState;
 import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -34,6 +33,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class DefaultInstantiatorTest {
 
@@ -44,29 +48,26 @@ class DefaultInstantiatorTest {
 
     @Test
     void createComponent_dontDependOnGetOrCreate() {
-        DefaultInstantiator instantiator = Mockito
-                .mock(DefaultInstantiator.class);
+        DefaultInstantiator instantiator = mock(DefaultInstantiator.class);
 
-        Mockito.when(instantiator.createComponent(Mockito.any()))
-                .thenCallRealMethod();
+        when(instantiator.createComponent(any())).thenCallRealMethod();
 
         TestComponent component = instantiator
                 .createComponent(TestComponent.class);
 
         assertNotNull(component);
 
-        Mockito.verify(instantiator, Mockito.times(0))
-                .getOrCreate(Mockito.any());
+        verify(instantiator, times(0)).getOrCreate(any());
     }
 
     @Test
     void getOrCreate_lookupHasObject_returnObjectFromLookup() {
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         Lookup lookup = mockLookup(service);
 
         DefaultInstantiator instantiator = new DefaultInstantiator(service);
 
-        Mockito.when(lookup.lookup(List.class)).thenReturn(new ArrayList<>());
+        when(lookup.lookup(List.class)).thenReturn(new ArrayList<>());
 
         List<?> list = instantiator.getOrCreate(List.class);
         assertTrue(list instanceof ArrayList);
@@ -74,7 +75,7 @@ class DefaultInstantiatorTest {
 
     @Test
     void getOrCreate_lookupHasNoObject_createNewObject() {
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         mockLookup(service);
 
         DefaultInstantiator instantiator = new DefaultInstantiator(service);
@@ -85,7 +86,7 @@ class DefaultInstantiatorTest {
 
     @Test
     void getApplicationClass_regularClass_getsSameClass() {
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         mockLookup(service);
 
         DefaultInstantiator instantiator = new DefaultInstantiator(service);
@@ -100,7 +101,7 @@ class DefaultInstantiatorTest {
     @Test
     void getApplicationClass_syntheticClass_getsApplicationClass()
             throws Exception {
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         mockLookup(service);
         DefaultInstantiator instantiator = new DefaultInstantiator(service);
 
@@ -121,11 +122,11 @@ class DefaultInstantiatorTest {
     }
 
     private Lookup mockLookup(VaadinService service) {
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        Mockito.when(service.getContext()).thenReturn(context);
+        VaadinContext context = mock(VaadinContext.class);
+        when(service.getContext()).thenReturn(context);
 
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        Lookup lookup = mock(Lookup.class);
+        when(context.getAttribute(Lookup.class)).thenReturn(lookup);
         return lookup;
     }
 }

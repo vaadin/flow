@@ -41,6 +41,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.server.FrontendDependencyUrlResolver;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -63,6 +64,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
     private static final String VALUE = "value";
     private static final String DEVELOPMENT_ONLY = "developmentOnly";
+    private static final String TYPE = "type";
+    private static final String MODULE_TYPE = JavaScript.Type.MODULE.name();
     private static final String VERSION = "version";
     private static final String ASSETS = "assets";
 
@@ -361,6 +364,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private <T extends Annotation> void collectScripts(
             LinkedHashSet<String> target, LinkedHashSet<String> targetDevOnly,
             Class<T> annotationType) {
+        // Only @JavaScript has a type attribute, reading it from @JsModule
+        // would fail
+        boolean hasTypeAttribute = JavaScript.class.equals(annotationType);
         try {
             Set<String> logs = new HashSet<>();
             Class<? extends Annotation> loadedAnnotation = getFinder()
@@ -384,6 +390,30 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                                     // classes (Lumo and Material)
                                     // but should include imports only from the
                                     // active one
+                                    return;
+                                }
+
+                                if (hasTypeAttribute && MODULE_TYPE
+                                        .equals(getAnnotationValueAsString(ann,
+                                                TYPE))) {
+                                    // type=MODULE values are loaded at runtime
+                                    // as <script type="module"> and must not
+                                    // enter the bundle
+                                    return;
+                                }
+
+                                if (FrontendDependencyUrlResolver
+                                        .isRuntimeDependencyUrl(value)
+                                        && (hasTypeAttribute
+                                                || loadsRuntimeDependencies(
+                                                        clazz))) {
+                                    // Values with a runtime prefix or any
+                                    // other scheme are loaded at runtime as
+                                    // <script> or <script type="module"> and
+                                    // must not enter the bundle. Nothing
+                                    // loads @JsModule values of other classes
+                                    // than components and the app shell at
+                                    // runtime, so those are left to the bundle
                                     return;
                                 }
 

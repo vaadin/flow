@@ -26,6 +26,9 @@ import com.vaadin.flow.shared.ApplicationConstants;
 /**
  * A {@link RequestHandler} that presents an informative page that the browser
  * in use will not work.
+ * <p>
+ * An {@link UnsupportedBrowserEvent} is fired through the service event bus
+ * before the page is written.
  *
  * @since 1.0
  */
@@ -40,12 +43,15 @@ public class UnsupportedBrowserHandler implements RequestHandler {
                 RequestType.BROWSER_TOO_OLD)) {
             return false;
         }
+        VaadinService service = session.getService();
+        service.getEventBus().fireEvent(
+                new UnsupportedBrowserEvent(service, session, request));
+
         response.setContentType(
                 ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
 
         // Use a file from the application resources folder, if available
-        Lookup lookup = session.getService().getContext()
-                .getAttribute(Lookup.class);
+        Lookup lookup = service.getContext().getAttribute(Lookup.class);
         if (lookup != null) {
             final ResourceProvider resourceProvider = lookup
                     .lookup(ResourceProvider.class);

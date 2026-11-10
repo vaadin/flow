@@ -1,4 +1,3 @@
-import prettier from 'eslint-config-vaadin/prettier';
 import typescript from 'eslint-config-vaadin/typescript';
 import globals from 'globals';
 import tsdoc from 'eslint-plugin-tsdoc';
@@ -8,7 +7,6 @@ export default [
     ignores: ['target/**/*', '**/*.js', '*.mjs']
   },
   ...typescript,
-  ...prettier,
   {
     // Validate the TSDoc/JSDoc syntax of doc comments in the migrated modules so
     // ported Javadoc tags stay well-formed (e.g. @param/@returns/@typeParam and
@@ -27,9 +25,14 @@ export default [
         projectService: {
           // The ported suites belong to src/test/frontend/tsconfig.json, which
           // the project service finds by walking up from each file. Only the
-          // two root-level suites need the default project: they predate the
-          // port and are not type-clean, so that project leaves them out.
-          allowDefaultProject: ['src/test/frontend/*']
+          // root-level suites that predate the port need the default project:
+          // they are not type-clean, so that project leaves them out.
+          allowDefaultProject: [
+            'src/test/frontend/BrowserHelpersTests.ts',
+            'src/test/frontend/DownloadTests.ts',
+            'src/test/frontend/FlowTests.ts',
+            'src/test/frontend/FullscreenTests.ts'
+          ]
         }
       }
     },

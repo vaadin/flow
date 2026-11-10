@@ -60,7 +60,10 @@ public class ComponentMapping extends ServerSideFeature {
                 : "Only a Composite is allowed to remap a component";
         this.component = component;
 
-        if (getNode().hasFeature(ClientCallableHandlers.class)) {
+        // Most components have no handlers, so only create the feature for
+        // those that do instead of holding an empty one for every component
+        if (getNode().hasFeature(ClientCallableHandlers.class)
+                && ClientCallableHandlers.hasHandlers(component.getClass())) {
             getNode().getFeature(ClientCallableHandlers.class)
                     .componentSet(component);
         }

@@ -1,0 +1,5 @@
+/* Loaded into the "theme" cascade layer by @StyleSheet */
+div#annotated-div.layered {
+  color: rgb(255, 0, 0);
+  background-color: rgb(255, 255, 0);
+}

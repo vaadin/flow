@@ -18,15 +18,16 @@ package com.vaadin.flow.component;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals;
@@ -52,6 +53,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -64,13 +67,11 @@ class ShortcutRegistrationTest {
     @BeforeEach
     void initTests() {
         ui = mock(UI.class);
-        // initShortcutClient loads the client helper via ui.getPage()
-        when(ui.getPage())
-                .thenReturn(mock(com.vaadin.flow.component.page.Page.class));
         lifecycleOwner = mock(Component.class);
         Arrays.setAll(listenOn, i -> mock(Component.class));
 
         when(lifecycleOwner.getUI()).thenReturn(Optional.of(ui));
+        when(lifecycleOwner.getUIOrThrow()).thenCallRealMethod();
         when(lifecycleOwner.addAttachListener(any()))
                 .thenReturn(mock(Registration.class));
         when(lifecycleOwner.addDetachListener(any()))
@@ -224,7 +225,7 @@ class ShortcutRegistrationTest {
                 }, Key.KEY_A);
 
         for (Component component : listenOn) {
-            when(component.addDetachListener(Mockito.any()))
+            when(component.addDetachListener(any()))
                     .thenReturn(mock(Registration.class));
         }
         clientResponse();
@@ -528,6 +529,76 @@ class ShortcutRegistrationTest {
     }
 
     @Test
+    void ownerScopeGuard_componentLifecycleOwner_filterLocatesOwnerByToken() {
+        UI realUi = spyUiWithSession();
+        Component owner = new FakeComponent();
+        realUi.add(owner);
+        new ShortcutRegistration(owner, () -> new Component[] { realUi },
+                event -> {
+                }, Key.KEY_A);
+
+        realUi.getInternals().getStateTree()
+                .runExecutionsBeforeClientResponse();
+
+        final String token = owner.getElement()
+                .getAttribute(ShortcutRegistration.SHORTCUT_OWNER_ATTRIBUTE);
+        assertNotNull(token, "component owner should be marked");
+        assertTrue(
+                shortcutFilter(realUi).contains("eventInOwnerScope(event, '["
+                        + ShortcutRegistration.SHORTCUT_OWNER_ATTRIBUTE + "~=\""
+                        + token + "\"]')"),
+                "filter should locate the owner element by its marker token");
+    }
+
+    @Test
+    void ownerScopeGuard_uiLifecycleOwner_filterHasNoTokenAndUiIsNotMarked() {
+        UI realUi = spyUiWithSession();
+        realUi.addShortcutListener(() -> {
+        }, Key.KEY_A);
+
+        realUi.getInternals().getStateTree()
+                .runExecutionsBeforeClientResponse();
+
+        assertNull(
+                realUi.getElement().getAttribute(
+                        ShortcutRegistration.SHORTCUT_OWNER_ATTRIBUTE),
+                "the UI element can never be inside a popover, so it needs no marker");
+        final String filter = shortcutFilter(realUi);
+        assertTrue(filter.contains("eventInTopLevelScope(event)"),
+                "UI-owned shortcut should use the token-free origin guard "
+                        + filter);
+        assertFalse(
+                filter.contains(ShortcutRegistration.SHORTCUT_OWNER_ATTRIBUTE),
+                "UI-owned shortcut should not embed an owner token " + filter);
+    }
+
+    @Test
+    void ownerScopeGuard_uiLifecycleOwner_repeatedRegistrationsShareFilter() {
+        // #25624: a filter text that differs per registration is retained
+        // forever by the client expression cache and both constant pools, so
+        // re-registering the same shortcut must not produce a new expression.
+        UI realUi = spyUiWithSession();
+        final StateTree tree = realUi.getInternals().getStateTree();
+
+        ShortcutRegistration first = realUi.addShortcutListener(() -> {
+        }, Key.KEY_A);
+        tree.runExecutionsBeforeClientResponse();
+        // The whole expression map is what keys the constant pool entry.
+        final Set<String> firstExpressions = new HashSet<>(
+                keydownExpressions(realUi));
+
+        first.remove();
+        realUi.addShortcutListener(() -> {
+        }, Key.KEY_A);
+        tree.runExecutionsBeforeClientResponse();
+
+        assertEquals(firstExpressions,
+                new HashSet<>(keydownExpressions(realUi)),
+                "re-registering the same UI shortcut should reuse the very "
+                        + "same expressions");
+    }
+
+    @Test
     void constructedRegistration_lifecycleIsVisibleAndEnabled_shorcutEventIsFired() {
         AtomicReference<ShortcutEvent> event = new AtomicReference<>();
 
@@ -605,7 +676,7 @@ class ShortcutRegistrationTest {
                 Key.KEY_A);
 
         mockLifecycle(true);
-        Mockito.when(lifecycleOwner.getParent())
+        when(lifecycleOwner.getParent())
                 .thenReturn(Optional.of(new FakeComponent()));
 
         clientResponse();
@@ -620,25 +691,27 @@ class ShortcutRegistrationTest {
     void uiRegistration_uiHasModalComponent_eventIsSentFromModalComponentInsteadOfUi() {
         AtomicReference<ShortcutEvent> eventRef = new AtomicReference<>();
 
-        Component modal = Mockito.mock(Component.class);
+        Component modal = mock(Component.class);
         when(modal.getUI()).thenReturn(Optional.of(ui));
+        when(modal.getUIOrThrow()).thenCallRealMethod();
         when(modal.getEventBus()).thenReturn(new ComponentEventBus(modal));
         when(modal.getElement()).thenReturn(new Element("tag"));
         when(modal.isVisible()).thenReturn(true);
 
-        UIInternals uiInternals = Mockito.mock(UIInternals.class);
-        Mockito.when(uiInternals.hasModalComponent()).thenReturn(true);
-        Mockito.when(uiInternals.getActiveModalComponent()).thenReturn(modal);
-        Mockito.when(ui.getInternals()).thenReturn(uiInternals);
+        UIInternals uiInternals = mock(UIInternals.class);
+        when(uiInternals.hasModalComponent()).thenReturn(true);
+        when(uiInternals.getActiveModalComponent()).thenReturn(modal);
+        when(ui.getInternals()).thenReturn(uiInternals);
 
         listenOn = new Component[] { ui };
         when(ui.getUI()).thenReturn(Optional.of(ui));
+        when(ui.getUIOrThrow()).thenCallRealMethod();
 
         new ShortcutRegistration(lifecycleOwner, () -> listenOn, eventRef::set,
                 Key.KEY_A);
 
         mockLifecycle(true);
-        Mockito.when(lifecycleOwner.getParent()).thenReturn(Optional.of(modal));
+        when(lifecycleOwner.getParent()).thenReturn(Optional.of(modal));
 
         clientResponse(listenOn);
 
@@ -662,8 +735,7 @@ class ShortcutRegistrationTest {
         FakeComponent component = new FakeComponent();
         component.setVisible(false);
         component.getElement().appendChild(ownerElement);
-        Mockito.when(lifecycleOwner.getParent())
-                .thenReturn(Optional.of(component));
+        when(lifecycleOwner.getParent()).thenReturn(Optional.of(component));
 
         clientResponse();
 
@@ -702,7 +774,7 @@ class ShortcutRegistrationTest {
     @Test
     void constructedRegistration_lifeCycleOwnerIsDetached_detachListenerIsDeregisteredFromListenOnComponents() {
         AtomicReference<ComponentEventListener> detachListener = new AtomicReference<>();
-        Mockito.doAnswer(invocaation -> {
+        doAnswer(invocaation -> {
             detachListener.set(
                     invocaation.getArgument(0, ComponentEventListener.class));
             return mock(Registration.class);
@@ -711,17 +783,16 @@ class ShortcutRegistrationTest {
         new ShortcutRegistration(lifecycleOwner, () -> listenOn, event -> {
         }, Key.KEY_A);
 
-        Registration registration = Mockito.mock(Registration.class);
+        Registration registration = mock(Registration.class);
         for (Component component : listenOn) {
-            Mockito.when(component.addDetachListener(Mockito.any()))
-                    .thenReturn(registration);
+            when(component.addDetachListener(any())).thenReturn(registration);
         }
 
         clientResponse();
 
         detachListener.get().onComponentEvent(new DetachEvent(lifecycleOwner));
 
-        Mockito.verify(registration, Mockito.times(3)).remove();
+        verify(registration, times(3)).remove();
     }
 
     @Test
@@ -729,9 +800,9 @@ class ShortcutRegistrationTest {
         UI ui = spyUiWithSession();
         Component owner = new FakeComponent();
 
-        Registration registration = Mockito.mock(Registration.class);
+        Registration registration = mock(Registration.class);
         AtomicInteger count = new AtomicInteger();
-        Mockito.doAnswer(invocation -> {
+        doAnswer(invocation -> {
             count.incrementAndGet();
             return registration;
         }).when(ui).addDetachListener(any());
@@ -825,10 +896,10 @@ class ShortcutRegistrationTest {
     }
 
     private Element mockLifecycle(boolean visible) {
-        Mockito.when(lifecycleOwner.isVisible()).thenReturn(visible);
+        when(lifecycleOwner.isVisible()).thenReturn(visible);
         Element element = ElementFactory.createAnchor();
         element.setVisible(visible);
-        Mockito.when(lifecycleOwner.getElement()).thenReturn(element);
+        when(lifecycleOwner.getElement()).thenReturn(element);
         return element;
     }
 
@@ -841,9 +912,9 @@ class ShortcutRegistrationTest {
         private final UI ui;
 
         ElementLocatorTestFixture() {
-            VaadinSession session = Mockito.mock(VaadinSession.class);
-            Mockito.when(session.hasLock()).thenReturn(true);
-            ui = Mockito.spy(UI.class);
+            VaadinSession session = mock(VaadinSession.class);
+            when(session.hasLock()).thenReturn(true);
+            ui = spy(UI.class);
             ui.getInternals().setSession(session);
 
             owner = new FakeComponent();
@@ -909,8 +980,8 @@ class ShortcutRegistrationTest {
     }
 
     private static UI spyUiWithSession() {
-        UI spyUi = Mockito.spy(UI.class);
-        // A locked session lets initShortcutClient's executeJs run.
+        UI spyUi = spy(UI.class);
+        // A locked session lets the delegate's executeJs run.
         VaadinSession session = mock(VaadinSession.class);
         when(session.hasLock()).thenReturn(true);
         spyUi.getInternals().setSession(session);
@@ -919,11 +990,28 @@ class ShortcutRegistrationTest {
 
     private static String delegateExpression(
             List<PendingJavaScriptInvocation> invocations) {
-        // Match the delegate CALL, not the FlowShortcut.js definition load.
         return invocations.stream().map(i -> i.getInvocation().getExpression())
                 .filter(e -> e.contains("registerKeydownDelegate(this,"))
                 .findFirst().orElseThrow(() -> new AssertionError(
                         "No registerKeydownDelegate call scheduled"));
+    }
+
+    private static Set<String> keydownExpressions(Component component) {
+        return component.getElement().getNode()
+                .getFeature(ElementListenerMap.class).getExpressions("keydown");
+    }
+
+    /**
+     * The single keydown listener filter carrying the shortcut origin guard.
+     */
+    private static String shortcutFilter(Component component) {
+        return keydownExpressions(component).stream()
+                .filter(e -> e.contains("window.Vaadin.Flow.shortcut."))
+                .reduce((a, b) -> {
+                    throw new AssertionError(
+                            "More than one shortcut filter: " + a + " / " + b);
+                }).orElseThrow(() -> new AssertionError(
+                        "No shortcut filter registered for keydown"));
     }
 
     private boolean hasKeyAInKeyDownExpression(Component component) {

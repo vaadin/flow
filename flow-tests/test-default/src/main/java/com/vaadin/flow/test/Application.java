@@ -17,13 +17,19 @@ package com.vaadin.flow.test;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.server.servlet.context.ServletComponentScan;
 
 /**
  * Spring Boot entry point for the default configuration test module. Views in
  * this package (and below) are picked up automatically by Vaadin's Spring
  * integration, so no servlet registration is needed.
+ * <p>
+ * {@link ServletComponentScan} is enabled so that the few tests that need to
+ * hook into the servlet container can use {@code @WebFilter} /
+ * {@code @WebListener} instead of Spring specific registrations.
  */
 @SpringBootApplication
+@ServletComponentScan
 public class Application {
 
     public static void main(String[] args) {

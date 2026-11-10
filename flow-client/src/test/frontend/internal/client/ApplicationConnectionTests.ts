@@ -6,6 +6,7 @@ import { testRegistry } from './testRegistry';
 import { expect, waitUntil } from '@open-wc/testing';
 import { ApplicationConfiguration } from '../../../../main/frontend/internal/client/ApplicationConfiguration';
 import { ApplicationConnection } from '../../../../main/frontend/internal/client/ApplicationConnection';
+import { ClientEvents } from '../../../../main/frontend/internal/client/ClientEvents';
 import { getScheduler } from '../../../../main/frontend/internal/client/TrackingScheduler';
 import { onModuleLoad } from '../../../../main/frontend/internal/client/bootstrap/Bootstrapper';
 import { StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
@@ -27,6 +28,7 @@ function makeRegistry(opts: { initialUidlHandled?: boolean; activeRequest?: bool
   // Something on the root node, so debug() has to reach that node rather than
   // any empty one. 'tag' in feature 0 is what the server writes for an element.
   tree.getRootNode().getMap(0).getProperty('tag').setValue('body');
+  const events = new ClientEvents();
   const registry = testRegistry({
     MessageSender: {
       resynchronize: () => log.resynchronized++,
@@ -48,9 +50,10 @@ function makeRegistry(opts: { initialUidlHandled?: boolean; activeRequest?: bool
         log.events.push({ nodeId, eventType, data })
     },
     ApplicationConfiguration: { getUIId: () => 7 },
+    ClientEvents: events,
     StateTree: tree
   });
-  return { registry, log, tree };
+  return { registry, log, tree, events };
 }
 
 // Records the event types registered on a target, the way the Java suite's
@@ -80,6 +83,18 @@ describe('ApplicationConnection', () => {
     expect(registry.log.startedRequests).to.equal(1);
     expect(registry.log.handled).to.deep.equal([{ syncId: 0 }]);
     expect(registry.log.resynchronized).to.equal(0);
+  });
+
+  it('does not reload on the initial, non-persisted pageshow', async () => {
+    new ApplicationConnection(makeRegistry().registry).start({ syncId: 0 });
+    // The browser fires this when the document is first shown, which can be
+    // after the client has started when a resource delays the load event.
+    const unloaded = new Promise<boolean>((resolve) => {
+      window.addEventListener('beforeunload', () => resolve(true), { once: true });
+      setTimeout(() => resolve(false), 100);
+    });
+    window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: false }));
+    expect(await unloaded).to.be.false;
   });
 
   it('isActive while the initial UIDL is not yet handled', () => {
@@ -118,7 +133,7 @@ describe('ApplicationConnection', () => {
     expect(connection.isActive()).to.be.false;
   });
 
-  it('delegates poll, resolveUri, sendEventMessage, connectWebComponent, getUIId, debug', () => {
+  it('delegates poll, resolveUri, sendEventMessage, connectWebComponent, getUIId, getClientEvents, debug', () => {
     const registry = makeRegistry();
     const connection = new ApplicationConnection(registry.registry);
 
@@ -133,6 +148,7 @@ describe('ApplicationConnection', () => {
     ]);
     expect(connection.getUIId()).to.equal(7);
     expect(connection.getProfilingData()).to.deep.equal([1, 2]);
+    expect(connection.getClientEvents()).to.equal(registry.events);
     expect(connection.debug()).to.deep.equal({ elementData: { tag: 'body' } });
   });
 

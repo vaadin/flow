@@ -92,6 +92,26 @@ import static com.vaadin.flow.server.Constants.DEFAULT_REQUEST_SIZE_MAX;
  *     }
  * };
  * </pre>
+ * <p>
+ * An upload is received independently of the owning component's lifecycle. The
+ * owner's attached, visible, enabled and inert state is checked when the upload
+ * request is received, but not while the upload is being received. Once
+ * handling has started, detaching the owner component, navigating to another
+ * view or closing the browser tab does not abort the transfer on the server.
+ * <p>
+ * A UI that is closed while an upload for it is ongoing is kept attached to its
+ * session until the upload has been handled, so that transfer progress
+ * listeners and the callbacks of the factory methods above are still run even
+ * though there is no client left to receive the UI changes.
+ * <p>
+ * An upload does not, however, outlive its session: if the session is
+ * invalidated, either explicitly or by timing out, an ongoing upload is
+ * terminated. The input stream of the upload stops providing content and throws
+ * an {@link java.io.IOException} instead, so the upload callback is not run and
+ * a partially received file is discarded. An application with long-lived
+ * uploads that should survive can keep the session alive while the upload is
+ * ongoing, or receive the upload through a servlet of its own that is not tied
+ * to a UI and a session.
  *
  * @since 24.8
  */

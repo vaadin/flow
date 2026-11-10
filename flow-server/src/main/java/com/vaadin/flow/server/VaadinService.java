@@ -27,6 +27,7 @@ import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -146,6 +147,15 @@ public abstract class VaadinService implements Serializable {
 
     private static final String REQUEST_START_TIME_ATTRIBUTE = "requestStartTime";
 
+    private static final String REQUEST_HANDLER_ATTRIBUTE = VaadinService.class
+            .getName() + ".requestHandler";
+
+    private static final String SESSIONLESS_REQUEST_HANDLER_ATTRIBUTE = VaadinService.class
+            .getName() + ".sessionlessRequestHandler";
+
+    private static final String REQUEST_FAILURE_ATTRIBUTE = VaadinService.class
+            .getName() + ".requestFailure";
+
     /**
      * Should never be used directly, always use
      * {@link #getDeploymentConfiguration()}.
@@ -168,6 +178,8 @@ public abstract class VaadinService implements Serializable {
     private ClassLoader classLoader;
 
     private Iterable<RequestHandler> requestHandlers;
+
+    private Collection<SessionlessRequestHandler> sessionlessRequestHandlers;
 
     private transient Iterable<IndexHtmlRequestListener> indexHtmlRequestListeners;
 
@@ -282,6 +294,8 @@ public abstract class VaadinService implements Serializable {
         router = new Router(getRouteRegistry());
 
         List<RequestHandler> handlers = createRequestHandlers();
+        List<SessionlessRequestHandler> sessionlessHandlers = new ArrayList<>(
+                createSessionlessRequestHandlers());
 
         // If the user has already provided interceptors we will add them to the
         // list
@@ -330,6 +344,12 @@ public abstract class VaadinService implements Serializable {
             Collections.reverse(handlers);
 
             requestHandlers = Collections.unmodifiableCollection(handlers);
+
+            sessionlessHandlers.addAll(
+                    event.getAddedSessionlessRequestHandlers().toList());
+            Collections.reverse(sessionlessHandlers);
+            sessionlessRequestHandlers = Collections
+                    .unmodifiableCollection(sessionlessHandlers);
 
             event.getAddedVaadinRequestInterceptor()
                     .forEach(requestInterceptors::add);
@@ -397,6 +417,7 @@ public abstract class VaadinService implements Serializable {
      * @return {@code true} if this service can process requests, {@code false}
      *         otherwise
      * @see #whenInitialized(Consumer)
+     * @since 25.4
      */
     public boolean isInitialized() {
         return initialized;
@@ -438,6 +459,7 @@ public abstract class VaadinService implements Serializable {
      *            the action to run, given whether the service was initialized
      *            successfully
      * @see #isInitialized()
+     * @since 25.4
      */
     public void whenInitialized(Consumer<Boolean> action) {
         // handle() absorbs an initialization failure into the action itself, so
@@ -610,12 +632,30 @@ public abstract class VaadinService implements Serializable {
         handlers.add(new UnsupportedBrowserHandler());
         handlers.add(new StreamRequestHandler());
         handlers.add(new PwaHandler(() -> getPwaRegistry()));
+        handlers.add(new WebComponentBootstrapHandler());
+
+        return handlers;
+    }
+
+    /**
+     * Called during initialization to add the sessionless request handlers for
+     * the service. Note that the returned list will be reversed so the last
+     * handler will be called first. This enables overriding this method and
+     * using add on the returned list to add a custom sessionless request
+     * handler which overrides any predefined handler.
+     *
+     * @return The list of sessionless request handlers used by this service.
+     * @throws ServiceException
+     *             if a problem occurs when creating the request handlers
+     * @see SessionlessRequestHandler
+     * @since 25.4
+     */
+    protected List<SessionlessRequestHandler> createSessionlessRequestHandlers()
+            throws ServiceException {
+        List<SessionlessRequestHandler> handlers = new ArrayList<>();
         handlers.add(new TranslationFileRequestHandler(
                 getInstantiator().getI18NProvider(), getClassLoader()));
-
-        handlers.add(new WebComponentBootstrapHandler());
         handlers.add(new WebComponentProvider());
-
         return handlers;
     }
 
@@ -1112,6 +1152,7 @@ public abstract class VaadinService implements Serializable {
             List<UI> uis = new ArrayList<>(session.getUIs());
             for (final UI ui : uis) {
                 try {
+                    ui.getInternals().terminateActiveTransfers();
                     ui.accessSynchronously(() -> {
                         /*
                          * close() called here for consistency so that it is
@@ -1548,6 +1589,30 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
+     * Gets the currently used Vaadin service, throwing an exception if none is
+     * available. Use this method when the code must run within an active
+     * service context.
+     * <p>
+     * If the code can work without a service, use {@link #getCurrent()} instead
+     * and check for null.
+     *
+     * @return the current Vaadin service instance, never <code>null</code>
+     * @throws IllegalStateException
+     *             if no service is bound to the current thread
+     * @see #getCurrent()
+     * @since 25.4
+     */
+    public static VaadinService getCurrentOrThrow() {
+        VaadinService service = getCurrent();
+        if (service == null) {
+            throw new IllegalStateException(
+                    "No currently active VaadinService found. This code must be run while a request is handled "
+                            + "or within UI.access() or VaadinSession.access().");
+        }
+        return service;
+    }
+
+    /**
      * Sets the this Vaadin service as the current service and also sets the
      * current Vaadin request and Vaadin response. This method is used by the
      * framework to set the current instances when a request related to the
@@ -1663,7 +1728,12 @@ public abstract class VaadinService implements Serializable {
      * @param request
      *            The Vaadin request for which the session should be
      *            reinitialized
+     * @deprecated use
+     *             {@link jakarta.servlet.http.HttpServletRequest#changeSessionId()}
+     *             instead, which changes the session id in place without
+     *             copying the session attributes
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public static void reinitializeSession(VaadinRequest request) {
         WrappedSession oldSession = request.getWrappedSession();
 
@@ -1798,6 +1868,18 @@ public abstract class VaadinService implements Serializable {
         List<UI> uis = new ArrayList<>(session.getUIs());
         for (final UI ui : uis) {
             if (ui.isClosing()) {
+                if (ui.getInternals().hasActiveTransfers()) {
+                    /*
+                     * Keep the UI attached so that listeners and callbacks
+                     * bound to it are still effective for the ongoing upload or
+                     * download. The request that serves the last transfer
+                     * detaches the UI through its own cleanup.
+                     */
+                    getLogger().debug(
+                            "Not removing closed UI {} since it has ongoing transfers",
+                            ui.getUIId());
+                    continue;
+                }
                 ui.accessSynchronously(() -> {
                     getLogger().debug("Removing closed UI {}", ui.getUIId());
                     session.removeUI(ui);
@@ -1884,7 +1966,7 @@ public abstract class VaadinService implements Serializable {
         }
 
         // Check for long running tasks
-        Lock lockInstance = ui.getSession().getLockInstance();
+        Lock lockInstance = ui.getSessionOrThrow().getLockInstance();
         if (lockInstance instanceof ReentrantLock
                 && ((ReentrantLock) lockInstance).hasQueuedThreads()) {
             /*
@@ -1948,6 +2030,35 @@ public abstract class VaadinService implements Serializable {
         vaadinRequestInterceptors
                 .forEach(requestInterceptor -> requestInterceptor
                         .requestStart(request, response));
+        if (eventBus.hasListener(RequestStartedEvent.class)) {
+            eventBus.fireEvent(
+                    new RequestStartedEvent(this, request, response));
+        }
+    }
+
+    /**
+     * Records the exception that made handling a request fail, so that the
+     * {@link RequestEndedEvent} of the request reports it.
+     * <p>
+     * Failures in {@link #handleRequest(VaadinRequest, VaadinResponse)} are
+     * recorded automatically. Code that handles a request between its own calls
+     * to {@link #requestStart(VaadinRequest, VaadinResponse)} and
+     * {@link #requestEnd(VaadinRequest, VaadinResponse, VaadinSession)}, such
+     * as the handling of push messages, calls this method when it catches an
+     * exception, typically next to passing it to the session
+     * {@link ErrorHandler}.
+     *
+     * @param request
+     *            the request that failed, not {@code null}
+     * @param failure
+     *            the exception that made handling the request fail, not
+     *            {@code null}
+     * @since 25.4
+     */
+    public void recordRequestFailure(VaadinRequest request, Exception failure) {
+        if (eventBus.hasListener(RequestEndedEvent.class)) {
+            request.setAttribute(REQUEST_FAILURE_ATTRIBUTE, failure);
+        }
     }
 
     /**
@@ -1964,6 +2075,19 @@ public abstract class VaadinService implements Serializable {
      */
     public void requestEnd(VaadinRequest request, VaadinResponse response,
             VaadinSession session) {
+        if (eventBus.hasListener(RequestEndedEvent.class)) {
+            Duration duration = Duration
+                    .ofNanos(System.nanoTime() - (Long) request
+                            .getAttribute(REQUEST_START_TIME_ATTRIBUTE));
+            eventBus.fireEventInReverseOrder(new RequestEndedEvent(this,
+                    request, response, session,
+                    (RequestHandler) request
+                            .getAttribute(REQUEST_HANDLER_ATTRIBUTE),
+                    (SessionlessRequestHandler) request.getAttribute(
+                            SESSIONLESS_REQUEST_HANDLER_ATTRIBUTE),
+                    (Exception) request.getAttribute(REQUEST_FAILURE_ATTRIBUTE),
+                    duration));
+        }
         vaadinRequestInterceptors.forEach(requestInterceptor -> {
             try {
                 requestInterceptor.requestEnd(request, response, session);
@@ -2005,6 +2129,21 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
+     * Returns the sessionless request handlers that are registered with this
+     * service. They are asked, in the iteration order of the returned
+     * collection, before the session of a request is looked up and before any
+     * of the {@link #getRequestHandlers() request handlers} is called.
+     *
+     * @return a collection of sessionless request handlers in the order they
+     *         are invoked
+     * @see #createSessionlessRequestHandlers()
+     * @since 25.4
+     */
+    public Iterable<SessionlessRequestHandler> getSessionlessRequestHandlers() {
+        return sessionlessRequestHandlers;
+    }
+
+    /**
      * Returns the request interceptors that are registered with this service.
      * The iteration order of the returned collection is the same as the order
      * in which the request handlers will be invoked when a request is handled.
@@ -2033,6 +2172,11 @@ public abstract class VaadinService implements Serializable {
      * Handles the incoming request and writes the response into the response
      * object. Uses {@link #getRequestHandlers()} for handling the request.
      * <p>
+     * The {@link #getSessionlessRequestHandlers() sessionless handlers} are
+     * asked first, before the session of the request is looked up. The request
+     * handlers are then called with the session, which is created if the
+     * request can create one.
+     * <p>
      * If a session expiration is detected during request handling then each
      * {@link RequestHandler request handler} has an opportunity to handle the
      * expiration event if it implements {@link SessionExpiredHandler}. If no
@@ -2053,6 +2197,26 @@ public abstract class VaadinService implements Serializable {
 
         VaadinSession vaadinSession = null;
         try {
+            // Requests that do not need a session are handled before looking
+            // it up, so that they neither create a session nor wait for its
+            // lock
+            // The handler is recorded before it runs, so that a request
+            // ended event names the handler that threw if handling fails
+            boolean observed = eventBus.hasListener(RequestEndedEvent.class);
+            for (SessionlessRequestHandler handler : getSessionlessRequestHandlers()) {
+                if (observed) {
+                    request.setAttribute(SESSIONLESS_REQUEST_HANDLER_ATTRIBUTE,
+                            handler);
+                }
+                if (handler.handleRequest(request, response)) {
+                    return;
+                }
+            }
+            if (observed) {
+                request.setAttribute(SESSIONLESS_REQUEST_HANDLER_ATTRIBUTE,
+                        null);
+            }
+
             // Find out the service session this request is related to
             vaadinSession = findVaadinSession(request);
             if (vaadinSession == null) {
@@ -2060,9 +2224,15 @@ public abstract class VaadinService implements Serializable {
             }
 
             for (RequestHandler handler : getRequestHandlers()) {
+                if (observed) {
+                    request.setAttribute(REQUEST_HANDLER_ATTRIBUTE, handler);
+                }
                 if (handler.handleRequest(vaadinSession, request, response)) {
                     return;
                 }
+            }
+            if (observed) {
+                request.setAttribute(REQUEST_HANDLER_ATTRIBUTE, null);
             }
 
             // Request not handled by any RequestHandler
@@ -2072,6 +2242,7 @@ public abstract class VaadinService implements Serializable {
         } catch (final SessionExpiredException e) {
             handleSessionExpired(request, response);
         } catch (final Exception e) {
+            recordRequestFailure(request, e);
             handleExceptionDuringRequest(request, response, vaadinSession, e);
         } finally {
             requestEnd(request, response, vaadinSession);
@@ -2470,7 +2641,7 @@ public abstract class VaadinService implements Serializable {
      */
     public static boolean isCsrfTokenValid(UI ui, String requestToken) {
 
-        if (ui.getSession().getService().getDeploymentConfiguration()
+        if (ui.getSessionOrThrow().getService().getDeploymentConfiguration()
                 .isXsrfProtectionEnabled()) {
             String uiToken = ui.getCsrfToken();
 

@@ -5,7 +5,13 @@ import type {
   ResourceLoadListener
 } from '../../../../../main/frontend/internal/client/ResourceRegistry';
 import { expect } from '@open-wc/testing';
-import { MessageHandler, parseJson } from '../../../../../main/frontend/internal/client/communication/MessageHandler';
+import {
+  MessageHandler,
+  parseJson,
+  resolveWhatRuns
+} from '../../../../../main/frontend/internal/client/communication/MessageHandler';
+import { ConstantPool } from '../../../../../main/frontend/internal/client/flow/ConstantPool';
+import { ResynchronizationState } from '../../../../../main/frontend/internal/client/communication/MessageSender';
 import { DependencyLoader } from '../../../../../main/frontend/internal/client/DependencyLoader';
 import { ResourceLoader } from '../../../../../main/frontend/internal/client/ResourceLoader';
 import { runWhenEagerDependenciesLoaded } from '../../../../../main/frontend/internal/client/EagerDependencyTracker';
@@ -13,6 +19,7 @@ import { StateNode } from '../../../../../main/frontend/internal/client/flow/Sta
 import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
 import { UILifecycle, UIState } from '../../../../../main/frontend/internal/client/UILifecycle';
 import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
+import { VaadinRequest } from '../../../../../main/frontend/internal/client/communication/VaadinRequest';
 
 function makeRegistry(maxMessageSuspendTimeout = 10000) {
   const log = {
@@ -31,8 +38,11 @@ function makeRegistry(maxMessageSuspendTimeout = 10000) {
   // active, so the tracker starts out with one; ending it clears the flag, as
   // the real tracker does.
   let activeRequest = true;
+  // The request the sender knows a reply to answer.
+  const request = new VaadinRequest();
   return {
     log,
+    request,
     getState: () => state,
     startRequest: () => {
       activeRequest = true;
@@ -52,11 +62,12 @@ function makeRegistry(maxMessageSuspendTimeout = 10000) {
         requestResynchronize: () => true,
         resynchronize: () => {
           log.resynchronized = true;
-        }
+        },
+        getRequest: () => request,
+        findRequest: (nextClientId: number | undefined) => (nextClientId === 1 ? request : undefined)
       },
       StateTree: { prepareForResync: () => {} },
       RequestResponseTracker: {
-        fireResponseHandlingStarted: () => {},
         endRequest: () => {
           // The real tracker throws when there is nothing to end.
           if (!activeRequest) {
@@ -162,7 +173,6 @@ function makeWiredRegistry() {
     })
     .register('URIResolver', { resolveVaadinUri: (uri: string) => uri })
     .register('RequestResponseTracker', {
-      fireResponseHandlingStarted: () => {},
       // The Java suite's TestRequestResponseTracker makes endRequest a no-op.
       endRequest: () => {},
       hasActiveRequest: () => true
@@ -240,7 +250,10 @@ describe('MessageHandler', () => {
 
       // syncId 5 while expecting 1 -> queued, not applied.
       handler.handleMessage({ syncId: 5, constants: { skipped: 1 } });
-      expect(registry.log.constants).to.deep.equal([{ first: 1 }]); // second not imported
+      // The constants of a message go into the pool as it arrives, since what
+      // an invocation of it runs is read out of there, but nothing of the
+      // message itself is applied
+      expect(registry.log.constants).to.deep.equal([{ first: 1 }, { skipped: 1 }]);
       expect(handler.getLastSeenServerSyncId()).to.equal(0);
     });
 
@@ -257,7 +270,9 @@ describe('MessageHandler', () => {
       // is ended.
       registry.startRequest();
       handler.handleMessage({ syncId: 0, constants: { stale: 1 } });
-      expect(registry.log.constants).to.deep.equal([]); // never applied any constants
+      // Nothing of the message is applied; its constants are in the pool the
+      // way those of any message that arrives are
+      expect(registry.log.constants).to.deep.equal([{ stale: 1 }]);
       expect(registry.log.endRequests).to.equal(endRequestsBefore + 1);
     });
 
@@ -274,6 +289,52 @@ describe('MessageHandler', () => {
       expect(registry.log.endRequests).to.equal(1);
       // The loading indicator is still stopped for the duplicate.
       expect(registry.log.stopLoadings).to.equal(2);
+    });
+
+    describe('replies', () => {
+      // Records the events the request dispatches, with its outcome.
+      function recordRequest(request: VaadinRequest): string[] {
+        const events: string[] = [];
+        request.addEventListener('response', () => events.push('response'));
+        request.addEventListener('end', () => events.push(`end ${request.outcome}`));
+        return events;
+      }
+
+      it('settles the request an XHR reply answers', () => {
+        const registry = makeRegistry();
+        const events = recordRequest(registry.request);
+        new MessageHandler(registry.registry).handleMessage({ syncId: 0, clientId: 1 }, { rpc: [] });
+        expect(events).to.deep.equal(['response', 'end acknowledged']);
+      });
+
+      it('settles the request a reply over push answers, found by the client id it carries', () => {
+        const registry = makeRegistry();
+        const events = recordRequest(registry.request);
+        new MessageHandler(registry.registry).handleMessage({ syncId: 0, clientId: 1 });
+        expect(events).to.deep.equal(['response', 'end acknowledged']);
+      });
+
+      it('settles no request for a message the server pushed on its own', () => {
+        const registry = makeRegistry();
+        const events = recordRequest(registry.request);
+        // The client id would match the request, but the message is no reply.
+        new MessageHandler(registry.registry).handleMessage({ syncId: 0, clientId: 1, meta: { async: true } });
+        expect(events).to.deep.equal([]);
+      });
+
+      [
+        { refusal: 'the session expired', meta: { sessionExpired: true } },
+        // What the server replies with when it refuses the request, e.g. for a
+        // bad security key or a message id out of sync, or fails to process it.
+        { refusal: 'an application error', meta: { appError: { caption: null, message: null } } }
+      ].forEach(({ refusal, meta }) => {
+        it(`rejects the request a reply with ${refusal} answers`, () => {
+          const registry = makeRegistry();
+          const events = recordRequest(registry.request);
+          new MessageHandler(registry.registry).handleMessage({ syncId: 0, meta }, { rpc: [] });
+          expect(events).to.deep.equal(['response', 'end rejected']);
+        });
+      });
     });
 
     it('runs a one-shot session-expired handler when set', () => {
@@ -453,7 +514,7 @@ describe('MessageHandler', () => {
         // sheet the same message is about to remove, leaving the page with
         // neither. Both the real loader and the real DependencyLoader are wired
         // in, as that dedup is the thing under test.
-        const url = '/stylesheet-swap.css';
+        const url = '/src/test/frontend/stylesheet-swap.css';
         const oldLink = document.createElement('link');
         oldLink.rel = 'stylesheet';
         oldLink.href = url;
@@ -466,18 +527,17 @@ describe('MessageHandler', () => {
           MessageSender: {
             getResynchronizationState: () => 'NOT_ACTIVE',
             clearResynchronizationState: () => {},
-            setClientToServerMessageId: () => {}
+            setClientToServerMessageId: () => {},
+            findRequest: () => undefined
           },
           RequestResponseTracker: {
-            fireResponseHandlingStarted: () => {},
             endRequest: () => {},
             hasActiveRequest: () => true
           },
           LoadingIndicatorStateHandler: { stopLoading: () => {} },
           ApplicationConfiguration: { getMaxMessageSuspendTimeout: () => 10000 },
           URIResolver: { resolveVaadinUri: (uri: string) => uri },
-          // The swapped URL has no file behind it, so the load fails; the
-          // assertions below are made before it settles either way.
+          // The assertions below are made before the load settles either way
           SystemErrorHandler: { handleError: () => {} }
         });
         // initFromDom: true, as in the browser, so the sheet already on the page
@@ -514,6 +574,55 @@ describe('MessageHandler', () => {
         expect(profiling.length).to.be.at.least(3);
         profiling.forEach((value) => expect(value).to.be.finite);
         expect(profiling[0]).to.be.at.least(0);
+      });
+
+      it('reads what an invocation runs out of the pool', () => {
+        // Which decides whether a forced reload during a resynchronization is
+        // seen; the constants of a message go into the pool as it arrives, so
+        // the one it carries is there along with the ones before it.
+        const pool = new ConstantPool();
+        pool.importFromJson({ earlier: 'window.location.reload();' });
+
+        expect(resolveWhatRuns([{}, 'earlier'], pool)).to.equal('window.location.reload();');
+        expect(resolveWhatRuns([{}, 'neither'], pool)).to.be.null;
+        expect(resolveWhatRuns([], pool)).to.be.null;
+      });
+
+      it('takes the constants of a message the server re-sends', () => {
+        // The message is ignored as already seen, but its constants are read
+        // before that, as they are for any message that arrives. They name
+        // what the pool holds, which is what the pool makes of a key it has.
+        const registry = makeRegistry();
+        const handler = new MessageHandler(registry.registry);
+        handler.handleMessage({ syncId: 0, constants: { c: 'window.alert($0)' } });
+
+        registry.startRequest();
+        handler.handleMessage({ syncId: 0, constants: { c: 'window.alert($0)' } });
+
+        expect(registry.log.constants).to.deep.equal([{ c: 'window.alert($0)' }, { c: 'window.alert($0)' }]);
+      });
+
+      it('takes the constants of a message in before deciding what to do with it', () => {
+        // What an invocation runs is read out of the pool, and a message that
+        // arrives while a resynchronization is ongoing is only queued, so its
+        // constants have to be in the pool by then.
+        const pool = new ConstantPool();
+        const registry = testRegistry({
+          MessageSender: {
+            getResynchronizationState: () => ResynchronizationState.WAITING_FOR_RESPONSE,
+            clearResynchronizationState: () => {},
+            setClientToServerMessageId: () => {}
+          },
+          ConstantPool: pool
+        });
+
+        new TestMessageHandler(registry).callHandleJSON({
+          syncId: 3,
+          constants: { c: 'window.alert($0)' },
+          execute: [['c']]
+        });
+
+        expect(pool.get<string>('c')).to.equal('window.alert($0)');
       });
 
       it('keeps processing a message whose stylesheetRemovals is null', () => {

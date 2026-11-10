@@ -46,6 +46,11 @@ const REQUEST_TYPE_PUSH = 'push';
 const UI_ID_PARAMETER = 'v-uiId';
 const PUSH_ID_PARAMETER = 'v-pushId';
 
+// How long a push connection has to stay open before its loss no longer counts
+// towards Atmosphere's websocket retries, so that a connection that keeps
+// failing right after opening still falls back to the fallback transport.
+const STABLE_CONNECTION_MS = 5 * 60 * 1000;
+
 /**
  * Splits a message into websocket fragments of at most WEBSOCKET_FRAGMENT_SIZE
  * characters; the first fragment is prefixed with `<length><delimiter>` so the
@@ -139,6 +144,19 @@ function doPush(socket: unknown, message: string): void {
   (socket as { push: (message: string) => void }).push(message);
 }
 
+/**
+ * Resets the websocket error retry counter of the given Atmosphere socket.
+ * atmosphere.js only resets it when the request is closed, so errors from
+ * separate outages would otherwise add up until it permanently downgrades to
+ * the fallback transport.
+ */
+function resetWebsocketErrorRetries(socket: unknown): void {
+  const request = (socket as { request?: { curWebsocketErrorRetries?: number } } | null)?.request;
+  if (request) {
+    request.curWebsocketErrorRetries = 0;
+  }
+}
+
 /** Unsubscribes the Atmosphere connection for the given url. */
 function doDisconnect(url: string): void {
   // Java dereferences $wnd.vaadinPush.atmosphere unconditionally here: the
@@ -211,6 +229,8 @@ export class AtmospherePushConnection implements PushConnection {
   #url = '';
 
   #pendingDisconnectCommand: Command | null = null;
+
+  #connectedAt: number | null = null;
 
   constructor(registry: Registry) {
     this.#registry = registry;
@@ -364,6 +384,7 @@ export class AtmospherePushConnection implements PushConnection {
    */
   protected onConnect(response: AtmosphereResponse): void {
     this.#transport = response.transport;
+    this.#connectedAt ??= Date.now();
     switch (this.#state) {
       case State.CONNECT_PENDING:
         this.#state = State.CONNECTED;
@@ -446,6 +467,12 @@ export class AtmospherePushConnection implements PushConnection {
    * @param response - the Atmosphere response which was closed
    */
   protected onClose(response: AtmosphereResponse): void {
+    // Atmosphere counts the websocket error of this close only after the
+    // callback, so a connection that has been stable starts a fresh count.
+    if (this.#connectedAt !== null && Date.now() - this.#connectedAt >= STABLE_CONNECTION_MS) {
+      resetWebsocketErrorRetries(this.#socket);
+    }
+    this.#connectedAt = null;
     this.#state = State.CONNECT_PENDING;
     this.#getConnectionStateHandler().pushClosed(this, response);
   }

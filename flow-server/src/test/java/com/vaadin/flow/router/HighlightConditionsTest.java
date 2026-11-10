@@ -16,10 +16,11 @@
 package com.vaadin.flow.router;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class HighlightConditionsTest {
 
@@ -27,12 +28,12 @@ class HighlightConditionsTest {
     void locationPrefix_defaultRoute_emptyLocationMatches() {
         HighlightCondition<RouterLink> condition = HighlightConditions
                 .locationPrefix();
-        RouterLink link = Mockito.mock(RouterLink.class);
-        AfterNavigationEvent event = Mockito.mock(AfterNavigationEvent.class);
+        RouterLink link = mock(RouterLink.class);
+        AfterNavigationEvent event = mock(AfterNavigationEvent.class);
 
-        Mockito.when(link.getHref()).thenReturn("");
+        when(link.getHref()).thenReturn("");
         Location location = new Location("");
-        Mockito.when(event.getLocation()).thenReturn(location);
+        when(event.getLocation()).thenReturn(location);
         assertTrue(condition.shouldHighlight(link, event));
     }
 
@@ -40,12 +41,12 @@ class HighlightConditionsTest {
     void locationPrefix_defaultRoute_nonEmptyLocationDoesNotMatch() {
         HighlightCondition<RouterLink> condition = HighlightConditions
                 .locationPrefix();
-        RouterLink link = Mockito.mock(RouterLink.class);
-        AfterNavigationEvent event = Mockito.mock(AfterNavigationEvent.class);
+        RouterLink link = mock(RouterLink.class);
+        AfterNavigationEvent event = mock(AfterNavigationEvent.class);
 
-        Mockito.when(link.getHref()).thenReturn("");
+        when(link.getHref()).thenReturn("");
         Location location = new Location("foo");
-        Mockito.when(event.getLocation()).thenReturn(location);
+        when(event.getLocation()).thenReturn(location);
         assertFalse(condition.shouldHighlight(link, event));
     }
 
@@ -53,12 +54,12 @@ class HighlightConditionsTest {
     void locationPrefix_notDefaultRoute_prefixMatches() {
         HighlightCondition<RouterLink> condition = HighlightConditions
                 .locationPrefix();
-        RouterLink link = Mockito.mock(RouterLink.class);
-        AfterNavigationEvent event = Mockito.mock(AfterNavigationEvent.class);
+        RouterLink link = mock(RouterLink.class);
+        AfterNavigationEvent event = mock(AfterNavigationEvent.class);
 
-        Mockito.when(link.getHref()).thenReturn("foo");
+        when(link.getHref()).thenReturn("foo");
         Location location = new Location("foobar");
-        Mockito.when(event.getLocation()).thenReturn(location);
+        when(event.getLocation()).thenReturn(location);
         assertTrue(condition.shouldHighlight(link, event));
     }
 
@@ -66,12 +67,12 @@ class HighlightConditionsTest {
     void locationPrefix_notDefaultRoute_nonPrefixDoesNotMatch() {
         HighlightCondition<RouterLink> condition = HighlightConditions
                 .locationPrefix();
-        RouterLink link = Mockito.mock(RouterLink.class);
-        AfterNavigationEvent event = Mockito.mock(AfterNavigationEvent.class);
+        RouterLink link = mock(RouterLink.class);
+        AfterNavigationEvent event = mock(AfterNavigationEvent.class);
 
-        Mockito.when(link.getHref()).thenReturn("foo");
+        when(link.getHref()).thenReturn("foo");
         Location location = new Location("bar");
-        Mockito.when(event.getLocation()).thenReturn(location);
+        when(event.getLocation()).thenReturn(location);
         assertFalse(condition.shouldHighlight(link, event));
     }
 }

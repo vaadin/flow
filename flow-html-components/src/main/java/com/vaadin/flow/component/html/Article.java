@@ -34,6 +34,10 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.ARTICLE)
+// The deprecated HasOrderedComponents is declared until its removal in 26,
+// so that applications typing this component as HasOrderedComponents keep
+// compiling
+@SuppressWarnings("removal")
 public class Article extends HtmlContainer
         implements ClickNotifier<Article>, HasOrderedComponents {
 

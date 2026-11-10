@@ -215,6 +215,7 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
      * @param npmFolder
      *            the project root, used to relativize an absolute offline path
      * @return the offline path wrapped in single quotes
+     * @since 25.2.9
      */
     public static String getOfflinePath(PwaConfiguration pwaConfiguration,
             File npmFolder) {

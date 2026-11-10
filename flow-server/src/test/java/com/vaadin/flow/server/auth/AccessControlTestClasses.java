@@ -28,6 +28,7 @@ import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RoutePrefix;
@@ -278,6 +279,39 @@ public class AccessControlTestClasses {
 
     }
 
+    /**
+     * Shaped like the example in the {@link AccessDeniedErrorRouter} javadoc: a
+     * message constructor for application use, plus the no-arg constructor that
+     * the annotation requires.
+     */
+    public static class CustomAccessDeniedException extends RuntimeException {
+
+        public CustomAccessDeniedException() {
+        }
+
+        public CustomAccessDeniedException(String message) {
+            super(message);
+        }
+    }
+
+    @AccessDeniedErrorRouter(rerouteToError = CustomAccessDeniedException.class)
+    @RolesAllowed("admin")
+    @Route("customaccessdeniedwithmessage")
+    public static class CustomAccessDeniedWithMessageView extends Component {
+
+    }
+
+    @Tag(Tag.DIV)
+    public static class CustomAccessDeniedErrorView extends Component
+            implements HasErrorParameter<CustomAccessDeniedException> {
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<CustomAccessDeniedException> parameter) {
+            return 0;
+        }
+    }
+
     @AnonymousAllowed
     @Route("anon")
     @RouteAlias("anon-alias")
@@ -469,6 +503,14 @@ public class AccessControlTestClasses {
 
     @Tag(Tag.DIV)
     public static class NoPermitParent extends Component
+            implements RouterLayout {
+    }
+
+    @Tag(Tag.DIV)
+    @Layout
+    @PermitAll
+    @ParentLayout(NoPermitParent.class)
+    public static class PermitAllLayoutInNoPermitParent extends Component
             implements RouterLayout {
     }
 

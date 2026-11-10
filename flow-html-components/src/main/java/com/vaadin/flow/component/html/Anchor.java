@@ -60,6 +60,12 @@ public class Anchor extends HtmlContainer
                     AnchorTarget.DEFAULT.getValue());
 
     private static final String ROUTER_IGNORE_ATTRIBUTE = "router-ignore";
+    /**
+     * The href as it was set: either a {@link String} or an
+     * {@code AbstractStreamResource}. A disabled anchor has no {@code href}
+     * attribute, so the value is kept here and written back when the anchor is
+     * enabled again.
+     */
     private Serializable href;
 
     /**

@@ -39,6 +39,13 @@ public class DevLoopInitListener implements VaadinServiceInitListener {
     private static final Logger LOGGER = LoggerFactory
             .getLogger(DevLoopInitListener.class);
 
+    /**
+     * Creates the listener. It is found through the service loader.
+     */
+    public DevLoopInitListener() {
+        // Default constructor
+    }
+
     @Override
     public void serviceInit(ServiceInitEvent event) {
         if (!DevLoopRegistration.isDaemonLaunched()) {
@@ -54,6 +61,11 @@ public class DevLoopInitListener implements VaadinServiceInitListener {
                     "The vaadin-dev daemon launched this application but it is running in production mode; the dev loop is disabled");
             return;
         }
+        // Before the try, and deliberately: what is being reported is that the
+        // daemon launched this application, which is true whether or not the
+        // registration then comes up. Whether the loop actually worked is what
+        // flow/devloop/apply says.
+        DevLoopStatistics.appLaunched();
         try {
             DevLoopRegistration.start(event.getSource());
         } catch (RuntimeException e) {

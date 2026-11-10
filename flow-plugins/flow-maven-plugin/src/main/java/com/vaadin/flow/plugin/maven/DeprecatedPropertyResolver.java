@@ -18,6 +18,7 @@ package com.vaadin.flow.plugin.maven;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -25,6 +26,8 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.plugin.descriptor.Parameter;
 import org.apache.maven.project.MavenProject;
+
+import com.vaadin.flow.internal.ReflectTools;
 
 /**
  * Temporary backward-compatibility support for deprecated Mojo property names.
@@ -152,13 +155,14 @@ final class DeprecatedPropertyResolver {
     private static void applyPropertyValue(FlowModeAbstractMojo target,
             String fieldName, String value)
             throws ReflectiveOperationException {
-        Field field = findField(target.getClass(), fieldName);
-        if (field == null) {
+        Optional<Field> maybeField = ReflectTools
+                .findDeclaredField(target.getClass(), fieldName);
+        if (maybeField.isEmpty()) {
             target.logDebug("Cannot find field '" + fieldName
                     + "' for deprecated" + " property migration, skipping.");
             return;
         }
-        field.setAccessible(true);
+        Field field = maybeField.get();
         Class<?> type = field.getType();
         if (type == boolean.class || type == Boolean.class) {
             field.set(target, Boolean.parseBoolean(value));
@@ -167,16 +171,5 @@ final class DeprecatedPropertyResolver {
         } else {
             field.set(target, value);
         }
-    }
-
-    private static Field findField(Class<?> clazz, String name) {
-        while (clazz != null && clazz != Object.class) {
-            try {
-                return clazz.getDeclaredField(name);
-            } catch (NoSuchFieldException e) {
-                clazz = clazz.getSuperclass();
-            }
-        }
-        return null;
     }
 }

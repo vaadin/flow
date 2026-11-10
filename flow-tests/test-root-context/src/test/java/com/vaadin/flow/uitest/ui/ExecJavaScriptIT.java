@@ -62,6 +62,64 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void testVariadicJsDefinition() {
+        open();
+
+        getButton("variadicButton").click();
+
+        // Each argument reaches the browser on its own, and the generated
+        // function collects the ones that follow the fixed parameter
+        WebElement result = waitUntil(
+                d -> findElement(By.id("variadicResult")));
+        Assert.assertEquals("Variadic call: a-1-true-b", result.getText());
+    }
+
+    @Test
+    public void testVariadicJsDefinitionWithoutTrailingArguments() {
+        open();
+
+        getButton("variadicNoArgumentsButton").click();
+
+        WebElement result = waitUntil(
+                d -> findElement(By.id("variadicResult")));
+        Assert.assertEquals("Variadic call: a", result.getText());
+    }
+
+    @Test
+    public void testCallFunctionWithArguments() {
+        open();
+
+        getButton("callFunctionButton").click();
+
+        // The name of the function and the arguments are sent, and the
+        // browser looks the function up on the element
+        WebElement result = waitUntil(d -> findElement(By.id("callResult")));
+        Assert.assertEquals("Function call: a-1-true", result.getText());
+    }
+
+    @Test
+    public void testCallFunctionThroughProperty() {
+        open();
+
+        getButton("callOnPropertyButton").click();
+
+        // The property the function is read from is its this, so the label it
+        // reads is the one of the connector rather than of the element
+        WebElement result = waitUntil(d -> findElement(By.id("callResult")));
+        Assert.assertEquals("Function call: connector!", result.getText());
+    }
+
+    @Test
+    public void testCallFunctionThatIsNotThere() {
+        open();
+
+        getButton("callMissingButton").click();
+
+        WebElement result = waitUntil(d -> findElement(By.id("callResult")));
+        Assert.assertEquals("Function call: failed", result.getText());
+    }
+
+    @Test
     public void testBeanSerialization() {
         open();
 

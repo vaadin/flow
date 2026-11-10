@@ -28,6 +28,6 @@ export default function (source, map) {
 
   logger.log("Using '", themeFolder, "' for the application theme base folder.");
 
-  source = rewriteCssUrls(source, handledResourceFolder, themeFolder, logger, options);
-  this.callback(null, source, map);
+  const rewritten = rewriteCssUrls(source, handledResourceFolder, themeFolder, logger, options);
+  this.callback(null, rewritten ? rewritten.code : source, map);
 }

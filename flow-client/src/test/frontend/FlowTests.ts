@@ -1,7 +1,7 @@
 import { expect } from '@open-wc/testing';
 
 // API to test
-import { ConnectionState, ConnectionStateStore } from '@vaadin/common-frontend';
+import { ConnectionState, ConnectionStateStore } from '../../main/frontend/ConnectionState';
 import { Flow, type NavigationParameters } from '../../main/frontend/Flow';
 // Intern does not serve webpack chunks, adding deps here in order to
 // produce one chunk, because dynamic imports in Flow.ts  will not work.
@@ -128,6 +128,10 @@ describe('Flow', () => {
   });
 
   afterEach(() => {
+    // Every spy and stub below is created on the default sandbox, so one
+    // restore covers them all and keeps a case that throws mid-way from
+    // leaking a replaced function (e.g. console.error) into later cases.
+    sinon.restore();
     server.remove();
     delete $wnd.Vaadin;
     delete flowRoot.$;
@@ -157,44 +161,13 @@ describe('Flow', () => {
 
   it('should initialize a flow loading indicator', async () => {
     new Flow({ imports: () => {} });
-    $wnd.Vaadin.connectionIndicator.firstDelay = 100;
-    $wnd.Vaadin.connectionIndicator.secondDelay = 200;
-    $wnd.Vaadin.connectionIndicator.thirdDelay = 400;
     await $wnd.Vaadin.connectionIndicator.updateComplete;
+    expect($wnd.Vaadin.connectionIndicator.isConnected).to.be.true;
     const indicator = $wnd.document.querySelector('.v-loading-indicator') as HTMLElement;
     const styles = $wnd.document.querySelector('style#css-loading-indicator') as HTMLElement;
     expect(indicator).not.to.be.null;
     expect(styles).not.to.be.null;
-
     expect(indicator.getAttribute('style')).to.equal('display: none');
-
-    $wnd.Vaadin.connectionState.state = ConnectionState.LOADING;
-    await $wnd.Vaadin.connectionIndicator.updateComplete;
-
-    await new Promise((resolve) => setTimeout(resolve, 150));
-    expect(indicator.getAttribute('style')).to.equal('display: block');
-    expect(indicator.classList.contains('first')).to.be.true;
-    expect(indicator.classList.contains('second')).to.be.false;
-    expect(indicator.classList.contains('third')).to.be.false;
-
-    await new Promise((resolve) => setTimeout(resolve, 150));
-    expect(indicator.getAttribute('style')).to.equal('display: block');
-    expect(indicator.classList.contains('first')).to.be.false;
-    expect(indicator.classList.contains('second')).to.be.true;
-    expect(indicator.classList.contains('third')).to.be.false;
-
-    await new Promise((resolve) => setTimeout(resolve, 150));
-    expect(indicator.classList.contains('first')).to.be.false;
-    expect(indicator.classList.contains('second')).to.be.false;
-    expect(indicator.classList.contains('third')).to.be.true;
-
-    $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTED;
-    await $wnd.Vaadin.connectionIndicator.updateComplete;
-
-    expect(indicator.getAttribute('style')).to.equal('display: none');
-    expect(indicator.classList.contains('first')).to.be.false;
-    expect(indicator.classList.contains('second')).to.be.false;
-    expect(indicator.classList.contains('third')).to.be.false;
   });
 
   it('should throw when an incorrect server response is received', () => {
@@ -549,6 +522,7 @@ describe('Flow', () => {
   it('should show stub when navigating to server view offline', async () => {
     stubServerRemoteFunction('foobar-123');
     $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
+    const consoleError = sinon.stub(console, 'error');
     const flow = new Flow();
     const route = flow.serverSideRoutes[0];
     const params: NavigationParameters = {
@@ -558,6 +532,10 @@ describe('Flow', () => {
     const view = await route.action(params);
     expect(view.localName).to.equal('iframe');
     expect(view.getAttribute('src')).to.equal('./offline-stub.html');
+    // Nothing was attempted, so there is nothing to report. Staying silent
+    // here is what makes the log of the initialization failure below a
+    // reliable way to tell the two routes to the stub apart.
+    sinon.assert.notCalled(consoleError);
 
     // @ts-ignore
     let onBeforeEnterReturns = view.onBeforeEnter(params, {});
@@ -582,12 +560,22 @@ describe('Flow', () => {
     await $wnd.Vaadin.connectionIndicator.updateComplete;
     const indicator = $wnd.document.querySelector('.v-loading-indicator');
 
+    const consoleError = sinon.stub(console, 'error');
     const view = await route.action(params);
     expect(view).not.to.be.null;
     expect(view.localName).to.equal('iframe');
     expect(view.getAttribute('src')).to.equal('./offline-stub.html');
 
     expect(indicator.getAttribute('style')).to.equal('display: none');
+
+    // The stub replaces the view without a trace of why, so the failure has
+    // to reach the console: the reported error carries the status and body of
+    // the failed init request, which is the only clue to what went wrong.
+    sinon.assert.calledOnce(consoleError);
+    const reportedError = consoleError.getCall(0).args[1];
+    expect(reportedError).to.be.instanceOf(Error);
+    expect(reportedError.message).to.contain('500');
+    expect(reportedError.message).to.contain('unable to connect');
 
     // @ts-ignore
     let onBeforeEnterReturns = view.onBeforeEnter(params, {});

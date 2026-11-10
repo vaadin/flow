@@ -9,9 +9,9 @@ To install NPM dependencies:
 npm install
 ```
 
-To format code using Prettier:
+To format code (Prettier runs through Spotless):
 ```shell
-npm run prettier
+mvn spotless:apply
 ```
 
 ### Using the local dev tool files in a Flow application

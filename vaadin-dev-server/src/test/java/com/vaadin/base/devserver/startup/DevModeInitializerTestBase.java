@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.FrontendUtils;
@@ -52,6 +51,9 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubViteServer;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Base class for DevModeInitializer tests. It is an independent class so as it
@@ -89,21 +91,19 @@ class DevModeInitializerTestBase extends AbstractDevModeTest {
         // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
         new File(baseDir, "node_modules/.modules.yaml").createNewFile();
 
-        ServletRegistration vaadinServletRegistration = Mockito
-                .mock(ServletRegistration.class);
+        ServletRegistration vaadinServletRegistration = mock(
+                ServletRegistration.class);
 
-        Mockito.when(vaadinServletRegistration.getClassName())
+        when(vaadinServletRegistration.getClassName())
                 .thenReturn(VaadinServletSubClass.class.getName());
-        endpointGeneratorTaskFactory = Mockito
-                .mock(EndpointGeneratorTaskFactory.class);
-        taskGenerateEndpoint = Mockito.mock(TaskGenerateEndpoint.class);
-        taskGenerateOpenAPI = Mockito.mock(TaskGenerateOpenAPI.class);
-        Mockito.doReturn(endpointGeneratorTaskFactory).when(lookup)
+        endpointGeneratorTaskFactory = mock(EndpointGeneratorTaskFactory.class);
+        taskGenerateEndpoint = mock(TaskGenerateEndpoint.class);
+        taskGenerateOpenAPI = mock(TaskGenerateOpenAPI.class);
+        doReturn(endpointGeneratorTaskFactory).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
-        Mockito.doReturn(taskGenerateEndpoint)
-                .when(endpointGeneratorTaskFactory)
+        doReturn(taskGenerateEndpoint).when(endpointGeneratorTaskFactory)
                 .createTaskGenerateEndpoint(any());
-        Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
+        doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
                 .createTaskGenerateOpenAPI(any());
 
         classes = new HashSet<>();
@@ -115,14 +115,13 @@ class DevModeInitializerTestBase extends AbstractDevModeTest {
          * Adding extra registrations to make sure that DevModeInitializer picks
          * the correct registration which is a VaadinServlet registration.
          */
-        registry.put("extra1", Mockito.mock(ServletRegistration.class));
+        registry.put("extra1", mock(ServletRegistration.class));
         registry.put("foo", vaadinServletRegistration);
-        registry.put("extra2", Mockito.mock(ServletRegistration.class));
-        Mockito.when(servletContext.getServletRegistrations())
-                .thenReturn(registry);
-        Mockito.when(servletContext.getInitParameterNames())
+        registry.put("extra2", mock(ServletRegistration.class));
+        when(servletContext.getServletRegistrations()).thenReturn(registry);
+        when(servletContext.getInitParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
-        Mockito.when(servletContext.getClassLoader())
+        when(servletContext.getClassLoader())
                 .thenReturn(this.getClass().getClassLoader());
 
         mainPackageFile = new File(baseDir, PACKAGE_JSON);
@@ -190,8 +189,8 @@ class DevModeInitializerTestBase extends AbstractDevModeTest {
     }
 
     void runDestroy() throws Exception {
-        ServletContextEvent event = Mockito.mock(ServletContextEvent.class);
-        Mockito.when(event.getServletContext()).thenReturn(servletContext);
+        ServletContextEvent event = mock(ServletContextEvent.class);
+        when(event.getServletContext()).thenReturn(servletContext);
         devModeStartupListener.contextDestroyed(event);
     }
 

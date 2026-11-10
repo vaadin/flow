@@ -12,6 +12,7 @@
   <description>${project.name}</description>
 
   <properties>
+    <jandex.skip>true</jandex.skip>
     <flow.apicmp.skip>true</flow.apicmp.skip>
   </properties>
 

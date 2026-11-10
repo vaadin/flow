@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +29,7 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * The compile leg is one instance across every module in the loop, but one
@@ -39,6 +41,35 @@ class CompileTest {
 
     @TempDir
     private Path repo;
+
+    /**
+     * The property picks the backend; a value naming none of them is warned
+     * about and compiles with javac rather than failing every apply.
+     */
+    @Test
+    void theCompilerIsChosenByTheProperty() {
+        List<String> logged = new java.util.ArrayList<>();
+        String previous = System.getProperty(Compile.Compiler.PROPERTY);
+        try {
+            System.setProperty(Compile.Compiler.PROPERTY, "Maven");
+            assertEquals(Compile.Compiler.MAVEN,
+                    Compile.Compiler.configured(logged::add));
+            System.setProperty(Compile.Compiler.PROPERTY, "gradle");
+            assertEquals(Compile.Compiler.JAVAC,
+                    Compile.Compiler.configured(logged::add));
+            System.clearProperty(Compile.Compiler.PROPERTY);
+            assertEquals(Compile.Compiler.JAVAC,
+                    Compile.Compiler.configured(logged::add));
+        } finally {
+            if (previous == null) {
+                System.clearProperty(Compile.Compiler.PROPERTY);
+            } else {
+                System.setProperty(Compile.Compiler.PROPERTY, previous);
+            }
+        }
+        assertEquals(List.of("WARNING: vaadin.dev.compiler=gradle is not one "
+                + "of javac, maven; compiling with javac"), logged);
+    }
 
     @Test
     void compile_emitsBytecodeTheApplicationsJvmCanLoad() throws IOException {
@@ -64,6 +95,47 @@ class CompileTest {
     private int majorVersion(Path classFile) throws IOException {
         byte[] header = Files.readAllBytes(classFile);
         return ((header[6] & 0xFF) << 8) | (header[7] & 0xFF);
+    }
+
+    @Test
+    void compile_keepsParameterNamesAndDebugInfoLikeAMavenBuild()
+            throws Exception {
+        // Spring Data is the loud case: a query with a named parameter needs
+        // the name in the bytecode, and every Spring Boot project has
+        // -parameters on without ever mentioning it.
+        Reactor.Module app = module("app", "Finder", """
+                package app;
+                public class Finder {
+                    public String byName(String name) {
+                        String found = name;
+                        return found;
+                    }
+                }
+                """);
+        Launch.Project project = project(app);
+
+        Compile.Result result = new Compile(project)
+                .compile(List.of(source(app, "Finder")), project);
+
+        assertTrue(result.success(), () -> "errors: " + result.errors());
+        Path classFile = app.classesDir().resolve("app")
+                .resolve("Finder.class");
+        try (var loader = new java.net.URLClassLoader(
+                new java.net.URL[] { app.classesDir().toUri().toURL() },
+                null)) {
+            var parameter = loader.loadClass("app.Finder")
+                    .getMethod("byName", String.class).getParameters()[0];
+            assertTrue(parameter.isNamePresent(),
+                    "-parameters: the class carries no MethodParameters");
+            assertEquals("name", parameter.getName());
+        }
+        // -g, which the compiler plugin has on by default: the local variable
+        // names a debugger and a stack trace read.
+        assertTrue(
+                new String(Files.readAllBytes(classFile),
+                        java.nio.charset.StandardCharsets.ISO_8859_1)
+                        .contains("LocalVariableTable"),
+                "-g: the class carries no LocalVariableTable");
     }
 
     @Test
@@ -238,6 +310,61 @@ class CompileTest {
     }
 
     @Test
+    void classesUnknownToTheApp_answersFromTheLaunchSnapshot()
+            throws IOException {
+        // The signal a new bean or entity is escalated on. The application's
+        // own answer to "have you loaded this?" cannot serve: HotswapAgent's
+        // watcher defines a new class as soon as it notices the file, and a
+        // defined class is still not a bean definition.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        Path known = source(app, "Main");
+        // What the application was launched with: one class on the classpath,
+        // and the baseline taken from it.
+        compile.compile(List.of(known), project);
+        compile.seedFromDisk();
+
+        // A class of its own in a file the application has always had, which
+        // is the case a per-source answer gets wrong.
+        assertEquals(List.of("app.Main$Inner", "app.Second"),
+                compile.classesUnknownToTheApp(
+                        List.of("app.Main", "app.Main$Inner", "app.Second")));
+
+        // Compiled since - by an earlier apply, an IDE building on save, a
+        // bare mvn run. The application has it on the classpath now and still
+        // started without it, so the answer must not change.
+        Path added = known.resolveSibling("Added.java");
+        Files.writeString(added, """
+                package app;
+                public class Added { }
+                """);
+        compile.compile(List.of(added), project);
+
+        assertEquals(List.of("app.Added"), compile
+                .classesUnknownToTheApp(List.of("app.Main", "app.Added")));
+
+        // And what the application does run stays its own however often it is
+        // recompiled, which is what keeps a second method-body edit a hot
+        // swap rather than a restart for a bean the context has always held.
+        compile.compile(List.of(known), project);
+
+        assertTrue(
+                compile.classesUnknownToTheApp(List.of("app.Main")).isEmpty());
+
+        // Until the restart re-seeds, which is when the application has them
+        // all.
+        compile.seedFromDisk();
+
+        assertTrue(
+                compile.classesUnknownToTheApp(List.of("app.Main", "app.Added"))
+                        .isEmpty());
+    }
+
+    @Test
     void stale_reportsADeletedSourceAgainstTheInventory() throws IOException {
         // A walk only sees what is there, so the fingerprint map is what
         // answers: a deleted route or bean would otherwise be a silent "no
@@ -334,6 +461,50 @@ class CompileTest {
     }
 
     @Test
+    void classpathForced_recompilesWhenAReactorSiblingLeavesTheLoop()
+            throws IOException {
+        // Dropping a sibling dependency also drops the sibling from the loop,
+        // because the module set is read off the application's resolved
+        // classpath. The baseline is rebuilt for that new module set, and a
+        // baseline seeded from the project as it now stands would call the
+        // move already compiled - the apply would then restart the app into a
+        // ClassNotFoundException instead of failing with a diagnostic.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main {
+                    public static String label() {
+                        return shared.Formatter.label();
+                    }
+                }
+                """);
+        Reactor.Module shared = module("shared", "Formatter", """
+                package shared;
+                public class Formatter {
+                    public static String label() { return "shared"; }
+                }
+                """);
+        Launch.Project before = reactor(List.of(app, shared),
+                Map.of("app", List.of(shared)));
+        Compile previous = new Compile(before);
+        previous.compile(
+                List.of(source(app, "Main"), source(shared, "Formatter")),
+                before);
+        Launch.Project after = reactor(List.of(app), Map.of());
+
+        Compile compile = new Compile(after, previous);
+
+        assertEquals(List.of("app"), compile.classpathChangedModules(after));
+        List<Path> forced = compile.classpathForced(after);
+        assertEquals(List.of(source(app, "Main")), forced);
+        Compile.Result result = compile.compile(forced, after);
+        assertFalse(result.success());
+        assertTrue(
+                result.errors().stream()
+                        .anyMatch(error -> error.text().contains("shared")),
+                () -> "errors: " + result.errors());
+    }
+
+    @Test
     void relative_namesASiblingAsTheDeveloperWouldTypeIt() throws IOException {
         Reactor.Module app = module("app", "Main", """
                 package app;
@@ -390,22 +561,59 @@ class CompileTest {
     }
 
     @Test
-    void staleFrontend_seedingKeepsAnEditMadeSinceTheAppStarted()
+    void staleFrontend_seedingKeepsChangesMadeSinceTheAppStarted()
             throws IOException {
         // The "start, edit, first apply" sequence. A frontend file has no
         // artifact to be newer than, so a baseline taken while the app is
         // already running would otherwise swallow the edit and answer "no
-        // changes" to the very change it was asked about.
-        Compile compile = withFrontend("views/main.ts", "views/settled.ts");
-        long appStarted = System.currentTimeMillis();
+        // changes" to the very change it was asked about - and would not know
+        // a file deleted in the meantime existed at all.
+        Compile compile = withFrontend("views/main.ts", "views/settled.ts",
+                "views/removed.ts");
+        Compile.Snapshot launched = Compile.Snapshot
+                .of(project(Reactor.Module.of(repo.resolve("app"), "app")));
         touch("app/src/main/frontend/views/main.ts");
+        Path removed = repo.resolve("app/src/main/frontend/views/removed.ts");
+        Files.delete(removed);
 
-        compile.seedFromDisk(appStarted);
+        compile.seedFromDisk(launched);
 
         Compile.FrontendChanges changes = compile.staleFrontend();
         assertEquals(
                 List.of(repo.resolve("app/src/main/frontend/views/main.ts")),
                 changes.modified());
+        assertEquals(List.of(removed), changes.deleted());
+    }
+
+    @Test
+    void staleFrontend_launchUnderAnotherFolder_keepsEditsSinceTheLaunch()
+            throws IOException {
+        // The baseline settled on the convention folder before a build wrote
+        // the build-info token; the launch then walked the folder the token
+        // names. None of the launch's files are this baseline's, and taking
+        // its stamps would report every file here - restarting the app for a
+        // bundled one. Its own folder is walked instead, and the "start,
+        // edit, first apply" edit must still come out of that walk.
+        Compile compile = withFrontend("views/main.ts", "views/settled.ts");
+        assertEquals(repo.resolve("app/src/main/frontend"),
+                compile.frontend().root().orElseThrow());
+        Path custom = repo.resolve("app/custom-frontend");
+        write("app/custom-frontend/views/other.ts", "export {};");
+        Path config = repo.resolve("app/target/classes/META-INF/VAADIN/config");
+        Files.createDirectories(config);
+        Files.writeString(config.resolve("flow-build-info.json"),
+                "{ \"frontendFolder\" : \"" + Json.escape(custom.toString())
+                        + "\" }");
+        Compile.Snapshot launched = Compile.Snapshot
+                .of(project(Reactor.Module.of(repo.resolve("app"), "app")));
+        assertEquals(custom, launched.frontendRoot());
+        touch("app/src/main/frontend/views/main.ts");
+
+        compile.seedFromDisk(launched);
+
+        assertEquals(
+                List.of(repo.resolve("app/src/main/frontend/views/main.ts")),
+                compile.staleFrontend().modified());
     }
 
     @Test
@@ -456,6 +664,469 @@ class CompileTest {
         assertEquals(List.of(config), changes.startup().modified());
     }
 
+    /**
+     * A build that regenerates a resource rewrites it whether or not anything
+     * about it changed, and both of the questions {@code staleResources} asks
+     * are asked of timestamps. Measured in this repository: {@code tsc}
+     * rewrites nine {@code .d.ts} files under
+     * {@code vaadin-dev-server/src/main/resources} on every build with
+     * byte-identical content, and because they are startup-only resources every
+     * apply restarted the application - over an edit that was one method body
+     * in one class.
+     */
+    @Test
+    void staleResources_aRewriteThatChangedNoBytesIsNotAChange()
+            throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
+        Path config = write("app/src/main/resources/application.properties",
+                "server.port=8080");
+        Compile compile = new Compile(project(app));
+        compile.copyResources(compile.staleResources().copies());
+        compile.seedFromDisk();
+
+        // What a regenerating build does: same bytes, new modification time.
+        Files.writeString(served, "body{}");
+        Files.writeString(config, "server.port=8080");
+
+        assertTrue(compile.staleResources().isEmpty(),
+                "a rewrite that changed no bytes must not be a change");
+    }
+
+    /**
+     * And answering that once has to settle it. Both cheap questions failed on
+     * a regenerated file - the stamp moved, and the copy is now older than the
+     * source - and neither is mended by finding the bytes unchanged, so before
+     * this the daemon read the file and its copy in full on every apply, for
+     * ever.
+     */
+    @Test
+    void staleResources_aRewriteThatChangedNoBytesIsSettledOnce()
+            throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
+        Compile compile = new Compile(project(app));
+        compile.copyResources(compile.staleResources().copies());
+        compile.seedFromDisk();
+        Path copy = app.classesDir().resolve("META-INF/resources/site.css");
+
+        // What a regenerating build does: same bytes, later modification time.
+        Files.writeString(served, "body{}");
+        Files.setLastModifiedTime(served, FileTime
+                .fromMillis(Files.getLastModifiedTime(copy).toMillis() + 5000));
+
+        assertTrue(compile.staleResources().isEmpty(),
+                "a rewrite that changed no bytes must not be a change");
+
+        assertTrue(
+                Files.getLastModifiedTime(copy)
+                        .compareTo(Files.getLastModifiedTime(served)) >= 0,
+                "the copy must not go on looking older than the source it "
+                        + "already holds");
+        assertTrue(compile.staleResources().isEmpty(),
+                "and it must still not be a change");
+    }
+
+    /** And a rewrite that did change something still is one. */
+    @Test
+    void staleResources_aRewriteThatChangedBytesIsStillAChange()
+            throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
+        Compile compile = new Compile(project(app));
+        compile.copyResources(compile.staleResources().copies());
+        compile.seedFromDisk();
+
+        Files.writeString(served, "body{margin:0}");
+
+        assertEquals(List.of(served),
+                compile.staleResources().live().modified());
+    }
+
+    /**
+     * The classpath copy cannot answer "has the application been told this?",
+     * because this daemon is not the only thing that writes it. IntelliJ with
+     * auto-build on copies resources on save, so the copy holds the new value
+     * before the apply ever looks - and a check that compared the source with
+     * its copy would call that no change, leaving the application running on
+     * the value it read at startup with no restart in sight.
+     */
+    @Test
+    void staleResources_anEditAlreadyCopiedOutIsStillAChange()
+            throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path config = write("app/src/main/resources/application.properties",
+                "server.port=8080");
+        Compile compile = new Compile(project(app));
+        compile.copyResources(compile.staleResources().copies());
+        compile.seedFromDisk();
+
+        // The edit, and the copy something other than the apply made of it.
+        // The edit keeps the length, so the stamp only sees it once the
+        // modification time has moved.
+        Files.writeString(config, "server.port=9090");
+        touch("app/src/main/resources/application.properties");
+        compile.copyResources(List.of(config));
+        // A copy at least as new as its source, as the IDE leaves it.
+        touch("app/target/classes/application.properties");
+
+        assertEquals(List.of(config),
+                compile.staleResources().startup().modified());
+    }
+
+    /** And having acted on those bytes is what makes it quiet again. */
+    @Test
+    void staleResources_actingOnAnEditAlreadyCopiedOutQuietensIt()
+            throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
+        Compile compile = new Compile(project(app));
+        compile.copyResources(compile.staleResources().copies());
+        compile.seedFromDisk();
+
+        Files.writeString(served, "body{margin:0}");
+        compile.copyResources(List.of(served));
+        assertEquals(List.of(served),
+                compile.staleResources().live().modified());
+
+        compile.markResourcesNotified(List.of(served));
+
+        assertTrue(compile.staleResources().isEmpty(),
+                "a resource the browser has been shown is not a change");
+    }
+
+    /**
+     * The comparison is against the classpath copy, so a resource that has
+     * never been copied is a change however old it is - otherwise a first apply
+     * on a module built by something other than this daemon would leave the
+     * application reading nothing.
+     */
+    @Test
+    void staleResources_aResourceWithNoClasspathCopyIsAChange()
+            throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
+        Compile compile = new Compile(project(app));
+        compile.seedFromDisk();
+
+        assertEquals(List.of(served),
+                compile.staleResources().live().modified());
+    }
+
+    @Test
+    void staleResources_seedingKeepsAnEditMadeSinceTheAppStarted()
+            throws IOException {
+        // A pom edit re-seeds the baseline while the app runs, and the Maven
+        // re-resolve before it has already copied the edited config onto the
+        // classpath. Taking that edit as acted on would report "no changes"
+        // for a config the running JVM never loaded, and no later apply could
+        // see it again.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path config = write("app/src/main/resources/application.properties",
+                "server.port=8080");
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        compile.copyResources(List.of(served));
+        Compile.Snapshot launched = Compile.Snapshot.of(project);
+        touch("app/src/main/resources/application.properties");
+        // What the re-resolve's process-resources leaves behind: a copy at
+        // least as new as its source.
+        compile.copyResources(List.of(config));
+        touch("app/target/classes/application.properties");
+
+        compile.seedFromDisk(launched);
+
+        Compile.ResourceChanges changes = compile.staleResources();
+        assertEquals(List.of(config), changes.startup().modified());
+        // What the app did start with is still seeded, or every apply would
+        // report every resource.
+        assertTrue(changes.live().isEmpty());
+    }
+
+    @Test
+    void staleResources_seedingTakesAFutureDatedResourceAsReadAtStart()
+            throws IOException {
+        // An archive extracted in a time zone behind the one it was packed in
+        // dates every file hours ahead. Taken as newer than the start, the
+        // config would restart the app on every apply, each restart leaving
+        // it newer than the next start too.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path config = write("app/src/main/resources/application.properties",
+                "server.port=8080");
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        compile.copyResources(List.of(config));
+        Files.setLastModifiedTime(config, FileTime
+                .fromMillis(System.currentTimeMillis() + 5 * 3_600_000L));
+
+        compile.seedFromDisk(Compile.Snapshot.of(project));
+
+        assertTrue(compile.staleResources().startup().isEmpty());
+    }
+
+    @Test
+    void staleResources_seedingTakesAResourceDatedSlightlyAheadAsReadAtStart()
+            throws IOException {
+        // A file system on another host stamps with its own clock, a few
+        // seconds ahead of this one. What the launch read is what it read,
+        // whatever the clocks say about when it was written.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path config = write("app/src/main/resources/application.properties",
+                "server.port=8080");
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        Files.setLastModifiedTime(config,
+                FileTime.fromMillis(System.currentTimeMillis() + 30_000L));
+        compile.copyResources(List.of(config));
+
+        compile.seedFromDisk(Compile.Snapshot.of(project));
+
+        assertTrue(compile.staleResources().startup().isEmpty());
+    }
+
+    @Test
+    void stale_aFutureDatedSourceIsAChangeOnlyWhenEdited() throws IOException {
+        // The same archive dates the sources ahead too. Newer than every class
+        // compiled from them, they would recompile on every apply, and an
+        // entity among them restarts the app each time.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        Path main = source(app, "Main");
+        compile.compile(List.of(main), project);
+        Files.setLastModifiedTime(main, FileTime
+                .fromMillis(System.currentTimeMillis() + 5 * 3_600_000L));
+        compile.seedFromDisk(Compile.Snapshot.of(project));
+
+        assertTrue(compile.stale().isEmpty());
+
+        Files.writeString(main, """
+                package app;
+                public class Main { int edited; }
+                """);
+
+        assertEquals(List.of(main), compile.stale().modified());
+    }
+
+    @Test
+    void stale_aFutureDatedSourceStaysUnchangedAsTheClockCatchesUp()
+            throws IOException {
+        // Seeded while far enough ahead to be capped, the source then drifts
+        // within the skew as the clock moves on. Still newer than its class,
+        // and still the stamp the app started with, it is no change.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        Path main = source(app, "Main");
+        compile.compile(List.of(main), project);
+        long dated = System.currentTimeMillis() + 60_500;
+        Files.setLastModifiedTime(main, FileTime.fromMillis(dated));
+        compile.seedFromDisk(Compile.Snapshot.of(project));
+        long withinSkew = dated - 60_000;
+        assumeTrue(System.currentTimeMillis() < withinSkew,
+                "seeded while the source was still capped");
+
+        while (System.currentTimeMillis() <= withinSkew) {
+            java.util.concurrent.locks.LockSupport.parkNanos(10_000_000);
+        }
+
+        assertTrue(compile.stale().isEmpty());
+    }
+
+    @Test
+    void stale_seedingKeepsASourceEditedSinceTheLaunch() throws IOException {
+        // The baseline is taken after the application has read its sources.
+        // An edit in between that something else has already compiled is
+        // current against its class file, so only the launch's own stamp can
+        // say the application does not have it.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        Path main = source(app, "Main");
+        compile.compile(List.of(main), project);
+        Compile.Snapshot launched = Compile.Snapshot.of(project);
+        Files.writeString(main, """
+                package app;
+                public class Main { int edited; }
+                """);
+        compile.compile(List.of(main), project);
+
+        compile.seedFromDisk(launched);
+
+        assertEquals(List.of(main), compile.stale().modified());
+    }
+
+    @Test
+    void stale_seedingReportsASourceDeletedSinceTheLaunch() throws IOException {
+        // The application loaded the class, so the source going away before
+        // the baseline is taken is still a deletion it has to be told of.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        Path main = source(app, "Main");
+        compile.compile(List.of(main), project);
+        Compile.Snapshot launched = Compile.Snapshot.of(project);
+        Files.delete(main);
+
+        compile.seedFromDisk(launched);
+
+        assertEquals(List.of(main), compile.stale().deleted());
+    }
+
+    @Test
+    void stale_seedingTakesAModuleThatJoinedTheLoopFromDisk()
+            throws IOException {
+        // The other direction: a pom edit let a module in that the launch
+        // did not have, so the snapshot has no stamps for it. Nothing in it
+        // was edited, and none of it may read as changed - its startup
+        // resources would restart the app over nothing.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Compile.Snapshot launched = Compile.Snapshot.of(project(app));
+        Reactor.Module lib = module("lib", "Util", """
+                package lib;
+                public class Util { }
+                """);
+        Path config = write("lib/src/main/resources/lib.properties", "a=1");
+        Launch.Project withLib = project(app, lib);
+        Compile compile = new Compile(withLib);
+        compile.compile(List.of(source(app, "Main"), source(lib, "Util")),
+                withLib);
+        compile.copyResources(List.of(config));
+
+        compile.seedFromDisk(launched);
+
+        assertTrue(compile.stale().modified().isEmpty());
+        assertTrue(compile.staleResources().isEmpty());
+    }
+
+    @Test
+    void stale_seedingLeavesOutAModuleThatLeftTheLoop() throws IOException {
+        // A pom edit rebuilds the baseline for a module set the launch did
+        // not have. A source of a module no longer in the loop is not one an
+        // apply can act on, and must not read as deleted.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Reactor.Module lib = module("lib", "Util", """
+                package lib;
+                public class Util { }
+                """);
+        Launch.Project withLib = project(app, lib);
+        new Compile(withLib).compile(
+                List.of(source(app, "Main"), source(lib, "Util")), withLib);
+        Compile.Snapshot launched = Compile.Snapshot.of(withLib);
+        Compile compile = new Compile(project(app));
+
+        compile.seedFromDisk(launched);
+
+        assertTrue(compile.stale().isEmpty());
+    }
+
+    @Test
+    void stale_aSameSizeEditWithinTheBaselineMillisecondIsAChange()
+            throws IOException {
+        // A fingerprint keeps milliseconds, so an edit of the same length in
+        // the same millisecond matches it. The artifact time is compared at
+        // full precision and still sees the source as newer than its class.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        Path main = source(app, "Main");
+        compile.compile(List.of(main), project);
+        Path classFile = app.classesDir().resolve("app").resolve("Main.class");
+        long second = System.currentTimeMillis() / 1000 * 1000 - 10_000;
+        Files.setLastModifiedTime(main, FileTime.fromMillis(second));
+        FileTime compiled = FileTime.from(
+                java.time.Instant.ofEpochMilli(second).plusNanos(100_000));
+        Files.setLastModifiedTime(classFile, compiled);
+        assumeTrue(compiled.equals(Files.getLastModifiedTime(classFile)),
+                "the file system keeps sub-millisecond times");
+        compile.seedFromDisk();
+
+        Files.setLastModifiedTime(main, FileTime.from(
+                java.time.Instant.ofEpochMilli(second).plusNanos(500_000)));
+
+        assertEquals(List.of(main), compile.stale().modified());
+    }
+
+    @Test
+    void staleResources_seedingKeepsAnEditMadeSinceTheAppStartedInTheInventory()
+            throws IOException {
+        // Left out of the baseline, a config edited since the app started and
+        // then deleted before the next apply would be reported neither as a
+        // change nor as a deletion, while the running JVM still holds it.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path config = write("app/src/main/resources/application.properties",
+                "server.port=8080");
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        Compile.Snapshot launched = Compile.Snapshot.of(project);
+        touch("app/src/main/resources/application.properties");
+        compile.copyResources(List.of(config));
+
+        compile.seedFromDisk(launched);
+        Files.delete(config);
+
+        assertEquals(List.of(config),
+                compile.staleResources().startup().deleted());
+    }
+
     @Test
     void staleResources_reportADeletedResourceTheWalkCannotSee()
             throws IOException {
@@ -469,7 +1140,7 @@ class CompileTest {
                 "server.port=8080");
         Compile compile = new Compile(project(app));
         compile.copyResources(compile.staleResources().copies());
-        compile.seedResources();
+        compile.seedFromDisk();
         Files.delete(served);
         Files.delete(config);
 
@@ -493,7 +1164,7 @@ class CompileTest {
         compile.copyResources(List.of(served));
         Path copy = app.classesDir().resolve("META-INF/resources/site.css");
         assertTrue(Files.isRegularFile(copy));
-        compile.seedResources();
+        compile.seedFromDisk();
         Files.delete(served);
 
         assertEquals(List.of(copy),

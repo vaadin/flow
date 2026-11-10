@@ -297,6 +297,7 @@ public class JarContentsManager {
      * @throws UncheckedIOException
      *             if {@link IOException} occurs during the operation, for
      *             instance, when jar file specified is not a jar file
+     * @since 25.3
      */
     public Set<String> copyIncludedFilesFromJarTrimmingBasePath(File jar,
             String jarDirectoryToCopyFrom, File outputDirectory,

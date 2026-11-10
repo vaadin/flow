@@ -52,14 +52,9 @@ public interface HasAriaDescription extends HasElement {
      *      MDN: aria-describedby</a>
      */
     default void setAriaDescribedBy(String ariaDescribedBy) {
-        if (ariaDescribedBy != null) {
-            getElement().setAttribute(
-                    ElementConstants.ARIA_DESCRIBEDBY_ATTRIBUTE_NAME,
-                    ariaDescribedBy);
-        } else {
-            getElement().removeAttribute(
-                    ElementConstants.ARIA_DESCRIBEDBY_ATTRIBUTE_NAME);
-        }
+        getElement().setAttribute(
+                ElementConstants.ARIA_DESCRIBEDBY_ATTRIBUTE_NAME,
+                ariaDescribedBy);
     }
 
     /**

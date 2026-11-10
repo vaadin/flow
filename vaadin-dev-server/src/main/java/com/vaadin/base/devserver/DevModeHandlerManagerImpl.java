@@ -75,6 +75,14 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     private String applicationUrl;
     private boolean fullyStarted = false;
 
+    /**
+     * Creates the manager. Flow instantiates it when building the
+     * {@code Lookup}.
+     */
+    public DevModeHandlerManagerImpl() {
+        // Default constructor
+    }
+
     @Override
     public Class<?>[] getHandlesTypes() {
         return DevModeStartupListener.class.getAnnotation(HandlesTypes.class)

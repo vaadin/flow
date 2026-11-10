@@ -49,7 +49,6 @@ import java.util.stream.DoubleStream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -57,6 +56,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.Size;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
@@ -73,13 +73,20 @@ import com.vaadin.flow.internal.nodefeature.ElementListenersTest;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
 import com.vaadin.flow.internal.nodefeature.InertData;
+import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
+import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
@@ -95,6 +102,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 
 @Isolated
 class ElementTest extends AbstractNodeTest {
@@ -189,6 +197,9 @@ class ElementTest extends AbstractNodeTest {
         ignore.add("bindText");
         ignore.add("bindVisible");
 
+        // returns a read-only Signal
+        ignore.add("sizeSignal");
+
         // returns void
         ignore.add("flashClass");
 
@@ -252,11 +263,17 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void setNullAttribute() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Element e = ElementFactory.createDiv();
-            e.setAttribute("foo", (String) null);
-        });
+    void setNullAttribute_attributeRemoved() {
+        Element e = ElementFactory.createDiv();
+        e.setAttribute("foo", "bar");
+        e.setAttribute("class", "baz");
+
+        e.setAttribute("foo", (String) null);
+        e.setAttribute("class", (String) null);
+
+        assertFalse(e.hasAttribute("foo"));
+        assertFalse(e.hasAttribute("class"));
+        assertTrue(e.getClassList().isEmpty());
     }
 
     @Test
@@ -1585,18 +1602,21 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void setResourceAttribute_nullValue() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Element element = ElementFactory.createDiv();
-            element.setAttribute("foo", (StreamResource) null);
-        });
+    void setResourceAttribute_nullValue_attributeRemoved() {
+        UI.setCurrent(createUI());
+        Element element = ElementFactory.createDiv();
+        element.setAttribute("foo", createEmptyResource("resource"));
+
+        element.setAttribute("foo", (StreamResource) null);
+
+        assertFalse(element.hasAttribute("foo"));
     }
 
     @Test
     void setResourceAttribute_classAttribute() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element element = ElementFactory.createDiv();
-            element.setAttribute("class", Mockito.mock(StreamResource.class));
+            element.setAttribute("class", mock(StreamResource.class));
         });
     }
 
@@ -1604,7 +1624,7 @@ class ElementTest extends AbstractNodeTest {
     void setResourceAttribute_nullAttribute() {
         assertThrows(IllegalArgumentException.class, () -> {
             Element element = ElementFactory.createDiv();
-            element.setAttribute(null, Mockito.mock(StreamResource.class));
+            element.setAttribute(null, mock(StreamResource.class));
         });
     }
 
@@ -1985,7 +2005,7 @@ class ElementTest extends AbstractNodeTest {
     void setResourceAttribute_elementIsText_operationIsNotSupported() {
         assertThrows(UnsupportedOperationException.class, () -> {
             Element.createText("").setAttribute("foo",
-                    Mockito.mock(StreamResource.class));
+                    mock(StreamResource.class));
         });
     }
 
@@ -2546,6 +2566,21 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
+    void flashClass_runsTheDeclaredJavaScriptOnTheElement() {
+        MockUI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        element.flashClass("highlight");
+
+        JavaScriptInvocation invocation = ui.onlyScheduledInvocation();
+        assertEquals(new JsCall(Element.ElementJs.class, "flashClass",
+                List.of("highlight")), invocation.getJsCall());
+        assertEquals(List.of("highlight", element), invocation.getParameters(),
+                "the class name should be followed by the element to flash");
+    }
+
+    @Test
     void callFunctionBeforeAttach() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
@@ -2553,7 +2588,7 @@ class ElementTest extends AbstractNodeTest {
         ui.getElement().appendChild(element);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "return $0.noArgsMethod()", element);
+        assertPendingFunctionCall(ui, element, "noArgsMethod");
     }
 
     @Test
@@ -2564,7 +2599,7 @@ class ElementTest extends AbstractNodeTest {
         element.callJsFunction("noArgsMethod");
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "return $0.noArgsMethod()", element);
+        assertPendingFunctionCall(ui, element, "noArgsMethod");
     }
 
     @Test
@@ -2594,19 +2629,7 @@ class ElementTest extends AbstractNodeTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "return $0.noArgsMethod()", element);
-    }
-
-    @Test
-    void callFunctionOneParam() {
-        UI ui = new MockUI();
-        Element element = ElementFactory.createDiv();
-        element.callJsFunction("method", "foo");
-        ui.getElement().appendChild(element);
-
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        assertPendingJs(ui, "return $0.method($1)", element, "foo");
-
+        assertPendingFunctionCall(ui, element, "noArgsMethod");
     }
 
     @Test
@@ -2617,7 +2640,7 @@ class ElementTest extends AbstractNodeTest {
         ui.getElement().appendChild(element);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "return $0.method($1,$2)", element, "foo", 123);
+        assertPendingFunctionCall(ui, element, "method", "foo", 123);
     }
 
     @Test
@@ -2629,29 +2652,94 @@ class ElementTest extends AbstractNodeTest {
         ui.getElement().appendChild(element);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "return $0.method($1)", element, bean);
+        assertPendingFunctionCall(ui, element, "method", bean);
     }
 
     @Test
     void callFunctionOnProperty() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
-        element.callJsFunction("property.method");
-        ui.getElement().appendChild(element);
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-
-        assertPendingJs(ui, "return $0.property.method()", element);
-    }
-
-    @Test
-    void callFunctionOnSubProperty() {
-        UI ui = new MockUI();
-        Element element = ElementFactory.createDiv();
         element.callJsFunction("property.other.method");
         ui.getElement().appendChild(element);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "return $0.property.other.method()", element);
+        // The browser reads the path and calls the function it names, so the
+        // name travels as it was written however many properties it goes
+        // through
+        assertPendingFunctionCall(ui, element, "property.other.method");
+    }
+
+    @Test
+    void executeJsWithDefinition_schedulesTheDeclaredExpressionAndCarriesTheCall() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        element.executeJs(TestJs.class).method("foo");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pendingJs.size());
+        JavaScriptInvocation invocation = pendingJs.get(0).getInvocation();
+
+        assertEquals("this.method($0)", invocation.getExpression(),
+                "the declared expression should not be wrapped, since the generated function is what runs");
+        assertEquals(List.of("foo", element), invocation.getParameters(),
+                "the arguments should be followed by the element to apply the function to");
+        assertEquals(new JsCall(TestJs.class, "method", List.of("foo")),
+                invocation.getJsCall());
+    }
+
+    @Test
+    void executeJsWithDefinition_methodReturningAResult_schedulesAndReturnsIt() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        PendingJavaScriptResult result = element.executeJs(ResultJs.class)
+                .readValue();
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pendingJs.size());
+        assertSame(pendingJs.get(0), result,
+                "the result of the call should be the invocation the element scheduled");
+    }
+
+    @Test
+    void executeJsWithDefinition_variadicMethod_trailingArgumentsSentOneByOne() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        element.executeJs(TestJs.class).methodWithMany("foo", "bar", "baz");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pendingJs.size());
+        JavaScriptInvocation invocation = pendingJs.get(0).getInvocation();
+
+        assertEquals(List.of("foo", "bar", "baz", element),
+                invocation.getParameters(),
+                "a trailing argument should reach the client on its own, so that the generated function collects it into its rest parameter");
+    }
+
+    @JsDefinition
+    interface ResultJs extends Serializable {
+        @JsExpression("return this.value;")
+        PendingJavaScriptResult readValue();
+    }
+
+    @JsDefinition
+    interface TestJs extends Serializable {
+        @JsExpression("this.method($0)")
+        void method(String value);
+
+        @JsExpression("this.method($0, ...$1)")
+        void methodWithMany(String value, Object... rest);
     }
 
     @Test
@@ -3210,6 +3298,56 @@ class ElementTest extends AbstractNodeTest {
         assertEquals(Boolean.TRUE, invokedParams.get()[1]);
     }
 
+    @Test
+    void sizeSignal_isReadOnlyAndCached() {
+        UI ui = new MockUI();
+        Element div = ElementFactory.createDiv();
+        ui.getElement().appendChild(div);
+
+        Signal<Size> signal = div.sizeSignal();
+
+        assertFalse(signal instanceof ValueSignal,
+                "sizeSignal() should return a read-only signal");
+        assertEquals(new Size(0, 0), signal.peek());
+        assertSame(signal, div.sizeSignal(),
+                "sizeSignal() should return the same signal for an element");
+    }
+
+    @Test
+    void sizeSignal_updatedByClientReportedSize() {
+        UI ui = new MockUI();
+        Element div = ElementFactory.createDiv();
+        ui.getElement().appendChild(div);
+
+        Signal<Size> signal = div.sizeSignal();
+
+        reportSize(div, 800, 600);
+        assertEquals(new Size(800, 600), signal.peek());
+
+        reportSize(div, 1024, 768);
+        assertEquals(new Size(1024, 768), signal.peek());
+    }
+
+    @Test
+    void sizeSignal_detachedAndReattached_keepsSignalAndLastSize() {
+        UI ui = new MockUI();
+        Element div = ElementFactory.createDiv();
+        ui.getElement().appendChild(div);
+
+        Signal<Size> signal = div.sizeSignal();
+        reportSize(div, 800, 600);
+
+        div.removeFromParent();
+
+        assertEquals(new Size(800, 600), signal.peek(),
+                "the last reported size should be kept while detached");
+
+        ui.getElement().appendChild(div);
+
+        assertSame(signal, div.sizeSignal(),
+                "sizeSignal() should return the same signal after re-attach");
+    }
+
     @Override
     protected Element createParentNode() {
         return ElementFactory.createDiv();
@@ -3230,6 +3368,33 @@ class ElementTest extends AbstractNodeTest {
 
     }
 
+    /**
+     * Asserts that the only scheduled invocation is the call of the named
+     * function on the given element, which runs the JavaScript declared for
+     * calling a function rather than an expression naming the function.
+     */
+    private void assertPendingFunctionCall(UI ui, Element element,
+            String functionName, Object... arguments) {
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pendingJs.size());
+        JavaScriptInvocation invocation = pendingJs.get(0).getInvocation();
+
+        JsCall call = invocation.getJsCall();
+        assertEquals(Element.CallFunctionJs.class, call.definitionType(),
+                "the call should run the JavaScript declared for calling a function");
+
+        List<Object> expected = new ArrayList<>();
+        expected.add(functionName);
+        Collections.addAll(expected, arguments);
+        assertEquals(expected, call.flattenArguments(),
+                "the name of the function should be followed by the arguments of the call");
+
+        expected.add(element);
+        assertEquals(expected, invocation.getParameters(),
+                "and the element to call the function on should be last");
+    }
+
     private void assertInvocationEquals(JavaScriptInvocation expected,
             JavaScriptInvocation actual) {
         assertEquals(expected.getExpression(), actual.getExpression());
@@ -3241,6 +3406,23 @@ class ElementTest extends AbstractNodeTest {
     private static ArrayNode createNumberArray(double... items) {
         return DoubleStream.of(items).mapToObj(JacksonUtils::createNode)
                 .collect(JacksonUtils.asArray());
+    }
+
+    /**
+     * Simulates the browser-side resize observer reporting a new size through
+     * the return channel that the size trigger registered on the element.
+     */
+    private void reportSize(Element element, int width, int height) {
+        ReturnChannelRegistration channel = element.getNode()
+                .getFeature(ReturnChannelMap.class).get(0);
+
+        ObjectNode size = JacksonUtils.createObjectNode();
+        size.put("width", width);
+        size.put("height", height);
+        ArrayNode arguments = JacksonUtils.createArrayNode();
+        arguments.add(size);
+
+        channel.invoke(arguments);
     }
 
     @Tag("div")

@@ -31,7 +31,7 @@ class GradleDeprecationTest : AbstractGradleTest() {
 
     // Latest released Gradle at the time of writing; deprecations that Gradle
     // schedules for removal in 10 are already reported by 9.x.
-    private val latestGradleVersion = "9.6.1"
+    private val latestGradleVersion = "9.8.0"
 
     @Before
     fun setup() {
