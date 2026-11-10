@@ -23,19 +23,22 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ScrollPositionLiveReloadView", layout = ViewTestLayout.class)
+@RouteAlias(value = ScrollPositionLiveReloadView.FORWARDED_ROUTE, layout = ViewTestLayout.class)
 public class ScrollPositionLiveReloadView extends AbstractLiveReloadView
         implements BeforeEnterObserver {
 
     public static final String RENDER_LATE_PARAMETER = "render-late";
 
-    public static final String FORWARDED_PARAMETER = "forwarded";
+    // The same view at another address, so that its scroll containers can be
+    // found there as well
+    public static final String FORWARDED_ROUTE = "com.vaadin.flow.uitest.ui.ScrollPositionLiveReloadView/forwarded";
 
     private static final String FORWARD_NEXT_LOAD_ATTRIBUTE = ScrollPositionLiveReloadView.class
             .getName() + ".forwardNextLoad";
@@ -86,6 +89,8 @@ public class ScrollPositionLiveReloadView extends AbstractLiveReloadView
         // Outer scrollable container
         outerScroll.setId("outer-scroll");
         outerScroll.getStyle().set("height", "400px");
+        // Kept when the content is hidden, so that the container can be clicked
+        outerScroll.getStyle().set("width", "600px");
         outerScroll.getStyle().set("overflow", "auto");
         outerScroll.getStyle().set("border", "2px solid blue");
 
@@ -141,8 +146,7 @@ public class ScrollPositionLiveReloadView extends AbstractLiveReloadView
         VaadinSession session = event.getUI().getSession();
         if (session.getAttribute(FORWARD_NEXT_LOAD_ATTRIBUTE) != null) {
             session.setAttribute(FORWARD_NEXT_LOAD_ATTRIBUTE, null);
-            event.forwardTo(event.getLocation().getPath(),
-                    QueryParameters.of(FORWARDED_PARAMETER, "true"));
+            event.forwardTo(FORWARDED_ROUTE);
             return;
         }
         if (event.getLocation().getQueryParameters()

@@ -23,6 +23,7 @@ import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriverException;
 
@@ -42,6 +43,18 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
     // Reported instead of a scroll position for a container that is not in the
     // DOM, which is a different thing from a container scrolled to the top
     private static final int ELEMENT_MISSING = -1;
+
+    // Presses the pointer on an item and on the blank area of a container
+    // still being restored, and presses a key that does not scroll
+    private static final String PAGE_CLICK_SCRIPT = """
+            const item = document.getElementById('bottom-marker');
+            item.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+            const container = document.getElementById('outer-scroll');
+            const bounds = container.getBoundingClientRect();
+            container.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true,
+                    clientX: bounds.left + 20, clientY: bounds.top + 20 }));
+            item.dispatchEvent(new KeyboardEvent('keydown', { key: 'Control', bubbles: true }));
+            """;
 
     private static final String SCROLL_POSITIONS_SCRIPT = """
             const inner = document.querySelector(arguments[0]);
@@ -97,12 +110,26 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
     public void scrollPositionPreservedAfterFullPageReload_pageClickedDuringRestore() {
         // Focusing the page after saving in the IDE presses the pointer and
         // possibly a key, neither of which scrolls anything
-        reloadThenInterruptRestore(() -> executeScript(
-                """
-                        const target = document.getElementById('bottom-marker');
-                        target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
-                        target.dispatchEvent(new KeyboardEvent('keydown', { key: 'Control', bubbles: true }));
-                        """));
+        reloadThenInterruptRestore(() -> executeScript(PAGE_CLICK_SCRIPT));
+    }
+
+    @Test
+    public void scrollPositionNotRestoredAfterFullPageReload_userScrollsDuringRestore() {
+        openAndWaitForContent(
+                ScrollPositionLiveReloadView.RENDER_LATE_PARAMETER);
+        List<Integer> scrollBefore = scrollAllContainers();
+
+        reloadAndWaitForWindowPosition(scrollBefore);
+        // A click first, so that the listener still has to be there for the
+        // scroll key that follows
+        executeScript(PAGE_CLICK_SCRIPT);
+        executeScript(
+                "document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true }))");
+
+        waitForElementVisible(By.id("outer-item-0"));
+        waitForAnimationFrames();
+        Assert.assertEquals(List.of(scrollBefore.get(0), 0, 0),
+                getScrollPositions());
     }
 
     /**
@@ -116,6 +143,17 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
 
         List<Integer> scrollBefore = scrollAllContainers();
 
+        reloadAndWaitForWindowPosition(scrollBefore);
+        interruption.run();
+
+        waitForScrollRestoration(scrollBefore);
+    }
+
+    /**
+     * Reloads the page and waits until the window position is back, while the
+     * containers have not rendered yet and are still waiting to be restored.
+     */
+    private void reloadAndWaitForWindowPosition(List<Integer> scrollBefore) {
         markDocument();
         executeScript(
                 "document.querySelector('vaadin-dev-tools').frontendConnection.onReload('reload')");
@@ -124,14 +162,23 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
         waitUntil(d -> Math.abs(getScrollPositions().get(0)
                 - scrollBefore.get(0)) < TOLERANCE_PX, 10);
         // Once the content has rendered, the restore can finish without
-        // anything left for the interruption to affect
+        // anything left for what follows to affect
         Assert.assertEquals(
-                "The containers should still be waiting for their content when the restore is interrupted",
+                "The containers should still be waiting for their content",
                 "none", executeScript(
                         "return getComputedStyle(document.getElementById('outer-item-0')).display"));
-        interruption.run();
+    }
 
-        waitForScrollRestoration(scrollBefore);
+    private void waitForAnimationFrames() {
+        // A restore that is still running applies the positions in the
+        // first frame after the content has rendered
+        ((JavascriptExecutor) getDriver()).executeAsyncScript(
+                """
+                        const done = arguments[arguments.length - 1];
+                        let frames = 10;
+                        const next = () => --frames ? requestAnimationFrame(next) : done();
+                        requestAnimationFrame(next);
+                        """);
     }
 
     @Test
@@ -144,8 +191,9 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
         executeScript(
                 "document.querySelector('vaadin-dev-tools').frontendConnection.onReload('reload')");
         waitForNewDocument();
-        waitUntil(d -> getDriver().getCurrentUrl()
-                .contains(ScrollPositionLiveReloadView.FORWARDED_PARAMETER),
+        waitUntil(
+                d -> getDriver().getCurrentUrl()
+                        .endsWith(ScrollPositionLiveReloadView.FORWARDED_ROUTE),
                 10);
         waitForElementVisible(By.id("outer-item-0"));
 

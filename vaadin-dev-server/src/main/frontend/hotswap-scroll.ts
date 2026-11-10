@@ -38,9 +38,10 @@ const SCROLL_KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp'
 
 interface StoredScrollSnapshot {
   timestamp: number;
-  // The page the positions were captured on. The reload can end up on another
-  // one, for example when the view forwards elsewhere or a login redirect
-  // follows a server restart, and the positions do not describe that page.
+  // The page the positions were captured on, see pageOf. The reload can end
+  // up on another one, for example when the view forwards elsewhere or a
+  // login redirect follows a server restart, and the positions do not
+  // describe that page.
   location: string;
   positions: ScrollSnapshot;
   // The value history.scrollRestoration had before it was taken over for the
@@ -213,6 +214,15 @@ let unrestoredPositions: () => ScrollSnapshot = () => ({});
 // on this page has taken it over
 let scrollRestorationToHandBack: ScrollRestoration | undefined;
 
+/**
+ * Identifies the page at the current address. The query string and the hash
+ * are left out, as a view may well write its own state into them while it
+ * loads, and they do not make it another page.
+ */
+function pageOf(location: Location): string {
+  return location.origin + location.pathname;
+}
+
 function resolveScroller(key: string): Element | null {
   return key === WINDOW_KEY ? document.scrollingElement : document.querySelector(key);
 }
@@ -224,24 +234,38 @@ function resolveScroller(key: string): Element | null {
  * @param event
  *          the event to check
  * @param pendingKeys
- *          the keys of the positions that are still being restored. Dragging
- *          the scrollbar of one of them presses the pointer on that element
- *          itself.
+ *          the keys of the positions that are still being restored. Only
+ *          pressing the pointer on the scrollbar of one of them scrolls.
  */
 function isUserScroll(event: Event, pendingKeys: string[]): boolean {
   if (event instanceof KeyboardEvent) {
     return SCROLL_KEYS.includes(event.key) && !isEditable(event.target);
   }
-  if (event.type === 'pointerdown') {
+  if (event instanceof PointerEvent) {
     return pendingKeys.some((key) => {
       try {
-        return event.target === resolveScroller(key);
+        return isOnScrollbar(event, key);
       } catch {
         return false;
       }
     });
   }
   return true;
+}
+
+// A press on a scrollbar targets the element that scrolls, and lands outside
+// its client area, which excludes the scrollbar
+function isOnScrollbar(event: PointerEvent, key: string): boolean {
+  const el = resolveScroller(key);
+  if (!el || event.target !== el) {
+    return false;
+  }
+  // The client area of the root element is the viewport, wherever the
+  // document is scrolled to
+  const bounds = key === WINDOW_KEY ? { left: 0, top: 0 } : el.getBoundingClientRect();
+  const x = event.clientX - bounds.left - el.clientLeft;
+  const y = event.clientY - bounds.top - el.clientTop;
+  return x >= el.clientWidth || y >= el.clientHeight;
 }
 
 // Scroll keys move the caret or type in an editable element instead of
@@ -287,7 +311,7 @@ function applyPendingPosition(entry: PendingPosition): boolean {
  * after the UIDL has been processed. Positions that never become reachable are
  * given up on after a timeout.
  *
- * The positions are dropped once the page has another address than the one
+ * The positions are dropped once the browser is on another page than the one
  * they were captured on, as when the view forwards elsewhere, since they do
  * not describe that page.
  *
@@ -297,12 +321,12 @@ function applyPendingPosition(entry: PendingPosition): boolean {
  *          called once every position has been restored or dropped, or the
  *          timeout has been reached
  * @param capturedOn
- *          the address of the page the positions were captured on
+ *          the page the positions were captured on, as identified by pageOf
  */
 export function restoreScrollPositions(
   snapshot: ScrollSnapshot,
   onSettled?: () => void,
-  capturedOn = window.location.href
+  capturedOn = pageOf(window.location)
 ): void {
   const pending: PendingPosition[] = Object.entries(snapshot).map(([key, position]) => ({
     key,
@@ -327,7 +351,7 @@ export function restoreScrollPositions(
     }
   };
   USER_SCROLL_EVENTS.forEach((type) => window.addEventListener(type, cancel, { passive: true }));
-  const stopped = () => cancelled || restoreId !== latestRestoreId || window.location.href !== capturedOn;
+  const stopped = () => cancelled || restoreId !== latestRestoreId || pageOf(window.location) !== capturedOn;
   const settle = () => {
     USER_SCROLL_EVENTS.forEach((type) => window.removeEventListener(type, cancel));
     pending.length = 0;
@@ -369,8 +393,9 @@ export function restoreScrollPositions(
     const clients = getFlowClients();
     const idle = clients.length > 0 && clients.every((c: any) => !c.isActive());
     // A navigation that a response started, such as a forward, updates the
-    // address only after the response has been processed, so the clients
-    // have to stay idle for another poll before the address can be trusted
+    // address in a task the response queues, which runs only after the
+    // clients report being idle. Waiting for another poll lets the tasks
+    // queued by then run first, so that the address can be trusted.
     const ready = (idle && idleBefore) || performance.now() > idleDeadline;
     idleBefore = idle;
     if (stopped()) {
@@ -405,7 +430,7 @@ export function saveScrollPositionsForReload(): void {
   }
   const stored: StoredScrollSnapshot = {
     timestamp: Date.now(),
-    location: window.location.href,
+    location: pageOf(window.location),
     positions,
     scrollRestoration: scrollRestorationToHandBack ?? history.scrollRestoration
   };
