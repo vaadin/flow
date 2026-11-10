@@ -235,12 +235,16 @@ class PendingJavaScriptInvocationTest {
     void throwingSuccessHandlers_laterHandlersRunAndFirstExceptionIsThrown() {
         IllegalStateException first = new IllegalStateException("first");
         IOException second = new IOException("second");
+        AssertionError third = new AssertionError("third");
         invocation.then(json -> {
             throw first;
         });
         invocation.then(json -> sneakyThrow(second));
         invocation.then(json -> {
             throw first;
+        });
+        invocation.then(json -> {
+            throw third;
         });
         invocation.then(jsonSuccessConsumer);
         CompletableFuture<JsonNode> future = invocation.toCompletableFuture();
@@ -249,7 +253,8 @@ class PendingJavaScriptInvocationTest {
                 () -> invocation.complete(fooJsonString));
 
         assertSame(first, thrown);
-        assertEquals(List.of(second), Arrays.asList(thrown.getSuppressed()));
+        assertEquals(List.of(second, third),
+                Arrays.asList(thrown.getSuppressed()));
         assertSame(fooJsonString, jsonSuccessConsumer.getCapturedValue());
         assertSame(fooJsonString, future.getNow(null));
     }
