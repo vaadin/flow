@@ -69,8 +69,9 @@ public interface ClickNotifier<T extends Component> extends Serializable {
         if (this instanceof Component) {
             return ComponentUtil.addListener((Component) this, ClickEvent.class,
                     (ComponentEventListener) listener,
-                    d -> d.setFilterExpression(JsSnippets
-                            .of(ClickFiltersJs.class).isClickCountBetween(2, 2)));
+                    d -> d.setFilterExpression(
+                            JsSnippets.of(ClickFiltersJs.class)
+                                    .isClickCountBetween(2, 2)));
         } else {
             throw new IllegalStateException(String.format(
                     "The class '%s' doesn't extend '%s'. "
@@ -94,8 +95,9 @@ public interface ClickNotifier<T extends Component> extends Serializable {
             // If JavaScript click() function was used detail is < 1
             return ComponentUtil.addListener((Component) this, ClickEvent.class,
                     (ComponentEventListener) listener,
-                    d -> d.setFilterExpression(JsSnippets
-                            .of(ClickFiltersJs.class).isClickCountBetween(0, 1)));
+                    d -> d.setFilterExpression(
+                            JsSnippets.of(ClickFiltersJs.class)
+                                    .isClickCountBetween(0, 1)));
         } else {
             throw new IllegalStateException(String.format(
                     "The class '%s' doesn't extend '%s'. "
