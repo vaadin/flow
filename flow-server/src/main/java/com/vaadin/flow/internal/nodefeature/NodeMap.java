@@ -155,7 +155,8 @@ public abstract class NodeMap extends NodeFeature {
     }
 
     /**
-     * A signal bound to a key of the map, with the value it last wrote.
+     * A signal bound to a key of the map, together with the current value of
+     * the key.
      *
      * @param signal
      *            the bound signal
