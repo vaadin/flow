@@ -174,6 +174,29 @@ class JsDefinitionProxyTest {
         JsSnippet createSnippet(String prefix);
     }
 
+    @JsCalledWith({ "html", "item" })
+    interface TemplateSnippet extends JsSnippet {
+    }
+
+    @JsDefinition
+    interface TemplateJs extends Serializable {
+        @JsExpression("return html`<b>${$0}: ${item.name}</b>`;")
+        TemplateSnippet label(String prefix);
+
+        @JsExpression("return html`${$0}`;")
+        TemplateSnippet echo(Object value);
+    }
+
+    interface ActionSnippet extends JsSnippet {
+        void run();
+    }
+
+    @JsDefinition
+    interface ActionJs extends Serializable {
+        @JsExpression("console.log('run');")
+        ActionSnippet createAction();
+    }
+
     @JsDefinition
     interface EventJs extends Serializable {
         @JsExpression("return event.key === $0;")
@@ -514,6 +537,41 @@ class JsDefinitionProxyTest {
                 events.isKey("Enter").getDeclaredCall());
         assertEquals(new JsCall(EventJs.class, "attribute", List.of("id")),
                 events.attribute("id").getDeclaredCall());
+    }
+
+    @Test
+    void createSnippets_snippetTypeOfTheApplication_answersWithAnImplementationOfIt() {
+        TemplateJs templates = JsDefinitionProxy
+                .createSnippets(TemplateJs.class);
+
+        TemplateSnippet label = templates.label("Name");
+
+        assertEquals(new JsCall(TemplateJs.class, "label", List.of("Name")),
+                JsDefinitionProxy.findDeclaredCall(label),
+                "the snippet should name what declared it, for the client to look it up by");
+        assertEquals(templates.label("Name"), label);
+        assertEquals(templates.label("Name").hashCode(), label.hashCode());
+        assertNotEquals(templates.label("Other"), label);
+        assertTrue(label.toString().contains("TemplateSnippet"),
+                label.toString());
+        assertEquals(label, SerializationUtils.roundtrip(label));
+        assertThrows(RuntimeException.class,
+                () -> templates.echo(new SelfReference()),
+                "a capture the client can not receive should fail when declared");
+    }
+
+    @Test
+    void checkDefinition_snippetTypeOfTheApplicationWithMethods_throws() {
+        // Nothing could implement them, as the snippet only exists on the
+        // client
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> JsDefinitionProxy.checkDefinition(ActionJs.class));
+
+        assertTrue(
+                exception.getMessage().contains(ActionSnippet.class.getName())
+                        && exception.getMessage().contains("run"),
+                exception.getMessage());
     }
 
     @Test
