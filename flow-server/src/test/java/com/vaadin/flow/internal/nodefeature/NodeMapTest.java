@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.SerializationUtils;
@@ -478,9 +479,13 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         // Only the map and the registry reference the generated key
         WeakReference<String> keyRef = putGeneratedKeyAndClear();
 
+        // Cleared references are enqueued asynchronously by the JVM, which can
+        // lag behind on a busy machine, so keep retrying until a deadline
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
         boolean removed = false;
-        for (int i = 0; i < 10 && !removed; i++) {
+        while (!removed && System.nanoTime() < deadline) {
             System.gc();
+            Thread.sleep(50);
             // Any registration polls for key sets that have been collected
             ElementStylePropertyMap otherMap = createFeature();
             otherMap.put("evictTriggerA", "a");
