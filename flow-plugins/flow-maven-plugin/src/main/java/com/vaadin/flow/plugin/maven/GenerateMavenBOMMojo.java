@@ -17,6 +17,7 @@ package com.vaadin.flow.plugin.maven;
 
 import java.util.Properties;
 
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -156,13 +157,11 @@ public class GenerateMavenBOMMojo extends AbstractMojo {
     @Parameter(property = VERBOSE, defaultValue = "false")
     private boolean verbose = false;
 
+    @Parameter(defaultValue = "${session}", readonly = true)
+    private MavenSession session;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        InvocationRequestBuilder requestBuilder = new InvocationRequestBuilder();
-        InvocationRequest request = requestBuilder.groupId(GROUP)
-                .artifactId(ARTIFACT).version(VERSION).goal(GOAL)
-                .createInvocationRequest();
-
         Properties properties = new Properties();
         properties.setProperty(PROJECT_TYPE, projectType);
         properties.setProperty(SCHEMA_VERSION, schemaVersion);
@@ -193,7 +192,10 @@ public class GenerateMavenBOMMojo extends AbstractMojo {
         properties.setProperty(EXCLUDE_TEST_PROJECT,
                 String.valueOf(excludeTestProject));
         properties.setProperty(CYCLONEDX_VERBOSE, String.valueOf(verbose));
-        request.setProperties(properties);
+        InvocationRequest request = new InvocationRequestBuilder()
+                .groupId(GROUP).artifactId(ARTIFACT).version(VERSION).goal(GOAL)
+                .session(session).properties(properties)
+                .createInvocationRequest();
 
         Invoker invoker = new DefaultInvoker();
         try {
