@@ -17,7 +17,7 @@ updates:
       # only patch releases of the current LTS are proposed.
       - dependency-name: "io.quarkus:*"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
-      # ClassGraph 6 requires JDK 25 or newer, while Flow still supports
-      # JDK 21.
+      # Stay on ClassGraph 4.x. ClassGraph 6 requires JDK 25 or newer, while
+      # Flow still supports JDK 21, and moving to 5.x is a deliberate decision.
       - dependency-name: "io.github.classgraph:classgraph"
-        versions: [">= 6"]
+        versions: [">= 5"]
