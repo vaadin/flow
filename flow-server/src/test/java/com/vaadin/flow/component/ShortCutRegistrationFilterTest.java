@@ -61,7 +61,7 @@ class ShortCutRegistrationFilterTest {
     }
 
     @Test
-    void testGenerateEventModifierFilterWithModifierKeyAlt()
+    void getModifierNames_alt_altGraphNeitherRequiredNorForbidden()
             throws ReflectiveOperationException {
         assertEquals("Alt", invokeGetModifierNames(true, KeyModifier.ALT));
         // AltGraph is neither required nor forbidden, as browsers differ
@@ -71,7 +71,7 @@ class ShortCutRegistrationFilterTest {
     }
 
     @Test
-    void testGenerateEventModifierFilterWithModifierKeyAltGr()
+    void getModifierNames_altGraph_altForbidden()
             throws ReflectiveOperationException {
         assertEquals("AltGraph",
                 invokeGetModifierNames(true, KeyModifier.ALT_GRAPH));
@@ -80,7 +80,7 @@ class ShortCutRegistrationFilterTest {
     }
 
     @Test
-    void testGenerateEventModifierFilterWithModifierKeyAltAndAltGr()
+    void getModifierNames_altAndAltGraph_bothRequired()
             throws ReflectiveOperationException {
         assertEquals("Alt AltGraph", invokeGetModifierNames(true,
                 KeyModifier.ALT, KeyModifier.ALT_GRAPH));
@@ -89,7 +89,7 @@ class ShortCutRegistrationFilterTest {
     }
 
     @Test
-    void testGenerateEventModifierFilterWithModifierKeyAltGrAndCtrl()
+    void getModifierNames_altGraphAndControl_altForbidden()
             throws ReflectiveOperationException {
         assertEquals("Control AltGraph", invokeGetModifierNames(true,
                 KeyModifier.ALT_GRAPH, KeyModifier.CONTROL));
@@ -98,7 +98,7 @@ class ShortCutRegistrationFilterTest {
     }
 
     @Test
-    void testGenerateEventModifierFilterWithModifierKeyAltAndCtrl()
+    void getModifierNames_altAndControl_altGraphNeitherRequiredNorForbidden()
             throws ReflectiveOperationException {
         assertEquals("Control Alt", invokeGetModifierNames(true,
                 KeyModifier.ALT, KeyModifier.CONTROL));
