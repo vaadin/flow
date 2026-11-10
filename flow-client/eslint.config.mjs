@@ -25,9 +25,14 @@ export default [
         projectService: {
           // The ported suites belong to src/test/frontend/tsconfig.json, which
           // the project service finds by walking up from each file. Only the
-          // two root-level suites need the default project: they predate the
-          // port and are not type-clean, so that project leaves them out.
-          allowDefaultProject: ['src/test/frontend/*']
+          // root-level suites that predate the port need the default project:
+          // they are not type-clean, so that project leaves them out.
+          allowDefaultProject: [
+            'src/test/frontend/BrowserHelpersTests.ts',
+            'src/test/frontend/DownloadTests.ts',
+            'src/test/frontend/FlowTests.ts',
+            'src/test/frontend/FullscreenTests.ts'
+          ]
         }
       }
     },

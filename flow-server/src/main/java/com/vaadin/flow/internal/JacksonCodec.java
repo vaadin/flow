@@ -16,8 +16,10 @@
 package com.vaadin.flow.internal;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JavaType;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
@@ -61,6 +63,8 @@ public class JacksonCodec {
 
     /**
      * The key of the JSON object that a {@link JsFunction} is encoded as.
+     * 
+     * @since 25.4
      */
     public static final String FUNCTION_KEY = "@v-fn";
 
@@ -159,8 +163,9 @@ public class JacksonCodec {
 
     /**
      * Encodes a "primitive" value or a constant pool reference to JSON. This
-     * methods supports {@link ConstantPoolKey} in addition to the types
-     * supported by {@link #encodeWithoutTypeInfo(Object)}.
+     * methods supports {@link ConstantPoolKey} and
+     * {@link ParameterizedConstantPoolKey} in addition to the types supported
+     * by {@link #encodeWithoutTypeInfo(Object)}.
      *
      * @param value
      *            the value to encode
@@ -174,6 +179,8 @@ public class JacksonCodec {
             ConstantPoolKey reference = (ConstantPoolKey) value;
             return JacksonUtils.getMapper()
                     .valueToTree(constantPool.getConstantId(reference));
+        } else if (value instanceof ParameterizedConstantPoolKey reference) {
+            return reference.encode(constantPool);
         } else {
             return encodeWithoutTypeInfo(value);
         }
@@ -279,6 +286,45 @@ public class JacksonCodec {
             }
         }
 
+    }
+
+    /**
+     * Decodes a JSON value as an instance of the given type. The type can be a
+     * generic type, for example {@code List<MyBean>}.
+     *
+     * @param <T>
+     *            the type to decode as
+     * @param json
+     *            the JSON value to decode
+     * @param type
+     *            the type to decode as
+     * @return the value decoded as the given type
+     * @throws IllegalArgumentException
+     *             if deserialization failed, or if the type is a JSON node type
+     *             that the value is not, such as an object node for an array
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T decodeAs(JsonNode json, JavaType type) {
+        Objects.requireNonNull(json, "JSON cannot be null");
+        Objects.requireNonNull(type, "Type cannot be null");
+        if (json.getNodeType() == JsonNodeType.NULL) {
+            return null;
+        }
+        if (type.isTypeOrSubTypeOf(JsonNode.class)) {
+            if (!type.getRawClass().isInstance(json)) {
+                throw new IllegalArgumentException("Cannot decode JSON of type "
+                        + json.getNodeType() + " as " + type.toCanonical());
+            }
+            return (T) json;
+        }
+        try {
+            return JacksonUtils.getMapper().treeToValue(json, type);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(
+                    "Cannot deserialize JSON to type " + type.toCanonical()
+                            + ": " + e.getMessage(),
+                    e);
+        }
     }
 
     /**
