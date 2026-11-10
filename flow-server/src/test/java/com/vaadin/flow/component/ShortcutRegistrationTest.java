@@ -459,6 +459,28 @@ class ShortcutRegistrationTest {
     }
 
     @Test
+    void listenOnComponentHasDeclaredElementLocator_delegateRegisteredOncePerSettings() {
+        final ElementLocatorTestFixture fixture = new ElementLocatorTestFixture(
+                JsSnippets.of(LocatorJs.class).locateOverlay());
+        fixture.createNewShortcut(Key.KEY_A);
+        fixture.createNewShortcut(Key.KEY_A);
+        assertEquals(1, delegateCalls(fixture.writeResponse()).size());
+
+        // Setting an equal locator again does not relay keydowns twice
+        Shortcuts.setShortcutListenOnElement(
+                JsSnippets.of(LocatorJs.class).locateOverlay(),
+                fixture.components[0]);
+        fixture.createNewShortcut(Key.KEY_A);
+        assertEquals(0, delegateCalls(fixture.writeResponse()).size());
+
+        fixture.createNewShortcut(Key.KEY_B);
+        final List<JsCall> calls = delegateCalls(fixture.writeResponse());
+        assertEquals(1, calls.size());
+        assertArrayEquals(Key.KEY_B.getKeys().toArray(),
+                (Object[]) calls.get(0).arguments().get(6));
+    }
+
+    @Test
     void listenOnComponentHasElementLocatorJs_allowBrowserDefault_JsExecutionDoesNotPreventDefault() {
         final ElementLocatorTestFixture fixture = new ElementLocatorTestFixture();
         final Key key = Key.KEY_A;
@@ -1036,11 +1058,17 @@ class ShortcutRegistrationTest {
 
     private static JsCall delegateCall(
             List<PendingJavaScriptInvocation> invocations) {
+        return delegateCalls(invocations).stream().findFirst()
+                .orElseThrow(() -> new AssertionError(
+                        "No registerKeydownDelegate call scheduled"));
+    }
+
+    private static List<JsCall> delegateCalls(
+            List<PendingJavaScriptInvocation> invocations) {
         return invocations.stream().map(i -> i.getInvocation().getJsCall())
                 .filter(call -> call != null
                         && call.definitionType() == ShortcutJs.class)
-                .findFirst().orElseThrow(() -> new AssertionError(
-                        "No registerKeydownDelegate call scheduled"));
+                .toList();
     }
 
     /**
@@ -1089,9 +1117,10 @@ class ShortcutRegistrationTest {
 
     private boolean hasKeyAInKeyDownExpression(Component component) {
         // Once the shortcut listener is registered the filter should match
-        // KeyA
+        // KeyA, and only it
         ArrayNode captures = shortcutFilterCaptures(component);
-        return captures.get(7).asString().equals(Key.KEY_A.getKeys().get(0));
+        return captures.size() == 8 && captures.get(7).asString()
+                .equals(Key.KEY_A.getKeys().get(0));
     }
 
     @JsDefinition

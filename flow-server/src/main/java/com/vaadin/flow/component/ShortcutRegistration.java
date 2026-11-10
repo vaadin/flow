@@ -1088,7 +1088,13 @@ public class ShortcutRegistration implements Registration, Serializable {
         final boolean checkBoundary = !allowEventsFromNestedModals;
         final String[] keys = getKeyValues();
 
-        final List<Object> delegateSettings = List.of(elementLocator,
+        // A declared locator is compared by its call, as setting the locator
+        // again creates a new function for the same call
+        final Object locatorKey = elementLocator instanceof JsFunction function
+                && function.getDeclaredCall() != null
+                        ? function.getDeclaredCall()
+                        : elementLocator;
+        final List<Object> delegateSettings = List.of(locatorKey,
                 requiredModifiers, forbiddenModifiers, checkBoundary,
                 resetFocusOnActiveElement, allowDefaultBehavior, List.of(keys));
         final Set<List<Object>> delegates = getOrInitListenData(listenOn);

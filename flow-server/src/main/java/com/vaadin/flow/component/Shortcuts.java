@@ -217,7 +217,8 @@ public final class Shortcuts {
      *
      * @param elementLocator
      *            the function that returns the desired element in DOM, or
-     *            {@code null} to remove any existing locator
+     *            {@code null} to remove any existing locator, passed as
+     *            {@code (JsFunction) null} to tell the overloads apart
      * @param listenOnComponent
      *            the component that is setup for listening shortcuts on
      *            {@link ShortcutRegistration#listenOn(Component...)}

@@ -103,7 +103,7 @@ describe('shortcut origin guards', () => {
     expect(guardResult(inPopover, topLevel)).to.be.false;
   });
 
-  it('relays a matching keydown to listenOn with the origin popover as its scope', () => {
+  it('relays only a keydown that is the shortcut and outside a nested popover', () => {
     const listenOn = document.createElement('div');
     document.body.appendChild(listenOn);
     const relayed: Event[] = [];
@@ -207,6 +207,52 @@ describe('shortcut origin guards', () => {
     expect(allowDefault.defaultPrevented).to.be.false;
   });
 
+  it('stops the propagation and resets the focus only when asked to', () => {
+    const originalResetFocus = $wnd.Vaadin.Flow.resetFocus;
+    let resetFocusCalls = 0;
+    $wnd.Vaadin.Flow.resetFocus = () => {
+      resetFocusCalls++;
+      return true;
+    };
+    let reachedDocument = 0;
+    const documentListener = () => reachedDocument++;
+    document.addEventListener('keydown', documentListener);
+    const dispatchFiltered = (code: string, overrides: object) => {
+      const listener = (e: Event) =>
+        $wnd.Vaadin.Flow.shortcut.matchKeydown(e, {
+          keys: ['KeyA'],
+          requiredModifiers: '',
+          forbiddenModifiers: '',
+          checkOwnerScope: false,
+          ownerSelector: null,
+          preventDefault: false,
+          stopPropagation: false,
+          resetFocus: false,
+          ...overrides
+        });
+      owner.addEventListener('keydown', listener);
+      inPopover.dispatchEvent(new KeyboardEvent('keydown', { code, bubbles: true }));
+      owner.removeEventListener('keydown', listener);
+    };
+    try {
+      dispatchFiltered('KeyA', { stopPropagation: true, resetFocus: true });
+      expect(reachedDocument).to.equal(0);
+      expect(resetFocusCalls).to.equal(1);
+
+      dispatchFiltered('KeyA', {});
+      expect(reachedDocument).to.equal(1);
+      expect(resetFocusCalls).to.equal(1);
+
+      // A keydown that is not the shortcut gets no side effects
+      dispatchFiltered('KeyB', { stopPropagation: true, resetFocus: true });
+      expect(reachedDocument).to.equal(2);
+      expect(resetFocusCalls).to.equal(1);
+    } finally {
+      document.removeEventListener('keydown', documentListener);
+      $wnd.Vaadin.Flow.resetFocus = originalResetFocus;
+    }
+  });
+
   it('passes a keydown only from the scope of the owner when asked to', () => {
     const options = {
       keys: ['a'],
@@ -228,5 +274,18 @@ describe('shortcut origin guards', () => {
     expect(guardResult(inPopover, filter({ ownerSelector: null }))).to.be.false;
     expect(guardResult(owner, filter({ ownerSelector: null }))).to.be.true;
     expect(guardResult(inPopover, filter({ checkOwnerScope: false }))).to.be.true;
+
+    // A keydown from a nested popover is left untouched
+    let reachedDocument = false;
+    const documentListener = () => (reachedDocument = true);
+    document.addEventListener('keydown', documentListener);
+    const nested = new KeyboardEvent('keydown', { key: 'a', bubbles: true, cancelable: true });
+    const ownerListener = (e: Event) => filter({ stopPropagation: true })(e);
+    owner.addEventListener('keydown', ownerListener);
+    inPopover.dispatchEvent(nested);
+    owner.removeEventListener('keydown', ownerListener);
+    document.removeEventListener('keydown', documentListener);
+    expect(nested.defaultPrevented).to.be.false;
+    expect(reachedDocument).to.be.true;
   });
 });
