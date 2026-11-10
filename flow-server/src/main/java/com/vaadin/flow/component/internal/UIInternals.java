@@ -370,7 +370,7 @@ public class UIInternals implements Serializable {
     private final Signal<WebNotificationPermission> webNotificationPermissionReadOnly = webNotificationPermissionSignal
             .asReadonly();
 
-    private volatile boolean webNotificationPermissionListenerInstalled;
+    private volatile boolean webNotificationPermissionWired;
 
     private static final String SCREEN_ORIENTATION_CHANGE_EVENT = "vaadin-screen-orientation-change";
 
@@ -2102,7 +2102,7 @@ public class UIInternals implements Serializable {
      * @return {@code true} if the listener is installed
      */
     public boolean isWebNotificationPermissionWired() {
-        return webNotificationPermissionListenerInstalled;
+        return webNotificationPermissionWired;
     }
 
     /**
@@ -2207,18 +2207,13 @@ public class UIInternals implements Serializable {
      * Installs, once per UI, the DOM listener that bridges
      * {@code vaadin-web-notification-permission-change} events into the web
      * notification permission signal. Guarded by a flag so repeated calls do
-     * not attach duplicate listeners. Must be called with the session lock
-     * held. For framework use only.
+     * not attach duplicate listeners. For framework use only.
      */
     public void ensureWebNotificationPermissionWired() {
-        if (webNotificationPermissionListenerInstalled) {
+        if (webNotificationPermissionWired) {
             return;
         }
-        VaadinSession uiSession = session;
-        if (uiSession != null) {
-            uiSession.checkHasLock();
-        }
-        webNotificationPermissionListenerInstalled = true;
+        webNotificationPermissionWired = true;
         ui.getElement()
                 .addEventListener(WEB_NOTIFICATION_PERMISSION_CHANGE_EVENT,
                         e -> applyWebNotificationPermission(
