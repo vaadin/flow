@@ -486,8 +486,11 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      */
     protected void addErrorTarget(Class<? extends Component> target,
             Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap) {
-        Class<? extends Exception> exceptionType = ReflectTools
-                .getGenericInterfaceType(target, HasErrorParameter.class)
+        Class<? extends Exception> exceptionType = Objects.requireNonNull(
+                ReflectTools.getGenericInterfaceType(target,
+                        HasErrorParameter.class),
+                () -> "Cannot resolve the HasErrorParameter exception type of "
+                        + target.getName())
                 .asSubclass(Exception.class);
 
         if (exceptionTargetsMap.containsKey(exceptionType)) {

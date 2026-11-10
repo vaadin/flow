@@ -971,8 +971,11 @@ public abstract class BeforeEvent extends EventObject {
 
     private <T> void checkUrlParameterType(T routeParam,
             Class<? extends Component> target) {
-        Class<?> genericInterfaceType = ReflectTools
-                .getGenericInterfaceType(target, HasUrlParameter.class);
+        Class<?> genericInterfaceType = Objects.requireNonNull(
+                ReflectTools.getGenericInterfaceType(target,
+                        HasUrlParameter.class),
+                () -> "Cannot resolve the HasUrlParameter type of "
+                        + target.getName());
         if (!genericInterfaceType.isAssignableFrom(routeParam.getClass())) {
             throw new IllegalArgumentException(String.format(
                     "Given route parameter '%s' is of the wrong type. Required '%s'.",
