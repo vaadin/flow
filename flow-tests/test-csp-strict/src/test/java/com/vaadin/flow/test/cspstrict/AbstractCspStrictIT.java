@@ -23,24 +23,20 @@ import java.net.http.HttpResponse;
 
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 
-import com.vaadin.testbench.BrowserTestBase;
-import com.vaadin.testbench.DriverSupplier;
+import com.vaadin.flow.testutil.junit6.AbstractBrowserIT;
 
 /**
  * Base class for the integration tests of the strict Content Security Policy
- * module, on JUnit 6 (Jupiter) through TestBench's {@link BrowserTestBase}.
+ * module, on the shared {@link AbstractBrowserIT} of the test modules on JUnit
+ * 6 (Jupiter).
  * <p>
  * Every test opens a view in the browser, which enforces the policy Vaadin
  * sends, and ends with {@link #assertNoCspViolations()}: the scenario of the
  * view is done when the browser reports nothing. The violations are collected
  * by the inline script that {@link CspViolationCollector} adds to every page.
  */
-public abstract class AbstractCspStrictIT extends BrowserTestBase
-        implements DriverSupplier {
+public abstract class AbstractCspStrictIT extends AbstractBrowserIT {
 
     /**
      * Port the application is served on. Failsafe passes the
@@ -48,9 +44,11 @@ public abstract class AbstractCspStrictIT extends BrowserTestBase
      * property, and the same property is filtered into the
      * {@code application.properties} of the Spring Boot app, so overriding
      * {@code server.port} on the Maven command line moves both. The fallback is
-     * for running a test from the IDE against an app started by Maven.
+     * for running a test from the IDE against an app started by Maven; it is
+     * not the one of the shared base class because this module has a port of
+     * its own.
      */
-    public static final int SERVER_PORT = Integer
+    private static final int PORT = Integer
             .parseInt(System.getProperty("serverPort", "8890"));
 
     /**
@@ -62,17 +60,6 @@ public abstract class AbstractCspStrictIT extends BrowserTestBase
      */
     public static final String NO_UI_IN_STRICT_MODE = "Blocked by https://github.com/vaadin/flow/issues/26152: "
             + "Page's constructor registers event data, so no UI can be created in strict mode";
-
-    @Override
-    public WebDriver createDriver() {
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless=new", "--disable-gpu",
-                "--disable-backgrounding-occluded-windows");
-        // Required when running in CI/containers that disable the Chrome
-        // sandbox (no unprivileged user namespaces) and have a small /dev/shm.
-        options.addArguments("--no-sandbox", "--disable-dev-shm-usage");
-        return new ChromeDriver(options);
-    }
 
     /**
      * Gets the path of the view under test, starting with a "/".
@@ -88,13 +75,9 @@ public abstract class AbstractCspStrictIT extends BrowserTestBase
         getDriver().get(getRootURL() + getTestPath());
     }
 
-    /**
-     * Gets the URL of the root of the server, e.g. "http://localhost:8890".
-     *
-     * @return the root URL
-     */
+    @Override
     protected String getRootURL() {
-        return "http://localhost:" + SERVER_PORT;
+        return "http://localhost:" + PORT;
     }
 
     /**
