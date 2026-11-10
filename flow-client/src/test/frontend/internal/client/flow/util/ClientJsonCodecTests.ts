@@ -4,6 +4,7 @@ import { ConstantPool } from '../../../../../../main/frontend/internal/client/fl
 import { ExistingElementMap } from '../../../../../../main/frontend/internal/client/ExistingElementMap';
 import { expect } from '@open-wc/testing';
 import {
+  decodeCopyWithTypeInfo,
   decodeStateNode,
   decodeWithTypeInfo,
   decodeWithoutTypeInfo
@@ -148,6 +149,23 @@ describe('ClientJsonCodec', () => {
 
       expect(decodeWithTypeInfo(tree, json)).to.equal(json);
       expect(json.b).to.equal(domNode);
+    });
+
+    it('decodes a copy, with a reference to a removed node as null', () => {
+      const json = {
+        a: { '@v-node': 5 },
+        removed: { '@v-node': 9 },
+        list: [{ '@v-node': 9 }, { b: { '@v-node': 9 } }]
+      };
+      const original = JSON.stringify(json);
+
+      expect(decodeCopyWithTypeInfo(tree, json)).to.deep.equal({
+        a: domNode,
+        removed: null,
+        list: [null, { b: null }]
+      });
+      // The given value is not changed, so it can be decoded again
+      expect(JSON.stringify(json)).to.equal(original);
     });
 
     it('builds a return-channel callback that messages the server', () => {

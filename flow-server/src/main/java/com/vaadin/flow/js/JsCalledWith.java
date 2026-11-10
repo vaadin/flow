@@ -66,6 +66,12 @@ import com.vaadin.flow.dom.JsFunction;
  * JsFunction loadEditor();
  * </pre>
  * <p>
+ * A snippet type that is always called in the same way can declare the names
+ * once, on the type. The names then apply to all methods that return the type.
+ * A method can still declare its own names, and they are used instead. For
+ * example, {@link com.vaadin.flow.dom.DomEventFilter} is always called with the
+ * DOM <code>event</code> and the <code>element</code> of the listener.
+ * <p>
  * The names are part of the generated JavaScript, so a change to them is a
  * change to the function the client runs, as a change to the expression is.
  *
@@ -74,7 +80,7 @@ import com.vaadin.flow.dom.JsFunction;
  * @since 25.4
  */
 @Documented
-@Target(ElementType.METHOD)
+@Target({ ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface JsCalledWith {
 
