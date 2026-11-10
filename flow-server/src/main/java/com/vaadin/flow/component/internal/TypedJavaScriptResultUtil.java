@@ -72,7 +72,7 @@ public final class TypedJavaScriptResultUtil {
             conversionErrorHandler = e -> LoggerFactory
                     .getLogger(TypedJavaScriptResultUtil.class)
                     .warn("Ignored a JavaScript result that can not be"
-                            + " converted: {}", e.getMessage());
+                            + " converted", e);
         }
         pending.then(
                 decodingHandler(decoder, resultHandler, conversionErrorHandler),
