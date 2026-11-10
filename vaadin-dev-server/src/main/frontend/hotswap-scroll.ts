@@ -297,18 +297,20 @@ export function restoreScrollPositions(snapshot: ScrollSnapshot, onSettled?: () 
  * cases where the browser has already given up.
  */
 export function saveScrollPositionsForReload(): void {
-  const positions = captureScrollPositions();
-  if (Object.keys(positions).length > 0) {
-    const stored: StoredScrollSnapshot = { timestamp: Date.now(), positions };
-    window.sessionStorage.setItem(SNAPSHOT_KEY, JSON.stringify(stored));
+  // A stored snapshot that is still fresh means that this reload interrupted
+  // the restore of the previous one. The positions not restored yet are either
+  // missing from the page or clamped short of their target, so a new capture
+  // alone would lose them, and the stored values win over the captured ones.
+  // A snapshot whose restore finished, or was cancelled by the user scrolling,
+  // has already been removed.
+  const positions: ScrollSnapshot = { ...captureScrollPositions(), ...readStoredSnapshot()?.positions };
+  if (Object.keys(positions).length === 0) {
+    window.sessionStorage.removeItem(SNAPSHOT_KEY);
+    return;
   }
-  // Nothing to capture also means that this reload interrupted a restore that
-  // had not landed yet, in which case the stored snapshot is still the one to
-  // restore and is left in place. A snapshot whose restore did finish has
-  // already been removed, and a stale one is caught when reading it.
-  if (window.sessionStorage.getItem(SNAPSHOT_KEY) !== null) {
-    history.scrollRestoration = 'manual';
-  }
+  const stored: StoredScrollSnapshot = { timestamp: Date.now(), positions };
+  window.sessionStorage.setItem(SNAPSHOT_KEY, JSON.stringify(stored));
+  history.scrollRestoration = 'manual';
 }
 
 /**
@@ -323,30 +325,34 @@ export function saveScrollPositionsForReload(): void {
  *          restore was still running.
  */
 export function restoreScrollPositionsAfterReload(triggeredByReload: boolean): void {
-  const stored = window.sessionStorage.getItem(SNAPSHOT_KEY);
-  if (stored === null) {
+  if (window.sessionStorage.getItem(SNAPSHOT_KEY) === null) {
     // Restoration is taken over from the browser before a reload, which leaves
     // it disabled for this history entry when the reload had nothing to store.
     // Hand it back rather than leaving the page with neither mechanism.
     history.scrollRestoration = 'auto';
     return;
   }
-  if (!triggeredByReload) {
-    forgetStoredScrollPositions();
-    return;
-  }
-  const snapshot = parseSnapshot(stored);
-  if (!snapshot || Date.now() - snapshot.timestamp > SNAPSHOT_MAX_AGE_MS) {
+  const snapshot = triggeredByReload ? readStoredSnapshot() : undefined;
+  if (!snapshot) {
     forgetStoredScrollPositions();
     return;
   }
   restoreScrollPositions(snapshot.positions, forgetStoredScrollPositions);
 }
 
-function parseSnapshot(stored: string): StoredScrollSnapshot | undefined {
+/**
+ * Reads the stored snapshot, if there is one that is recent enough to still
+ * belong to the current reload.
+ */
+function readStoredSnapshot(): StoredScrollSnapshot | undefined {
+  const stored = window.sessionStorage.getItem(SNAPSHOT_KEY);
+  if (stored === null) {
+    return undefined;
+  }
   try {
     const snapshot = JSON.parse(stored) as StoredScrollSnapshot;
-    return snapshot?.positions && typeof snapshot.timestamp === 'number' ? snapshot : undefined;
+    const valid = snapshot?.positions && typeof snapshot.timestamp === 'number';
+    return valid && Date.now() - snapshot.timestamp <= SNAPSHOT_MAX_AGE_MS ? snapshot : undefined;
   } catch {
     return undefined;
   }

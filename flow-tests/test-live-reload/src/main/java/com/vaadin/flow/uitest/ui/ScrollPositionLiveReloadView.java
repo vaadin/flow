@@ -18,14 +18,27 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ScrollPositionLiveReloadView", layout = ViewTestLayout.class)
-public class ScrollPositionLiveReloadView extends AbstractLiveReloadView {
+public class ScrollPositionLiveReloadView extends AbstractLiveReloadView
+        implements BeforeEnterObserver {
+
+    public static final String RENDER_LATE_PARAMETER = "render-late";
+
+    // Long enough for the Flow client to have processed the initial UIDL and
+    // reported being idle before anything can be scrolled
+    private static final int RENDER_LATE_DELAY_MS = 2000;
+
+    // Holds everything that scrolls, so that it can be rendered late
+    private final Div content = new Div();
 
     public ScrollPositionLiveReloadView() {
         // Button to trigger full-refresh (DOM patching, no full page reload)
@@ -93,7 +106,7 @@ public class ScrollPositionLiveReloadView extends AbstractLiveReloadView {
             outerScroll.add(item);
         }
 
-        add(outerScroll);
+        content.add(outerScroll);
 
         // Items below the scrollable containers for window-level scroll
         for (int i = 0; i < 100; i++) {
@@ -102,11 +115,26 @@ public class ScrollPositionLiveReloadView extends AbstractLiveReloadView {
             item.setId("item-" + i);
             item.getStyle().set("padding", "10px");
             item.getStyle().set("border-bottom", "1px solid #ccc");
-            add(item);
+            content.add(item);
         }
+        add(content);
 
         Span bottomMarker = new Span("Bottom of page");
         bottomMarker.setId("bottom-marker");
         add(bottomMarker);
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        if (event.getLocation().getQueryParameters()
+                .getSingleParameter(RENDER_LATE_PARAMETER).isPresent()) {
+            // Simulates a view that renders after the initial UIDL, so that
+            // the scroll positions cannot be restored as soon as the client
+            // is idle
+            content.getStyle().setDisplay(Style.Display.NONE);
+            content.getElement().executeJs(
+                    "setTimeout(() => this.style.display = '', $0)",
+                    RENDER_LATE_DELAY_MS);
+        }
     }
 }

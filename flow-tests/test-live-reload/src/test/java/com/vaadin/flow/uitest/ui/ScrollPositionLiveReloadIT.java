@@ -53,8 +53,30 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
 
     @Test
     public void scrollPositionPreservedAfterUIRefresh() {
-        open();
-        waitForElementPresent(By.id("item-50"));
+        assertScrollPositionPreservedAfterUIRefresh();
+    }
+
+    @Test
+    public void scrollPositionPreservedAfterUIRefresh_viewRendersLate() {
+        assertScrollPositionPreservedAfterUIRefresh(
+                ScrollPositionLiveReloadView.RENDER_LATE_PARAMETER);
+    }
+
+    @Test
+    public void scrollPositionPreservedAfterFullPageReload() {
+        assertScrollPositionPreservedAfterFullPageReload();
+    }
+
+    @Test
+    public void scrollPositionPreservedAfterFullPageReload_viewRendersLate() {
+        assertScrollPositionPreservedAfterFullPageReload(
+                ScrollPositionLiveReloadView.RENDER_LATE_PARAMETER);
+    }
+
+    private void assertScrollPositionPreservedAfterUIRefresh(
+            String... parameters) {
+        open(parameters);
+        waitForElementVisible(By.id("item-50"));
 
         List<Integer> scrollBefore = scrollAllContainers();
 
@@ -72,10 +94,10 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
         waitForScrollRestoration(scrollBefore);
     }
 
-    @Test
-    public void scrollPositionPreservedAfterFullPageReload() {
-        open();
-        waitForElementPresent(By.id("item-50"));
+    private void assertScrollPositionPreservedAfterFullPageReload(
+            String... parameters) {
+        open(parameters);
+        waitForElementVisible(By.id("item-50"));
 
         List<Integer> scrollBefore = scrollAllContainers();
 
