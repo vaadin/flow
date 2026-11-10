@@ -36,6 +36,7 @@ import { JsonConstants } from '../../../flow/shared/JsonConstants';
 import { NodeFeatures } from '../../../flow/internal/nodefeature/NodeFeatures';
 import type { StateNode } from '../StateNode';
 import { getJsProperty, setJsProperty } from '../../WidgetUtil';
+import { createPropertyPathExpression } from '../util/PropertyPathExpression';
 
 // The $server object is an arbitrary-keyed JS object (server methods plus the
 // promise-callback slot).
@@ -301,7 +302,10 @@ function getOrCreateExpression(expressionString: string): ServerEventDataExpress
 
   if (expression === undefined) {
     // Mirrors NativeFunction.create; the server controls these expressions.
-    expression = new Function(EVENT_PREFIX, 'element', `return (${expressionString})`) as ServerEventDataExpression;
+    // A property path is read without compiling it.
+    expression =
+      createPropertyPathExpression(expressionString) ??
+      (new Function(EVENT_PREFIX, 'element', `return (${expressionString})`) as ServerEventDataExpression);
     expressionCache.set(expressionString, expression);
   }
 

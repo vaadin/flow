@@ -120,7 +120,7 @@ jobs:
           node-version: '26.13.0'
 
       - name: Run code review
-        uses: vaadin/github-actions/code-review@fdb11ea65f1b4ba33aacdcae1c7f59b425be3d20 # main
+        uses: vaadin/github-actions/code-review@5e91962ee15f7602a7366238d92375429afaa0d1 # main
         with:
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           pr-number: ${{ env.PR_NUMBER }}
