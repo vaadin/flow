@@ -2207,18 +2207,19 @@ public class UIInternals implements Serializable {
      * Installs, once per UI, the DOM listener that bridges
      * {@code vaadin-web-notification-permission-change} events into the web
      * notification permission signal. Guarded by a flag so repeated calls do
-     * not attach duplicate listeners. For framework use only.
+     * not attach duplicate listeners. Like other methods that change the UI, it
+     * needs the session lock. For framework use only.
      */
     public void ensureWebNotificationPermissionWired() {
         if (webNotificationPermissionWired) {
             return;
         }
-        webNotificationPermissionWired = true;
         ui.getElement()
                 .addEventListener(WEB_NOTIFICATION_PERMISSION_CHANGE_EVENT,
                         e -> applyWebNotificationPermission(
                                 e.getEventDetail(String.class)))
                 .addEventDetail().allowInert();
+        webNotificationPermissionWired = true;
     }
 
     private void applyWebNotificationPermission(@Nullable String permission) {
