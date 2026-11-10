@@ -679,24 +679,15 @@ try {
 
     $status = Send-Command ([int]$port) $token $words
 
-        if [[ -n "$recorded" ]] && recorded_daemon_lingers "$recorded"; then
-            echo "vaadin-dev: the daemon recorded for $ROOT (pid $recorded)" \
-                 "is running but not answering. Kill pid $recorded, then" \
-                 "'vaadin-dev start' spawns a fresh one." >&2
-            exit 70
-        fi
-        if [[ -f "$HANDSHAKE" ]]; then
-            echo "vaadin-dev: the daemon recorded for $ROOT (pid" \
-                 "${recorded:-unknown}) is gone and left its handshake behind," \
-                 "so it was killed rather than shut down - the application it" \
-                 "owned stopped with it. The app needs 'vaadin-dev start'" \
-                 "again." >&2
-            echo "vaadin-dev: if that repeats on every command, whatever runs" \
-                 "vaadin-dev is killing the process group each command runs in;" \
-                 "see \"When it goes wrong\" in the vaadin-devloop skill" \
-                 "reference." >&2
-            rm -f "$HANDSHAKE"
-        fi
+    # 99 means the recorded daemon is not answering. Whether there is still a
+    # daemon is decided from its process, given up to five seconds to finish
+    # exiting - so a wedged daemon costs every command that long before it
+    # exits 70. A live one keeps its record whatever the command: it still
+    # holds the daemon lock, so a fresh daemon could not come up beside it, and
+    # without the record nothing names the pid to kill. A daemon that exited on
+    # its own took its handshake with it; a killed one leaves a stale record,
+    # which is reaped. Either way a command that only reports then answers that
+    # there is none, any other tries once more with a fresh daemon.
     #
     # Said out loud, because the application went with it. A daemon that shuts
     # down deletes its own handshake, so a handshake still naming a process that
