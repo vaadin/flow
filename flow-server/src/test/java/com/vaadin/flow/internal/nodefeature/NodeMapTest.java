@@ -485,7 +485,6 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         boolean removed = false;
         while (!removed && System.nanoTime() < deadline) {
             System.gc();
-            Thread.sleep(50);
             // Any registration polls for key sets that have been collected
             ElementStylePropertyMap otherMap = createFeature();
             otherMap.put("evictTriggerA", "a");
