@@ -21,6 +21,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -153,6 +155,12 @@ class PublishedServerEventHandlerRpcHandlerTest {
     public static class SubComponentWithDefaultClientCallable
             extends ComponentWithDefaultClientCallable
             implements InertInterfaceWithClientCallable {
+    }
+
+    @Tag(Tag.DIV)
+    public static class SubSubComponentWithDefaultClientCallable
+            extends SubComponentWithDefaultClientCallable
+            implements InterfaceWithClientCallable {
     }
 
     enum Title {
@@ -311,11 +319,17 @@ class PublishedServerEventHandlerRpcHandlerTest {
         assertFalse(component.isInvoked);
     }
 
-    @Test
-    void interfaceOverrideReachedAfterSuperclass_mostSpecificDeclarationUsed() {
-        // The superclass reaches the declaration without @AllowInert first,
-        // but the override in the class' own interface is more specific
-        ComponentWithDefaultClientCallable component = new SubComponentWithDefaultClientCallable();
+    // The declaration without @AllowInert is reached first for the sub
+    // component and last for the sub-sub component, but the more specific
+    // override with @AllowInert must win either way
+    @ParameterizedTest
+    @ValueSource(classes = { SubComponentWithDefaultClientCallable.class,
+            SubSubComponentWithDefaultClientCallable.class })
+    void interfaceOverride_mostSpecificDeclarationUsed(
+            Class<? extends ComponentWithDefaultClientCallable> componentClass)
+            throws ReflectiveOperationException {
+        ComponentWithDefaultClientCallable component = componentClass
+                .getDeclaredConstructor().newInstance();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "inertMethod",
                 JacksonUtils.createArrayNode(), -1, true);
