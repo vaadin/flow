@@ -277,6 +277,19 @@ describe('AtmospherePushConnection', () => {
       expect(log.closed).to.equal(1);
     });
 
+    it('holds pushes back once a reconnect of an open connection starts', async () => {
+      const { registry, log, capture } = setupPush();
+      const connection = new AtmospherePushConnection(registry);
+      await tick();
+      capture.handlers!.open(response('websocket'));
+
+      capture.handlers!.reconnect({}, response('websocket'));
+      expect(log.pushReconnectPending).to.equal(1);
+      connection.push({ a: 1 });
+      expect(log.pushNotConnected).to.equal(1);
+      expect(log.pushed).to.deep.equal([]);
+    });
+
     it('reports an error only once atmosphere.js gives the connection up', async () => {
       // Beyond the Java suite: atmosphere.js 5 reports every failed attempt through its error handler.
       const { registry, log, capture } = setupPush();
@@ -489,8 +502,11 @@ describe('AtmospherePushConnection', () => {
         sockets[sockets.length - 1].open();
       }
       expect(log.pushError).to.equal(0);
-      expect(connection.getTransportType()).to.equal('websocket');
-      expect(connection.isActive()).to.be.true;
+      // Reported open again after each outage, on a new websocket every time
+      expect(log.pushOk).to.equal(4);
+      expect(sockets).to.have.length(10);
+      connection.push({ a: 1 });
+      expect(sockets[sockets.length - 1].sent).to.deep.equal(['7|{"a":1}']);
 
       await loseConnection(3);
       expect(log.pushError).to.equal(1);
