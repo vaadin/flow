@@ -19,19 +19,27 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.jspecify.annotations.Nullable;
+import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.ConstantPoolKey;
+import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 /**
  * A call made through {@link Element#executeJs(Class)}: which definition
@@ -178,7 +186,9 @@ public record JsCall(Class<?> definitionType, String methodName,
      * a function taking the {@link JsCalledWith} parameters. What sets it apart
      * is hashed with the JavaScript, so a snippet and a call that declare the
      * same JavaScript are different functions, and so are two snippets called
-     * with different parameters.
+     * with different parameters. A method annotated with
+     * {@link JsWithExecutionContext} is generated with the execution context as
+     * a leading parameter, and is told apart the same way.
      *
      * @param method
      *            a method annotated with {@link JsExpression}, not
@@ -198,6 +208,16 @@ public record JsCall(Class<?> definitionType, String methodName,
         String expression = annotation.value();
         int parameterCount = method.getParameterCount();
         boolean variadic = method.isVarArgs();
+        if (method.isAnnotationPresent(JsWithExecutionContext.class)) {
+            // A call is hashed from what starts with the parameter count and a
+            // snippet from what starts with "(", so this never shares the hash
+            // input of either
+            return StringUtil
+                    .getHash(
+                            "executionContext," + parameterCount
+                                    + (variadic ? "*" : "") + ":" + expression,
+                            StandardCharsets.UTF_8);
+        }
         if (!JsSnippet.class.isAssignableFrom(method.getReturnType())) {
             return functionId(expression, parameterCount, variadic);
         }
@@ -211,7 +231,9 @@ public record JsCall(Class<?> definitionType, String methodName,
 
     /**
      * Gets the names of the parameters that the function a snippet evaluates to
-     * is called with, as declared by {@link JsCalledWith} on the given method.
+     * is called with. They come from {@link JsCalledWith} on the given method.
+     * If the method has no such annotation, they come from the annotation on
+     * the snippet type that the method returns.
      * <p>
      * The names become parameters of the generated function, so each of them is
      * checked to be one that a function in a JavaScript module can declare and
@@ -219,14 +241,21 @@ public record JsCall(Class<?> definitionType, String methodName,
      *
      * @param method
      *            a method of a JavaScript definition, not <code>null</code>
-     * @return the parameter names in the order they are passed, empty when the
-     *         method is not annotated with {@link JsCalledWith}
+     * @return the parameter names in the order they are passed, empty when
+     *         neither the method nor the snippet type it returns is annotated
+     *         with {@link JsCalledWith}
      * @throws IllegalArgumentException
      *             if a name is not a JavaScript identifier, is a reserved word,
      *             names a captured argument or is declared twice
      */
     public static List<String> getCalledWithNames(Method method) {
         JsCalledWith annotation = method.getAnnotation(JsCalledWith.class);
+        if (annotation == null) {
+            // A snippet type that is always called in the same way declares
+            // the names once, for all methods that return it
+            annotation = method.getReturnType()
+                    .getAnnotation(JsCalledWith.class);
+        }
         if (annotation == null) {
             return List.of();
         }
@@ -304,6 +333,95 @@ public record JsCall(Class<?> definitionType, String methodName,
      */
     public boolean isVariadic() {
         return resolveMethod().method().isVarArgs();
+    }
+
+    /**
+     * Encodes the arguments of this call as the captures of a snippet. The
+     * captures are sent to the client together with the snippet.
+     * <p>
+     * A snippet calls this when it is created. So an error is thrown right
+     * away, not later when the snippet is used, in these cases:
+     * <ul>
+     * <li>the method does not declare a snippet, or</li>
+     * <li>an argument cannot be sent to the client.</li>
+     * </ul>
+     * A snippet that is sent more than once, such as one that an event listener
+     * uses, calls this again each time it is sent. An element is then sent with
+     * the id that it has at that time.
+     *
+     * @return the encoded captures, not <code>null</code>
+     * @throws IllegalArgumentException
+     *             if the called method does not declare a {@link JsSnippet}
+     * @throws RuntimeException
+     *             if any argument cannot be encoded to be sent to the client
+     */
+    public ArrayNode encodeSnippetCaptures() {
+        if (!isSnippet()) {
+            throw new IllegalArgumentException("Method " + methodName + " of "
+                    + definitionType.getName()
+                    + " does not declare a JsSnippet, so a call of it runs"
+                    + " JavaScript rather than declaring a snippet");
+        }
+        return flattenArguments().stream().map(JacksonCodec::encodeWithTypeInfo)
+                .collect(JacksonUtils.asArray());
+    }
+
+    /**
+     * Creates a short key that identifies a snippet created by this call: its
+     * function and its captures. Two snippets with the same key are treated as
+     * the same.
+     * <p>
+     * If all captures are plain values (see
+     * {@link #hasOnlyPlainSnippetCaptures()}), the key is made from the
+     * function and the values. Two calls of the same method with equal plain
+     * values then have the same key.
+     * <p>
+     * Any other capture, for example an element, may be encoded differently
+     * each time the snippet is sent: an element gets a new id when it moves to
+     * another UI. So for such captures, the key is made from a random value,
+     * and it is different for each call of this method.
+     *
+     * @return the key of the snippet, not <code>null</code>
+     * @throws IllegalArgumentException
+     *             if the called method does not declare a {@link JsSnippet}
+     * @throws RuntimeException
+     *             if any argument cannot be encoded to be sent to the client
+     */
+    public String createSnippetKey() {
+        // Also checks that the captures can be sent
+        ArrayNode encoded = encodeSnippetCaptures();
+        String captures = hasOnlyPlainSnippetCaptures() ? encoded.toString()
+                : UUID.randomUUID().toString();
+        return ConstantPoolKey.calculateHash(getFunctionId() + captures);
+    }
+
+    /**
+     * Checks whether all captures of a snippet created by this call are plain
+     * values: strings, numbers of the boxed primitive types,
+     * <code>BigInteger</code> or <code>BigDecimal</code>, booleans, characters,
+     * enums or <code>null</code>. Plain values are encoded in the same way each
+     * time the snippet is sent. It is also <code>true</code> when there are no
+     * captures.
+     *
+     * @return <code>true</code> if all captures are plain values
+     */
+    public boolean hasOnlyPlainSnippetCaptures() {
+        return flattenArguments().stream().allMatch(JsCall::isPlainValue);
+    }
+
+    private static boolean isPlainValue(Object value) {
+        return value == null || value instanceof String
+                || isUnchangeableNumber(value) || value instanceof Boolean
+                || value instanceof Character || value instanceof Enum<?>;
+    }
+
+    // Not every Number: AtomicInteger, AtomicLong and the like can change
+    // after the snippet is created, but its key would not
+    private static boolean isUnchangeableNumber(Object value) {
+        return value instanceof Integer || value instanceof Long
+                || value instanceof Double || value instanceof Float
+                || value instanceof Short || value instanceof Byte
+                || value instanceof BigInteger || value instanceof BigDecimal;
     }
 
     /**

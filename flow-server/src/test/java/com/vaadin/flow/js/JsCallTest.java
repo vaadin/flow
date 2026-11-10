@@ -28,9 +28,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -91,6 +93,12 @@ class JsCallTest {
         }
     }
 
+    interface ContextJs extends Serializable {
+        @JsExpression("this.run($0)")
+        @JsWithExecutionContext
+        void run(String name);
+    }
+
     interface LoggerJs extends Serializable {
         @JsExpression("console.log($0, value)")
         void log(String prefix);
@@ -111,6 +119,15 @@ class JsCallTest {
         @JsExpression("console.log($0, value)")
         @JsCalledWith({})
         JsFunction createWithoutParameters(String prefix);
+    }
+
+    interface EventJs extends Serializable {
+        @JsExpression("return event.key === $0;")
+        DomEventFilter isKey(String key);
+
+        @JsExpression("return e.key === $0;")
+        @JsCalledWith("e")
+        DomEventFilter isKeyOf(String key);
     }
 
     interface InvalidNamesJs extends Serializable {
@@ -275,6 +292,15 @@ class JsCallTest {
     }
 
     @Test
+    void functionId_withExecutionContext_isAnotherFunction() throws Exception {
+        // The generated function takes the context as a leading parameter, so
+        // it may not be registered under the identifier of the same
+        // JavaScript generated without it
+        assertNotEquals(JsCall.functionId("this.run($0)", 1, false), JsCall
+                .functionId(ContextJs.class.getMethod("run", String.class)));
+    }
+
+    @Test
     void functionId_snippetWithoutCalledWith_isTheFunctionOfAnEmptyList()
             throws Exception {
         // Both declare a function without parameters around the expression
@@ -302,6 +328,15 @@ class JsCallTest {
                 "createWithoutParameters", List.of("a")).getCalledWithNames());
         assertEquals(List.of(), new JsCall(LoggerJs.class, "log", List.of("a"))
                 .getCalledWithNames());
+    }
+
+    @Test
+    void getCalledWithNames_snippetTypeDeclaresNames_methodTakesPrecedence()
+            throws Exception {
+        assertEquals(List.of("event", "element"), JsCall.getCalledWithNames(
+                EventJs.class.getMethod("isKey", String.class)));
+        assertEquals(List.of("e"), JsCall.getCalledWithNames(
+                EventJs.class.getMethod("isKeyOf", String.class)));
     }
 
     @ParameterizedTest

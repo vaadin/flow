@@ -444,6 +444,20 @@ public class FrontendTools {
     }
 
     /**
+     * Locate <code>npx</code> executable.
+     * <p>
+     * Unlike {@link #getNpmExecutable()}, this leaves the project files
+     * untouched, so it can also be used in projects that use pnpm.
+     *
+     * @return the list of all commands in sequence that need to be executed to
+     *         have npx running
+     * @since 25.4
+     */
+    public List<String> getNpxExecutable() {
+        return getNpmCliToolExecutable(BuildTool.NPX);
+    }
+
+    /**
      * Locate <code>pnpm</code> executable.
      * <p>
      * In case pnpm is not available it will be installed.
