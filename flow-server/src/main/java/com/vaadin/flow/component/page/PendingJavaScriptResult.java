@@ -86,9 +86,9 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
 
     /**
      * Adds a typed handler that will be run for a successful execution and a
-     * handler that will be run for a failed execution. One of the handlers will
-     * be invoked asynchronously when the result of the execution is sent back
-     * to the server.
+     * handler that will be run for a failed execution or a return value that
+     * can not be converted. One of the handlers will be invoked asynchronously
+     * when the result of the execution is sent back to the server.
      * <p>
      * The JavaScript return value will be automatically converted to the
      * specified target type. All types supported by Jackson for JSON
@@ -108,7 +108,8 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
      * @param errorHandler
      *            a handler for an error message in case the execution failed or
      *            its return value can not be converted, or <code>null</code> to
-     *            ignore errors
+     *            ignore failed executions. Without an error handler, a return
+     *            value that can not be converted is logged as a warning
      */
     default <T> void then(Class<T> targetType,
             SerializableConsumer<T> resultHandler,
@@ -128,7 +129,8 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
     /**
      * Adds a typed handler that will be run for a successful execution. The
      * handler will be invoked asynchronously if the execution was successful.
-     * In case of a failure, no handler will be run.
+     * In case the execution fails, no handler will be run. A return value that
+     * can not be converted is logged as a warning, and no handler will be run.
      * <p>
      * The JavaScript return value will be automatically converted to the
      * specified target type. All types supported by Jackson for JSON
@@ -190,9 +192,9 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
 
     /**
      * Adds a typed handler that will be run for a successful execution and a
-     * handler that will be run for a failed execution. One of the handlers will
-     * be invoked asynchronously when the result of the execution is sent back
-     * to the server.
+     * handler that will be run for a failed execution or a return value that
+     * can not be converted. One of the handlers will be invoked asynchronously
+     * when the result of the execution is sent back to the server.
      * <p>
      * The JavaScript return value will be automatically converted to the type
      * specified by the {@link TypeReference}. This method supports generic
@@ -220,7 +222,8 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
      * @param errorHandler
      *            a handler for an error message in case the execution failed or
      *            its return value can not be converted, or <code>null</code> to
-     *            ignore errors
+     *            ignore failed executions. Without an error handler, a return
+     *            value that can not be converted is logged as a warning
      * @since 25.0
      */
     default <T> void then(TypeReference<T> typeReference,
@@ -241,7 +244,8 @@ public interface PendingJavaScriptResult extends JavaScriptResult<JsonNode> {
     /**
      * Adds a typed handler that will be run for a successful execution. The
      * handler will be invoked asynchronously if the execution was successful.
-     * In case of a failure, no handler will be run.
+     * In case the execution fails, no handler will be run. A return value that
+     * can not be converted is logged as a warning, and no handler will be run.
      * <p>
      * The JavaScript return value will be automatically converted to the type
      * specified by the {@link TypeReference}. This method supports generic
