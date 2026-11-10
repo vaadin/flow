@@ -27,10 +27,13 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JavaType;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.NumericNode;
 import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.type.TypeFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -46,6 +49,7 @@ import com.vaadin.flow.js.JsSnippets;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -283,6 +287,71 @@ class JacksonCodecTest {
         assertNull(JacksonCodec.decodeAs(json, Integer.class));
         assertNull(JacksonCodec.decodeAs(json, Double.class));
         assertNull(JacksonCodec.decodeAs(json, JsonNode.class));
+        assertEquals(0, JacksonCodec.decodeAs(json, int.class));
+        assertEquals(false, JacksonCodec.decodeAs(json, boolean.class));
+        assertEquals(0, (int) JacksonCodec.decodeAs(json,
+                objectMapper.getTypeFactory().constructType(int.class)));
+    }
+
+    @Test
+    void decodeAs_nullArguments_throwNullPointerException() {
+        JsonNode json = objectMapper.valueToTree("foo");
+        JavaType javaType = objectMapper.getTypeFactory()
+                .constructType(String.class);
+        TypeReference<String> typeReference = new TypeReference<>() {
+        };
+
+        assertThrows(NullPointerException.class,
+                () -> JacksonCodec.decodeAs(null, String.class));
+        assertThrows(NullPointerException.class,
+                () -> JacksonCodec.decodeAs(null, javaType));
+        assertThrows(NullPointerException.class,
+                () -> JacksonCodec.decodeAs(null, typeReference));
+        assertThrows(NullPointerException.class,
+                () -> JacksonCodec.decodeAs(json, (Class<?>) null));
+        assertThrows(NullPointerException.class,
+                () -> JacksonCodec.decodeAs(json, (JavaType) null));
+        assertThrows(NullPointerException.class,
+                () -> JacksonCodec.decodeAs(json, (TypeReference<?>) null));
+    }
+
+    @Test
+    void decodeAs_typeReferenceJsonNodeType() {
+        JsonNode array = objectMapper.valueToTree(List.of(4, 2));
+
+        assertSame(array,
+                JacksonCodec.decodeAs(array, new TypeReference<ArrayNode>() {
+                }));
+        TypeReference<ObjectNode> objectNode = new TypeReference<>() {
+        };
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> JacksonCodec.decodeAs(array, objectNode));
+        assertEquals("Cannot decode JSON of type ARRAY as "
+                + ObjectNode.class.getName(), exception.getMessage());
+        assertNull(JacksonCodec.decodeAs(objectMapper.nullNode(), objectNode));
+    }
+
+    @Test
+    void decodeAs_javaType() {
+        TypeFactory types = objectMapper.getTypeFactory();
+        JavaType listOfInts = types
+                .constructType(new TypeReference<List<Integer>>() {
+                });
+        JsonNode json = objectMapper.valueToTree(List.of(4, 2));
+
+        assertEquals(List.of(4, 2), JacksonCodec.decodeAs(json, listOfInts));
+        assertNull(JacksonCodec.decodeAs(objectMapper.nullNode(), listOfInts));
+        assertEquals(json, JacksonCodec.decodeAs(json,
+                types.constructType(JsonNode.class)));
+        JsonNode text = objectMapper.valueToTree("abc");
+        JavaType integer = types.constructType(Integer.class);
+        assertThrows(IllegalArgumentException.class,
+                () -> JacksonCodec.decodeAs(text, integer));
+        JavaType objectNode = types.constructType(ObjectNode.class);
+        assertThrows(IllegalArgumentException.class,
+                () -> JacksonCodec.decodeAs(json, objectNode));
+        assertNull(JacksonCodec.decodeAs(objectMapper.nullNode(), objectNode));
     }
 
     @Test
@@ -293,19 +362,14 @@ class JacksonCodecTest {
     }
 
     @Test
-    void decodeAs_jsonValueWrongType_classCastException() {
+    void decodeAs_jsonValueWrongType_illegalArgumentException() {
         ObjectNode json = objectMapper.createObjectNode();
         json.put("foo", "bar");
-        assertThrows(ClassCastException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> JacksonCodec.decodeAs(json, NumericNode.class));
-    }
-
-    @Test
-    void decodeAs_unsupportedType() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            assertNull(JacksonCodec.decodeAs(objectMapper.valueToTree("foo"),
-                    float.class));
-        });
+        assertTrue(exception.getMessage().contains("OBJECT"),
+                exception.getMessage());
     }
 
     @Test
