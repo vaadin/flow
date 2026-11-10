@@ -26,5 +26,6 @@ to their code and are listed at the top of [Architecture](architecture.md).
 | [Browser Integration](browser-integration.md) | Wrapping browser APIs, `executeJs`, DOM events, bootstrap data, capability detection. |
 | [Wire Protocol](wire-protocol.md)           | The UIDL response, the constant pool, how `executeJs` is encoded and executed. |
 | [Frontend Hotswap](frontend-hotswap.md)     | Keeping generated frontend files in sync with Java classes in development mode. |
+| [Dev Loop](dev-loop.md)                     | The `vaadin-dev` daemon and CLI: what they promise and the decisions behind them. |
 | [Documenting](documenting.md)               | Javadoc expectations, documenting wrapped browser APIs.                        |
 | [Testing](testing.md)                       | Where tests live, testing a browser-API wrapper.                             |

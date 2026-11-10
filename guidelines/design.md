@@ -330,7 +330,10 @@ called it.
   way records print them when the values need a name
   (`Name[width=100, height=50]`), and bare values when they do not
   (`StringLengthValidator[1, 10]`). Show what identifies the instance or
-  explains its behaviour, not every field.
+  explains its behaviour, not every field. `ToStringBuilder` in
+  `com.vaadin.flow.internal` builds this shape from the runtime class name,
+  and falls back to the named supertype for an anonymous class, whose simple
+  name is empty.
 - **Label numbers that can mislead.** If a value can be read two ways, say
   which one it is: `ListDataProvider` prints `250 backend items, filtered`,
   because a bare `250 items` suggests the data is fine when a filter hides all

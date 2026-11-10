@@ -34,8 +34,8 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
 
-import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
+import com.vaadin.flow.component.internal.PrebuiltEventData;
 import com.vaadin.flow.component.internal.UIInternalUpdater;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.History;
@@ -118,7 +118,6 @@ import com.vaadin.flow.signals.local.ValueSignal;
  *
  * @since 1.0
  */
-@JsModule("@vaadin/common-frontend/ConnectionIndicator.js")
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
 
@@ -2089,6 +2088,7 @@ public class UI extends Component
      * @since 24.4
      */
     @DomEvent(BrowserLeaveNavigationEvent.EVENT_NAME)
+    @PrebuiltEventData
     public static class BrowserLeaveNavigationEvent extends ComponentEvent<UI> {
         public static final String EVENT_NAME = "ui-leave-navigation";
         private final String route;
@@ -2120,6 +2120,7 @@ public class UI extends Component
      * @since 24.4
      */
     @DomEvent(BrowserNavigateEvent.EVENT_NAME)
+    @PrebuiltEventData
     public static class BrowserNavigateEvent extends ComponentEvent<UI> {
         public static final String EVENT_NAME = "ui-navigate";
 
@@ -2178,6 +2179,7 @@ public class UI extends Component
      * @since 24.5
      */
     @DomEvent(BrowserRefreshEvent.EVENT_NAME)
+    @PrebuiltEventData
     public static class BrowserRefreshEvent extends ComponentEvent<UI> {
         public static final String EVENT_NAME = "ui-refresh";
 

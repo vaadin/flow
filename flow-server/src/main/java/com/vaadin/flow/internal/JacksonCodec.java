@@ -16,8 +16,10 @@
 package com.vaadin.flow.internal;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JavaType;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
@@ -30,6 +32,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
+import com.vaadin.flow.js.JsCall;
 
 /**
  * Utility for encoding objects to and from JSON.
@@ -45,7 +48,9 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * <li>{@link Element} (encoded as a reference to the element)
  * <li>{@link Component} (encoded as a reference to the root element)
  * <li>{@link JsFunction} (encoded as a JS function literal that closes over its
- * captured parameters on the client)
+ * captured parameters on the client, or for one declared by a
+ * {@link com.vaadin.flow.js.JsDefinition JsDefinition} interface as the
+ * identifier of the function in the bundle and the captured parameters)
  * </ul>
  *
  * <p>
@@ -55,6 +60,13 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * @since 24.7
  */
 public class JacksonCodec {
+
+    /**
+     * The key of the JSON object that a {@link JsFunction} is encoded as.
+     * 
+     * @since 25.4
+     */
+    public static final String FUNCTION_KEY = "@v-fn";
 
     private JacksonCodec() {
         // Don't create instances
@@ -103,22 +115,32 @@ public class JacksonCodec {
         return obj;
     }
 
+    @SuppressWarnings("removal")
     private static JsonNode encodeJsFunction(JsFunction value) {
         ObjectMapper mapper = JacksonUtils.getMapper();
         ObjectNode obj = mapper.createObjectNode();
         ObjectNode payload = mapper.createObjectNode();
-        payload.put("body", value.getBody());
+        JsCall declaredCall = value.getDeclaredCall();
+        if (declaredCall != null) {
+            // The bundle has the JavaScript and the parameter names, so all the
+            // client needs is which function to call with the captures
+            payload.put("id", declaredCall.getFunctionId());
+        } else {
+            payload.put("body", value.getBody());
+        }
         ArrayNode captures = mapper.createArrayNode();
         for (Object capture : value.getCaptures()) {
             captures.add(encodeWithTypeInfo(capture));
         }
         payload.set("captures", captures);
-        ArrayNode args = mapper.createArrayNode();
-        for (String name : value.getArgumentNames()) {
-            args.add(name);
+        if (declaredCall == null) {
+            ArrayNode args = mapper.createArrayNode();
+            for (String name : value.getArgumentNames()) {
+                args.add(name);
+            }
+            payload.set("args", args);
         }
-        payload.set("args", args);
-        obj.set("@v-fn", payload);
+        obj.set(FUNCTION_KEY, payload);
         return obj;
     }
 
@@ -141,8 +163,9 @@ public class JacksonCodec {
 
     /**
      * Encodes a "primitive" value or a constant pool reference to JSON. This
-     * methods supports {@link ConstantPoolKey} in addition to the types
-     * supported by {@link #encodeWithoutTypeInfo(Object)}.
+     * methods supports {@link ConstantPoolKey} and
+     * {@link ParameterizedConstantPoolKey} in addition to the types supported
+     * by {@link #encodeWithoutTypeInfo(Object)}.
      *
      * @param value
      *            the value to encode
@@ -156,6 +179,8 @@ public class JacksonCodec {
             ConstantPoolKey reference = (ConstantPoolKey) value;
             return JacksonUtils.getMapper()
                     .valueToTree(constantPool.getConstantId(reference));
+        } else if (value instanceof ParameterizedConstantPoolKey reference) {
+            return reference.encode(constantPool);
         } else {
             return encodeWithoutTypeInfo(value);
         }
@@ -239,7 +264,9 @@ public class JacksonCodec {
      *            the type to decode as
      * @return the value decoded as the given type
      * @throws IllegalArgumentException
-     *             if the type was unsupported or deserialization failed
+     *             if the type was unsupported or deserialization failed, or if
+     *             the type is a JSON node type that the value is not, such as
+     *             an object node for an array
      */
     public static <T> T decodeAs(JsonNode json, Class<T> type) {
         assert json != null;
@@ -247,6 +274,10 @@ public class JacksonCodec {
             return null;
         }
         if (JsonNode.class.isAssignableFrom(type)) {
+            if (!type.isInstance(json)) {
+                throw new IllegalArgumentException("Cannot decode JSON of type "
+                        + json.getNodeType() + " as " + type.getName());
+            }
             return type.cast(json);
         } else {
             // Use Jackson for all deserialization - it handles primitives,
@@ -261,6 +292,45 @@ public class JacksonCodec {
             }
         }
 
+    }
+
+    /**
+     * Decodes a JSON value as an instance of the given type. The type can be a
+     * generic type, for example {@code List<MyBean>}.
+     *
+     * @param <T>
+     *            the type to decode as
+     * @param json
+     *            the JSON value to decode
+     * @param type
+     *            the type to decode as
+     * @return the value decoded as the given type
+     * @throws IllegalArgumentException
+     *             if deserialization failed, or if the type is a JSON node type
+     *             that the value is not, such as an object node for an array
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T decodeAs(JsonNode json, JavaType type) {
+        Objects.requireNonNull(json, "JSON cannot be null");
+        Objects.requireNonNull(type, "Type cannot be null");
+        if (json.getNodeType() == JsonNodeType.NULL) {
+            return null;
+        }
+        if (type.isTypeOrSubTypeOf(JsonNode.class)) {
+            if (!type.getRawClass().isInstance(json)) {
+                throw new IllegalArgumentException("Cannot decode JSON of type "
+                        + json.getNodeType() + " as " + type.toCanonical());
+            }
+            return (T) json;
+        }
+        try {
+            return JacksonUtils.getMapper().treeToValue(json, type);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(
+                    "Cannot deserialize JSON to type " + type.toCanonical()
+                            + ": " + e.getMessage(),
+                    e);
+        }
     }
 
     /**

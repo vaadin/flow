@@ -173,8 +173,9 @@ Make `toString()` cheap, free of side effects and unable to throw. Read a
 signal with `peek()` in it, never `get()`.
 
 Start `toString()` with `getClass().getSimpleName()` rather than a literal
-class name, and follow the `SimpleName[…]` shape. Keep `super.toString()` when
-the identity hash is what tells instances apart.
+class name, and follow the `SimpleName[…]` shape; `ToStringBuilder` in
+`com.vaadin.flow.internal` builds that shape. Keep `super.toString()` when the
+identity hash is what tells instances apart.
 
 Never put a password, token or other credential in `toString()`.
 
@@ -280,6 +281,8 @@ list drifts the moment someone adds a module and forgets it. Read the
 `validation.run` property, so a new module is picked up without being listed
 anywhere else. See `scripts/computeMatrix.js` and `scripts/previewModule.js`.
 
+A workflow job with effects outside the repository (uploading an analysis, deploying a preview or a snapshot, posting to Slack, opening pull requests, spending shared API credits) carries `github.repository == 'vaadin/flow'` in its `if:` condition, so a copy of the repository never publishes to the shared targets. When the secret such a job needs can be missing from the run's own secret store, as in Dependabot-triggered runs, bind the secret to the job `env` and skip the steps with a notice instead of failing, because a job-level `if:` cannot read the `secrets` context.
+
 Extract a shared utility instead of copying a class or method between modules.
 When two modules need the same logic, move it to the module they both depend
 on.
@@ -291,6 +294,120 @@ message that names what is missing.
 Follow the existing implementations when you add one to an extension point,
 including one that is in review at the same time, instead of introducing a
 second shape for the same thing.
+
+## Dev Loop
+
+These cover `flow-devloop-daemon`, the in-app connector in `vaadin-dev-server`
+and the `vaadin-dev` CLI under
+`flow-plugins/flow-plugin-base/src/main/resources/vaadin-dev-cli/`. See
+`guidelines/dev-loop.md` for the reasoning, and
+`flow-devloop-daemon/README.md` for how each part is implemented.
+
+Keep the daemon on the JDK alone and never load an application class in the
+daemon JVM. Read class files, compile sources and redefine through the in-app
+connector instead, so the daemon starts in milliseconds and the application's
+classpath cannot leak into it. See `guidelines/dev-loop.md`.
+
+Keep state that has to outlive `mvn clean` — the handshake and its lock — in
+`<app>/.vaadin/`, not under `target/`, and list every per-run file there in the
+`.gitignore` that `install-dev-cli` installs, since the handshake carries the
+token that authorizes commands.
+
+Start the daemon in a session of its own (`setsid`), not with only SIGHUP
+ignored, so that a runner killing the process group of the command that spawned
+it does not take the daemon and the application with it. Report a handshake left
+behind by a dead daemon instead of reaping it silently. See
+`guidelines/dev-loop.md`.
+
+Keep the daemon an orchestrator and observer: it calls compilers, HotswapAgent,
+Flow's `Hotswapper`, the dev server and live reload, and replaces none of them.
+Checking what a page renders is the agent's job, so add no browser automation
+or UI-testing API to the loop. See `guidelines/dev-loop.md`.
+
+Expose agent-facing capabilities as `vaadin-dev` verbs and options over the
+daemon's RPC, not as an MCP server. Keep the default output terse, print full
+diagnostics only on failure, and make structured output the opt-in `--json`.
+Bind the RPC to loopback only and require the handshake token on every request.
+
+Let whoever launched the application own compiling and reloading it. Never
+compile, redefine or restart an application the daemon did not launch, and do
+not start a second HotswapAgent JVM beside one an IDE owns. See
+`guidelines/dev-loop.md`.
+
+Keep the daemon's lifecycle automatic and separate from the application's:
+`start`, `stop` and `restart` act on the application, the daemon ends on
+`shutdown`, the idle timeout or a stale-instance takeover, and shutting it down
+stops the application it launched. Decide whether a daemon or an application
+is alive from its process, never by probing a socket.
+
+Answer every daemon command with zero or more `> ` progress lines and exactly
+one `EXIT <code>`; `register`, the connector's own connection, is not a
+command. Derive the code of an `apply` from `TransactionEngine.Outcome`, never
+from parsed text. The exit codes are the contract agents act on — `0`, `1` and `4`
+for outcomes, `64`, `70` and `77` from the CLI — so do not change the meaning
+of one.
+
+Keep at most one transaction in flight. A new `apply` supersedes the running one
+rather than queueing behind it, and the superseded caller still gets a terminal
+answer.
+
+Make `apply` block until the transaction reaches a terminal outcome and gate
+that wait on what happened, never on a timer, so an agent never has to sleep or
+poll. When the application dies, fail the transaction in flight, report the
+application as stopped or crashed, and never relaunch it on the daemon's own
+initiative.
+
+Redefine all classes of a transaction in one `redefineClasses` call from the
+connector, then call `Hotswapper.onHotswap` with whether the redefinition
+really succeeded. Keep the daemon the only redefiner: never enable
+HotswapAgent's own file-watching delivery or a plugin that reloads on its own.
+Report the classification of an apply (`hmr`, `hot-reload`, `restart`) from
+what happened, not from what was predicted.
+
+Keep the daemon passive on the browser: a refresh goes through Flow's
+`BrowserLiveReload` channel from the connector, and `apply` never waits for a
+browser. Report only what the loop knows, such as whether a reload was sent.
+
+Where Flow already decides something — whether the dev bundle is stale, how a
+theme or a redefined class is refreshed — use Flow's own code path instead of a
+parallel tracker. Compile an apply's change-set with javac or the
+`compiler:compile` goal, never through Maven's `compile` phase, and never
+assume the daemon is the only process running Flow's frontend tasks in the
+project. See `guidelines/dev-loop.md`.
+
+Read a setting that steers the daemon or the application from the daemon's own
+system properties or environment, which are fixed when the daemon is spawned,
+and say wherever the setting is documented that changing it takes a `shutdown`
+first. A value that has to change between launches of a running daemon is a
+command option, like `start --jvm-args`. See `guidelines/dev-loop.md`.
+
+Make the loop the only thing that restarts, redeploys or reloads the
+application. When adding or changing a runtime, switch off its own watcher,
+scanner or auto-redeploy for the loop's run, and never run a plugin's `dev`
+goal. See `guidelines/dev-loop.md`.
+
+Do not work out from the poms what only Maven can decide — whether a profile is
+active, what a module inherits from a parent outside the checkout, a plugin's
+effective configuration. Read it from what the build recorded, such as the
+`model.properties` that `DevLoopBuildExtension` writes. A value read from a pom
+needs a fallback for when it is inherited instead. See
+`guidelines/dev-loop.md`.
+
+Report a change as live only when it is. When the running JVM cannot take a
+change, escalate to a restart or fail the apply with the phase and the reason,
+and when the loop cannot tell, restart rather than claim success. See
+`guidelines/dev-loop.md`.
+
+Change user-facing CLI behavior in the bash and PowerShell launchers and in the
+`vaadin-devloop` skill in the same pull request, and keep the usage text of the
+two launchers the same word for word.
+
+Write an end-to-end test of the loop once, in
+`flow-tests/test-devloop/test-devloop-support`, so that every fixture runs it,
+and put a test in a single fixture only when it is about that fixture's
+runtime. A fixture whose runtime genuinely cannot answer a shared IT excludes
+it in its pom, and checks the same thing another way in a test of its own where
+the runtime allows. See `guidelines/dev-loop.md`.
 
 ## Javadoc
 
