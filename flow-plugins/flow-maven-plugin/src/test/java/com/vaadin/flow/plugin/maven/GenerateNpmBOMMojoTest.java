@@ -189,10 +189,13 @@ class GenerateNpmBOMMojoTest {
                 new DefaultMavenExecutionRequest().setOffline(true),
                 new Properties());
 
-        InvocationRequest request = mojo.createInvocationRequest(
-                List.of(new File("npx").getAbsolutePath()));
+        String npx = new File("npx").getAbsolutePath();
+
+        InvocationRequest request = mojo.createInvocationRequest(List.of(npx));
 
         assertTrue(request.isOffline());
+        assertEquals(npx,
+                request.getProperties().getProperty("exec.executable"));
     }
 
     @Test
