@@ -29,8 +29,9 @@ public abstract class AbstractLiveReloadIT extends ChromeDeviceTest {
         return "/context" + super.getTestPath();
     }
 
-    protected void open() {
-        open((String[]) null);
+    @Override
+    protected void open(String... parameters) {
+        super.open(parameters);
         waitForServiceWorkerReady();
         waitForElementPresent(By.id(AbstractLiveReloadView.ATTACH_IDENTIFIER));
         initialAttachId = getAttachId();

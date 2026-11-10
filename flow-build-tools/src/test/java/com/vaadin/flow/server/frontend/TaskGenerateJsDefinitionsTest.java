@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.js.JsCall;
@@ -59,6 +60,8 @@ class TaskGenerateJsDefinitionsTest {
 
     private static final String TICK_EXPRESSION = "console.log($0, Date.now());";
 
+    private static final String KEY_EXPRESSION = "return event.key === $0;";
+
     private static final String SNIPPETS_REGISTRY = "window.Vaadin.Flow.jsSnippets = window.Vaadin.Flow.jsSnippets || {};";
 
     private static final String CONTEXT_REGISTRY = "window.Vaadin.Flow.jsDefinitionsWithExecutionContext = window.Vaadin.Flow.jsDefinitionsWithExecutionContext || {};";
@@ -82,6 +85,12 @@ class TaskGenerateJsDefinitionsTest {
 
         @JsExpression(TICK_EXPRESSION)
         JsFunction createTicker(String label);
+    }
+
+    @JsDefinition
+    public interface EventJs extends Serializable {
+        @JsExpression(KEY_EXPRESSION)
+        DomEventFilter isKey(String key);
     }
 
     @JsDefinition
@@ -233,6 +242,24 @@ class TaskGenerateJsDefinitionsTest {
                         + content);
         assertFalse(content.contains("jsDefinitions[\""),
                 "a snippet is not run by a call: " + content);
+    }
+
+    @Test
+    void domEventSnippet_isCalledWithTheNamesItsTypeDeclares()
+            throws NoSuchMethodException {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(EventJs.class), false);
+
+        assertTrue(
+                content.contains(String.join(System.lineSeparator(),
+                        "window.Vaadin.Flow.jsSnippets[\""
+                                + JsCall.functionId(EventJs.class
+                                        .getMethod("isKey", String.class))
+                                + "\"] = function ($0) {",
+                        "  return function (event, element) {", KEY_EXPRESSION,
+                        "  };", "};")),
+                "a DOM event filter should be a function of the event and the element: "
+                        + content);
     }
 
     @Test

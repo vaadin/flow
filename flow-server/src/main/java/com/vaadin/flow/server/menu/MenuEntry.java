@@ -66,6 +66,7 @@ public record MenuEntry(String path, String title, Double order, String icon,
      *            the icon to use in the menu or null for no icon
      * @param menuClass
      *            the source {@code @Menu} class or null if not available
+     * @since 25.4
      */
     public MenuEntry(String path, String title, Double order, String icon,
             Class<? extends Component> menuClass) {
