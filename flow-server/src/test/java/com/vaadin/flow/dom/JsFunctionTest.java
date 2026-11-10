@@ -57,6 +57,13 @@ class JsFunctionTest {
     }
 
     @JsDefinition
+    interface OtherLoggerJs extends Serializable {
+        @JsExpression("console.info($0, value);")
+        @JsCalledWith("value")
+        JsFunction createLogger(String prefix);
+    }
+
+    @JsDefinition
     interface ConsoleJs extends Serializable {
         @JsExpression("console.log($0);")
         void log(String message);
@@ -124,9 +131,14 @@ class JsFunctionTest {
 
         assertNotEquals(tagged,
                 logger.createTaggedLogger(new String[] { "b" }));
-        // Same JavaScript, but declared by another method
-        assertNotEquals(logger.createLogger("Greeting:"),
+        // The same JavaScript declared by another method is the same
+        // function of the bundle
+        assertEquals(logger.createLogger("Greeting:"),
                 logger.createAnyLogger("Greeting:"));
+        assertNotEquals(
+                JsSnippets.of(OtherLoggerJs.class).createLogger("Greeting:"),
+                logger.createLogger("Greeting:"));
+        assertNotEquals(JsFunction.of("return a;"), JsFunction.of("return b;"));
         assertNotEquals(JsFunction.of("return a;"),
                 JsFunction.of("return a;").withArguments("a"));
     }

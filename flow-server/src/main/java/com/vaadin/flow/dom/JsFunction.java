@@ -275,10 +275,9 @@ public final class JsFunction implements JsSnippet {
 
     /**
      * Checks whether the given object is a function that runs the same
-     * JavaScript with the same captures: the same declaring method of a
-     * {@link JsDefinition} interface, or the same body, together with the same
-     * argument names and captures. Captured arrays are compared by their
-     * contents.
+     * JavaScript with the same captures: the same function of the bundle, or
+     * the same body, together with the same argument names and captures. A
+     * captured array is compared by its current contents.
      *
      * @param obj
      *            the object to compare with
@@ -291,9 +290,7 @@ public final class JsFunction implements JsSnippet {
         }
         return obj instanceof JsFunction other
                 && Objects.equals(body, other.body)
-                && Objects.equals(getDeclaringType(), other.getDeclaringType())
-                && Objects.equals(getDeclaringMethodName(),
-                        other.getDeclaringMethodName())
+                && Objects.equals(getFunctionId(), other.getFunctionId())
                 && argumentNames.equals(other.argumentNames)
                 && Arrays.deepEquals(captures.toArray(),
                         other.captures.toArray());
@@ -301,15 +298,11 @@ public final class JsFunction implements JsSnippet {
 
     @Override
     public int hashCode() {
-        return Objects.hash(body, getDeclaringType(), getDeclaringMethodName(),
-                argumentNames, Arrays.deepHashCode(captures.toArray()));
+        return Objects.hash(body, getFunctionId(), argumentNames,
+                Arrays.deepHashCode(captures.toArray()));
     }
 
-    private @Nullable Class<?> getDeclaringType() {
-        return declaredCall == null ? null : declaredCall.definitionType();
-    }
-
-    private @Nullable String getDeclaringMethodName() {
-        return declaredCall == null ? null : declaredCall.methodName();
+    private @Nullable String getFunctionId() {
+        return declaredCall == null ? null : declaredCall.getFunctionId();
     }
 }

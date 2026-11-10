@@ -1091,10 +1091,13 @@ public class ShortcutRegistration implements Registration, Serializable {
         final List<Object> delegateSettings = List.of(elementLocator,
                 requiredModifiers, forbiddenModifiers, checkBoundary,
                 resetFocusOnActiveElement, allowDefaultBehavior, List.of(keys));
-        final Set<List<Object>> delegates = getOrInitListenData(listenOn);
-        if (!delegates.add(delegateSettings)) {
+        // A list rather than a hash set: a locator compares captured arrays
+        // by their contents, which could change after it is stored
+        final List<List<Object>> delegates = getOrInitListenData(listenOn);
+        if (delegates.contains(delegateSettings)) {
             return;
         }
+        delegates.add(delegateSettings);
         // #10362 the delegate only prevents the default of keydown events that
         // match, to not block typing or existing shortcuts
         listenOn.getElement().executeJs(ShortcutJs.class)
@@ -1126,16 +1129,16 @@ public class ShortcutRegistration implements Registration, Serializable {
      *
      * @param listenOn
      *            component to listen events on
-     * @return set with the settings of the delegates already registered
+     * @return the settings of the delegates already registered
      */
     @SuppressWarnings("unchecked")
-    private Set<List<Object>> getOrInitListenData(Component listenOn) {
+    private List<List<Object>> getOrInitListenData(Component listenOn) {
         final Object componentData = ComponentUtil.getData(listenOn,
                 LISTEN_ON_INITIALIZED);
         if (componentData != null) {
-            return (Set<List<Object>>) componentData;
+            return (List<List<Object>>) componentData;
         }
-        final HashSet<List<Object>> delegates = new HashSet<>();
+        final List<List<Object>> delegates = new ArrayList<>();
         ComponentUtil.setData(listenOn, LISTEN_ON_INITIALIZED, delegates);
         listenOn.addDetachListener(event -> ComponentUtil
                 .setData(event.getSource(), LISTEN_ON_INITIALIZED, null));
