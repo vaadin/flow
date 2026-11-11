@@ -76,8 +76,8 @@ public class StaticFileServer implements StaticFileHandler {
 
     private final ResponseWriter responseWriter;
     private final VaadinService vaadinService;
-    private DeploymentConfiguration deploymentConfiguration;
-    private DevModeHandler devModeHandler;
+    private final DeploymentConfiguration deploymentConfiguration;
+    private final DevModeHandler devModeHandler;
 
     // Matches paths to theme files referenced from link tags (e.g. styles
     // .css or document.css)
