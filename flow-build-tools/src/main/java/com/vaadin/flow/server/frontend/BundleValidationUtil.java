@@ -84,6 +84,10 @@ public final class BundleValidationUtil {
      */
     private static final String DEFAULT_PWA_OFFLINE_PATH = "'.'";
 
+    private static final List<String> SERVICE_WORKER_FILES = List.of(
+            FrontendUtils.SERVICE_WORKER_SRC,
+            FrontendUtils.SERVICE_WORKER_SRC_JS);
+
     /**
      * Checks if an application needs a new frontend bundle.
      *
@@ -277,6 +281,17 @@ public final class BundleValidationUtil {
         // removing it from hashes map to prevent other unnecessary checks
         ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY)).remove(
                 FrontendUtils.GENERATED + FrontendUtils.COMMERCIAL_BANNER_JS);
+
+        if (customServiceWorkerChanged(options, statsJson,
+                frontendDependencies)) {
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-changed-service-worker", null);
+            return true;
+        }
+        // service worker hashes have already been checked, if needed.
+        // removing them from hashes map to prevent other unnecessary checks
+        ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY))
+                .remove(SERVICE_WORKER_FILES);
 
         if (!BundleValidationUtil.frontendImportsFound(statsJson, options)) {
             UsageStatistics.markAsUsed(
@@ -950,6 +965,49 @@ public final class BundleValidationUtil {
             getLogger().info(
                     "The bundle's service worker uses offline path {}, but the application asks for {}.",
                     bundleOfflinePath, offlinePath);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks whether the service worker in the frontend folder differs from the
+     * one the bundle was built with.
+     * <p>
+     * A {@code sw.ts} or {@code sw.js} in the frontend folder replaces the
+     * default service worker. It is built separately from the application's
+     * modules, so none of the import checks look at it, and adding, changing or
+     * removing it only reaches the application through a new bundle. Only that
+     * file is compared, not the modules it imports.
+     */
+    private static boolean customServiceWorkerChanged(Options options,
+            JsonNode statsJson,
+            FrontendDependenciesScanner frontendDependencies)
+            throws IOException {
+        PwaConfiguration pwaConfiguration = frontendDependencies
+                .getPwaConfiguration();
+        if (pwaConfiguration == null || !pwaConfiguration.isOfflineEnabled()) {
+            // Without offline support no service worker is built, so the
+            // bundle does not depend on its source.
+            return false;
+        }
+        JsonNode frontendHashes = statsJson.get(FRONTEND_HASHES_STATS_KEY);
+        List<String> faultyContent = new ArrayList<>();
+        for (String serviceWorkerFile : SERVICE_WORKER_FILES) {
+            File serviceWorker = new File(options.getFrontendDirectory(),
+                    serviceWorkerFile);
+            if (serviceWorker.exists()) {
+                compareFrontendHashes(frontendHashes, faultyContent,
+                        serviceWorkerFile,
+                        Files.readString(serviceWorker.toPath()));
+            } else if (frontendHashes.has(serviceWorkerFile)) {
+                getLogger().info("Detected deleted {} file", serviceWorkerFile);
+                return true;
+            }
+        }
+        if (!faultyContent.isEmpty()) {
+            logChangedFiles(faultyContent,
+                    "Detected changed content for frontend files:");
             return true;
         }
         return false;
