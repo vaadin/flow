@@ -88,7 +88,9 @@ public class TestBenchHelpers extends ParallelTest {
      * Simulate DnD of {@code source} element into the {@code target} element.
      *
      * @param source
+     *            the element to drag
      * @param target
+     *            the element to drop on
      */
     public void dragAndDrop(WebElement source, WebElement target) {
         getCommandExecutor().executeScript(LazyDndSimulationLoad.DND_SCRIPT,
@@ -99,6 +101,7 @@ public class TestBenchHelpers extends ParallelTest {
      * Simulate only a drag of {@code source}.
      *
      * @param source
+     *            the element to drag
      */
     public void drag(WebElement source) {
         getCommandExecutor().executeScript(LazyDndSimulationLoad.DND_SCRIPT,
@@ -110,7 +113,9 @@ public class TestBenchHelpers extends ParallelTest {
      * element.
      *
      * @param source
+     *            the element to drag
      * @param target
+     *            the element to drag over
      */
     public void dragElementOver(WebElement source, WebElement target) {
         getCommandExecutor().executeScript(LazyDndSimulationLoad.DND_SCRIPT,
