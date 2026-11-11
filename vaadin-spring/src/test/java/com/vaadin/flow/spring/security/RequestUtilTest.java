@@ -29,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -768,27 +769,31 @@ class RequestUtilTest {
         assertFalse(authorizationResult.isGranted());
     }
 
-    @Test
-    void authorizeHillaRoute_customRolePrefix_granted() {
+    @ParameterizedTest
+    @CsvSource(value = { "CUSTOM_,foo,CUSTOM_foo,ROLE_foo",
+            "CUSTOM_,CUSTOM_foo,CUSTOM_foo,ROLE_foo", "'',foo,foo,ROLE_foo" })
+    void authorizeHillaRoute_configuredRolePrefix_used(String rolePrefix,
+            String allowedRole, String grantedAuthority,
+            String deniedAuthority) {
         MockHttpServletRequest request = createRequest("/hilla", null);
         when(fileRouterRequestUtil.isSecuredRoute(request)).thenReturn(true);
         when(fileRouterRequestUtil.getAllowedAuthorities(request))
-                .thenReturn(Set.of("foo"));
+                .thenReturn(Set.of(allowedRole));
         var originalHolder = ReflectionTestUtils.getField(requestUtil,
                 "rolePrefixHolder");
         ReflectionTestUtils.setField(requestUtil, "rolePrefixHolder",
-                new VaadinRolePrefixHolder("CUSTOM_"));
+                new VaadinRolePrefixHolder(rolePrefix));
         try {
             assertTrue(requestUtil
                     .authorizeHillaRoute(
                             () -> new TestingAuthenticationToken("user", "pass",
-                                    "CUSTOM_foo"),
+                                    grantedAuthority),
                             new RequestAuthorizationContext(request))
                     .isGranted());
             assertFalse(requestUtil
                     .authorizeHillaRoute(
                             () -> new TestingAuthenticationToken("user", "pass",
-                                    "ROLE_foo"),
+                                    deniedAuthority),
                             new RequestAuthorizationContext(request))
                     .isGranted());
         } finally {
