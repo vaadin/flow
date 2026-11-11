@@ -30,3 +30,4 @@ mvn verify -pl flow-tests/test-csp-strict \
 | Navigation through a router link | `routing.NavigationView` | `NavigationIT` |
 | Click listener with event data, element listener with an event data property path | `dom.ClickView` | `ClickIT` |
 | Keyboard shortcut | `components.ShortcutView` | `ShortcutIT` |
+| Server push from a background thread, over the default transport (WebSocket) | `push.PushView` | `PushIT` |
