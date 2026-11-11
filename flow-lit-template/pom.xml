@@ -12,7 +12,7 @@
   <description>${project.name}</description>
 
   <properties>
-    <jpms.module.name>com.vaadin.flow.component.littemplate</jpms.module.name>
+    <jpms.module.name>com.vaadin.flow.lit.template</jpms.module.name>
   </properties>
 
   <dependencies>

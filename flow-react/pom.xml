@@ -13,7 +13,7 @@
   <description>${project.name}</description>
 
   <properties>
-    <jpms.module.name>com.vaadin.flow.component.react</jpms.module.name>
+    <jpms.module.name>com.vaadin.flow.react</jpms.module.name>
   </properties>
 
   <dependencies>

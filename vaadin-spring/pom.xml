@@ -14,7 +14,7 @@
   <description>Provides Spring integration for Vaadin applications.</description>
 
   <properties>
-    <jpms.module.name>com.vaadin.flow.spring</jpms.module.name>
+    <jpms.module.name>com.vaadin.spring</jpms.module.name>
     <jandex.skip>true</jandex.skip>
   </properties>
 

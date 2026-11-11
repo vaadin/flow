@@ -13,7 +13,7 @@
   <description>${project.name}</description>
 
   <properties>
-    <jpms.module.name>com.vaadin.flow.server.webpush</jpms.module.name>
+    <jpms.module.name>com.vaadin.flow.webpush</jpms.module.name>
   </properties>
 
   <dependencies>
