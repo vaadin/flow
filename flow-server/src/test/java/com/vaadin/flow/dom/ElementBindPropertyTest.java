@@ -35,6 +35,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JacksonUtilsTest;
+import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementListenersTest;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
@@ -987,9 +988,13 @@ class ElementBindPropertyTest extends SignalsUnitTest {
                     counter.incrementAndGet();
                 });
 
+        collectPropertyChanges(component.getElement());
+
         emulateClientUpdate(component.getElement(), "prop", "bar");
         assertEquals("BAR", eventValue.get());
         assertEquals(1, counter.get());
+        assertEquals(Map.of("prop", "BAR"),
+                collectPropertyChanges(component.getElement()));
     }
 
     @Test
@@ -1005,9 +1010,16 @@ class ElementBindPropertyTest extends SignalsUnitTest {
                     fail("Property change listener should not be triggered with a no-op callback");
                 });
 
+        collectPropertyChanges(component.getElement());
+
         // With a no-op callback, value is not changed and event should not be
         // triggered
         emulateClientUpdate(component.getElement(), "prop", "bar");
+
+        // The client shows "bar", so it has to be told to go back to "foo"
+        assertEquals("foo", component.getElement().getProperty("prop"));
+        assertEquals(Map.of("prop", "foo"),
+                collectPropertyChanges(component.getElement()));
     }
 
     @Test
@@ -1056,11 +1068,14 @@ class ElementBindPropertyTest extends SignalsUnitTest {
             signal.set((String) notAString);
         });
         rejectPropertyChanges(component.getElement());
+        collectPropertyChanges(component.getElement());
 
         emulateClientUpdate(component.getElement(), "prop", "bar");
 
         assertEquals("foo", signal.peek());
         assertEquals("foo", component.getElement().getProperty("prop"));
+        assertEquals(Map.of("prop", "foo"),
+                collectPropertyChanges(component.getElement()));
     }
 
     @Test
@@ -1105,6 +1120,20 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         ObjectNode json = JacksonUtils.createObjectNode();
         json.put("evil", true);
         return json;
+    }
+
+    private Map<String, Object> collectPropertyChanges(Element element) {
+        ElementPropertyMap propertyMap = ElementPropertyMap
+                .getModel(element.getNode());
+        Map<String, Object> changes = new HashMap<>();
+        UI.getCurrent().getInternals().getStateTree().collectChanges(change -> {
+            if (change instanceof MapPutChange put
+                    && put.getFeature() == propertyMap.getClass()
+                    && put.getNode() == element.getNode()) {
+                changes.put(put.getKey(), put.getValue());
+            }
+        });
+        return changes;
     }
 
     private void emulateClientUpdate(Element element, String property,

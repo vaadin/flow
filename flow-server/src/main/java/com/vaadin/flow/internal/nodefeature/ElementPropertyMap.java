@@ -669,12 +669,18 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
             Serializable resolvedValue = writeSignalValue(key, value, binding);
 
-            // never trigger change event here since the change event will be
-            // triggered by the signal update
-            Serializable oldValue = super.put(key,
-                    new InternalSignalBinding(binding.signal(), resolvedValue,
-                            binding.writeCallback()),
-                    false);
+            // Never fire a property change event here: if the signal value
+            // changed, the signal's own effect fires it.
+            Serializable oldValue = super.put(key, new InternalSignalBinding(
+                    binding.signal(), value, binding.writeCallback()), false);
+            if (!Objects.equals(resolvedValue, value)) {
+                // The client keeps showing its own value unless told
+                // otherwise. A write callback that leaves the signal unchanged
+                // runs no effect, so the signal value has to be queued for the
+                // client here.
+                super.put(key, new InternalSignalBinding(binding.signal(),
+                        resolvedValue, binding.writeCallback()), true);
+            }
             putResult = new PutResult(oldValue, null);
 
         } else {
