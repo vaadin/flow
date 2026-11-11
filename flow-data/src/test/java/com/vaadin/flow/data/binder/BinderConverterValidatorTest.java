@@ -763,7 +763,8 @@ class BinderConverterValidatorTest
     void withNullSafeConverter_nullRepresentationMapsToNullAndBack() {
         ageField.setValue("stale");
         binder.forField(ageField)
-                .withNullSafeConverter(Integer::valueOf, String::valueOf, "")
+                .withNullSafeConverter(Integer::valueOf, String::valueOf,
+                        Exception::getMessage, "")
                 .bind(Person::getSalary, Person::setSalary);
         binder.setBean(item);
         assertEquals("", ageField.getValue());
@@ -780,11 +781,11 @@ class BinderConverterValidatorTest
     }
 
     @Test
-    void withNullSafeConverter_conversionFails_usesGivenErrorMessage() {
+    void withNullSafeConverter_conversionFails_showsErrorMessage() {
         item.setBirthDate(LocalDate.of(2003, 7, 14));
         binder.forField(nameField)
                 .withNullSafeConverter(LocalDate::parse, LocalDate::toString,
-                        "Invalid date", "")
+                        exception -> "Invalid date", "")
                 .bind(Person::getBirthDate, Person::setBirthDate);
         binder.setBean(item);
         assertEquals("2003-07-14", nameField.getValue());

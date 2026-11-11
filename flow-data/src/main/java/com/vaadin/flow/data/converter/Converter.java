@@ -232,7 +232,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      * to handle either case.
      * <p>
      * When binding with mapping functions rather than an existing converter,
-     * {@link BindingBuilder#withNullSafeConverter(SerializableFunction, SerializableFunction, Object)}
+     * {@link BindingBuilder#withNullSafeConverter(SerializableFunction, SerializableFunction, SerializableFunction, Object)}
      * does the same in one call.
      * <p>
      * Example use:
@@ -259,7 +259,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      * @return a converter that maps {@code nullRepresentation} to null and back
      * @see #nullSafeConverter(Converter)
      * @see BindingBuilder#withNullSafeConverter(SerializableFunction,
-     *      SerializableFunction, Object)
+     *      SerializableFunction, SerializableFunction, Object)
      * @see BindingBuilder#withNullRepresentation(Object)
      */
     static <P, M> Converter<P, M> nullSafeConverter(Converter<P, M> converter,
