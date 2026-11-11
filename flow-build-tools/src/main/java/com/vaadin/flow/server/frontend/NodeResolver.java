@@ -183,7 +183,9 @@ class NodeResolver implements java.io.Serializable {
      * Checks that a globally installed Node.js is one that Flow is tested
      * against: at least {@link FrontendTools#SUPPORTED_NODE_VERSION} and at
      * most {@link FrontendTools#MAX_SUPPORTED_NODE_MAJOR_VERSION}, which is the
-     * long-term support line Flow is built on.
+     * long-term support line Flow is built on. A newer version is rejected with
+     * a warning that tells how to use it anyway through
+     * {@link InitParameters#NODE_FOLDER}.
      *
      * @param version
      *            the version of the globally installed Node.js
@@ -202,11 +204,11 @@ class NodeResolver implements java.io.Serializable {
 
         if (version
                 .getMajorVersion() > FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION) {
-            getLogger().info(
-                    "The globally installed Node.js version {}.x is newer than the maximum supported version {}.x and may not be compatible. Using Node.js from {}.",
+            getLogger().warn(
+                    "The globally installed Node.js version {}.x is newer than the maximum supported version {}.x and may not be compatible. Using Node.js from {}. To use the newer Node.js anyway, at your own risk, set the '{}' property to the folder that contains it.",
                     version.getMajorVersion(),
                     FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION,
-                    alternativeDir);
+                    alternativeDir, InitParameters.NODE_FOLDER);
             return false;
         }
 

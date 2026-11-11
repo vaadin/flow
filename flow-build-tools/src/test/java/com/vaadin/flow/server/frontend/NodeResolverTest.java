@@ -29,10 +29,17 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.Platform;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.NodeResolver.ActiveNodeInstallation;
 import com.vaadin.flow.testutil.FrontendStubs;
 
@@ -169,6 +176,33 @@ class NodeResolverTest {
                 resolver.isSupportedGlobalVersion(
                         new FrontendVersion(maximumMajor + 1, 0, 0)),
                 "A version newer than the maximum major version should be rejected");
+    }
+
+    @Test
+    void globalNode_newerThanMaximum_warnsHowToUseItAnyway() {
+        NodeResolver resolver = resolver(VERSION);
+        int newerMajor = FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION + 1;
+        Logger logger = Mockito.spy(Logger.class);
+
+        try (MockedStatic<LoggerFactory> loggerFactory = Mockito
+                .mockStatic(LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
+            loggerFactory
+                    .when(() -> LoggerFactory.getLogger(NodeResolver.class))
+                    .thenReturn(logger);
+            resolver.isSupportedGlobalVersion(
+                    new FrontendVersion(newerMajor, 0, 0));
+        }
+
+        ArgumentCaptor<Object[]> arguments = ArgumentCaptor
+                .forClass(Object[].class);
+        Mockito.verify(logger).warn(
+                ArgumentMatchers.contains("newer than the maximum"),
+                arguments.capture());
+        List<Object> values = List.of(arguments.getValue());
+        assertTrue(values.contains(newerMajor),
+                "The warning should name the global Node.js version");
+        assertTrue(values.contains(InitParameters.NODE_FOLDER),
+                "The warning should name the property that opts in to the global Node.js");
     }
 
     private ActiveNodeInstallation resolve(String nodeVersion) {
