@@ -235,6 +235,9 @@ public class ReflectionCache<C, T> {
      * Clears mappings for give type from all reflection caches and related
      * resources.
      * 
+     * @param type
+     *            the type to clear the mappings for, or {@code null} to clear
+     *            all mappings
      * @since 25.0
      */
     public static void clearAll(Class<?> type) {

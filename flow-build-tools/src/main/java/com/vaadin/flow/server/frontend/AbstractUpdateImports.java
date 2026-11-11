@@ -580,15 +580,13 @@ abstract class AbstractUpdateImports implements Runnable {
                         && !module.startsWith(
                                 ApplicationConstants.BASE_PROTOCOL_PREFIX))
                 .filter(module -> !UrlUtil.isExternal(module))
-                .map(module -> resolveResource(module))
-                .collect(Collectors.toList());
+                .map(module -> resolveResource(module)).toList();
     }
 
     private Collection<? extends String> resolveGeneratedModules(
             Collection<String> generatedModules) {
         return generatedModules.stream()
-                .map(module -> resolveGeneratedModule(module))
-                .collect(Collectors.toList());
+                .map(module -> resolveGeneratedModule(module)).toList();
     }
 
     String resolveGeneratedModule(String module) {
@@ -824,8 +822,7 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private List<String> getModuleLines(Collection<String> modules) {
         return getUniqueEs6ImportPaths(modules).stream()
-                .map(path -> String.format(IMPORT_TEMPLATE, path))
-                .collect(Collectors.toList());
+                .map(path -> String.format(IMPORT_TEMPLATE, path)).toList();
     }
 
     private boolean frontendFileExists(String jsImport) {
@@ -1051,7 +1048,7 @@ abstract class AbstractUpdateImports implements Runnable {
                         }
                         return normalizePath(
                                 resolvedPath.replaceAll("\\\\", "/"));
-                    }).filter(Objects::nonNull).collect(Collectors.toList()));
+                    }).filter(Objects::nonNull).toList());
         }
         List<String> resolvedPaths = resolvedImportPathsCache.get(filePath);
 
