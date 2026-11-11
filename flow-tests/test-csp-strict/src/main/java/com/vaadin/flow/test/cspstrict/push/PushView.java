@@ -15,38 +15,11 @@
  */
 package com.vaadin.flow.test.cspstrict.push;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 
 /**
- * A server push: the click starts a background task that updates the page after
- * the response to the click is sent, so the update can only reach the browser
- * over the push connection. Push is enabled for the whole application, see
- * {@code Application}.
+ * Server push over the default transport, WebSocket.
  */
 @Route("push")
-public class PushView extends Div {
-
-    private static final int DELAY_MS = 500;
-
-    public PushView() {
-        Span pushed = new Span("waiting");
-        pushed.setId("pushed");
-        NativeButton start = new NativeButton("Start", click -> {
-            UI ui = click.getSource().getUI().orElseThrow();
-            CompletableFuture.runAsync(
-                    () -> ui.access(
-                            () -> pushed.setText("Pushed under the policy")),
-                    CompletableFuture.delayedExecutor(DELAY_MS,
-                            TimeUnit.MILLISECONDS));
-        });
-        start.setId("start");
-        add(start, pushed);
-    }
+public class PushView extends AbstractPushView {
 }

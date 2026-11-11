@@ -15,18 +15,11 @@
  */
 package com.vaadin.flow.test.cspstrict.push;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.junit.jupiter.api.Assertions;
 
-import com.vaadin.flow.component.html.testbench.NativeButtonElement;
-import com.vaadin.flow.test.cspstrict.AbstractCspStrictIT;
 import com.vaadin.testbench.BrowserTest;
 
-/**
- * The push client is loaded and connects under the policy, and an update made
- * by a background thread reaches the page.
- */
-public class PushIT extends AbstractCspStrictIT {
+public class PushIT extends AbstractPushIT {
 
     @Override
     protected String getTestPath() {
@@ -34,13 +27,13 @@ public class PushIT extends AbstractCspStrictIT {
     }
 
     @BrowserTest
-    public void backgroundUpdate_reachesThePage() {
+    public void backgroundUpdate_reachesThePageOverWebSocket() {
         open();
 
-        $(NativeButtonElement.class).id("start").click();
+        startAndWaitForPush();
 
-        waitUntil(ExpectedConditions.textToBe(By.id("pushed"),
-                "Pushed under the policy"));
+        Assertions.assertEquals("websocket", getPushTransports(),
+                "Push should only use WebSocket, without falling back to long polling");
         assertNoCspViolations();
     }
 }
