@@ -24,8 +24,8 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 
 /**
- * A keyboard shortcut: the registration builds the key filter at runtime, which
- * the strict mode rejects until the shortcut listener is declared.
+ * A keyboard shortcut, whose key filter is sent as a declared snippet with the
+ * key and the modifiers as its values.
  */
 @Route("shortcut")
 public class ShortcutView extends Div {

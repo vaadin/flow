@@ -15,13 +15,11 @@
  */
 package com.vaadin.flow.test.cspstrict.dom;
 
-import org.junit.jupiter.api.Disabled;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.test.cspstrict.AbstractCspStrictIT;
 import com.vaadin.testbench.BrowserTest;
 
-@Disabled(AbstractCspStrictIT.NO_UI_IN_STRICT_MODE)
 public class FocusIT extends AbstractCspStrictIT {
 
     @Override
