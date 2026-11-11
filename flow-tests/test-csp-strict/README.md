@@ -30,4 +30,6 @@ mvn verify -pl flow-tests/test-csp-strict \
 | Navigation through a router link | `routing.NavigationView` | `NavigationIT` |
 | Click listener with event data, element listener with an event data property path | `dom.ClickView` | `ClickIT` |
 | Keyboard shortcut | `components.ShortcutView` | `ShortcutIT` |
-| Server push from a background thread, over the default transport (WebSocket) | `push.PushView` | `PushIT` |
+| Server push from a background thread over WebSocket, the default transport, with no fallback | `push.PushView` | `PushIT` |
+| Server push from a background thread over long polling | `push.LongPollingPushView` | `LongPollingPushIT` |
+| Navigation to a view whose frontend module is in a lazy chunk | `chunk.LazyChunkView` | `LazyChunkIT` |
