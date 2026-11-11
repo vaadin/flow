@@ -39,6 +39,7 @@ class InputTest extends ComponentTest {
         whitelistProperty("valueChangeTimeout");
         whitelistProperty("inputMode");
         whitelistProperty("name");
+        whitelistProperty("autocomplete");
         super.setup();
     }
 
@@ -73,6 +74,29 @@ class InputTest extends ComponentTest {
         input.setName(null);
         assertNull(input.getName());
         assertNull(input.getElement().getAttribute("name"));
+    }
+
+    @Test
+    void setAutocomplete_getAutocomplete() {
+        Input input = new Input();
+        assertNull(input.getAutocomplete());
+
+        input.setAutocomplete("current-password");
+        assertEquals("current-password", input.getAutocomplete());
+        assertEquals("current-password",
+                input.getElement().getAttribute("autocomplete"));
+
+        input.setAutocomplete(null);
+        assertNull(input.getAutocomplete());
+        assertNull(input.getElement().getAttribute("autocomplete"));
+    }
+
+    @Test
+    void setRequiredIndicatorVisible_setsNativeRequiredProperty() {
+        Input input = new Input();
+        input.setRequiredIndicatorVisible(true);
+        // the browser blocks a form submit while a required input is empty
+        assertEquals(true, input.getElement().getProperty("required", false));
     }
 
     @Override

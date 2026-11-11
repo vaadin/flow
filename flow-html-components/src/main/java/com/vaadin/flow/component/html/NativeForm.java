@@ -77,9 +77,13 @@ import com.vaadin.flow.signals.Signal;
  * <pre>
  * Input username = new Input();
  * username.setName("username");
+ * username.setAutocomplete("username");
+ * username.setRequiredIndicatorVisible(true);
  * Input password = new Input();
  * password.setType("password");
  * password.setName("password");
+ * password.setAutocomplete("current-password");
+ * password.setRequiredIndicatorVisible(true);
  * // Keep the password out of the Vaadin session, see below
  * password.setValueChangeMode(null);
  * NativeButton submit = new NativeButton("Log in");
@@ -88,6 +92,11 @@ import com.vaadin.flow.signals.Signal;
  * NativeForm form = new NativeForm(username, password, submit);
  * form.setAction("login");
  * </pre>
+ * <p>
+ * {@link Input#setRequiredIndicatorVisible(boolean)} sets the native
+ * {@code required} flag, so the browser does not submit the form while such an
+ * input is empty, and {@link Input#setAutocomplete(String)} helps password
+ * managers fill in a login form.
  * <p>
  * An {@link Input} sends its value to the server on every change by default, so
  * the value is also kept in the component state of the Vaadin session, which

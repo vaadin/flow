@@ -136,6 +136,33 @@ public class Input extends AbstractSinglePropertyField<Input, String>
     }
 
     /**
+     * Sets the autocomplete hint of this input, which tells the browser and
+     * password managers what kind of value the field expects, such as
+     * {@code "username"}, {@code "current-password"}, {@code "new-password"},
+     * {@code "email"} or {@code "off"}.
+     *
+     * @param autocomplete
+     *            the space-separated autocomplete tokens, or {@code null} to
+     *            remove the attribute
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/autocomplete">The
+     *      autocomplete attribute (MDN)</a>
+     */
+    public void setAutocomplete(@Nullable String autocomplete) {
+        getElement().setAttribute("autocomplete", autocomplete);
+    }
+
+    /**
+     * Gets the autocomplete hint of this input.
+     *
+     * @return the autocomplete tokens, or {@code null} if not set
+     * @see #setAutocomplete(String)
+     */
+    public @Nullable String getAutocomplete() {
+        return getElement().getAttribute("autocomplete");
+    }
+
+    /**
      * Sets the {@link InputMode} that hints at the type of virtual keyboard to
      * display when the user interacts with the field on a mobile device. If not
      * set, the browser defaults to {@link InputMode#TEXT}.
