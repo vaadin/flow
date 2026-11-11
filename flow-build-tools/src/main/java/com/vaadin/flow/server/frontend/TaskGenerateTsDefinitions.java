@@ -63,6 +63,17 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
             ****************************************************************************"
 
             """;
+    static final String CSS_IMPORTS_MESSAGE = """
+            The customized TypeScript type declaration file 'types.d.ts' does \
+            not declare CSS imports, so TypeScript 6 or later reports errors \
+            for imports such as `import './view.css'`. Add these declarations \
+            to the file:
+
+            %s
+            """;
+
+    static boolean cssImportsMessageEmitted = false;
+
     /**
      * Keeps track of whether a warning update has already been logged. This is
      * used to avoid spamming the log with the same message.
@@ -184,6 +195,8 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
                 }
             } else if (containsExactCssModule && containsExactCssTypeModule) {
                 log().debug("{} is up-to-date", TS_DEFINITIONS);
+                logIfCssImportsNotDeclared(content, uncommentedDefaultContent,
+                        requiredContent);
             } else if (containsCssModule && !containsExactCssModule) {
                 log().debug(
                         "Custom {} not updated because it contains '*.css?inline' module declaration",
@@ -245,6 +258,8 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
                             log().warn(UPDATE_MESSAGE);
                             warningEmitted = true;
                         }
+                        logIfCssImportsNotDeclared(content,
+                                uncommentedDefaultContent, requiredContent);
                     }
                     track(tsDefinitions);
                 } catch (IOException ex) {
@@ -303,6 +318,17 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
         // required by flow. Append what is needed and throw an exception so
         // that developer can check the changes are ok
         return UpdateMode.UPDATE_AND_BACKUP;
+    }
+
+    private static void logIfCssImportsNotDeclared(String content,
+            String uncommentedDefaultContent, String requiredContent) {
+        if (!cssImportsMessageEmitted
+                && !content.contains("declare module '*.css'")) {
+            log().info(
+                    String.format(CSS_IMPORTS_MESSAGE, uncommentedDefaultContent
+                            .replace(requiredContent, "").strip()));
+            cssImportsMessageEmitted = true;
+        }
     }
 
     private static String removeComments(String content) {

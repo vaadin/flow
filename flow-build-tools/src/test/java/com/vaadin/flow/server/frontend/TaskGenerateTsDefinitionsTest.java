@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,6 +60,7 @@ class TaskGenerateTsDefinitionsTest {
 
         taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(options);
         taskGenerateTsDefinitions.warningEmitted = false;
+        TaskGenerateTsDefinitions.cssImportsMessageEmitted = false;
     }
 
     @Test
@@ -222,6 +224,13 @@ class TaskGenerateTsDefinitionsTest {
                 containsString(stripEmptyLines(readRequiredContent())));
         assertThat("types.d.ts should contain original content", updatedContent,
                 containsString(hillaTsDef));
+        assertEquals(1,
+                updatedContent.split(
+                        Pattern.quote("declare module '*.module.css'"),
+                        -1).length - 1,
+                "CSS modules should be declared only once");
+        assertFalse(updatedContent.contains("declare module '*.css' {}"),
+                "CSS imports declared by Hilla should not be declared again");
     }
 
     @Test
@@ -297,8 +306,10 @@ class TaskGenerateTsDefinitionsTest {
         String updatedContent = Files.readString(typesTSfile);
         assertThat("types.d.ts should have been updated", updatedContent,
                 containsString(readRequiredContent()));
-        assertFalse(updatedContent.contains("declare module '*.module.css'"),
-                "Optional declarations should not be added to a custom types.d.ts");
+        assertEquals(originalContent + readRequiredContent(), updatedContent,
+                "Only the required declarations should be added to a custom types.d.ts");
+        assertTrue(logger.getLogs().contains("declare module '*.css' {}"),
+                "Missing CSS import declarations should be logged");
         assertBackupFileCreated(originalContent);
     }
 
@@ -522,6 +533,12 @@ class TaskGenerateTsDefinitionsTest {
         ExecutionFailedException exception = assertThrows(
                 ExecutionFailedException.class,
                 taskGenerateTsDefinitions::execute);
+        assertThat(exception.getMessage(),
+                containsString("declare module 'csstype'"));
+        assertFalse(
+                exception.getMessage()
+                        .contains("declare module '*.module.css'"),
+                "Only the required declarations should be listed");
         assertThat(exception.getMessage(),
                 containsString(TaskGenerateTsDefinitions.CHECK_CONTENT_MESSAGE
                         .substring(0,
