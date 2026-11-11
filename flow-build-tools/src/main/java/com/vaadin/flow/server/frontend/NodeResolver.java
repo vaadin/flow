@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.internal.FrontendVersion;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.installer.InstallationException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
@@ -184,8 +185,8 @@ class NodeResolver implements java.io.Serializable {
      * against: at least {@link FrontendTools#SUPPORTED_NODE_VERSION} and at
      * most {@link FrontendTools#MAX_SUPPORTED_NODE_MAJOR_VERSION}, which is the
      * long-term support line Flow is built on. A newer version is rejected with
-     * a warning that tells how to use it anyway through
-     * {@link InitParameters#NODE_FOLDER}.
+     * a warning that tells how to use it anyway through the
+     * {@link InitParameters#NODE_FOLDER} setting.
      *
      * @param version
      *            the version of the globally installed Node.js
@@ -208,7 +209,8 @@ class NodeResolver implements java.io.Serializable {
                     "The globally installed Node.js version {}.x is newer than the maximum supported version {}.x and may not be compatible. Using Node.js from {}. To use the newer Node.js anyway, at your own risk, set the '{}' property to the folder that contains it.",
                     version.getMajorVersion(),
                     FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION,
-                    alternativeDir, InitParameters.NODE_FOLDER);
+                    alternativeDir,
+                    Constants.VAADIN_PREFIX + InitParameters.NODE_FOLDER);
             return false;
         }
 

@@ -30,15 +30,16 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.Platform;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.NodeResolver.ActiveNodeInstallation;
 import com.vaadin.flow.testutil.FrontendStubs;
@@ -193,16 +194,21 @@ class NodeResolverTest {
                     new FrontendVersion(newerMajor, 0, 0));
         }
 
+        ArgumentCaptor<String> format = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<Object[]> arguments = ArgumentCaptor
                 .forClass(Object[].class);
-        Mockito.verify(logger).warn(
-                ArgumentMatchers.contains("newer than the maximum"),
-                arguments.capture());
-        List<Object> values = List.of(arguments.getValue());
-        assertTrue(values.contains(newerMajor),
-                "The warning should name the global Node.js version");
-        assertTrue(values.contains(InitParameters.NODE_FOLDER),
-                "The warning should name the property that opts in to the global Node.js");
+        Mockito.verify(logger).warn(format.capture(), arguments.capture());
+        String message = MessageFormatter
+                .arrayFormat(format.getValue(), arguments.getValue())
+                .getMessage();
+        assertTrue(message.contains("version " + newerMajor + ".x"),
+                "The warning should name the global Node.js version: "
+                        + message);
+        assertTrue(
+                message.contains("set the '" + Constants.VAADIN_PREFIX
+                        + InitParameters.NODE_FOLDER + "' property"),
+                "The warning should tell how to use the global Node.js anyway: "
+                        + message);
     }
 
     private ActiveNodeInstallation resolve(String nodeVersion) {
