@@ -64,6 +64,8 @@ class NodeResolverTest {
      */
     private static final String OUTDATED_VERSION = "v18.14.1";
 
+    private static final File GLOBAL_NODE_FOLDER = new File("/opt/node/bin");
+
     private static final Instant LONG_AGO = Instant.now()
             .minus(Duration.ofDays(400));
     private static final Instant RECENTLY = Instant.now()
@@ -152,13 +154,13 @@ class NodeResolverTest {
     void globalNode_versionsInTheSupportedRangeAreAccepted() {
         NodeResolver resolver = resolver(VERSION);
 
-        assertTrue(
-                resolver.isSupportedGlobalVersion(
-                        FrontendTools.SUPPORTED_NODE_VERSION),
+        assertTrue(resolver.isSupportedGlobalVersion(
+                FrontendTools.SUPPORTED_NODE_VERSION, GLOBAL_NODE_FOLDER),
                 "The minimum supported version should be accepted");
         assertTrue(
                 resolver.isSupportedGlobalVersion(new FrontendVersion(
-                        FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION, 99, 0)),
+                        FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION, 99, 0),
+                        GLOBAL_NODE_FOLDER),
                 "A later release of the maximum supported major version should be accepted");
     }
 
@@ -171,11 +173,13 @@ class NodeResolverTest {
 
         assertFalse(
                 resolver.isSupportedGlobalVersion(
-                        new FrontendVersion(minimumMajor - 1, 99, 0)),
+                        new FrontendVersion(minimumMajor - 1, 99, 0),
+                        GLOBAL_NODE_FOLDER),
                 "A version older than the minimum should be rejected");
         assertFalse(
                 resolver.isSupportedGlobalVersion(
-                        new FrontendVersion(maximumMajor + 1, 0, 0)),
+                        new FrontendVersion(maximumMajor + 1, 0, 0),
+                        GLOBAL_NODE_FOLDER),
                 "A version newer than the maximum major version should be rejected");
     }
 
@@ -200,6 +204,9 @@ class NodeResolverTest {
                 message.contains("set the '" + Constants.VAADIN_PREFIX
                         + InitParameters.NODE_FOLDER + "' property"),
                 "The warning should tell how to use the global Node.js anyway: "
+                        + message);
+        assertTrue(message.endsWith(GLOBAL_NODE_FOLDER.getAbsolutePath()),
+                "The warning should name the global Node.js folder: "
                         + message);
     }
 
@@ -226,7 +233,7 @@ class NodeResolverTest {
                     .when(() -> LoggerFactory.getLogger(NodeResolver.class))
                     .thenReturn(logger);
             assertFalse(resolver.isSupportedGlobalVersion(
-                    new FrontendVersion(major, 0, 0)));
+                    new FrontendVersion(major, 0, 0), GLOBAL_NODE_FOLDER));
         }
     }
 
