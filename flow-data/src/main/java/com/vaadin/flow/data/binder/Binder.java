@@ -914,6 +914,116 @@ public class Binder<BEAN> implements Serializable {
         }
 
         /**
+         * Maps the binding to another data type using mapping functions that
+         * never receive null or the given {@code nullRepresentation}. If a
+         * value cannot be converted, the message of the thrown exception is
+         * shown as the error message.
+         * <p>
+         * A field value that is null or equal to {@code nullRepresentation}
+         * converts to a null model value, and a null model value converts to
+         * {@code nullRepresentation}. Other values are passed to the mapping
+         * functions. This lets method references that do not accept null, such
+         * as {@code LocalDate::parse}, be used directly.
+         * <p>
+         * Pass the field's empty value as {@code nullRepresentation}, for
+         * example {@code ""} for a text field, so that an empty field becomes a
+         * null model value and a null model value empties the field:
+         * <code>withNullSafeConverter(LocalDate::parse, LocalDate::toString, "")</code>.
+         * For a field whose empty value is null, such as a date picker, pass
+         * null.
+         * <p>
+         * Unlike
+         * {@link #withConverter(SerializableFunction, SerializableFunction)},
+         * the mapping functions do not have to handle null. To wrap an existing
+         * {@link Converter} in the same way, use
+         * {@link Converter#nullSafeConverter(Converter, Object)}.
+         *
+         * @param <NEWTARGET>
+         *            the type to convert to
+         * @param toModel
+         *            the function which can convert from the old target type to
+         *            the new target type, never called with null or
+         *            {@code nullRepresentation}
+         * @param toPresentation
+         *            the function which can convert from the new target type to
+         *            the old target type, never called with null
+         * @param nullRepresentation
+         *            the field value that stands for a null model value; may be
+         *            null
+         * @return this BindingBuilder configured with the appropriate type
+         * @throws IllegalStateException
+         *             if {@code bind} has already been called
+         * @see #withNullSafeConverter(SerializableFunction,
+         *      SerializableFunction, String, Object)
+         */
+        default <NEWTARGET> BindingBuilder<BEAN, NEWTARGET> withNullSafeConverter(
+                SerializableFunction<TARGET, NEWTARGET> toModel,
+                SerializableFunction<NEWTARGET, TARGET> toPresentation,
+                TARGET nullRepresentation) {
+            return withConverter(
+                    Converter.nullSafeConverter(
+                            Converter.from(toModel, toPresentation,
+                                    Throwable::getMessage),
+                            nullRepresentation));
+        }
+
+        /**
+         * Maps the binding to another data type using mapping functions that
+         * never receive null or the given {@code nullRepresentation}, and the
+         * given error message if a value cannot be converted.
+         * <p>
+         * A field value that is null or equal to {@code nullRepresentation}
+         * converts to a null model value, and a null model value converts to
+         * {@code nullRepresentation}. Other values are passed to the mapping
+         * functions. This lets method references that do not accept null, such
+         * as {@code LocalDate::parse}, be used directly.
+         * <p>
+         * Pass the field's empty value as {@code nullRepresentation}, for
+         * example {@code ""} for a text field, so that an empty field becomes a
+         * null model value and a null model value empties the field:
+         * <code>withNullSafeConverter(LocalDate::parse, LocalDate::toString, "Invalid date", "")</code>.
+         * For a field whose empty value is null, such as a date picker, pass
+         * null.
+         * <p>
+         * Unlike
+         * {@link #withConverter(SerializableFunction, SerializableFunction, String)},
+         * the mapping functions do not have to handle null. To wrap an existing
+         * {@link Converter} in the same way, use
+         * {@link Converter#nullSafeConverter(Converter, Object)}.
+         *
+         * @param <NEWTARGET>
+         *            the type to convert to
+         * @param toModel
+         *            the function which can convert from the old target type to
+         *            the new target type, never called with null or
+         *            {@code nullRepresentation}
+         * @param toPresentation
+         *            the function which can convert from the new target type to
+         *            the old target type, never called with null
+         * @param errorMessage
+         *            the error message to use if conversion using
+         *            <code>toModel</code> fails
+         * @param nullRepresentation
+         *            the field value that stands for a null model value; may be
+         *            null
+         * @return this BindingBuilder configured with the appropriate type
+         * @throws IllegalStateException
+         *             if {@code bind} has already been called
+         * @see #withNullSafeConverter(SerializableFunction,
+         *      SerializableFunction, Object)
+         */
+        default <NEWTARGET> BindingBuilder<BEAN, NEWTARGET> withNullSafeConverter(
+                SerializableFunction<TARGET, NEWTARGET> toModel,
+                SerializableFunction<NEWTARGET, TARGET> toPresentation,
+                String errorMessage, TARGET nullRepresentation) {
+            return withConverter(
+                    Converter.nullSafeConverter(
+                            Converter.from(toModel, toPresentation,
+                                    exception -> errorMessage),
+                            nullRepresentation));
+        }
+
+        /**
          * Maps binding value {@code null} to given null representation and back
          * to {@code null} when converting back to model value.
          *

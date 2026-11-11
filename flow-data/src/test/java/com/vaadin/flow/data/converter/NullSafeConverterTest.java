@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Test;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.binder.testcomponents.TestDatePicker;
-import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 
 import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -61,26 +60,6 @@ class NullSafeConverterTest {
                 "-");
         assertEquals("-", showsNothing
                 .convertToPresentation(new ValueObject("hello"), context));
-    }
-
-    @Test
-    void binder_textFieldWithEmptyStringAsNullRepresentation() {
-        var field = new TestTextField();
-        field.setValue("stale");
-        var binder = new Binder<Bean<ValueObject>>();
-        binder.forField(field)
-                .withConverter(Converter.nullSafeConverter(wrapped, ""))
-                .bind(Bean::getValue, Bean::setValue);
-        var bean = new Bean<ValueObject>();
-        binder.setBean(bean);
-        assertEquals("", field.getValue());
-
-        field.setValue("world");
-        assertEquals(new ValueObject("world"), bean.getValue());
-
-        field.setValue("");
-        assertTrue(binder.isValid());
-        assertNull(bean.getValue());
     }
 
     @Test

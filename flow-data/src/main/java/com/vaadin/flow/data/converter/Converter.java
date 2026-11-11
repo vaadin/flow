@@ -231,6 +231,10 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      * null model value empties the field, without the wrapped converter having
      * to handle either case.
      * <p>
+     * When binding with mapping functions rather than an existing converter,
+     * {@link BindingBuilder#withNullSafeConverter(SerializableFunction, SerializableFunction, Object)}
+     * does the same in one call.
+     * <p>
      * Example use:
      *
      * <pre>
@@ -254,6 +258,8 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      *            example {@code ""} for a text field; may be null
      * @return a converter that maps {@code nullRepresentation} to null and back
      * @see #nullSafeConverter(Converter)
+     * @see BindingBuilder#withNullSafeConverter(SerializableFunction,
+     *      SerializableFunction, Object)
      * @see BindingBuilder#withNullRepresentation(Object)
      */
     static <P, M> Converter<P, M> nullSafeConverter(Converter<P, M> converter,

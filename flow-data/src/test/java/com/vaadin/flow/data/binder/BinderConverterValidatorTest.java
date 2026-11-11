@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.binder;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.tests.data.bean.Person;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -755,5 +757,44 @@ class BinderConverterValidatorTest
         assertThrows(ValidationException.class, () -> binder.writeBean(person));
         // Bean should have been updated for item validation but reverted
         assertEquals(0, person.getAge());
+    }
+
+    @Test
+    void withNullSafeConverter_nullRepresentationMapsToNullAndBack() {
+        ageField.setValue("stale");
+        binder.forField(ageField)
+                .withNullSafeConverter(Integer::valueOf, String::valueOf, "")
+                .bind(Person::getSalary, Person::setSalary);
+        binder.setBean(item);
+        assertEquals("", ageField.getValue());
+
+        ageField.setValue("4200");
+        assertEquals(4200, item.getSalary());
+
+        ageField.setValue("");
+        assertTrue(binder.isValid());
+        assertNull(item.getSalary());
+
+        ageField.setValue("lots");
+        assertThat(componentErrors.get(ageField), containsString("lots"));
+    }
+
+    @Test
+    void withNullSafeConverter_conversionFails_usesGivenErrorMessage() {
+        item.setBirthDate(LocalDate.of(2003, 7, 14));
+        binder.forField(nameField)
+                .withNullSafeConverter(LocalDate::parse, LocalDate::toString,
+                        "Invalid date", "")
+                .bind(Person::getBirthDate, Person::setBirthDate);
+        binder.setBean(item);
+        assertEquals("2003-07-14", nameField.getValue());
+
+        nameField.setValue("someday");
+        assertEquals("Invalid date", componentErrors.get(nameField));
+        assertEquals(LocalDate.of(2003, 7, 14), item.getBirthDate());
+
+        nameField.setValue("");
+        assertTrue(binder.isValid());
+        assertNull(item.getBirthDate());
     }
 }
