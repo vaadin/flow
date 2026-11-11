@@ -171,24 +171,27 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         assert !forbiddenProperties.contains(name)
                 : "Forbidden property name: " + name;
 
-        Serializable valueToSet;
-        if (value == null) {
-            valueToSet = JacksonUtils.nullNode();
-        } else if (value instanceof String || value instanceof Number
-                || value instanceof Boolean || value instanceof BaseJsonNode) {
-            valueToSet = (Serializable) value;
-        } else if (value instanceof List) {
-            // List type conversion (return type ArrayNode)
-            valueToSet = JacksonUtils.listToJson((List<?>) value);
-        } else {
-            // Map and Bean/Object types conversion (return type ObjectNode)
-            valueToSet = JacksonUtils.beanToJson(value);
-        }
+        Serializable valueToSet = toPropertyValue(value);
 
         Serializable oldValue = get(name);
         boolean valueChanged = !Objects.equals(oldValue, valueToSet);
         if (valueChanged) {
             setProperty(name, valueToSet, true);
+        }
+    }
+
+    private static Serializable toPropertyValue(Object value) {
+        if (value == null) {
+            return JacksonUtils.nullNode();
+        } else if (value instanceof String || value instanceof Number
+                || value instanceof Boolean || value instanceof BaseJsonNode) {
+            return (Serializable) value;
+        } else if (value instanceof List) {
+            // List type conversion (return type ArrayNode)
+            return JacksonUtils.listToJson((List<?>) value);
+        } else {
+            // Map and Bean/Object types conversion (return type ObjectNode)
+            return JacksonUtils.beanToJson(value);
         }
     }
 
@@ -235,17 +238,20 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
     private Serializable writeSignalValue(String name, Serializable value,
             InternalSignalBinding binding) {
-        AtomicReference<Serializable> resolvedValue = new AtomicReference<>(
-                value);
+        AtomicReference<Object> resolvedValue = new AtomicReference<>(value);
 
         // use new SignalBindingFeature instance to update the signal value
         SignalBindingFeature feat = new SignalBindingFeature(getNode());
         feat.setBinding(SignalBindingFeature.VALUE, binding.signal(),
                 binding.writeCallback());
-        feat.updateSignalByWriteCallback(SignalBindingFeature.VALUE, get(name),
-                value, Objects::equals, resolvedValue::set);
+        // Object rather than Serializable since the signal may hold a value
+        // that is not Serializable, such as a bean
+        feat.<Object> updateSignalByWriteCallback(SignalBindingFeature.VALUE,
+                get(name), value, Objects::equals, resolvedValue::set);
 
-        return resolvedValue.get();
+        // A reverted value comes from the signal as is and may be sent to the
+        // client, so it needs the same conversion as in the signal effect
+        return toPropertyValue(resolvedValue.get());
     }
 
     private class PutResult implements Runnable {

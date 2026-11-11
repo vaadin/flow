@@ -1079,6 +1079,25 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
+    void bindBeanProperty_clientSendsMismatchedValue_signalValueSentToClientAsJson() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        JacksonUtilsTest.Person person = createPerson("Jack", 52, false);
+        ValueSignal<JacksonUtilsTest.Person> signal = new ValueSignal<>(person);
+        // The client always sends JSON, which the typed callback cannot cast
+        // to a Person, so the signal keeps its value
+        component.getElement().bindProperty("prop", signal, signal::set);
+        rejectPropertyChanges(component.getElement());
+        collectPropertyChanges(component.getElement());
+
+        emulateClientUpdate(component.getElement(), "prop", mismatchedJson());
+
+        Map<String, Object> changes = collectPropertyChanges(
+                component.getElement());
+        assertEquals(Map.of("prop", JacksonUtils.beanToJson(person)), changes);
+    }
+
+    @Test
     void bindProperty_clientSendsObjectForErasedLocalSignal_valueAccepted() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
