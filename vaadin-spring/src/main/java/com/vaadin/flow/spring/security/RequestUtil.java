@@ -85,7 +85,6 @@ public class RequestUtil {
     @Autowired
     private ServletRegistrationBean<SpringServlet> springServletRegistration;
 
-    @Autowired(required = false)
     private VaadinRolePrefixHolder rolePrefixHolder;
 
     private WebIconsRequestMatcher webIconsRequestMatcher;
@@ -275,9 +274,13 @@ public class RequestUtil {
         if (rolePrefix == null || rolePrefix.isEmpty()) {
             return roles;
         }
-        return roles.stream().map(
-                role -> role.startsWith(rolePrefix) ? role : rolePrefix + role)
-                .collect(Collectors.toSet());
+        return roles.stream().map(role -> role.startsWith(rolePrefix) ? role
+                : (rolePrefix + role)).collect(Collectors.toSet());
+    }
+
+    @Autowired(required = false)
+    void setRolePrefixHolder(VaadinRolePrefixHolder rolePrefixHolder) {
+        this.rolePrefixHolder = rolePrefixHolder;
     }
 
     private String getRolePrefix() {
