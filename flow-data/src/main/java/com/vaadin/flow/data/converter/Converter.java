@@ -181,17 +181,22 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      * the wrapped converter.
      * <p>
      * Use this for fields whose empty value is null, such as a date picker or a
-     * combo box. For fields whose empty value is not null, such as an empty
-     * string in a text field, use {@link #nullSafeConverter(Converter, Object)}
-     * instead, so the empty value maps to null and back.
+     * combo box. Do not use it for a field that does not accept null, such as a
+     * text field: {@code withConverter} turns off the binder's default null
+     * representation, so a null model value would reach the field as null and
+     * the field would throw. Use {@link #nullSafeConverter(Converter, Object)}
+     * with the field's empty value, such as {@code ""}, instead.
      * <p>
      * Example use:
      *
      * <pre>
      * {@code
-     * Converter<String, LocalDate> converter = Converter
-     *         .nullSafeConverter(Converter.from(LocalDate::parse,
-     *                 LocalDate::toString, Exception::getMessage));
+     * binder.forField(datePicker)
+     *         .withConverter(Converter.nullSafeConverter(Converter.from(
+     *                 date -> date.atStartOfDay(ZoneOffset.UTC).toInstant(),
+     *                 instant -> LocalDate.ofInstant(instant, ZoneOffset.UTC),
+     *                 Exception::getMessage)))
+     *         .bind(Event::getStart, Event::setStart);
      * }
      * </pre>
      *
@@ -214,9 +219,12 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      * <ul>
      * <li>A presentation value that is null or equal to
      * {@code nullRepresentation} converts to a null model value.</li>
-     * <li>A null model value converts to {@code nullRepresentation}.</li>
+     * <li>A null model value, or a null returned by the wrapped converter,
+     * converts to {@code nullRepresentation}.</li>
      * </ul>
-     * Other values are passed to the wrapped converter.
+     * Other values are passed to the wrapped converter. A model value that the
+     * wrapped converter shows as {@code nullRepresentation}, such as a value
+     * object holding an empty string, therefore reads back as null.
      * <p>
      * This is meant for fields whose empty value is not null, such as an empty
      * string in a text field: an empty field becomes a null model value, and a
@@ -254,7 +262,8 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
         return new Converter<P, M>() {
             @Override
             public Result<M> convertToModel(P value, ValueContext context) {
-                if (value == null || value.equals(nullRepresentation)) {
+                if (value == null
+                        || Objects.equals(value, nullRepresentation)) {
                     return Result.ok(null);
                 }
                 return converter.convertToModel(value, context);
@@ -262,8 +271,9 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
 
             @Override
             public P convertToPresentation(M value, ValueContext context) {
-                return value == null ? nullRepresentation
+                P presentation = value == null ? null
                         : converter.convertToPresentation(value, context);
+                return presentation == null ? nullRepresentation : presentation;
             }
         };
     }

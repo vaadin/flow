@@ -15,10 +15,15 @@
  */
 package com.vaadin.flow.data.converter;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValueContext;
+import com.vaadin.flow.data.binder.testcomponents.TestDatePicker;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 
 import static java.util.Objects.requireNonNull;
@@ -38,30 +43,23 @@ class NullSafeConverterTest {
             .from(ValueObject::new, ValueObject::value, Exception::getMessage);
 
     @Test
-    void nullSafeConverter_mapsNullToNullAndDelegatesOtherValues() {
-        var converter = Converter.nullSafeConverter(wrapped);
-        var context = new ValueContext();
-
-        assertNull(convertToModel(converter, null));
-        assertNull(converter.convertToPresentation(null, context));
-        assertEquals(new ValueObject("hello"),
-                convertToModel(converter, "hello"));
-        assertEquals(new ValueObject(""), convertToModel(converter, ""));
-        assertEquals("hello", converter
-                .convertToPresentation(new ValueObject("hello"), context));
-    }
-
-    @Test
-    void nullSafeConverterWithNullRepresentation_mapsItToNullAndBack() {
+    void nullSafeConverter_mapsNullRepresentationToNullAndBack() {
         var converter = Converter.nullSafeConverter(wrapped, "-");
         var context = new ValueContext();
 
         assertNull(convertToModel(converter, "-"));
         assertNull(convertToModel(converter, null));
-        assertEquals("-", converter.convertToPresentation(null, context));
         assertEquals(new ValueObject("hello"),
                 convertToModel(converter, "hello"));
+        assertEquals("-", converter.convertToPresentation(null, context));
         assertEquals("hello", converter
+                .convertToPresentation(new ValueObject("hello"), context));
+
+        var showsNothing = Converter.nullSafeConverter(
+                Converter.<String, ValueObject> from(ValueObject::new,
+                        value -> null, Exception::getMessage),
+                "-");
+        assertEquals("-", showsNothing
                 .convertToPresentation(new ValueObject("hello"), context));
     }
 
@@ -69,11 +67,11 @@ class NullSafeConverterTest {
     void binder_textFieldWithEmptyStringAsNullRepresentation() {
         var field = new TestTextField();
         field.setValue("stale");
-        var binder = new Binder<Bean>();
+        var binder = new Binder<Bean<ValueObject>>();
         binder.forField(field)
                 .withConverter(Converter.nullSafeConverter(wrapped, ""))
                 .bind(Bean::getValue, Bean::setValue);
-        var bean = new Bean();
+        var bean = new Bean<ValueObject>();
         binder.setBean(bean);
         assertEquals("", field.getValue());
 
@@ -85,20 +83,43 @@ class NullSafeConverterTest {
         assertNull(bean.getValue());
     }
 
+    @Test
+    void binder_datePickerWithoutNullRepresentation() {
+        var field = new TestDatePicker();
+        field.setValue(LocalDate.of(2003, 7, 14));
+        var binder = new Binder<Bean<Instant>>();
+        binder.forField(field)
+                .withConverter(Converter.nullSafeConverter(Converter.from(
+                        date -> date.atStartOfDay(ZoneOffset.UTC).toInstant(),
+                        instant -> LocalDate.ofInstant(instant, ZoneOffset.UTC),
+                        Exception::getMessage)))
+                .bind(Bean::getValue, Bean::setValue);
+        var bean = new Bean<Instant>();
+        binder.setBean(bean);
+        assertNull(field.getValue());
+
+        field.setValue(LocalDate.of(2011, 3, 9));
+        assertEquals(Instant.parse("2011-03-09T00:00:00Z"), bean.getValue());
+
+        field.clear();
+        assertTrue(binder.isValid());
+        assertNull(bean.getValue());
+    }
+
     private static ValueObject convertToModel(
             Converter<String, ValueObject> converter, String value) {
         return converter.convertToModel(value, new ValueContext())
                 .getOrThrow(IllegalStateException::new);
     }
 
-    public static class Bean {
-        private ValueObject value;
+    public static class Bean<T> {
+        private T value;
 
-        public ValueObject getValue() {
+        public T getValue() {
             return value;
         }
 
-        public void setValue(ValueObject value) {
+        public void setValue(T value) {
             this.value = value;
         }
     }
