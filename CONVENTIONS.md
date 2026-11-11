@@ -295,8 +295,14 @@ so the names stay consistent across repositories:
   `com.vaadin.flow.server`, `flow-html-components` →
   `com.vaadin.flow.html.components`, `vaadin-spring` → `com.vaadin.spring`,
   `vaadin-quarkus-deployment` → `com.vaadin.quarkus.deployment`).
-- Since an artifact ID is unique within its group, so is the name. Do not
-  hand-pick a different name for a jar, even when it would match its packages.
+- An artifact ID of just `vaadin` gives the group ID alone (`com.vaadin`).
+- Do not hand-pick a different name for a jar, even when it would match its
+  packages.
+
+A name must be unique across all Vaadin jars. The derivation can map two
+artifacts to one name (`vaadin-foo` and `foo`, or `com.vaadin:flow-server` and
+`com.vaadin.flow:server`), so choose the artifact ID of a new jar so that its
+name does not collide with an existing one.
 
 Name the jars that end up in an application's module graph, which includes
 Quarkus deployment jars, because Quarkus resolves them as modules when it builds
