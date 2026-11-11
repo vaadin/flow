@@ -80,12 +80,19 @@ import com.vaadin.flow.signals.Signal;
  * Input password = new Input();
  * password.setType("password");
  * password.setName("password");
+ * // Keep the password out of the Vaadin session, see below
+ * password.setValueChangeMode(null);
  * NativeButton submit = new NativeButton("Log in");
  * submit.setType(NativeButton.Type.SUBMIT);
  *
  * NativeForm form = new NativeForm(username, password, submit);
  * form.setAction("login");
  * </pre>
+ * <p>
+ * An {@link Input} sends its value to the server on every change by default, so
+ * the value is also kept in the component state of the Vaadin session, which
+ * may be serialized. Call {@code setValueChangeMode(null)} on an input for a
+ * password or another secret that only the action URL should receive.
  * <p>
  * Forms can not be nested in HTML; the browser drops the inner
  * <code>&lt;form&gt;</code> tag. Adding a {@code NativeForm} directly to
