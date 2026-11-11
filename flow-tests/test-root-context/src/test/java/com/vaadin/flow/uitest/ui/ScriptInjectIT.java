@@ -16,7 +16,6 @@
 package com.vaadin.flow.uitest.ui;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,7 +31,7 @@ public class ScriptInjectIT extends ChromeBrowserTest {
         open();
         List<WebElement> inputs = findElements(By.xpath("//input")).stream()
                 .filter(element -> "text".equals(element.getAttribute("type")))
-                .collect(Collectors.toList());
+                .toList();
         Assert.assertEquals(ScriptInjectView.values.length, inputs.size());
 
         // All inputs should contain some variant of

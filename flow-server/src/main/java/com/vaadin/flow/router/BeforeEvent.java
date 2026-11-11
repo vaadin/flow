@@ -21,7 +21,6 @@ import java.util.EventObject;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -972,8 +971,11 @@ public abstract class BeforeEvent extends EventObject {
 
     private <T> void checkUrlParameterType(T routeParam,
             Class<? extends Component> target) {
-        Class<?> genericInterfaceType = ReflectTools
-                .getGenericInterfaceType(target, HasUrlParameter.class);
+        Class<?> genericInterfaceType = Objects.requireNonNull(
+                ReflectTools.getGenericInterfaceType(target,
+                        HasUrlParameter.class),
+                () -> "Cannot resolve the HasUrlParameter type of "
+                        + target.getName());
         if (!genericInterfaceType.isAssignableFrom(routeParam.getClass())) {
             throw new IllegalArgumentException(String.format(
                     "Given route parameter '%s' is of the wrong type. Required '%s'.",
@@ -984,7 +986,7 @@ public abstract class BeforeEvent extends EventObject {
     private <T> NavigationState getNavigationState(String url,
             List<T> routeParams) {
         List<String> segments = routeParams.stream().map(Object::toString)
-                .collect(Collectors.toList());
+                .toList();
         Class<? extends Component> target = getTargetOrThrow(url, segments);
 
         if (!routeParams.isEmpty()) {

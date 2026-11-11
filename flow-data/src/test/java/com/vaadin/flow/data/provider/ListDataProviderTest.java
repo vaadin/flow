@@ -18,7 +18,6 @@ package com.vaadin.flow.data.provider;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.Test;
@@ -83,7 +82,7 @@ class ListDataProviderTest
         dataProvider.addSortOrder(StrBean::getId, SortDirection.DESCENDING);
 
         List<StrBean> threeFirstItems = dataProvider.fetch(new Query<>())
-                .limit(3).collect(Collectors.toList());
+                .limit(3).toList();
 
         // First one is Xyz
         assertEquals(new StrBean("Xyz", 10, 100), threeFirstItems.get(0));

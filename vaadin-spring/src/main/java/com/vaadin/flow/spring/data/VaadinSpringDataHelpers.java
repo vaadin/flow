@@ -16,7 +16,6 @@
 package com.vaadin.flow.spring.data;
 
 import java.io.Serializable;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -52,7 +51,7 @@ public interface VaadinSpringDataHelpers extends Serializable {
                 .map(so -> so.getDirection() == SortDirection.ASCENDING
                         ? Order.asc(so.getSorted())
                         : Order.desc(so.getSorted()))
-                .collect(Collectors.toList()));
+                .toList());
     }
 
     /**

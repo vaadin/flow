@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-tests</artifactId>
+    <version>25.4-SNAPSHOT</version>
+  </parent>
+  <artifactId>flow-test-pwa-devbundle</artifactId>
+
+  <packaging>war</packaging>
+  <name>Flow tests for PWA annotation (dev bundle)</name>
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+    <vaadin.frontend.hotdeploy>false</vaadin.frontend.hotdeploy>
+    <surefire.reportNameSuffix>devbundle</surefire.reportNameSuffix>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-test-resources</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-dev-server</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.brotli</groupId>
+      <artifactId>dec</artifactId>
+      <version>0.1.2</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-dev-bundle-plugin</artifactId>
+        <version>${project.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>build-dev-bundle</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <vaadin.test.devBundle>true</vaadin.test.devBundle>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      <!-- This module is mapped to default web context -->
+      <plugin>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-maven-plugin</artifactId>
+        <version>${jetty.version}</version>
+        <configuration>
+          <webApp>
+            <resourceBases>
+              <resourceBase>${project.basedir}/public</resourceBase>
+              <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
+            </resourceBases>
+          </webApp>
+        </configuration>
+
+        <executions>
+          <!-- start and stop jetty (running our app) when running
+                        integration tests -->
+          <execution>
+            <id>start-jetty</id>
+            <goals>
+              <goal>start</goal>
+            </goals>
+            <phase>pre-integration-test</phase>
+          </execution>
+          <execution>
+            <id>stop-jetty</id>
+            <goals>
+              <goal>stop</goal>
+            </goals>
+            <phase>post-integration-test</phase>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

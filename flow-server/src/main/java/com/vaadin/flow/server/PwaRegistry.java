@@ -550,7 +550,7 @@ public class PwaRegistry implements Serializable {
             throws IOException {
         // Use only icons which are cached with service worker
         List<PwaIcon> iconList = getIcons().stream()
-                .filter(PwaIcon::shouldBeCached).collect(Collectors.toList());
+                .filter(PwaIcon::shouldBeCached).toList();
         // init header inject of icons
         String iconHead = iconList.stream()
                 .map(icon -> icon.asElement().toString())

@@ -373,8 +373,7 @@ class BeanPropertySetTest {
         PropertySet<Iface3> set = BeanPropertySet.get(Iface3.class, false,
                 PropertyFilterDefinition.getDefaultFilter());
 
-        List<PropertyDefinition<Iface3, ?>> defs = set.getProperties()
-                .collect(Collectors.toList());
+        List<PropertyDefinition<Iface3, ?>> defs = set.getProperties().toList();
 
         assertEquals(1, defs.size());
         assertEquals("name", defs.get(0).getName());
@@ -386,7 +385,7 @@ class BeanPropertySetTest {
                 .get(DefaultMethodIface.class);
 
         List<PropertyDefinition<DefaultMethodIface, ?>> defs = set
-                .getProperties().collect(Collectors.toList());
+                .getProperties().toList();
 
         assertEquals(1, defs.size());
         assertEquals("name", defs.get(0).getName());
@@ -398,7 +397,7 @@ class BeanPropertySetTest {
                 .get(DefaultMethodSubclassIface.class);
 
         List<PropertyDefinition<DefaultMethodSubclassIface, ?>> defs = set
-                .getProperties().collect(Collectors.toList());
+                .getProperties().toList();
 
         assertEquals(3, defs.size());
         assertEquals("name", defs.get(0).getName());
@@ -538,7 +537,7 @@ class BeanPropertySetTest {
         PropertySet<MyClass> set = BeanPropertySet.get(MyClass.class);
 
         List<PropertyDefinition<MyClass, ?>> defs = set.getProperties()
-                .collect(Collectors.toList());
+                .toList();
 
         assertEquals(4, defs.size());
         assertEquals("firstName", defs.get(0).getName());

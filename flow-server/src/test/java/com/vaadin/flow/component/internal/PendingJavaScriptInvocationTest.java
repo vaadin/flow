@@ -28,7 +28,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -401,8 +400,7 @@ class PendingJavaScriptInvocationTest {
                     .toCompletableFuture();
 
             List<Future<JsonNode>> futures = createBlockingActions(
-                    completableFuture).stream().map(executor::submit)
-                    .collect(Collectors.toList());
+                    completableFuture).stream().map(executor::submit).toList();
 
             assertEquals(0, futures.stream().filter(Future::isDone).count(),
                     "All futures should be pending");
