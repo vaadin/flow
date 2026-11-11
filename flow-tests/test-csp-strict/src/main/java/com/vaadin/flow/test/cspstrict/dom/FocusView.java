@@ -18,13 +18,19 @@ package com.vaadin.flow.test.cspstrict.dom;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
 /**
  * Framework JavaScript that already runs from the bundle: focusing an element
  * and setting the page title.
+ * <p>
+ * The title comes from {@link PageTitle}: the router sets the title of the
+ * route after the view is attached and after the navigation observers run, so a
+ * title set with {@code Page.setTitle} there would be replaced.
  */
 @Route("focus")
+@PageTitle(FocusView.TITLE)
 public class FocusView extends Div {
 
     static final String TITLE = "Focused under the policy";
@@ -39,6 +45,5 @@ public class FocusView extends Div {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         input.focus();
-        attachEvent.getUI().getPage().setTitle(TITLE);
     }
 }

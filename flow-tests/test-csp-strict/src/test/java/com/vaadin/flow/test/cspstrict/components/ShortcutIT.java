@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.test.cspstrict.components;
 
-import org.junit.jupiter.api.Disabled;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -24,12 +23,6 @@ import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.test.cspstrict.AbstractCspStrictIT;
 import com.vaadin.testbench.BrowserTest;
 
-/**
- * The shortcut registration builds its key filter as a string, which the strict
- * mode rejects. Enabled when the shortcut listener is a fixed declared
- * expression.
- */
-@Disabled("Blocked by https://github.com/vaadin/flow/issues/26666")
 public class ShortcutIT extends AbstractCspStrictIT {
 
     @Override
