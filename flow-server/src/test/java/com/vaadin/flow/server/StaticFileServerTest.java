@@ -703,11 +703,12 @@ class StaticFileServerTest implements Serializable {
             throws Exception {
         DevModeHandler devModeHandler = setupDevModeHandler();
         setupRequestURI("", "", "/VAADIN/folder/");
-        when(servletService.getStaticResource("/VAADIN/folder/"))
-                .thenReturn(new URL("file:///VAADIN/folder/"));
+        when(servletService.getStaticResource("/VAADIN/folder/")).thenReturn(
+                createFileURLWithDataAndLength("/VAADIN/folder", "content"));
 
         assertFalse(fileServer.serveStaticResource(request, response));
         verify(devModeHandler).serveDevModeRequest(request, response);
+        verify(response, never()).setContentLengthLong(anyLong());
     }
 
     @ParameterizedTest

@@ -94,7 +94,7 @@ public class BasicsIT extends ViteDevModeIT {
                 """
                         return [...document.querySelectorAll('vite-plugin-checker-overlay')]
                             .some(overlay => /\\d+ errors?\\b/.test(
-                                overlay.shadowRoot.querySelector('.label').textContent));
+                                overlay.shadowRoot?.querySelector('.label')?.textContent ?? ''));
                         """);
     }
 
