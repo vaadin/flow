@@ -180,19 +180,11 @@ class NodeResolverTest {
     }
 
     @Test
-    void globalNode_newerThanMaximum_warnsHowToUseItAnyway() {
-        NodeResolver resolver = resolver(VERSION);
+    void globalNode_newerThanMaximumWithoutInstalledNode_warnsHowToUseItAnyway() {
         int newerMajor = FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION + 1;
         Logger logger = Mockito.spy(Logger.class);
 
-        try (MockedStatic<LoggerFactory> loggerFactory = Mockito
-                .mockStatic(LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
-            loggerFactory
-                    .when(() -> LoggerFactory.getLogger(NodeResolver.class))
-                    .thenReturn(logger);
-            resolver.isSupportedGlobalVersion(
-                    new FrontendVersion(newerMajor, 0, 0));
-        }
+        rejectNewerGlobalVersion(newerMajor, logger);
 
         ArgumentCaptor<String> format = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<Object[]> arguments = ArgumentCaptor
@@ -209,6 +201,33 @@ class NodeResolverTest {
                         + InitParameters.NODE_FOLDER + "' property"),
                 "The warning should tell how to use the global Node.js anyway: "
                         + message);
+    }
+
+    @Test
+    void globalNode_newerThanMaximumWithInstalledNode_isNotWarnedAbout()
+            throws IOException {
+        stubInstallation(VERSION);
+        Logger logger = Mockito.spy(Logger.class);
+
+        rejectNewerGlobalVersion(
+                FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION + 1, logger);
+
+        Mockito.verify(logger, Mockito.never()).warn(Mockito.anyString(),
+                Mockito.any(Object[].class));
+        Mockito.verify(logger).info(Mockito.anyString(),
+                Mockito.any(Object[].class));
+    }
+
+    private void rejectNewerGlobalVersion(int major, Logger logger) {
+        NodeResolver resolver = resolver(VERSION);
+        try (MockedStatic<LoggerFactory> loggerFactory = Mockito
+                .mockStatic(LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
+            loggerFactory
+                    .when(() -> LoggerFactory.getLogger(NodeResolver.class))
+                    .thenReturn(logger);
+            assertFalse(resolver.isSupportedGlobalVersion(
+                    new FrontendVersion(major, 0, 0)));
+        }
     }
 
     private ActiveNodeInstallation resolve(String nodeVersion) {

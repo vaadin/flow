@@ -185,8 +185,10 @@ class NodeResolver implements java.io.Serializable {
      * against: at least {@link FrontendTools#SUPPORTED_NODE_VERSION} and at
      * most {@link FrontendTools#MAX_SUPPORTED_NODE_MAJOR_VERSION}, which is the
      * long-term support line Flow is built on. A newer version is rejected with
-     * a warning that tells how to use it anyway through the
-     * {@link InitParameters#NODE_FOLDER} setting.
+     * a message that tells how to use it anyway through the
+     * {@link InitParameters#NODE_FOLDER} setting. The message is a warning only
+     * when the Node.js to use instead is not yet installed in the alternative
+     * directory, as the build then depends on downloading it.
      *
      * @param version
      *            the version of the globally installed Node.js
@@ -205,12 +207,20 @@ class NodeResolver implements java.io.Serializable {
 
         if (version
                 .getMajorVersion() > FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION) {
-            getLogger().warn(
-                    "The globally installed Node.js version {}.x is newer than the maximum supported version {}.x and may not be compatible. Using Node.js from {}. To use the newer Node.js anyway, at your own risk, set the '{}' property to the folder that contains it.",
-                    version.getMajorVersion(),
+            String message = "The globally installed Node.js version {}.x is newer than the maximum supported version {}.x and may not be compatible. Using Node.js from {}. To use the newer Node.js anyway, at your own risk, set the '{}' property to the folder that contains it.";
+            Object[] arguments = { version.getMajorVersion(),
                     FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION,
                     alternativeDir,
-                    Constants.VAADIN_PREFIX + InitParameters.NODE_FOLDER);
+                    Constants.VAADIN_PREFIX + InitParameters.NODE_FOLDER };
+            // A setup that already works should not get a warning on every
+            // build, only one that is about to depend on a download
+            if (NodeInstallation
+                    .forVersion(new File(alternativeDir), nodeVersion)
+                    .hasNodeExecutable()) {
+                getLogger().info(message, arguments);
+            } else {
+                getLogger().warn(message, arguments);
+            }
             return false;
         }
 
