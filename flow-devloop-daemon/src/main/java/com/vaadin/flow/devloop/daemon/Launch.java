@@ -18,6 +18,7 @@ package com.vaadin.flow.devloop.daemon;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -29,9 +30,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * Composes the app JVM command line, resolves the classpath through Maven, and
@@ -1259,11 +1262,13 @@ final class Launch {
      * it declares, would stay until {@code mvn clean}.
      * <p>
      * The build is Maven's own {@code compile}, which recompiles a module whose
-     * sources were added or removed and deletes the classes the previous
-     * compile wrote for it - no guessing here about which class files belong to
-     * which source. A build that fails is reported and the launch goes ahead on
-     * the classes there are, as before; it is not a resolution failure, so it
-     * does not block the applies that will compile the fixed source.
+     * sources were added or removed and deletes the classes its previous
+     * compile wrote. A class an apply wrote is not in that record, so the
+     * classes of a deleted source that are still there after the build are
+     * removed the way an apply removes them. A build that fails is reported and
+     * the launch goes ahead on the classes there are, as before; it is not a
+     * resolution failure, so it does not block the applies that will compile
+     * the fixed source.
      *
      * @param project
      *            the resolved build about to be launched
@@ -1271,98 +1276,112 @@ final class Launch {
      *            where to say that a build is needed, and why
      */
     void catchUpSources(Project project, Log progress) {
-        List<String> behind = sourcesAheadOfClasses(project);
+        Map<Path, Long> sources = javaSources(project);
+        Map<Path, Long> recorded = readSourceInventory();
+        List<Path> behind = sourcesAheadOfClasses(project, sources, recorded);
         if (!behind.isEmpty()) {
             progress.line("target/classes is behind the sources ("
-                    + summarise(behind) + "); building before the launch");
+                    + summarise(behind.stream().map(this::relative).toList())
+                    + "); building before the launch");
+            // Whole seconds, as some file systems keep no finer: a class the
+            // build writes within the second it started must still count as
+            // the build's own.
+            long buildStarted = System.currentTimeMillis() / 1000 * 1000;
             try {
                 runMaven(progress);
-                resolutions.incrementAndGet();
+                List<Path> deleted = recorded.keySet().stream()
+                        .filter(source -> !sources.containsKey(source))
+                        .toList();
+                Compile.removeClassArtifacts(project.modules(), deleted,
+                        buildStarted);
             } catch (IOException e) {
                 progress.line("WARNING: building the sources failed, launching "
                         + "with the classes from the last build: "
                         + e.getMessage());
                 // The inventory is kept as it was, so the next launch still
-                // knows which deleted sources have classes to clean up.
+                // knows which sources it has to catch up with.
                 return;
             }
         }
-        writeSourceInventory(project);
+        writeSourceInventory(sources);
     }
 
     /**
      * The sources whose classes in {@code target/classes} are not the ones a
-     * build of the sources on disk would produce, app-relative; empty when the
-     * two agree.
+     * build of the sources on disk would produce; empty when the two agree.
      * <p>
      * A source is behind when its class is missing or older than it, and a
-     * source that has been deleted is behind while its class is still there.
-     * Deletions are read against the inventory the last launch recorded, as a
-     * file that is gone cannot be found by walking the tree; an apply that
+     * deleted source is behind while its class is still there. Both are read
+     * against the inventory the last launch recorded. A deletion has to be, as
+     * a file that is gone cannot be found by walking the tree; an apply that
      * removed the class of a deleted source has already caught up with it, so
-     * that one does not count. {@code package-info.java} is skipped, as javac
+     * that one does not count. And a source that has not moved since the last
+     * launch is not built for again, as that launch already ran or skipped the
+     * build for it - which is what keeps a source that never yields a class of
+     * its own name, or one dated in the future, from setting off a build on
+     * every launch. {@code package-info.java} is skipped outright, as javac
      * writes no class for a package without annotations.
-     *
-     * @param project
-     *            the resolved build whose modules are checked
-     * @return the sources that are behind, sorted
      */
-    List<String> sourcesAheadOfClasses(Project project) {
-        Set<String> behind = new java.util.TreeSet<>();
-        for (Reactor.Module module : project.modules()) {
-            for (Path source : javaSources(module)) {
-                if (!source.getFileName().toString().equals("package-info.java")
-                        && isNewerThanItsClass(module, source)) {
-                    behind.add(relative(source));
-                }
+    private static List<Path> sourcesAheadOfClasses(Project project,
+            Map<Path, Long> sources, Map<Path, Long> recorded) {
+        Set<Path> behind = new TreeSet<>();
+        sources.forEach((source, modified) -> {
+            if (!modified.equals(recorded.get(source))
+                    && !source.getFileName().toString()
+                            .equals("package-info.java")
+                    && classIsOlder(ownerOf(project, source), source,
+                            modified)) {
+                behind.add(source);
             }
-        }
-        for (String line : readOrEmpty(sourceInventoryFile()).lines()
-                .toList()) {
-            if (line.isBlank()) {
-                continue;
-            }
-            Path source = Path.of(line);
-            project.modules().stream()
-                    .filter(module -> source.startsWith(module.sourceDir()))
-                    .findFirst()
-                    .filter(module -> !Files.exists(source)
-                            && Files.isRegularFile(module.artifactFor(source)))
-                    .ifPresent(module -> behind.add(relative(source)));
-        }
+        });
+        recorded.keySet().stream()
+                .filter(source -> !sources.containsKey(source))
+                .forEach(source -> {
+                    Reactor.Module owner = ownerOf(project, source);
+                    if (owner != null
+                            && Files.isRegularFile(owner.artifactFor(source))) {
+                        behind.add(source);
+                    }
+                });
         return List.copyOf(behind);
     }
 
-    private static boolean isNewerThanItsClass(Reactor.Module module,
-            Path source) {
-        try {
-            Path artifact = module.artifactFor(source);
-            return !Files.isRegularFile(artifact)
-                    || Files.getLastModifiedTime(artifact).toMillis() < Files
-                            .getLastModifiedTime(source).toMillis();
-        } catch (IOException e) {
-            // A source that vanished under the walk is a deletion, which the
-            // inventory answers on the next launch.
-            return false;
-        }
+    private static Reactor.Module ownerOf(Project project, Path source) {
+        return project.modules().stream()
+                .filter(module -> source.startsWith(module.sourceDir()))
+                .findFirst().orElse(null);
     }
 
-    private static List<Path> javaSources(Reactor.Module module) {
-        if (!Files.isDirectory(module.sourceDir())) {
-            return List.of();
+    private static boolean classIsOlder(Reactor.Module module, Path source,
+            long sourceModified) {
+        Path artifact = module.artifactFor(source);
+        return Compile.stampOf(artifact)
+                .map(stamp -> stamp.modified() < sourceModified).orElse(true);
+    }
+
+    /** Every Java source of the loop, with when it was last modified. */
+    private static Map<Path, Long> javaSources(Project project) {
+        Map<Path, Long> sources = new LinkedHashMap<>();
+        for (Reactor.Module module : project.modules()) {
+            if (!Files.isDirectory(module.sourceDir())) {
+                continue;
+            }
+            try (Stream<Path> walk = Files.walk(module.sourceDir())) {
+                walk.filter(Files::isRegularFile)
+                        .filter(path -> path.toString().endsWith(".java"))
+                        .forEach(path -> Compile.stampOf(path).ifPresent(
+                                stamp -> sources.put(path, stamp.modified())));
+            } catch (IOException | UncheckedIOException e) {
+                // An unreadable tree is one nothing can be built from either.
+            }
         }
-        try (java.util.stream.Stream<Path> walk = Files
-                .walk(module.sourceDir())) {
-            return walk.filter(Files::isRegularFile)
-                    .filter(path -> path.toString().endsWith(".java")).toList();
-        } catch (IOException | java.io.UncheckedIOException e) {
-            return List.of();
-        }
+        return sources;
     }
 
     /**
-     * Every Java source of the loop as of the last launch, one absolute path
-     * per line - what {@link #sourcesAheadOfClasses} reads deletions against.
+     * Every Java source of the loop as of the last launch, one per line with
+     * its modification time - what {@link #sourcesAheadOfClasses} reads
+     * against.
      * <p>
      * Under {@code target/} with the classes it describes, so that a clean
      * wipes both together. A source created and deleted between two launches is
@@ -1373,13 +1392,24 @@ final class Launch {
         return workDir(root).resolve("sources.txt");
     }
 
-    private void writeSourceInventory(Project project) {
+    private Map<Path, Long> readSourceInventory() {
+        Map<Path, Long> recorded = new LinkedHashMap<>();
+        stampLines(readOrEmpty(sourceInventoryFile()))
+                .forEach((path, modified) -> {
+                    try {
+                        recorded.put(Path.of(path), Long.parseLong(modified));
+                    } catch (NumberFormatException e) {
+                        // A line this version did not write; dropping it costs
+                        // at most one build.
+                    }
+                });
+        return recorded;
+    }
+
+    private void writeSourceInventory(Map<Path, Long> sources) {
         StringBuilder sb = new StringBuilder();
-        for (Reactor.Module module : project.modules()) {
-            for (Path source : javaSources(module)) {
-                sb.append(source).append('\n');
-            }
-        }
+        sources.forEach((source, modified) -> sb.append(source).append('\t')
+                .append(modified).append('\n'));
         try {
             Path inventory = sourceInventoryFile();
             Files.createDirectories(inventory.getParent());

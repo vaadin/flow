@@ -1343,9 +1343,33 @@ final class Compile {
      * removed type straight back off the classpath.
      */
     List<Path> removeClassArtifacts(List<Path> sources) throws IOException {
+        return removeClassArtifacts(modules, sources, Long.MAX_VALUE);
+    }
+
+    /**
+     * As {@link #removeClassArtifacts(List)}, for the given modules rather than
+     * a baseline's - for a caller that has no baseline, as a launch that
+     * catches up with sources deleted while no daemon was running does not.
+     *
+     * @param modules
+     *            the modules whose sources and classes these are
+     * @param sources
+     *            the removed sources; one outside every module is skipped
+     * @param writtenBefore
+     *            only class files last written before this, in epoch
+     *            milliseconds, are deleted - so that a class a build has just
+     *            written from another source, under the same name, is kept
+     * @return the class files that were deleted, sorted
+     * @throws IOException
+     *             if a class file cannot be deleted
+     */
+    static List<Path> removeClassArtifacts(List<Reactor.Module> modules,
+            List<Path> sources, long writtenBefore) throws IOException {
         List<Path> removed = new ArrayList<>();
         for (Path source : sources) {
-            Optional<Reactor.Module> owner = sourceOwner(source);
+            Optional<Reactor.Module> owner = modules.stream()
+                    .filter(module -> source.startsWith(module.sourceDir()))
+                    .findFirst();
             if (owner.isEmpty()) {
                 continue;
             }
@@ -1355,19 +1379,26 @@ final class Compile {
             if (directory == null || fileName == null) {
                 continue;
             }
-            if (Files.deleteIfExists(artifact)) {
+            if (writtenBefore(artifact, writtenBefore)
+                    && Files.deleteIfExists(artifact)) {
                 removed.add(artifact);
             }
             String nestedPrefix = fileName.toString().substring(0,
                     fileName.toString().length() - CLASS_SUFFIX.length()) + "$";
             for (Path nested : nestedClasses(directory, nestedPrefix)) {
-                if (Files.deleteIfExists(nested)) {
+                if (writtenBefore(nested, writtenBefore)
+                        && Files.deleteIfExists(nested)) {
                     removed.add(nested);
                 }
             }
         }
         removed.sort(Comparator.naturalOrder());
         return removed;
+    }
+
+    private static boolean writtenBefore(Path file, long millis) {
+        return millis == Long.MAX_VALUE || stampOf(file)
+                .map(stamp -> stamp.modified() < millis).orElse(false);
     }
 
     /**

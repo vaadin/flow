@@ -72,7 +72,8 @@ Under `<app>/target/devloop/`: `daemon.log` (the daemon's stdout — which is wh
 `System.out` here is correct and SLF4J would not be), `app.log` (the app's stdout
 and stderr, the only place a "Port 8080 was already in use" exists), `cp.txt`
 (the resolved classpath), `cp.stamp` (a fingerprint of every pom in the reactor),
-`sources.txt` (every Java source of the loop as of the last launch),
+`sources.txt` (every Java source of the loop as of the last launch, with its
+modification time),
 `jvm-args.txt` (the app JVM's argument file — a reactor classpath is well past
 Windows' 32 kB command-line limit). Each in-loop module gets its own
 `<module>/target/devloop/cp.txt` and `model.properties`.
@@ -80,13 +81,14 @@ Windows' 32 kB command-line limit). Each in-loop module gets its own
 **Every launch first checks that `target/classes` matches the sources.** The
 pom stamp says nothing about sources changed while no daemon was running — a
 `git checkout`, a pull, a revert. So before each launch the daemon looks for a
-source whose class is missing or older than it, and for a source listed in
-`sources.txt` that is gone while its class is still there. If it finds one, it
-runs the same Maven `compile` the resolve does. The compiler plugin's
-incremental build recompiles a module whose sources were added or removed and
-deletes the classes its previous compile wrote, so the daemon never decides on
-its own which class files to delete. A failed build is reported and the launch
-goes ahead on the classes there are.
+source that moved since `sources.txt` was written and whose class is missing or
+older than it, and for a source listed there that is gone while its class is
+still there. If it finds one, it runs the same Maven `compile` the resolve
+does, whose incremental build recompiles the module and deletes the classes its
+previous compile wrote. Classes an apply wrote are not in Maven's record, so
+whatever classes of a deleted source the build left are then removed the way an
+apply removes them. A failed build is reported, the launch goes ahead on the
+classes there are, and the next launch tries again.
 
 **`model.properties` is how the daemon knows what starts the application**,
 written by `DevLoopBuildExtension` as each resolve reads the projects and read
