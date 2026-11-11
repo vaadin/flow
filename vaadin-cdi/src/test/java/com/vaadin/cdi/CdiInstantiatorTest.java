@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,7 +28,6 @@ import jakarta.servlet.ServletException;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -274,8 +273,7 @@ public class CdiInstantiatorTest extends AbstractWeldTest {
         // @Before does instantiator.init()
         // There will be other entries too to filter out
         List<UsageStatistics.UsageEntry> entries = UsageStatistics.getEntries()
-                .filter(entry -> entry.getName().contains("Cdi"))
-                .collect(Collectors.toList());
+                .filter(entry -> entry.getName().contains("Cdi")).toList();
         assertEquals(1, entries.size());
 
         UsageStatistics.UsageEntry entry = entries.get(0);

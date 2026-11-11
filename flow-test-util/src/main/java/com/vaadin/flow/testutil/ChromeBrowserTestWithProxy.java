@@ -79,6 +79,9 @@ public abstract class ChromeBrowserTestWithProxy
 
     /**
      * Ensure the proxy is active. Does nothing if the proxy is already active.
+     *
+     * @throws IOException
+     *             if connecting the proxy fails
      */
     protected void connectProxy() throws IOException {
         if (proxySession != null) {

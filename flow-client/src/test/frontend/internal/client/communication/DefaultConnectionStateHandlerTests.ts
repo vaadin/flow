@@ -4,7 +4,13 @@ import { type StateChangeHandler, UIState } from '../../../../../main/frontend/i
 import type { EventRemover } from '../../../../../main/frontend/internal/EventRemover';
 import { testRegistry } from '../testRegistry';
 import { DefaultConnectionStateHandler } from '../../../../../main/frontend/internal/client/communication/DefaultConnectionStateHandler';
+import { LoadingIndicatorStateHandler } from '../../../../../main/frontend/internal/client/communication/LoadingIndicatorStateHandler';
 import { XhrConnectionError } from '../../../../../main/frontend/internal/client/communication/XhrConnectionError';
+import type {
+  VaadinRequestFailure,
+  VaadinRequestOutcome
+} from '../../../../../main/frontend/internal/client/communication/VaadinRequest';
+import type { PushConnection } from '../../../../../main/frontend/internal/client/communication/PushConnection';
 import {
   CONNECTED,
   CONNECTION_LOST,
@@ -15,6 +21,7 @@ import {
 function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) {
   const log = {
     reconnectionAttempts: [] as number[],
+    requests: [] as Array<VaadinRequestFailure | VaadinRequestOutcome>,
     heartbeatSends: 0,
     sessionExpired: 0,
     unrecoverable: [] as string[],
@@ -23,51 +30,53 @@ function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) 
   const lifecycleHandlers: StateChangeHandler[] = [];
   let state: UIState = UIState.RUNNING;
   let heartbeatInterval = 300;
-  return {
-    log,
-    lifecycleHandlers,
-    registry: testRegistry({
-      UILifecycle: {
-        isRunning: () => state === UIState.RUNNING,
-        getState: () => state,
-        setState: (s: UIState) => {
-          state = s;
-          log.states.push(s);
-        },
-        addHandler: (handler: StateChangeHandler): EventRemover => {
-          lifecycleHandlers.push(handler);
-          return { remove: () => lifecycleHandlers.splice(lifecycleHandlers.indexOf(handler), 1) };
-        }
+  const registry = testRegistry({
+    UILifecycle: {
+      isRunning: () => state === UIState.RUNNING,
+      getState: () => state,
+      setState: (s: UIState) => {
+        state = s;
+        log.states.push(s);
       },
-      ReconnectConfiguration: {
-        getReconnectAttempts: () => reconnectAttempts,
-        getReconnectInterval: () => 5000,
-        getDialogText: () => null,
-        getDialogTextGaveUp: () => null
-      },
-      RequestResponseTracker: {
-        hasActiveRequest: () => false,
-        endRequest: () => {}
-      },
-      LoadingIndicatorStateHandler: { restoreLoading: () => {} },
-      Heartbeat: {
-        setInterval: (interval: number) => {
-          heartbeatInterval = interval;
-        },
-        getInterval: () => heartbeatInterval,
-        send: () => log.heartbeatSends++
-      },
-      ApplicationConfiguration: { getHeartbeatInterval: () => configuredHeartbeatInterval },
-      MessageSender: {
-        sendInvocationsToServer: () => {},
-        resendQueuedMessages: (attempt: number) => log.reconnectionAttempts.push(attempt)
-      },
-      SystemErrorHandler: {
-        handleSessionExpiredError: () => log.sessionExpired++,
-        handleUnrecoverableError: (_caption: string, message: string) => log.unrecoverable.push(message)
+      addHandler: (handler: StateChangeHandler): EventRemover => {
+        lifecycleHandlers.push(handler);
+        return { remove: () => lifecycleHandlers.splice(lifecycleHandlers.indexOf(handler), 1) };
       }
-    })
-  };
+    },
+    ReconnectConfiguration: {
+      getReconnectAttempts: () => reconnectAttempts,
+      getReconnectInterval: () => 5000,
+      getDialogText: () => null,
+      getDialogTextGaveUp: () => null
+    },
+    RequestResponseTracker: {
+      hasActiveRequest: () => false,
+      endRequest: () => {}
+    },
+    Heartbeat: {
+      setInterval: (interval: number) => {
+        heartbeatInterval = interval;
+      },
+      getInterval: () => heartbeatInterval,
+      send: () => log.heartbeatSends++
+    },
+    ApplicationConfiguration: { getHeartbeatInterval: () => configuredHeartbeatInterval },
+    MessageSender: {
+      sendInvocationsToServer: () => {},
+      resendQueuedMessages: (attempt: number) => log.reconnectionAttempts.push(attempt),
+      failAttempt: (_payload: Record<string, unknown>, failure: VaadinRequestFailure) => log.requests.push(failure),
+      failPushAttempt: (failure: VaadinRequestFailure) => log.requests.push(failure),
+      settleRequest: (_payload: Record<string, unknown>, outcome: VaadinRequestOutcome) => log.requests.push(outcome),
+      discardSentRequests: () => {}
+    },
+    SystemErrorHandler: {
+      handleSessionExpiredError: () => log.sessionExpired++,
+      handleUnrecoverableError: (_caption: string, message: string) => log.unrecoverable.push(message)
+    }
+  });
+  // The real loading handler, which shows connected when a reconnect resolves.
+  registry.register('LoadingIndicatorStateHandler', new LoadingIndicatorStateHandler(registry));
+  return { log, lifecycleHandlers, registry };
 }
 
 // The handler listens on window for the browser's connectivity events.
@@ -145,6 +154,9 @@ describe('DefaultConnectionStateHandler', () => {
     handler.xhrInvalidStatusCode(xhrError({}, 401));
     expect(registry.log.sessionExpired).to.equal(1);
     expect(registry.log.reconnectionAttempts).to.deep.equal([]);
+    // The request fails with the status and ends as rejected, before the
+    // application stops and discards what is left.
+    expect(registry.log.requests).to.deep.equal([{ reason: 'http', status: 401 }, 'rejected']);
   });
 
   it('reports an unrecoverable error for invalid xhr content (no refresh token)', () => {
@@ -153,6 +165,7 @@ describe('DefaultConnectionStateHandler', () => {
     const handler = new DefaultConnectionStateHandler(registry.registry);
     handler.xhrInvalidContent(xhrError({}, 200, 'not json'));
     expect(registry.log.unrecoverable).to.have.length(1);
+    expect(registry.log.requests).to.deep.equal([{ reason: 'invalid-response', status: 200 }, 'discarded']);
     expect(registry.log.states).to.deep.equal(['TERMINATED']);
   });
 
@@ -170,8 +183,14 @@ describe('DefaultConnectionStateHandler', () => {
     const initialState = getState();
 
     // Long polling does not necessarily know when the connection is available
-    // again, so the reconnect is left to the next failing xhr.
-    handler.pushReconnectPending({ isBidirectional: () => false } as never);
+    // again, so the reconnect is left to the next failing xhr, however often
+    // it closes.
+    const longPolling: Partial<PushConnection> = {
+      isBidirectional: () => false,
+      getTransportType: () => 'long-polling'
+    };
+    handler.pushReconnectPending(longPolling as PushConnection);
+    handler.pushReconnectPending(longPolling as PushConnection);
     expect(getState()).to.equal(initialState);
     expect(registry.log.heartbeatSends).to.equal(0);
 
@@ -179,6 +198,79 @@ describe('DefaultConnectionStateHandler', () => {
     handler.pushReconnectPending({ isBidirectional: () => true } as never);
     expect(getState()).to.equal(RECONNECTING);
     expect(registry.log.heartbeatSends).to.equal(1);
+  });
+
+  it('reports why each failed attempt of a request failed', () => {
+    const registry = makeRegistry(10);
+    const handler = new DefaultConnectionStateHandler(registry.registry);
+
+    handler.xhrException(xhrError({ rpc: 1 }));
+    // A request that got no response at all completes with status 0.
+    handler.xhrInvalidStatusCode(xhrError({ rpc: 1 }, 0));
+    handler.xhrInvalidStatusCode(xhrError({ rpc: 1 }, 500));
+    handler.pushNotConnected({ rpc: 1 });
+    handler.pushReconnectPending({ isBidirectional: () => true } as never);
+    handler.pushInvalidContent({ isBidirectional: () => true } as never, 'not json');
+
+    expect(registry.log.requests).to.deep.equal([
+      { reason: 'network' },
+      { reason: 'network' },
+      { reason: 'http', status: 500 },
+      { reason: 'network' },
+      { reason: 'network' },
+      { reason: 'invalid-response' }
+    ]);
+  });
+
+  it('checks the connection with a heartbeat when reopening a receive-only websocket fails', () => {
+    // Beyond the Java suite: No Java case covers pushReconnectPending.
+    const registry = makeRegistry(3);
+    const handler = new DefaultConnectionStateHandler(registry.registry);
+    const initialState = getState();
+    const websocket: Partial<PushConnection> = { isBidirectional: () => false, getTransportType: () => 'websocket' };
+
+    // The server may close the websocket on purpose, and it reopens.
+    handler.pushReconnectPending(websocket as PushConnection);
+    handler.pushOk(websocket as PushConnection);
+    handler.pushReconnectPending(websocket as PushConnection);
+    expect(getState()).to.equal(initialState);
+    expect(registry.log.heartbeatSends).to.equal(0);
+
+    // Reopening it failed, so the connection is checked over HTTP, which
+    // decides whether to reconnect.
+    handler.pushReconnectPending(websocket as PushConnection);
+    expect(getState()).to.equal(initialState);
+    expect(registry.log.heartbeatSends).to.equal(1);
+
+    // The heartbeat succeeded, and further failed reopens add nothing to it.
+    handler.pushReconnectPending(websocket as PushConnection);
+    expect(registry.log.heartbeatSends).to.equal(1);
+    // Messages to the server go over XHR, so no request failed with the
+    // websocket.
+    expect(registry.log.requests).to.deep.equal([]);
+
+    // While reconnecting, the reconnect logic already sends heartbeats.
+    handler.pushOk(websocket as PushConnection);
+    handler.pushReconnectPending(websocket as PushConnection);
+    handler.heartbeatException({} as XMLHttpRequest, new Error('down'));
+    expect(getState()).to.equal(RECONNECTING);
+    const heartbeatSends = registry.log.heartbeatSends;
+    handler.pushReconnectPending(websocket as PushConnection);
+    expect(registry.log.heartbeatSends).to.equal(heartbeatSends);
+  });
+
+  it('does not check a lost receive-only websocket while offline', () => {
+    // Beyond the Java suite: No Java case covers pushReconnectPending.
+    const registry = makeRegistry(3);
+    const handler = new DefaultConnectionStateHandler(registry.registry);
+    const websocket: Partial<PushConnection> = { isBidirectional: () => false, getTransportType: () => 'websocket' };
+
+    // Going offline pauses heartbeats, and the websocket drops with it.
+    dispatch('offline');
+    handler.pushReconnectPending(websocket as PushConnection);
+    handler.pushReconnectPending(websocket as PushConnection);
+    expect(registry.log.heartbeatSends).to.equal(0);
+    expect(getState()).to.equal(CONNECTION_LOST);
   });
 
   it('stops heartbeats while the browser is offline and resumes them', () => {

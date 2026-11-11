@@ -102,6 +102,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * @return this instance for method chaining
      * @throws IllegalArgumentException
      *             if the content type is blank
+     * @since 25.4
      */
     public R withContentType(String contentType) {
         Objects.requireNonNull(contentType, "Content type cannot be null");
@@ -122,6 +123,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      *
      * @return the MIME type that the content is served with, or
      *         <code>null</code> if it is taken from the file name
+     * @since 25.4
      */
     public String getContentType() {
         return contentType;
@@ -140,6 +142,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      *            the response, which gives access to the servlet container
      * @return the MIME type that the content is served with, not
      *         <code>null</code>
+     * @since 25.4
      */
     protected final String resolveContentType(String fileName,
             VaadinResponse response) {

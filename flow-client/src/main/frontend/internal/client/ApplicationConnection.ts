@@ -45,6 +45,7 @@ import { NodeFeatures } from '../flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../flow/internal/nodefeature/NodeProperties';
 import { publishClient } from './publishClient';
 import type { ApplicationConnection as PublishedClient } from './clientApi';
+import type { ClientEvents } from './ClientEvents';
 import type { ApplicationConfiguration } from './ApplicationConfiguration';
 import { getScheduler } from './TrackingScheduler';
 import type { Registry } from './Registry';
@@ -152,7 +153,13 @@ export class ApplicationConnection implements PublishedClient {
     }
 
     window.addEventListener('pagehide', () => this.#registry.getMessageSender().sendUnloadBeacon());
-    window.addEventListener('pageshow', () => {
+    window.addEventListener('pageshow', (event) => {
+      // The initial display of the document also fires pageshow, after the
+      // client has started if a slow resource delays the load event. Only a
+      // page restored from the back/forward cache needs reloading.
+      if (!event.persisted) {
+        return;
+      }
       // Currently only Safari gets here, sometimes when going back/forward with
       // browser buttons. Chrome discards our state as beforeunload is used. As
       // state is most likely cleared on the server already (especially now with
@@ -227,6 +234,11 @@ export class ApplicationConnection implements PublishedClient {
   /** Profiling data for the last request (processing times + server timing + bootstrap). */
   getProfilingData(): number[] {
     return this.#registry.getMessageHandler().getProfilingData();
+  }
+
+  /** The events through which page scripts can follow what this client does. */
+  getClientEvents(): ClientEvents {
+    return this.#registry.getClientEvents();
   }
 
   /** Resolves a Vaadin URI (context://, base://) to an absolute URL. */

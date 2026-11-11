@@ -20,34 +20,48 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
+import com.vaadin.flow.dom.DomEventData;
+import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.ParameterizedConstantPoolKey;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -139,6 +153,17 @@ public class ElementListenersTest
         assertTrue(expressions.contains("data2"));
         // due to fix to #5090, data3 won't be present after removal
         assertFalse(expressions.contains("data3"));
+    }
+
+    @Test
+    void addEventDataWithoutCspReport_addsKeysLikeAddEventData() {
+        DomListenerRegistration registration = ns.add("eventType", noOp)
+                .addEventData("data1");
+
+        ElementListenerMap.addEventDataWithoutCspReport(registration,
+                List.of("data1", "data2"));
+
+        assertEquals(Set.of("data1", "data2"), getExpressions("eventType"));
     }
 
     @Test
@@ -305,6 +330,492 @@ public class ElementListenersTest
 
         assertEquals(1, JacksonUtils.getKeys(capturedJson).size());
         assertEquals("true", capturedJson.get("baz").toString());
+    }
+
+    @JsDefinition
+    public interface EventJs extends Serializable {
+        @JsExpression("return element.closest($0).tagName;")
+        DomEventData<String> closestTag(String selector);
+
+        @JsExpression("return event.key === $0;")
+        DomEventFilter isKey(String key);
+
+        @JsExpression("return $0;")
+        DomEventData<Object> echo(Object value);
+
+        @JsExpression("return [];")
+        DomEventData<List<Point>> points();
+    }
+
+    public record Point(int x, int y) {
+    }
+
+    private static final EventJs JS = JsSnippets.of(EventJs.class);
+
+    @Test
+    void addDeclaredEventData_valueReadThroughEventData() {
+        AtomicReference<DomEvent> eventReference = new AtomicReference<>();
+        ns.add("foo", eventReference::set)
+                .addEventData(JS.closestTag(".container"));
+
+        // No expression is sent for the client to compile
+        assertEquals(Collections.emptySet(), getExpressions("foo"));
+
+        // The key contains neither the expression nor the capture
+        String key = ElementListenerMap
+                .getEventDataKey(JS.closestTag(".container"));
+        assertTrue(key.startsWith("@"));
+        assertFalse(key.contains("closest"));
+        assertFalse(key.contains(".container"));
+
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put(key, "DIV");
+        ns.fireEvent(new DomEvent(new Element("element"), "foo", fromClient));
+
+        // Read through an equal snippet: with plain captures, the key is made
+        // from the function and the values, not from the instance
+        DomEvent event = eventReference.get();
+        assertEquals("DIV", event.getEventData(JS.closestTag(".container")));
+        assertNull(event.getEventData(JS.closestTag(".other")));
+    }
+
+    @Test
+    void declaredEventData_readAsDeclaredGenericType() {
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        ObjectNode point = fromClient
+                .putArray(ElementListenerMap.getEventDataKey(JS.points()))
+                .addObject();
+        point.put("x", 1);
+        point.put("y", 2);
+
+        DomEvent event = new DomEvent(new Element("element"), "foo",
+                fromClient);
+
+        assertEquals(List.of(new Point(1, 2)), event.getEventData(JS.points()));
+    }
+
+    @Test
+    void declaredEventData_valueOfAnotherType_throws() {
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put(ElementListenerMap.getEventDataKey(JS.points()),
+                "not a list");
+        DomEvent event = new DomEvent(new Element("element"), "foo",
+                fromClient);
+        DomEventData<List<Point>> points = JS.points();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> event.getEventData(points));
+    }
+
+    @Test
+    void declaredSnippet_settingsNameTheFunctionOfTheBundle() throws Exception {
+        ns.add("foo", noOp).addEventData(JS.closestTag(".container"));
+
+        JsonNode settings = eventSettings(ns, "foo").get(ElementListenerMap
+                .getEventDataKey(JS.closestTag(".container")));
+
+        assertEquals(
+                JsCall.functionId(
+                        EventJs.class.getMethod("closestTag", String.class)),
+                settings.get(JsonConstants.EVENT_SETTINGS_FUNCTION).asString());
+        assertEquals("false",
+                settings.get(JsonConstants.EVENT_SETTINGS_DEBOUNCE).toString());
+        assertEquals("[\".container\"]",
+                settings.get(JsonConstants.EVENT_SETTINGS_CAPTURES).toString());
+        assertFalse(settings.has(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT));
+    }
+
+    @Test
+    void declaredSnippetWithoutCaptures_noCapturesSent() {
+        ns.add("foo", noOp).addEventData(JS.points());
+
+        JsonNode settings = eventSettings(ns, "foo")
+                .get(ElementListenerMap.getEventDataKey(JS.points()));
+
+        assertFalse(settings.has(JsonConstants.EVENT_SETTINGS_CAPTURES));
+    }
+
+    @Test
+    void declaredFilterWithPlainCaptures_sharedThroughConstantPool() {
+        ElementListenerMap enter1 = createFeature();
+        enter1.add("keydown", noOp).setFilterExpression(JS.isKey("Enter"));
+        ElementListenerMap enter2 = createFeature();
+        enter2.add("keydown", noOp).setFilterExpression(JS.isKey("Enter"));
+        ElementListenerMap escape = createFeature();
+        escape.add("keydown", noOp).setFilterExpression(JS.isKey("Escape"));
+
+        // Equal plain captures give equal settings, so they are sent once
+        Serializable value1 = settingsValue(enter1, "keydown");
+        Serializable value2 = settingsValue(enter2, "keydown");
+        assertTrue(value1 instanceof ConstantPoolKey);
+        assertEquals(((ConstantPoolKey) value1).getId(),
+                ((ConstantPoolKey) value2).getId());
+        assertNotEquals(((ConstantPoolKey) value1).getId(),
+                ((ConstantPoolKey) settingsValue(escape, "keydown")).getId());
+    }
+
+    @Test
+    void sameDeclaredFilterDifferentCaptures_separateFilters() {
+        AtomicInteger enterCount = new AtomicInteger();
+        AtomicInteger escapeCount = new AtomicInteger();
+        ns.add("keydown", e -> enterCount.incrementAndGet())
+                .setFilterExpression(JS.isKey("Enter"));
+        ns.add("keydown", e -> escapeCount.incrementAndGet())
+                .setFilterExpression(JS.isKey("Escape"));
+
+        ObjectNode settings = eventSettings(ns, "keydown");
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put(keyWithCapture(settings, "Enter"), true);
+        fromClient.put(keyWithCapture(settings, "Escape"), false);
+        ns.fireEvent(
+                new DomEvent(new Element("element"), "keydown", fromClient));
+
+        assertEquals(1, enterCount.get());
+        assertEquals(0, escapeCount.get());
+    }
+
+    @Test
+    void declaredFiltersReturnOtherValues_checkedWithJavaScriptTruthiness() {
+        AtomicInteger enterCount = new AtomicInteger();
+        AtomicInteger escapeCount = new AtomicInteger();
+        ns.add("keydown", e -> enterCount.incrementAndGet())
+                .setFilterExpression(JS.isKey("Enter"));
+        ns.add("keydown", e -> escapeCount.incrementAndGet())
+                .setFilterExpression(JS.isKey("Escape"));
+
+        // The browser sends what each filter returned. The value of a filter
+        // that did not pass is sent too, because another filter passed.
+        ObjectNode settings = eventSettings(ns, "keydown");
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put(keyWithCapture(settings, "Enter"), "Enter");
+        fromClient.put(keyWithCapture(settings, "Escape"), 0);
+        ns.fireEvent(
+                new DomEvent(new Element("element"), "keydown", fromClient));
+
+        assertEquals(1, enterCount.get());
+        assertEquals(0, escapeCount.get());
+    }
+
+    @Test
+    void stringFiltersReturnOtherValues_checkedWithJavaScriptTruthiness() {
+        AtomicInteger keyCount = new AtomicInteger();
+        AtomicInteger emptyCount = new AtomicInteger();
+        AtomicInteger nullCount = new AtomicInteger();
+        ns.add("keydown", e -> keyCount.incrementAndGet())
+                .setFilter("event.key");
+        ns.add("keydown", e -> emptyCount.incrementAndGet())
+                .setFilter("event.code");
+        ns.add("keydown", e -> nullCount.incrementAndGet())
+                .setFilter("event.target.value");
+
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put("event.key", "Enter");
+        fromClient.put("event.code", "");
+        fromClient.putNull("event.target.value");
+        ns.fireEvent(
+                new DomEvent(new Element("element"), "keydown", fromClient));
+
+        assertEquals(1, keyCount.get());
+        assertEquals(0, emptyCount.get());
+        assertEquals(0, nullCount.get());
+    }
+
+    @Test
+    void sameDeclaredFilterDifferentCaptures_ownDebounceSettings() {
+        ns.add("keydown", noOp).setFilterExpression(JS.isKey("Enter"));
+        ns.add("keydown", noOp).setFilterExpression(JS.isKey("Escape"))
+                .debounce(300, DebouncePhase.TRAILING);
+        // Same filter and captures as the previous listener, so the debounce
+        // settings of both are merged
+        ns.add("keydown", noOp).setFilterExpression(JS.isKey("Escape"))
+                .debounce(300, DebouncePhase.LEADING);
+
+        ObjectNode settings = eventSettings(ns, "keydown");
+        assertEquals(2, JacksonUtils.getKeys(settings).size());
+
+        // The Escape debounce does not apply to the Enter filter
+        assertEquals("true", settings.get(keyWithCapture(settings, "Enter"))
+                .get(JsonConstants.EVENT_SETTINGS_DEBOUNCE).toString());
+        assertEquals("[[300,\"leading\",\"trailing\"]]",
+                settings.get(keyWithCapture(settings, "Escape"))
+                        .get(JsonConstants.EVENT_SETTINGS_DEBOUNCE).toString());
+    }
+
+    @Test
+    void preventDefaultWithDeclaredFilter_conditionalOnFilter() {
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.setFilterExpression(JS.isKey("Enter"));
+        registration.preventDefault();
+
+        // Nothing is made from strings for a declared filter
+        assertEquals(Collections.emptySet(), getExpressions("keydown"));
+
+        // The filter, and an entry that runs the same function with the same
+        // capture and calls preventDefault when it passes
+        ObjectNode settings = eventSettings(ns, "keydown");
+        List<String> keys = JacksonUtils.getKeys(settings);
+        assertEquals(2, keys.size());
+        keys.forEach(key -> assertEquals("[\"Enter\"]", settings.get(key)
+                .get(JsonConstants.EVENT_SETTINGS_CAPTURES).toString()));
+        List<JsonNode> sideEffects = keys.stream().map(settings::get).filter(
+                entry -> entry.has(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT))
+                .toList();
+        assertEquals(1, sideEffects.size());
+        assertEquals("preventDefault", sideEffects.get(0)
+                .get(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT).asString());
+    }
+
+    @Test
+    void getSnippetEntries_eventSimulatedFromEntries() {
+        AtomicReference<DomEvent> eventReference = new AtomicReference<>();
+        DomListenerRegistration registration = ns.add("keydown",
+                eventReference::set);
+        registration.setFilterExpression(JS.isKey("Enter"));
+        registration.addEventData(JS.closestTag(".container"));
+        registration.addEventData("event.code");
+        registration.preventDefault();
+
+        Set<ElementListenerMap.SnippetEntry> entries = ns
+                .getSnippetEntries("keydown");
+        assertEquals(3, entries.size());
+        ElementListenerMap.SnippetEntry filter = findEntry(entries,
+                ElementListenerMap.SnippetEntry::filter);
+        ElementListenerMap.SnippetEntry sideEffect = findEntry(entries,
+                entry -> entry.sideEffect() != null);
+        ElementListenerMap.SnippetEntry data = findEntry(entries,
+                entry -> !entry.filter() && entry.sideEffect() == null);
+
+        // Together with the expressions, these are the keys sent to the client
+        assertEquals(Set.of("event.code"), getExpressions("keydown"));
+        assertEquals(
+                Set.of(filter.key(), sideEffect.key(), data.key(),
+                        "event.code"),
+                Set.copyOf(JacksonUtils.getKeys(eventSettings(ns, "keydown"))));
+        assertEquals("return event.key === $0;", filter.call().getExpression());
+        assertEquals(List.of("Enter"), filter.call().flattenArguments());
+        assertEquals("preventDefault", sideEffect.sideEffect());
+        assertEquals(filter.key() + ".preventDefault", sideEffect.key());
+        assertEquals(filter.call(), sideEffect.call());
+        assertEquals(
+                ElementListenerMap.getEventDataKey(JS.closestTag(".container")),
+                data.key());
+
+        // The values the client would send are enough to notify the listener
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put(filter.key(), true);
+        fromClient.put(sideEffect.key(), true);
+        fromClient.put(data.key(), "DIV");
+        fromClient.put("event.code", "Enter");
+        ns.fireEvent(
+                new DomEvent(new Element("element"), "keydown", fromClient));
+
+        assertEquals("DIV",
+                eventReference.get().getEventData(JS.closestTag(".container")));
+    }
+
+    @Test
+    void getSnippetEntries_sameCallAsEventDataAndFilter_isFilter() {
+        DomEventFilter isEnter = JS.isKey("Enter");
+        DomEventData<Boolean> isEnterData = DomEventData
+                .ofDeclaredCall(isEnter.getDeclaredCall(), Boolean.class);
+        // Event data first, then the filter
+        ns.add("keydown", noOp).addEventData(isEnterData);
+        ns.add("keydown", noOp).setFilterExpression(isEnter);
+        // The filter first, then event data
+        ns.add("keyup", noOp).setFilterExpression(isEnter);
+        ns.add("keyup", noOp).addEventData(isEnterData);
+
+        for (String eventType : List.of("keydown", "keyup")) {
+            Set<ElementListenerMap.SnippetEntry> entries = ns
+                    .getSnippetEntries(eventType);
+            assertEquals(1, entries.size());
+            assertTrue(entries.iterator().next().filter());
+        }
+    }
+
+    private static ElementListenerMap.SnippetEntry findEntry(
+            Set<ElementListenerMap.SnippetEntry> entries,
+            Predicate<ElementListenerMap.SnippetEntry> condition) {
+        List<ElementListenerMap.SnippetEntry> matching = entries.stream()
+                .filter(condition).toList();
+        assertEquals(1, matching.size());
+        return matching.get(0);
+    }
+
+    @Test
+    void declaredEventData_elementCapture_sentForThisElementOnly() {
+        Element child = new Element("span");
+        new UI().getElement().appendChild(child);
+        ns.add("click", noOp).addEventData("event.type")
+                .addEventData(JS.echo(child));
+
+        // The expression is shared, the snippet with the element is not
+        Serializable value = settingsValue(ns, "click");
+        assertTrue(value instanceof ParameterizedConstantPoolKey);
+        ConstantPool constantPool = new ConstantPool();
+        ArrayNode encoded = ((ParameterizedConstantPoolKey) value)
+                .encode(constantPool);
+        JsonNode shared = constantPool.dumpConstants()
+                .get(encoded.get(0).stringValue());
+        assertEquals(List.of("event.type"), JacksonUtils.getKeys(shared));
+        assertEquals(1, JacksonUtils.getKeys(encoded.get(1)).size());
+    }
+
+    @Test
+    void declaredEventData_elementCaptureMovedToAnotherUi_sentWithNewNodeId() {
+        Element child = new Element("span");
+        new UI().getElement().appendChild(child);
+        int oldId = child.getNode().getId();
+        DomEventData<Object> data = JS.echo(child);
+        String key = ElementListenerMap.getEventDataKey(data);
+        ns.add("click", noOp).addEventData(data);
+
+        // As with @PreserveOnRefresh, the element moves to a new UI, where it
+        // gets a new node id
+        child.removeFromParent();
+        child.getNode().removeFromTree();
+        new UI().getElement().appendChild(new Element("div"), child);
+        int newId = child.getNode().getId();
+        assertNotEquals(oldId, newId);
+
+        // The value is still read by the same key, and the settings that are
+        // sent again have the new id
+        assertEquals(key, ElementListenerMap.getEventDataKey(data));
+        assertEquals(newId, capturedNodeId(eventSettings(ns, "click"), key));
+    }
+
+    @Test
+    void declaredEventData_elementCapture_ownKeyPerInstance() {
+        Element child = new Element("span");
+        new UI().getElement().appendChild(child);
+        DomEventData<Object> added = JS.echo(child);
+        DomEventData<Object> other = JS.echo(child);
+        assertNotEquals(ElementListenerMap.getEventDataKey(added),
+                ElementListenerMap.getEventDataKey(other));
+
+        // Only the instance that was added reads the value
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put(ElementListenerMap.getEventDataKey(added), "value");
+        DomEvent event = new DomEvent(new Element("div"), "click", fromClient);
+        assertEquals("value", event.getEventData(added));
+        assertNull(event.getEventData(other));
+    }
+
+    @Test
+    void declaredEventData_elementAttachedAfterCreation_sentWhileAttached() {
+        Element child = new Element("span");
+        DomEventData<Object> data = JS.echo(child);
+        String key = ElementListenerMap.getEventDataKey(data);
+        ns.add("click", noOp).addEventData(data);
+
+        new UI().getElement().appendChild(child);
+        assertEquals(child.getNode().getId(),
+                capturedNodeId(eventSettings(ns, "click"), key));
+
+        child.removeFromParent();
+        ns.add("click", noOp);
+        assertTrue(eventSettings(ns, "click").get(key)
+                .get(JsonConstants.EVENT_SETTINGS_CAPTURES).get(0).isNull());
+    }
+
+    @Test
+    void setDeclaredFilter_getFilterReturnsNull() {
+        DomListenerRegistration registration = ns.add("foo", noOp);
+        registration.setFilterExpression(JS.isKey("Enter"));
+
+        assertNull(registration.getFilter());
+    }
+
+    @Test
+    void nullEventData_throws() {
+        DomListenerRegistration registration = ns.add("foo", noOp);
+
+        assertThrows(NullPointerException.class,
+                () -> registration.addEventData((DomEventData<?>) null));
+    }
+
+    @Test
+    void setNullDeclaredFilter_filterCleared() {
+        AtomicInteger count = new AtomicInteger();
+        DomListenerRegistration registration = ns.add("keydown",
+                e -> count.incrementAndGet());
+        registration.setFilterExpression(JS.isKey("Enter"));
+
+        DomEventFilter noFilter = null;
+        registration.setFilterExpression(noFilter);
+
+        assertTrue(JacksonUtils.getKeys(eventSettings(ns, "keydown")).stream()
+                .noneMatch(key -> key.startsWith("@")));
+        ns.fireEvent(new DomEvent(new Element("element"), "keydown",
+                JacksonUtils.createObjectNode()));
+        assertEquals(1, count.get());
+    }
+
+    @Test
+    void serializable_withDeclaredSnippets() {
+        ns.add("click", noOp).setFilterExpression(JS.isKey("Enter"))
+                .addEventData(JS.closestTag(".container"));
+
+        ElementListenerMap roundtrip = SerializationUtils.roundtrip(ns);
+
+        // The deserialized listeners send the same function ids, keys and
+        // captures to the client
+        assertEquals(eventSettings(ns, "click"),
+                eventSettings(roundtrip, "click"));
+    }
+
+    /**
+     * Gets the value that is sent to the client for the event type: a constant
+     * pool key, or a constant pool key with the settings of this element only.
+     */
+    private Serializable settingsValue(ElementListenerMap listenerMap,
+            String eventType) {
+        return (Serializable) collectChanges(listenerMap).stream()
+                .filter(MapPutChange.class::isInstance)
+                .map(MapPutChange.class::cast)
+                .filter(change -> eventType.equals(change.getKey())).findFirst()
+                .orElseThrow().getValue();
+    }
+
+    /**
+     * Gets the settings that the client gets for the event type: the shared
+     * settings together with the settings of this element only.
+     */
+    private ObjectNode eventSettings(ElementListenerMap listenerMap,
+            String eventType) {
+        Serializable value = settingsValue(listenerMap, eventType);
+        ConstantPool constantPool = new ConstantPool();
+        ObjectNode settings = JacksonUtils.createObjectNode();
+        if (value instanceof ConstantPoolKey key) {
+            settings.setAll((ObjectNode) exportConstant(key));
+        } else {
+            ArrayNode encoded = ((ParameterizedConstantPoolKey) value)
+                    .encode(constantPool);
+            settings.setAll((ObjectNode) constantPool.dumpConstants()
+                    .get(encoded.get(0).stringValue()));
+            settings.setAll((ObjectNode) encoded.get(1));
+        }
+        return settings;
+    }
+
+    private static JsonNode exportConstant(ConstantPoolKey key) {
+        ObjectNode constantPoolUpdate = JacksonUtils.createObjectNode();
+        key.export(constantPoolUpdate);
+        return constantPoolUpdate.get(key.getId());
+    }
+
+    /** Gets the key of the snippet whose only capture is the given string. */
+    private static String keyWithCapture(ObjectNode settings, String capture) {
+        return JacksonUtils.getKeys(settings).stream()
+                .filter(key -> capture.equals(settings.get(key)
+                        .get(JsonConstants.EVENT_SETTINGS_CAPTURES).get(0)
+                        .asString()))
+                .findFirst().orElseThrow();
+    }
+
+    private static int capturedNodeId(ObjectNode settings, String key) {
+        return settings.get(key).get(JsonConstants.EVENT_SETTINGS_CAPTURES)
+                .get(0).get("@v-node").intValue();
     }
 
     @Test
@@ -754,7 +1265,9 @@ public class ElementListenersTest
         // Test that addEventData correctly extracts nested record structure
         record EventDetails(int button, int clientX, int clientY) {
         }
-        record MouseEventData(EventDetails event, String type) {
+        record ElementDetails(String tagName) {
+        }
+        record MouseEventData(EventDetails event, ElementDetails element) {
         }
 
         DomListenerRegistration registration = ns.add("click", noOp);
@@ -769,10 +1282,114 @@ public class ElementListenersTest
                 "Should capture event.clientX");
         assertTrue(expressions.contains("event.clientY"),
                 "Should capture event.clientY");
-        assertTrue(expressions.contains("type"), "Should capture type");
+        assertTrue(expressions.contains("element.tagName"),
+                "Should capture element.tagName");
 
         // Should have exactly these 4 expressions
         assertEquals(4, expressions.size(), "Should have 4 expressions");
+    }
+
+    @Test
+    void testAddEventDataWithRecordAndGetEventData() {
+        record EventDetails(String type, int button, int clientX, int clientY) {
+        }
+        record MouseEventData(EventDetails event) {
+        }
+
+        Element element = new Element("div");
+        AtomicReference<MouseEventData> captured = new AtomicReference<>();
+        AtomicReference<MouseEventData> capturedWithTypeReference = new AtomicReference<>();
+        element.addEventListener("click", e -> {
+            captured.set(e.getEventData(MouseEventData.class));
+            capturedWithTypeReference
+                    .set(e.getEventData(new TypeReference<MouseEventData>() {
+                    }));
+        }).addEventData(MouseEventData.class);
+
+        // The client sends one flat key per expression
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put("event.button", 1);
+        eventData.put("event.clientX", 68);
+        eventData.put("event.clientY", 159);
+        eventData.put("event.type", "click");
+
+        element.getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(new DomEvent(element, "click", eventData));
+
+        assertEquals(new MouseEventData(new EventDetails("click", 1, 68, 159)),
+                captured.get());
+        assertEquals(captured.get(), capturedWithTypeReference.get());
+    }
+
+    @Test
+    void testGetEventDataKeepsFlatKeys() {
+        record FlatMouseEventData(@JsonProperty("event.button") int button,
+                @JsonProperty("event.clientX") int clientX) {
+        }
+
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put("event.button", 2);
+        eventData.put("event.clientX", 68);
+        eventData.put("event.preventDefault()", (String) null);
+        // Keys with empty segments are not property paths
+        eventData.put("event.", "a");
+        eventData.put("event..x", "b");
+        eventData.put("event.other.", "c");
+        DomEvent event = new DomEvent(new Element("div"), "click", eventData);
+
+        assertEquals(new FlatMouseEventData(2, 68),
+                event.getEventData(FlatMouseEventData.class));
+        record EventNode(JsonNode event) {
+        }
+        JsonNode nested = event.getEventData(EventNode.class).event();
+        assertEquals(2, nested.get("button").asInt());
+        assertFalse(nested.has("preventDefault()"));
+        assertFalse(nested.has(""));
+        assertFalse(nested.has("x"));
+        assertFalse(nested.has("other"));
+        // Maps and JSON nodes get only the flat keys, so scalar value types
+        // keep working
+        Set<String> flatKeys = Set.of("event.button", "event.clientX",
+                "event.preventDefault()", "event.", "event..x", "event.other.");
+        Map<String, String> data = event
+                .getEventData(new TypeReference<Map<String, String>>() {
+                });
+        assertEquals(flatKeys, data.keySet());
+        assertEquals(flatKeys, Set.copyOf(
+                JacksonUtils.getKeys(event.getEventData(JsonNode.class))));
+        // The original event data is not modified
+        assertEquals(6, eventData.size());
+    }
+
+    @Test
+    void testGetEventDataMergesNestedPaths() {
+        record Rgb(int r, int g, int b) {
+        }
+        record Event(Rgb detail, JsonNode button) {
+        }
+        record Data(Event event, JsonNode target) {
+        }
+
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        // Sub-paths before the complete object they belong to
+        eventData.put("event.detail.g", 99);
+        eventData.put("event.detail.b", 3);
+        ObjectNode detail = eventData.putObject("event.detail");
+        detail.put("r", 1);
+        detail.put("g", 2);
+        // A null or scalar prefix value
+        eventData.putNull("event.button");
+        eventData.put("event.button.x", 4);
+        eventData.put("target", 5);
+        eventData.put("target.id", "foo");
+        DomEvent event = new DomEvent(new Element("div"), "click", eventData);
+
+        Data data = event.getEventData(Data.class);
+        // The complete object is the base, sub-paths are merged in without
+        // overwriting it
+        assertEquals(new Rgb(1, 2, 3), data.event().detail());
+        assertEquals(4, data.event().button().get("x").asInt());
+        assertEquals(5, data.target().asInt());
     }
 
     @Test
@@ -925,6 +1542,35 @@ public class ElementListenersTest
 
         // Should have exactly these 4 expressions
         assertEquals(4, expressions.size(), "Should have 4 expressions");
+    }
+
+    @Test
+    void testGetEventDetailWithNestedPaths() {
+        record Position(int x, int y) {
+        }
+        record DragDetail(Position start, Position end) {
+        }
+
+        // The client sends one flat key per expression
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put("event.detail.start.x", 1);
+        eventData.put("event.detail.start.y", 2);
+        eventData.put("event.detail.end.x", 3);
+        eventData.put("event.detail.end.y", 4);
+        DomEvent event = new DomEvent(new Element("div"), "drag", eventData);
+
+        DragDetail expected = new DragDetail(new Position(1, 2),
+                new Position(3, 4));
+        assertEquals(expected, event.getEventDetail(DragDetail.class));
+        assertEquals(expected,
+                event.getEventDetail(new TypeReference<DragDetail>() {
+                }));
+        // Maps get only the flat keys
+        Map<String, Integer> detail = event
+                .getEventDetail(new TypeReference<Map<String, Integer>>() {
+                });
+        assertEquals(Set.of("start.x", "start.y", "end.x", "end.y"),
+                detail.keySet());
     }
 
     @Test

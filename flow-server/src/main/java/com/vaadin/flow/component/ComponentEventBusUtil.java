@@ -114,6 +114,7 @@ public class ComponentEventBusUtil {
      *            the component event type
      * @return an unmodifiable list of event data expressions for a DOM listener
      *         registration
+     * @since 25.4
      */
     public static List<String> getListenerEventData(
             Class<? extends ComponentEvent<?>> eventType) {

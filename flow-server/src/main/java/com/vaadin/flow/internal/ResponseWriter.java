@@ -136,8 +136,8 @@ public class ResponseWriter implements Serializable {
             try {
                 url = getPrecompressedResource(request, resourceUrl,
                         brotliFilenameWithPath, ".br");
-                if (url != null) {
-                    connection = url.openConnection();
+                connection = openIfUpToDate(url, resourceUrl);
+                if (connection != null) {
                     dataStream = connection.getInputStream();
                     response.setHeader("Content-Encoding", "br");
                 }
@@ -154,8 +154,8 @@ public class ResponseWriter implements Serializable {
             try {
                 url = getPrecompressedResource(request, resourceUrl,
                         gzippedFilenameWithPath, ".gz");
-                if (url != null) {
-                    connection = url.openConnection();
+                connection = openIfUpToDate(url, resourceUrl);
+                if (connection != null) {
                     dataStream = connection.getInputStream();
                     response.setHeader("Content-Encoding", "gzip");
                 }
@@ -225,6 +225,7 @@ public class ResponseWriter implements Serializable {
      * @param resource
      *            the resource, used in log messages
      * @return the ranges to send, or {@code null} if the header is ignored
+     * @since 25.4
      */
     public static List<Pair<Long, Long>> parseRanges(String range,
             long resourceLength, Object resource) {
@@ -322,6 +323,7 @@ public class ResponseWriter implements Serializable {
      * @throws IOException
      *             if reading the resource or writing the response fails, or the
      *             resource ends before a range does
+     * @since 25.4
      */
     public static void writeRanges(List<Pair<Long, Long>> ranges,
             long resourceLength, InputStream dataStream, URL resourceUrl,
@@ -531,6 +533,51 @@ public class ResponseWriter implements Serializable {
             return sibling;
         }
         return getResource(request, compressedFilenameWithPath);
+    }
+
+    /**
+     * Opens a precompressed variant unless it is older than the resource
+     * itself. A production build writes the variants after the resource, but
+     * nothing updates them when the resource is replaced later (an IDE build, a
+     * copied hotfix, a redeploy into the same directory), so an older variant
+     * holds outdated content. Variants with an unknown timestamp are served.
+     */
+    private static URLConnection openIfUpToDate(URL compressedUrl,
+            URL resourceUrl) throws IOException {
+        if (compressedUrl == null) {
+            return null;
+        }
+        // Read first so a failure here leaves no compressed stream open
+        long resourceLastModified = getLastModified(resourceUrl);
+        URLConnection connection = compressedUrl.openConnection();
+        long compressedLastModified = connection.getLastModified();
+        if (compressedLastModified > 0
+                && compressedLastModified < resourceLastModified) {
+            getLogger().debug("Not serving {} because it is older than {}",
+                    compressedUrl, resourceUrl);
+            closeConnection(connection);
+            return null;
+        }
+        return connection;
+    }
+
+    private static long getLastModified(URL url) throws IOException {
+        URLConnection connection = url.openConnection();
+        try {
+            return connection.getLastModified();
+        } finally {
+            closeConnection(connection);
+        }
+    }
+
+    private static void closeConnection(URLConnection connection) {
+        // getLastModified() connects, which opens the stream of a file URL
+        try {
+            connection.getInputStream().close();
+        } catch (IOException e) {
+            getLogger().debug("Error closing connection to {}",
+                    connection.getURL(), e);
+        }
     }
 
     private URL getCompressedSibling(URL resourceUrl, String suffix) {

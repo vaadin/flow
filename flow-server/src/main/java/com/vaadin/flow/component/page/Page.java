@@ -36,13 +36,19 @@ import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.Element.ElementJs;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.CssBundler;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.js.internal.JsWithExecutionContext;
+import com.vaadin.flow.server.CspMode;
+import com.vaadin.flow.server.CspViolationException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -148,15 +154,17 @@ public class Page implements Serializable {
      * Adds the given style sheet to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the static web resources
-     * directory. So if the {@code url} value is {@code "some.js"} and
+     * Relative URLs are resolved against the page's base URI, which is the
+     * Vaadin servlet mapping path. So if the {@code url} value is
+     * {@code "some.js"}, the servlet is mapped to the context root and
      * {@code src/main/webapp} is used as a location for static web resources
-     * (which is the default location) then the file system path for the
+     * (which is the default location), then the file system path for the
      * resource should be {@code src/main/webapp/some.js}.
      * <p>
      * You can prefix the URL with {@code context://} to make it relative to the
      * context path or use an absolute URL to refer to files outside the
-     * frontend directory.
+     * frontend directory. The {@code context://} and {@code base://} rules of
+     * {@link StyleSheet#value()} apply here as well.
      * <p>
      * For component related style sheet dependencies, you should use the
      * {@link StyleSheet @StyleSheet} annotation.
@@ -176,15 +184,17 @@ public class Page implements Serializable {
      * Adds the given style sheet to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the static web resources
-     * directory. So if the {@code url} value is {@code "some.js"} and
+     * Relative URLs are resolved against the page's base URI, which is the
+     * Vaadin servlet mapping path. So if the {@code url} value is
+     * {@code "some.js"}, the servlet is mapped to the context root and
      * {@code src/main/webapp} is used as a location for static web resources
-     * (which is the default location) then the file system path for the
+     * (which is the default location), then the file system path for the
      * resource should be {@code src/main/webapp/some.js}.
      * <p>
      * You can prefix the URL with {@code context://} to make it relative to the
      * context path or use an absolute URL to refer to files outside the
-     * frontend directory.
+     * frontend directory. The {@code context://} and {@code base://} rules of
+     * {@link StyleSheet#value()} apply here as well.
      * <p>
      * For component related style sheet dependencies, you should use the
      * {@link StyleSheet @StyleSheet} annotation.
@@ -230,6 +240,7 @@ public class Page implements Serializable {
      * @return a registration object that can be used to remove the style sheet
      * @throws IllegalArgumentException
      *             if {@code layer} is not a valid cascade layer name
+     * @since 25.4
      */
     public Registration addStyleSheet(String url, LoadMode loadMode,
             String layer) {
@@ -276,15 +287,17 @@ public class Page implements Serializable {
      * Adds the given JavaScript to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the static web resources
-     * directory. So if the {@code url} value is {@code "some.js"} and
+     * Relative URLs are resolved against the page's base URI, which is the
+     * Vaadin servlet mapping path. So if the {@code url} value is
+     * {@code "some.js"}, the servlet is mapped to the context root and
      * {@code src/main/webapp} is used as a location for static web resources
-     * (which is the default location) then the file system path for the
+     * (which is the default location), then the file system path for the
      * resource should be {@code src/main/webapp/some.js}.
      * <p>
      * You can prefix the URL with {@code context://} to make it relative to the
      * context path or use an absolute URL to refer to files outside the
-     * frontend directory.
+     * frontend directory. The {@code context://} and {@code base://} rules of
+     * {@link JavaScript#value()} apply here as well.
      * <p>
      * For component related JavaScript dependencies, you should use the
      * {@link JavaScript @JavaScript} annotation.
@@ -303,15 +316,17 @@ public class Page implements Serializable {
      * Adds the given JavaScript to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the static web resources
-     * directory. So if the {@code url} value is {@code "some.js"} and
+     * Relative URLs are resolved against the page's base URI, which is the
+     * Vaadin servlet mapping path. So if the {@code url} value is
+     * {@code "some.js"}, the servlet is mapped to the context root and
      * {@code src/main/webapp} is used as a location for static web resources
-     * (which is the default location) then the file system path for the
+     * (which is the default location), then the file system path for the
      * resource should be {@code src/main/webapp/some.js}.
      * <p>
      * You can prefix the URL with {@code context://} to make it relative to the
      * context path or use an absolute URL to refer to files outside the
-     * frontend directory.
+     * frontend directory. The {@code context://} and {@code base://} rules of
+     * {@link JavaScript#value()} apply here as well.
      * <p>
      * For component related JavaScript dependencies, you should use the
      * {@link JavaScript @JavaScript} annotation.
@@ -330,10 +345,12 @@ public class Page implements Serializable {
      * Adds the given JavaScript to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the static web resources
-     * directory. You can prefix the URL with {@code context://} to make it
-     * relative to the context path or use an absolute URL to refer to files
-     * outside the frontend directory.
+     * Relative URLs are resolved against the page's base URI, which is the
+     * Vaadin servlet mapping path. You can prefix the URL with
+     * {@code context://} to make it relative to the context path or use an
+     * absolute URL to refer to files outside the frontend directory. The
+     * {@code context://} and {@code base://} rules of
+     * {@link JavaScript#value()} apply here as well.
      * <p>
      * The {@code type} parameter selects the kind of {@code <script>} tag the
      * browser receives: {@link JavaScript.Type#SCRIPT} renders a classic
@@ -410,14 +427,69 @@ public class Page implements Serializable {
      * {@code Promise} of the {@code expression} is completed. It behaves like
      * other dependencies ({@link #addJavaScript(String)},
      * {@link #addJsModule(String)}, etc.)
-     *
+     * <p>
+     * The browser compiles the expression from a string, which a Content
+     * Security Policy without {@code unsafe-eval} blocks. Use
+     * {@link #addDynamicImport(JsFunction)} with a function declared by a
+     * {@link JsDefinition} interface to keep the JavaScript in the bundle.
      *
      * @param expression
      *            the JavaScript expression which return a Promise
      * @since 2.1
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode
      */
     public void addDynamicImport(String expression) {
+        CspViolationReporter.reportStringJavaScript();
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
+    }
+
+    /**
+     * Adds a dynamic import that calls the given function, which is supposed to
+     * return a JavaScript {@code Promise}.
+     * <p>
+     * No change will be applied on the client side until the resulting
+     * {@code Promise} is completed, as with {@link #addDynamicImport(String)}.
+     * Unlike that method, which sends an expression that the browser compiles,
+     * this one sends a function value, so a function declared by a
+     * {@link JsDefinition} interface and obtained from
+     * {@link JsSnippets#of(Class)} loads without anything being compiled in the
+     * browser:
+     *
+     * <pre>
+     * &#64;JsDefinition
+     * public interface ReportEditorJs extends Serializable {
+     *     &#64;JsExpression("return import('Frontend/report-editor/report-editor.js');")
+     *     JsFunction loadEditor();
+     * }
+     *
+     * page.addDynamicImport(JsSnippets.of(ReportEditorJs.class).loadEditor());
+     * // Defined by the time it is attached, as the import blocks later changes
+     * layout.add(new ReportEditor());
+     * </pre>
+     *
+     * The build puts the expression into the bundle, where the bundler can
+     * split a module imported with a literal path into a file of its own that
+     * is loaded only when the import runs.
+     * <p>
+     * A function that is added again with the same captured values is loaded
+     * only once. The function cannot capture an element or a component,
+     * attached or not, as the browser loads dependencies before it applies the
+     * changes of the same round trip, and a detached element cannot be
+     * referenced. This is checked for a capture itself and for what a
+     * collection, a map, an array or a captured function holds. Bean properties
+     * are only checked for attached elements; a detached one in a bean is sent
+     * as {@code null}, as it is for any other value sent to the browser.
+     *
+     * @param dynamicImport
+     *            the function that returns a Promise, not {@code null}
+     * @throws IllegalArgumentException
+     *             if the function captures an element or a component, as
+     *             described above
+     * @since 25.4
+     */
+    public void addDynamicImport(JsFunction dynamicImport) {
+        addDependency(new Dependency(dynamicImport));
     }
 
     /**
@@ -524,9 +596,12 @@ public class Page implements Serializable {
      * @return a pending result that can be used to get a value returned from
      *         the expression
      * @since 25.0
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
+        CspViolationReporter.reportStringJavaScript();
         return ui.getInternals().addJavaScriptInvocation(
                 new JavaScriptInvocation(expression, parameters));
     }
@@ -633,15 +708,7 @@ public class Page implements Serializable {
     private void ensureResizeListener() {
         if (resizeReceiver == null) {
             // "republish" on the UI element, so can be listened with core APIs
-            ui.getElement().executeJs("""
-                        const el = this;
-                        window.addEventListener('resize', evt => {
-                            const event = new Event("window-resize");
-                            event.w = document.documentElement.clientWidth;
-                            event.h = document.documentElement.clientHeight;
-                            el.dispatchEvent(event);
-                        });
-                    """);
+            ui.getElement().executeJs(ElementJs.class).forwardWindowResize();
             resizeReceiver = ui.getElement()
                     .addEventListener("window-resize", e -> {
                         int w = e.getEventData().get("event.w").intValue();
@@ -830,10 +897,7 @@ public class Page implements Serializable {
         // The vaadin-redirect-pending event might be useful to block other
         // client side
         // reload/redirection triggered by other components, for example Vite.
-        executeJs(
-                "window.dispatchEvent(new CustomEvent('vaadin-redirect-pending', {detail: {url: $0}})); "
-                        + "if ($1 == '_self') this.stopApplication(); window.open($0, $1)",
-                url, windowName);
+        executeJs(NavigationJs.class).open(url, windowName);
     }
 
     /**
@@ -1032,6 +1096,40 @@ public class Page implements Serializable {
          */
         @JsExpression("return document.dir")
         PendingJavaScriptResult readDirection();
+    }
+
+    /**
+     * What this page runs to open a URL, as a JavaScript definition for
+     * {@link #executeJs(Class)}. Kept apart from {@link PageJs} since it
+     * reaches the execution context of the client and does not check the URL,
+     * which {@link #open(String, String)} does before calling it.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface NavigationJs extends Serializable {
+
+        /**
+         * Opens a URL in the window with the given name, after telling the
+         * client that a redirect is pending. Opening it in this window stops
+         * the application first, so that the client does not try to talk to the
+         * server while the page unloads.
+         *
+         * @param url
+         *            the URL to open
+         * @param windowName
+         *            the name of the window to open it in, or
+         *            <code>_self</code> for this window
+         */
+        @JsExpression("""
+                window.dispatchEvent(new CustomEvent('vaadin-redirect-pending', {detail: {url: $0}}));
+                if ($1 == '_self') $executionContext.stopApplication();
+                window.open($0, $1);
+                """)
+        @JsWithExecutionContext
+        void open(String url, String windowName);
     }
 
     /**

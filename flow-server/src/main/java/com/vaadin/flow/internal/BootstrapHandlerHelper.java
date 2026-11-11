@@ -226,6 +226,7 @@ public final class BootstrapHandlerHelper implements Serializable {
      * @return the path of the push WebSocket endpoint, or {@code null} if the
      *         servlet has neither the init parameter nor a registration to read
      *         the URL mapping from
+     * @since 25.4
      */
     public static String getPushEndpointPath(ServletConfig servletConfig) {
         String pushServletMapping = getCleanedPushServletMapping(

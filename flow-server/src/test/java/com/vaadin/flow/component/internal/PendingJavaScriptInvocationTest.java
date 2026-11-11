@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -27,25 +28,43 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.MockedStatic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.PendingJavaScriptResult.JavaScriptException;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.SingleCaptureConsumer;
 
+import elemental.json.JsonValue;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
 
 class PendingJavaScriptInvocationTest {
     private static final JsonNode fooJsonString = JacksonUtils
@@ -225,6 +244,57 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
+    void throwingSuccessHandlers_laterHandlersRunAndFirstExceptionIsThrown() {
+        IllegalStateException first = new IllegalStateException("first");
+        IOException second = new IOException("second");
+        AssertionError third = new AssertionError("third");
+        invocation.then(json -> {
+            throw first;
+        });
+        invocation.then(json -> sneakyThrow(second));
+        invocation.then(json -> {
+            throw first;
+        });
+        invocation.then(json -> {
+            throw third;
+        });
+        invocation.then(jsonSuccessConsumer);
+        CompletableFuture<JsonNode> future = invocation.toCompletableFuture();
+
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> invocation.complete(fooJsonString));
+
+        assertSame(first, thrown);
+        assertEquals(List.of(second, third),
+                Arrays.asList(thrown.getSuppressed()));
+        assertSame(fooJsonString, jsonSuccessConsumer.getCapturedValue());
+        assertSame(fooJsonString, future.getNow(null));
+    }
+
+    @Test
+    void throwingErrorHandler_laterHandlersRunAndExceptionIsThrown() {
+        IOException failure = new IOException("failure");
+        invocation.then(jsonSuccessConsumer, error -> sneakyThrow(failure));
+        invocation.then(jsonSuccessConsumer, errorConsumer);
+        CompletableFuture<JsonNode> future = invocation.toCompletableFuture();
+
+        IOException thrown = assertThrows(IOException.class,
+                () -> invocation.completeExceptionally(fooJsonString));
+
+        assertSame(failure, thrown);
+        assertSame("foo", errorConsumer.getCapturedValue());
+        ExecutionException futureFailure = assertThrows(
+                ExecutionException.class, future::get);
+        assertInstanceOf(JavaScriptException.class, futureFailure.getCause());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <E extends Throwable> void sneakyThrow(Throwable throwable)
+            throws E {
+        throw (E) throwable;
+    }
+
+    @Test
     void thenAfterSend_throws() {
         invocation.setSentToBrowser();
 
@@ -330,8 +400,7 @@ class PendingJavaScriptInvocationTest {
                     .toCompletableFuture();
 
             List<Future<JsonNode>> futures = createBlockingActions(
-                    completableFuture).stream().map(executor::submit)
-                    .collect(Collectors.toList());
+                    completableFuture).stream().map(executor::submit).toList();
 
             assertEquals(0, futures.stream().filter(Future::isDone).count(),
                     "All futures should be pending");
@@ -366,6 +435,256 @@ class PendingJavaScriptInvocationTest {
         return Arrays.asList(completableFuture::get,
                 () -> completableFuture.get(1, TimeUnit.HOURS),
                 completableFuture::join);
+    }
+
+    /**
+     * Simulates an add-on compiled against Vaadin 24, where {@code then} took a
+     * {@code SerializableConsumer<JsonValue>}. Due to erasure, the call links
+     * fine against the Vaadin 25 signature.
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private SerializableConsumer<JsonValue> scheduleCallbackFromIncompatibleAddon() {
+        SerializableConsumer<JsonValue> legacyCallback = value -> {
+        };
+        invocation.then((SerializableConsumer) legacyCallback);
+        return legacyCallback;
+    }
+
+    @Test
+    void incompatibleSuccessHandler_exceptionNamesHandlerClass() {
+        SerializableConsumer<JsonValue> legacyCallback = scheduleCallbackFromIncompatibleAddon();
+
+        ClassCastException exception = assertThrows(ClassCastException.class,
+                () -> invocation.complete(JacksonUtils.nullNode()));
+
+        assertTrue(
+                exception.getMessage()
+                        .contains(legacyCallback.getClass().getName()),
+                exception.getMessage());
+        assertInstanceOf(ClassCastException.class, exception.getCause());
+    }
+
+    @Test
+    void successHandlerCastFailureWithoutMessage_rethrownUnchanged() {
+        ClassCastException original = new ClassCastException();
+        invocation.then(value -> {
+            throw original;
+        });
+
+        ClassCastException exception = assertThrows(ClassCastException.class,
+                () -> invocation.complete(JacksonUtils.nullNode()));
+
+        assertSame(original, exception);
+    }
+
+    /**
+     * A return value that a legacy handler can accept, so that the cast to
+     * {@code JsonValue} succeeds and the handler body runs.
+     */
+    private static class LegacyCompatibleNode extends StringNode
+            implements JsonValue {
+        LegacyCompatibleNode() {
+            super("foo");
+        }
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    void incompatibleSuccessHandler_castFailureWithoutMessage_exceptionNamesHandlerClass() {
+        // Stands in for the pre-allocated exception without a message that
+        // the JVM throws for a cast that fails very often
+        ClassCastException original = new ClassCastException();
+        SerializableConsumer<JsonValue> legacyCallback = value -> {
+            throw original;
+        };
+        invocation.then((SerializableConsumer) legacyCallback);
+
+        ClassCastException exception = assertThrows(ClassCastException.class,
+                () -> invocation.complete(new LegacyCompatibleNode()));
+
+        assertTrue(
+                exception.getMessage()
+                        .contains(legacyCallback.getClass().getName()),
+                exception.getMessage());
+        assertSame(original, exception.getCause());
+    }
+
+    private static void acceptLegacyValue(JsonValue value) {
+    }
+
+    @Test
+    void acceptsElementalJson_legacyHandlers_true() {
+        SerializableConsumer<JsonValue> lambda = value -> {
+        };
+        SerializableConsumer<JsonValue> methodReference = PendingJavaScriptInvocationTest::acceptLegacyValue;
+        SerializableConsumer<JsonValue> anonymous = new SerializableConsumer<>() {
+            @Override
+            public void accept(JsonValue value) {
+            }
+        };
+
+        assertTrue(PendingJavaScriptInvocation.acceptsElementalJson(lambda));
+        assertTrue(PendingJavaScriptInvocation
+                .acceptsElementalJson(methodReference));
+        assertTrue(PendingJavaScriptInvocation.acceptsElementalJson(anonymous));
+    }
+
+    @Test
+    void acceptsElementalJson_jsonNodeHandlers_false() {
+        SerializableConsumer<JsonNode> lambda = value -> {
+        };
+        SerializableConsumer<JsonNode> anonymous = new SerializableConsumer<>() {
+            @Override
+            public void accept(JsonNode value) {
+            }
+        };
+
+        assertFalse(PendingJavaScriptInvocation.acceptsElementalJson(lambda));
+        assertFalse(
+                PendingJavaScriptInvocation.acceptsElementalJson(anonymous));
+    }
+
+    @Test
+    void successHandlerThrowsUnrelatedClassCastException_rethrownUnchanged() {
+        ClassCastException original = new ClassCastException(
+                "class java.lang.Integer cannot be cast to class java.lang.String");
+        invocation.then(value -> {
+            throw original;
+        });
+
+        ClassCastException exception = assertThrows(ClassCastException.class,
+                () -> invocation.complete(JacksonUtils.nullNode()));
+
+        assertSame(original, exception);
+    }
+
+    @Test
+    void successHandlerThrowsUnrelatedNoClassDefFoundError_rethrownUnchanged() {
+        NoClassDefFoundError original = new NoClassDefFoundError(
+                "com/example/Missing");
+        invocation.then(value -> {
+            throw original;
+        });
+
+        NoClassDefFoundError error = assertThrows(NoClassDefFoundError.class,
+                () -> invocation.complete(JacksonUtils.nullNode()));
+
+        assertSame(original, error);
+    }
+
+    @Test
+    void successHandlerMissingElementalJson_errorNamesHandlerClass() {
+        NoClassDefFoundError original = new NoClassDefFoundError(
+                "elemental/json/JsonValue");
+        SerializableConsumer<JsonNode> handler = value -> {
+            throw original;
+        };
+        invocation.then(handler);
+
+        NoClassDefFoundError error = assertThrows(NoClassDefFoundError.class,
+                () -> invocation.complete(JacksonUtils.nullNode()));
+
+        assertTrue(error.getMessage().contains(handler.getClass().getName()),
+                error.getMessage());
+        assertSame(original, error.getCause());
+    }
+
+    @Test
+    void typedSuccessHandlerCastFailureWithoutMessage_rethrownUnchanged() {
+        ClassCastException original = new ClassCastException();
+        invocation.then(String.class, value -> {
+            throw original;
+        });
+
+        ClassCastException exception = assertThrows(ClassCastException.class,
+                () -> invocation.complete(fooJsonString));
+
+        assertSame(original, exception);
+    }
+
+    @ParameterizedTest
+    @ValueSource(classes = { Integer.class, ObjectNode.class })
+    void typedFuture_conversionFails_completesExceptionally(
+            Class<?> targetType) {
+        CompletableFuture<?> future = invocation
+                .toCompletableFuture(targetType);
+
+        invocation.complete(fooJsonString);
+
+        assertConversionFailure(future);
+    }
+
+    @Test
+    void typeReferenceFuture_conversionFails_completesExceptionally() {
+        CompletableFuture<List<Integer>> future = invocation
+                .toCompletableFuture(new TypeReference<List<Integer>>() {
+                });
+
+        invocation.complete(fooJsonString);
+
+        assertConversionFailure(future);
+    }
+
+    @Test
+    void typedCaptureErrors_conversionFails_errorHandlerCalled() {
+        SingleCaptureConsumer<Integer> classHandler = new SingleCaptureConsumer<>();
+        SingleCaptureConsumer<String> extraErrorHandler = new SingleCaptureConsumer<>();
+        invocation.then(Integer.class, classHandler, errorConsumer);
+        invocation.then(new TypeReference<Integer>() {
+        }, value -> fail("Should not be called"), extraErrorHandler);
+
+        invocation.complete(fooJsonString);
+
+        assertFalse(classHandler.isCaptured());
+        assertTrue(errorConsumer.getCapturedValue().contains("Integer"),
+                errorConsumer.getCapturedValue());
+        assertTrue(extraErrorHandler.getCapturedValue().contains("Integer"),
+                extraErrorHandler.getCapturedValue());
+    }
+
+    @Test
+    void typedIgnoreErrors_conversionFails_warningLoggedAndLaterHandlersRun() {
+        Logger logger = mock(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class, CALLS_REAL_METHODS)) {
+            loggerFactory
+                    .when(() -> LoggerFactory
+                            .getLogger(TypedJavaScriptResultUtil.class))
+                    .thenReturn(logger);
+            invocation.then(Integer.class,
+                    value -> fail("Should not be called"));
+            invocation.then(jsonSuccessConsumer, errorConsumer);
+
+            invocation.complete(fooJsonString);
+        }
+
+        assertJsonSuccess();
+        verify(logger).warn(anyString(), any(IllegalArgumentException.class));
+    }
+
+    private static void assertConversionFailure(CompletableFuture<?> future) {
+        assertTrue(future.isCompletedExceptionally());
+        CompletionException exception = assertThrows(CompletionException.class,
+                future::join);
+        JavaScriptException javaScriptException = assertInstanceOf(
+                JavaScriptException.class, exception.getCause());
+        assertInstanceOf(IllegalArgumentException.class,
+                javaScriptException.getCause());
+    }
+
+    @Test
+    void typedSuccessHandlerThrowsIllegalArgument_rethrownNotRoutedToErrorHandler() {
+        IllegalArgumentException original = new IllegalArgumentException();
+        invocation.then(String.class, value -> {
+            throw original;
+        }, errorConsumer);
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> invocation.complete(fooJsonString));
+
+        assertSame(original, exception);
+        assertNoErrorValue();
     }
 
     private void assertStringSuccess() {

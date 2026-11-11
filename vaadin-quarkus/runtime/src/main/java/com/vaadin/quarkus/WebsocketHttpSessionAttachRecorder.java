@@ -75,6 +75,7 @@ public class WebsocketHttpSessionAttachRecorder {
      * @param deploymentManager
      *            deployment manager
      * @return an adapted version of VertxWebSocketHandler
+     * @since 25.4
      */
     public Handler<RoutingContext> createWebSocketHandler(
             DeploymentManager deploymentManager) {

@@ -16,8 +16,6 @@
 package com.vaadin.flow.internal;
 
 import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.NullNode;
-import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Helpers for replicating JavaScript semantics in Java.
@@ -33,13 +31,17 @@ public class JavaScriptSemantics {
     }
 
     /**
-     * Gets the boolean value of the provided value:
+     * Gets the boolean value of the provided value, with the same rules as in
+     * JavaScript. The value can be a Java value or a JSON value:
      * <ul>
-     * <li><code>null</code> is <code>false</code>.
-     * <li>String values are <code>true</code>, except for the empty string.
-     * <li>Numerical values are <code>true</code>, except for 0 and
+     * <li><code>null</code>, a JSON <code>null</code> and a missing JSON value
+     * are <code>false</code>.
+     * <li>A Java or JSON boolean is its own value.
+     * <li>A Java or JSON string is <code>true</code>, except for the empty
+     * string. The string <code>"false"</code> is also <code>true</code>.
+     * <li>A Java or JSON number is <code>true</code>, except for 0 and
      * <code>NaN</code>.
-     * <li>JSON object and JSON array values are always <code>true</code>.
+     * <li>A JSON object or JSON array is always <code>true</code>.
      * </ul>
      *
      * @param value
@@ -48,25 +50,41 @@ public class JavaScriptSemantics {
      *         JavaScript semantics, otherwise <code>false</code>
      */
     public static boolean isTrueish(Object value) {
-        if (value == null || value instanceof NullNode) {
+        if (value == null) {
             return false;
-        } else if (value instanceof Boolean) {
-            return ((Boolean) value).booleanValue();
-        } else if (value instanceof ObjectNode) {
-            return ((JsonNode) value).asBoolean(true);
-        } else if (value instanceof JsonNode) {
-            return ((JsonNode) value).asBoolean();
-        } else if (value instanceof Number) {
-            double number = ((Number) value).doubleValue();
-            // Special comparison to keep sonarqube happy
-            return !Double.isNaN(number)
-                    && Double.doubleToLongBits(number) != 0;
-        } else if (value instanceof String) {
-            return !((String) value).isEmpty();
+        } else if (value instanceof Boolean bool) {
+            return bool.booleanValue();
+        } else if (value instanceof JsonNode node) {
+            return isTrueish(node);
+        } else if (value instanceof Number number) {
+            return isTrueish(number.doubleValue());
+        } else if (value instanceof String string) {
+            return !string.isEmpty();
         } else {
             throw new IllegalStateException(
                     "Unsupported type: " + value.getClass());
         }
+    }
+
+    private static boolean isTrueish(JsonNode node) {
+        // Not asBoolean(): in Jackson 3 it throws for most strings, for
+        // numbers that are not integers and for arrays
+        if (node.isBoolean()) {
+            return node.booleanValue();
+        } else if (node.isNumber()) {
+            return isTrueish(node.doubleValue());
+        } else if (node.isString()) {
+            return !node.stringValue().isEmpty();
+        } else {
+            // An object or an array is true, null and a missing value are
+            // false
+            return node.isContainer();
+        }
+    }
+
+    private static boolean isTrueish(double number) {
+        // False for 0, -0 and NaN
+        return Math.abs(number) > 0;
     }
 
 }

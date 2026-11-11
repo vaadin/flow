@@ -33,6 +33,8 @@ import io.undertow.servlet.core.ManagedServlets;
  * its deployment configuration are created from the runtime configuration.
  * <p>
  * This class is meant for internal use only.
+ * 
+ * @since 25.4
  */
 @Recorder
 public class VaadinServletStartupRecorder {

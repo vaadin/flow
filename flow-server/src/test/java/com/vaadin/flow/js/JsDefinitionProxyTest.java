@@ -15,19 +15,43 @@
  */
 package com.vaadin.flow.js;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.component.page.PendingJavaScriptResult.JavaScriptException;
+import com.vaadin.flow.dom.DomEvent;
+import com.vaadin.flow.dom.DomEventData;
+import com.vaadin.flow.dom.DomEventFilter;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
+import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 
 class JsDefinitionProxyTest {
 
@@ -38,6 +62,74 @@ class JsDefinitionProxyTest {
 
         @JsExpression("return this.value;")
         PendingJavaScriptResult readValue();
+    }
+
+    public record Person(String name, int age) implements Serializable {
+    }
+
+    @JsDefinition
+    interface TypedJs extends Serializable {
+        @JsExpression("return 42;")
+        JavaScriptResult<Integer> readAnswer();
+
+        @JsExpression("return [{name: 'Ada', age: 36}];")
+        JavaScriptResult<List<Person>> readPeople();
+
+        @JsExpression("return this.dataset;")
+        JavaScriptResult<JsonNode> readJson();
+    }
+
+    interface ValueJs<T> extends Serializable {
+        @JsExpression("return this.value;")
+        JavaScriptResult<T> readValue();
+    }
+
+    interface ListJs<T> extends ValueJs<List<T>> {
+    }
+
+    interface ArrayJs<T> extends ValueJs<T[]> {
+    }
+
+    @JsDefinition
+    interface CounterJs extends ValueJs<Integer> {
+    }
+
+    @JsDefinition
+    interface NumbersJs extends ListJs<Integer> {
+    }
+
+    @JsDefinition
+    interface IntsJs extends ArrayJs<Integer> {
+    }
+
+    @JsDefinition
+    @SuppressWarnings("rawtypes")
+    interface RawValueJs extends ValueJs {
+    }
+
+    @JsDefinition
+    interface StillGenericJs<T> extends ValueJs<T> {
+    }
+
+    interface UnusedVariableJs<U> extends ValueJs<Integer> {
+    }
+
+    @JsDefinition
+    @SuppressWarnings("rawtypes")
+    interface RawUnusedVariableJs extends UnusedVariableJs {
+    }
+
+    @JsDefinition
+    interface UntypedJs<T> extends Serializable {
+        @SuppressWarnings("rawtypes")
+        @JsExpression("return 1;")
+        JavaScriptResult readRaw();
+
+        @JsExpression("return 1;")
+        JavaScriptResult<?> readWildcard();
+
+        @JsExpression("return [1];")
+        JavaScriptResult<List<T>> readVariable();
     }
 
     @JsDefinition
@@ -72,10 +164,119 @@ class JsDefinitionProxyTest {
         }
     }
 
+    @JsDefinition
+    interface LoggerJs extends Serializable {
+        @JsExpression("console.log($0, value);")
+        @JsCalledWith("value")
+        JsFunction createLogger(String prefix);
+
+        @JsExpression("return (value) => console.log($0, value);")
+        JsSnippet createSnippet(String prefix);
+    }
+
+    @JsDefinition
+    interface EventJs extends Serializable {
+        @JsExpression("return event.key === $0;")
+        DomEventFilter isKey(String key);
+
+        @JsExpression("return element.getAttribute($0);")
+        DomEventData<String> attribute(String name);
+
+        @JsExpression("return event.detail === $0;")
+        DomEventFilter isDetail(Object detail);
+
+        @JsExpression("return $0;")
+        DomEventData<Object> echo(Object value);
+    }
+
+    /**
+     * A bean that cannot be encoded since it refers to itself.
+     */
+    public static class SelfReference {
+        public SelfReference getSelf() {
+            return this;
+        }
+    }
+
+    @JsDefinition
+    interface CalledWithInvalidNameJs extends Serializable {
+        @JsExpression("console.log(value);")
+        @JsCalledWith("not-a-name")
+        JsFunction createLogger();
+    }
+
+    @JsDefinition
+    interface EmptyJs extends Serializable {
+    }
+
+    @JsDefinition
+    @JsCalledWith("value")
+    interface CalledWithOnDefinitionJs extends Serializable {
+        @JsExpression("console.log(value);")
+        JsFunction createLogger();
+    }
+
+    @JsDefinition
+    interface MixedJs extends Serializable {
+        @JsExpression("console.log($0, value);")
+        @JsCalledWith("value")
+        JsFunction createLogger(String prefix);
+
+        @JsExpression("console.log($0);")
+        void log(String message);
+    }
+
+    @JsDefinition
+    interface CalledWithWhenRunJs extends Serializable {
+        @JsExpression("console.log(value);")
+        @JsCalledWith("value")
+        void log();
+    }
+
+    @JsDefinition
+    interface SnippetWithExecutionContextJs extends Serializable {
+        @JsExpression("console.log($executionContext);")
+        @JsWithExecutionContext
+        JsFunction createLogger();
+    }
+
     private final List<JsCall> calls = new ArrayList<>();
 
-    private final PendingJavaScriptResult result = mock(
-            PendingJavaScriptResult.class);
+    private final RecordingResult result = new RecordingResult();
+
+    /** A pending result that keeps its handlers for a test to complete. */
+    private static class RecordingResult implements PendingJavaScriptResult {
+        private final List<SerializableConsumer<JsonNode>> resultHandlers = new ArrayList<>();
+        private final List<SerializableConsumer<String>> errorHandlers = new ArrayList<>();
+
+        @Override
+        public boolean cancelExecution() {
+            return false;
+        }
+
+        @Override
+        public boolean isSentToBrowser() {
+            return false;
+        }
+
+        @Override
+        public void then(SerializableConsumer<JsonNode> resultHandler,
+                SerializableConsumer<String> errorHandler) {
+            resultHandlers.add(resultHandler);
+            if (errorHandler != null) {
+                errorHandlers.add(errorHandler);
+            }
+        }
+
+        private void complete(String json) {
+            JsonNode value = JacksonUtils.getMapper().readTree(json);
+            resultHandlers.forEach(handler -> handler.accept(value));
+        }
+
+        private void fail(String message) {
+            errorHandlers.forEach(handler -> handler.accept(message));
+        }
+    }
 
     private <T> T proxy(Class<T> definitionType) {
         return JsDefinitionProxy.create(definitionType, call -> {
@@ -99,8 +300,141 @@ class JsDefinitionProxyTest {
 
     @Test
     void create_methodDeclaringAResult_answersWithWhatRanIt() {
-        assertEquals(result, proxy(GreeterJs.class).readValue(),
+        assertSame(result, proxy(GreeterJs.class).readValue(),
                 "a method that declares a result answers with the pending one");
+        assertSame(result, proxy(TypedJs.class).readJson(),
+                "the pending result already is a result of JSON");
+    }
+
+    @Test
+    void create_methodDeclaringATypedResult_convertsTheValue() {
+        List<Person> people = new ArrayList<>();
+        JavaScriptResult<List<Person>> typed = proxy(TypedJs.class)
+                .readPeople();
+        assertTrue(result.resultHandlers.isEmpty(),
+                "a result nobody reads should not be sent back");
+
+        typed.then(people::addAll);
+        result.complete("[{\"name\":\"Ada\",\"age\":36}]");
+
+        assertEquals(List.of(new Person("Ada", 36)), people);
+    }
+
+    @Test
+    void create_methodDeclaringATypedResult_completesTheFutureWithTheValue() {
+        CompletableFuture<Integer> answer = proxy(TypedJs.class).readAnswer()
+                .toCompletableFuture();
+
+        result.complete("42");
+
+        assertEquals(42, answer.getNow(null));
+    }
+
+    @Test
+    void create_methodDeclaringATypedResult_failsTheFutureWithTheError() {
+        CompletableFuture<Integer> answer = proxy(TypedJs.class).readAnswer()
+                .toCompletableFuture();
+
+        result.fail("not thinking");
+
+        CompletionException exception = assertThrows(CompletionException.class,
+                () -> answer.getNow(null));
+        assertInstanceOf(JavaScriptException.class, exception.getCause());
+        assertEquals("not thinking", exception.getCause().getMessage());
+    }
+
+    @Test
+    void create_valueThatCanNotBeConverted_failsWithTheConversionError() {
+        List<String> errors = new ArrayList<>();
+        JavaScriptResult<Integer> answer = proxy(TypedJs.class).readAnswer();
+        answer.then(value -> errors.add("converted " + value), errors::add);
+        CompletableFuture<Integer> future = answer.toCompletableFuture();
+
+        result.complete("\"forty-two\"");
+
+        assertEquals(1, errors.size());
+        assertTrue(errors.get(0).contains("Integer"), errors.get(0));
+        CompletionException exception = assertThrows(CompletionException.class,
+                () -> future.getNow(null));
+        JavaScriptException javaScriptException = assertInstanceOf(
+                JavaScriptException.class, exception.getCause());
+        assertInstanceOf(IllegalArgumentException.class,
+                javaScriptException.getCause());
+    }
+
+    @Test
+    void create_valueThatCanNotBeConvertedWithoutAnErrorHandler_runsLaterHandlers() {
+        JavaScriptResult<Integer> answer = proxy(TypedJs.class).readAnswer();
+        answer.then(value -> {
+        });
+        CompletableFuture<Integer> future = answer.toCompletableFuture();
+
+        result.complete("\"forty-two\"");
+
+        assertThrows(CompletionException.class, () -> future.getNow(null));
+    }
+
+    @Test
+    void create_typedResultFromAGenericInterface_convertsToTheBoundType() {
+        List<Integer> counts = new ArrayList<>();
+        proxy(CounterJs.class).readValue().then(counts::add);
+        result.complete("7");
+        assertEquals(List.of(7), counts);
+
+        result.resultHandlers.clear();
+        List<Integer> numbers = new ArrayList<>();
+        proxy(NumbersJs.class).readValue().then(numbers::addAll);
+        result.complete("[4, 2]");
+        assertEquals(List.of(4, 2), numbers);
+
+        result.resultHandlers.clear();
+        List<Integer> ints = new ArrayList<>();
+        proxy(IntsJs.class).readValue()
+                .then(array -> ints.addAll(List.of(array)));
+        result.complete("[4, 2]");
+        assertEquals(List.of(4, 2), ints);
+    }
+
+    @Test
+    void create_methodDeclaringATypedResult_isSerializable() throws Exception {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (ObjectOutputStream out = new ObjectOutputStream(bytes)) {
+            out.writeObject(proxy(TypedJs.class).readPeople());
+        }
+        try (ObjectInputStream in = new ObjectInputStream(
+                new ByteArrayInputStream(bytes.toByteArray()))) {
+            assertInstanceOf(JavaScriptResult.class, in.readObject());
+        }
+    }
+
+    @Test
+    void create_typedResultWithoutAHandler_throws() {
+        JavaScriptResult<Integer> answer = proxy(TypedJs.class).readAnswer();
+
+        assertThrows(IllegalArgumentException.class, () -> answer.then(null));
+    }
+
+    @Test
+    void create_typedResultWithoutAConcreteType_throws() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> proxy(UntypedJs.class));
+
+        String message = exception.getMessage();
+        assertTrue(
+                message.contains("readRaw") && message.contains("readWildcard")
+                        && message.contains("readVariable"),
+                "the message should name every method: " + message);
+        assertTrue(message.contains("PendingJavaScriptResult"),
+                "the message should say what to declare instead: " + message);
+        for (Class<?> unbound : List.of(RawValueJs.class, StillGenericJs.class,
+                RawUnusedVariableJs.class)) {
+            String unboundMessage = assertThrows(IllegalArgumentException.class,
+                    () -> proxy(unbound)).getMessage();
+            assertTrue(unboundMessage.contains("readValue"),
+                    unbound.getSimpleName()
+                            + " leaves the type variable unbound: "
+                            + unboundMessage);
+        }
     }
 
     @Test
@@ -126,6 +460,9 @@ class JsDefinitionProxyTest {
         assertTrue(exception.getMessage().contains("undeclared"),
                 "the message should name the method that declares nothing: "
                         + exception.getMessage());
+        // A definition that fails the check is not remembered as checked
+        assertThrows(IllegalArgumentException.class,
+                () -> proxy(UndeclaredJs.class));
     }
 
     @Test
@@ -147,5 +484,178 @@ class JsDefinitionProxyTest {
                 () -> proxy(ComposingJs.class)).getMessage().contains("twice"));
         assertTrue(assertThrows(IllegalArgumentException.class,
                 () -> proxy(HelpingJs.class)).getMessage().contains("name"));
+    }
+
+    @Test
+    void createSnippets_callOfADeclaredMethod_answersWithTheFunctionItDeclares() {
+        LoggerJs logger = JsDefinitionProxy.createSnippets(LoggerJs.class);
+
+        JsFunction function = logger.createLogger("Greeting:");
+
+        assertEquals(
+                new JsCall(LoggerJs.class, "createLogger",
+                        List.of("Greeting:")),
+                function.getDeclaredCall(),
+                "the function should name what declared it, for the client to look it up by");
+        assertEquals(List.of("Greeting:"), function.getCaptures());
+        assertEquals(
+                new JsCall(LoggerJs.class, "createSnippet", List.of("Unit")),
+                ((JsFunction) logger.createSnippet("Unit")).getDeclaredCall(),
+                "a method returning any snippet should answer with a function");
+        assertNotNull(logger.toString(),
+                "the implementation should answer the methods of Object");
+    }
+
+    @Test
+    void createSnippets_domEventSnippets_answerWithTheTypeTheyDeclare() {
+        EventJs events = JsDefinitionProxy.createSnippets(EventJs.class);
+
+        assertEquals(new JsCall(EventJs.class, "isKey", List.of("Enter")),
+                events.isKey("Enter").getDeclaredCall());
+        assertEquals(new JsCall(EventJs.class, "attribute", List.of("id")),
+                events.attribute("id").getDeclaredCall());
+    }
+
+    @Test
+    void createSnippets_domEventSnippetCaptureTheClientCanNotReceive_throwsWhenDeclared() {
+        EventJs events = JsDefinitionProxy.createSnippets(EventJs.class);
+        SelfReference unencodable = new SelfReference();
+
+        assertThrows(RuntimeException.class,
+                () -> events.isDetail(unencodable));
+        assertThrows(RuntimeException.class, () -> events.echo(unencodable));
+    }
+
+    @Test
+    void createSnippets_plainCaptures_equalKeysForEqualValues() {
+        EventJs events = JsDefinitionProxy.createSnippets(EventJs.class);
+
+        assertEquals(events.echo(42).getSnippetKey(),
+                events.echo(42).getSnippetKey());
+        assertEquals(events.echo(new BigDecimal("1.5")).getSnippetKey(),
+                events.echo(new BigDecimal("1.5")).getSnippetKey());
+        // A number that can change later is not a plain value
+        AtomicInteger counter = new AtomicInteger(42);
+        assertNotEquals(events.echo(counter).getSnippetKey(),
+                events.echo(counter).getSnippetKey());
+    }
+
+    @Test
+    void createSnippets_domEventSnippets_surviveSerialization() {
+        EventJs events = JsDefinitionProxy.createSnippets(EventJs.class);
+        DomEventFilter filter = events.isKey("Enter");
+        DomEventData<String> data = events.attribute("id");
+        // An element capture has a random key, which must be kept
+        DomEventData<Object> elementData = events.echo(new Element("span"));
+
+        DomEventFilter filterCopy = SerializationUtils.roundtrip(filter);
+        DomEventData<String> dataCopy = SerializationUtils.roundtrip(data);
+        DomEventData<Object> elementDataCopy = SerializationUtils
+                .roundtrip(elementData);
+
+        assertEquals(filter.getDeclaredCall(), filterCopy.getDeclaredCall());
+        assertEquals(filter.getSnippetKey(), filterCopy.getSnippetKey());
+        assertEquals(ElementListenerMap.getEventDataKey(elementData),
+                ElementListenerMap.getEventDataKey(elementDataCopy));
+        // Still read by the same key, as the type the method declares
+        assertEquals(ElementListenerMap.getEventDataKey(data),
+                ElementListenerMap.getEventDataKey(dataCopy));
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put(ElementListenerMap.getEventDataKey(data), "value");
+        assertEquals("value",
+                new DomEvent(new Element("div"), "click", eventData)
+                        .getEventData(dataCopy));
+    }
+
+    @Test
+    void createSnippets_methodRunningJavaScript_throws() {
+        // Nothing to run it on, since a snippet is not bound to an element
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> JsDefinitionProxy.createSnippets(GreeterJs.class));
+
+        assertTrue(exception.getMessage().contains("showGreeting"),
+                "the message should name the method: "
+                        + exception.getMessage());
+    }
+
+    @Test
+    void createSnippets_noMethods_saysThereAreNoSnippets() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> JsDefinitionProxy.createSnippets(EmptyJs.class));
+
+        assertTrue(exception.getMessage().endsWith("declares no snippets"),
+                exception.getMessage());
+    }
+
+    @Test
+    void createSnippets_calledWithANameAFunctionCanNotDeclare_throws() {
+        // When the implementation is handed out, rather than when the snippet
+        // is evaluated and the browser reports a syntax error
+        assertThrows(IllegalArgumentException.class, () -> JsDefinitionProxy
+                .createSnippets(CalledWithInvalidNameJs.class));
+    }
+
+    @Test
+    void checkDefinition_calledWithOnTheDefinition_throws() {
+        // The names would otherwise be ignored, and the expression would fail
+        // in the browser on the first call
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> JsDefinitionProxy
+                        .checkDefinition(CalledWithOnDefinitionJs.class));
+
+        assertTrue(exception.getMessage().contains("@JsCalledWith"),
+                exception.getMessage());
+    }
+
+    @Test
+    void checkDefinition_snippetsBesideJavaScriptToRun_throwsForEitherUse() {
+        // Whichever way it is used, half of it can not work
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> JsDefinitionProxy.checkDefinition(MixedJs.class));
+
+        assertTrue(exception.getMessage().contains("log"),
+                "the message should name the method that does not fit: "
+                        + exception.getMessage());
+        assertThrows(IllegalArgumentException.class,
+                () -> JsDefinitionProxy.createSnippets(MixedJs.class));
+        assertThrows(IllegalArgumentException.class,
+                () -> proxy(MixedJs.class));
+    }
+
+    @Test
+    void create_methodReturningASnippet_throws() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> proxy(LoggerJs.class));
+
+        assertTrue(exception.getMessage().contains("JsSnippets.of"),
+                "the message should say where a snippet is obtained from: "
+                        + exception.getMessage());
+    }
+
+    @Test
+    void create_calledWithOnAMethodRunningJavaScript_throws() {
+        // A call runs the expression rather than a function around it, so the
+        // names would never be declared
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> proxy(CalledWithWhenRunJs.class));
+
+        assertTrue(exception.getMessage().contains("@JsCalledWith"),
+                exception.getMessage());
+    }
+
+    @Test
+    void createSnippets_executionContextOnASnippet_throws() {
+        // Only a call runs against an element with the context beside it, a
+        // snippet is evaluated by whatever it is passed to
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> JsDefinitionProxy
+                        .createSnippets(SnippetWithExecutionContextJs.class));
+
+        assertTrue(exception.getMessage().contains("@JsWithExecutionContext"),
+                exception.getMessage());
     }
 }
