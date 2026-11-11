@@ -32,6 +32,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
@@ -42,7 +43,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -88,6 +88,9 @@ class RequestUtilTest {
 
     @Autowired
     RequestUtil requestUtil;
+
+    @Autowired
+    ObjectProvider<VaadinRolePrefixHolder> rolePrefixHolder;
 
     @MockitoSpyBean
     NavigationAccessControl accessControl;
@@ -771,7 +774,8 @@ class RequestUtilTest {
 
     @ParameterizedTest
     @CsvSource(value = { "CUSTOM_,foo,CUSTOM_foo,ROLE_foo",
-            "CUSTOM_,CUSTOM_foo,CUSTOM_foo,ROLE_foo", "'',foo,foo,ROLE_foo" })
+            "CUSTOM_,CUSTOM_foo,CUSTOM_foo,ROLE_foo", "'',foo,foo,ROLE_foo",
+            ",foo,ROLE_foo,foo" })
     void authorizeHillaRoute_configuredRolePrefix_used(String rolePrefix,
             String allowedRole, String grantedAuthority,
             String deniedAuthority) {
@@ -779,10 +783,7 @@ class RequestUtilTest {
         when(fileRouterRequestUtil.isSecuredRoute(request)).thenReturn(true);
         when(fileRouterRequestUtil.getAllowedAuthorities(request))
                 .thenReturn(Set.of(allowedRole));
-        var originalHolder = ReflectionTestUtils.getField(requestUtil,
-                "rolePrefixHolder");
-        ReflectionTestUtils.setField(requestUtil, "rolePrefixHolder",
-                new VaadinRolePrefixHolder(rolePrefix));
+        requestUtil.setRolePrefixHolder(new VaadinRolePrefixHolder(rolePrefix));
         try {
             assertTrue(requestUtil
                     .authorizeHillaRoute(
@@ -797,8 +798,7 @@ class RequestUtilTest {
                             new RequestAuthorizationContext(request))
                     .isGranted());
         } finally {
-            ReflectionTestUtils.setField(requestUtil, "rolePrefixHolder",
-                    originalHolder);
+            requestUtil.setRolePrefixHolder(rolePrefixHolder.getIfAvailable());
         }
     }
 }
