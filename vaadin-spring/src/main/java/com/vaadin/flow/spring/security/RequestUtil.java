@@ -20,6 +20,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -83,6 +84,9 @@ public class RequestUtil {
 
     @Autowired
     private ServletRegistrationBean<SpringServlet> springServletRegistration;
+
+    @Autowired(required = false)
+    private VaadinRolePrefixHolder rolePrefixHolder;
 
     private WebIconsRequestMatcher webIconsRequestMatcher;
 
@@ -250,11 +254,38 @@ public class RequestUtil {
         }
     }
 
+    /**
+     * Gets the authorities that grant access to the Hilla route of the request.
+     * <p>
+     * The route declares role names, like {@code @RolesAllowed} does, so they
+     * are prefixed with the role prefix in the same way as
+     * {@link HttpServletRequest#isUserInRole(String)} does in Spring Security.
+     * This keeps the check consistent with the filtering of the client-side
+     * routes, which uses {@code isUserInRole}.
+     */
     private Set<String> getHillaAllowedAuthorities(HttpServletRequest request) {
-        if (fileRouterRequestUtil != null) {
-            return fileRouterRequestUtil.getAllowedAuthorities(request);
+        if (fileRouterRequestUtil == null) {
+            return Collections.emptySet();
         }
-        return Collections.emptySet();
+        var roles = fileRouterRequestUtil.getAllowedAuthorities(request);
+        if (roles.isEmpty()) {
+            return roles;
+        }
+        var rolePrefix = getRolePrefix();
+        if (rolePrefix == null || rolePrefix.isEmpty()) {
+            return roles;
+        }
+        return roles.stream().map(
+                role -> role.startsWith(rolePrefix) ? role : rolePrefix + role)
+                .collect(Collectors.toSet());
+    }
+
+    private String getRolePrefix() {
+        if (rolePrefixHolder != null && rolePrefixHolder.isSet()) {
+            return rolePrefixHolder.getRolePrefix();
+        }
+        // The default of SecurityContextHolderAwareRequestWrapper
+        return "ROLE_";
     }
 
     /**

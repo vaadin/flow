@@ -68,12 +68,15 @@ public interface FileRouterRequestUtil {
     boolean isSecuredRoute(HttpServletRequest request);
 
     /**
-     * Gets the set of authorities that are allowed to access the given request.
+     * Gets the roles that are allowed to access the given request.
+     * <p>
+     * These are the role names declared by the route, such as
+     * {@code rolesAllowed} of a file route, without any role prefix.
      *
      * @param request
      *            the HTTP request to check
-     * @return the set of authorities that are allowed to access the given
-     *         request, or an empty set if no authority is required
+     * @return the roles that are allowed to access the given request, or an
+     *         empty set if no role is required
      * @since 25.0
      */
     Set<String> getAllowedAuthorities(HttpServletRequest request);
