@@ -15,10 +15,17 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.IntStream;
+
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebDriverException;
 
 @NotThreadSafe
 public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
@@ -27,23 +34,205 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
     // scroll restoration works for elements identified by DOM path
     private static final String INNER_SCROLL_SELECTOR = "#outer-scroll > div:nth-of-type(1)";
 
+    private static final int TOLERANCE_PX = 5;
+
+    // Set on the document before a reload is triggered, so that the test can
+    // tell the reloaded page from the one the reload was triggered on
+    private static final String DOCUMENT_MARKER = "__scrollPositionTestDocument";
+
+    // Reported instead of a scroll position for a container that is not in the
+    // DOM, which is a different thing from a container scrolled to the top
+    private static final int ELEMENT_MISSING = -1;
+
+    // Presses the pointer on an item and on the blank area of a container
+    // still being restored, and presses a key that does not scroll
+    private static final String PAGE_CLICK_SCRIPT = """
+            const item = document.getElementById('bottom-marker');
+            item.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+            const container = document.getElementById('outer-scroll');
+            const bounds = container.getBoundingClientRect();
+            container.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true,
+                    clientX: bounds.left + 20, clientY: bounds.top + 20 }));
+            item.dispatchEvent(new KeyboardEvent('keydown', { key: 'Control', bubbles: true }));
+            """;
+
+    private static final String SCROLL_POSITIONS_SCRIPT = """
+            const inner = document.querySelector(arguments[0]);
+            const outer = document.querySelector('#outer-scroll');
+            const missing = arguments[1];
+            return [window.scrollY, outer ? outer.scrollTop : missing,
+                    inner ? inner.scrollTop : missing];
+            """;
+
     @Test
     public void scrollPositionPreservedAfterUIRefresh() {
-        open();
-        waitForElementPresent(By.id("item-50"));
+        assertScrollPositionPreservedAfterUIRefresh();
+    }
 
+    @Test
+    public void scrollPositionPreservedAfterUIRefresh_viewRendersLate() {
+        assertScrollPositionPreservedAfterUIRefresh(
+                ScrollPositionLiveReloadView.RENDER_LATE_PARAMETER);
+    }
+
+    @Test
+    public void scrollPositionPreservedAfterFullPageReload() {
+        assertScrollPositionPreservedAfterFullPageReload();
+    }
+
+    @Test
+    public void scrollPositionPreservedAfterFullPageReload_viewRendersLate() {
+        assertScrollPositionPreservedAfterFullPageReload(
+                ScrollPositionLiveReloadView.RENDER_LATE_PARAMETER);
+    }
+
+    @Test
+    public void scrollPositionPreservedAfterFullPageReload_reloadInterruptsRestore() {
+        reloadThenInterruptRestore(() -> {
+            markDocument();
+            executeScript(
+                    "document.querySelector('vaadin-dev-tools').frontendConnection.onReload('reload')");
+            waitForNewDocument();
+        });
+    }
+
+    @Test
+    public void scrollPositionPreservedAfterFullPageReload_uiRefreshInterruptsRestore() {
+        reloadThenInterruptRestore(() -> {
+            String attachIdBefore = getAttachId();
+            executeScript(
+                    "document.querySelector('vaadin-dev-tools').frontendConnection.onReload('full-refresh')");
+            waitUntil(d -> !attachIdBefore.equals(getAttachId()), 10);
+        });
+    }
+
+    @Test
+    public void scrollPositionPreservedAfterFullPageReload_pageClickedDuringRestore() {
+        // Focusing the page after saving in the IDE presses the pointer and
+        // possibly a key, neither of which scrolls anything
+        reloadThenInterruptRestore(() -> executeScript(PAGE_CLICK_SCRIPT));
+    }
+
+    @Test
+    public void scrollPositionNotRestoredAfterFullPageReload_userScrollsDuringRestore() {
+        openAndWaitForContent(
+                ScrollPositionLiveReloadView.RENDER_LATE_PARAMETER);
+        List<Integer> scrollBefore = scrollAllContainers();
+
+        reloadAndWaitForWindowPosition(scrollBefore);
+        // A click first, so that the listener still has to be there for the
+        // scroll key that follows
+        executeScript(PAGE_CLICK_SCRIPT);
+        executeScript(
+                "document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true }))");
+
+        waitForElementVisible(By.id("outer-item-0"));
+        waitForAnimationFrames();
+        Assert.assertEquals(List.of(scrollBefore.get(0), 0, 0),
+                getScrollPositions());
+    }
+
+    /**
+     * Reloads the page and runs the given interruption once the window is back
+     * in place, while the containers have not rendered yet and are still
+     * waiting to be restored. Then checks that every position comes back.
+     */
+    private void reloadThenInterruptRestore(Runnable interruption) {
+        openAndWaitForContent(
+                ScrollPositionLiveReloadView.RENDER_LATE_PARAMETER);
+
+        List<Integer> scrollBefore = scrollAllContainers();
+
+        reloadAndWaitForWindowPosition(scrollBefore);
+        interruption.run();
+
+        waitForScrollRestoration(scrollBefore);
+    }
+
+    /**
+     * Reloads the page and waits until the window position is back, while the
+     * containers have not rendered yet and are still waiting to be restored.
+     */
+    private void reloadAndWaitForWindowPosition(List<Integer> scrollBefore) {
+        markDocument();
+        executeScript(
+                "document.querySelector('vaadin-dev-tools').frontendConnection.onReload('reload')");
+        waitForNewDocument();
+
+        waitUntil(d -> Math.abs(getScrollPositions().get(0)
+                - scrollBefore.get(0)) < TOLERANCE_PX, 10);
+        // Once the content has rendered, the restore can finish without
+        // anything left for what follows to affect
+        Assert.assertEquals(
+                "The containers should still be waiting for their content",
+                "none", executeScript(
+                        "return getComputedStyle(document.getElementById('outer-item-0')).display"));
+    }
+
+    private void waitForAnimationFrames() {
+        // A restore that is still running applies the positions in the
+        // first frame after the content has rendered
+        ((JavascriptExecutor) getDriver()).executeAsyncScript(
+                """
+                        const done = arguments[arguments.length - 1];
+                        let frames = 10;
+                        const next = () => --frames ? requestAnimationFrame(next) : done();
+                        requestAnimationFrame(next);
+                        """);
+    }
+
+    @Test
+    public void scrollPositionNotRestoredWhenFullPageReloadEndsUpElsewhere() {
+        openAndWaitForContent();
         scrollAllContainers();
+        $("*").id("forward-next-load-button").click();
 
-        int windowScrollBefore = getScrollY();
-        int outerScrollBefore = getScrollTop("#outer-scroll");
-        int innerScrollBefore = getScrollTop(INNER_SCROLL_SELECTOR);
+        markDocument();
+        executeScript(
+                "document.querySelector('vaadin-dev-tools').frontendConnection.onReload('reload')");
+        waitForNewDocument();
+        waitUntil(
+                d -> getDriver().getCurrentUrl()
+                        .endsWith(ScrollPositionLiveReloadView.FORWARDED_ROUTE),
+                10);
+        waitForElementVisible(By.id("outer-item-0"));
 
-        Assert.assertTrue("Window should be scrolled down",
-                windowScrollBefore > 100);
-        Assert.assertTrue("Outer container should be scrolled down",
-                outerScrollBefore > 50);
-        Assert.assertTrue("Inner container (no ID) should be scrolled down",
-                innerScrollBefore > 50);
+        // Restoration is handed back once the restore is done with, whether
+        // it applied the positions or discarded them
+        waitUntil(d -> "auto"
+                .equals(executeScript("return history.scrollRestoration")), 10);
+        Assert.assertEquals(List.of(0, 0, 0), getScrollPositions());
+    }
+
+    @Test
+    public void scrollRestorationSetByApplicationKeptAfterFullPageReload() {
+        openAndWaitForContent();
+        List<Integer> scrollBefore = scrollAllContainers();
+        executeScript("history.scrollRestoration = 'manual'");
+
+        markDocument();
+        executeScript(
+                "document.querySelector('vaadin-dev-tools').frontendConnection.onReload('reload')");
+        waitForNewDocument();
+        waitForScrollRestoration(scrollBefore);
+
+        // The value persists on the history entry across reloads, so a plain
+        // reload shows both what the restore handed it back as and whether
+        // a load without a stored snapshot leaves it alone
+        markDocument();
+        executeScript("location.reload()");
+        waitForNewDocument();
+        waitUntil(d -> executeScript("return !!window.Vaadin?.devTools")
+                .equals(Boolean.TRUE), 10);
+        Assert.assertEquals("manual",
+                executeScript("return history.scrollRestoration"));
+    }
+
+    private void assertScrollPositionPreservedAfterUIRefresh(
+            String... parameters) {
+        openAndWaitForContent(parameters);
+
+        List<Integer> scrollBefore = scrollAllContainers();
 
         String attachIdBefore = getAttachId();
 
@@ -56,43 +245,44 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
         // Wait for the UI to refresh
         waitUntil(d -> !attachIdBefore.equals(getAttachId()), 10);
 
-        waitForScrollRestoration("window", windowScrollBefore);
-        waitForScrollRestoration("#outer-scroll", outerScrollBefore);
-        waitForScrollRestoration(INNER_SCROLL_SELECTOR, innerScrollBefore);
+        waitForScrollRestoration(scrollBefore);
     }
 
-    @Test
-    public void scrollPositionPreservedAfterFullPageReload() {
-        open();
-        waitForElementPresent(By.id("item-50"));
+    private void assertScrollPositionPreservedAfterFullPageReload(
+            String... parameters) {
+        openAndWaitForContent(parameters);
 
-        scrollAllContainers();
+        List<Integer> scrollBefore = scrollAllContainers();
 
-        int windowScrollBefore = getScrollY();
-        int outerScrollBefore = getScrollTop("#outer-scroll");
-        int innerScrollBefore = getScrollTop(INNER_SCROLL_SELECTOR);
-
-        Assert.assertTrue("Window should be scrolled down",
-                windowScrollBefore > 100);
-        Assert.assertTrue("Outer container should be scrolled down",
-                outerScrollBefore > 50);
-        Assert.assertTrue("Inner container (no ID) should be scrolled down",
-                innerScrollBefore > 50);
+        markDocument();
 
         // Simulate hot-swap full reload: saves scroll to sessionStorage
         // and calls window.location.reload().
         executeScript(
                 "document.querySelector('vaadin-dev-tools').frontendConnection.onReload('reload')");
 
-        // Wait for the page to reload and render
+        waitForNewDocument();
         waitForElementPresent(By.id("item-50"));
 
-        waitForScrollRestoration("window", windowScrollBefore);
-        waitForScrollRestoration("#outer-scroll", outerScrollBefore);
-        waitForScrollRestoration(INNER_SCROLL_SELECTOR, innerScrollBefore);
+        waitForScrollRestoration(scrollBefore);
+
+        // Restoration is taken over from the browser only for the reload
+        waitUntil(d -> "auto"
+                .equals(executeScript("return history.scrollRestoration")), 10);
     }
 
-    private void scrollAllContainers() {
+    private void openAndWaitForContent(String... parameters) {
+        open(parameters);
+        waitForElementVisible(By.id("outer-item-0"));
+    }
+
+    /**
+     * Scrolls the window and both containers and returns the positions once
+     * they have stopped changing.
+     *
+     * @return the window, outer container and inner container scroll positions
+     */
+    private List<Integer> scrollAllContainers() {
         // Scroll the inner container (no ID, found by CSS selector)
         executeScript("document.querySelector(arguments[0]).scrollTop = 300",
                 INNER_SCROLL_SELECTOR);
@@ -101,29 +291,100 @@ public class ScrollPositionLiveReloadIT extends AbstractLiveReloadIT {
                 "document.querySelector('#outer-scroll').scrollTop = 400");
         // Scroll the window
         executeScript("document.getElementById('item-50').scrollIntoView()");
-        sleep(500);
+
+        List<Integer> positions = waitForStableScrollPositions();
+
+        Assert.assertTrue("Window should be scrolled down, but was at "
+                + positions.get(0), positions.get(0) > 100);
+        Assert.assertTrue("Outer container should be scrolled down, but was at "
+                + positions.get(1), positions.get(1) > 50);
+        Assert.assertTrue(
+                "Inner container (no ID) should be scrolled down, but was at "
+                        + positions.get(2),
+                positions.get(2) > 50);
+        return positions;
     }
 
-    private int getScrollTop(String cssSelector) {
-        return ((Number) executeScript(
-                "return document.querySelector(arguments[0]).scrollTop",
-                cssSelector)).intValue();
+    private List<Integer> getScrollPositions() {
+        List<?> values = (List<?>) executeScript(SCROLL_POSITIONS_SCRIPT,
+                INNER_SCROLL_SELECTOR, ELEMENT_MISSING);
+        return values.stream().map(value -> ((Number) value).intValue())
+                .toList();
     }
 
-    private void waitForScrollRestoration(String target, int expectedScrollY) {
-        if ("window".equals(target)) {
-            waitUntil(d -> Math.abs(getScrollY() - expectedScrollY) < 5, 10);
-        } else {
-            waitUntil(d -> Math.abs(getScrollTop(target) - expectedScrollY) < 5,
-                    10);
+    private List<Integer> waitForStableScrollPositions() {
+        AtomicReference<List<Integer>> previous = new AtomicReference<>(
+                getScrollPositions());
+        AtomicReference<List<Integer>> stable = new AtomicReference<>();
+        try {
+            waitUntil(d -> {
+                List<Integer> current = getScrollPositions();
+                if (current.equals(previous.get())) {
+                    stable.set(current);
+                    return true;
+                }
+                previous.set(current);
+                return false;
+            }, 10);
+        } catch (TimeoutException e) {
+            Assert.fail(
+                    "Scroll positions (window, outer container, inner container) kept changing, last seen "
+                            + describe(previous.get()));
+        }
+        return stable.get();
+    }
+
+    private void waitForScrollRestoration(List<Integer> expected) {
+        AtomicReference<List<Integer>> actual = new AtomicReference<>();
+        try {
+            waitUntil(d -> {
+                actual.set(getScrollPositions());
+                return isRestored(actual.get(), expected);
+            }, 10);
+        } catch (TimeoutException e) {
+            Assert.fail(
+                    "Scroll positions (window, outer container, inner container) were not restored. Expected "
+                            + expected + " but was " + describe(actual.get()));
         }
     }
 
-    private void sleep(int millis) {
+    private String describe(List<Integer> positions) {
+        return positions.stream()
+                .map(position -> position == ELEMENT_MISSING ? "<no element>"
+                        : position.toString())
+                .toList().toString();
+    }
+
+    private boolean isRestored(List<Integer> actual, List<Integer> expected) {
+        return IntStream.range(0, expected.size()).allMatch(
+                i -> Math.abs(actual.get(i) - expected.get(i)) < TOLERANCE_PX);
+    }
+
+    private void markDocument() {
+        executeScript("window[arguments[0]] = true", DOCUMENT_MARKER);
+    }
+
+    /**
+     * Waits until the marker set by {@link #markDocument()} is gone, i.e. until
+     * the browser has actually loaded a new document. Without this, assertions
+     * can run against the page the reload was triggered on, which still has the
+     * original scroll positions.
+     */
+    private void waitForNewDocument() {
         try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+            waitUntil(d -> {
+                try {
+                    return !Boolean.TRUE.equals(executeScript(
+                            "return window[arguments[0]] === true",
+                            DOCUMENT_MARKER));
+                } catch (WebDriverException e) {
+                    // Script execution fails while the page is being replaced
+                    return false;
+                }
+            }, 10);
+        } catch (TimeoutException e) {
+            Assert.fail(
+                    "The browser never loaded a new document, so the reload did not happen");
         }
     }
 }

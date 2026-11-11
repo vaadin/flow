@@ -254,7 +254,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
             if (bootstrapElements != null) {
                 return Collections.unmodifiableList(bootstrapElements.stream()
                         .map(WebComponentConfigurationRegistry::copyElementTree)
-                        .collect(Collectors.toList()));
+                        .toList());
             } else {
                 return Collections.emptyList();
             }

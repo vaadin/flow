@@ -27,6 +27,7 @@ import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class JsFunctionTest {
@@ -49,6 +50,17 @@ class JsFunctionTest {
 
         @JsExpression("console.log($0);")
         JsFunction createPrefixLogger(String prefix);
+
+        @JsExpression("console.log($0, value);")
+        @JsCalledWith("value")
+        JsFunction createTaggedLogger(String[] tags);
+    }
+
+    @JsDefinition
+    interface OtherLoggerJs extends Serializable {
+        @JsExpression("console.info($0, value);")
+        @JsCalledWith("value")
+        JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
@@ -104,5 +116,30 @@ class JsFunctionTest {
         assertThrows(RuntimeException.class,
                 () -> JsFunction.of("console.log($0);", capture),
                 "a function with a body should refuse the capture when created");
+    }
+
+    @Test
+    void equals_sameJavaScriptAndCaptures_comparedByContent() {
+        LoggerJs logger = JsSnippets.of(LoggerJs.class);
+        JsFunction tagged = logger.createTaggedLogger(new String[] { "a" });
+
+        assertEquals(tagged, logger.createTaggedLogger(new String[] { "a" }));
+        assertEquals(tagged.hashCode(),
+                logger.createTaggedLogger(new String[] { "a" }).hashCode());
+        assertEquals(JsFunction.of("return $0;", JsFunction.of("return 1;")),
+                JsFunction.of("return $0;", JsFunction.of("return 1;")));
+
+        assertNotEquals(tagged,
+                logger.createTaggedLogger(new String[] { "b" }));
+        // The same JavaScript declared by another method is the same
+        // function of the bundle
+        assertEquals(logger.createLogger("Greeting:"),
+                logger.createAnyLogger("Greeting:"));
+        assertNotEquals(
+                JsSnippets.of(OtherLoggerJs.class).createLogger("Greeting:"),
+                logger.createLogger("Greeting:"));
+        assertNotEquals(JsFunction.of("return a;"), JsFunction.of("return b;"));
+        assertNotEquals(JsFunction.of("return a;"),
+                JsFunction.of("return a;").withArguments("a"));
     }
 }
