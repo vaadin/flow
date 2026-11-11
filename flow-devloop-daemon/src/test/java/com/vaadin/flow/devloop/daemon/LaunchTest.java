@@ -35,6 +35,7 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -498,13 +499,11 @@ class LaunchTest {
         writeSource(app, "Edited", 3_000);
         writeClass(app, "Edited", 2_000);
 
-        try {
-            launch.invocation(0, "token", "start", text -> {
-            });
-        } catch (IOException e) {
-            // How this project starts is beyond what the fake Maven tells;
-            // the build is what is asserted here.
-        }
+        // The fake Maven writes no model to tell how this project starts, so
+        // the launch fails once the build has run - which is all this checks.
+        assertThrows(IOException.class,
+                () -> launch.invocation(0, "token", "start", text -> {
+                }));
 
         // Once to resolve, once to catch up with the edited source.
         assertEquals(2, runs(runs));

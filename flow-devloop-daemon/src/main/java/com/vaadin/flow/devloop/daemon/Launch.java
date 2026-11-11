@@ -1360,7 +1360,7 @@ final class Launch {
     }
 
     /** Every Java source of the loop, with when it was last modified. */
-    private static Map<Path, Long> javaSources(Project project) {
+    private Map<Path, Long> javaSources(Project project) {
         Map<Path, Long> sources = new LinkedHashMap<>();
         for (Reactor.Module module : project.modules()) {
             if (!Files.isDirectory(module.sourceDir())) {
@@ -1372,7 +1372,10 @@ final class Launch {
                         .forEach(path -> Compile.stampOf(path).ifPresent(
                                 stamp -> sources.put(path, stamp.modified())));
             } catch (IOException | UncheckedIOException e) {
-                // An unreadable tree is one nothing can be built from either.
+                // An unreadable tree is one nothing can be built from either,
+                // so the launch goes on; the reason is still worth keeping.
+                log.line("could not read the sources of " + module.sourceDir()
+                        + ": " + e.getMessage());
             }
         }
         return sources;
