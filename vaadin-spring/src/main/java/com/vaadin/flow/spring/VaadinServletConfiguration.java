@@ -21,7 +21,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,7 +104,7 @@ public class VaadinServletConfiguration {
                 return Collections.emptyList();
             } else {
                 return Arrays.stream(value.split(",")).map(url -> url.trim())
-                        .collect(Collectors.toList());
+                        .toList();
             }
         }
     }

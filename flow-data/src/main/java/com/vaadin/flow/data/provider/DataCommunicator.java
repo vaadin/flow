@@ -31,7 +31,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.IntSupplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -1092,7 +1091,7 @@ public class DataCommunicator<T> implements Serializable {
                             getLogger().debug(
                                     "Data provider {} has returned parallel stream on 'fetch' call",
                                     getDataProvider().getClass());
-                            dataProviderStream.collect(Collectors.toList())
+                            dataProviderStream.toList()
                                     .forEach(addItemAndCheckConsumer);
                         } else {
                             dataProviderStream.forEach(addItemAndCheckConsumer);
@@ -1116,7 +1115,7 @@ public class DataCommunicator<T> implements Serializable {
                     "Data provider {} has returned parallel stream on 'fetch' call",
                     getDataProvider().getClass());
             try (Stream<T> parallelStream = stream) {
-                stream = parallelStream.collect(Collectors.toList()).stream();
+                stream = parallelStream.toList().stream();
                 assert !stream.isParallel();
             }
         }
@@ -1548,8 +1547,7 @@ public class DataCommunicator<T> implements Serializable {
     private List<JsonNode> getJsonItems(Range range) {
         return range.stream()
                 .mapToObj(index -> activeKeyOrder.get(index - activeStart))
-                .map(keyMapper::get).map(this::generateJson)
-                .collect(Collectors.toList());
+                .map(keyMapper::get).map(this::generateJson).toList();
     }
 
     private static void withMissing(Range expected, Range actual,

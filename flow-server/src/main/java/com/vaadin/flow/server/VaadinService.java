@@ -52,7 +52,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
@@ -364,11 +363,11 @@ public abstract class VaadinService implements Serializable {
 
             dependencyFilters = Collections.unmodifiableCollection(instantiator
                     .getDependencyFilters(event.getAddedDependencyFilters())
-                    .collect(Collectors.toList()));
+                    .toList());
             indexHtmlRequestListeners = instantiator
                     .getIndexHtmlRequestListeners(
                             event.getAddedIndexHtmlRequestListeners())
-                    .collect(Collectors.toList());
+                    .toList();
         });
 
         if (this.executor == null) {
@@ -648,6 +647,7 @@ public abstract class VaadinService implements Serializable {
      * @throws ServiceException
      *             if a problem occurs when creating the request handlers
      * @see SessionlessRequestHandler
+     * @since 25.4
      */
     protected List<SessionlessRequestHandler> createSessionlessRequestHandlers()
             throws ServiceException {
@@ -2136,6 +2136,7 @@ public abstract class VaadinService implements Serializable {
      * @return a collection of sessionless request handlers in the order they
      *         are invoked
      * @see #createSessionlessRequestHandlers()
+     * @since 25.4
      */
     public Iterable<SessionlessRequestHandler> getSessionlessRequestHandlers() {
         return sessionlessRequestHandlers;

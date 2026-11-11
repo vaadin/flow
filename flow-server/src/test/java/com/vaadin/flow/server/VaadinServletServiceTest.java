@@ -41,6 +41,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
@@ -317,10 +319,12 @@ class VaadinServletServiceTest {
         verify(httpRequest, never()).getSession(anyBoolean());
     }
 
-    @Test
-    void handleRequest_favicon_notFoundWithoutSession() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = { "", "/contextpath" })
+    void handleRequest_favicon_notFoundWithoutSession(String contextPath)
+            throws Exception {
         HttpServletRequest httpRequest = createRequest("http://dummy.host:8080",
-                "", "", "/favicon.ico");
+                contextPath, "", "/favicon.ico");
         VaadinResponse response = mock(VaadinResponse.class);
         // Handlers added through ServiceInitEvent come first
         RequestHandler customHandler = mock(RequestHandler.class);
@@ -334,15 +338,23 @@ class VaadinServletServiceTest {
         verify(customHandler, never()).handleRequest(any(), any(), any());
         verify(httpRequest, never()).getSession();
         verify(httpRequest, never()).getSession(anyBoolean());
+    }
 
-        // Below a context path, the favicon is a request like any other
-        HttpServletRequest contextRequest = createRequest(
-                "http://dummy.host:8080", "/contextpath", "", "/favicon.ico");
+    @Test
+    void handleRequest_faviconBelowServletPath_passedToHandlers()
+            throws Exception {
+        HttpServletRequest httpRequest = createRequest("http://dummy.host:8080",
+                "/contextpath", "/servlet", "/favicon.ico");
+        VaadinResponse response = mock(VaadinResponse.class);
+        RequestHandler customHandler = mock(RequestHandler.class);
+        when(customHandler.handleRequest(any(), any(), any())).thenReturn(true);
+        service.getRequestHandlers().add(0, customHandler);
 
-        service.handleRequest(servlet.createVaadinRequest(contextRequest),
+        service.handleRequest(servlet.createVaadinRequest(httpRequest),
                 response);
 
         verify(customHandler).handleRequest(notNull(), any(), eq(response));
+        verify(response, never()).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
     private String testLocation(String base, String contextPath,

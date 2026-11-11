@@ -15,8 +15,13 @@
  */
 package com.vaadin.flow.spring.security;
 
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.security.Principal;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -24,8 +29,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
+import org.springframework.security.web.FilterChainProxy;
+import org.springframework.security.web.FilterInvocation;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AuthorizationManagerWebInvocationPrivilegeEvaluator.HttpServletRequestTransformer;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
+import org.springframework.web.context.ServletContextAware;
 
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.server.auth.AccessPathChecker;
 
 /**
@@ -49,9 +61,19 @@ import com.vaadin.flow.server.auth.AccessPathChecker;
  * The current authentication is read from a
  * {@link SecurityContextHolderStrategy}. When the principal passed to
  * {@link #hasAccess(String, Principal, Predicate)} is {@literal null}, the
- * check is done for an anonymous user: an anonymous authentication from the
- * strategy is kept, any other authentication is replaced by a default
- * {@code ROLE_ANONYMOUS} one.
+ * check is done for an anonymous user, with the anonymous authentication
+ * configured for the security filter chain that would handle a request to the
+ * path. When the filter chain proxy is not given, or no chain matches the path,
+ * an anonymous authentication from the strategy is kept and any other
+ * authentication is replaced by a default {@code ROLE_ANONYMOUS} one.
+ * <p>
+ * The filter chain proxy is read on each check and the anonymous authentication
+ * of a chain is computed on the first check it handles. The chains are matched
+ * against a request bound to the {@link ServletContext} set with
+ * {@link #setServletContext(ServletContext)}, which Spring calls when the
+ * checker is a bean of a web application context. The proxy and the servlet
+ * context are not serialized with the checker: after deserialization the
+ * default anonymous authentication is used.
  *
  * <pre>
  * {@code
@@ -65,7 +87,8 @@ import com.vaadin.flow.server.auth.AccessPathChecker;
  * 
  * @since 24.3
  */
-public class SpringAccessPathChecker implements AccessPathChecker {
+public class SpringAccessPathChecker
+        implements AccessPathChecker, ServletContextAware {
 
     private static final Authentication ANONYMOUS_AUTHENTICATION = new AnonymousAuthenticationToken(
             "anonymous", "anonymousUser",
@@ -79,6 +102,27 @@ public class SpringAccessPathChecker implements AccessPathChecker {
      * the one installed in {@link SecurityContextHolder} at check time.
      */
     private final transient SecurityContextHolderStrategy securityContextHolderStrategy;
+    /**
+     * Supplies the filter chain proxy to read the configured anonymous
+     * authentication from, or {@literal null} to use the default one.
+     */
+    private final transient SerializableSupplier<FilterChainProxy> filterChainProxy;
+    /**
+     * Transforms the request built for the path before matching the filter
+     * chains, {@literal null} when the proxy is not given.
+     */
+    private final transient HttpServletRequestTransformer requestTransformer;
+    /**
+     * The anonymous authentication of each filter chain, computed on the first
+     * check handled by the chain. Only read when the proxy supplier is set, so
+     * it is never reached after deserialization.
+     */
+    private final transient Map<SecurityFilterChain, Authentication> chainAnonymousAuthentications = new ConcurrentHashMap<>();
+    /**
+     * The servlet context of the request built for the path, or {@literal null}
+     * if not set.
+     */
+    private transient ServletContext servletContext;
 
     /**
      * Creates a new instance that uses the given
@@ -112,6 +156,8 @@ public class SpringAccessPathChecker implements AccessPathChecker {
         this.urlMapping = urlMapping;
         this.evaluator = evaluator;
         this.securityContextHolderStrategy = null;
+        this.filterChainProxy = null;
+        this.requestTransformer = null;
     }
 
     /**
@@ -130,6 +176,7 @@ public class SpringAccessPathChecker implements AccessPathChecker {
      * @param securityContextHolderStrategy
      *            the strategy to read the current authentication from, not
      *            {@literal null}
+     * @since 25.4
      */
     public SpringAccessPathChecker(WebInvocationPrivilegeEvaluator evaluator,
             String urlMapping,
@@ -139,6 +186,72 @@ public class SpringAccessPathChecker implements AccessPathChecker {
         this.securityContextHolderStrategy = Objects.requireNonNull(
                 securityContextHolderStrategy,
                 "securityContextHolderStrategy must not be null");
+        this.filterChainProxy = null;
+        this.requestTransformer = null;
+    }
+
+    /**
+     * Creates a new instance that uses the given
+     * {@link WebInvocationPrivilegeEvaluator} to check path permissions.
+     *
+     * It applies the given Vaadin servlet url mapping to the input path before
+     * delegating the check to the evaluator. The current authentication is read
+     * from the given {@link SecurityContextHolderStrategy} instead of the one
+     * installed in {@link SecurityContextHolder}. A check with a
+     * {@literal null} principal uses the anonymous authentication configured
+     * for the security filter chain that would handle a request to the path, so
+     * that anonymous authorities set with {@code http.anonymous(...)} are
+     * honoured also when a logged-in user is bound to the current thread.
+     * <p>
+     * The filter chain proxy is taken from the supplier on the first check, so
+     * the checker can be created before the security filter chains are built.
+     * The request used to select the chain is transformed with the given
+     * transformer, which should be the one the evaluator uses.
+     *
+     * @param evaluator
+     *            evaluator to check path permissions.
+     * @param urlMapping
+     *            Vaadin servlet url mapping
+     * @param securityContextHolderStrategy
+     *            the strategy to read the current authentication from, not
+     *            {@literal null}
+     * @param filterChainProxy
+     *            supplies the filter chain proxy to read the configured
+     *            anonymous authentication from, not {@literal null}
+     * @param requestTransformer
+     *            transforms the request built for the path before matching the
+     *            filter chains, not {@literal null}
+     */
+    public SpringAccessPathChecker(WebInvocationPrivilegeEvaluator evaluator,
+            String urlMapping,
+            SecurityContextHolderStrategy securityContextHolderStrategy,
+            SerializableSupplier<FilterChainProxy> filterChainProxy,
+            HttpServletRequestTransformer requestTransformer) {
+        this.urlMapping = urlMapping;
+        this.evaluator = evaluator;
+        this.securityContextHolderStrategy = Objects.requireNonNull(
+                securityContextHolderStrategy,
+                "securityContextHolderStrategy must not be null");
+        this.filterChainProxy = Objects.requireNonNull(filterChainProxy,
+                "filterChainProxy must not be null");
+        this.requestTransformer = Objects.requireNonNull(requestTransformer,
+                "requestTransformer must not be null");
+    }
+
+    /**
+     * Sets the servlet context of the request built for the path, as the
+     * privilege evaluator does. Spring calls this method when the checker is a
+     * bean of a web application context. Set it when creating the checker by
+     * hand if a filter chain uses a request matcher that reads the servlet
+     * context, like Spring Boot's {@code EndpointRequest} and
+     * {@code PathRequest} matchers.
+     *
+     * @param servletContext
+     *            the servlet context
+     */
+    @Override
+    public void setServletContext(ServletContext servletContext) {
+        this.servletContext = servletContext;
     }
 
     @Override
@@ -149,15 +262,56 @@ public class SpringAccessPathChecker implements AccessPathChecker {
                 .getContext().getAuthentication();
         // A null principal means the check is done on behalf of an anonymous
         // user (e.g. when detecting public views), so an authenticated user
-        // bound to the current thread must not be used. The configured
-        // anonymous authentication is only honoured when it is already on the
-        // thread; for a logged-in user, or when there is no authentication,
-        // the default ROLE_ANONYMOUS token is used.
-        if (principal == null
-                && !(authentication instanceof AnonymousAuthenticationToken)) {
-            authentication = ANONYMOUS_AUTHENTICATION;
+        // bound to the current thread must not be used.
+        if (principal == null) {
+            authentication = getAnonymousAuthentication(path, authentication);
         }
         return evaluator.isAllowed(path, authentication);
+    }
+
+    /**
+     * Gets the anonymous authentication to check the path with: the one
+     * configured for the filter chain that would handle a request to the path.
+     * When the proxy is not available or no chain matches, an anonymous
+     * authentication already on the thread is kept, otherwise the default one
+     * is used.
+     */
+    private Authentication getAnonymousAuthentication(String path,
+            Authentication current) {
+        Authentication fallback = current instanceof AnonymousAuthenticationToken
+                ? current
+                : ANONYMOUS_AUTHENTICATION;
+        FilterChainProxy proxy = filterChainProxy == null ? null
+                : filterChainProxy.get();
+        if (proxy == null) {
+            return fallback;
+        }
+        // The chains are matched against the same kind of request the
+        // privilege evaluator builds
+        HttpServletRequest request = requestTransformer.transform(
+                new FilterInvocation(null, path, null, servletContext)
+                        .getHttpRequest());
+        return proxy.getFilterChains().stream()
+                .filter(chain -> chain.matches(request)).findFirst()
+                .map(chain -> chainAnonymousAuthentications.computeIfAbsent(
+                        chain,
+                        SpringAccessPathChecker::createAnonymousAuthentication))
+                .orElse(fallback);
+    }
+
+    private static Authentication createAnonymousAuthentication(
+            SecurityFilterChain chain) {
+        return chain.getFilters().stream()
+                .filter(AnonymousAuthenticationFilter.class::isInstance)
+                .map(AnonymousAuthenticationFilter.class::cast).findFirst()
+                // The token constructor rejects empty authorities
+                .filter(filter -> !filter.getAuthorities().isEmpty())
+                // The key is never checked, the evaluator does not
+                // authenticate the token
+                .map(filter -> (Authentication) new AnonymousAuthenticationToken(
+                        "anonymous", filter.getPrincipal(),
+                        filter.getAuthorities()))
+                .orElse(ANONYMOUS_AUTHENTICATION);
     }
 
     private SecurityContextHolderStrategy getSecurityContextHolderStrategy() {

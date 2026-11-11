@@ -19,7 +19,6 @@ import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.Test;
@@ -91,6 +90,35 @@ class AbstractSinglePropertyFieldTest {
         field.getElement().setProperty("property", null);
         assertEquals("", field.getValue());
         monitor.assertEvent(false, "bar", "");
+    }
+
+    public static class GenericStringField<T> extends StringField {
+    }
+
+    @Test
+    void genericSubclassOfConcreteField_propertyTypeFromSuperclass() {
+        GenericStringField<Object> field = new GenericStringField<>();
+
+        field.setValue("foo");
+
+        assertEquals("foo", field.getElement().getProperty("property"));
+    }
+
+    @Tag("tag")
+    @SuppressWarnings("rawtypes")
+    public static class RawField extends AbstractSinglePropertyField {
+        public RawField() {
+            super("property", "", false);
+        }
+    }
+
+    @Test
+    void rawField_propertyTypeNotResolvable_throws() {
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class, RawField::new);
+        assertEquals(
+                "Cannot automatically determine element property type based on type parameters.",
+                exception.getMessage());
     }
 
     @Test
@@ -502,7 +530,7 @@ class AbstractSinglePropertyFieldTest {
     void noOwnPublicApi() {
         List<Method> newPublicMethods = PublicApiAnalyzer
                 .findNewPublicMethods(AbstractSinglePropertyField.class)
-                .collect(Collectors.toList());
+                .toList();
         assertEquals(Collections.emptyList(), newPublicMethods);
     }
 

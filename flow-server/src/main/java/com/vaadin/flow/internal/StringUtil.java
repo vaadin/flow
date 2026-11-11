@@ -40,6 +40,7 @@ public final class StringUtil {
      * Note, this is an internal helper method, use only from framework code.
      * 
      * @param bytes
+     *            the bytes to decode
      * @return new string enforced in UTF_8 because jdk engineers didn't have
      *         the guts to break all things
      * @since 25.0
@@ -54,8 +55,10 @@ public final class StringUtil {
      * Note, this is an internal helper method, use only from framework code.
      * 
      * @param input
+     *            the input stream to read
      * @return string in UTF 8
      * @throws IOException
+     *             if reading the stream fails
      * @since 25.0
      */
     public static String toUTF8String(InputStream input) throws IOException {

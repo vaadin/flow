@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -34,14 +35,29 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.KeyModifier;
+import com.vaadin.flow.component.Shortcuts;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.webcomponent.WebComponentUI;
+import com.vaadin.flow.dom.DomEventData;
+import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.js.JsCalledWith;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.tests.util.MockUI;
 
@@ -57,9 +73,44 @@ import static org.mockito.Mockito.verify;
 
 class CspModeTest {
 
+    @JsDefinition
+    interface LoggerJs extends Serializable {
+        @JsExpression("console.log($0, value);")
+        @JsCalledWith("value")
+        JsFunction createLogger(String prefix);
+    }
+
+    @JsDefinition
+    interface EventJs extends Serializable {
+        @JsExpression("return event.x == $0;")
+        DomEventFilter isX(int x);
+
+        @JsExpression("return event.x * $0;")
+        DomEventData<Integer> scaledX(int factor);
+    }
+
+    @JsDefinition
+    interface LocatorJs extends Serializable {
+        @JsExpression("return this.firstElementChild;")
+        JsFunction locateFirstChild();
+    }
+
     @Tag("div")
     private static class Clickable extends Component
             implements ClickNotifier<Clickable> {
+    }
+
+    @Route("csp")
+    @Tag("div")
+    private static class RouteView extends Component {
+    }
+
+    @DomEvent("custom-event")
+    public static class KeyedEvent extends ComponentEvent<UI> {
+        public KeyedEvent(UI source, boolean fromClient,
+                @EventData("key") String key) {
+            super(source, fromClient);
+        }
     }
 
     private MockServletServiceSessionSetup setup;
@@ -91,25 +142,41 @@ class CspModeTest {
                 call(JsFunction.class, "of", ui -> JsFunction.of("return 1")),
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
-                        }).addEventData("event.x")),
+                        }).addEventData("event.x * 2")),
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
-                        }).addEventData(List.of("event.x"))),
+                        }).addEventData(List.of("event?.x()"))),
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).addEventData(
                                 List.of(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN
-                                        + "value", "event.x"))),
+                                        + "value", "event.x[0]"))),
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
-                        }).addEventDataElement("event.target.parentElement")),
+                        }).addEventDataElement("event.composedPath()[0]")),
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ui.getElement().addEventListener("click", e -> {
+                        }).addEventData("window.location")),
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ui.getElement().addEventListener("click", e -> {
+                        }).addEventData("event??.x")),
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ui.getElement().addEventListener("click", e -> {
+                        }).addEventData("event.?x")),
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ui.getElement().addEventListener("click", e -> {
+                        }).addEventDataElement("document.head")),
                 call(DomListenerRegistration.class, "setFilter",
                         ui -> ui.getElement().addEventListener("click", e -> {
-                        }).setFilter("event.x")),
-                // Vaadin code sending event data and a filter on its own
+                        }).setFilter("event.x == 1")),
+                // The deprecated locator is an expression for the browser
+                call(JsFunction.class, "of",
+                        CspModeTest::delegateShortcutToStringLocator),
+                // A key of client-built data only for Flow's own events
                 call(DomListenerRegistration.class, "addEventData",
-                        ui -> new Clickable().addDoubleClickListener(e -> {
-                        })));
+                        ui -> ComponentUtil.addListener(ui, KeyedEvent.class,
+                                e -> {
+                                })));
     }
 
     private static Arguments call(Class<?> api, String method,
@@ -146,6 +213,57 @@ class CspModeTest {
                             JsonConstants.MAP_STATE_NODE_EVENT_DATA));
             registration.synchronizeProperty("value");
             registration.mapEventTargetElement();
+            // The client reads property paths without compiling them
+            registration.addEventData("event.detail.value");
+            registration.addEventData("event.detail?.value");
+            registration.addEventData(List.of("element.value", "event"));
+            registration.addEventDetail();
+            registration.addEventDataElement("event.target.parentElement");
+            registration.setFilter("event.isTrusted");
+            // The client runs these without compiling them, also when Flow
+            // adds the always-true filter for the debounce
+            registration.preventDefault();
+            registration.stopPropagation();
+            registration.debounce(300);
+            // Its JavaScript is in the bundle rather than in a string
+            JsSnippets.of(LoggerJs.class).createLogger("Greeting:");
+            EventJs eventJs = JsSnippets.of(EventJs.class);
+            registration.setFilterExpression(eventJs.isX(2))
+                    .addEventData(eventJs.scaledX(2));
+            // The click count filters are declared snippets too
+            Clickable clickable = new Clickable();
+            clickable.addSingleClickListener(e -> {
+            });
+            clickable.addDoubleClickListener(e -> {
+            });
+            // Loads the chunk of the route with a function from the bundle
+            ui.getInternals().addComponentDependencies(RouteView.class);
+            // Shortcuts send their keys and options as data to JavaScript in
+            // the bundle, also when they listen on a browser-only element
+            ui.addShortcutListener(() -> {
+            }, Key.KEY_A, KeyModifier.CONTROL);
+            Clickable owner = new Clickable();
+            ui.add(owner);
+            Shortcuts.setShortcutListenOnElementLocator(
+                    JsSnippets.of(LocatorJs.class).locateFirstChild(), owner);
+            owner.addClickShortcut(Key.ENTER).listenOn(owner);
+            ui.getInternals().getStateTree()
+                    .runExecutionsBeforeClientResponse();
+        });
+    }
+
+    @Test
+    void strict_uiStartsWithoutViolation() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+
+        // The constructor of Page adds the detail of an event, and the events
+        // of the navigation and of connecting a web component carry keys of
+        // data that client code builds, not expressions
+        assertDoesNotThrow(() -> {
+            new MockUI(setup.getSession()).doInit(null, 1, "app");
+            WebComponentUI webComponentUI = new WebComponentUI();
+            webComponentUI.getInternals().setSession(setup.getSession());
+            webComponentUI.doInit(null, 2, "app");
         });
     }
 
@@ -187,6 +305,15 @@ class CspModeTest {
         for (Throwable warning : warnings.getAllValues()) {
             assertTraceLeadsFromApiToTest(warning, Element.class, "executeJs");
         }
+    }
+
+    @SuppressWarnings("removal")
+    private static void delegateShortcutToStringLocator(UI ui) {
+        Clickable owner = new Clickable();
+        ui.add(owner);
+        Shortcuts.setShortcutListenOnElement("this.firstElementChild", owner);
+        owner.addClickShortcut(Key.ENTER).listenOn(owner);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
     }
 
     private void executeJsOnUi() {

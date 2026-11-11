@@ -1,6 +1,6 @@
 import { Flow } from 'Frontend/generated/jar-resources/Flow';
 import { Router } from '@vaadin/router';
-import { connectionIndicator } from '@vaadin/common-frontend';
+import { connectionIndicator } from 'Frontend/generated/jar-resources/ConnectionIndicator';
 
 const { serverSideRoutes } = new Flow({
   imports: () => import('Frontend/generated/flow/generated-flow-imports.js')

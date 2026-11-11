@@ -45,11 +45,14 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InOrder;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.Converter;
@@ -264,22 +267,6 @@ class VaadinQuarkusNativeProcessorTest {
     }
 
     @Test
-    void testVaadinNativeSupport_registersRuntimeLoadedClientHelpers() {
-        List<NativeImageResourcePatternsBuildItem> resources = new ArrayList<>();
-
-        processor.vaadinNativeSupport(new CombinedIndexBuildItem(index, index),
-                item -> {
-                }, resources::add, item -> {
-                }, item -> {
-                });
-
-        assertTrue(isIncluded(resources, "META-INF/frontend/FlowShortcut.js"),
-                "Shortcut client helper should be included in the image");
-        assertTrue(isIncluded(resources, "META-INF/frontend/FlowWebPush.js"),
-                "Web push client helper should be included in the image");
-    }
-
-    @Test
     void testVaadinNativeSupport_registersRuntimeLoadedProperties() {
         List<NativeImageResourcePatternsBuildItem> resources = new ArrayList<>();
 
@@ -402,6 +389,49 @@ class VaadinQuarkusNativeProcessorTest {
     }
 
     @Test
+    void testRegisterJsDefinitionProxies_registersInheritedInterfaces()
+            throws IOException {
+        Indexer indexer = new Indexer();
+        indexer.indexClass(SimpleDtoJs.class);
+        indexer.indexClass(ValueJs.class);
+        Index jsIndex = indexer.complete();
+        List<ReflectiveClassBuildItem> reflective = new ArrayList<>();
+
+        processor.registerJsDefinitionProxies(
+                new CombinedIndexBuildItem(jsIndex, jsIndex), item -> {
+                }, reflective::add);
+
+        assertEquals(
+                Set.of(SimpleDtoJs.class.getName(), ValueJs.class.getName()),
+                reflective.stream()
+                        .flatMap(item -> item.getClassNames().stream())
+                        .collect(Collectors.toSet()),
+                "Should register the inherited interface, whose generic return"
+                        + " type is resolved by reflection");
+    }
+
+    @Test
+    void testDetectJsResultTypes_collectsConvertedTypes() throws IOException {
+        Indexer indexer = new Indexer();
+        indexer.indexClass(SimpleDtoJs.class);
+        indexer.indexClass(ValueJs.class);
+        indexer.indexClass(SimpleDto.class);
+        indexer.indexClass(OtherDto.class);
+        indexer.indexClass(JsonNode.class);
+        indexer.indexClass(ObjectNode.class);
+        Index jsIndex = indexer.complete();
+
+        Set<ClassInfo> result = processor.detectJsResultTypes(jsIndex);
+
+        assertTrue(result.stream().anyMatch(containsClass(SimpleDto.class)),
+                "Should detect SimpleDto bound to an inherited type variable");
+        assertTrue(result.stream().anyMatch(containsClass(OtherDto.class)),
+                "Should detect OtherDto from a JavaScriptResult type argument");
+        assertFalse(result.stream().anyMatch(containsClass(ObjectNode.class)),
+                "Should NOT detect Jackson's own node types");
+    }
+
+    @Test
     void testRegisterJsDefinitionProxies_noDefinitions_registersNothing()
             throws IOException {
         Indexer indexer = new Indexer();
@@ -443,6 +473,17 @@ class VaadinQuarkusNativeProcessorTest {
 
     @JsDefinition
     public static class Greeter {
+    }
+
+    public interface ValueJs<T> {
+        JavaScriptResult<T> readValue();
+    }
+
+    @JsDefinition
+    public interface SimpleDtoJs extends ValueJs<SimpleDto> {
+        JavaScriptResult<List<OtherDto>> readOthers();
+
+        JavaScriptResult<ObjectNode> readNode();
     }
 
     public static class CustomException extends RuntimeException {

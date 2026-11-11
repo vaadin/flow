@@ -24,6 +24,8 @@ package com.vaadin.flow.server;
  * server instead, where the stack trace points at the code that made it.
  * <p>
  * The stack trace starts at the API and leads to the code that called it.
+ * 
+ * @since 25.4
  */
 public class CspViolationException extends IllegalStateException {
 

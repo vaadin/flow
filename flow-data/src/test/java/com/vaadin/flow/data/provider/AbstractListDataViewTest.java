@@ -1413,7 +1413,7 @@ class AbstractListDataViewTest {
     void getItems_withOffsetAndLimit_largerLimit_returnsAvailable() {
         // items: first, middle, last
         Stream<String> stream = dataView.getItems(1, 10);
-        List<String> list = stream.collect(Collectors.toList());
+        List<String> list = stream.toList();
         assertEquals(2, list.size());
         assertEquals("middle", list.get(0));
         assertEquals("last", list.get(1));

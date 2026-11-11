@@ -164,6 +164,23 @@ describe('ServerEventObject', () => {
     expect(node.sent[0].args).to.deep.equal([42, { nodeId: 9 }]);
   });
 
+  it('reads a property path of the event without compiling it', () => {
+    const node = fakeNode({ doIt: { value: 'key' } }, { key: ['event.detail.value'] });
+    const server: Record<string, any> = {};
+    defineMethod(server, 'doIt', node, false);
+    const originalFunction = globalThis.Function;
+    // As under a Content Security Policy without unsafe-eval
+    globalThis.Function = function blocked(): never {
+      throw new EvalError('blocked by the test');
+    } as unknown as FunctionConstructor;
+    try {
+      server.doIt({ detail: { value: 5 } });
+    } finally {
+      globalThis.Function = originalFunction;
+    }
+    expect(node.sent[0].args).to.deep.equal([5]);
+  });
+
   it('evaluates an event expression against the event and the server object', () => {
     // An event expression is compiled to an (event, element) function, where
     // the element is the object the method is defined on.

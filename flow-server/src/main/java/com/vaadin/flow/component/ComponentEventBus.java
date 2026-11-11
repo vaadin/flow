@@ -30,6 +30,7 @@ import java.util.function.Consumer;
 
 import tools.jackson.databind.JsonNode;
 
+import com.vaadin.flow.component.internal.PrebuiltEventData;
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
@@ -38,6 +39,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -308,8 +310,16 @@ public class ComponentEventBus implements Serializable {
 
         registration.setDisabledUpdateMode(mode);
 
-        registration.addEventData(
-                ComponentEventBusUtil.getListenerEventData(eventType));
+        List<String> eventData = ComponentEventBusUtil
+                .getListenerEventData(eventType);
+        if (AnnotationReader
+                .getAnnotationFor(eventType, PrebuiltEventData.class)
+                .isPresent()) {
+            ElementListenerMap.addEventDataWithoutCspReport(registration,
+                    eventData);
+        } else {
+            registration.addEventData(eventData);
+        }
 
         if (!"".equals(filter)) {
             registration.setFilter(filter);
