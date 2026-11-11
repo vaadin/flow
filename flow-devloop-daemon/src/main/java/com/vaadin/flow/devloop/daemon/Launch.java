@@ -1226,6 +1226,7 @@ final class Launch {
                             + "the build does not currently resolve: "
                             + resolutionError);
         }
+        catchUpSources(resolved, tee);
         AppRuntime appRuntime = runtime();
         List<String> jvmFlags = composeJvmFlags(tee,
                 appRuntime.extraJvmFlags());
@@ -1243,6 +1244,150 @@ final class Launch {
         // the poms describe? - is the same either way.
         launchedClasspath = resolved.appClasspath();
         return new Composed(invocation, resolved);
+    }
+
+    /**
+     * Builds the loop's modules when {@code target/classes} is behind their
+     * sources, so that a launch runs the code on disk.
+     * <p>
+     * The cache stamp only covers the poms, so sources changed while no daemon
+     * was watching - a {@code git checkout}, a pull, a revert - would otherwise
+     * be launched from the classes of an earlier build. An apply afterwards
+     * catches up with an edited file, as its class is older than it, but not
+     * with a deleted one: the launch snapshot that apply's deletion inventory
+     * is seeded from never saw that source, so its class, and the route or bean
+     * it declares, would stay until {@code mvn clean}.
+     * <p>
+     * The build is Maven's own {@code compile}, which recompiles a module whose
+     * sources were added or removed and deletes the classes the previous
+     * compile wrote for it - no guessing here about which class files belong to
+     * which source. A build that fails is reported and the launch goes ahead on
+     * the classes there are, as before; it is not a resolution failure, so it
+     * does not block the applies that will compile the fixed source.
+     *
+     * @param project
+     *            the resolved build about to be launched
+     * @param progress
+     *            where to say that a build is needed, and why
+     */
+    void catchUpSources(Project project, Log progress) {
+        List<String> behind = sourcesAheadOfClasses(project);
+        if (!behind.isEmpty()) {
+            progress.line("target/classes is behind the sources ("
+                    + summarise(behind) + "); building before the launch");
+            try {
+                runMaven(progress);
+                resolutions.incrementAndGet();
+            } catch (IOException e) {
+                progress.line("WARNING: building the sources failed, launching "
+                        + "with the classes from the last build: "
+                        + e.getMessage());
+                // The inventory is kept as it was, so the next launch still
+                // knows which deleted sources have classes to clean up.
+                return;
+            }
+        }
+        writeSourceInventory(project);
+    }
+
+    /**
+     * The sources whose classes in {@code target/classes} are not the ones a
+     * build of the sources on disk would produce, app-relative; empty when the
+     * two agree.
+     * <p>
+     * A source is behind when its class is missing or older than it, and a
+     * source that has been deleted is behind while its class is still there.
+     * Deletions are read against the inventory the last launch recorded, as a
+     * file that is gone cannot be found by walking the tree; an apply that
+     * removed the class of a deleted source has already caught up with it, so
+     * that one does not count. {@code package-info.java} is skipped, as javac
+     * writes no class for a package without annotations.
+     *
+     * @param project
+     *            the resolved build whose modules are checked
+     * @return the sources that are behind, sorted
+     */
+    List<String> sourcesAheadOfClasses(Project project) {
+        Set<String> behind = new java.util.TreeSet<>();
+        for (Reactor.Module module : project.modules()) {
+            for (Path source : javaSources(module)) {
+                if (!source.getFileName().toString().equals("package-info.java")
+                        && isNewerThanItsClass(module, source)) {
+                    behind.add(relative(source));
+                }
+            }
+        }
+        for (String line : readOrEmpty(sourceInventoryFile()).lines()
+                .toList()) {
+            if (line.isBlank()) {
+                continue;
+            }
+            Path source = Path.of(line);
+            project.modules().stream()
+                    .filter(module -> source.startsWith(module.sourceDir()))
+                    .findFirst()
+                    .filter(module -> !Files.exists(source)
+                            && Files.isRegularFile(module.artifactFor(source)))
+                    .ifPresent(module -> behind.add(relative(source)));
+        }
+        return List.copyOf(behind);
+    }
+
+    private static boolean isNewerThanItsClass(Reactor.Module module,
+            Path source) {
+        try {
+            Path artifact = module.artifactFor(source);
+            return !Files.isRegularFile(artifact)
+                    || Files.getLastModifiedTime(artifact).toMillis() < Files
+                            .getLastModifiedTime(source).toMillis();
+        } catch (IOException e) {
+            // A source that vanished under the walk is a deletion, which the
+            // inventory answers on the next launch.
+            return false;
+        }
+    }
+
+    private static List<Path> javaSources(Reactor.Module module) {
+        if (!Files.isDirectory(module.sourceDir())) {
+            return List.of();
+        }
+        try (java.util.stream.Stream<Path> walk = Files
+                .walk(module.sourceDir())) {
+            return walk.filter(Files::isRegularFile)
+                    .filter(path -> path.toString().endsWith(".java")).toList();
+        } catch (IOException | java.io.UncheckedIOException e) {
+            return List.of();
+        }
+    }
+
+    /**
+     * Every Java source of the loop as of the last launch, one absolute path
+     * per line - what {@link #sourcesAheadOfClasses} reads deletions against.
+     * <p>
+     * Under {@code target/} with the classes it describes, so that a clean
+     * wipes both together. A source created and deleted between two launches is
+     * never in it, and a class it left behind waits for the next full build,
+     * the same bound the apply's own deletion inventory has.
+     */
+    private Path sourceInventoryFile() {
+        return workDir(root).resolve("sources.txt");
+    }
+
+    private void writeSourceInventory(Project project) {
+        StringBuilder sb = new StringBuilder();
+        for (Reactor.Module module : project.modules()) {
+            for (Path source : javaSources(module)) {
+                sb.append(source).append('\n');
+            }
+        }
+        try {
+            Path inventory = sourceInventoryFile();
+            Files.createDirectories(inventory.getParent());
+            Files.writeString(inventory, sb.toString());
+        } catch (IOException e) {
+            log.line("could not record the sources of this launch: "
+                    + e.getMessage());
+        }
     }
 
     /**

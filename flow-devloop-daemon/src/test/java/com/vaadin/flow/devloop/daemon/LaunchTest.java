@@ -19,12 +19,17 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.OptionalInt;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -348,6 +353,150 @@ class LaunchTest {
         return new Launch(Reactor.discover(repo, text -> {
         }), text -> {
         });
+    }
+
+    /**
+     * Sources changed while no daemon was watching - a checkout, a pull - have
+     * to be built before a launch, or the application runs the classes of an
+     * earlier build.
+     */
+    @Test
+    void sourcesAheadOfClasses_namesSourcesWhoseClassIsMissingOrOlder(
+            @TempDir Path repo) throws IOException {
+        Launch launch = appWithSources(repo);
+        Reactor.Module app = Reactor.Module.of(repo, "app");
+        writeSource(app, "Current", 1_000);
+        writeClass(app, "Current", 2_000);
+        writeSource(app, "Edited", 3_000);
+        writeClass(app, "Edited", 2_000);
+        writeSource(app, "Added", 1_000);
+        // javac writes no class for a package without annotations.
+        writeSource(app, "package-info", 1_000);
+
+        assertEquals(
+                List.of("src/main/java/app/Added.java",
+                        "src/main/java/app/Edited.java"),
+                launch.sourcesAheadOfClasses(project(app)));
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    void catchUpSources_buildsWhenASourceDeletedSinceTheLastLaunchLeftItsClass(
+            @TempDir Path repo) throws IOException {
+        Launch launch = appWithSources(repo);
+        Path runs = fakeMaven(repo, 0);
+        Reactor.Module app = Reactor.Module.of(repo, "app");
+        writeSource(app, "About", 1_000);
+        writeClass(app, "About", 2_000);
+        writeSource(app, "Kept", 1_000);
+        writeClass(app, "Kept", 2_000);
+        Launch.Project project = project(app);
+
+        launch.catchUpSources(project, text -> {
+        });
+        assertFalse(Files.exists(runs), "nothing was behind, so no build");
+
+        Files.delete(app.sourceDir().resolve("app").resolve("About.java"));
+        assertEquals(List.of("src/main/java/app/About.java"),
+                launch.sourcesAheadOfClasses(project));
+        List<String> progress = new ArrayList<>();
+        launch.catchUpSources(project, progress::add);
+
+        assertEquals(1, Files.readAllLines(runs).size());
+        assertTrue(progress.get(0).contains("src/main/java/app/About.java"),
+                () -> "progress: " + progress);
+    }
+
+    @Test
+    void sourcesAheadOfClasses_ignoresADeletedSourceWhoseClassIsGone(
+            @TempDir Path repo) throws IOException {
+        // What an apply leaves behind when it removed the class of a deleted
+        // source; building again for it would only cost the next restart.
+        Launch launch = appWithSources(repo);
+        Reactor.Module app = Reactor.Module.of(repo, "app");
+        writeSource(app, "About", 1_000);
+        writeClass(app, "About", 2_000);
+        Launch.Project project = project(app);
+        launch.catchUpSources(project, text -> {
+        });
+
+        Files.delete(app.sourceDir().resolve("app").resolve("About.java"));
+        Files.delete(app.artifactFor(
+                app.sourceDir().resolve("app").resolve("About.java")));
+
+        assertEquals(List.of(), launch.sourcesAheadOfClasses(project));
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    void catchUpSources_failedBuild_keepsTheDeletionForTheNextLaunch(
+            @TempDir Path repo) throws IOException {
+        Launch launch = appWithSources(repo);
+        Reactor.Module app = Reactor.Module.of(repo, "app");
+        writeSource(app, "About", 1_000);
+        writeClass(app, "About", 2_000);
+        Launch.Project project = project(app);
+        launch.catchUpSources(project, text -> {
+        });
+        Files.delete(app.sourceDir().resolve("app").resolve("About.java"));
+        fakeMaven(repo, 1);
+
+        List<String> progress = new ArrayList<>();
+        launch.catchUpSources(project, progress::add);
+
+        assertTrue(
+                progress.stream()
+                        .anyMatch(line -> line.startsWith(
+                                "WARNING: building the sources failed")),
+                () -> "progress: " + progress);
+        assertEquals(List.of("src/main/java/app/About.java"),
+                launch.sourcesAheadOfClasses(project));
+    }
+
+    private Launch appWithSources(Path repo) throws IOException {
+        Files.writeString(repo.resolve("pom.xml"), """
+                <project>
+                  <artifactId>app</artifactId>
+                  <packaging>jar</packaging>
+                </project>
+                """);
+        return new Launch(Reactor.discover(repo, text -> {
+        }), text -> {
+        });
+    }
+
+    /** A Maven that records each run and exits with the given code. */
+    private Path fakeMaven(Path repo, int exitCode) throws IOException {
+        Path runs = repo.resolve("maven-runs");
+        Path script = repo.resolve("fake-mvn-" + exitCode);
+        Files.writeString(script, "#!/bin/sh\necho run >> '" + runs + "'\nexit "
+                + exitCode + "\n");
+        assertTrue(script.toFile().setExecutable(true));
+        setProperty("vaadin.dev.maven", script.toString());
+        return runs;
+    }
+
+    private static Launch.Project project(Reactor.Module app) {
+        return new Launch.Project(List.of(app), app.classesDir().toString(),
+                Map.of(app.artifactId(), app.classesDir().toString()),
+                OptionalInt.empty());
+    }
+
+    private static void writeSource(Reactor.Module app, String name,
+            long modified) throws IOException {
+        Path source = app.sourceDir().resolve("app").resolve(name + ".java");
+        Files.createDirectories(source.getParent());
+        Files.writeString(source, "package app;");
+        Files.setLastModifiedTime(source, FileTime.fromMillis(modified));
+    }
+
+    private static void writeClass(Reactor.Module app, String name,
+            long modified) throws IOException {
+        Path artifact = app.artifactFor(
+                app.sourceDir().resolve("app").resolve(name + ".java"));
+        Files.createDirectories(artifact.getParent());
+        Files.write(artifact, new byte[0]);
+        Files.setLastModifiedTime(artifact, FileTime.fromMillis(modified));
     }
 
     private void setProperty(String name, String value) {
