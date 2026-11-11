@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.converter;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.function.Function;
 
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
@@ -174,35 +175,18 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
     }
 
     /**
-     * Wraps the given {@code converter} with a converter that handles both null
-     * presentation and null model values:
-     * <ul>
-     * <li>If the model value is null, the converter returns null. Otherwise, it
-     * delegates to the wrapped converter.</li>
-     * <li>If the presentation value is null, or equal to the
-     * {@link com.vaadin.flow.component.HasValue#getEmptyValue() empty value} of
-     * the field available through {@link ValueContext#getHasValue()}, the
-     * converter returns null. Otherwise, it delegates to the wrapped
-     * converter.</li>
-     * </ul>
-     * When the converter is used directly on a field, as the first converter of
-     * a binding, the wrapped converter thus never sees a null value nor the
-     * field's empty value, such as an empty string from a text field. The
-     * field's empty value is always converted to null, even when it is a
-     * meaningful value such as {@code false} for a checkbox. The empty value
-     * check is only meaningful when this converter is attached directly to the
-     * field: further down a converter chain, the incoming value is still
-     * compared to the field's empty value. Without a field in the context, for
-     * example when the converter is used outside a binder, only null is
-     * converted to null.
+     * Wraps the given {@code converter} so that null values never reach it: a
+     * null presentation value converts to a null model value, and a null model
+     * value converts to a null presentation value. Other values are passed to
+     * the wrapped converter.
      * <p>
-     * A null model value is converted to a null presentation value. If the
-     * field does not accept null, configure a null representation for the
-     * binding with {@link BindingBuilder#withNullRepresentation(Object)} before
-     * adding this converter.
+     * Use this for fields whose empty value is null, such as a date picker or a
+     * combo box. For fields whose empty value is not null, such as an empty
+     * string in a text field, use {@link #nullSafeConverter(Converter, Object)}
+     * instead, so the empty value maps to null and back.
      * <p>
      * Example use:
-     * 
+     *
      * <pre>
      * {@code
      * Converter<String, LocalDate> converter = Converter
@@ -216,18 +200,61 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      * @param <M>
      *            the model type
      * @param converter
-     *            the converter to delegate to when the value being converted is
-     *            neither null nor the field's empty value
-     * @return a converter that handles both null presentation and null model
-     *         values
+     *            the converter to delegate to for non-null values, not null
+     * @return a converter that maps null to null in both directions
+     * @see #nullSafeConverter(Converter, Object)
      */
     static <P, M> Converter<P, M> nullSafeConverter(Converter<P, M> converter) {
+        return nullSafeConverter(converter, null);
+    }
+
+    /**
+     * Wraps the given {@code converter} so that neither null nor the given
+     * {@code nullRepresentation} ever reach it:
+     * <ul>
+     * <li>A presentation value that is null or equal to
+     * {@code nullRepresentation} converts to a null model value.</li>
+     * <li>A null model value converts to {@code nullRepresentation}.</li>
+     * </ul>
+     * Other values are passed to the wrapped converter.
+     * <p>
+     * This is meant for fields whose empty value is not null, such as an empty
+     * string in a text field: an empty field becomes a null model value, and a
+     * null model value empties the field, without the wrapped converter having
+     * to handle either case.
+     * <p>
+     * Example use:
+     *
+     * <pre>
+     * {@code
+     * binder.forField(textField)
+     *         .withConverter(Converter
+     *                 .nullSafeConverter(Converter.from(LocalDate::parse,
+     *                         LocalDate::toString, Exception::getMessage), ""))
+     *         .bind(Person::getBirthDate, Person::setBirthDate);
+     * }
+     * </pre>
+     *
+     * @param <P>
+     *            the presentation type
+     * @param <M>
+     *            the model type
+     * @param converter
+     *            the converter to delegate to for other values, not null
+     * @param nullRepresentation
+     *            the presentation value that stands for a null model value, for
+     *            example {@code ""} for a text field; may be null
+     * @return a converter that maps {@code nullRepresentation} to null and back
+     * @see #nullSafeConverter(Converter)
+     * @see BindingBuilder#withNullRepresentation(Object)
+     */
+    static <P, M> Converter<P, M> nullSafeConverter(Converter<P, M> converter,
+            P nullRepresentation) {
+        Objects.requireNonNull(converter, "converter cannot be null");
         return new Converter<P, M>() {
             @Override
             public Result<M> convertToModel(P value, ValueContext context) {
-                if (value == null || context.getHasValue()
-                        .map(field -> value.equals(field.getEmptyValue()))
-                        .orElse(false)) {
+                if (value == null || value.equals(nullRepresentation)) {
                     return Result.ok(null);
                 }
                 return converter.convertToModel(value, context);
@@ -235,7 +262,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
 
             @Override
             public P convertToPresentation(M value, ValueContext context) {
-                return value == null ? null
+                return value == null ? nullRepresentation
                         : converter.convertToPresentation(value, context);
             }
         };

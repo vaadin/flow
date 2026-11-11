@@ -23,7 +23,6 @@ import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 
 import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -35,52 +34,48 @@ class NullSafeConverterTest {
         }
     }
 
-    private final Converter<String, ValueObject> converter = Converter
-            .nullSafeConverter(Converter.from(ValueObject::new,
-                    ValueObject::value, Exception::getMessage));
+    private final Converter<String, ValueObject> wrapped = Converter
+            .from(ValueObject::new, ValueObject::value, Exception::getMessage);
 
     @Test
-    void nullPresentationConvertsToNullModel() {
-        var result = converter.convertToModel(null, new ValueContext());
-        assertFalse(result.isError());
-        assertNull(result.getOrThrow(RuntimeException::new));
-    }
+    void nullSafeConverter_mapsNullToNullAndDelegatesOtherValues() {
+        var converter = Converter.nullSafeConverter(wrapped);
+        var context = new ValueContext();
 
-    @Test
-    void nonNullPresentationConvertsToNonNullModel() {
-        var result = converter.convertToModel("hello", new ValueContext());
-        assertFalse(result.isError());
+        assertNull(convertToModel(converter, null));
+        assertNull(converter.convertToPresentation(null, context));
         assertEquals(new ValueObject("hello"),
-                result.getOrThrow(RuntimeException::new));
+                convertToModel(converter, "hello"));
+        assertEquals(new ValueObject(""), convertToModel(converter, ""));
+        assertEquals("hello", converter
+                .convertToPresentation(new ValueObject("hello"), context));
     }
 
     @Test
-    void emptyFieldValueConvertsToNullModel() {
+    void nullSafeConverterWithNullRepresentation_mapsItToNullAndBack() {
+        var converter = Converter.nullSafeConverter(wrapped, "-");
+        var context = new ValueContext();
+
+        assertNull(convertToModel(converter, "-"));
+        assertNull(convertToModel(converter, null));
+        assertEquals("-", converter.convertToPresentation(null, context));
+        assertEquals(new ValueObject("hello"),
+                convertToModel(converter, "hello"));
+        assertEquals("hello", converter
+                .convertToPresentation(new ValueObject("hello"), context));
+    }
+
+    @Test
+    void binder_textFieldWithEmptyStringAsNullRepresentation() {
         var field = new TestTextField();
-        var result = converter.convertToModel("",
-                new ValueContext(field, field));
-        assertFalse(result.isError());
-        assertNull(result.getOrThrow(RuntimeException::new));
-    }
-
-    @Test
-    void emptyValueWithoutFieldIsPassedToWrappedConverter() {
-        var result = converter.convertToModel("", new ValueContext());
-        assertFalse(result.isError());
-        assertEquals(new ValueObject(""),
-                result.getOrThrow(RuntimeException::new));
-    }
-
-    @Test
-    void binder_emptyTextField_nullModelValue() {
-        var field = new TestTextField();
+        field.setValue("stale");
         var binder = new Binder<Bean>();
-        binder.forField(field).withConverter(converter).bind(Bean::getValue,
-                Bean::setValue);
+        binder.forField(field)
+                .withConverter(Converter.nullSafeConverter(wrapped, ""))
+                .bind(Bean::getValue, Bean::setValue);
         var bean = new Bean();
-        bean.setValue(new ValueObject("hello"));
         binder.setBean(bean);
-        assertEquals("hello", field.getValue());
+        assertEquals("", field.getValue());
 
         field.setValue("world");
         assertEquals(new ValueObject("world"), bean.getValue());
@@ -90,17 +85,10 @@ class NullSafeConverterTest {
         assertNull(bean.getValue());
     }
 
-    @Test
-    void nullModelConvertsToNullPresentation() {
-        var result = converter.convertToPresentation(null, new ValueContext());
-        assertNull(result);
-    }
-
-    @Test
-    void nonNullModelConvertsToNonNullPresentation() {
-        var result = converter.convertToPresentation(new ValueObject("hello"),
-                new ValueContext());
-        assertEquals("hello", result);
+    private static ValueObject convertToModel(
+            Converter<String, ValueObject> converter, String value) {
+        return converter.convertToModel(value, new ValueContext())
+                .getOrThrow(IllegalStateException::new);
     }
 
     public static class Bean {
