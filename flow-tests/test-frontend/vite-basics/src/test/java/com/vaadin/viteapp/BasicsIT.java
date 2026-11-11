@@ -80,6 +80,8 @@ public class BasicsIT extends ViteDevModeIT {
                 return diagnostics.contains("typeerror.ts")
                         && diagnostics.contains("TS2322");
             }, 60);
+            // Proves the badge lookup that the error-free checks rely on
+            waitUntil(driver -> hasTypescriptErrorOverlay(), 60);
         } finally {
             FileUtils.deleteQuietly(typeErrorFile);
             // Leave the checker without errors for the other tests
