@@ -273,7 +273,8 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
      * value of this signal. An {@link Signal#unboundEffect(EffectAction)
      * effect} or outer cached signal that uses the value from a cached signal
      * will not be invalidated if the inner signal is invalidated but holds the
-     * same value as before invalidation.
+     * same value as before invalidation. Exceptions are compared by identity,
+     * so a new exception from the inner signal always invalidates them.
      * 
      * @param <T>
      *            the signal type

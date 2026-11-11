@@ -16,7 +16,12 @@
 package com.vaadin.flow.signals.impl;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jspecify.annotations.Nullable;
@@ -45,7 +50,8 @@ import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
  * this signal. An {@link Signal#unboundEffect(EffectAction) effect} or outer
  * cached signal that uses the value from a cached signal will not be
  * invalidated if the computation is run again but produces the same value as
- * before.
+ * before. Exceptions are compared by identity, so a new exception from the
+ * computation always invalidates them.
  *
  * @param <T>
  *            the value type
@@ -59,8 +65,51 @@ public class CachedSignal<T extends @Nullable Object>
      * Hilla clients.
      */
     private record CacheState(@Nullable Object value,
-            @Nullable RuntimeException exception,
-            Usage dependencies) implements Serializable {
+            @Nullable RuntimeException exception, Usage dependencies,
+            List<CachedSignal<?>> cachedDependencies) implements Serializable {
+    }
+
+    /*
+     * A named class so that an outer cached signal can recognize which of its
+     * dependencies are cached signals.
+     */
+    private static final class CachedUsage implements Usage {
+        private final CachedSignal<?> owner;
+        private final Usage superUsage;
+
+        private CachedUsage(CachedSignal<?> owner, Usage superUsage) {
+            this.owner = owner;
+            this.superUsage = superUsage;
+        }
+
+        @Override
+        public boolean hasChanges() {
+            return superUsage.hasChanges();
+        }
+
+        @Override
+        public Registration onNextChange(TransientListener listener) {
+            Registration uncount = owner.countActiveExternalListener();
+
+            // avoid lambda to allow proper deserialization
+            TransientListener usageListener = new TransientListener() {
+                @Override
+                public boolean invoke(boolean immediate) {
+                    boolean listenToNext = listener.invoke(immediate);
+                    if (!listenToNext) {
+                        uncount.remove();
+                    }
+                    return listenToNext;
+                }
+            };
+
+            Registration superCleanup = superUsage.onNextChange(usageListener);
+
+            return () -> {
+                superCleanup.remove();
+                uncount.remove();
+            };
+        }
     }
 
     private final Signal<T> inner;
@@ -231,54 +280,40 @@ public class CachedSignal<T extends @Nullable Object>
      */
     @Override
     protected Usage createUsage(Transaction transaction) {
-        Usage superUsage = super.createUsage(transaction);
-
-        return new Usage() {
-            @Override
-            public boolean hasChanges() {
-                return superUsage.hasChanges();
-            }
-
-            @Override
-            public Registration onNextChange(TransientListener listener) {
-                Registration uncount = countActiveExternalListener();
-
-                // avoid lambda to allow proper deserialization
-                TransientListener usageListener = new TransientListener() {
-                    @Override
-                    public boolean invoke(boolean immediate) {
-                        boolean listenToNext = listener.invoke(immediate);
-                        if (!listenToNext) {
-                            uncount.remove();
-                        }
-                        return listenToNext;
-                    }
-                };
-
-                Registration superCleanup = superUsage
-                        .onNextChange(usageListener);
-
-                return () -> {
-                    superCleanup.remove();
-                    uncount.remove();
-                };
-            }
-        };
+        return new CachedUsage(this, super.createUsage(transaction));
     }
 
     private CacheState getValidState(@Nullable Data data) {
+        Set<CachedSignal<?>> refreshed = Collections
+                .newSetFromMap(new IdentityHashMap<>());
+        refreshed.add(this);
+        return getValidState(data, refreshed);
+    }
+
+    private CacheState getValidState(@Nullable Data data,
+            Set<CachedSignal<?>> refreshed) {
         CacheState state = readState(data);
 
-        if (state == null || state.dependencies.hasChanges()) {
+        if (state == null || state.dependencies.hasChanges()
+                || refreshCachedDependencies(state, refreshed)) {
             @Nullable
             Object[] holder = new @Nullable Object[2];
-            Usage dependencies = UsageTracker.track(() -> {
+            List<Usage> usages = new ArrayList<>();
+            List<CachedSignal<?>> cachedDependencies = new ArrayList<>();
+            UsageTracker.track(() -> {
                 try {
                     holder[0] = inner.get();
                 } catch (RuntimeException e) {
                     holder[1] = e;
                 }
+            }, usage -> {
+                usages.add(usage);
+                if (usage instanceof CachedUsage cachedUsage
+                        && !cachedDependencies.contains(cachedUsage.owner)) {
+                    cachedDependencies.add(cachedUsage.owner);
+                }
             });
+            Usage dependencies = UsageTracker.combine(usages);
             if (dependencies == UsageTracker.NO_USAGE) {
                 throw new MissingSignalUsageException(
                         "A computing inner signal must read at least one other signal value.");
@@ -288,7 +323,8 @@ public class CachedSignal<T extends @Nullable Object>
             @Nullable
             RuntimeException exception = (RuntimeException) holder[1];
 
-            state = new CacheState(value, exception, dependencies);
+            state = new CacheState(value, exception, dependencies,
+                    List.copyOf(cachedDependencies));
 
             CacheState finalState = state;
             Effect.runInReadTriggeredUpdateContext(
@@ -297,6 +333,31 @@ public class CachedSignal<T extends @Nullable Object>
         }
 
         return state;
+    }
+
+    /*
+     * Without active listeners, a cached dependency is revalidated only when it
+     * is read, so the value stored in its tree may be stale and
+     * dependencies.hasChanges() misses a change that comes through it.
+     * Revalidate cached dependencies in the order they were read, each at most
+     * once per read, and stop at the first change so that dependencies that the
+     * computation will no longer read are not revalidated. If revalidating a
+     * dependency throws, e.g. because its computation reads no signal, then
+     * this read throws as well. Nothing is stored in that case, so the
+     * dependency is kept and revalidated again on the next read.
+     */
+    private static boolean refreshCachedDependencies(CacheState state,
+            Set<CachedSignal<?>> refreshed) {
+        for (CachedSignal<?> dependency : state.cachedDependencies) {
+            if (refreshed.add(dependency)) {
+                dependency.getValidState(
+                        dependency.data(Transaction.getCurrent()), refreshed);
+                if (state.dependencies.hasChanges()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static @Nullable CacheState readState(@Nullable Data data) {
@@ -344,7 +405,13 @@ public class CachedSignal<T extends @Nullable Object>
         if (value == null) {
             return null;
         }
-        return extractState(value).value;
+        /*
+         * Compare the exception when there is one, since the value is null both
+         * while throwing and when the computation returns null. Exceptions are
+         * compared by identity, so each new exception is a change.
+         */
+        CacheState state = extractState(value);
+        return state.exception != null ? state.exception : state.value;
     }
 
     @Override
