@@ -315,3 +315,14 @@ Configuration:
 | `ANTHROPIC_API_KEY` | secret | Key the review runs with. |
 | `VAADIN_REVIEW_BOT` | secret | Token of the `vaadin-review-bot` account, used to post the review and react to the trigger. Without it both fall back to the workflow token. |
 | `CLAUDE_DEBUG` | variable (optional) | Set to `true` to upload the full execution log as a run artifact. It contains every tool call and its result, so it is world-readable on this public repository. |
+
+## PR risk
+
+`pr-risk.yml` is on trial: it rates every ready pull request to `main` as low,
+medium or high risk and posts one comment that explains why. Nothing reads the
+result. Its header explains how the level is decided, and
+`node .github/pr-risk/cli.js <pull request URL>` shows it for a pull request
+without changing it. It needs the `ANTHROPIC_API_KEY` secret, and uses
+`VAADIN_BOT_TOKEN` to check whether the author is a member of the
+organization. `pr-risk-test.yml` runs the tests of the scripts when they
+change.
