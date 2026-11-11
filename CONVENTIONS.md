@@ -257,10 +257,9 @@ component and platform jars, so the names stay consistent across repositories:
 A name must be unique across all Vaadin jars. Test jars, build-time-only jars
 and jars that no module descriptor is expected to `requires` get no name, so
 they keep the one derived from their file name. In this repository, set the
-name with the
-`jpms.module.name` property in the module's `pom.xml`; the root pom writes the
-manifest entry and omits it when the property is empty. A released name can
-not change, because other modules `requires` it.
+name with the `jpms.module.name` property in the module's `pom.xml`; the root
+pom writes the manifest entry and omits it when the property is empty. A
+released name can not change, because other modules `requires` it.
 
 ## Javadoc
 
