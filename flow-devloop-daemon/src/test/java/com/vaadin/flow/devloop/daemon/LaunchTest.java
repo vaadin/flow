@@ -435,6 +435,29 @@ class LaunchTest {
 
     @Test
     @DisabledOnOs(OS.WINDOWS)
+    void catchUpSources_deletedSource_keepsAClassTheBuildWroteUnderItsName(
+            @TempDir Path repo) throws IOException {
+        // Another source of the package may declare the class the deleted one
+        // did, and then the class file is the build's own, not a leftover.
+        Launch launch = appWithSources(repo);
+        Reactor.Module app = Reactor.Module.of(repo, "app");
+        writeSource(app, "About", 1_000);
+        writeClass(app, "About", 2_000);
+        Path about = app.artifactFor(sourceOf(app, "About"));
+        Launch.Project project = project(app);
+        launch.catchUpSources(project, text -> {
+        });
+        Files.delete(sourceOf(app, "About"));
+        fakeMaven(repo, 0, "touch '" + about + "'");
+
+        launch.catchUpSources(project, text -> {
+        });
+
+        assertTrue(Files.exists(about));
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
     void catchUpSources_deletedSourceWhoseClassIsGone_doesNotBuild(
             @TempDir Path repo) throws IOException {
         // What an apply leaves behind when it removed the class of a deleted

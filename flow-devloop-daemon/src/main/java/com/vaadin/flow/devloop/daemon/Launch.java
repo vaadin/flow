@@ -1290,8 +1290,7 @@ final class Launch {
             try {
                 runMaven(progress);
                 List<Path> deleted = recorded.keySet().stream()
-                        .filter(source -> !sources.containsKey(source))
-                        .toList();
+                        .filter(source -> isDeleted(source, sources)).toList();
                 Compile.removeClassArtifacts(project.modules(), deleted,
                         buildStarted);
             } catch (IOException e) {
@@ -1334,8 +1333,7 @@ final class Launch {
                 behind.add(source);
             }
         });
-        recorded.keySet().stream()
-                .filter(source -> !sources.containsKey(source))
+        recorded.keySet().stream().filter(source -> isDeleted(source, sources))
                 .forEach(source -> {
                     Reactor.Module owner = ownerOf(project, source);
                     if (owner != null
@@ -1344,6 +1342,15 @@ final class Launch {
                     }
                 });
         return List.copyOf(behind);
+    }
+
+    /**
+     * Whether a recorded source is gone - asked of the disk too, as a walk that
+     * failed part way, or a file replaced under it, leaves a source out of the
+     * walk that is still there, and its classes must not be removed.
+     */
+    private static boolean isDeleted(Path source, Map<Path, Long> sources) {
+        return !sources.containsKey(source) && Files.notExists(source);
     }
 
     private static Reactor.Module ownerOf(Project project, Path source) {
