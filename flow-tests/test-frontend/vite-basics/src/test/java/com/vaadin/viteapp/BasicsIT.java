@@ -73,14 +73,13 @@ public class BasicsIT extends ViteDevModeIT {
             FileUtils.write(typeErrorFile,
                     "export const notANumber: number = 'string';\n",
                     StandardCharsets.UTF_8);
-            waitUntil(driver -> $("vite-plugin-checker-error-overlay").all()
-                    .stream()
-                    .anyMatch(overlay -> overlay.$("main").exists()
-                            && overlay.$("main").first().getText()
-                                    .contains("typeerror.ts")
-                            && overlay.$("main").first().getText()
-                                    .contains("TS2322")),
-                    60);
+            // The drawer shows the diagnostics page served by the dev server,
+            // so its content also proves the page is reachable through Flow
+            waitUntil(driver -> {
+                String diagnostics = getCheckerDrawerText();
+                return diagnostics.contains("typeerror.ts")
+                        && diagnostics.contains("TS2322");
+            }, 60);
         } finally {
             FileUtils.deleteQuietly(typeErrorFile);
             // Leave the checker without errors for the other tests
@@ -89,8 +88,24 @@ public class BasicsIT extends ViteDevModeIT {
     }
 
     private boolean hasTypescriptErrorOverlay() {
-        return $("vite-plugin-checker-error-overlay").all().stream()
-                .anyMatch(overlay -> overlay.$("main").exists());
+        // The badge label reads e.g. "Checker: 1 error" or
+        // "Checker: no problems"
+        return (Boolean) executeScript(
+                """
+                        return [...document.querySelectorAll('vite-plugin-checker-overlay')]
+                            .some(overlay => /\\d+ errors?\\b/.test(
+                                overlay.shadowRoot.querySelector('.label').textContent));
+                        """);
+    }
+
+    private String getCheckerDrawerText() {
+        return (String) executeScript(
+                """
+                        return [...document.querySelectorAll('vite-plugin-checker-overlay')]
+                            .map(overlay => overlay.shadowRoot.querySelector('iframe'))
+                            .map(frame => frame?.contentDocument?.body?.innerText ?? '')
+                            .join('\\n');
+                        """);
     }
 
     @Test

@@ -253,10 +253,14 @@ public class StaticFileServer implements StaticFileHandler {
             HttpServletResponse response) throws IOException {
 
         String filenameWithPath = getRequestFilename(request);
-        if (filenameWithPath.endsWith("/")) {
+        boolean directory = filenameWithPath.endsWith("/");
+        if (directory && (devModeHandler == null
+                || !filenameWithPath.startsWith("/" + VAADIN_MAPPING)
+                || filenameWithPath.equals("/" + VAADIN_MAPPING))) {
             // Directories are not static resources although
             // servletContext.getResource will return a URL for them, at
-            // least with Jetty
+            // least with Jetty. Only the dev server may serve a page for a
+            // directory below /VAADIN/.
             return false;
         } else if (HandlerHelper.getPublicInternalFolderPaths().stream()
                 .anyMatch(path -> filenameWithPath.equals(path))) {
@@ -301,6 +305,11 @@ public class StaticFileServer implements StaticFileHandler {
                         ee);
             }
             return true;
+        }
+        if (directory) {
+            // Only the dev server serves pages addressed by a directory, such
+            // as the type checker diagnostics page at /VAADIN/__checker/
+            return false;
         }
 
         URL resourceUrl = null;
