@@ -27,8 +27,6 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -87,9 +85,9 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -1670,11 +1668,6 @@ class HotswapperTest {
 
     static class RefreshTestingUI extends MockUI {
 
-        private static final String REFRESH_EVENT_NAME = "vaadin-refresh-ui";
-
-        private static final Pattern FIRE_UI_REFRESH_EVENT = Pattern
-                .compile(".*new CustomEvent\\(\"" + REFRESH_EVENT_NAME
-                        + "\",\\s*\\{\\s*detail:\\s*\\{\\s*fullRefresh:\\s*(true|false)\\s*}\\s*}\\).*");
         private Boolean refreshRouteChainRequested;
 
         private final Page pageSpy;
@@ -1682,17 +1675,11 @@ class HotswapperTest {
         public RefreshTestingUI(VaadinSession session) {
             super(session);
             pageSpy = spy(super.getPage());
-            // Intercept javascript executions to check if the custom ui refresh
-            // event dispatch has been registered.
-            doAnswer(i -> {
-                String expression = i.getArgument(0);
-                Matcher matcher = FIRE_UI_REFRESH_EVENT.matcher(expression);
-                if (matcher.matches()) {
-                    refreshRouteChainRequested = Boolean
-                            .parseBoolean(matcher.group(1));
-                }
-                return null;
-            }).when(pageSpy).executeJs(anyString(), any(Object[].class));
+            // Intercept the request to the browser to check whether a UI
+            // refresh has been asked for, and for which part of the chain.
+            Hotswapper.RefreshUiJs refreshUiJs = fullRefresh -> refreshRouteChainRequested = fullRefresh;
+            doReturn(refreshUiJs).when(pageSpy)
+                    .executeJs(Hotswapper.RefreshUiJs.class);
         }
 
         @Override
