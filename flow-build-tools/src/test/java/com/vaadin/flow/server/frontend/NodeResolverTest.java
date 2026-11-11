@@ -165,22 +165,16 @@ class NodeResolverTest {
     }
 
     @Test
-    void globalNode_versionsOutsideTheSupportedRangeAreRejected() {
+    void globalNode_versionOlderThanMinimumIsRejected() {
         NodeResolver resolver = resolver(VERSION);
         int minimumMajor = FrontendTools.SUPPORTED_NODE_VERSION
                 .getMajorVersion();
-        int maximumMajor = FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION;
 
         assertFalse(
                 resolver.isSupportedGlobalVersion(
                         new FrontendVersion(minimumMajor - 1, 99, 0),
                         GLOBAL_NODE_FOLDER),
                 "A version older than the minimum should be rejected");
-        assertFalse(
-                resolver.isSupportedGlobalVersion(
-                        new FrontendVersion(maximumMajor + 1, 0, 0),
-                        GLOBAL_NODE_FOLDER),
-                "A version newer than the maximum major version should be rejected");
     }
 
     @Test
@@ -194,35 +188,44 @@ class NodeResolverTest {
         ArgumentCaptor<Object[]> arguments = ArgumentCaptor
                 .forClass(Object[].class);
         Mockito.verify(logger).warn(format.capture(), arguments.capture());
-        String message = MessageFormatter
-                .arrayFormat(format.getValue(), arguments.getValue())
-                .getMessage();
-        assertTrue(message.contains("version " + newerMajor + ".x"),
-                "The warning should name the global Node.js version: "
-                        + message);
-        assertTrue(
-                message.contains("set the '" + Constants.VAADIN_PREFIX
-                        + InitParameters.NODE_FOLDER + "' property"),
-                "The warning should tell how to use the global Node.js anyway: "
-                        + message);
-        assertTrue(message.endsWith(GLOBAL_NODE_FOLDER.getAbsolutePath()),
-                "The warning should name the global Node.js folder: "
-                        + message);
+        assertTellsHowToUseNewerNode(format, arguments, newerMajor);
     }
 
     @Test
     void globalNode_newerThanMaximumWithInstalledNode_isNotWarnedAbout()
             throws IOException {
         stubInstallation(VERSION);
+        int newerMajor = FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION + 1;
         Logger logger = Mockito.spy(Logger.class);
 
-        rejectNewerGlobalVersion(
-                FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION + 1, logger);
+        rejectNewerGlobalVersion(newerMajor, logger);
 
         Mockito.verify(logger, Mockito.never()).warn(Mockito.anyString(),
                 Mockito.any(Object[].class));
-        Mockito.verify(logger).info(Mockito.anyString(),
-                Mockito.any(Object[].class));
+        ArgumentCaptor<String> format = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Object[]> arguments = ArgumentCaptor
+                .forClass(Object[].class);
+        Mockito.verify(logger).info(format.capture(), arguments.capture());
+        assertTellsHowToUseNewerNode(format, arguments, newerMajor);
+    }
+
+    private static void assertTellsHowToUseNewerNode(
+            ArgumentCaptor<String> format, ArgumentCaptor<Object[]> arguments,
+            int newerMajor) {
+        String message = MessageFormatter
+                .arrayFormat(format.getValue(), arguments.getValue())
+                .getMessage();
+        assertTrue(message.contains("version " + newerMajor + ".x"),
+                "The message should name the global Node.js version: "
+                        + message);
+        assertTrue(
+                message.contains("set the '" + Constants.VAADIN_PREFIX
+                        + InitParameters.NODE_FOLDER + "' property"),
+                "The message should tell how to use the global Node.js anyway: "
+                        + message);
+        assertTrue(message.endsWith(GLOBAL_NODE_FOLDER.getAbsolutePath()),
+                "The message should name the global Node.js folder: "
+                        + message);
     }
 
     private void rejectNewerGlobalVersion(int major, Logger logger) {
