@@ -45,6 +45,8 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.Layout;
@@ -87,7 +89,6 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -1668,18 +1669,20 @@ class HotswapperTest {
 
     static class RefreshTestingUI extends MockUI {
 
-        private Boolean refreshRouteChainRequested;
+        private JsCall refreshCall;
 
         private final Page pageSpy;
 
         public RefreshTestingUI(VaadinSession session) {
             super(session);
             pageSpy = spy(super.getPage());
-            // Intercept the request to the browser to check whether a UI
-            // refresh has been asked for, and for which part of the chain.
-            Hotswapper.RefreshUiJs refreshUiJs = fullRefresh -> refreshRouteChainRequested = fullRefresh;
-            doReturn(refreshUiJs).when(pageSpy)
-                    .executeJs(Hotswapper.RefreshUiJs.class);
+            // Records the refresh request that the real definition queues for
+            // the browser, to check what the dev tools would receive.
+            doAnswer(i -> JsDefinitionProxy.create(Hotswapper.RefreshUiJs.class,
+                    call -> {
+                        refreshCall = call;
+                        return getInternals().addJavaScriptInvocation(call);
+                    })).when(pageSpy).executeJs(Hotswapper.RefreshUiJs.class);
         }
 
         @Override
@@ -1688,22 +1691,30 @@ class HotswapperTest {
         }
 
         void assertNotRefreshed() {
-            assertNull(refreshRouteChainRequested,
+            assertNull(refreshCall,
                     "Expecting refreshCurrentRoute not to be called, but was invoked");
         }
 
         void assertRouteRefreshed() {
-            assertNotNull(refreshRouteChainRequested,
-                    "Expecting refreshCurrentRoute to be called but was not");
-            assertFalse(refreshRouteChainRequested,
+            assertFalse(readFullRefreshOfSentEvent(),
                     "Expecting refreshCurrentRoute to refresh only route, but layout refresh was requested");
         }
 
         void assertChainRefreshed() {
-            assertNotNull(refreshRouteChainRequested,
-                    "Expecting refreshCurrentRoute to be called but was not");
-            assertTrue(refreshRouteChainRequested,
+            assertTrue(readFullRefreshOfSentEvent(),
                     "Expecting refreshCurrentRoute to refresh all chain, but only route refresh was requested");
+        }
+
+        // The dev tools refresh the UI on this event, see hotswap-scroll.ts
+        private boolean readFullRefreshOfSentEvent() {
+            assertNotNull(refreshCall,
+                    "Expecting refreshCurrentRoute to be called but was not");
+            String expression = refreshCall.getExpression();
+            assertTrue(expression.contains(
+                    "window.dispatchEvent(new CustomEvent('vaadin-refresh-ui', { detail: { fullRefresh: $0 } }))"),
+                    "Unexpected refresh event: " + expression);
+            assertEquals(1, refreshCall.arguments().size());
+            return (Boolean) refreshCall.arguments().get(0);
         }
 
         void enablePush() {
