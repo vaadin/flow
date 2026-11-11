@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
@@ -86,11 +87,13 @@ public class ElementListenerMap extends NodeMap {
     /**
      * {@code event} or {@code element}, followed by any number of {@code .name}
      * or {@code ?.name} segments. The client reads such a path without
-     * compiling it, see {@code PropertyPathExpression.ts}, which has the same
-     * pattern.
+     * compiling it, see {@code PropertyPathExpression.ts}, which matches the
+     * same paths. The quantifiers are possessive so that a long input can't
+     * cause deep backtracking; a segment always starts with a dot, so nothing
+     * needs to be backtracked.
      */
     private static final Pattern PROPERTY_PATH = Pattern
-            .compile("(event|element)(\\??\\.[A-Za-z_$][\\w$]*)*");
+            .compile("(event|element)(\\??\\.[A-Za-z_$][\\w$]*+)*+");
 
     private static final Entry ALWAYS_TRUE_ENTRY = new ExpressionEntry(
             ALWAYS_TRUE_FILTER);
@@ -112,7 +115,7 @@ public class ElementListenerMap extends NodeMap {
      * expression or a declared snippet. The client sends the value of the entry
      * to the server under the key of the entry.
      */
-    private sealed interface Entry extends Serializable
+    sealed interface Entry extends Serializable
             permits ExpressionEntry, SnippetEntry {
         String key();
     }
@@ -125,33 +128,59 @@ public class ElementListenerMap extends NodeMap {
     }
 
     /**
-     * A function declared in the bundle, with the values it captures. The key
-     * is {@link #SNIPPET_KEY_PREFIX} followed by the key of the snippet, see
+     * A function declared in the bundle, with the values it captures, that the
+     * client runs when an event occurs: a filter added with
+     * {@link DomListenerRegistration#setFilterExpression(DomEventFilter)} or
+     * event data added with
+     * {@link DomListenerRegistration#addEventData(DomEventData)}. The client
+     * runs the call and sends the value it returns to the server under the key
+     * of the entry.
+     * <p>
+     * The key is <code>@</code> followed by the key of the snippet, see
      * {@link JsCall#createSnippetKey()}.
      * <p>
-     * A snippet can have a side effect: the name of a method of the event,
+     * An entry can have a side effect: the name of a method of the event,
      * <code>preventDefault</code> or <code>stopPropagation</code>. The client
-     * then calls the method when the snippet returns a truthy value. This is
-     * used for <code>addEventData("event.preventDefault()")</code> on a
-     * listener with a declared filter: the event is prevented only when the
-     * filter passes. The key then ends with the name of the method, so it is
-     * different from the key of the filter itself.
+     * then calls the method when the call returns a truthy value. This is used
+     * for <code>addEventData("event.preventDefault()")</code> on a listener
+     * with a declared filter: the event is prevented only when the filter
+     * passes. The key then ends with <code>.</code> and the name of the method,
+     * so it is different from the key of the filter itself. Such an entry is
+     * not a filter, as it doesn't decide which listeners are notified.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param key
+     *            the key that the client sends the value under, not
+     *            <code>null</code>
+     * @param call
+     *            the call that the client runs, not <code>null</code>
+     * @param sideEffect
+     *            the name of the method of the event that the client calls when
+     *            the call returns a truthy value, or <code>null</code> if there
+     *            is no side effect
+     * @param filter
+     *            <code>true</code> if the entry is the filter of a listener,
+     *            which is notified only when the value is truthy, even if the
+     *            same call is also event data; <code>false</code> if it is only
+     *            event data or has a side effect
+     * @see #getSnippetEntries(String)
      */
-    private record SnippetEntry(String key, JsCall call,
-            String sideEffect) implements Entry {
+    public record SnippetEntry(String key, JsCall call,
+            @Nullable String sideEffect, boolean filter) implements Entry {
 
         static SnippetEntry of(DomEventData<?> eventData) {
             return new SnippetEntry(getEventDataKey(eventData),
-                    eventData.getDeclaredCall(), null);
+                    eventData.getDeclaredCall(), null, false);
         }
 
         static SnippetEntry of(DomEventFilter filter) {
             return new SnippetEntry(SNIPPET_KEY_PREFIX + filter.getSnippetKey(),
-                    filter.getDeclaredCall(), null);
+                    filter.getDeclaredCall(), null, true);
         }
 
         SnippetEntry withSideEffect(String method) {
-            return new SnippetEntry(key + "." + method, call, method);
+            return new SnippetEntry(key + "." + method, call, method, false);
         }
     }
 
@@ -159,8 +188,8 @@ public class ElementListenerMap extends NodeMap {
      * The settings of one entry for an event type: the entry and its debounce
      * settings.
      */
-    private static class ExpressionSettings implements Serializable {
-        private final Entry entry;
+    private static final class ExpressionSettings implements Serializable {
+        private Entry entry;
         private final Map<Integer, Set<DebouncePhase>> debounceSettings = new HashMap<>();
 
         private ExpressionSettings(Entry entry) {
@@ -229,10 +258,10 @@ public class ElementListenerMap extends NodeMap {
             } else {
                 // [[timeout1, phase1, phase2, ...], [timeout2, phase1, ...]]
                 return debounceSettings.entrySet().stream()
-                        .map(entry -> Stream.concat(
+                        .map(debounce -> Stream.concat(
                                 Stream.of(JacksonUtils
-                                        .createNode(entry.getKey().intValue())),
-                                entry.getValue().stream()
+                                        .createNode(debounce.getKey())),
+                                debounce.getValue().stream()
                                         .map(DebouncePhase::getIdentifier)
                                         .map(JacksonUtils::createNode))
                                 .collect(JacksonUtils.asArray()))
@@ -417,9 +446,7 @@ public class ElementListenerMap extends NodeMap {
         @Override
         public String getFilter() {
             // A declared filter has no expression to return
-            return filter instanceof ExpressionEntry expression
-                    ? expression.key()
-                    : null;
+            return filter instanceof ExpressionEntry(String key) ? key : null;
         }
 
         boolean matchesFilter(JsonNode eventData) {
@@ -599,9 +626,17 @@ public class ElementListenerMap extends NodeMap {
         boolean hasUnfilteredListener = false;
         boolean hasFilteredListener = false;
 
-        Function<Entry, ExpressionSettings> ensureExpression = entry -> expressions
-                .computeIfAbsent(entry.key(),
-                        key -> new ExpressionSettings(entry));
+        Function<Entry, ExpressionSettings> ensureExpression = entry -> {
+            ExpressionSettings settings = expressions.computeIfAbsent(
+                    entry.key(), key -> new ExpressionSettings(entry));
+            // The same call can be the filter of one listener and event data
+            // of another, which share a key. The value then still decides
+            // whether the filtered listener is notified.
+            if (entry instanceof SnippetEntry snippet && snippet.filter()) {
+                settings.entry = snippet;
+            }
+            return settings;
+        };
 
         Collection<DomEventListenerWrapper> wrappers = getWrappers(eventType);
 
@@ -682,11 +717,10 @@ public class ElementListenerMap extends NodeMap {
             return new ExpressionEntry(expression);
         }
         return switch (filter) {
-        case ExpressionEntry filterExpression when filterExpression.key()
-                .isEmpty() ->
+        case ExpressionEntry(String key) when key.isEmpty() ->
             new ExpressionEntry(expression);
-        case ExpressionEntry filterExpression -> new ExpressionEntry(
-                "(" + filterExpression.key() + ") && event." + method + "()");
+        case ExpressionEntry(String key) ->
+            new ExpressionEntry("(" + key + ") && event." + method + "()");
         case SnippetEntry snippet -> snippet.withSideEffect(method);
         };
     }
@@ -826,11 +860,33 @@ public class ElementListenerMap extends NodeMap {
      * @since 3.0
      */
     public Set<String> getExpressions(String eventName) {
-        assert eventName != null;
+        Objects.requireNonNull(eventName, "Event name cannot be null");
         // Declared snippets have no expression
         return collectEventExpressions(eventName).values().stream()
                 .map(settings -> settings.entry)
                 .filter(ExpressionEntry.class::isInstance).map(Entry::key)
+                .collect(Collectors.toUnmodifiableSet());
+    }
+
+    /**
+     * Gets the declared snippets that the client runs for the given event name:
+     * the filters and the event data that are declared as JavaScript functions
+     * of the bundle instead of as expressions. Together with
+     * {@link #getExpressions(String)}, this is everything the client runs when
+     * the event occurs. This method is currently only provided to facilitate
+     * testing, such as simulating events on the server.
+     *
+     * @param eventName
+     *            the name of the event, not <code>null</code>
+     * @return an unmodifiable set of the declared snippets, not
+     *         <code>null</code>
+     */
+    public Set<SnippetEntry> getSnippetEntries(String eventName) {
+        Objects.requireNonNull(eventName, "Event name cannot be null");
+        return collectEventExpressions(eventName).values().stream()
+                .map(settings -> settings.entry)
+                .filter(SnippetEntry.class::isInstance)
+                .map(SnippetEntry.class::cast)
                 .collect(Collectors.toUnmodifiableSet());
     }
 
