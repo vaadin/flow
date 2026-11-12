@@ -32,6 +32,7 @@ import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.server.AbstractConfiguration;
@@ -85,8 +86,7 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
                 .filter(type -> type.isAnnotationPresent(JsDefinition.class))
                 .toList());
         List<Class<?>> snippetTypes = changed.stream()
-                .filter(JsDefinitionHotswapper::isApplicationSnippetType)
-                .toList();
+                .filter(JsDefinitionProxy::isApplicationSnippetType).toList();
         if (definitions.isEmpty() && snippetTypes.isEmpty()) {
             return;
         }
@@ -125,12 +125,6 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
         if (!missing.isEmpty()) {
             warnAboutMissingDefinitions(missing);
         }
-    }
-
-    private static boolean isApplicationSnippetType(Class<?> type) {
-        return type.isInterface() && type != JsSnippet.class
-                && JsSnippet.class.isAssignableFrom(type)
-                && !type.isAnnotationPresent(JsDefinition.class);
     }
 
     /**

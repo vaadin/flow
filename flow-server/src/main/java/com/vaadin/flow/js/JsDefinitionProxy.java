@@ -328,8 +328,9 @@ public final class JsDefinitionProxy {
 
     /**
      * Checks that a snippet type of the application, which a proxy implements,
-     * declares no methods, since there is nothing on the server to run them:
-     * the snippet only becomes something that can be called on the client.
+     * declares no instance methods, since there is nothing on the server to run
+     * them: the snippet only becomes something that can be called on the
+     * client.
      */
     private static void checkSnippetType(Class<?> definitionType,
             Method method) {
@@ -349,7 +350,7 @@ public final class JsDefinitionProxy {
                     + ". A snippet type that extends JsSnippet only names what"
                     + " a snippet is for, and the snippet only becomes"
                     + " something to call on the client, so the type can not"
-                    + " declare methods");
+                    + " declare instance methods");
         }
     }
 
@@ -482,7 +483,19 @@ public final class JsDefinitionProxy {
         return null;
     }
 
-    private static boolean isApplicationSnippetType(Class<?> type) {
+    /**
+     * Checks whether the given type is a snippet type that an application or a
+     * component declares, as an interface that extends {@link JsSnippet}, and
+     * that a proxy implements when a snippet method returns it.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param type
+     *            the type to check, not <code>null</code>
+     * @return <code>true</code> if the type is a snippet type of the
+     *         application, <code>false</code> otherwise
+     */
+    public static boolean isApplicationSnippetType(Class<?> type) {
         return type.isInterface() && type != JsSnippet.class
                 && JsSnippet.class.isAssignableFrom(type);
     }
@@ -618,8 +631,8 @@ public final class JsDefinitionProxy {
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) {
-            // The type declares no methods, so only equals, hashCode and
-            // toString of Object reach this
+            // The type declares no instance methods, so only equals, hashCode
+            // and toString of Object reach this
             return switch (method.getName()) {
             case "equals" ->
                 args[0] != null && Proxy.isProxyClass(args[0].getClass())

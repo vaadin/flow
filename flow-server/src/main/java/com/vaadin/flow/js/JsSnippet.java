@@ -53,9 +53,9 @@ import com.vaadin.flow.dom.JsFunction;
  * <p>
  * A component or an application can declare a snippet type of its own for what
  * it invokes on the client, as an interface that extends this one and declares
- * no methods. It names what the snippet is for, so an API can accept only
- * snippets of that kind, and it can declare the parameters every snippet of it
- * is called with by annotating the type with {@link JsCalledWith}:
+ * no instance methods. It names what the snippet is for, so an API can accept
+ * only snippets of that kind, and it can declare the parameters every snippet
+ * of it is called with by annotating the type with {@link JsCalledWith}:
  *
  * <pre>
  * &#64;JsCalledWith({ "html", "item" })
