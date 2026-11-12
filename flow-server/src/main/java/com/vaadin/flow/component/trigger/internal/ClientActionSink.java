@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.trigger;
+package com.vaadin.flow.component.trigger.internal;
 
 import java.io.Serializable;
 
@@ -21,8 +21,9 @@ import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Receives the client-side function a {@link ClientAction} renders to, and is
- * responsible for getting it invoked in the browser.
+ * Receives the client-side function an {@link Action} renders to when it is
+ * bound through a {@link SinkTrigger}, and is responsible for getting it
+ * invoked in the browser.
  * <p>
  * Implemented by whatever accepts client actions — typically a renderer that
  * passes the function into its own client-side template so a {@code @click}

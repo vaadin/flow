@@ -23,9 +23,8 @@ import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.trigger.ClientAction;
+import com.vaadin.flow.component.trigger.internal.Action;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
-import com.vaadin.flow.component.trigger.internal.ClientActions;
 import com.vaadin.flow.component.trigger.internal.ContextInput;
 import com.vaadin.flow.component.trigger.internal.PromiseAction.Error;
 import com.vaadin.flow.component.trigger.internal.WriteToClipboardAction;
@@ -189,11 +188,12 @@ public final class Clipboard implements Serializable {
      * {@link #writeText(SerializableConsumer, SerializableConsumer)} to confirm
      * the copy or report a failure.
      *
-     * @return an unbound action, to be handed to whatever fires it
+     * @return an action not bound to any trigger, to be handed to whatever
+     *         fires it
      */
-    public static ClientAction writeText() {
-        return ClientActions.of(new WriteToClipboardAction(
-                new ContextInput<>("args", "0"), null));
+    public static Action writeText() {
+        return new WriteToClipboardAction(new ContextInput<>("args", "0"),
+                null);
     }
 
     /**
@@ -221,13 +221,14 @@ public final class Clipboard implements Serializable {
      *            UI-thread callback receiving the browser's error, for example
      *            when the page is not a secure context or the write permission
      *            is denied, not {@code null}
-     * @return an unbound action, to be handed to whatever fires it
+     * @return an action not bound to any trigger, to be handed to whatever
+     *         fires it
      */
-    public static ClientAction writeText(
+    public static Action writeText(
             SerializableConsumer<@Nullable String> onCopied,
             SerializableConsumer<Error> onError) {
-        return ClientActions.of(new WriteToClipboardAction(
-                new ContextInput<>("args", "0"), null, onCopied, onError));
+        return new WriteToClipboardAction(new ContextInput<>("args", "0"), null,
+                onCopied, onError);
     }
 
     /**

@@ -17,7 +17,6 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
-import com.vaadin.flow.component.trigger.ClientActionSink;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.shared.Registration;

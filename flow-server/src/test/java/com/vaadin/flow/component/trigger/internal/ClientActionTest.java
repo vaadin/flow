@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.trigger;
+package com.vaadin.flow.component.trigger.internal;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -36,13 +36,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.clipboard.Clipboard;
 import com.vaadin.flow.component.internal.ValueJs;
-import com.vaadin.flow.component.trigger.internal.DownloadAction;
-import com.vaadin.flow.component.trigger.internal.OpenInNewTabAction;
-import com.vaadin.flow.component.trigger.internal.PromiseAction;
-import com.vaadin.flow.component.trigger.internal.ShareAction;
-import com.vaadin.flow.component.trigger.internal.TriggerJs;
-import com.vaadin.flow.component.trigger.internal.TriggerTestUtil;
-import com.vaadin.flow.component.trigger.internal.WriteToClipboardAction;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -94,7 +87,8 @@ class ClientActionTest {
         RecordingSink sink = new RecordingSink();
 
         // Template: <button @click=${() => copy(item.email)}>Copy</button>
-        Clipboard.writeText().bindTo(container.getElement(), sink);
+        new SinkTrigger(container.getElement(), sink)
+                .triggers(Clipboard.writeText());
 
         // One binding for the whole renderer, whatever the row count.
         assertEquals(1, sink.installed.size());
@@ -112,8 +106,8 @@ class ClientActionTest {
         List<@Nullable String> copied = new ArrayList<>();
         List<PromiseAction.Error> failed = new ArrayList<>();
 
-        Clipboard.writeText(copied::add, failed::add)
-                .bindTo(container.getElement(), sink);
+        new SinkTrigger(container.getElement(), sink)
+                .triggers(Clipboard.writeText(copied::add, failed::add));
 
         // Still one binding: the outcome travels over one return channel on
         // the renderer's element, shared by every element that calls copy.
@@ -152,15 +146,14 @@ class ClientActionTest {
     }
 
     /**
-     * A view-like owner that keeps the handle in a field and whose callback
-     * reaches back to it, the usual shape in an application: the handle and its
+     * A view-like owner that keeps the action in a field and whose callback
+     * reaches back to it, the usual shape in an application: the action and its
      * owner form a reference cycle.
      */
     private static class CopyOwner implements Serializable {
         private final List<@Nullable String> copied = new ArrayList<>();
-        private final ClientAction copy = Clipboard.writeText(this::copied,
-                err -> {
-                });
+        private final Action copy = Clipboard.writeText(this::copied, err -> {
+        });
 
         private void copied(@Nullable String value) {
             copied.add(value);
@@ -168,38 +161,38 @@ class ClientActionTest {
     }
 
     @Test
-    void handle_survivesSerialization_evenWhenItsCallbacksReachBackToIt()
+    void action_survivesSerialization_evenWhenItsCallbacksReachBackToIt()
             throws Exception {
-        // Serialize from the handle, as when the renderer holding it is
+        // Serialize from the action, as when the renderer holding it is
         // reached before the view that owns it.
-        ClientAction restored = serializeAndDeserialize(new CopyOwner().copy);
+        Action restored = serializeAndDeserialize(new CopyOwner().copy);
 
         UI ui = new MockUI();
         Div container = new Div();
         ui.add(container);
         RecordingSink sink = new RecordingSink();
-        restored.bindTo(container.getElement(), sink);
+        new SinkTrigger(container.getElement(), sink).triggers(restored);
 
         assertEquals(1, sink.installed.size());
     }
 
     @Test
-    void unarmedCheckPasses_andRegistrationDetachesTheBinding() {
+    void unarmedCheckPasses_andRemovingTheTriggerDetachesTheBinding() {
         UI ui = new MockUI();
         Div container = new Div();
         ui.add(container);
         RecordingSink sink = new RecordingSink();
 
-        Registration registration = Clipboard.writeText()
-                .bindTo(container.getElement(), sink);
+        SinkTrigger trigger = new SinkTrigger(container.getElement(), sink);
+        trigger.triggers(Clipboard.writeText());
 
         // The action is committed as part of binding, so the trigger is armed
         // and the before-response check must not throw.
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        registration.remove();
+        trigger.remove();
         assertTrue(sink.installed.isEmpty(),
-                "removing the registration must detach the installed function");
+                "removing the trigger must detach the installed function");
     }
 
     @Test
@@ -209,11 +202,11 @@ class ClientActionTest {
         Div container = new Div();
         ui.add(container);
 
-        ClientAction copy = Clipboard.writeText();
+        Action copy = Clipboard.writeText();
         Element host = container.getElement();
 
         assertThrows(NullPointerException.class,
-                () -> copy.bindTo(host, action -> null));
+                () -> new SinkTrigger(host, action -> null).triggers(copy));
     }
 
     @Test
