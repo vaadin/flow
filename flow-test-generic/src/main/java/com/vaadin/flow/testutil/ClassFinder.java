@@ -183,6 +183,14 @@ public abstract class ClassFinder {
      * <p>
      * Only classes under {@link #getBasePackages} are considered, and those
      * matching {@code excludes} are filtered out.
+     *
+     * @param classpathEntry
+     *            the directory or JAR file to search
+     * @param excludes
+     *            the patterns of class names to leave out
+     * @return the names of the found classes
+     * @throws IOException
+     *             if reading the class path entry fails
      */
     protected List<String> findServerClasses(String classpathEntry,
             Collection<Pattern> excludes) throws IOException {

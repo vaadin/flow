@@ -13,7 +13,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
@@ -432,7 +431,7 @@ class BeanModelTypeTest {
                 .getModel(applicationToModel);
 
         assertEquals(Arrays.asList("string"),
-                model.getPropertyNames().collect(Collectors.toList()));
+                model.getPropertyNames().toList());
 
         assertEquals("3", model.getProperty("string"));
     }

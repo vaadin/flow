@@ -54,7 +54,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -572,7 +571,7 @@ class StaticFileServerTest implements Serializable {
                         return new Result(null);
                     };
                     return callable;
-                }).collect(Collectors.toList());
+                }).toList();
 
         ExecutorService executor = Executors.newFixedThreadPool(THREADS);
         List<Future<Result>> futures = executor.invokeAll(folderNotResource);
@@ -624,7 +623,7 @@ class StaticFileServerTest implements Serializable {
                         return new Result(null);
                     };
                     return callable;
-                }).collect(Collectors.toList());
+                }).toList();
 
         executor = Executors.newFixedThreadPool(THREADS);
         futures = executor.invokeAll(fileIsResource);

@@ -116,7 +116,7 @@ class SpringLookupInitializerTest {
                 .filter(method -> Modifier.isPublic(method.getModifiers())
                         && !Modifier.isStatic(method.getModifiers())
                         && !method.isSynthetic())
-                .collect(Collectors.toList());
+                .toList();
 
         // self check
         assertEquals(1, methods.size());

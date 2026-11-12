@@ -30,6 +30,9 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * This class is responsible for - creating, and providing the ContextualStorage
  * for a context key - destroying ContextualStorages
+ *
+ * @param <K>
+ *            the type of the context key
  */
 @SuppressWarnings("CdiManagedBeanInconsistencyInspection")
 abstract class AbstractContextualStorageManager<K> implements Serializable {

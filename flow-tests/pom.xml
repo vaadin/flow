@@ -350,8 +350,10 @@
       </activation>
       <modules>
         <module>test-default</module>
+        <module>test-csp-strict</module>
         <module>test-pwa</module>
         <module>test-pwa/pom-production.xml</module>
+        <module>test-pwa/pom-devbundle.xml</module>
         <module>test-pwa-disabled-offline</module>
         <module>test-pwa-disabled-offline/pom-production.xml</module>
         <module>test-router-custom-context</module>

@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -562,6 +563,83 @@ public class ElementListenersTest
         assertEquals(1, sideEffects.size());
         assertEquals("preventDefault", sideEffects.get(0)
                 .get(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT).asString());
+    }
+
+    @Test
+    void getSnippetEntries_eventSimulatedFromEntries() {
+        AtomicReference<DomEvent> eventReference = new AtomicReference<>();
+        DomListenerRegistration registration = ns.add("keydown",
+                eventReference::set);
+        registration.setFilterExpression(JS.isKey("Enter"));
+        registration.addEventData(JS.closestTag(".container"));
+        registration.addEventData("event.code");
+        registration.preventDefault();
+
+        Set<ElementListenerMap.SnippetEntry> entries = ns
+                .getSnippetEntries("keydown");
+        assertEquals(3, entries.size());
+        ElementListenerMap.SnippetEntry filter = findEntry(entries,
+                ElementListenerMap.SnippetEntry::filter);
+        ElementListenerMap.SnippetEntry sideEffect = findEntry(entries,
+                entry -> entry.sideEffect() != null);
+        ElementListenerMap.SnippetEntry data = findEntry(entries,
+                entry -> !entry.filter() && entry.sideEffect() == null);
+
+        // Together with the expressions, these are the keys sent to the client
+        assertEquals(Set.of("event.code"), getExpressions("keydown"));
+        assertEquals(
+                Set.of(filter.key(), sideEffect.key(), data.key(),
+                        "event.code"),
+                Set.copyOf(JacksonUtils.getKeys(eventSettings(ns, "keydown"))));
+        assertEquals("return event.key === $0;", filter.call().getExpression());
+        assertEquals(List.of("Enter"), filter.call().flattenArguments());
+        assertEquals("preventDefault", sideEffect.sideEffect());
+        assertEquals(filter.key() + ".preventDefault", sideEffect.key());
+        assertEquals(filter.call(), sideEffect.call());
+        assertEquals(
+                ElementListenerMap.getEventDataKey(JS.closestTag(".container")),
+                data.key());
+
+        // The values the client would send are enough to notify the listener
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put(filter.key(), true);
+        fromClient.put(sideEffect.key(), true);
+        fromClient.put(data.key(), "DIV");
+        fromClient.put("event.code", "Enter");
+        ns.fireEvent(
+                new DomEvent(new Element("element"), "keydown", fromClient));
+
+        assertEquals("DIV",
+                eventReference.get().getEventData(JS.closestTag(".container")));
+    }
+
+    @Test
+    void getSnippetEntries_sameCallAsEventDataAndFilter_isFilter() {
+        DomEventFilter isEnter = JS.isKey("Enter");
+        DomEventData<Boolean> isEnterData = DomEventData
+                .ofDeclaredCall(isEnter.getDeclaredCall(), Boolean.class);
+        // Event data first, then the filter
+        ns.add("keydown", noOp).addEventData(isEnterData);
+        ns.add("keydown", noOp).setFilterExpression(isEnter);
+        // The filter first, then event data
+        ns.add("keyup", noOp).setFilterExpression(isEnter);
+        ns.add("keyup", noOp).addEventData(isEnterData);
+
+        for (String eventType : List.of("keydown", "keyup")) {
+            Set<ElementListenerMap.SnippetEntry> entries = ns
+                    .getSnippetEntries(eventType);
+            assertEquals(1, entries.size());
+            assertTrue(entries.iterator().next().filter());
+        }
+    }
+
+    private static ElementListenerMap.SnippetEntry findEntry(
+            Set<ElementListenerMap.SnippetEntry> entries,
+            Predicate<ElementListenerMap.SnippetEntry> condition) {
+        List<ElementListenerMap.SnippetEntry> matching = entries.stream()
+                .filter(condition).toList();
+        assertEquals(1, matching.size());
+        return matching.get(0);
     }
 
     @Test

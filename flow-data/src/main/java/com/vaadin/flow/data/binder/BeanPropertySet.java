@@ -407,7 +407,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
                 List<PropertyDescriptor> descriptors = BeanUtil
                         .getBeanPropertyDescriptors(type).stream()
                         .filter(BeanPropertySet::hasNonObjectReadMethod)
-                        .collect(Collectors.toList());
+                        .toList();
                 for (PropertyDescriptor descriptor : descriptors) {
                     String name = parentPropertyKey + "."
                             + descriptor.getName();
