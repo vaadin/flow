@@ -4,8 +4,12 @@ name: Update @since tags
 # history, and open a PR with the result. The reconciliation engine and caching
 # live in the shared vaadin/github-actions/reconcile-since-tags action; the target branch is
 # chosen at dispatch time (the version is derived from that branch's pom).
+# The weekly schedule reconciles every branch listed in the matrix below.
 
 on:
+  schedule:
+    - cron: '0 9 * * 1'
+      timezone: Europe/Helsinki
   workflow_dispatch:
     inputs:
       branch:
@@ -22,11 +26,20 @@ permissions:
 
 jobs:
   reconcile:
+    # Scheduled only in vaadin/flow: a schedule also fires in forks, which
+    # would open pull requests of their own.
+    if: github.event_name != 'schedule' || github.repository == 'vaadin/flow'
     runs-on: ubuntu-26.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # Scheduled runs cover main and the newest maintenance branch; bump the
+        # latter when a new minor branch is cut.
+        branch: ${{ fromJSON(github.event_name == 'schedule' && '["main", "25.3"]' || format('["{0}"]', inputs.branch)) }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          ref: ${{ inputs.branch }}
+          ref: ${{ matrix.branch }}
           fetch-depth: 0
 
       - name: Disable git hooks (husky isn't set up in CI)
@@ -116,8 +129,8 @@ jobs:
       - name: Open pull request
         uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0
         with:
-          base: ${{ inputs.branch }}
-          branch: since-tags/${{ inputs.branch }}
+          base: ${{ matrix.branch }}
+          branch: since-tags/${{ matrix.branch }}
           add-paths: "**/*.java"
           title: "docs: reconcile @since tags (${{ steps.since.outputs.version }})"
           commit-message: |
@@ -127,7 +140,7 @@ jobs:
             add missing tags, correct wrong ones, create minimal @since javadoc
             for undocumented types, and remove redundant tags.
           body: |
-            Automated `@since` reconciliation for `${{ inputs.branch }}` (version `${{ steps.since.outputs.version }}`).
+            Automated `@since` reconciliation for `${{ matrix.branch }}` (version `${{ steps.since.outputs.version }}`).
 
             Generated via [`vaadin/github-actions/reconcile-since-tags`](https://github.com/vaadin/github-actions/tree/main/reconcile-since-tags). See the run's job summary for counts.
           delete-branch: true

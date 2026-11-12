@@ -18,6 +18,8 @@ package com.vaadin.flow.server.frontend.scanner;
 import java.io.Serializable;
 import java.util.Objects;
 
+import com.vaadin.flow.internal.ToStringBuilder;
+
 /**
  * A container for CssImport information when scanning the class path. It
  * overrides equals and hashCode in order to use HashSet to eliminate
@@ -113,8 +115,8 @@ public final class CssData implements Serializable {
 
     @Override
     public String toString() {
-        return "value: " + value + (id != null ? " id:" + id : "")
-                + (include != null ? " include:" + include : "")
-                + (themefor != null ? " themefor:" + themefor : "");
+        return ToStringBuilder.of(this).add("value", value)
+                .addIfNotNull("id", id).addIfNotNull("include", include)
+                .addIfNotNull("themefor", themefor).toString();
     }
 }

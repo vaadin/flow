@@ -163,17 +163,9 @@ public final class JsFunction implements JsSnippet {
      */
     public static JsFunction ofDeclaredCall(JsCall call) {
         Objects.requireNonNull(call, "call");
-        if (!call.isSnippet()) {
-            throw new IllegalArgumentException("Method " + call.methodName()
-                    + " of " + call.definitionType().getName()
-                    + " does not declare a JsSnippet, so a call of it runs"
-                    + " JavaScript rather than declaring a function");
-        }
-        List<Object> captures = call.flattenArguments();
         // Fail fast at the call that captures an unsupported value, as of does
-        for (Object capture : captures) {
-            JacksonCodec.encodeWithTypeInfo(capture);
-        }
+        call.encodeSnippetCaptures();
+        List<Object> captures = call.flattenArguments();
         return new JsFunction(null, call, captures, call.getCalledWithNames());
     }
 
@@ -279,5 +271,38 @@ public final class JsFunction implements JsSnippet {
     @Deprecated(since = "25.4", forRemoval = true)
     public List<String> getArgumentNames() {
         return argumentNames;
+    }
+
+    /**
+     * Checks whether the given object is a function that runs the same
+     * JavaScript with the same captures: the same function of the bundle, or
+     * the same body, together with the same argument names and captures. A
+     * captured array is compared by its current contents.
+     *
+     * @param obj
+     *            the object to compare with
+     * @return <code>true</code> if the object is an equal function
+     */
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        return obj instanceof JsFunction other
+                && Objects.equals(body, other.body)
+                && Objects.equals(getFunctionId(), other.getFunctionId())
+                && argumentNames.equals(other.argumentNames)
+                && Arrays.deepEquals(captures.toArray(),
+                        other.captures.toArray());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(body, getFunctionId(), argumentNames,
+                Arrays.deepHashCode(captures.toArray()));
+    }
+
+    private @Nullable String getFunctionId() {
+        return declaredCall == null ? null : declaredCall.getFunctionId();
     }
 }

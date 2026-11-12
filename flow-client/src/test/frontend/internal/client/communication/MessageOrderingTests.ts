@@ -51,7 +51,7 @@ describe('MessageOrdering', () => {
     queue.push({ syncId: 4 }); // old -> dropped
     queue.push({ syncId: 6 }); // current -> kept
     queue.push({}); // no id (-1) -> kept
-    queue.removeOld();
+    expect(queue.removeOld()).to.deep.equal([{ syncId: 4 }]);
     expect(queue.length()).to.equal(2);
     expect(queue.findNextHandlable()).to.equal(0); // id-6 is now first
   });
@@ -60,7 +60,7 @@ describe('MessageOrdering', () => {
     const queue = new PendingMessageQueue();
     queue.push({ syncId: 1 });
     expect(queue.isEmpty()).to.be.false;
-    queue.clear();
+    expect(queue.clear()).to.deep.equal([{ syncId: 1 }]);
     expect(queue.isEmpty()).to.be.true;
   });
 });

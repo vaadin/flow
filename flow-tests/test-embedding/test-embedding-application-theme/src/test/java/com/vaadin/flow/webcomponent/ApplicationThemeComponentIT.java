@@ -16,7 +16,6 @@
 package com.vaadin.flow.webcomponent;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -171,8 +170,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 .findElements(By.tagName("link"));
 
         List<String> linkUrls = links.stream()
-                .map(link -> link.getAttribute("href"))
-                .collect(Collectors.toList());
+                .map(link -> link.getAttribute("href")).toList();
         Assert.assertTrue("Missing link for external url", linkUrls
                 .contains("https://fonts.googleapis.com/css?family=Poppins"));
         Assert.assertTrue("Link with media query was not found", linkUrls
@@ -183,7 +181,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         final List<WebElement> mediaLinks = links.stream()
                 .filter(link -> link.getAttribute("href").equals(
                         "https://fonts.googleapis.com/css?family=Oswald"))
-                .collect(Collectors.toList());
+                .toList();
         Assert.assertFalse("No expected media link found",
                 mediaLinks.isEmpty());
         Assert.assertEquals("Wrong media attribute contents",
@@ -199,8 +197,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         final List<TestBenchElement> links = themedComponent.$("link").all();
 
         List<String> linkUrls = links.stream()
-                .map(link -> link.getAttribute("href"))
-                .collect(Collectors.toList());
+                .map(link -> link.getAttribute("href")).toList();
         Assert.assertTrue("Missing link for external url", linkUrls
                 .contains("https://fonts.googleapis.com/css?family=Itim"));
     }
