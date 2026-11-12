@@ -191,7 +191,7 @@ public class ElementListenersTest
     }
 
     @Test
-    void addEventDataList_otherRegistration_addsEachWithAddEventData() {
+    void defaultMethods_otherRegistration_addEachWithAddEventData() {
         DomListenerRegistration registration = mock(
                 DomListenerRegistration.class, CALLS_REAL_METHODS);
 
@@ -1036,8 +1036,10 @@ public class ElementListenersTest
         assertNull(capturedTarget.get(), "no element should be reported");
     }
 
-    @Test
-    void addEventDataElement_targetNodeInJsonData_elementMapped() {
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void addEventDataElement_targetNodeInJsonData_elementMapped(
+            boolean usePath) {
         Element parent = new Element("parent");
         Element child = new Element("child");
         Element sibling = new Element("sibling");
@@ -1045,7 +1047,8 @@ public class ElementListenersTest
         new StateTree(new UI().getInternals(), ElementChildrenList.class)
                 .getUI().getElement().appendChild(parent, sibling);
         final String eventType = "click";
-        final String expression = "expression";
+        final String expression = usePath ? "event.target.parentElement"
+                : "expression";
         final String key = JsonConstants.MAP_STATE_NODE_EVENT_DATA + expression;
 
         AtomicReference<DomEvent> capturedTarget = new AtomicReference<>();
@@ -1057,7 +1060,11 @@ public class ElementListenersTest
         Set<String> expressions = getExpressions(listenerMap, eventType);
         assertEquals(0, expressions.size());
 
-        registration.addEventDataElement(expression);
+        if (usePath) {
+            registration.addEventDataElementPath(expression);
+        } else {
+            registration.addEventDataElement(expression);
+        }
         expressions = getExpressions(listenerMap, eventType);
 
         assertEquals(1, expressions.size());

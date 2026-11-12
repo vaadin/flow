@@ -173,7 +173,7 @@ public class DomEvent extends EventObject {
      * Gets additional data related to the event. An empty JSON object is
      * returned if no event data is available.
      *
-     * @see DomListenerRegistration#addEventData(String)
+     * @see DomListenerRegistration#addEventDataPath(String)
      *
      * @return a JSON object containing event data, never <code>null</code>
      */
@@ -204,7 +204,7 @@ public class DomEvent extends EventObject {
      *            the class to deserialize the event data to, not
      *            <code>null</code>
      * @return the event data deserialized as the given type
-     * @see DomListenerRegistration#addEventData(String)
+     * @see DomListenerRegistration#addEventDataPath(String)
      * @since 25.0
      */
     public <T> T getEventData(Class<T> type) {
@@ -239,7 +239,7 @@ public class DomEvent extends EventObject {
      *            the type reference describing the target type, not
      *            <code>null</code>
      * @return the event data deserialized as the given type
-     * @see DomListenerRegistration#addEventData(String)
+     * @see DomListenerRegistration#addEventDataPath(String)
      * @since 25.0
      */
     public <T> T getEventData(TypeReference<T> typeReference) {
@@ -321,6 +321,7 @@ public class DomEvent extends EventObject {
      * Gets the closest {@link Element} corresponding to the given event data
      * expression. <em>NOTE:</em> this only works if you have added the
      * expression using
+     * {@link DomListenerRegistration#addEventDataElementPath(String)} or
      * {@link DomListenerRegistration#addEventDataElement(String)}.
      * <p>
      * If the evaluated JS expression returned an element that is not created or
