@@ -686,6 +686,12 @@ public class ElementListenerMap extends NodeMap {
             if (entry instanceof SnippetEntry snippet && snippet.filter()) {
                 settings.entry = snippet;
             }
+            // The same expression can be event data of a component event and
+            // be added as a string by another listener. Running it from the
+            // bundle gives the same value without compiling it.
+            if (entry instanceof BundledExpressionEntry) {
+                settings.entry = entry;
+            }
             return settings;
         };
 

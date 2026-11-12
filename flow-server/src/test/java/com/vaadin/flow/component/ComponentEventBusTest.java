@@ -16,7 +16,9 @@
 package com.vaadin.flow.component;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -27,12 +29,16 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
+import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.component.internal.KeyboardEvent;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.MessageDigestUtil;
+import com.vaadin.flow.internal.change.MapPutChange;
+import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.router.RouterLink;
@@ -823,6 +829,61 @@ class ComponentEventBusTest {
         assertEquals(3, expressions.size());
         assertEquals(element.getNode().getFeature(ElementListenerMap.class)
                 .getExpressions("element-data-event"), expressions);
+    }
+
+    @DomEvent("offset-event")
+    public static class OffsetEvent extends ComponentEvent<Component> {
+        private final double offset;
+
+        public OffsetEvent(Component source, boolean fromClient,
+                @EventData(OFFSET) double offset,
+                @EventData("event.clientX") double clientX,
+                @EventData("event.composedPath()[0]") Element target) {
+            super(source, fromClient);
+            this.offset = offset;
+        }
+    }
+
+    private static final String OFFSET = "event.clientX - element.offsetLeft";
+
+    @Test
+    void addListener_expressionEventData_sentAsTheFunctionOfTheBundle() {
+        TestComponent component = new TestComponent();
+        AtomicReference<OffsetEvent> received = new AtomicReference<>();
+        component.addListener(OffsetEvent.class, received::set);
+        ElementListenerMap listenerMap = component.getElement().getNode()
+                .getFeature(ElementListenerMap.class);
+
+        ConstantPoolKey key = (ConstantPoolKey) collectSettingsValue(
+                listenerMap, "offset-event");
+        ObjectNode exported = JacksonUtils.createObjectNode();
+        key.export(exported);
+        JsonNode settings = exported.get(key.getId());
+
+        assertEquals(BundledEventData.getFunctionId(OFFSET),
+                settings.get(OFFSET).get(JsonConstants.EVENT_SETTINGS_FUNCTION)
+                        .asString());
+        assertTrue(settings.get("event.clientX").isBoolean(),
+                "the client reads a property path without compiling it");
+        assertTrue(
+                settings.get(JsonConstants.MAP_STATE_NODE_EVENT_DATA
+                        + "event.composedPath()[0]").isBoolean(),
+                "the client maps what the expression of an element returns to a state node");
+
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put(OFFSET, 42.5);
+        fireDomEvent(component, "offset-event", eventData);
+        assertEquals(42.5, received.get().offset);
+    }
+
+    private static Object collectSettingsValue(ElementListenerMap listenerMap,
+            String eventType) {
+        List<NodeChange> changes = new ArrayList<>();
+        listenerMap.collectChanges(changes::add);
+        return changes.stream().filter(MapPutChange.class::isInstance)
+                .map(MapPutChange.class::cast)
+                .filter(change -> eventType.equals(change.getKey())).findFirst()
+                .orElseThrow().getValue();
     }
 
     @Test

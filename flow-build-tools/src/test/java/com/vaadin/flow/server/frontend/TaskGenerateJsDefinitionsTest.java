@@ -147,11 +147,22 @@ class TaskGenerateJsDefinitionsTest {
         }
     }
 
+    private static final String COMMENTED_EXPRESSION = "event.clientY // y\n + 1";
+
     @DomEvent("other-offset")
     public static class OtherOffsetEvent extends ComponentEvent<Component> {
         public OtherOffsetEvent(Component source, boolean fromClient,
-                @EventData(OFFSET_EXPRESSION) double offset) {
+                @EventData(OFFSET_EXPRESSION) double offset,
+                @EventData(COMMENTED_EXPRESSION) double commented) {
             super(source, fromClient);
+        }
+    }
+
+    @DomEvent("no-dom-event-constructor")
+    public static class NoDomEventConstructorEvent
+            extends ComponentEvent<Component> {
+        public NoDomEventConstructorEvent(Component source) {
+            super(source, false);
         }
     }
 
@@ -302,8 +313,11 @@ class TaskGenerateJsDefinitionsTest {
     void domEventClass_registersASnippetPerEventDataTheClientWouldCompile() {
         String functionId = BundledEventData.getFunctionId(OFFSET_EXPRESSION);
         Options withEvents = new Options(mock(Lookup.class),
+                // An event that can not be listened to is left out without
+                // failing the build
                 new DefaultClassFinder(Set.of(OffsetEvent.class,
-                        OtherOffsetEvent.class, PrebuiltEvent.class)),
+                        OtherOffsetEvent.class, PrebuiltEvent.class,
+                        NoDomEventConstructorEvent.class)),
                 null).withFrontendDirectory(frontendFolder)
                 .withProductionMode(false);
         String content = new TaskGenerateJsDefinitions(withEvents)
@@ -325,6 +339,19 @@ class TaskGenerateJsDefinitionsTest {
                         + functionId + "\"] = \"" + OffsetEvent.class.getName()
                         + " @EventData(\\\"" + OFFSET_EXPRESSION + "\\\")\";"),
                 "a development bundle should name what declared the value: "
+                        + content);
+        String commentedId = BundledEventData
+                .getFunctionId(COMMENTED_EXPRESSION);
+        assertTrue(
+                content.contains(
+                        String.join(System.lineSeparator(), "    return (",
+                                "event.clientY // y", " + 1", "    );")),
+                "a value ending with a comment should not comment out what closes it: "
+                        + content);
+        assertTrue(content.contains("window.Vaadin.Flow.jsDefinitionNames[\""
+                + commentedId + "\"] = \"" + OtherOffsetEvent.class.getName()
+                + " @EventData(\\\"event.clientY // y\\n + 1\\\")\";"),
+                "the name of a value on several lines should stay on one line: "
                         + content);
         assertFalse(content.contains("event.clientX" + System.lineSeparator()),
                 "the client reads a property path without compiling it: "

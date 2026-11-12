@@ -429,6 +429,9 @@ public class ElementListenersTest
     @Test
     void bundledEventData_sentAsTheFunctionOfTheBundleUnderTheExpression() {
         String expression = "event.clientX - element.offsetLeft";
+        // Also added as a string by another listener, which must not make the
+        // client compile it
+        ns.add("foo", noOp).addEventData(expression);
         ElementListenerMap.addBundledEventData(ns.add("foo", noOp),
                 List.of(expression));
 

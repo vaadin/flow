@@ -113,6 +113,14 @@ class CspModeTest {
         }
     }
 
+    @DomEvent("element-target-event")
+    public static class ElementTargetEvent extends ComponentEvent<Component> {
+        public ElementTargetEvent(Component source, boolean fromClient,
+                @EventData("event.composedPath()[0]") Element target) {
+            super(source, fromClient);
+        }
+    }
+
     private MockServletServiceSessionSetup setup;
     private MockUI ui;
 
@@ -171,7 +179,13 @@ class CspModeTest {
                         }).setFilter("event.x == 1")),
                 // The deprecated locator is an expression for the browser
                 call(JsFunction.class, "of",
-                        CspModeTest::delegateShortcutToStringLocator));
+                        CspModeTest::delegateShortcutToStringLocator),
+                // An element the client maps to a state node is not put
+                // into the bundle
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ComponentUtil.addListener(ui,
+                                ElementTargetEvent.class, e -> {
+                                })));
     }
 
     private static Arguments call(Class<?> api, String method,
