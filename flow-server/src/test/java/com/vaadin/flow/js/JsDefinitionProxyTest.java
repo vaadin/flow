@@ -564,6 +564,7 @@ class JsDefinitionProxyTest {
         assertEquals(templates.label("Name"), label);
         assertEquals(templates.label("Name").hashCode(), label.hashCode());
         assertNotEquals(templates.label("Other"), label);
+        assertNotEquals(templates.echo("Name"), label);
         assertTrue(label.toString().contains("TemplateSnippet"),
                 label.toString());
         assertEquals(label, SerializationUtils.roundtrip(label));
