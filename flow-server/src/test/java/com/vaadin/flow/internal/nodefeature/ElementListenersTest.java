@@ -1456,15 +1456,14 @@ public class ElementListenersTest
     }
 
     @Test
-    void addEventDetail_propertyNotAsciiIdentifier_throwsWithoutAdding() {
+    void addEventDetail_propertyNotAsciiIdentifier_added() {
         record Detail(int a, int größe) {
         }
 
-        DomListenerRegistration registration = ns.add("custom", noOp);
+        ns.add("custom", noOp).addEventDetail(Detail.class);
 
-        assertThrows(IllegalArgumentException.class,
-                () -> registration.addEventDetail(Detail.class));
-        assertEquals(Set.of(), getExpressions("custom"));
+        assertEquals(Set.of("event.detail.a", "event.detail.größe"),
+                getExpressions("custom"));
     }
 
     @Test

@@ -534,6 +534,11 @@ public interface DomListenerRegistration extends Registration {
 
     /**
      * Adds an element to map to its server-side element as event data.
+     *
+     * @param eventData
+     *            the property path or expression of the element, not
+     *            <code>null</code>
+     * @return this registration, for chaining
      */
     private DomListenerRegistration addEventDataElementEntry(String eventData) {
         // ComponentEventBusUtil has a copy of this mapping for component event
@@ -551,6 +556,10 @@ public interface DomListenerRegistration extends Registration {
      * Adds an internal token or a property path as event data. Not through
      * {@link #addEventData(String)}, which is deprecated for JavaScript
      * expressions, since the browser reads these without compiling anything.
+     *
+     * @param eventData
+     *            the token or property path, not <code>null</code>
+     * @return this registration, for chaining
      */
     private DomListenerRegistration addEventDataEntry(String eventData) {
         ElementListenerMap.addEventData(this, List.of(eventData));
@@ -560,6 +569,9 @@ public interface DomListenerRegistration extends Registration {
     /**
      * Adds property paths as event data, after checking all of them so that
      * nothing is added when one of them is not a property path.
+     *
+     * @param paths
+     *            the property paths, not <code>null</code>
      */
     private void addEventDataPaths(List<String> paths) {
         paths.forEach(DomListenerRegistration::requirePropertyPath);
@@ -569,6 +581,12 @@ public interface DomListenerRegistration extends Registration {
     /**
      * Checks that the given string is a property path that the browser reads
      * without compiling it.
+     *
+     * @param path
+     *            the string to check, not <code>null</code>
+     * @return the given path
+     * @throws IllegalArgumentException
+     *             if the string is not a property path
      */
     private static String requirePropertyPath(String path) {
         Objects.requireNonNull(path, "Event data path cannot be null");
@@ -802,10 +820,6 @@ public interface DomListenerRegistration extends Registration {
      *            the class whose properties should be captured from
      *            event.detail, not <code>null</code>
      * @return this registration, for chaining
-     * @throws IllegalArgumentException
-     *             if a property of the class does not give a property path,
-     *             such as a property with a name that has other characters than
-     *             ASCII letters, digits, <code>_</code> and <code>$</code>
      * @see DomEvent#getEventDetail(Class)
      * @see DomEvent#getEventDetail(TypeReference)
      * @since 25.0
@@ -815,8 +829,12 @@ public interface DomListenerRegistration extends Registration {
             throw new IllegalArgumentException("Type cannot be null");
         }
         try {
-            addEventDataPaths(BeanUtil.getBeanPropertyPaths(type).stream()
-                    .map(path -> "event.detail." + path).toList());
+            // Not checked as property paths: the bean may come from code
+            // that the application can't change, and a property name that is
+            // not an ASCII identifier works as a compiled expression
+            ElementListenerMap.addEventData(this,
+                    BeanUtil.getBeanPropertyPaths(type).stream()
+                            .map(path -> "event.detail." + path).toList());
         } catch (IntrospectionException e) {
             throw new IllegalArgumentException(
                     "Failed to introspect type: " + type.getName(), e);
