@@ -203,11 +203,11 @@ class SinkTriggerTest {
         ui.add(container);
 
         Action copy = Clipboard.writeText();
-        Element host = container.getElement();
+        SinkTrigger trigger = new SinkTrigger(container.getElement(),
+                action -> null);
 
         NullPointerException exception = assertThrows(
-                NullPointerException.class,
-                () -> new SinkTrigger(host, action -> null).triggers(copy));
+                NullPointerException.class, () -> trigger.triggers(copy));
         assertEquals("ClientActionSink.install must return a Registration",
                 exception.getMessage());
     }
