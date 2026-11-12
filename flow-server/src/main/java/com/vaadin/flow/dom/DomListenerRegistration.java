@@ -483,6 +483,7 @@ public interface DomListenerRegistration extends Registration {
      *            definition for element that should be passed back to the
      *            server together with the event, not <code>null</code>
      * @return this registration, for chaining
+     * @since 9.0
      * @see #mapEventTargetElement() to map the {@code event.target} to an
      *      element
      * @deprecated JavaScript that is sent as a string is compiled by the

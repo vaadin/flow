@@ -175,6 +175,9 @@ class CspModeTest {
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).addEventDetail(NonAsciiDetail.class)),
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ui.getElement().addEventListener("click", e -> {
+                        }).addEventData(AsciiDetail.class)),
                 call(DomListenerRegistration.class, "setFilter",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).setFilter("event.x == 1")),
