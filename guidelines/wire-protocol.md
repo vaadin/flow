@@ -149,6 +149,11 @@ debounce forms above, which is how the client tells the two apart:
   filter. The entry runs the filter, and the client calls that method of
   the event only when the filter passes. Its key is the key of the filter
   followed by `.` and the method name.
+- `e` — `true` for event data declared as `DomEventData<Element>`, left
+  out otherwise. The function returns a DOM node, and the client sends the
+  id of the closest state node instead (`-1` when there is none), like it
+  does for an expression added with `addEventDataElement(String)`. The
+  server resolves the id to the element with the same lookup.
 
 ```json
 {
