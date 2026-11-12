@@ -17,18 +17,14 @@ package com.vaadin.flow.component;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 
 import com.vaadin.flow.component.internal.BundledEventData;
+import com.vaadin.flow.component.internal.DomEventInfo;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomListenerRegistration;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
-import com.vaadin.flow.shared.JsonConstants;
 
 /**
  * Static helpers and caching functionality for {@link ComponentEventBus}.
@@ -38,56 +34,10 @@ import com.vaadin.flow.shared.JsonConstants;
  */
 public class ComponentEventBusUtil {
 
-    private static final String EVENT_CONSTRUCTOR_DEFINITION = "A DOM event constructor should take (Component, boolean) as the two first parameters, followed by any number of optional parameters marked with @"
-            + EventData.class.getSimpleName();
-
-    private static final String NO_SUITABLE_CONSTRUCTOR = "No suitable DOM event constructor found for %s. "
-            + EVENT_CONSTRUCTOR_DEFINITION;
-
     // Package private to enable testing only
 
-    static ReflectionCache<ComponentEvent<?>, EventTypeInfo> cache = new ReflectionCache<>(
-            EventTypeInfo::new);
-
-    private static class EventTypeInfo {
-        private final LinkedHashMap<String, Class<?>> dataExpressions;
-        private final List<String> listenerEventData;
-        private final List<String> expressionEventData;
-        private final List<String> bundledEventData;
-        private final Constructor<? extends ComponentEvent<?>> eventConstructor;
-
-        public EventTypeInfo(Class<? extends ComponentEvent<?>> type) {
-            eventConstructor = findEventConstructor(type);
-            dataExpressions = findEventDataExpressions(eventConstructor);
-            listenerEventData = toListenerEventData(dataExpressions);
-            bundledEventData = BundledEventData.selectBundled(type,
-                    listenerEventData);
-            // Keeps sharing the list when nothing is put into the bundle
-            expressionEventData = bundledEventData.isEmpty() ? listenerEventData
-                    : listenerEventData.stream().filter(
-                            eventData -> !bundledEventData.contains(eventData))
-                            .toList();
-        }
-
-        private static List<String> toListenerEventData(
-                LinkedHashMap<String, Class<?>> dataExpressions) {
-            LinkedHashSet<String> eventData = new LinkedHashSet<>();
-            dataExpressions.forEach((expression, type) -> {
-                if (Component.class.isAssignableFrom(type)
-                        || type == Element.class) {
-                    // Same mapping as
-                    // DomListenerRegistration.addEventDataElement
-                    eventData.add("event.target".equals(expression)
-                            ? JsonConstants.MAP_STATE_NODE_EVENT_DATA
-                            : (JsonConstants.MAP_STATE_NODE_EVENT_DATA
-                                    + expression));
-                } else {
-                    eventData.add(expression);
-                }
-            });
-            return List.copyOf(eventData);
-        }
-    }
+    static ReflectionCache<ComponentEvent<?>, DomEventInfo> cache = new ReflectionCache<>(
+            DomEventInfo::new);
 
     private ComponentEventBusUtil() {
         // Static methods and static/shared cache only
@@ -108,7 +58,7 @@ public class ComponentEventBusUtil {
      */
     public static LinkedHashMap<String, Class<?>> getEventDataExpressions(
             Class<? extends ComponentEvent<?>> eventType) {
-        return cache.get(eventType).dataExpressions;
+        return cache.get(eventType).getDataExpressions();
     }
 
     /**
@@ -128,7 +78,7 @@ public class ComponentEventBusUtil {
      */
     public static List<String> getListenerEventData(
             Class<? extends ComponentEvent<?>> eventType) {
-        return cache.get(eventType).listenerEventData;
+        return cache.get(eventType).getListenerEventData();
     }
 
     /**
@@ -143,7 +93,7 @@ public class ComponentEventBusUtil {
      */
     static List<String> getExpressionEventData(
             Class<? extends ComponentEvent<?>> eventType) {
-        return cache.get(eventType).expressionEventData;
+        return cache.get(eventType).getExpressionEventData();
     }
 
     /**
@@ -158,37 +108,7 @@ public class ComponentEventBusUtil {
      */
     static List<String> getBundledEventData(
             Class<? extends ComponentEvent<?>> eventType) {
-        return cache.get(eventType).bundledEventData;
-    }
-
-    /**
-     * Scans the event type and forms a map of event data expression (for
-     * {@link com.vaadin.flow.dom.DomListenerRegistration#addEventData(String)}
-     * ) to Java type, with the same order as the parameters for the event
-     * constructor (as returned by {@link #getEventConstructor(Class)}).
-     *
-     * @return a map of event data expressions, in the order defined by the
-     *         component event constructor parameters
-     */
-    private static LinkedHashMap<String, Class<?>> findEventDataExpressions(
-            Constructor<? extends ComponentEvent<?>> eventConstructor) {
-        LinkedHashMap<String, Class<?>> eventDataExpressions = new LinkedHashMap<>();
-        // Parameter 0 is always "Component source"
-        // Parameter 1 is always "boolean fromClient"
-        for (int i = 2; i < eventConstructor.getParameterCount(); i++) {
-            Parameter p = eventConstructor.getParameters()[i];
-            EventData eventData = p.getAnnotation(EventData.class);
-            if (eventData == null || eventData.value().isEmpty()) {
-                // The parameter foo of the constructor Bar(Foo foo) has no
-                // @DomEvent, or its value is empty."
-                throw new IllegalArgumentException(String.format(
-                        "The parameter %s of the constructor %s has no @%s, or the annotation value is empty",
-                        p.getName(), eventConstructor.toString(),
-                        EventData.class.getSimpleName()));
-            }
-            eventDataExpressions.put(eventData.value(), p.getType());
-        }
-        return eventDataExpressions;
+        return cache.get(eventType).getBundledEventData();
     }
 
     /**
@@ -206,71 +126,7 @@ public class ComponentEventBusUtil {
     @SuppressWarnings("unchecked")
     public static <T extends ComponentEvent<?>> Constructor<T> getEventConstructor(
             Class<T> eventType) {
-        return (Constructor<T>) cache.get(eventType).eventConstructor;
-    }
-
-    /**
-     * Scans through the given event type class and tries to find a suitable
-     * constructor to use for firing DOM Events.
-     * <ul>
-     * <li>The constructor must take Component, boolean as the two first
-     * parameters
-     * <li>If there is only one constructor with @{@link EventData} annotations,
-     * use that
-     * <li>If there is no constructor with @{@link EventData} annotations, use
-     * the one which takes (Component, boolean)
-     * </ul>
-     *
-     * @param eventType
-     *            the event type
-     * @return the constructor to use when creating an event from a DOM event
-     * @throws IllegalArgumentException
-     *             if no suitable constructor was found
-     */
-    @SuppressWarnings("unchecked")
-    private static <T extends ComponentEvent<?>> Constructor<T> findEventConstructor(
-            Class<T> eventType) {
-        ReflectTools.checkClassAccessibility(eventType);
-        List<Constructor<T>> constructors = new ArrayList<>();
-        for (Constructor<?> c : eventType.getConstructors()) {
-            if (isDomEventConstructor(c)) {
-                constructors.add((Constructor<T>) c);
-            }
-        }
-
-        if (constructors.isEmpty()) {
-            throw new IllegalArgumentException(String
-                    .format(NO_SUITABLE_CONSTRUCTOR, eventType.getName()));
-        } else if (constructors.size() == 1) {
-            // One expected, one found, all is well
-            return constructors.get(0);
-        }
-
-        // Multiple constructors - use the one which has @EventData
-        Constructor<T> eventDataConstructor = null;
-        for (Constructor<T> c : constructors) {
-            if (c.getParameterCount() > 2) {
-                if (eventDataConstructor == null) {
-                    eventDataConstructor = c;
-                } else {
-                    throw new IllegalArgumentException(
-                            "More than one DOM event constructors annotated with @"
-                                    + EventData.class.getSimpleName()
-                                    + " found for " + eventType.getName()
-                                    + ". There can be only one constructor with @"
-                                    + EventData.class.getSimpleName()
-                                    + " annotations present.");
-                }
-            }
-        }
-        if (eventDataConstructor != null) {
-            return eventDataConstructor;
-        } else {
-            // This should not be possible (there are multiple constructors so
-            // one of them must have @EventData)
-            throw new IllegalArgumentException(String
-                    .format(NO_SUITABLE_CONSTRUCTOR, eventType.getName()));
-        }
+        return (Constructor<T>) cache.get(eventType).getEventConstructor();
     }
 
     /**
