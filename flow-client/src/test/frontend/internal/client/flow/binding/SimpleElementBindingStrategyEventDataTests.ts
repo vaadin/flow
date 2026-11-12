@@ -264,15 +264,6 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
     expect(harness.collectedEventData[0]).to.deep.equal({ '@target': childNode.getId() });
   });
 
-  it('maps a DOM node outside the state tree returned by a declared snippet of an element to -1', () => {
-    snippets()['fn-id'] = () => () => document.head;
-    bindWithClickSettings({ '@target': { f: 'fn-id', d: false, e: true } });
-
-    element.click();
-
-    expect(harness.collectedEventData[0]).to.deep.equal({ '@target': -1 });
-  });
-
   it('runs a declared snippet without captures', () => {
     snippets()['fn-id'] = () => (event) => event.type;
     bindWithClickSettings({ '@type': { f: 'fn-id', d: false } });

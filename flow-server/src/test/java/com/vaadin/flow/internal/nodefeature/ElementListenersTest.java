@@ -464,11 +464,14 @@ public class ElementListenersTest
                 new DomEvent(parent, "click", fromClient)
                         .getEventDataElement(target));
 
-        // No state node, or no value from a function missing from the bundle
+        // No state node
         fromClient.put(key, -1);
         assertEquals(Optional.empty(), new DomEvent(parent, "click", fromClient)
                 .getEventDataElement(target));
-        fromClient.putNull(key);
+
+        // Invisible elements are not reported
+        sibling.setVisible(false);
+        fromClient.put(key, sibling.getNode().getId());
         assertEquals(Optional.empty(), new DomEvent(parent, "click", fromClient)
                 .getEventDataElement(target));
     }

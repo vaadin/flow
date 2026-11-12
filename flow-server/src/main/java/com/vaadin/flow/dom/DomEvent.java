@@ -334,6 +334,12 @@ public class DomEvent extends EventObject {
      * <p>
      * In case you want the {@code event.target} element, use
      * {@link #getEventTarget()} instead.
+     * <p>
+     * The browser compiles the expression from a string, so it does not work
+     * with a Content Security Policy that does not allow
+     * <code>unsafe-eval</code>, unless it is a property path. For an element
+     * from declared event data, which works without that, use
+     * {@link #getEventDataElement(DomEventData)}.
      *
      * @param eventDataExpression
      *            the expression that was executed on the client to retrieve the
