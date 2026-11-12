@@ -23,6 +23,7 @@ import com.vaadin.flow.component.ComponentEventBusUtil;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.shared.JsonConstants;
@@ -58,6 +59,10 @@ public final class BundledEventData {
     /**
      * Gets the event data of the given event type that the build puts into the
      * bundle as functions, in constructor parameter order.
+     * <p>
+     * For the build, which loads the event type with a class loader it closes
+     * afterwards: nothing about the event type is left in a reflection cache,
+     * whose static map would otherwise keep that class loader alive.
      *
      * @param eventType
      *            a component event type annotated with {@link DomEvent}, not
@@ -70,8 +75,12 @@ public final class BundledEventData {
      */
     public static List<String> getBundledEventData(
             Class<? extends ComponentEvent<?>> eventType) {
-        return selectBundled(eventType,
-                ComponentEventBusUtil.getListenerEventData(eventType));
+        try {
+            return selectBundled(eventType,
+                    ComponentEventBusUtil.getListenerEventData(eventType));
+        } finally {
+            ReflectionCache.clearAll(eventType);
+        }
     }
 
     /**

@@ -108,8 +108,8 @@ class CspModeTest {
     @DomEvent("offset-event")
     public static class OffsetEvent extends ComponentEvent<Component> {
         // Only the event data annotations of the parameters are used
-        public OffsetEvent(Component source, boolean fromClient, // NOSONAR
-                @EventData("event.clientX - element.offsetLeft") double offset) {
+        public OffsetEvent(Component source, boolean fromClient,
+                @EventData("event.clientX - element.offsetLeft") double offset) { // NOSONAR
             super(source, fromClient);
         }
     }
@@ -117,8 +117,8 @@ class CspModeTest {
     @DomEvent("element-target-event")
     public static class ElementTargetEvent extends ComponentEvent<Component> {
         // Only the event data annotations of the parameters are used
-        public ElementTargetEvent(Component source, boolean fromClient, // NOSONAR
-                @EventData("event.composedPath()[0]") Element target) {
+        public ElementTargetEvent(Component source, boolean fromClient,
+                @EventData("event.composedPath()[0]") Element target) { // NOSONAR
             super(source, fromClient);
         }
     }

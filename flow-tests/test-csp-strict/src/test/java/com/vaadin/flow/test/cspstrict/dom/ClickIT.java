@@ -18,6 +18,7 @@ package com.vaadin.flow.test.cspstrict.dom;
 import java.util.regex.Pattern;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
@@ -64,10 +65,15 @@ public class ClickIT extends AbstractCspStrictIT {
     public void componentEventWithExpressionEventData_receivesEventData() {
         open();
 
-        $(DivElement.class).id("offset-area").click();
+        // A real pointer click: the click of TestBench dispatches an event
+        // whose clientX is 0
+        new Actions(getDriver()).click($(DivElement.class).id("offset-area"))
+                .perform();
 
         waitUntil(ExpectedConditions.textMatches(By.id("offset"),
-                Pattern.compile("offset=\\d+")));
+                // A value the bundle has no function for arrives as 0, and
+                // the click lands in the middle of the area
+                Pattern.compile("offset=[1-9]\\d*")));
         assertNoCspViolations();
     }
 }

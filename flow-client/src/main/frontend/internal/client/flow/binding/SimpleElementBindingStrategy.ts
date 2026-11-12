@@ -107,8 +107,10 @@ type EventExpression = (event: Event, element: Element) => unknown;
 
 /**
  * The settings of a declared snippet that the client runs when an event
- * occurs. The settings of a JavaScript expression are only its debounce
- * settings, and its key is the expression.
+ * occurs. Its key is `@` followed by the key of the snippet, or, for an
+ * `@EventData` value that the build put into the bundle, the expression
+ * itself. The settings of an expression that the client compiles or reads
+ * are only its debounce settings, and its key is the expression.
  */
 type SnippetSettings = {
   /** The id of the declared function; EVENT_SETTINGS_FUNCTION. */
@@ -123,7 +125,8 @@ type SnippetSettings = {
 
 /**
  * Checks whether the settings of an entry are the settings of a declared
- * snippet. The settings of an expression are `false`, `true` or an array.
+ * snippet, whatever its key. The settings of an expression that the client
+ * compiles or reads are `false`, `true` or an array.
  */
 function isSnippetSettings(settings: unknown): settings is SnippetSettings {
   return typeof settings === 'object' && settings !== null && !Array.isArray(settings);

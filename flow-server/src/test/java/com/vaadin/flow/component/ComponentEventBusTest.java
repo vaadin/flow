@@ -836,9 +836,9 @@ class ComponentEventBusTest {
         private final double offset;
 
         // Only the event data annotations of the parameters are used
-        public OffsetEvent(Component source, boolean fromClient, // NOSONAR
+        public OffsetEvent(Component source, boolean fromClient,
                 @EventData(OFFSET) double offset,
-                @EventData("event.clientX") double clientX,
+                @EventData("event.clientX") double clientX, // NOSONAR
                 @EventData("event.composedPath()[0]") Element target) {
             super(source, fromClient);
             this.offset = offset;
