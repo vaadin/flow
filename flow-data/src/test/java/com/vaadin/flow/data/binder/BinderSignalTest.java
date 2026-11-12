@@ -1040,4 +1040,28 @@ class BinderSignalTest extends SignalsUnitTest {
         assertEquals(1, validatorCalls.get());
         assertTrue(field.isInvalid());
     }
+
+    @Test
+    void setBeanWhileDetachedAfterPreviousAttach_reattach_validationEffectCreatedOnce() {
+        var signal = new ValueSignal<>("");
+        var validatorCalls = new AtomicInteger();
+        var field = new TestTextField();
+        UI.getCurrent().add(field);
+        UI.getCurrent().remove(field);
+        binder.forField(field).withValidator(value -> {
+            validatorCalls.incrementAndGet();
+            return signal.get().isEmpty();
+        }, "Signal must be empty").bind(Person::getFirstName,
+                Person::setFirstName);
+        binder.setBean(item);
+
+        UI.getCurrent().add(field);
+        UI.getCurrent().remove(field);
+        UI.getCurrent().add(field);
+        validatorCalls.set(0);
+        signal.set("changed");
+
+        assertEquals(1, validatorCalls.get());
+        assertTrue(field.isInvalid());
+    }
 }
