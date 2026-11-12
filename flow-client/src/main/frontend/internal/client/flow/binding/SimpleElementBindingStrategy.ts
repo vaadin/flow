@@ -122,6 +122,8 @@ type SnippetSettings = {
   [JsonConstants.EVENT_SETTINGS_CAPTURES]?: unknown[];
   /** The method of the event to call when the value is truthy; EVENT_SETTINGS_SIDE_EFFECT. */
   [JsonConstants.EVENT_SETTINGS_SIDE_EFFECT]?: string;
+  /** Whether the value is a DOM node to send as the closest state node id; EVENT_SETTINGS_MAP_ELEMENT. */
+  [JsonConstants.EVENT_SETTINGS_MAP_ELEMENT]?: boolean;
 };
 
 /**
@@ -1509,6 +1511,10 @@ function updateAttributeValue(
  * A snippet can have a side effect, `preventDefault` or `stopPropagation`. Then
  * the method of the event is called only if the value is truthy. This way, the
  * method is called only when the filter of the listener passes.
+ *
+ * A snippet of an element returns a DOM node. Its value is the id of the
+ * closest state node, or -1 if there is none, like for an expression of an
+ * element.
  */
 function evaluateSnippet(settings: SnippetSettings, tree: StateTree, event: Event, element: Element): unknown {
   const functionId = settings[JsonConstants.EVENT_SETTINGS_FUNCTION];
@@ -1529,6 +1535,9 @@ function evaluateSnippet(settings: SnippetSettings, tree: StateTree, event: Even
   const sideEffect = settings[JsonConstants.EVENT_SETTINGS_SIDE_EFFECT];
   if (value && (sideEffect === 'preventDefault' || sideEffect === 'stopPropagation')) {
     event[sideEffect]();
+  }
+  if (settings[JsonConstants.EVENT_SETTINGS_MAP_ELEMENT]) {
+    return getClosestStateNodeIdToDomNode(tree, value, functionId);
   }
   return value;
 }

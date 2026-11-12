@@ -181,25 +181,33 @@ public class ElementListenerMap extends NodeMap {
      *            which is notified only when the value is truthy, even if the
      *            same call is also event data; <code>false</code> if it is only
      *            event data or has a side effect
+     * @param mapElement
+     *            <code>true</code> if the call returns a DOM node that the
+     *            client sends as the id of the closest state node, for event
+     *            data of an {@link com.vaadin.flow.dom.Element};
+     *            <code>false</code> otherwise
      * @see #getSnippetEntries(String)
      */
     public record SnippetEntry(String key, JsCall call,
-            @Nullable String sideEffect, boolean filter) implements Entry {
+            @Nullable String sideEffect, boolean filter,
+            boolean mapElement) implements Entry {
 
         static SnippetEntry of(DomEventData<?> eventData) {
             return new SnippetEntry(getEventDataKey(eventData),
-                    eventData.getDeclaredCall(), null, false);
+                    eventData.getDeclaredCall(), null, false,
+                    eventData.isElementValue());
         }
 
         static SnippetEntry of(DomEventFilter filter) {
             return new SnippetEntry(
                     JsonConstants.EVENT_SNIPPET_KEY_PREFIX
                             + filter.getSnippetKey(),
-                    filter.getDeclaredCall(), null, true);
+                    filter.getDeclaredCall(), null, true, false);
         }
 
         SnippetEntry withSideEffect(String method) {
-            return new SnippetEntry(key + "." + method, call, method, false);
+            return new SnippetEntry(key + "." + method, call, method, false,
+                    false);
         }
     }
 
@@ -243,11 +251,12 @@ public class ElementListenerMap extends NodeMap {
          * Creates the JSON for the client. For an expression, this is only the
          * debounce settings, as the key is the expression. For a snippet, this
          * is an object with the function, the debounce settings, the side
-         * effect and the captures. The captures are encoded now, so that an
-         * element is sent with the id that it has now. An expression that the
-         * bundle has a function for is sent like a snippet without captures, so
-         * the client runs the function instead of compiling the key, and
-         * compiles the key only when the bundle has no such function.
+         * effect, whether the value is mapped to an element, and the captures.
+         * The captures are encoded now, so that an element is sent with the id
+         * that it has now. An expression that the bundle has a function for is
+         * sent like a snippet without captures, so the client runs the function
+         * instead of compiling the key, and compiles the key only when the
+         * bundle has no such function.
          *
          * @return the debounce settings for an expression, or the settings
          *         object for a snippet, not <code>null</code>
@@ -271,6 +280,9 @@ public class ElementListenerMap extends NodeMap {
             if (snippet.sideEffect() != null) {
                 json.put(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT,
                         snippet.sideEffect());
+            }
+            if (snippet.mapElement()) {
+                json.put(JsonConstants.EVENT_SETTINGS_MAP_ELEMENT, true);
             }
             ArrayNode captures = snippet.call().encodeSnippetCaptures();
             if (!captures.isEmpty()) {

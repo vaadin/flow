@@ -378,6 +378,15 @@ export const JsonConstants = {
   EVENT_SNIPPET_KEY_PREFIX: '@',
 
   /**
+   * Key in the settings of a declared snippet that the client runs when an
+   * event occurs. The value is `true` when the snippet returns a DOM node that
+   * the client sends as the id of the closest state node, like for the keys
+   * that start with MAP_STATE_NODE_EVENT_DATA. A snippet that returns any
+   * other value does not have this key.
+   */
+  EVENT_SETTINGS_MAP_ELEMENT: 'e',
+
+  /**
    * RPC type value used for return channel messages.
    */
   RPC_TYPE_CHANNEL: 'channel',
