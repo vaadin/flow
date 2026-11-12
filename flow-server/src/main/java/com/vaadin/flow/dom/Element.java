@@ -297,6 +297,7 @@ public class Element extends Node<Element> {
      *            the name of the attribute
      * @param signal
      *            the signal to bind, not <code>null</code>
+     * @return the binding, which can be used to react to updates
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setAttribute(String, String)
@@ -986,6 +987,9 @@ public class Element extends Node<Element> {
      *            calling {@link #setProperty(String, String)} (or any overload)
      *            on the bound property will invoke this callback instead of
      *            throwing.
+     * @param <T>
+     *            the type of the signal value
+     * @return the binding, which can be used to react to updates
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setProperty(String, String)
@@ -1447,6 +1451,7 @@ public class Element extends Node<Element> {
      *
      * @param signal
      *            the signal to bind, not <code>null</code>
+     * @return the binding, which can be used to react to updates
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setText(String)
@@ -2237,6 +2242,7 @@ public class Element extends Node<Element> {
      *
      * @param visibleSignal
      *            the signal to bind, not <code>null</code>
+     * @return the binding, which can be used to react to updates
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setVisible(boolean)
@@ -2296,6 +2302,7 @@ public class Element extends Node<Element> {
      *
      * @param enabledSignal
      *            the signal to bind, not <code>null</code>
+     * @return the binding, which can be used to react to updates
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setEnabled(boolean)

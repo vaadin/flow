@@ -204,6 +204,7 @@ public interface HasTheme extends HasElement {
      *            the theme name to bind, not {@code null} or blank
      * @param signal
      *            the boolean signal to bind to, not {@code null}
+     * @return the binding, which can be used to react to updates
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @since 25.1
@@ -224,6 +225,7 @@ public interface HasTheme extends HasElement {
      *
      * @param names
      *            the signal providing the list of theme names, not {@code null}
+     * @return the binding, which can be used to react to updates
      * @see ThemeList#bind(Signal)
      * @since 25.1
      */

@@ -71,6 +71,7 @@ public interface ClassList extends Set<String>, Serializable {
      *            the class name to bind, not {@code null} or blank
      * @param signal
      *            the boolean signal to bind to, not {@code null}
+     * @return the binding, which can be used to react to updates
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @since 25.0
@@ -101,6 +102,7 @@ public interface ClassList extends Set<String>, Serializable {
      *
      * @param names
      *            the signal providing the list of class names, not {@code null}
+     * @return the binding, which can be used to react to updates
      * @throws BindingActiveException
      *             thrown when there is already an existing group binding
      * @since 25.1
