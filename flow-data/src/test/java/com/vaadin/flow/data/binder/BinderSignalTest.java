@@ -1003,4 +1003,41 @@ class BinderSignalTest extends SignalsUnitTest {
         assertEquals("edited", item.getLastName());
         assertEquals("first", item.getFirstName());
     }
+
+    // Every bean read while the field is detached used to add another
+    // deferred attach listener, of which unbind() removed only the last one.
+    @Test
+    void setBeanTwiceBeforeAttach_thenUnbind_noErrorOnAttach() {
+        var field = new TestTextField();
+        var binding = binder.forField(field).bind(Person::getFirstName,
+                Person::setFirstName);
+        binder.setBean(item);
+        binder.setBean(new Person());
+
+        binding.unbind();
+        UI.getCurrent().add(field);
+
+        assertTrue(events.isEmpty());
+    }
+
+    @Test
+    void setBeanTwiceBeforeAttach_validationEffectCreatedOnce() {
+        var signal = new ValueSignal<>("");
+        var validatorCalls = new AtomicInteger();
+        var field = new TestTextField();
+        binder.forField(field).withValidator(value -> {
+            validatorCalls.incrementAndGet();
+            return signal.get().isEmpty();
+        }, "Signal must be empty").bind(Person::getFirstName,
+                Person::setFirstName);
+        binder.setBean(item);
+        binder.setBean(new Person());
+
+        UI.getCurrent().add(field);
+        validatorCalls.set(0);
+        signal.set("changed");
+
+        assertEquals(1, validatorCalls.get());
+        assertTrue(field.isInvalid());
+    }
 }

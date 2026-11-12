@@ -1823,20 +1823,20 @@ public class Binder<BEAN> implements Serializable {
 
         private void initInternalSignalEffectForValidators() {
             if (signalRegistration == null
+                    && signalEffectAttachRegistration == null
                     && getField() instanceof Component component) {
                 if (component.isAttached()) {
                     initInternalSignalEffectForValidators(component);
                 } else {
-                    // Set up the effect lazily on attach. The registration is
-                    // stored so unbind() can cancel it; otherwise a stale
-                    // listener would later create an effect for an already
-                    // unbound binding whose field is null.
+                    // Set up the effect lazily on attach. Only one listener is
+                    // kept pending, and it is stored so unbind() can cancel it;
+                    // otherwise a stale listener would later create an
+                    // additional effect, or one for an already unbound binding
+                    // whose field is null.
                     signalEffectAttachRegistration = component
                             .addAttachListener(event -> {
-                                if (event.isInitialAttach()) {
-                                    event.unregisterListener();
-                                    signalEffectAttachRegistration = null;
-                                }
+                                event.unregisterListener();
+                                signalEffectAttachRegistration = null;
                                 initInternalSignalEffectForValidators(
                                         event.getSource());
                             });
