@@ -134,8 +134,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                 "Generating the file needs a class finder to scan for the JavaScript definitions with");
         return renderFileContent(
                 classFinder.getAnnotatedClasses(JsDefinition.class),
-                classFinder.getAnnotatedClasses(DomEvent.class),
-                !options.isProductionMode());
+                findDomEventTypes(classFinder), !options.isProductionMode());
     }
 
     /**
@@ -232,6 +231,20 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                 .toList();
     }
 
+    /**
+     * The component event types that are listened to as DOM events. Found as
+     * subtypes rather than by the annotation: {@link DomEvent} is inherited, so
+     * a subclass that declares its own constructor is listened to through the
+     * annotation of its superclass, and a class finder that reports only the
+     * classes an annotation is written on would leave its event data out of the
+     * bundle.
+     */
+    private static List<Class<?>> findDomEventTypes(ClassFinder classFinder) {
+        return classFinder.getSubTypesOf(ComponentEvent.class).stream()
+                .filter(type -> type.isAnnotationPresent(DomEvent.class))
+                .<Class<?>> map(type -> type).toList();
+    }
+
     @SuppressWarnings("unchecked")
     private static List<String> findBundledEventData(Class<?> eventType) {
         if (!ComponentEvent.class.isAssignableFrom(eventType)) {
@@ -243,7 +256,10 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         } catch (IllegalArgumentException e) {
             // Left out rather than failing the build, as for a definition.
             // Listening to the event fails at runtime with the same message.
-            getLogger().warn(
+            // Debug only: a subclass that inherits the annotation and is only
+            // fired from the server, without a DOM event constructor, is
+            // common and no mistake.
+            getLogger().debug(
                     "Leaving the event data of {} out of the bundle: {}",
                     eventType.getName(), e.getMessage());
             return List.of();

@@ -18,10 +18,12 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -157,6 +159,18 @@ class TaskGenerateJsDefinitionsTest {
             super(source, fromClient);
         }
     }
+
+    /**
+     * Listened to as a DOM event through the annotation of its superclass.
+     */
+    public static class InheritingOffsetEvent extends OffsetEvent {
+        public InheritingOffsetEvent(Component source, boolean fromClient,
+                @EventData(INHERITING_EXPRESSION) double offset) { // NOSONAR
+            super(source, fromClient, 0, 0, null);
+        }
+    }
+
+    private static final String INHERITING_EXPRESSION = "event.pageX - 1";
 
     @DomEvent("no-dom-event-constructor")
     public static class NoDomEventConstructorEvent
@@ -362,6 +376,31 @@ class TaskGenerateJsDefinitionsTest {
         assertFalse(content.contains("values[0]"),
                 "the event data of a prebuilt event are keys, not JavaScript: "
                         + content);
+    }
+
+    @Test
+    void domEventSubclass_inheritingTheAnnotation_registersItsEventData() {
+        // Like the class finder of a build, which reports only the classes an
+        // annotation is written on
+        DefaultClassFinder declaredOnly = new DefaultClassFinder(
+                Set.of(OffsetEvent.class, InheritingOffsetEvent.class)) {
+            @Override
+            public Set<Class<?>> getAnnotatedClasses(
+                    Class<? extends Annotation> annotation) {
+                return super.getAnnotatedClasses(annotation).stream().filter(
+                        type -> type.getDeclaredAnnotation(annotation) != null)
+                        .collect(Collectors.toSet());
+            }
+        };
+        String content = new TaskGenerateJsDefinitions(
+                new Options(mock(Lookup.class), declaredOnly, null)
+                        .withFrontendDirectory(frontendFolder)
+                        .withProductionMode(true))
+                .getFileContent();
+
+        assertTrue(content.contains("window.Vaadin.Flow.jsSnippets[\""
+                + BundledEventData.getFunctionId(INHERITING_EXPRESSION)
+                + "\"]"), content);
     }
 
     @Test

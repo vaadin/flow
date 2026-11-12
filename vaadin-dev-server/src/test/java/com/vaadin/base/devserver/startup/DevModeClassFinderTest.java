@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 import com.vaadin.base.devserver.DevToolsMessageHandler;
 import com.vaadin.base.devserver.startup.DevModeInitializer.DevModeClassFinder;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -76,7 +76,8 @@ class DevModeClassFinderTest {
                 Template.class, LoadDependenciesOnStartup.class,
                 Component.class, TypeScriptBootstrapModifier.class,
                 DevToolsMessageHandler.class, Layout.class, StyleSheet.class,
-                StyleSheet.Container.class, JsDefinition.class, DomEvent.class);
+                StyleSheet.Container.class, JsDefinition.class,
+                ComponentEvent.class);
 
         for (Class<?> clz : classes) {
             assertTrue(knownClasses.contains(clz),
