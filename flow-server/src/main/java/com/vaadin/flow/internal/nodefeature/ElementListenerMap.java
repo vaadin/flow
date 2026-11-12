@@ -574,6 +574,17 @@ public class ElementListenerMap extends NodeMap {
     }
 
     /**
+     * Creates a new element listener map for the given node.
+     *
+     * @param node
+     *            the node that the map belongs to
+     *
+     */
+    public ElementListenerMap(StateNode node) {
+        super(node);
+    }
+
+    /**
      * Checks whether the client compiles the given event data from a string.
      * The client reads a synchronized property, the state node closest to the
      * event target or a property path, also one that leads to the element to
@@ -604,17 +615,6 @@ public class ElementListenerMap extends NodeMap {
 
     private static boolean isPropertyPath(String expression) {
         return PROPERTY_PATH.matcher(expression).matches();
-    }
-
-    /**
-     * Creates a new element listener map for the given node.
-     *
-     * @param node
-     *            the node that the map belongs to
-     *
-     */
-    public ElementListenerMap(StateNode node) {
-        super(node);
     }
 
     /**
