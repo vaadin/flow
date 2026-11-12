@@ -18,6 +18,7 @@ package com.vaadin.flow.component.trigger.internal;
 import java.util.Objects;
 
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsSnippets;
 
 /**
  * Reads a value out of the trigger context — the object a trigger supplies to
@@ -36,6 +37,8 @@ import com.vaadin.flow.dom.JsFunction;
  *            the runtime type of the value produced
  */
 public class ContextInput<T> extends Action.Input<T> {
+
+    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
 
     private final String contextProperty;
     private final String valueProperty;
@@ -57,11 +60,7 @@ public class ContextInput<T> extends Action.Input<T> {
 
     @Override
     public JsFunction toJs(Trigger trigger) {
-        // Both names are captures, so nothing is concatenated into the body.
-        // Optional chaining avoids throwing when the trigger supplies no
-        // context; a missing value becomes null, which actions treat as absent.
-        return JsFunction.of("return context?.[$0]?.[$1] ?? null",
-                contextProperty, valueProperty)
-                .withArguments("event", "context");
+        // A missing value becomes null, which actions treat as absent.
+        return TRIGGER_JS.contextValue(contextProperty, valueProperty);
     }
 }

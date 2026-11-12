@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,15 +33,26 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.clipboard.Clipboard;
+import com.vaadin.flow.component.internal.ValueJs;
+import com.vaadin.flow.component.trigger.internal.DownloadAction;
+import com.vaadin.flow.component.trigger.internal.OpenInNewTabAction;
 import com.vaadin.flow.component.trigger.internal.PromiseAction;
+import com.vaadin.flow.component.trigger.internal.ShareAction;
+import com.vaadin.flow.component.trigger.internal.TriggerJs;
+import com.vaadin.flow.component.trigger.internal.TriggerTestUtil;
+import com.vaadin.flow.component.trigger.internal.WriteToClipboardAction;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
+import com.vaadin.flow.js.JsCalledWith;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -49,9 +61,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * component, so a renderer can fire it once per element it renders on the
  * client while the server holds a single binding.
  */
-// Asserts on the generated JavaScript, which only the deprecated JsFunction
-// getters expose
-@SuppressWarnings("removal")
 class ClientActionTest {
 
     private static class Div extends Component {
@@ -89,9 +98,6 @@ class ClientActionTest {
         assertEquals(1, sink.installed.size());
         JsFunction action = sink.installed.get(0);
 
-        // The renderer calls the function from its own event binding and
-        // supplies the template's call arguments in the context argument.
-        assertEquals(List.of("event", "context"), action.getArgumentNames());
         assertCopiesFirstTemplateArgument(action);
     }
 
@@ -110,8 +116,10 @@ class ClientActionTest {
         // Still one binding: the outcome travels over one return channel on
         // the renderer's element, shared by every element that calls copy.
         assertEquals(1, sink.installed.size());
-        List<ReturnChannelRegistration> channels = sink.installed.get(0)
-                .getCaptures().stream()
+        JsFunction action = sink.installed.get(0);
+        assertEquals("reportOutcome",
+                TriggerTestUtil.snippetOf(TriggerJs.class, action));
+        List<ReturnChannelRegistration> channels = action.getCaptures().stream()
                 .filter(ReturnChannelRegistration.class::isInstance)
                 .map(ReturnChannelRegistration.class::cast).toList();
         assertEquals(1, channels.size());
@@ -119,7 +127,7 @@ class ClientActionTest {
 
         // The outcome wrapper calls the same write as the plain overload.
         assertCopiesFirstTemplateArgument(
-                (JsFunction) sink.installed.get(0).getCaptures().get(1));
+                (JsFunction) action.getCaptures().get(0));
 
         ObjectNode ok = JacksonUtils.createObjectNode();
         ok.put("ok", true);
@@ -205,17 +213,43 @@ class ClientActionTest {
                 () -> copy.bindTo(host, action -> null));
     }
 
+    @Test
+    void composingSnippets_forwardTheContextToTheirInputs() throws Exception {
+        // An action reaches a context input only through the snippets that
+        // compose it, so each of them has to take the context and pass it on.
+        for (Class<?> definition : List.of(TriggerJs.class,
+                WriteToClipboardAction.WriteToClipboardJs.class,
+                ShareAction.ShareJs.class, DownloadAction.DownloadJs.class,
+                OpenInNewTabAction.OpenInNewTabJs.class)) {
+            for (Method method : definition.getMethods()) {
+                String expression = method.getAnnotation(JsExpression.class)
+                        .value();
+                if (!expression.contains("(event")) {
+                    continue;
+                }
+                String name = definition.getSimpleName() + "."
+                        + method.getName();
+                assertFalse(expression.contains("(event)"),
+                        name + " calls an input without the context");
+                JsCalledWith calledWith = method
+                        .getAnnotation(JsCalledWith.class);
+                assertNotNull(calledWith, name);
+                assertEquals(List.of("event", "context"),
+                        List.of(calledWith.value()), name);
+            }
+        }
+    }
+
     private static void assertCopiesFirstTemplateArgument(JsFunction write) {
-        assertEquals(
-                "return window.Vaadin.Flow.clipboard.writePayload($0(event, context), $1(event, context), $2(event, context))",
-                write.getBody());
+        assertEquals("writeToClipboard", TriggerTestUtil.snippetOf(
+                WriteToClipboardAction.WriteToClipboardJs.class, write));
         JsFunction text = (JsFunction) write.getCaptures().get(0);
-        assertEquals(List.of("event", "context"), text.getArgumentNames());
-        assertEquals("return context?.[$0]?.[$1] ?? null", text.getBody());
+        assertEquals("contextValue",
+                TriggerTestUtil.snippetOf(TriggerJs.class, text));
         assertEquals(List.of("args", "0"), text.getCaptures());
         // Text only: the html slot stays empty.
-        assertEquals("return null",
-                ((JsFunction) write.getCaptures().get(1)).getBody());
+        assertEquals("nullValue", TriggerTestUtil.snippetOf(ValueJs.class,
+                (JsFunction) write.getCaptures().get(1)));
     }
 
     @SuppressWarnings("unchecked")

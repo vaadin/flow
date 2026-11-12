@@ -128,10 +128,9 @@ public abstract class Action implements Serializable {
         /**
          * Builds the {@link JsFunction} that yields this input's value when
          * called. The function may take {@code event} and {@code context} as
-         * runtime arguments (declared by the subclass via
-         * {@link JsFunction#withArguments(String...)}); inputs that need
-         * neither simply omit the declaration and ignore the arguments the
-         * caller passes.
+         * runtime arguments (declared by the snippet that builds it with
+         * {@code @JsCalledWith}); inputs that need neither simply omit the
+         * declaration and ignore the arguments the caller passes.
          *
          * <p>
          * Public so that {@link Action} implementations in any package can
