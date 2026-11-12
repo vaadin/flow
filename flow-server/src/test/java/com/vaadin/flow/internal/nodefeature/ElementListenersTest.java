@@ -31,6 +31,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
@@ -69,6 +71,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -168,8 +172,11 @@ public class ElementListenersTest
 
     @Test
     void addEventDataList_existingExpressions_merged() {
-        ns.add("eventType", noOp).addEventData("data1")
-                .addEventData(List.of("data1", "data2"));
+        DomListenerRegistration registration = ns.add("eventType", noOp)
+                .addEventData("data1");
+
+        ElementListenerMap.addEventData(registration,
+                List.of("data1", "data2"));
 
         assertEquals(Set.of("data1", "data2"), getExpressions("eventType"));
     }
@@ -180,7 +187,42 @@ public class ElementListenersTest
         List<String> eventData = Arrays.asList("data1", null);
 
         assertThrows(IllegalArgumentException.class,
-                () -> registration.addEventData(eventData));
+                () -> ElementListenerMap.addEventData(registration, eventData));
+    }
+
+    @Test
+    void addEventDataList_otherRegistration_addsEachWithAddEventData() {
+        DomListenerRegistration registration = mock(
+                DomListenerRegistration.class, CALLS_REAL_METHODS);
+
+        registration.preventDefault().synchronizeProperty("value");
+
+        verify(registration)
+                .addEventData(JsonConstants.EVENT_DATA_PREVENT_DEFAULT);
+        verify(registration).addEventData(
+                JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + "value");
+    }
+
+    @Test
+    void addEventDataPath_propertyPath_addedWithPathAsKey() {
+        ns.add("eventType", noOp).addEventDataPath("event.detail?.itemKey")
+                .addEventDataPath("element");
+
+        assertEquals(Set.of("event.detail?.itemKey", "element"),
+                getExpressions("eventType"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "event.x * 2", "event.composedPath()[0]",
+            "window.location", "event.", "event..x", "detail.value", "" })
+    void addEventDataPath_notPropertyPath_throwsWithoutAdding(String path) {
+        DomListenerRegistration registration = ns.add("eventType", noOp);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> registration.addEventDataPath(path));
+        assertThrows(IllegalArgumentException.class,
+                () -> registration.addEventDataElementPath(path));
+        assertEquals(Set.of(), getExpressions("eventType"));
     }
 
     @Test
@@ -1041,7 +1083,7 @@ public class ElementListenersTest
     }
 
     @Test
-    void addEventDataElement_eventTarget_usesMapEventTargetInstead() {
+    void addEventDataElementPath_eventTarget_usesMapEventTargetInstead() {
         Element parent = new Element("parent");
         Element child = new Element("child");
         parent.appendChild(child);
@@ -1055,7 +1097,7 @@ public class ElementListenersTest
         final ElementListenerMap listenerMap = parent.getNode()
                 .getFeature(ElementListenerMap.class);
 
-        registration.addEventDataElement("event.target");
+        registration.addEventDataElementPath("event.target");
         Set<String> expressions = getExpressions(listenerMap, eventType);
 
         assertEquals(1, expressions.size());

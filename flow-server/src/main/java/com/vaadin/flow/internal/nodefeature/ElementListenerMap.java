@@ -285,7 +285,8 @@ public class ElementListenerMap extends NodeMap {
          * Exactly sized unmodifiable list rather than a set: listeners hold a
          * handful of expressions, so a hash set would cost several times more
          * memory for each one. The list may be shared with other listeners, see
-         * addEventData(List), and is replaced with a copy when adding.
+         * ElementListenerMap.addEventData, and is replaced with a copy when
+         * adding.
          */
         private List<String> eventDataExpressions;
         private List<DomEventData<?>> eventDataSnippets;
@@ -327,24 +328,16 @@ public class ElementListenerMap extends NodeMap {
         }
 
         @Override
+        @Deprecated(since = "25.4")
         public DomListenerRegistration addEventData(String eventData) {
             if (eventData == null) {
                 throw new IllegalArgumentException(
                         "The event data expression must not be null");
             }
-            if (isCompiledByClient(eventData)) {
-                CspViolationReporter.reportStringJavaScript();
-            }
-
-            appendEventData(List.of(eventData));
-
-            listenerMap.updateEventSettings(type);
-
-            return this;
+            return addEventData(List.of(eventData));
         }
 
-        @Override
-        public DomListenerRegistration addEventData(List<String> eventData) {
+        private DomListenerRegistration addEventData(List<String> eventData) {
             requireEventData(eventData);
             if (eventData.stream()
                     .anyMatch(DomEventListenerWrapper::isCompiledByClient)) {
@@ -535,10 +528,6 @@ public class ElementListenerMap extends NodeMap {
                     && !eventData
                             .equals(JsonConstants.EVENT_DATA_STOP_PROPAGATION)
                     && !isPropertyPath(expression);
-        }
-
-        private static boolean isPropertyPath(String expression) {
-            return PROPERTY_PATH.matcher(expression).matches();
         }
 
         private boolean isPropertySynchronized(String propertyName) {
@@ -894,11 +883,59 @@ public class ElementListenerMap extends NodeMap {
     }
 
     /**
+     * Checks whether the given expression is a property path that the browser
+     * reads without compiling it: <code>event</code> or <code>element</code>
+     * followed by property names that each start with <code>.</code> or
+     * <code>?.</code>.
+     *
+     * @param expression
+     *            the expression to check, not <code>null</code>
+     * @return <code>true</code> if the expression is a property path,
+     *         <code>false</code> otherwise
+     */
+    public static boolean isPropertyPath(String expression) {
+        return PROPERTY_PATH.matcher(expression).matches();
+    }
+
+    /**
+     * Adds event data to a registration. Reports the event data that the
+     * browser compiles from a string, which is any data other than a property
+     * path or a token of the internal data that Flow adds, such as a
+     * synchronized property. Keeps the given list if it is unmodifiable and the
+     * registration has no event data yet, so that listeners that add the same
+     * data can share one list.
+     * <p>
+     * A registration that is not one of this map gets each value with
+     * {@link DomListenerRegistration#addEventData(String)}.
+     *
+     * @param registration
+     *            the registration to add the event data to, not
+     *            <code>null</code>
+     * @param eventData
+     *            the event data, not <code>null</code> and not containing
+     *            <code>null</code>
+     * @throws com.vaadin.flow.server.CspViolationException
+     *             in the {@link com.vaadin.flow.server.CspMode#STRICT} Content
+     *             Security Policy mode, if any value is compiled by the browser
+     */
+    @SuppressWarnings("deprecation")
+    public static void addEventData(DomListenerRegistration registration,
+            List<String> eventData) {
+        Objects.requireNonNull(registration, "Registration cannot be null");
+        if (registration instanceof DomEventListenerWrapper wrapper) {
+            wrapper.addEventData(eventData);
+        } else {
+            DomEventListenerWrapper.requireEventData(eventData);
+            eventData.forEach(registration::addEventData);
+        }
+    }
+
+    /**
      * Adds event data to a registration of this map like
-     * {@link DomListenerRegistration#addEventData(List)}, but without reporting
-     * them as JavaScript sent as a string. For the keys of data that client
-     * code builds and sends with <code>sendEventMessage</code>, which the
-     * client never compiles.
+     * {@link #addEventData(DomListenerRegistration, List)}, but without
+     * reporting them as JavaScript sent as a string. For the keys of data that
+     * client code builds and sends with <code>sendEventMessage</code>, which
+     * the client never compiles.
      *
      * @param registration
      *            a registration returned by

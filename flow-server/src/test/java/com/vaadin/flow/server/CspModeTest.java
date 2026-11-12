@@ -53,6 +53,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
@@ -144,11 +145,9 @@ class CspModeTest {
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).addEventData("event.x * 2")),
                 call(DomListenerRegistration.class, "addEventData",
-                        ui -> ui.getElement().addEventListener("click", e -> {
-                        }).addEventData(List.of("event?.x()"))),
-                call(DomListenerRegistration.class, "addEventData",
-                        ui -> ui.getElement().addEventListener("click", e -> {
-                        }).addEventData(
+                        ui -> ElementListenerMap.addEventData(
+                                ui.getElement().addEventListener("click", e -> {
+                                }),
                                 List.of(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN
                                         + "value", "event.x[0]"))),
                 call(DomListenerRegistration.class, "addEventData",
@@ -207,8 +206,8 @@ class CspModeTest {
                     .addEventListener("click", e -> {
                     });
             registration.setFilter(null);
-            registration.addEventData(List.of());
-            registration.addEventData(
+            ElementListenerMap.addEventData(registration, List.of());
+            ElementListenerMap.addEventData(registration,
                     List.of(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + "value",
                             JsonConstants.MAP_STATE_NODE_EVENT_DATA));
             registration.synchronizeProperty("value");
@@ -216,7 +215,10 @@ class CspModeTest {
             // The client reads property paths without compiling them
             registration.addEventData("event.detail.value");
             registration.addEventData("event.detail?.value");
-            registration.addEventData(List.of("element.value", "event"));
+            ElementListenerMap.addEventData(registration,
+                    List.of("element.value", "event"));
+            registration.addEventDataPath("event.detail?.value");
+            registration.addEventDataElementPath("event.target.parentElement");
             registration.addEventDetail();
             registration.addEventDataElement("event.target.parentElement");
             registration.setFilter("event.isTrusted");

@@ -24,6 +24,7 @@ import tools.jackson.core.type.TypeReference;
 
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.BeanUtil;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.server.CspMode;
 import com.vaadin.flow.server.CspViolationException;
 import com.vaadin.flow.shared.JsonConstants;
@@ -78,36 +79,42 @@ public interface DomListenerRegistration extends Registration {
      * @see #addEventDataElement(String) for mapping an element
      * @see #mapEventTargetElement() to map the {@code event.target} to an
      *      element
+     * @deprecated JavaScript that is sent as a string is compiled by the
+     *             browser. Use {@link #addEventDataPath(String)} for a property
+     *             path, a {@link DomEventData} with
+     *             {@link #addEventData(DomEventData)} for any other expression,
+     *             and {@link #preventDefault()} or {@link #stopPropagation()}
+     *             instead of calling them in an expression.
      */
+    @Deprecated(since = "25.4")
     DomListenerRegistration addEventData(String eventData);
 
     /**
-     * Adds JavaScript expressions for extracting event data, like calling
-     * {@link #addEventData(String)} for each of them.
+     * Adds a property path for extracting event data. When an event is fired in
+     * the browser, the browser reads the value at the path and sends it back to
+     * the server. The path is <code>event</code>, which refers to the fired
+     * event, or <code>element</code>, which refers to this element, followed by
+     * property names that each start with <code>.</code> or <code>?.</code>,
+     * for example <code>event.detail.value</code> or
+     * <code>event.detail?.originalEvent.pageX</code>.
      * <p>
-     * Like with {@link #addEventData(String)}, the browser compiles the
-     * expressions from strings, unless they are property paths. See
-     * {@link #addEventData(DomEventData)} for event data that works with a
-     * Content Security Policy that does not allow <code>unsafe-eval</code>.
+     * The value is available in {@link DomEvent#getEventData()} with the path
+     * as the key in the JSON object. The browser reads the path without
+     * compiling anything, so this also works with a Content Security Policy
+     * that does not allow <code>unsafe-eval</code>. To get data that is not a
+     * property path, declare it in a {@link com.vaadin.flow.js.JsDefinition}
+     * interface and use {@link #addEventData(DomEventData)}.
      *
-     * @param eventData
-     *            definitions for data that should be passed back to the server
-     *            together with the event, not <code>null</code> and not
-     *            containing <code>null</code>
+     * @param path
+     *            the property path of the data to send to the server together
+     *            with the event, not <code>null</code>
      * @return this registration, for chaining
-     * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode,
-     *             unless every expression is a property path
-     * @see #addEventData(String)
-     * @since 25.4
+     * @throws IllegalArgumentException
+     *             if the path is not a property path
+     * @see #addEventDataElementPath(String) for mapping an element
      */
-    default DomListenerRegistration addEventData(List<String> eventData) {
-        if (eventData == null) {
-            throw new IllegalArgumentException(
-                    "The event data expressions must not be null");
-        }
-        eventData.forEach(this::addEventData);
-        return this;
+    default DomListenerRegistration addEventDataPath(String path) {
+        return addEventDataEntry(requirePropertyPath(path));
     }
 
     /**
@@ -439,7 +446,7 @@ public interface DomListenerRegistration extends Registration {
         if (propertyName == null || propertyName.isEmpty()) {
             throw new IllegalArgumentException("Property name must be given");
         }
-        return addEventData(
+        return addEventDataEntry(
                 JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + propertyName);
     }
 
@@ -452,7 +459,7 @@ public interface DomListenerRegistration extends Registration {
      * @since 9.0
      */
     default DomListenerRegistration mapEventTargetElement() {
-        return addEventData(JsonConstants.MAP_STATE_NODE_EVENT_DATA);
+        return addEventDataEntry(JsonConstants.MAP_STATE_NODE_EVENT_DATA);
     }
 
     /**
@@ -476,21 +483,78 @@ public interface DomListenerRegistration extends Registration {
      *            definition for element that should be passed back to the
      *            server together with the event, not <code>null</code>
      * @return this registration, for chaining
-     * @since 9.0
+     * @see #mapEventTargetElement() to map the {@code event.target} to an
+     *      element
+     * @deprecated JavaScript that is sent as a string is compiled by the
+     *             browser. Use {@link #addEventDataElementPath(String)} for a
+     *             property path, such as
+     *             <code>event.target.parentElement</code>.
+     */
+    @Deprecated(since = "25.4")
+    default DomListenerRegistration addEventDataElement(String eventData) {
+        Objects.requireNonNull(eventData);
+        return addEventDataElementEntry(eventData);
+    }
+
+    /**
+     * Adds a property path for extracting an element as event data. When an
+     * event is fired in the browser, the browser reads the value at the path
+     * and if it is an element from DOM, the server side element or closest
+     * parent element is sent to server side. The path is <code>event</code>,
+     * which refers to the fired event, or <code>element</code>, which refers to
+     * this element, followed by property names that each start with
+     * <code>.</code> or <code>?.</code>, for example
+     * <code>event.target.parentElement</code>.
+     * <p>
+     * The element is available in {@link DomEvent#getEventDataElement(String)}
+     * with the path as the key. The browser reads the path without compiling
+     * anything, so this also works with a Content Security Policy that does not
+     * allow <code>unsafe-eval</code>.
+     * <p>
+     * In case you want to get the {@code event.target} element to the server
+     * side, use the {@link #mapEventTargetElement()} method to get it mapped
+     * and the {@link DomEvent#getEventTarget()} to fetch the element.
+     *
+     * @param path
+     *            the property path of the element to send to the server
+     *            together with the event, not <code>null</code>
+     * @return this registration, for chaining
+     * @throws IllegalArgumentException
+     *             if the path is not a property path
      * @see #mapEventTargetElement() to map the {@code event.target} to an
      *      element
      */
-    default DomListenerRegistration addEventDataElement(String eventData) {
-        Objects.requireNonNull(eventData);
+    default DomListenerRegistration addEventDataElementPath(String path) {
+        return addEventDataElementEntry(requirePropertyPath(path));
+    }
+
+    private DomListenerRegistration addEventDataElementEntry(String eventData) {
         // ComponentEventBusUtil has a copy of this mapping for component event
         // data, update it as well when changing the mapping here
         // optimizing this case as it is quite trivial
         if (Objects.equals(eventData, "event.target")) {
             return mapEventTargetElement();
         } else {
-            return addEventData(
+            return addEventDataEntry(
                     JsonConstants.MAP_STATE_NODE_EVENT_DATA + eventData);
         }
+    }
+
+    // Not through addEventData(String), which is deprecated for JavaScript
+    // expressions: the default methods add internal tokens and paths that the
+    // browser reads without compiling anything
+    private DomListenerRegistration addEventDataEntry(String eventData) {
+        ElementListenerMap.addEventData(this, List.of(eventData));
+        return this;
+    }
+
+    private static String requirePropertyPath(String path) {
+        Objects.requireNonNull(path, "Event data path cannot be null");
+        if (!ElementListenerMap.isPropertyPath(path)) {
+            throw new IllegalArgumentException("'" + path
+                    + "' is not a property path, which is 'event' or 'element' followed by property names that each start with '.' or '?.'. Declare other event data in a JsDefinition interface and add it as a DomEventData.");
+        }
+        return path;
     }
 
     /**
@@ -514,7 +578,7 @@ public interface DomListenerRegistration extends Registration {
      * @since 24.2
      */
     default public DomListenerRegistration stopPropagation() {
-        addEventData(JsonConstants.EVENT_DATA_STOP_PROPAGATION);
+        addEventDataEntry(JsonConstants.EVENT_DATA_STOP_PROPAGATION);
         return this;
     };
 
@@ -541,7 +605,7 @@ public interface DomListenerRegistration extends Registration {
      * @since 24.2
      */
     default public DomListenerRegistration preventDefault() {
-        addEventData(JsonConstants.EVENT_DATA_PREVENT_DEFAULT);
+        addEventDataEntry(JsonConstants.EVENT_DATA_PREVENT_DEFAULT);
         return this;
     }
 
@@ -583,7 +647,7 @@ public interface DomListenerRegistration extends Registration {
      *            the class whose properties should be captured from the event
      *            data, not <code>null</code>
      * @return this registration, for chaining
-     * @see #addEventData(String)
+     * @see #addEventDataPath(String)
      * @since 25.0
      */
     default DomListenerRegistration addEventData(Class<?> type) {
@@ -593,7 +657,7 @@ public interface DomListenerRegistration extends Registration {
         try {
             List<String> propertyPaths = BeanUtil.getBeanPropertyPaths(type);
             for (String path : propertyPaths) {
-                addEventData(path);
+                addEventDataEntry(path);
             }
         } catch (IntrospectionException e) {
             throw new IllegalArgumentException(
@@ -615,7 +679,7 @@ public interface DomListenerRegistration extends Registration {
      *            the type reference whose properties should be captured from
      *            the event data, not <code>null</code>
      * @return this registration, for chaining
-     * @see #addEventData(String)
+     * @see #addEventDataPath(String)
      * @since 25.0
      */
     default DomListenerRegistration addEventData(
@@ -655,7 +719,8 @@ public interface DomListenerRegistration extends Registration {
 
     /**
      * Adds the {@code event.detail} property to the event data. This is a
-     * convenience method equivalent to {@code addEventData("event.detail")}.
+     * convenience method equivalent to
+     * {@code addEventDataPath("event.detail")}.
      * <p>
      * The {@code event.detail} property is commonly used in custom events to
      * pass event-specific data. The returned detail object can be retrieved on
@@ -680,7 +745,7 @@ public interface DomListenerRegistration extends Registration {
      * @since 25.0
      */
     default DomListenerRegistration addEventDetail() {
-        return addEventData("event.detail");
+        return addEventDataPath("event.detail");
     }
 
     /**
@@ -726,7 +791,7 @@ public interface DomListenerRegistration extends Registration {
         try {
             List<String> propertyPaths = BeanUtil.getBeanPropertyPaths(type);
             for (String path : propertyPaths) {
-                addEventData("event.detail." + path);
+                addEventDataEntry("event.detail." + path);
             }
         } catch (IntrospectionException e) {
             throw new IllegalArgumentException(
