@@ -1288,6 +1288,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             VaadinSession session) {
 
         UI ui = ReflectTools.createInstance(uiClass);
+        if (session.isUILockingEnabled()) {
+            /*
+             * The new UI is not reachable by other threads yet, so this never
+             * waits. Released by SynchronizedRequestHandler together with the
+             * session lock.
+             */
+            boolean locked = ui.getInternals().tryLockUI();
+            assert locked : "A new UI must not be locked by another thread";
+        }
         ui.getInternals().setContextRoot(
                 request.getService().getContextRootRelativePath(request));
 

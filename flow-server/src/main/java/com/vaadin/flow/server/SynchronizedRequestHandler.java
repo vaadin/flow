@@ -23,6 +23,9 @@ import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.UIInternals;
+
 /**
  * RequestHandler which takes care of locking and unlocking of the VaadinSession
  * automatically. The session is locked before
@@ -58,6 +61,14 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
             return false;
         }
 
+        if (session.isUILockingEnabled() && canHandleWithUILock()) {
+            UI ui = session.getService().findUI(session, request);
+            if (ui != null) {
+                return handleRequestWithUILock(session, ui, request, response);
+            }
+            // UI not found: let the handler respond as before
+        }
+
         try {
             if (isReadAndWriteOutsideSessionLock()) {
                 BufferedReader reader = request.getReader();
@@ -70,8 +81,13 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
                     return rejectOversizedRequest(response, e);
                 }
                 session.lock();
-                Optional<ResponseWriter> responseWriter = synchronizedHandleRequest(
-                        session, request, response, requestBody);
+                Optional<ResponseWriter> responseWriter;
+                try {
+                    responseWriter = synchronizedHandleRequest(session, request,
+                            response, requestBody);
+                } finally {
+                    releaseUILocks(session);
+                }
                 session.unlock();
                 if (responseWriter.isPresent()) {
                     responseWriter.get().writeResponse();
@@ -79,13 +95,91 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
                 return responseWriter.isPresent();
             } else {
                 session.lock();
-                return synchronizedHandleRequest(session, request, response);
+                try {
+                    return synchronizedHandleRequest(session, request,
+                            response);
+                } finally {
+                    releaseUILocks(session);
+                }
             }
         } finally {
             if (session.hasLock()) {
                 session.unlock();
             }
         }
+    }
+
+    /**
+     * Handles the request for the given UI while holding only the UI lock, used
+     * with {@link VaadinSession#isUILockingEnabled() UI locking}.
+     */
+    private boolean handleRequestWithUILock(VaadinSession session, UI ui,
+            VaadinRequest request, VaadinResponse response) throws IOException {
+        UIInternals internals = ui.getInternals();
+        if (isReadAndWriteOutsideSessionLock()) {
+            BufferedReader reader = request.getReader();
+            String requestBody;
+            try {
+                requestBody = reader == null ? null
+                        : getRequestBody(reader,
+                                getMaxRequestBodySize(request));
+            } catch (RequestBodyTooLargeException e) {
+                return rejectOversizedRequest(response, e);
+            }
+            Optional<ResponseWriter> responseWriter;
+            internals.lockUI();
+            try {
+                responseWriter = synchronizedHandleRequest(session, request,
+                        response, requestBody);
+            } finally {
+                internals.unlockUI();
+            }
+            if (responseWriter.isPresent()) {
+                responseWriter.get().writeResponse();
+            }
+            return responseWriter.isPresent();
+        }
+        internals.lockUI();
+        try {
+            return synchronizedHandleRequest(session, request, response);
+        } finally {
+            internals.unlockUI();
+        }
+    }
+
+    /**
+     * Releases UI locks the current thread acquired while handling the request
+     * with the session lock, e.g. for a UI created during bootstrap. Must be
+     * called before the session lock is released.
+     */
+    private static void releaseUILocks(VaadinSession session) {
+        if (!session.isUILockingEnabled()) {
+            return;
+        }
+        for (UI ui : session.getUIs()) {
+            UIInternals internals = ui.getInternals();
+            while (internals.hasUILock()) {
+                internals.unlockUI();
+            }
+        }
+    }
+
+    /**
+     * Checks whether the request targets a single UI and can therefore be
+     * handled while holding only the lock of that UI instead of the session
+     * lock, when the session uses {@link VaadinSession#isUILockingEnabled() UI
+     * locking}. The UI is resolved with
+     * {@link VaadinService#findUI(VaadinSession, VaadinRequest)}. If no UI is
+     * found, the request is handled with the session lock.
+     * <p>
+     * Handlers returning {@code true} must only access the state of that UI and
+     * thread-safe session state.
+     *
+     * @return {@code true} if the UI lock is sufficient, {@code false} by
+     *         default
+     */
+    protected boolean canHandleWithUILock() {
+        return false;
     }
 
     /**

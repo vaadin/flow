@@ -358,9 +358,14 @@ public class PushHandler {
             cleanDisconnectedUuidBuffer(resource);
 
             UI ui = null;
-            session.lock();
+            // With UI locking, only the UI is locked, see VaadinSession
+            UI lockedUI = session.isUILockingEnabled()
+                    ? service.findUI(session, vaadinRequest)
+                    : null;
+            Runnable releaseLock = VaadinSession.lockForUI(session, lockedUI);
             try {
-                ui = service.findUI(vaadinRequest);
+                ui = session.isUILockingEnabled() ? lockedUI
+                        : service.findUI(vaadinRequest);
                 assert UI.getCurrent() == ui;
 
                 if (ui == null) {
@@ -397,7 +402,7 @@ public class PushHandler {
                 callErrorHandler(session, e);
             } finally {
                 try {
-                    session.unlock();
+                    releaseLock.run();
                 } catch (Exception e) {
                     getLogger().warn("Error while unlocking session", e);
                     // can't call ErrorHandler, we (hopefully) don't have a lock
@@ -525,11 +530,16 @@ public class PushHandler {
         }
 
         UI ui;
-        session.lock();
+        // With UI locking, only the UI is locked, see VaadinSession
+        UI lockedUI = session.isUILockingEnabled()
+                ? findUIForDisconnect(service, session, vaadinRequest, resource)
+                : null;
+        Runnable releaseLock = VaadinSession.lockForUI(session, lockedUI);
         try {
             VaadinSession.setCurrent(session);
             // Sets UI.currentInstance
-            ui = service.findUI(vaadinRequest);
+            ui = session.isUILockingEnabled() ? lockedUI
+                    : service.findUI(vaadinRequest);
             if (ui == null) {
                 /*
                  * UI not found, could be because FF has asynchronously closed
@@ -600,13 +610,29 @@ public class PushHandler {
             callErrorHandler(session, e);
         } finally {
             try {
-                session.unlock();
+                releaseLock.run();
             } catch (Exception e) {
                 getLogger().warn("Error while unlocking session", e);
                 // can't call ErrorHandler, we (hopefully) don't have a lock
             }
         }
         return session;
+    }
+
+    /**
+     * Finds the UI of a disconnect event without any lock, falling back to the
+     * UI using the given resource, see
+     * {@link #findUiUsingResource(AtmosphereResource, Collection)}.
+     */
+    private static UI findUIForDisconnect(VaadinService service,
+            VaadinSession session, VaadinRequest request,
+            AtmosphereResource resource) {
+        UI ui = service.findUI(session, request);
+        if (ui == null) {
+            ui = findUiUsingResource(resource, session.getUIsWithoutLock());
+            UI.setCurrent(ui);
+        }
+        return ui;
     }
 
     private static UI findUiUsingResource(AtmosphereResource resource,

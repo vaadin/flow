@@ -140,11 +140,18 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     }
 
     @Override
+    protected boolean canHandleWithUILock() {
+        return true;
+    }
+
+    @Override
     public Optional<ResponseWriter> synchronizedHandleRequest(
             VaadinSession session, VaadinRequest request,
             VaadinResponse response, String requestBody)
             throws IOException, UnsupportedOperationException {
-        UI uI = session.getService().findUI(request);
+        UI uI = session.isUILockingEnabled()
+                ? session.getService().findUI(session, request)
+                : session.getService().findUI(request);
         if (uI == null) {
             // This should not happen but it will if the UI has been closed. We
             // really don't want to see it in the server logs though

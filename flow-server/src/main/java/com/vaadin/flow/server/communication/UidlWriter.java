@@ -133,7 +133,11 @@ public class UidlWriter implements Serializable {
 
         // Purge pending access calls as they might produce additional changes
         // to write out
-        service.runPendingAccessTasks(session);
+        if (session.isUILockingEnabled()) {
+            uiInternals.runPendingAccessTasks();
+        } else {
+            service.runPendingAccessTasks(session);
+        }
 
         // Paints components
         getLogger().debug("* Creating response to client");

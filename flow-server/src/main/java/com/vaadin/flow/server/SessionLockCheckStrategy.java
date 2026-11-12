@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server;
 
+import java.util.function.BooleanSupplier;
+
 /**
  * Available strategies for session lock checking.
  * 
@@ -27,8 +29,9 @@ public enum SessionLockCheckStrategy {
      */
     ASSERT {
         @Override
-        public void checkHasLock(VaadinSession session, String message) {
-            assert session.hasLock() : message;
+        public void checkHasLock(BooleanSupplier hasLock, VaadinSession session,
+                String message) {
+            assert hasLock.getAsBoolean() : message;
         }
     },
     /**
@@ -37,8 +40,9 @@ public enum SessionLockCheckStrategy {
      */
     LOG {
         @Override
-        public void checkHasLock(VaadinSession session, String message) {
-            if (!session.hasLock()) {
+        public void checkHasLock(BooleanSupplier hasLock, VaadinSession session,
+                String message) {
+            if (!hasLock.getAsBoolean()) {
                 session.getLogger().warn(message,
                         new IllegalStateException(message));
             }
@@ -50,8 +54,9 @@ public enum SessionLockCheckStrategy {
      */
     THROW {
         @Override
-        public void checkHasLock(VaadinSession session, String message) {
-            if (!session.hasLock()) {
+        public void checkHasLock(BooleanSupplier hasLock, VaadinSession session,
+                String message) {
+            if (!hasLock.getAsBoolean()) {
                 throw new IllegalStateException(message);
             }
         }
@@ -59,7 +64,9 @@ public enum SessionLockCheckStrategy {
 
     /**
      * Potentially checks whether this session is currently locked by the
-     * current thread
+     * current thread. With {@link VaadinSession#isUILockingEnabled() UI
+     * locking}, holding the lock of one of the session's UIs is also accepted,
+     * see {@link VaadinSession#hasAccess()}.
      *
      * @param session
      *            the session to check the lock for, not null.
@@ -67,5 +74,23 @@ public enum SessionLockCheckStrategy {
      *            the error message to include when failing if the check is done
      *            and the session is not locked
      */
-    public abstract void checkHasLock(VaadinSession session, String message);
+    public void checkHasLock(VaadinSession session, String message) {
+        checkHasLock(session::hasAccess, session, message);
+    }
+
+    /**
+     * Potentially checks whether the current thread holds a lock, and fails
+     * according to this strategy if not.
+     *
+     * @param hasLock
+     *            evaluates whether the required lock is held, only invoked if
+     *            the check is done, not null
+     * @param session
+     *            the session the lock belongs to, not null
+     * @param message
+     *            the error message to include when failing if the check is done
+     *            and the lock is not held
+     */
+    public abstract void checkHasLock(BooleanSupplier hasLock,
+            VaadinSession session, String message);
 }

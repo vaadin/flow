@@ -402,7 +402,7 @@ public class Router implements Serializable {
         assert ui != null;
         assert location != null;
         assert trigger != null;
-        ui.getSessionOrThrow().checkHasLock();
+        ui.getSessionOrThrow().checkHasUIAccess(ui);
 
         if (handleNavigationForLocation(ui, location)) {
             return observeNavigation(ui, location, trigger, () -> {

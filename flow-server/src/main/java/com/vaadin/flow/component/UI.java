@@ -84,6 +84,7 @@ import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.ErrorHandlingCommand;
+import com.vaadin.flow.server.FutureAccess;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -443,8 +444,11 @@ public class UI extends Component
             // the UI is detached and cleaned up.
 
             // Can't use UI.push() directly since it checks for a valid session
-            if (getSession() != null) {
-                getSession().getService().runPendingAccessTasks(getSession());
+            VaadinSession session = getSession();
+            if (session != null && session.isUILockingEnabled()) {
+                getInternals().runPendingAccessTasks();
+            } else if (session != null) {
+                session.getService().runPendingAccessTasks(session);
             }
             pushConnection.push();
         }
@@ -593,6 +597,11 @@ public class UI extends Component
 
         VaadinService.verifyNoOtherSessionLocked(session);
 
+        if (session.isUILockingEnabled()) {
+            accessSynchronouslyWithUILock(session, command, detachHandler);
+            return;
+        }
+
         session.lock();
         try {
             if (getSession() == null) {
@@ -613,6 +622,46 @@ public class UI extends Component
     }
 
     /**
+     * Runs the command while holding only the lock of this UI, used when the
+     * session uses UI locking.
+     */
+    private void accessSynchronouslyWithUILock(VaadinSession session,
+            Command command, SerializableRunnable detachHandler) {
+        UIInternals internals = getInternals();
+        if (!internals.hasUILock() && session.hasAccess()) {
+            /*
+             * Threads holding a UI lock may wait for the session lock, so
+             * waiting for this UI lock while holding the session lock or the
+             * lock of another UI could deadlock.
+             */
+            if (!internals.tryLockUI()) {
+                throw new IllegalStateException(
+                        "Cannot synchronously access a UI that is locked by another thread "
+                                + "while holding the session lock or the lock of another UI. "
+                                + "Use UI.access() instead.");
+            }
+        } else {
+            internals.lockUI();
+        }
+
+        Map<Class<?>, CurrentInstance> old = null;
+        try {
+            if (getSession() == null) {
+                // UI was detached before the lock was acquired
+                handleAccessDetach(detachHandler);
+                return;
+            }
+            old = CurrentInstance.setCurrent(this);
+            command.execute();
+        } finally {
+            internals.unlockUI();
+            if (old != null) {
+                CurrentInstance.restoreInstances(old);
+            }
+        }
+    }
+
+    /**
      * Provides exclusive access to this UI from outside a request handling
      * thread.
      * <p>
@@ -620,6 +669,10 @@ public class UI extends Component
      * exclusive access to this UI. If the session is not locked, the lock will
      * be acquired and the command is run right away. If the session is
      * currently locked, the command will be run before that lock is released.
+     * <p>
+     * With {@link VaadinSession#isUILockingEnabled() UI locking}, only the lock
+     * of this UI is held instead of the session lock, and the command is run
+     * before the UI lock is released.
      * <p>
      * RPC handlers for components inside this UI do not need to use this method
      * as the session is automatically locked by the framework during RPC
@@ -670,7 +723,7 @@ public class UI extends Component
             return null;
         }
 
-        return session.access(new ErrorHandlingCommand() {
+        ErrorHandlingCommand task = new ErrorHandlingCommand() {
             @Override
             public void execute() {
                 accessSynchronously(command, detachHandler);
@@ -710,7 +763,16 @@ public class UI extends Component
                     getLogger().error(e.getMessage(), e);
                 }
             }
-        });
+        };
+
+        if (session.isUILockingEnabled()) {
+            // Only this UI needs to be locked, the session lock is not used
+            FutureAccess future = new FutureAccess(session, task);
+            getInternals().getPendingAccessQueue().add(future);
+            getInternals().ensureAccessQueuePurged();
+            return future;
+        }
+        return session.access(task);
     }
 
     /**
@@ -890,7 +952,7 @@ public class UI extends Component
         if (session == null) {
             throw new UIDetachedException("Cannot push a detached UI");
         }
-        session.checkHasLock();
+        session.checkHasUIAccess(this);
 
         if (!getPushConfiguration().getPushMode().isEnabled()) {
             throw new IllegalStateException("Push not enabled");
@@ -904,7 +966,11 @@ public class UI extends Component
          * when the push would otherwise be ignored because there are no changes
          * to push.
          */
-        session.getService().runPendingAccessTasks(session);
+        if (session.isUILockingEnabled()) {
+            getInternals().runPendingAccessTasks();
+        } else {
+            session.getService().runPendingAccessTasks(session);
+        }
 
         if (!getInternals().isDirty()
                 || getInternals().getStateTree().isPreparingForResync()) {

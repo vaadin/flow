@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -38,6 +37,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -78,6 +79,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
 public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private static final String SESSION_NOT_LOCKED_MESSAGE = "Cannot access state in VaadinSession or UI without locking the session.";
+    private static final String UI_NOT_LOCKED_MESSAGE = "Cannot access state in UI without locking the UI. Use UI.access() to execute UI related code from a separate thread.";
     private static final Logger LOGGER = LoggerFactory
             .getLogger(VaadinSession.class.getName());
 
@@ -89,7 +91,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Locale value used for serialization. The signal is the runtime source of
      * truth; this field is only used to persist the value across serialization.
      */
-    private Locale locale = Locale.getDefault();
+    private volatile Locale locale = Locale.getDefault();
 
     private transient ValueSignal<Locale> localeSignal = new ValueSignal<>(
             locale);
@@ -98,21 +100,27 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Session wide error handler which is used by default if an error is left
      * unhandled.
      */
-    private ErrorHandler errorHandler = new DefaultErrorHandler();
-    private LinkedList<RequestHandler> requestHandlers = new LinkedList<>();
+    private volatile ErrorHandler errorHandler = new DefaultErrorHandler();
+    private final CopyOnWriteArrayList<RequestHandler> requestHandlers = new CopyOnWriteArrayList<>();
 
-    private int nextUIId = 0;
-    private transient Map<Integer, UI> uIs = new HashMap<>();
+    private final AtomicInteger nextUIId = new AtomicInteger();
 
-    protected WebBrowser browser = new WebBrowser();
+    /*
+     * Holds the UIs while no SessionUIService of a VaadinService is reachable,
+     * i.e. after deserialization until refreshTransients has been called, or
+     * when the service does not provide one (e.g. mocks in tests).
+     */
+    private transient SessionUIService localUIService;
 
-    private long cumulativeRequestDuration = 0;
+    protected volatile WebBrowser browser = new WebBrowser();
 
-    private long lastRequestDuration = -1;
+    private volatile long cumulativeRequestDuration = 0;
 
-    private long lastRequestTimestamp = System.currentTimeMillis();
+    private volatile long lastRequestDuration = -1;
 
-    private VaadinSessionState state = VaadinSessionState.OPEN;
+    private volatile long lastRequestTimestamp = System.currentTimeMillis();
+
+    private volatile VaadinSessionState state = VaadinSessionState.OPEN;
 
     private transient WrappedSession session;
 
@@ -121,6 +129,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     private transient Lock lock;
 
     private SessionLockCheckStrategy sessionLockCheckStrategy = SessionLockCheckStrategy.ASSERT;
+
+    private boolean uiLockingEnabled;
 
     /*
      * Pending tasks can't be serialized and the queue should be empty when the
@@ -158,6 +168,146 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     final protected void applyLockStrategy(SessionLockCheckStrategy strategy) {
         this.sessionLockCheckStrategy = Objects.requireNonNull(strategy);
+    }
+
+    /**
+     * Enables or disables locking per UI for this session, see
+     * {@link DeploymentConfiguration#isUILockingEnabled()}. Must be called
+     * before any UI is added to the session.
+     *
+     * @param uiLockingEnabled
+     *            {@code true} to protect UI state with a lock per UI,
+     *            {@code false} to use the session lock
+     */
+    final protected void applyUILocking(boolean uiLockingEnabled) {
+        this.uiLockingEnabled = uiLockingEnabled;
+    }
+
+    /**
+     * Checks whether the state of the UIs in this session is protected by a
+     * lock per UI instead of the session lock.
+     * <p>
+     * With UI locking, updating a UI (request handling and
+     * {@link UI#access(Command)}) only locks that UI and never blocks on the
+     * session lock. Code holding the session lock never blocks on a UI lock.
+     * Session state stays accessible while holding the lock of one of the
+     * session's UIs, see {@link #hasAccess()}.
+     *
+     * @return {@code true} if UI locking is enabled
+     * @see DeploymentConfiguration#isUILockingEnabled()
+     */
+    public boolean isUILockingEnabled() {
+        return uiLockingEnabled;
+    }
+
+    /**
+     * Checks whether the current thread may access the state of this session.
+     * This is the case if it holds the session lock, or, with
+     * {@link #isUILockingEnabled() UI locking}, the lock of one of the UIs of
+     * this session.
+     *
+     * @return {@code true} if the current thread may access session state
+     */
+    public boolean hasAccess() {
+        if (hasLock()) {
+            return true;
+        }
+        if (!uiLockingEnabled) {
+            return false;
+        }
+        UI current = UI.getCurrent();
+        if (current != null && current.getInternals().getSession() == this
+                && current.getInternals().hasUILock()) {
+            return true;
+        }
+        for (UI ui : getUIService().getUIs(this)) {
+            if (ui.getInternals().hasUILock()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Potentially checks whether the current thread may access the state of the
+     * given UI, and fails with a standard error message if not.
+     * <p>
+     * With {@link #isUILockingEnabled() UI locking}, the lock of the UI must be
+     * held. Otherwise, the session lock must be held. Whether and how the check
+     * is done is decided by the lock check strategy, see
+     * {@link #checkHasLock()}.
+     *
+     * @param ui
+     *            the UI to check, not {@code null}
+     */
+    public void checkHasUIAccess(UI ui) {
+        if (uiLockingEnabled) {
+            sessionLockCheckStrategy.checkHasLock(
+                    () -> ui.getInternals().hasUILock(), this,
+                    UI_NOT_LOCKED_MESSAGE);
+        } else {
+            checkHasLock();
+        }
+    }
+
+    /**
+     * Gets a UI by id without requiring any lock. The returned UI must only be
+     * accessed while holding its lock, see {@link #isUILockingEnabled()}.
+     *
+     * @param uiId
+     *            the UI id
+     * @return the UI, or {@code null} if not found
+     */
+    public UI findUIWithoutLock(int uiId) {
+        return getUIService().getUIById(this, uiId);
+    }
+
+    /**
+     * Gets the UIs of this session without requiring any lock. The returned UIs
+     * must only be accessed while holding their lock, see
+     * {@link #isUILockingEnabled()}.
+     *
+     * @return an unmodifiable, thread-safe view of the UIs
+     */
+    public Collection<UI> getUIsWithoutLock() {
+        return getUIService().getUIs(this);
+    }
+
+    /**
+     * Acquires the lock needed for accessing the state of the given UI: its UI
+     * lock if the session uses {@link #isUILockingEnabled() UI locking}, the
+     * session lock otherwise or if the UI is {@code null} or not attached to
+     * the session.
+     * <p>
+     * With UI locking, this must not be called while holding the session lock
+     * or the lock of another UI, see {@link UIInternals#lockUI()}.
+     * <p>
+     * Usage:
+     *
+     * <pre>
+     * Runnable unlock = VaadinSession.lockForUI(session, ui);
+     * try {
+     *     // access the UI
+     * } finally {
+     *     unlock.run();
+     * }
+     * </pre>
+     *
+     * @param session
+     *            the session, not {@code null}
+     * @param ui
+     *            the UI to lock, may be {@code null}
+     * @return the action that releases the acquired lock, not {@code null}
+     */
+    public static Runnable lockForUI(VaadinSession session, UI ui) {
+        if (session.isUILockingEnabled() && ui != null
+                && ui.getInternals().getSession() == session) {
+            UIInternals internals = ui.getInternals();
+            internals.lockUI();
+            return internals::unlockUI;
+        }
+        session.lock();
+        return session::unlock;
     }
 
     /**
@@ -430,6 +580,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * <p>
      * Setting the locale of a session will also override any custom locale
      * configured for all UIs in this session.
+     * <p>
+     * With {@link #isUILockingEnabled() UI locking}, UIs whose lock is not held
+     * by the current thread are updated asynchronously using
+     * {@link UI#access(Command)}.
      *
      * @param locale
      *            the locale to set, not <code>null</code>
@@ -442,6 +596,14 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         localeSignal.set(locale);
 
         getUIs().forEach(ui -> {
+            if (uiLockingEnabled && !ui.getInternals().hasUILock()) {
+                /*
+                 * Never wait for another UI lock here: the caller may hold the
+                 * session lock or the lock of another UI.
+                 */
+                ui.access(() -> ui.setLocale(locale));
+                return;
+            }
             Map<Class<?>, CurrentInstance> oldInstances = CurrentInstance
                     .setCurrent(ui);
             try {
@@ -489,7 +651,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public void addRequestHandler(RequestHandler handler) {
         checkHasLock();
-        requestHandlers.addFirst(handler);
+        requestHandlers.add(0, handler);
     }
 
     /**
@@ -617,7 +779,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public Collection<UI> getUIs() {
         checkHasLock();
-        return Collections.unmodifiableCollection(uIs.values());
+        return getUIService().getUIs(this);
     }
 
     /**
@@ -631,7 +793,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public UI getUIById(int uiId) {
         checkHasLock();
-        return uIs.get(uiId);
+        return getUIService().getUIById(this, uiId);
     }
 
     /**
@@ -712,7 +874,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         assert ui != null : "Removed UI cannot be null";
         assert UI.getCurrent().getUIId() == ui.getUIId() : "UIs don't match";
         ui.getInternals().setSession(null);
-        uIs.remove(ui.getUIId());
+        getUIService().removeUI(this, ui);
     }
 
     /**
@@ -821,7 +983,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @see UI#push()
      */
     public void unlock() {
-        checkHasLock();
+        sessionLockCheckStrategy.checkHasLock(this::hasLock, this,
+                SESSION_NOT_LOCKED_MESSAGE);
         boolean ultimateRelease = false;
         try {
             /*
@@ -832,7 +995,15 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                 ultimateRelease = true;
                 getService().runPendingAccessTasks(this);
 
-                for (UI ui : getUIs()) {
+                /*
+                 * With UI locking, pending UI changes are pushed when the UI
+                 * lock is released. Pushing here would need the UI locks, which
+                 * must not be waited for while holding the session lock.
+                 */
+                Collection<UI> uisToPush = uiLockingEnabled
+                        ? Collections.emptyList()
+                        : getUIs();
+                for (UI ui : uisToPush) {
                     if (ui.getPushConfiguration()
                             .getPushMode() == PushMode.AUTOMATIC) {
                         Map<Class<?>, CurrentInstance> oldCurrent = CurrentInstance
@@ -957,7 +1128,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public int getNextUIid() {
         checkHasLock();
-        return nextUIId++;
+        return nextUIId.getAndIncrement();
     }
 
     /**
@@ -977,7 +1148,34 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                     "The UI belongs to a different session");
         }
 
-        uIs.put(ui.getUIId(), ui);
+        getUIService().addUI(this, ui);
+    }
+
+    /**
+     * Gets the service holding the UIs of this session. This is the
+     * {@link SessionUIService} of the {@link VaadinService} when available.
+     * Otherwise a session local fallback is used, whose UIs are moved over as
+     * soon as the service becomes available.
+     *
+     * @return the UI service to use, not {@code null}
+     */
+    private SessionUIService getUIService() {
+        VaadinService vaadinService = getService();
+        SessionUIService uiService = vaadinService == null ? null
+                : vaadinService.getSessionUIService();
+        if (uiService == null) {
+            if (localUIService == null) {
+                localUIService = new SessionUIService();
+            }
+            return localUIService;
+        }
+        if (localUIService != null) {
+            for (UI ui : localUIService.removeSession(this)) {
+                uiService.addUI(this, ui);
+            }
+            localUIService = null;
+        }
+        return uiService;
     }
 
     public VaadinService getService() {
@@ -1185,7 +1383,11 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             requestHandlers.remove(null);
             destroyListeners.remove(null);
 
-            uIs = (Map<Integer, UI>) stream.readObject();
+            Map<Integer, UI> uis = (Map<Integer, UI>) stream.readObject();
+            // The service is not yet known, keep the UIs locally until
+            // refreshTransients is called
+            localUIService = new SessionUIService();
+            uis.values().forEach(ui -> localUIService.addUI(this, ui));
             resourceRegistry = (StreamResourceRegistry) stream.readObject();
             pendingAccessQueue = new ConcurrentLinkedQueue<>();
             localeSignal = new ValueSignal<>(locale);
@@ -1216,7 +1418,11 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
             stream.defaultWriteObject();
             if (serializeUIs) {
-                stream.writeObject(uIs);
+                // Same stream format as before: Map<Integer, UI>
+                Map<Integer, UI> uis = new HashMap<>();
+                getUIService().getUIs(this)
+                        .forEach(ui -> uis.put(ui.getUIId(), ui));
+                stream.writeObject(uis);
                 stream.writeObject(resourceRegistry);
             } else {
                 stream.writeObject(new HashMap<>());
@@ -1244,6 +1450,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         session = wrappedSession;
         service = vaadinService;
         refreshLock();
+        // Moves UIs restored by deserialization to the service
+        getUIService();
     }
 
     /**

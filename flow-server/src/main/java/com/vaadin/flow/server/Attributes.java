@@ -16,7 +16,7 @@
 package com.vaadin.flow.server;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The {@link Attributes} class represents a set of attributes.
@@ -27,7 +27,7 @@ import java.util.HashMap;
  */
 public class Attributes implements Serializable {
 
-    private final HashMap<String, Object> attributes = new HashMap<>();
+    private final ConcurrentHashMap<String, Object> attributes = new ConcurrentHashMap<>();
 
     /**
      * Stores a value in this set.
