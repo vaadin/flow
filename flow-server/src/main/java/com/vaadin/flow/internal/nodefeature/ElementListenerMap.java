@@ -79,13 +79,6 @@ public class ElementListenerMap extends NodeMap {
             .of(DebouncePhase.LEADING);
 
     /**
-     * Starts the key of a declared snippet. No JavaScript expression starts
-     * with <code>@</code>, so the key of a snippet is never equal to the key of
-     * an expression.
-     */
-    private static final String SNIPPET_KEY_PREFIX = "@";
-
-    /**
      * {@code event} or {@code element}, followed by any number of {@code .name}
      * or {@code ?.name} segments. The client reads such a path without
      * compiling it, see {@code PropertyPathExpression.ts}, which matches the
@@ -137,6 +130,13 @@ public class ElementListenerMap extends NodeMap {
      * {@link ExpressionEntry}, but the client is sent the identifier of the
      * function instead of compiling the expression, see
      * {@link BundledEventData}.
+     * <p>
+     * When the bundle has no function for the identifier, for example because
+     * the class that declares the value changed after the build, the client
+     * compiles the key as it does for an {@link ExpressionEntry}. If compiling
+     * is blocked too, by a Content Security Policy without
+     * <code>unsafe-eval</code>, the event is not sent, rather than sent with no
+     * value for the key.
      *
      * @param key
      *            the expression
@@ -192,7 +192,9 @@ public class ElementListenerMap extends NodeMap {
         }
 
         static SnippetEntry of(DomEventFilter filter) {
-            return new SnippetEntry(SNIPPET_KEY_PREFIX + filter.getSnippetKey(),
+            return new SnippetEntry(
+                    JsonConstants.EVENT_SNIPPET_KEY_PREFIX
+                            + filter.getSnippetKey(),
                     filter.getDeclaredCall(), null, true);
         }
 
@@ -244,7 +246,8 @@ public class ElementListenerMap extends NodeMap {
          * effect and the captures. The captures are encoded now, so that an
          * element is sent with the id that it has now. An expression that the
          * bundle has a function for is sent like a snippet without captures, so
-         * the client runs the function instead of compiling the key.
+         * the client runs the function instead of compiling the key, and
+         * compiles the key only when the bundle has no such function.
          *
          * @return the debounce settings for an expression, or the settings
          *         object for a snippet, not <code>null</code>
@@ -1012,7 +1015,8 @@ public class ElementListenerMap extends NodeMap {
      */
     public static String getEventDataKey(DomEventData<?> eventData) {
         Objects.requireNonNull(eventData, "Event data cannot be null");
-        return SNIPPET_KEY_PREFIX + eventData.getSnippetKey();
+        return JsonConstants.EVENT_SNIPPET_KEY_PREFIX
+                + eventData.getSnippetKey();
     }
 
     /**

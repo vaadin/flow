@@ -253,6 +253,59 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
 
       expect(harness.collectedEventData[0]).to.deep.equal({ [expression]: 'click true' });
     });
+
+    it('does not send the event for a bundled expression missing from the bundle', () => {
+      // An expression of its own, as a compiled expression is cached
+      const expression = 'event.type + " blocked"';
+      const errors: string[] = [];
+      const reported: unknown[] = [];
+      const originalError = console.error;
+      const onerror = window.onerror;
+      console.error = (message: unknown) => errors.push(String(message));
+      // The browser reports the error of a listener as uncaught; keep it from
+      // failing the case
+      window.onerror = (...args) => {
+        reported.push(args[4]);
+        return true;
+      };
+      try {
+        bindWithClickSettings({ 'event.type': false, [expression]: { f: 'missing-bundled-blocked', d: false } });
+
+        element.click();
+      } finally {
+        console.error = originalError;
+        window.onerror = onerror;
+      }
+
+      expect(harness.collectedNodes).to.have.length(0);
+      expect(reported).to.have.length(1);
+      expect(reported[0]).to.be.instanceOf(EvalError);
+      expect(errors[0]).to.contain(`@EventData value "${expression}"`);
+      expect(errors[0]).to.contain('the event is not sent');
+    });
+  });
+
+  it('compiles a bundled expression missing from the bundle and warns once', () => {
+    // An expression of its own, as a compiled expression is cached
+    const expression = 'event.type + " compiled"';
+    const warnings: string[] = [];
+    const originalWarn = console.warn;
+    console.warn = (message: unknown) => warnings.push(String(message));
+    try {
+      bindWithClickSettings({ [expression]: { f: 'missing-bundled-compiled', d: false } });
+
+      element.click();
+      element.click();
+    } finally {
+      console.warn = originalWarn;
+    }
+
+    expect(harness.collectedEventData).to.deep.equal([
+      { [expression]: 'click compiled' },
+      { [expression]: 'click compiled' }
+    ]);
+    expect(warnings).to.have.length(1);
+    expect(warnings[0]).to.contain(`@EventData value "${expression}"`);
   });
 
   it('runs a declared snippet with its captures, the event and the element', () => {
