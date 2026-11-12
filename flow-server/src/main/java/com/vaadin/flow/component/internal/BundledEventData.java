@@ -120,8 +120,9 @@ public final class BundledEventData {
 
     private static boolean isBundled(String eventData) {
         // A value mapped to a state node is sent with a prefix that tells the
-        // client to map what the expression returns, which a function of the
-        // bundle does not do
+        // client to map what the expression returns. Not bundled yet: the
+        // settings of a bundled value would need EVENT_SETTINGS_MAP_ELEMENT,
+        // and the compile fallback of the client the prefix stripped
         return !eventData.startsWith(JsonConstants.MAP_STATE_NODE_EVENT_DATA)
                 && ElementListenerMap.isCompiledByClient(eventData);
     }
