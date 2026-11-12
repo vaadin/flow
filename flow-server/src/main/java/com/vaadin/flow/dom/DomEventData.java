@@ -45,7 +45,10 @@ import com.vaadin.flow.js.JsSnippets;
  * <p>
  * In the listener, read the value with
  * {@link DomEvent#getEventData(DomEventData)}. The value has the type that the
- * method declares:
+ * method declares. For <code>DomEventData&lt;Element&gt;</code>, the expression
+ * returns a DOM node, and the value is the closest {@link Element} of the
+ * server that is an ancestor of the node or the node itself, see
+ * {@link DomEvent#getEventDataElement(DomEventData)}:
  *
  * <pre>
  * &#64;JsDefinition
@@ -192,5 +195,19 @@ public final class DomEventData<T> implements JsSnippet {
      */
     JavaType getValueType() {
         return valueType;
+    }
+
+    /**
+     * Checks whether the value of this event data is an {@link Element}. The
+     * browser then sends the closest element that the server knows instead of
+     * the DOM node that the expression returns.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @return <code>true</code> if the value type is {@link Element},
+     *         <code>false</code> otherwise
+     */
+    public boolean isElementValue() {
+        return valueType.getRawClass() == Element.class;
     }
 }

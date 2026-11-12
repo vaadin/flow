@@ -128,6 +128,11 @@ public interface DomListenerRegistration extends Registration {
      * The browser does not compile any JavaScript from a string, unlike with
      * {@link #addEventData(String)}. So this also works with a Content Security
      * Policy that does not allow <code>unsafe-eval</code>.
+     * <p>
+     * Event data of type <code>DomEventData&lt;Element&gt;</code> returns a DOM
+     * node. The browser sends the closest element that the server knows, and
+     * {@link DomEvent#getEventDataElement(DomEventData)} returns it, like
+     * {@link #addEventDataElement(String)} does for an expression.
      *
      * @param eventData
      *            the event data to send, not <code>null</code>
@@ -471,6 +476,12 @@ public interface DomListenerRegistration extends Registration {
      * In case you want to get the {@code event.target} element to the server
      * side, use the {@link #mapEventTargetElement()} method to get it mapped
      * and the {@link DomEvent#getEventTarget()} to fetch the element.
+     * <p>
+     * The browser compiles the expression from a string. To get an element with
+     * a Content Security Policy that does not allow <code>unsafe-eval</code>,
+     * declare <code>DomEventData&lt;Element&gt;</code> in a
+     * {@link com.vaadin.flow.js.JsDefinition} interface and use
+     * {@link #addEventData(DomEventData)}.
      *
      * @param eventData
      *            definition for element that should be passed back to the
