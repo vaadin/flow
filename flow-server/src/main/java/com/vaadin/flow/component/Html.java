@@ -530,6 +530,7 @@ public class Html extends Component {
      *
      * @param htmlSignal
      *            the signal to bind, not <code>null</code>
+     * @return the binding, which can be used to react to updates
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @since 25.1

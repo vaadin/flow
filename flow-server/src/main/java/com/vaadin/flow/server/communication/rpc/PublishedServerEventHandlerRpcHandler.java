@@ -65,6 +65,19 @@ import com.vaadin.flow.shared.JsonConstants;
 public class PublishedServerEventHandlerRpcHandler
         extends AbstractRpcInvocationHandler {
 
+    /**
+     * Holds the result of looking up the Polymer template event handler, which
+     * is a property of the deployment. Without the holder a missing handler
+     * (the usual case) cannot be remembered, and the lookup would then scan the
+     * classpath with a {@link java.util.ServiceLoader} for every decoded RPC
+     * argument.
+     */
+    private record PolymerEventHandlerHolder(
+            DeprecatedPolymerPublishedEventHandler handler)
+            implements
+                Serializable {
+    }
+
     private static final Collection<RpcDecoder> DECODERS = loadDecoders();
 
     @Override
@@ -314,8 +327,11 @@ public class PublishedServerEventHandlerRpcHandler
                 VaadinContext context = ui.get().getSessionOrThrow()
                         .getService().getContext();
                 DeprecatedPolymerPublishedEventHandler handler = context
-                        .getAttribute(Lookup.class)
-                        .lookup(DeprecatedPolymerPublishedEventHandler.class);
+                        .getAttribute(PolymerEventHandlerHolder.class,
+                                () -> new PolymerEventHandlerHolder(context
+                                        .getAttribute(Lookup.class)
+                                        .lookup(DeprecatedPolymerPublishedEventHandler.class)))
+                        .handler();
                 if (handler != null && handler.isTemplateModelValue(instance,
                         argValue, convertedType)) {
                     return handler.getTemplateItem(instance, argValue,

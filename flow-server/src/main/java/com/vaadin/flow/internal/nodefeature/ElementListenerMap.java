@@ -123,6 +123,9 @@ public class ElementListenerMap extends NodeMap {
     /**
      * A JavaScript expression. The key is the expression itself, for example
      * <code>event.clientX</code>.
+     *
+     * @param key
+     *            the expression
      */
     private record ExpressionEntry(String key) implements Entry {
     }

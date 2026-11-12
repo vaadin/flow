@@ -338,6 +338,8 @@ public class ServerRpcHandler implements Serializable {
      * @throws InvalidUIDLSecurityKeyException
      *             If the received security key does not match the one stored in
      *             the session.
+     * @throws MessageIdSyncException
+     *             If the client sends a message ID the server does not expect.
      */
     public void handleRpc(UI ui, Reader reader, VaadinRequest request)
             throws IOException, InvalidUIDLSecurityKeyException,
@@ -358,6 +360,8 @@ public class ServerRpcHandler implements Serializable {
      * @throws InvalidUIDLSecurityKeyException
      *             If the received security key does not match the one stored in
      *             the session.
+     * @throws MessageIdSyncException
+     *             If the client sends a message ID the server does not expect.
      * @since 24.5.6
      */
     public void handleRpc(UI ui, String message, VaadinRequest request)

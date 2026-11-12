@@ -17,7 +17,6 @@ package com.vaadin.flow.test.cspstrict.dom;
 
 import java.util.regex.Pattern;
 
-import org.junit.jupiter.api.Disabled;
 import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
@@ -27,11 +26,10 @@ import com.vaadin.flow.test.cspstrict.AbstractCspStrictIT;
 import com.vaadin.testbench.BrowserTest;
 
 /**
- * Event data expressions are still compiled by the browser, and the server
- * rejects them in the strict mode, so the view does not even render. Enabled
- * when the property paths of event data are sent without JavaScript.
+ * Event data that is a property path of the event is read in the browser
+ * without compiling JavaScript, for a component event and for a DOM event
+ * listener.
  */
-@Disabled("Blocked by https://github.com/vaadin/flow/issues/26152")
 public class ClickIT extends AbstractCspStrictIT {
 
     @Override
