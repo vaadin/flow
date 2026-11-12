@@ -52,16 +52,6 @@ public abstract class AbstractCspStrictIT extends AbstractBrowserIT {
             .parseInt(System.getProperty("serverPort", "8890"));
 
     /**
-     * Reason of the tests disabled because no page renders yet: the constructor
-     * of {@code Page} registers event data for the browser details, which the
-     * strict mode rejects, so creating the {@code UI} fails for every request.
-     * Goes away with the first fix of
-     * https://github.com/vaadin/flow/issues/26152.
-     */
-    public static final String NO_UI_IN_STRICT_MODE = "Blocked by https://github.com/vaadin/flow/issues/26152: "
-            + "Page's constructor registers event data, so no UI can be created in strict mode";
-
-    /**
      * Gets the path of the view under test, starting with a "/".
      *
      * @return the path appended to {@link #getRootURL()}

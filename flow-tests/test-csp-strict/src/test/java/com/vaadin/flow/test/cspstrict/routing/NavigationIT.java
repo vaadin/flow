@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.test.cspstrict.routing;
 
-import org.junit.jupiter.api.Disabled;
 import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
@@ -23,7 +22,6 @@ import com.vaadin.flow.component.html.testbench.AnchorElement;
 import com.vaadin.flow.test.cspstrict.AbstractCspStrictIT;
 import com.vaadin.testbench.BrowserTest;
 
-@Disabled(AbstractCspStrictIT.NO_UI_IN_STRICT_MODE)
 public class NavigationIT extends AbstractCspStrictIT {
 
     @Override
