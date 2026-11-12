@@ -76,7 +76,7 @@ public interface DomListenerRegistration extends Registration {
      * @throws CspViolationException
      *             in the {@link CspMode#STRICT} Content Security Policy mode,
      *             unless the expression is a property path
-     * @see #addEventDataElement(String) for mapping an element
+     * @see #addEventDataElementPath(String) for mapping an element
      * @see #mapEventTargetElement() to map the {@code event.target} to an
      *      element
      * @deprecated JavaScript that is sent as a string is compiled by the

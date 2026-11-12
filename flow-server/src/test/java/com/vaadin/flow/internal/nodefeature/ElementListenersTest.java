@@ -1513,6 +1513,26 @@ public class ElementListenersTest
     }
 
     @Test
+    void addEventData_simpleBean_propertiesFromGettersAdded() {
+        class SimpleEventData {
+            private String message;
+            private int code;
+
+            public String getMessage() {
+                return message;
+            }
+
+            public int getCode() {
+                return code;
+            }
+        }
+
+        ns.add("custom", noOp).addEventData(SimpleEventData.class);
+
+        assertEquals(Set.of("message", "code"), getExpressions("custom"));
+    }
+
+    @Test
     void addEventDetail_propertyNotAsciiIdentifier_added() {
         record Detail(int a, int größe) {
         }
