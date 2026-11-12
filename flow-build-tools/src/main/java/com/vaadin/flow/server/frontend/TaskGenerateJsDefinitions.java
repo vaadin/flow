@@ -256,12 +256,18 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         } catch (IllegalArgumentException e) {
             // Left out rather than failing the build, as for a definition.
             // Listening to the event fails at runtime with the same message.
-            // Debug only: a subclass that inherits the annotation and is only
-            // fired from the server, without a DOM event constructor, is
-            // common and no mistake.
-            getLogger().debug(
-                    "Leaving the event data of {} out of the bundle: {}",
-                    eventType.getName(), e.getMessage());
+            if (eventType.getDeclaredAnnotation(DomEvent.class) != null) {
+                getLogger().warn(
+                        "Leaving the event data of {} out of the bundle: {}",
+                        eventType.getName(), e.getMessage());
+            } else {
+                // A subclass that inherits the annotation and is only fired
+                // from the server, without a DOM event constructor, is common
+                // and no mistake
+                getLogger().debug(
+                        "Leaving the event data of {} out of the bundle: {}",
+                        eventType.getName(), e.getMessage());
+            }
             return List.of();
         }
     }
