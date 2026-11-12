@@ -340,6 +340,27 @@ class DevLoopRedefinerTest {
                 DevLoopRedefiner.frontendDependencies(EditedOffsetEvent.class));
     }
 
+    @DomEvent("offset")
+    public static class UnlistenableOffsetEvent
+            extends ComponentEvent<Component> {
+        public UnlistenableOffsetEvent(Component source, boolean fromClient,
+                double offset) { // NOSONAR
+            super(source, fromClient);
+        }
+    }
+
+    @Test
+    void frontendDependencies_eventNoListenerCanUse_isStillAChange() {
+        // A parameter without @EventData: the build leaves the event out, and
+        // the edit still has to be told apart from the one before
+        String imports = DevLoopRedefiner
+                .frontendDependencies(UnlistenableOffsetEvent.class);
+
+        assertTrue(imports.startsWith("eventdata:invalid:"), imports);
+        assertNotEquals(imports,
+                DevLoopRedefiner.frontendDependencies(OffsetEvent.class));
+    }
+
     @Test
     void frontendDependencies_seesBuildTimeImportsOnANonComponent() {
         String imports = DevLoopRedefiner

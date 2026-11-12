@@ -61,7 +61,6 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.internal.BundledEventData;
-import com.vaadin.flow.component.internal.DomEventInfo;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandler;
@@ -1506,8 +1505,10 @@ final class DevLoopRedefiner {
     @SuppressWarnings("unchecked")
     private static List<String> eventDataFingerprints(Class<?> type) {
         try {
-            return new DomEventInfo((Class<? extends ComponentEvent<?>>) type)
-                    .getBundledEventData().stream()
+            return BundledEventData
+                    .getBundledEventData(
+                            (Class<? extends ComponentEvent<?>>) type)
+                    .stream()
                     .map(expression -> "eventdata:"
                             + BundledEventData.getFunctionId(expression))
                     .toList();
