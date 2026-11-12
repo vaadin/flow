@@ -477,10 +477,14 @@ public interface DomListenerRegistration extends Registration {
      * side, use the {@link #mapEventTargetElement()} method to get it mapped
      * and the {@link DomEvent#getEventTarget()} to fetch the element.
      * <p>
-     * The browser compiles the expression from a string. To get an element with
-     * a Content Security Policy that does not allow <code>unsafe-eval</code>,
-     * declare <code>DomEventData&lt;Element&gt;</code> in a
-     * {@link com.vaadin.flow.js.JsDefinition} interface and use
+     * A property path, which is <code>event</code> or <code>element</code>
+     * followed by property names separated with <code>.</code> or
+     * <code>?.</code>, such as <code>event.target.parentElement</code>, is read
+     * in the browser without compiling it. Any other expression is compiled by
+     * the browser from a string, so it does not work with a Content Security
+     * Policy that does not allow <code>unsafe-eval</code>. To get such an
+     * element without that, declare <code>DomEventData&lt;Element&gt;</code> in
+     * a {@link com.vaadin.flow.js.JsDefinition} interface and use
      * {@link #addEventData(DomEventData)}.
      *
      * @param eventData
