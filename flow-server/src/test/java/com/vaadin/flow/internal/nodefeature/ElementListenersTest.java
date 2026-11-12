@@ -1442,17 +1442,16 @@ public class ElementListenersTest
     }
 
     @Test
-    void addEventData_topLevelPropertyNotEventOrElement_throwsWithoutAdding() {
+    void addEventData_topLevelPropertyNotEventOrElement_added() {
         record EventDetails(int button) {
         }
         record MixedEventData(EventDetails event, String message) {
         }
 
-        DomListenerRegistration registration = ns.add("custom", noOp);
+        ns.add("custom", noOp).addEventData(MixedEventData.class);
 
-        assertThrows(IllegalArgumentException.class,
-                () -> registration.addEventData(MixedEventData.class));
-        assertEquals(Set.of(), getExpressions("custom"));
+        assertEquals(Set.of("event.button", "message"),
+                getExpressions("custom"));
     }
 
     @Test

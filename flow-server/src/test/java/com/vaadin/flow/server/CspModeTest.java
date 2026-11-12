@@ -96,6 +96,12 @@ class CspModeTest {
         JsFunction locateFirstChild();
     }
 
+    record AsciiDetail(int x, String label) {
+    }
+
+    record NonAsciiDetail(int größe) {
+    }
+
     @Tag("div")
     private static class Clickable extends Component
             implements ClickNotifier<Clickable> {
@@ -165,6 +171,10 @@ class CspModeTest {
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).addEventDataElement("document.head")),
+                // Not a property path the browser reads without compiling
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ui.getElement().addEventListener("click", e -> {
+                        }).addEventDetail(NonAsciiDetail.class)),
                 call(DomListenerRegistration.class, "setFilter",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).setFilter("event.x == 1")),
@@ -220,6 +230,7 @@ class CspModeTest {
             registration.addEventDataPath("event.detail?.value");
             registration.addEventDataElementPath("event.target.parentElement");
             registration.addEventDetail();
+            registration.addEventDetail(AsciiDetail.class);
             registration.addEventDataElement("event.target.parentElement");
             registration.setFilter("event.isTrusted");
             // The client runs these without compiling them, also when Flow
