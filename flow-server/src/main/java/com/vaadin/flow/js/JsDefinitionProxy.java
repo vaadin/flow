@@ -609,7 +609,9 @@ public final class JsDefinitionProxy {
     /**
      * Implements a snippet type of the application, whose only methods are the
      * ones of {@link Object}: two snippets are equal when they are declared by
-     * equal calls.
+     * the same method with equal arguments. An array argument, such as the
+     * trailing arguments of a variadic method, is compared by its current
+     * contents, as for a declared {@link JsFunction}.
      */
     private record DeclaredSnippetHandler(Class<?> snippetType,
             JsCall call) implements InvocationHandler, Serializable {
@@ -627,6 +629,23 @@ public final class JsDefinitionProxy {
                     + call.definitionType().getSimpleName() + "."
                     + call.methodName() + "]";
             };
+        }
+
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            return obj instanceof DeclaredSnippetHandler other
+                    && snippetType == other.snippetType
+                    && call.definitionType() == other.call.definitionType()
+                    && call.methodName().equals(other.call.methodName())
+                    && Arrays.deepEquals(call.flattenArguments().toArray(),
+                            other.call.flattenArguments().toArray());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(snippetType, call.definitionType(),
+                    call.methodName(),
+                    Arrays.deepHashCode(call.flattenArguments().toArray()));
         }
     }
 

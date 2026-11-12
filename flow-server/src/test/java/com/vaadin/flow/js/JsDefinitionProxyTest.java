@@ -189,6 +189,9 @@ class JsDefinitionProxyTest {
 
         @JsExpression("return html`${$0}`;")
         TemplateSnippet echo(Object value);
+
+        @JsExpression("return html`${$0.join(' ')}`;")
+        TemplateSnippet join(String... parts);
     }
 
     interface ActionSnippet extends JsSnippet {
@@ -564,6 +567,12 @@ class JsDefinitionProxyTest {
         assertTrue(label.toString().contains("TemplateSnippet"),
                 label.toString());
         assertEquals(label, SerializationUtils.roundtrip(label));
+        TemplateSnippet joined = templates.join("a", "b");
+        assertEquals(templates.join("a", "b"), joined,
+                "trailing arguments should be compared by their contents");
+        assertEquals(templates.join("a", "b").hashCode(), joined.hashCode());
+        assertNotEquals(templates.join("a", "c"), joined);
+        assertEquals(joined, SerializationUtils.roundtrip(joined));
         SelfReference unencodable = new SelfReference();
         assertThrows(RuntimeException.class, () -> templates.echo(unencodable),
                 "a capture the client can not receive should fail when declared");
