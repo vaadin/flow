@@ -144,6 +144,29 @@ class DevLoopCliContractIT {
     }
 
     @Test
+    void status_withALivePidItCannotConfirm_reapsTheRecord(@TempDir Path app)
+            throws IOException {
+        // Without a start time to compare, a live pid may just as well belong
+        // to an unrelated process that reused it. Keeping the record would
+        // wedge every command on it until it was deleted by hand, so it is
+        // reaped once the grace an exiting daemon gets has run out. A ps that
+        // cannot report a start time, as on Git Bash, takes the same path.
+        Files.writeString(app.resolve("pom.xml"), "<project/>");
+        Path handshake = app.resolve(".vaadin/daemon.properties");
+        Files.createDirectories(handshake.getParent());
+        Files.writeString(handshake, "port=" + unusedPort()
+                + "\ntoken=stale\npid=" + ProcessHandle.current().pid() + "\n");
+
+        VaadinDevCli.of(AbstractDevLoopIT.APP)
+                .run("--app", app.toString(), "status").assertExitCode(0)
+                .assertOutputContains("its record was removed")
+                .assertOutputContains("no daemon running")
+                .assertOutputDoesNotContain("running but not answering");
+        assertFalse(Files.exists(handshake),
+                "status kept the record of a pid it cannot confirm");
+    }
+
+    @Test
     void status_whileTheDaemonExits_waitsForIt(@TempDir Path app)
             throws IOException, InterruptedException {
         // A daemon that has answered a shutdown has closed its port but takes

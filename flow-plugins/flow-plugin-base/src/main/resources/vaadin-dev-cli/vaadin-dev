@@ -220,14 +220,17 @@ read_prop() { # $1=key
 # Whether the daemon the handshake records is still running, decided from its
 # process. A live pid is not enough: once the daemon is killed its pid can be
 # handed to an unrelated process, so the recorded start time has to match too,
-# within ps's one-second resolution - the same check the daemon makes.
+# within ps's one-second resolution - the same check the daemon makes. Returns
+# 0 when it is, 1 when it is not, and 2 when the pid is alive but nothing tells
+# it apart from a reused one: no start time recorded, or a ps without -o and -p,
+# such as Git Bash's or busybox's.
 recorded_daemon_alive() { # $1=pid
     kill -0 "$1" 2>/dev/null || return 1
     local recorded elapsed days=0 h=0 m=0 sec
-    recorded="$(read_prop startEpochMillis)" || return 0
-    (( recorded > 0 )) || return 0
+    recorded="$(read_prop startEpochMillis)" || return 2
+    (( recorded > 0 )) || return 2
     elapsed="$(ps -o etime= -p "$1" 2>/dev/null | tr -d ' ')"
-    [[ "$elapsed" =~ ^(([0-9]+)-)?(([0-9]+):)?([0-9]+):([0-9]+)$ ]] || return 0
+    [[ "$elapsed" =~ ^(([0-9]+)-)?(([0-9]+):)?([0-9]+):([0-9]+)$ ]] || return 2
     days="${BASH_REMATCH[2]:-0}"; h="${BASH_REMATCH[4]:-0}"
     m="${BASH_REMATCH[5]}"; sec="${BASH_REMATCH[6]}"
     elapsed=$(( ((10#$days * 24 + 10#$h) * 60 + 10#$m) * 60 + 10#$sec ))
@@ -237,16 +240,16 @@ recorded_daemon_alive() { # $1=pid
 }
 
 # Whether the recorded daemon is still running once it has had a moment to
-# exit. A daemon that has just answered a shutdown, or shut itself down when
-# idle, has closed its port but not yet exited and removed its handshake, and
-# is not wedged.
+# exit, answered as recorded_daemon_alive does. A daemon that has just answered
+# a shutdown, or shut itself down when idle, has closed its port but not yet
+# exited and removed its handshake, and is not wedged.
 recorded_daemon_lingers() { # $1=pid
-    local end=$(( SECONDS + 5 ))
-    while recorded_daemon_alive "$1"; do
-        (( SECONDS >= end )) && return 0
+    local end=$(( SECONDS + 5 )) alive
+    while :; do
+        recorded_daemon_alive "$1"; alive=$?
+        (( alive == 1 || SECONDS >= end )) && return "$alive"
         sleep 0.1
     done
-    return 1
 }
 
 java_bin() {
@@ -689,13 +692,24 @@ main() {
     if (( status == 99 )); then
         local recorded
         recorded="$(read_prop pid || true)"
-        if [[ -n "$recorded" ]] && recorded_daemon_lingers "$recorded"; then
+        local lingers=1
+        [[ -n "$recorded" ]] && { recorded_daemon_lingers "$recorded"; lingers=$?; }
+        if (( lingers == 0 )); then
             echo "vaadin-dev: the daemon recorded for $ROOT (pid $recorded)" \
                  "is running but not answering. Kill pid $recorded, then" \
                  "'vaadin-dev start' spawns a fresh one." >&2
             exit 70
         fi
-        if [[ -f "$HANDSHAKE" ]]; then
+        # Unconfirmed, the pid may well belong to an unrelated process now, and
+        # keeping the record would wedge every command on it for good.
+        if (( lingers == 2 )); then
+            echo "vaadin-dev: the daemon recorded for $ROOT (pid $recorded)" \
+                 "does not answer, and its start time cannot be read here to" \
+                 "tell it from an unrelated process that reused the pid, so" \
+                 "its record was removed. If that pid is a wedged daemon, kill" \
+                 "it before 'vaadin-dev start'." >&2
+            rm -f "$HANDSHAKE"
+        elif [[ -f "$HANDSHAKE" ]]; then
             echo "vaadin-dev: the daemon recorded for $ROOT (pid" \
                  "${recorded:-unknown}) is gone and left its handshake behind," \
                  "so it was killed rather than shut down - the application it" \

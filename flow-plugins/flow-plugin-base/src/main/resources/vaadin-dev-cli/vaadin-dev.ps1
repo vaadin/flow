@@ -223,32 +223,35 @@ function Read-Handshake([string] $key) {
 # Whether the daemon the handshake records is still running, decided from its
 # process. A live pid is not enough: once the daemon is killed its pid can be
 # handed to an unrelated process, so the recorded start time has to match too -
-# the same check the daemon makes.
-function Test-RecordedDaemonAlive([int] $processId) {
+# the same check the daemon makes. Answers 'alive', 'gone', or 'unconfirmed'
+# when the pid is alive but nothing tells it apart from a reused one: no start
+# time recorded, or one the process does not reveal.
+function Get-RecordedDaemonState([int] $processId) {
     try { $process = Get-Process -Id $processId -ErrorAction Stop }
-    catch { return $false }
+    catch { return 'gone' }
     $recorded = 0L
     if (-not [long]::TryParse((Read-Handshake 'startEpochMillis'), [ref]$recorded) -or
             $recorded -le 0) {
-        return $true
+        return 'unconfirmed'
     }
-    try { $started = $process.StartTime } catch { return $true }
-    if (-not $started) { return $true }
+    try { $started = $process.StartTime } catch { return 'unconfirmed' }
+    if (-not $started) { return 'unconfirmed' }
     $actual = ([DateTimeOffset] $started).ToUnixTimeMilliseconds()
-    return [Math]::Abs($actual - $recorded) -lt 2000
+    if ([Math]::Abs($actual - $recorded) -lt 2000) { return 'alive' }
+    return 'gone'
 }
 
 # Whether the recorded daemon is still running once it has had a moment to
-# exit. A daemon that has just answered a shutdown, or shut itself down when
-# idle, has closed its port but not yet exited and removed its handshake, and
-# is not wedged.
-function Test-RecordedDaemonLingers([int] $processId) {
+# exit, answered as Get-RecordedDaemonState does. A daemon that has just
+# answered a shutdown, or shut itself down when idle, has closed its port but
+# not yet exited and removed its handshake, and is not wedged.
+function Get-RecordedDaemonLingering([int] $processId) {
     $clock = [Diagnostics.Stopwatch]::StartNew()
-    while (Test-RecordedDaemonAlive $processId) {
-        if ($clock.Elapsed.TotalSeconds -ge 5) { return $true }
+    while ($true) {
+        $state = Get-RecordedDaemonState $processId
+        if ($state -eq 'gone' -or $clock.Elapsed.TotalSeconds -ge 5) { return $state }
         Start-Sleep -Milliseconds 100
     }
-    return $false
 }
 
 function Get-JavaBinary {
@@ -697,17 +700,26 @@ try {
     # stopped it.
     if ($status -eq 99) {
         $recorded = Read-Handshake 'pid'
-        $alive = $false
+        $state = 'gone'
         if ($recorded) {
-            $alive = Test-RecordedDaemonLingers ([int]$recorded)
+            $state = Get-RecordedDaemonLingering ([int]$recorded)
         }
-        if ($alive) {
+        if ($state -eq 'alive') {
             [Console]::Error.WriteLine("vaadin-dev: the daemon recorded for " +
                 "$root (pid $recorded) is running but not answering. Kill pid " +
                 "$recorded, then 'vaadin-dev start' spawns a fresh one.")
             exit 70
         }
-        if (Test-Path -LiteralPath $handshake) {
+        # Unconfirmed, the pid may well belong to an unrelated process now, and
+        # keeping the record would wedge every command on it for good.
+        if ($state -eq 'unconfirmed') {
+            [Console]::Error.WriteLine("vaadin-dev: the daemon recorded for " +
+                "$root (pid $recorded) does not answer, and its start time " +
+                "cannot be read here to tell it from an unrelated process " +
+                "that reused the pid, so its record was removed. If that pid " +
+                "is a wedged daemon, kill it before 'vaadin-dev start'.")
+            Remove-Item -LiteralPath $handshake -Force -ErrorAction SilentlyContinue
+        } elseif (Test-Path -LiteralPath $handshake) {
             $named = if ($recorded) { $recorded } else { 'unknown' }
             [Console]::Error.WriteLine("vaadin-dev: the daemon recorded for " +
                 "$root (pid $named) is gone and left its handshake behind, so " +
