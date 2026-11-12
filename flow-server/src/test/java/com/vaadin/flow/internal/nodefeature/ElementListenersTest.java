@@ -1442,8 +1442,7 @@ public class ElementListenersTest
     }
 
     @Test
-    void testAddEventDataWithSimpleBean() {
-        // Test with a simple bean (non-record)
+    void addEventData_topLevelPropertyNotEventOrElement_throwsWithoutAdding() {
         class SimpleEventData {
             private String message;
             private int code;
@@ -1458,14 +1457,10 @@ public class ElementListenersTest
         }
 
         DomListenerRegistration registration = ns.add("custom", noOp);
-        registration.addEventData(SimpleEventData.class);
 
-        Set<String> expressions = getExpressions("custom");
-
-        // Should have captured both fields
-        assertTrue(expressions.contains("message"), "Should capture message");
-        assertTrue(expressions.contains("code"), "Should capture code");
-        assertEquals(2, expressions.size(), "Should have 2 expressions");
+        assertThrows(IllegalArgumentException.class,
+                () -> registration.addEventData(SimpleEventData.class));
+        assertEquals(Set.of(), getExpressions("custom"));
     }
 
     @Test

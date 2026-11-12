@@ -528,6 +528,9 @@ public interface DomListenerRegistration extends Registration {
         return addEventDataElementEntry(requirePropertyPath(path));
     }
 
+    /**
+     * Adds an element to map to its server-side element as event data.
+     */
     private DomListenerRegistration addEventDataElementEntry(String eventData) {
         // ComponentEventBusUtil has a copy of this mapping for component event
         // data, update it as well when changing the mapping here
@@ -540,14 +543,29 @@ public interface DomListenerRegistration extends Registration {
         }
     }
 
-    // Not through addEventData(String), which is deprecated for JavaScript
-    // expressions: the default methods add internal tokens and paths that the
-    // browser reads without compiling anything
+    /**
+     * Adds an internal token or a property path as event data. Not through
+     * {@link #addEventData(String)}, which is deprecated for JavaScript
+     * expressions, since the browser reads these without compiling anything.
+     */
     private DomListenerRegistration addEventDataEntry(String eventData) {
         ElementListenerMap.addEventData(this, List.of(eventData));
         return this;
     }
 
+    /**
+     * Adds property paths as event data, after checking all of them so that
+     * nothing is added when one of them is not a property path.
+     */
+    private void addEventDataPaths(List<String> paths) {
+        paths.forEach(DomListenerRegistration::requirePropertyPath);
+        ElementListenerMap.addEventData(this, paths);
+    }
+
+    /**
+     * Checks that the given string is a property path that the browser reads
+     * without compiling it.
+     */
     private static String requirePropertyPath(String path) {
         Objects.requireNonNull(path, "Event data path cannot be null");
         if (!ElementListenerMap.isPropertyPath(path)) {
@@ -635,18 +653,21 @@ public interface DomListenerRegistration extends Registration {
      * {@link DomEvent#getEventData(Class)} decodes the values of these
      * expressions back into the nested structure of the class.
      * <p>
-     * Each property path is evaluated as a JavaScript expression in the
-     * browser, where {@code event} and {@code element} are the only local
-     * variables besides the browser's global objects such as {@code window}. If
-     * a top-level property is none of these, such as {@code type}, its
-     * expression throws an error in the browser and the event is not sent to
-     * the server at all. The event type does not need an expression, it is
-     * available through {@link DomEvent#getType()}.
+     * Each property path is read in the browser without compiling it, where
+     * {@code event} refers to the fired event and {@code element} to this
+     * element. So every top-level property of the class must be {@code event}
+     * or {@code element}, like with {@link #addEventDataPath(String)}. The
+     * event type does not need a property, it is available through
+     * {@link DomEvent#getType()}.
      *
      * @param type
      *            the class whose properties should be captured from the event
      *            data, not <code>null</code>
      * @return this registration, for chaining
+     * @throws IllegalArgumentException
+     *             if a property of the class does not give a property path,
+     *             such as a top-level property other than {@code event} or
+     *             {@code element}
      * @see #addEventDataPath(String)
      * @since 25.0
      */
@@ -655,10 +676,7 @@ public interface DomListenerRegistration extends Registration {
             throw new IllegalArgumentException("Type cannot be null");
         }
         try {
-            List<String> propertyPaths = BeanUtil.getBeanPropertyPaths(type);
-            for (String path : propertyPaths) {
-                addEventDataEntry(path);
-            }
+            addEventDataPaths(BeanUtil.getBeanPropertyPaths(type));
         } catch (IntrospectionException e) {
             throw new IllegalArgumentException(
                     "Failed to introspect type: " + type.getName(), e);
@@ -780,6 +798,10 @@ public interface DomListenerRegistration extends Registration {
      *            the class whose properties should be captured from
      *            event.detail, not <code>null</code>
      * @return this registration, for chaining
+     * @throws IllegalArgumentException
+     *             if a property of the class does not give a property path,
+     *             such as a property with a name that is not a JavaScript
+     *             identifier
      * @see DomEvent#getEventDetail(Class)
      * @see DomEvent#getEventDetail(TypeReference)
      * @since 25.0
@@ -789,10 +811,8 @@ public interface DomListenerRegistration extends Registration {
             throw new IllegalArgumentException("Type cannot be null");
         }
         try {
-            List<String> propertyPaths = BeanUtil.getBeanPropertyPaths(type);
-            for (String path : propertyPaths) {
-                addEventDataEntry("event.detail." + path);
-            }
+            addEventDataPaths(BeanUtil.getBeanPropertyPaths(type).stream()
+                    .map(path -> "event.detail." + path).toList());
         } catch (IntrospectionException e) {
             throw new IllegalArgumentException(
                     "Failed to introspect type: " + type.getName(), e);

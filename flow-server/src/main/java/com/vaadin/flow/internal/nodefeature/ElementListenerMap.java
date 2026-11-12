@@ -327,6 +327,9 @@ public class ElementListenerMap extends NodeMap {
             }
         }
 
+        /**
+         * @deprecated see {@link DomListenerRegistration#addEventData(String)}
+         */
         @Override
         @Deprecated(since = "25.4")
         public DomListenerRegistration addEventData(String eventData) {
