@@ -24,6 +24,8 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.regex.Pattern;
 
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
@@ -45,7 +47,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
-import com.vaadin.flow.js.JsCalledWith;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
@@ -119,6 +121,7 @@ class ClientActionTest {
         JsFunction action = sink.installed.get(0);
         assertEquals("reportOutcome",
                 TriggerTestUtil.snippetOf(TriggerJs.class, action));
+        assertCalledWithContext(action);
         List<ReturnChannelRegistration> channels = action.getCaptures().stream()
                 .filter(ReturnChannelRegistration.class::isInstance)
                 .map(ReturnChannelRegistration.class::cast).toList();
@@ -214,28 +217,36 @@ class ClientActionTest {
     }
 
     @Test
-    void composingSnippets_forwardTheContextToTheirInputs() throws Exception {
+    void composingSnippets_forwardTheContextToTheirInputs() {
         // An action reaches a context input only through the snippets that
-        // compose it, so each of them has to take the context and pass it on.
+        // compose it, so each snippet that calls an input has to take the
+        // context and pass it on.
         for (Class<?> definition : List.of(TriggerJs.class,
                 WriteToClipboardAction.WriteToClipboardJs.class,
                 ShareAction.ShareJs.class, DownloadAction.DownloadJs.class,
                 OpenInNewTabAction.OpenInNewTabJs.class)) {
             for (Method method : definition.getMethods()) {
-                String expression = method.getAnnotation(JsExpression.class)
-                        .value();
-                if (!expression.contains("(event")) {
+                if (!List.of(method.getParameterTypes())
+                        .contains(JsFunction.class)) {
                     continue;
                 }
                 String name = definition.getSimpleName() + "."
                         + method.getName();
-                assertFalse(expression.contains("(event)"),
+                JsExpression expression = method
+                        .getAnnotation(JsExpression.class);
+                assertNotNull(expression, name);
+                // The installers call the action with whatever their trigger
+                // supplies; only the snippets that are themselves called with
+                // event take part in the action's calling convention.
+                List<String> calledWith = JsCall.getCalledWithNames(method);
+                if (calledWith.isEmpty()) {
+                    continue;
+                }
+                assertEquals(List.of("event", "context"), calledWith, name);
+                assertFalse(
+                        Pattern.compile("\\$\\d+\\((event)?\\)")
+                                .matcher(expression.value()).find(),
                         name + " calls an input without the context");
-                JsCalledWith calledWith = method
-                        .getAnnotation(JsCalledWith.class);
-                assertNotNull(calledWith, name);
-                assertEquals(List.of("event", "context"),
-                        List.of(calledWith.value()), name);
             }
         }
     }
@@ -243,13 +254,21 @@ class ClientActionTest {
     private static void assertCopiesFirstTemplateArgument(JsFunction write) {
         assertEquals("writeToClipboard", TriggerTestUtil.snippetOf(
                 WriteToClipboardAction.WriteToClipboardJs.class, write));
+        assertCalledWithContext(write);
         JsFunction text = (JsFunction) write.getCaptures().get(0);
         assertEquals("contextValue",
                 TriggerTestUtil.snippetOf(TriggerJs.class, text));
+        assertCalledWithContext(text);
         assertEquals(List.of("args", "0"), text.getCaptures());
         // Text only: the html slot stays empty.
         assertEquals("nullValue", TriggerTestUtil.snippetOf(ValueJs.class,
                 (JsFunction) write.getCaptures().get(1)));
+    }
+
+    private static void assertCalledWithContext(JsFunction function) {
+        assertEquals(List.of("event", "context"),
+                Objects.requireNonNull(function.getDeclaredCall())
+                        .getCalledWithNames());
     }
 
     @SuppressWarnings("unchecked")
