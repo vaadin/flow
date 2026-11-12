@@ -1043,8 +1043,8 @@ public class ElementListenerMap extends NodeMap {
 
     /**
      * Adds {@link com.vaadin.flow.component.EventData} values to a registration
-     * of this map like {@link DomListenerRegistration#addEventData(List)}, for
-     * values that the build has put into the bundle as functions, see
+     * of this map like {@link #addEventData(DomListenerRegistration, List)},
+     * for values that the build has put into the bundle as functions, see
      * {@link BundledEventData}. The client runs the function of the bundle
      * instead of compiling the value, and sends the result under the value, so
      * nothing is reported as JavaScript sent as a string.
