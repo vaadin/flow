@@ -56,7 +56,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * component, so a renderer can fire it once per element it renders on the
  * client while the server holds a single binding.
  */
-class ClientActionTest {
+class SinkTriggerTest {
 
     private static class Div extends Component {
         Div() {
@@ -116,11 +116,7 @@ class ClientActionTest {
         assertEquals("reportOutcome",
                 TriggerTestUtil.snippetOf(TriggerJs.class, action));
         assertCalledWithContext(action);
-        List<ReturnChannelRegistration> channels = action.getCaptures().stream()
-                .filter(ReturnChannelRegistration.class::isInstance)
-                .map(ReturnChannelRegistration.class::cast).toList();
-        assertEquals(1, channels.size());
-        ReturnChannelRegistration channel = channels.get(0);
+        ReturnChannelRegistration channel = singleChannel(action);
 
         // The outcome wrapper calls the same write as the plain overload.
         assertCopiesFirstTemplateArgument(
@@ -163,17 +159,21 @@ class ClientActionTest {
     @Test
     void action_survivesSerialization_evenWhenItsCallbacksReachBackToIt()
             throws Exception {
-        // Serialize from the action, as when the renderer holding it is
-        // reached before the view that owns it.
-        Action restored = serializeAndDeserialize(new CopyOwner().copy);
+        CopyOwner restored = serializeAndDeserialize(new CopyOwner());
 
         UI ui = new MockUI();
         Div container = new Div();
         ui.add(container);
         RecordingSink sink = new RecordingSink();
-        new SinkTrigger(container.getElement(), sink).triggers(restored);
+        new SinkTrigger(container.getElement(), sink).triggers(restored.copy);
 
-        assertEquals(1, sink.installed.size());
+        ObjectNode ok = JacksonUtils.createObjectNode();
+        ok.put("ok", true);
+        ok.put("value", "ada@example.com");
+        singleChannel(sink.installed.get(0)).invoke(outcome(ok));
+
+        // The restored callback still reaches the restored owner.
+        assertEquals(List.of("ada@example.com"), restored.copied);
     }
 
     @Test
@@ -205,8 +205,11 @@ class ClientActionTest {
         Action copy = Clipboard.writeText();
         Element host = container.getElement();
 
-        assertThrows(NullPointerException.class,
+        NullPointerException exception = assertThrows(
+                NullPointerException.class,
                 () -> new SinkTrigger(host, action -> null).triggers(copy));
+        assertEquals("ClientActionSink.install must return a Registration",
+                exception.getMessage());
     }
 
     @Test
@@ -233,6 +236,8 @@ class ClientActionTest {
                 // event take part in the action's calling convention.
                 List<String> calledWith = JsCall.getCalledWithNames(method);
                 if (calledWith.isEmpty()) {
+                    assertFalse(expression.value().contains("event"),
+                            name + " uses event without being called with it");
                     continue;
                 }
                 assertEquals(List.of("event", "context"), calledWith, name);
@@ -256,6 +261,14 @@ class ClientActionTest {
         // Text only: the html slot stays empty.
         assertEquals("nullValue", TriggerTestUtil.snippetOf(ValueJs.class,
                 (JsFunction) write.getCaptures().get(1)));
+    }
+
+    private static ReturnChannelRegistration singleChannel(JsFunction action) {
+        List<ReturnChannelRegistration> channels = action.getCaptures().stream()
+                .filter(ReturnChannelRegistration.class::isInstance)
+                .map(ReturnChannelRegistration.class::cast).toList();
+        assertEquals(1, channels.size());
+        return channels.get(0);
     }
 
     private static void assertCalledWithContext(JsFunction function) {
