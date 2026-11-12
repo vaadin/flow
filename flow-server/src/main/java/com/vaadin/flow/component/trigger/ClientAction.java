@@ -42,13 +42,12 @@ import com.vaadin.flow.shared.Registration;
  * is still valid — the whole reason clipboard, share and fullscreen calls
  * cannot be made from a server-side listener.
  * <p>
- * A {@code ClientAction} is the public handle of one of the framework's
- * internal trigger actions ({@code trigger.internal.Action}). That action
- * produces the JavaScript and is wired to a trigger on a server-side component.
- * The handle hides it and exposes only
- * {@link #bindTo(Element, ClientActionSink)}, which hands the same JavaScript
- * to whatever fires it on the client. Both run in the browser; they differ only
- * in who decides when.
+ * The browser-side work is the same as in a component binding such as
+ * {@code Clipboard.onClick(button)}; only what fires it differs. A component
+ * binding listens for an event on that component. A {@code ClientAction} does
+ * not listen for anything itself: {@link #bindTo(Element, ClientActionSink)}
+ * hands the function to a sink, and the sink's client-side code calls it, for
+ * example once per rendered row.
  * <p>
  * Instances are created by the feature facades, such as
  * {@code Clipboard.writeText()}, not by application code.
