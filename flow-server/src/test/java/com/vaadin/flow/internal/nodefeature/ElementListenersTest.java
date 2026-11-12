@@ -469,6 +469,13 @@ public class ElementListenersTest
         assertEquals(Optional.empty(), new DomEvent(parent, "click", fromClient)
                 .getEventDataElement(target));
 
+        // No value, from a function that is missing from the bundle
+        fromClient.putNull(key);
+        DomEvent withoutValue = new DomEvent(parent, "click", fromClient);
+        assertEquals(Optional.empty(),
+                withoutValue.getEventDataElement(target));
+        assertNull(withoutValue.getEventData(target));
+
         // Invisible elements are not reported
         sibling.setVisible(false);
         fromClient.put(key, sibling.getNode().getId());
