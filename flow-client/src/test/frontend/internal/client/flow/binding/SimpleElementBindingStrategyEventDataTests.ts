@@ -241,6 +241,18 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
         document.body.removeEventListener('click', countParentCall);
       }
     });
+
+    it('runs the function from the bundle for an expression key with snippet settings', () => {
+      // A bundled @EventData value keeps the expression as its key, so it is
+      // the shape of the settings that says not to compile the key
+      const expression = 'event.clientX - element.offsetLeft';
+      snippets()['fn-id'] = () => (event, target) => `${event.type} ${target === element}`;
+      bindWithClickSettings({ [expression]: { f: 'fn-id', d: false } });
+
+      element.click();
+
+      expect(harness.collectedEventData[0]).to.deep.equal({ [expression]: 'click true' });
+    });
   });
 
   it('runs a declared snippet with its captures, the event and the element', () => {

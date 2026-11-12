@@ -41,8 +41,6 @@ import com.vaadin.flow.shared.JsonConstants;
  * loader it closes afterwards is not kept by a static map.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- *
- * @since 25.4
  */
 public final class DomEventInfo {
 

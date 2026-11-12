@@ -46,8 +46,6 @@ import com.vaadin.flow.shared.JsonConstants;
  * compiling it, such as a property path like <code>event.clientX</code>.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- *
- * @since 25.4
  */
 public final class BundledEventData {
 
