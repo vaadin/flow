@@ -318,7 +318,7 @@ public class ComponentEventBus implements Serializable {
             ElementListenerMap.addEventDataWithoutCspReport(registration,
                     eventData);
         } else {
-            registration.addEventData(eventData);
+            ElementListenerMap.addEventData(registration, eventData);
         }
 
         if (!"".equals(filter)) {
