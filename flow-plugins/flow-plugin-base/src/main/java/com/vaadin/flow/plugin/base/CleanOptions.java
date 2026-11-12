@@ -117,6 +117,8 @@ public class CleanOptions {
     }
 
     /**
+     * Gets whether to remove the package lock file.
+     *
      * @return whether to remove package lock file (pnpm-lock.yaml or bun.lockb
      *         or package-lock.json)
      */
@@ -125,6 +127,8 @@ public class CleanOptions {
     }
 
     /**
+     * Gets whether to remove the {@code .pnpmfile.cjs} file.
+     *
      * @return whether to remove .pnpmfile.cjs file
      */
     public boolean isRemovePnpmFile() {
@@ -132,6 +136,8 @@ public class CleanOptions {
     }
 
     /**
+     * Gets whether to remove the generated TypeScript folder.
+     *
      * @return whether to remove the generated ts folder where flow will put TS
      *         API files for client projects.
      */
@@ -140,6 +146,8 @@ public class CleanOptions {
     }
 
     /**
+     * Gets whether to remove the generated frontend folder.
+     *
      * @return whether to remove the frontend generated folder
      */
     public boolean isRemoveFrontendGeneratedFolder() {
@@ -147,6 +155,8 @@ public class CleanOptions {
     }
 
     /**
+     * Gets whether to clean the {@code package.json} file.
+     *
      * @return whether to clean the package.json file
      */
     public boolean isCleanPackageJson() {
@@ -154,6 +164,8 @@ public class CleanOptions {
     }
 
     /**
+     * Gets whether to remove the dev bundle.
+     *
      * @return whether to remove the dev bundle
      */
     public boolean isRemoveDevBundle() {
@@ -161,6 +173,8 @@ public class CleanOptions {
     }
 
     /**
+     * Gets whether to remove the {@code node_modules} folder.
+     *
      * @return whether to remove the node_modules folder
      */
     public boolean isRemoveNodeModules() {

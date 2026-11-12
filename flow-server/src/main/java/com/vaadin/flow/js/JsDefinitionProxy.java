@@ -449,6 +449,11 @@ public final class JsDefinitionProxy {
     /**
      * Turns a call of a JavaScript definition into a {@link JsCall} and runs it
      * through the function it was created with.
+     *
+     * @param runner
+     *            the function that runs the call
+     * @param definitionType
+     *            the interface of the JavaScript definition
      */
     private record JsDefinitionHandler(
             SerializableFunction<JsCall, PendingJavaScriptResult> runner,
@@ -489,6 +494,13 @@ public final class JsDefinitionProxy {
      * result to the type that a method of a JavaScript definition declares. It
      * adds a handler to the pending result only when a handler is added to it,
      * so a call whose result nobody reads has no round trip for the result.
+     *
+     * @param <T>
+     *            the type of the result
+     * @param pending
+     *            the pending result of the call
+     * @param valueType
+     *            the type to convert the result to
      */
     private record TypedJavaScriptResult<T>(PendingJavaScriptResult pending,
             JavaType valueType) implements JavaScriptResult<T> {
@@ -525,6 +537,9 @@ public final class JsDefinitionProxy {
     /**
      * Answers a call of a JavaScript definition with the snippet that the call
      * declares. Nothing runs on the server.
+     *
+     * @param definitionType
+     *            the interface of the JavaScript definition
      */
     private record JsSnippetHandler(Class<?> definitionType)
             implements

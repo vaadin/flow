@@ -39,6 +39,9 @@ import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.KeyModifier;
+import com.vaadin.flow.component.Shortcuts;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
@@ -84,6 +87,12 @@ class CspModeTest {
 
         @JsExpression("return event.x * $0;")
         DomEventData<Integer> scaledX(int factor);
+    }
+
+    @JsDefinition
+    interface LocatorJs extends Serializable {
+        @JsExpression("return this.firstElementChild;")
+        JsFunction locateFirstChild();
     }
 
     @Tag("div")
@@ -160,6 +169,9 @@ class CspModeTest {
                 call(DomListenerRegistration.class, "setFilter",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).setFilter("event.x == 1")),
+                // The deprecated locator is an expression for the browser
+                call(JsFunction.class, "of",
+                        CspModeTest::delegateShortcutToStringLocator),
                 // A key of client-built data only for Flow's own events
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ComponentUtil.addListener(ui, KeyedEvent.class,
@@ -226,6 +238,17 @@ class CspModeTest {
             });
             // Loads the chunk of the route with a function from the bundle
             ui.getInternals().addComponentDependencies(RouteView.class);
+            // Shortcuts send their keys and options as data to JavaScript in
+            // the bundle, also when they listen on a browser-only element
+            ui.addShortcutListener(() -> {
+            }, Key.KEY_A, KeyModifier.CONTROL);
+            Clickable owner = new Clickable();
+            ui.add(owner);
+            Shortcuts.setShortcutListenOnElementLocator(
+                    JsSnippets.of(LocatorJs.class).locateFirstChild(), owner);
+            owner.addClickShortcut(Key.ENTER).listenOn(owner);
+            ui.getInternals().getStateTree()
+                    .runExecutionsBeforeClientResponse();
         });
     }
 
@@ -282,6 +305,15 @@ class CspModeTest {
         for (Throwable warning : warnings.getAllValues()) {
             assertTraceLeadsFromApiToTest(warning, Element.class, "executeJs");
         }
+    }
+
+    @SuppressWarnings("removal")
+    private static void delegateShortcutToStringLocator(UI ui) {
+        Clickable owner = new Clickable();
+        ui.add(owner);
+        Shortcuts.setShortcutListenOnElement("this.firstElementChild", owner);
+        owner.addClickShortcut(Key.ENTER).listenOn(owner);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
     }
 
     private void executeJsOnUi() {

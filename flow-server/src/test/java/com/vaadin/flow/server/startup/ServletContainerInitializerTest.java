@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -108,7 +107,7 @@ class ServletContainerInitializerTest extends ClassFinder {
         List<String> rawClasspathEntries = getRawClasspathEntries();
 
         List<Pattern> excludes = getExcludedPatterns().map(Pattern::compile)
-                .collect(Collectors.toList());
+                .toList();
 
         List<String> classes = new ArrayList<>();
         for (String location : rawClasspathEntries) {
