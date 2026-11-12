@@ -365,6 +365,22 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @Test
+    void domEventClass_productionMode_namesNothingOfTheJava() {
+        Options production = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(OffsetEvent.class)), null)
+                .withFrontendDirectory(frontendFolder).withProductionMode(true);
+        String content = new TaskGenerateJsDefinitions(production)
+                .getFileContent();
+
+        assertTrue(content.contains("window.Vaadin.Flow.jsSnippets[\""
+                + BundledEventData.getFunctionId(OFFSET_EXPRESSION) + "\"]"),
+                "the value should still be in the bundle: " + content);
+        assertFalse(content.contains(OffsetEvent.class.getName()),
+                "a production bundle should not tell a browser what declared the value: "
+                        + content);
+    }
+
+    @Test
     void definitionThatCanNotWork_isLeftOutWithoutFailingTheBuild()
             throws NoSuchMethodException {
         // A bad name would be a syntax error that breaks every function in
