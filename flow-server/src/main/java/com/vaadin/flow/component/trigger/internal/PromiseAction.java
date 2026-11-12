@@ -212,6 +212,13 @@ public abstract class PromiseAction<T> extends Action {
      * Wire shape exchanged between {@link TriggerJs#reportOutcome} and
      * {@link #dispatch}. {@code value} is meaningful when {@code ok == true};
      * {@code error} is meaningful when {@code ok == false}.
+     *
+     * @param ok
+     *            whether the promise was resolved
+     * @param value
+     *            the value the promise was resolved with
+     * @param error
+     *            the error the promise was rejected with
      */
     private record Outcome(boolean ok, @Nullable JsonNode value,
             @Nullable Error error) implements Serializable {

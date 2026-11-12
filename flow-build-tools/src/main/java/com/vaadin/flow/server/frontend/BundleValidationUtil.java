@@ -84,6 +84,10 @@ public final class BundleValidationUtil {
      */
     private static final String DEFAULT_PWA_OFFLINE_PATH = "'.'";
 
+    private static final List<String> SERVICE_WORKER_FILES = List.of(
+            FrontendUtils.SERVICE_WORKER_SRC,
+            FrontendUtils.SERVICE_WORKER_SRC_JS);
+
     /**
      * Checks if an application needs a new frontend bundle.
      *
@@ -288,6 +292,17 @@ public final class BundleValidationUtil {
         ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY))
                 .remove(FrontendUtils.GENERATED
                         + FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+
+        if (customServiceWorkerChanged(options, statsJson,
+                frontendDependencies)) {
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-changed-service-worker", null);
+            return true;
+        }
+        // service worker hashes have already been checked, if needed.
+        // removing them from hashes map to prevent other unnecessary checks
+        ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY))
+                .remove(SERVICE_WORKER_FILES);
 
         if (!BundleValidationUtil.frontendImportsFound(statsJson, options)) {
             UsageStatistics.markAsUsed(
@@ -600,12 +615,10 @@ public final class BundleValidationUtil {
                 .stream()
                 // skip checking flow-frontend as it was used in previous
                 // versions as an alias for ./target/flow-frontend
-                .filter(pkg -> !"@vaadin/flow-frontend".equals(pkg))
-                .collect(Collectors.toList());
+                .filter(pkg -> !"@vaadin/flow-frontend".equals(pkg)).toList();
 
         List<String> missingFromBundle = dependenciesList.stream()
-                .filter(pkg -> !bundleModules.has(pkg))
-                .collect(Collectors.toList());
+                .filter(pkg -> !bundleModules.has(pkg)).toList();
 
         if (!missingFromBundle.isEmpty()) {
             for (String dependency : missingFromBundle) {
@@ -620,7 +633,7 @@ public final class BundleValidationUtil {
                 .filter(pkg -> !versionAccepted(
                         dependencies.get(pkg).asString(),
                         bundleModules.get(pkg).asString()))
-                .collect(Collectors.toList());
+                .toList();
 
         if (!missingFromBundle.isEmpty()) {
             for (String pkg : missingFromBundle) {
@@ -696,7 +709,7 @@ public final class BundleValidationUtil {
                 .filter(pkg -> !(dependencies.has(pkg)
                         && versionAccepted(dependencies.get(pkg).asString(),
                                 npmPackages.get(pkg))))
-                .collect(Collectors.toList());
+                .toList();
         if (!collect.isEmpty()) {
             collect.forEach(dependency -> getLogger().info("Dependency "
                     + dependency + " is missing from the bundle"));
@@ -778,14 +791,14 @@ public final class BundleValidationUtil {
                         ? importString.substring(0,
                                 importString.lastIndexOf("?"))
                         : importString)
-                .collect(Collectors.toList());
+                .toList();
         LinkedHashSet<String> uniqueImports = new LinkedHashSet<>(imports);
         ArrayNode statsBundle = statsJson.has("bundleImports")
                 ? (ArrayNode) statsJson.get("bundleImports")
                 : JacksonUtils.createArrayNode();
         final List<String> missingFromBundle = uniqueImports.stream().filter(
                 importString -> !arrayContainsString(statsBundle, importString))
-                .collect(Collectors.toList());
+                .toList();
 
         if (!missingFromBundle.isEmpty()) {
             for (String dependency : missingFromBundle) {
@@ -801,7 +814,7 @@ public final class BundleValidationUtil {
                 .map(importString -> importString
                         .substring(importString.indexOf(resourcePath)
                                 + resourcePath.length()))
-                .collect(Collectors.toList());
+                .toList();
 
         final List<String> projectImports = uniqueImports.stream()
                 .filter(importString -> importString
@@ -809,7 +822,7 @@ public final class BundleValidationUtil {
                         && !importString.contains(resourcePath))
                 .map(importString -> importString.substring(
                         FrontendUtils.FRONTEND_FOLDER_ALIAS.length()))
-                .collect(Collectors.toList());
+                .toList();
 
         final JsonNode frontendHashes = statsJson
                 .get(FRONTEND_HASHES_STATS_KEY);
@@ -961,6 +974,49 @@ public final class BundleValidationUtil {
             getLogger().info(
                     "The bundle's service worker uses offline path {}, but the application asks for {}.",
                     bundleOfflinePath, offlinePath);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks whether the service worker in the frontend folder differs from the
+     * one the bundle was built with.
+     * <p>
+     * A {@code sw.ts} or {@code sw.js} in the frontend folder replaces the
+     * default service worker. It is built separately from the application's
+     * modules, so none of the import checks look at it, and adding, changing or
+     * removing it only reaches the application through a new bundle. Only that
+     * file is compared, not the modules it imports.
+     */
+    private static boolean customServiceWorkerChanged(Options options,
+            JsonNode statsJson,
+            FrontendDependenciesScanner frontendDependencies)
+            throws IOException {
+        PwaConfiguration pwaConfiguration = frontendDependencies
+                .getPwaConfiguration();
+        if (pwaConfiguration == null || !pwaConfiguration.isOfflineEnabled()) {
+            // Without offline support no service worker is built, so the
+            // bundle does not depend on its source.
+            return false;
+        }
+        JsonNode frontendHashes = statsJson.get(FRONTEND_HASHES_STATS_KEY);
+        List<String> faultyContent = new ArrayList<>();
+        for (String serviceWorkerFile : SERVICE_WORKER_FILES) {
+            File serviceWorker = new File(options.getFrontendDirectory(),
+                    serviceWorkerFile);
+            if (serviceWorker.exists()) {
+                compareFrontendHashes(frontendHashes, faultyContent,
+                        serviceWorkerFile,
+                        Files.readString(serviceWorker.toPath()));
+            } else if (frontendHashes.has(serviceWorkerFile)) {
+                getLogger().info("Detected deleted {} file", serviceWorkerFile);
+                return true;
+            }
+        }
+        if (!faultyContent.isEmpty()) {
+            logChangedFiles(faultyContent,
+                    "Detected changed content for frontend files:");
             return true;
         }
         return false;

@@ -150,6 +150,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.internal\\.JavaScriptSemantics",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeProperties",
                 "com\\.vaadin\\.flow\\.internal\\.AnnotationReader",
+                "com\\.vaadin\\.flow\\.internal\\.ToStringBuilder",
                 "com\\.vaadin\\.flow\\.server\\.StaticFileHandlerFactory",
                 "com\\.vaadin\\.flow\\.server\\.dau\\.DauEnforcementException",
                 "com\\.vaadin\\.flow\\.server\\.dau\\.FlowDauIntegration",
@@ -362,7 +363,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
 
         List<String> classes = new ArrayList<>();
         List<Pattern> excludes = getExcludedPatterns().map(Pattern::compile)
-                .collect(Collectors.toList());
+                .toList();
         for (String location : rawClasspathEntries) {
             if (!isTestClassPath(location)) {
                 classes.addAll(findServerClasses(location, excludes));
