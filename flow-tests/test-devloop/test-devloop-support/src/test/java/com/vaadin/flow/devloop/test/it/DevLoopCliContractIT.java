@@ -15,10 +15,12 @@
  */
 package com.vaadin.flow.devloop.test.it;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -146,20 +148,43 @@ class DevLoopCliContractIT {
     @Test
     void status_withALivePidItCannotConfirm_reapsTheRecord(@TempDir Path app)
             throws IOException {
-        // Without a start time to compare, a live pid may just as well belong
-        // to an unrelated process that reused it. Keeping the record would
-        // wedge every command on it until it was deleted by hand, so it is
-        // reaped once the grace an exiting daemon gets has run out. A ps that
-        // cannot report a start time, as on Git Bash, takes the same path.
+        // Without a start time to compare - none recorded, or a ps that cannot
+        // report one, as on Git Bash - a live pid may just as well belong to
+        // an unrelated process that reused it. Keeping the record would wedge
+        // every command on it until it was deleted by hand, so it is reaped
+        // once the grace an exiting daemon gets has run out.
         Files.writeString(app.resolve("pom.xml"), "<project/>");
         Path handshake = app.resolve(".vaadin/daemon.properties");
         Files.createDirectories(handshake.getParent());
-        Files.writeString(handshake, "port=" + unusedPort()
-                + "\ntoken=stale\npid=" + ProcessHandle.current().pid() + "\n");
+        VaadinDevCli cli = VaadinDevCli.of(AbstractDevLoopIT.APP);
+        String pid = "pid=" + ProcessHandle.current().pid();
 
-        VaadinDevCli.of(AbstractDevLoopIT.APP)
-                .run("--app", app.toString(), "status").assertExitCode(0)
-                .assertOutputContains("its record was removed")
+        Files.writeString(handshake,
+                "port=" + unusedPort() + "\ntoken=stale\n" + pid + "\n");
+        assertReapedUnconfirmed(cli.run("--app", app.toString(), "status"),
+                handshake);
+
+        // The PowerShell launcher reads the start time without ps.
+        if (!VaadinDevCli.WINDOWS) {
+            Path bin = Files.createDirectories(app.resolve("bin"));
+            Path ps = bin.resolve("ps");
+            Files.writeString(ps, "#!/bin/sh\nexit 1\n");
+            ps.toFile().setExecutable(true);
+            Files.writeString(handshake, "port="
+                    + unusedPort() + "\ntoken=stale\n" + pid
+                    + "\nstartEpochMillis=" + ProcessHandle.current().info()
+                            .startInstant().orElseThrow().toEpochMilli()
+                    + "\n");
+            assertReapedUnconfirmed(cli.run(
+                    Map.of("PATH",
+                            bin + File.pathSeparator + System.getenv("PATH")),
+                    "--app", app.toString(), "status"), handshake);
+        }
+    }
+
+    private static void assertReapedUnconfirmed(VaadinDevCli.Outcome outcome,
+            Path handshake) {
+        outcome.assertExitCode(0).assertOutputContains("its record was removed")
                 .assertOutputContains("no daemon running")
                 .assertOutputDoesNotContain("running but not answering");
         assertFalse(Files.exists(handshake),
@@ -179,20 +204,22 @@ class DevLoopCliContractIT {
         Files.createDirectories(handshake.getParent());
         Path ready = app.resolve("ready");
         Path exiting = app.resolve("Exiting.java");
-        Files.writeString(exiting, """
-                import java.nio.file.Files;
-                import java.nio.file.Path;
+        Files.writeString(exiting,
+                """
+                                        import java.nio.file.Files;
+                                        import java.nio.file.Path;
+                        import java.util.Map;
 
-                public class Exiting {
-                    public static void main(String[] args) throws Exception {
-                        Files.createFile(Path.of(args[1]));
-                        Thread.sleep(3500);
-                        if (args[2].equals("remove")) {
-                            Files.delete(Path.of(args[0]));
-                        }
-                    }
-                }
-                """);
+                                        public class Exiting {
+                                            public static void main(String[] args) throws Exception {
+                                                Files.createFile(Path.of(args[1]));
+                                                Thread.sleep(3500);
+                                                if (args[2].equals("remove")) {
+                                                    Files.delete(Path.of(args[0]));
+                                                }
+                                            }
+                                        }
+                                        """);
         VaadinDevCli cli = VaadinDevCli.of(AbstractDevLoopIT.APP);
 
         for (String exit : new String[] { "remove", "keep" }) {
