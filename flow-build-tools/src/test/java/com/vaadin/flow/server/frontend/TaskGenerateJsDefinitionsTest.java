@@ -27,8 +27,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.internal.BundledEventData;
+import com.vaadin.flow.component.internal.PrebuiltEventData;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.DomEventFilter;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.js.JsCall;
@@ -126,6 +133,35 @@ class TaskGenerateJsDefinitionsTest {
         @JsExpression("$executionContext.stopApplication()")
         @JsWithExecutionContext
         void stop();
+    }
+
+    private static final String OFFSET_EXPRESSION = "event.clientX - element.getBoundingClientRect().left";
+
+    @DomEvent("offset")
+    public static class OffsetEvent extends ComponentEvent<Component> {
+        public OffsetEvent(Component source, boolean fromClient,
+                @EventData(OFFSET_EXPRESSION) double offset,
+                @EventData("event.clientX") double clientX,
+                @EventData("event.composedPath()[0]") Element target) {
+            super(source, fromClient);
+        }
+    }
+
+    @DomEvent("other-offset")
+    public static class OtherOffsetEvent extends ComponentEvent<Component> {
+        public OtherOffsetEvent(Component source, boolean fromClient,
+                @EventData(OFFSET_EXPRESSION) double offset) {
+            super(source, fromClient);
+        }
+    }
+
+    @DomEvent("prebuilt")
+    @PrebuiltEventData
+    public static class PrebuiltEvent extends ComponentEvent<Component> {
+        public PrebuiltEvent(Component source, boolean fromClient,
+                @EventData("values[0]") String value) {
+            super(source, fromClient);
+        }
     }
 
     @TempDir
@@ -259,6 +295,45 @@ class TaskGenerateJsDefinitionsTest {
                         "  return function (event, element) {", KEY_EXPRESSION,
                         "  };", "};")),
                 "a DOM event filter should be a function of the event and the element: "
+                        + content);
+    }
+
+    @Test
+    void domEventClass_registersASnippetPerEventDataTheClientWouldCompile() {
+        String functionId = BundledEventData.getFunctionId(OFFSET_EXPRESSION);
+        Options withEvents = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(OffsetEvent.class,
+                        OtherOffsetEvent.class, PrebuiltEvent.class)),
+                null).withFrontendDirectory(frontendFolder)
+                .withProductionMode(false);
+        String content = new TaskGenerateJsDefinitions(withEvents)
+                .getFileContent();
+        String function = String.join(System.lineSeparator(),
+                "window.Vaadin.Flow.jsSnippets[\"" + functionId
+                        + "\"] = function () {",
+                "  return function (event, element) {", "    return (",
+                OFFSET_EXPRESSION, "    );", "  };", "};");
+
+        assertTrue(content.contains(function),
+                "the value should be a function of the event and the element, under the identifier the server sends: "
+                        + content);
+        assertEquals(content.indexOf(function), content.lastIndexOf(function),
+                "a value that two events declare should be registered once: "
+                        + content);
+        assertTrue(
+                content.contains("window.Vaadin.Flow.jsDefinitionNames[\""
+                        + functionId + "\"] = \"" + OffsetEvent.class.getName()
+                        + " @EventData(\\\"" + OFFSET_EXPRESSION + "\\\")\";"),
+                "a development bundle should name what declared the value: "
+                        + content);
+        assertFalse(content.contains("event.clientX" + System.lineSeparator()),
+                "the client reads a property path without compiling it: "
+                        + content);
+        assertFalse(content.contains("event.composedPath()[0]"),
+                "the client maps what the expression of an element returns to a state node: "
+                        + content);
+        assertFalse(content.contains("values[0]"),
+                "the event data of a prebuilt event are keys, not JavaScript: "
                         + content);
     }
 

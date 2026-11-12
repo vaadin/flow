@@ -28,7 +28,8 @@ import com.vaadin.testbench.BrowserTest;
 /**
  * Event data that is a property path of the event is read in the browser
  * without compiling JavaScript, for a component event and for a DOM event
- * listener.
+ * listener, and the event data of a component event that is any other
+ * expression runs from the bundle.
  */
 public class ClickIT extends AbstractCspStrictIT {
 
@@ -56,6 +57,17 @@ public class ClickIT extends AbstractCspStrictIT {
 
         waitUntil(ExpectedConditions.textMatches(By.id("client-x"),
                 Pattern.compile("x=\\d+")));
+        assertNoCspViolations();
+    }
+
+    @BrowserTest
+    public void componentEventWithExpressionEventData_receivesEventData() {
+        open();
+
+        $(DivElement.class).id("offset-area").click();
+
+        waitUntil(ExpectedConditions.textMatches(By.id("offset"),
+                Pattern.compile("offset=\\d+")));
         assertNoCspViolations();
     }
 }

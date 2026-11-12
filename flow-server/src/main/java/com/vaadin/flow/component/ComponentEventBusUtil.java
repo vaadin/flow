@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
@@ -51,12 +52,21 @@ public class ComponentEventBusUtil {
     private static class EventTypeInfo {
         private final LinkedHashMap<String, Class<?>> dataExpressions;
         private final List<String> listenerEventData;
+        private final List<String> expressionEventData;
+        private final List<String> bundledEventData;
         private final Constructor<? extends ComponentEvent<?>> eventConstructor;
 
         public EventTypeInfo(Class<? extends ComponentEvent<?>> type) {
             eventConstructor = findEventConstructor(type);
             dataExpressions = findEventDataExpressions(eventConstructor);
             listenerEventData = toListenerEventData(dataExpressions);
+            bundledEventData = BundledEventData.selectBundled(type,
+                    listenerEventData);
+            // Keeps sharing the list when nothing is put into the bundle
+            expressionEventData = bundledEventData.isEmpty() ? listenerEventData
+                    : listenerEventData.stream().filter(
+                            eventData -> !bundledEventData.contains(eventData))
+                            .toList();
         }
 
         private static List<String> toListenerEventData(
@@ -119,6 +129,36 @@ public class ComponentEventBusUtil {
     public static List<String> getListenerEventData(
             Class<? extends ComponentEvent<?>> eventType) {
         return cache.get(eventType).listenerEventData;
+    }
+
+    /**
+     * Gets the event data of {@link #getListenerEventData(Class)} that the
+     * client gets as it is, which is all of it except what
+     * {@link #getBundledEventData(Class)} returns. The same unmodifiable list
+     * is returned for every call.
+     *
+     * @param eventType
+     *            the component event type
+     * @return an unmodifiable list of event data expressions
+     */
+    static List<String> getExpressionEventData(
+            Class<? extends ComponentEvent<?>> eventType) {
+        return cache.get(eventType).expressionEventData;
+    }
+
+    /**
+     * Gets the event data of {@link #getListenerEventData(Class)} that the
+     * build puts into the bundle as functions, see {@link BundledEventData}.
+     * The same unmodifiable list is returned for every call.
+     *
+     * @param eventType
+     *            the component event type
+     * @return an unmodifiable list of event data expressions, empty if there
+     *         are none
+     */
+    static List<String> getBundledEventData(
+            Class<? extends ComponentEvent<?>> eventType) {
+        return cache.get(eventType).bundledEventData;
     }
 
     /**

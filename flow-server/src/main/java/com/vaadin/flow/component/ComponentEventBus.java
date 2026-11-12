@@ -311,7 +311,7 @@ public class ComponentEventBus implements Serializable {
         registration.setDisabledUpdateMode(mode);
 
         List<String> eventData = ComponentEventBusUtil
-                .getListenerEventData(eventType);
+                .getExpressionEventData(eventType);
         if (AnnotationReader
                 .getAnnotationFor(eventType, PrebuiltEventData.class)
                 .isPresent()) {
@@ -319,6 +319,12 @@ public class ComponentEventBus implements Serializable {
                     eventData);
         } else {
             registration.addEventData(eventData);
+        }
+        List<String> bundledEventData = ComponentEventBusUtil
+                .getBundledEventData(eventType);
+        if (!bundledEventData.isEmpty()) {
+            ElementListenerMap.addBundledEventData(registration,
+                    bundledEventData);
         }
 
         if (!"".equals(filter)) {

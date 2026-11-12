@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.test.cspstrict.dom;
 
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
@@ -22,8 +26,9 @@ import com.vaadin.flow.router.Route;
 
 /**
  * The most ordinary thing an application does: a click listener on a component,
- * whose event carries data read from the DOM event, and a DOM event listener
- * with an event data expression on a plain element.
+ * whose event carries data read from the DOM event, a DOM event listener with
+ * an event data expression on a plain element, and a component event whose
+ * event data is an expression that the build puts into the bundle.
  */
 @Route("click")
 public class ClickView extends Div {
@@ -44,6 +49,32 @@ public class ClickView extends Div {
                         + event.getEventData().get("event.clientX").asInt()))
                 .addEventData("event.clientX");
 
-        add(button, clicked, area, clientX);
+        Span offset = new Span();
+        offset.setId("offset");
+        Div offsetArea = new Div("Click here too");
+        offsetArea.setId("offset-area");
+        ComponentUtil.addListener(offsetArea, OffsetClickEvent.class,
+                event -> offset.setText("offset=" + event.getOffset()));
+
+        add(button, clicked, area, clientX, offsetArea, offset);
+    }
+
+    /**
+     * A click whose event data is computed by an expression rather than read
+     * from a property path.
+     */
+    @DomEvent("click")
+    public static class OffsetClickEvent extends ComponentEvent<Div> {
+        private final int offset;
+
+        public OffsetClickEvent(Div source, boolean fromClient,
+                @EventData("Math.round(event.clientX - element.getBoundingClientRect().left)") int offset) {
+            super(source, fromClient);
+            this.offset = offset;
+        }
+
+        public int getOffset() {
+            return offset;
+        }
     }
 }

@@ -180,6 +180,21 @@ declared entry is sent back under its key, and
 `DomEvent.getEventData(DomEventData)` reads it with
 `ElementListenerMap.getEventDataKey(DomEventData)`.
 
+An `@EventData` value of a `@DomEvent` class is known when the
+application is built, so a value that the client would otherwise compile
+from a string is generated into `window.Vaadin.Flow.jsSnippets` as a
+function of the event and the element, without captures. Its entry keeps
+the expression as its key, so the server reads the value as before, but
+the value is an object with only `f` and `d`, and the client runs the
+function instead of compiling the key. `BundledEventData` decides for
+both the build and the server which values those are and what their ids
+are: property paths, values mapped to a component or an element, and the
+keys of a `@PrebuiltEventData` event stay plain expressions.
+
+```json
+{ "event.clientX - element.offsetLeft": { "f": "3a1c…77e0", "d": false } }
+```
+
 ### Constraints this puts on new code
 
 - **Nothing is ever evicted, on either side.** The pool grows for the

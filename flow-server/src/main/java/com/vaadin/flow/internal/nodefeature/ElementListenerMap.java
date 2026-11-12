@@ -38,6 +38,7 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
@@ -116,7 +117,7 @@ public class ElementListenerMap extends NodeMap {
      * to the server under the key of the entry.
      */
     sealed interface Entry extends Serializable
-            permits ExpressionEntry, SnippetEntry {
+            permits ExpressionEntry, BundledExpressionEntry, SnippetEntry {
         String key();
     }
 
@@ -128,6 +129,19 @@ public class ElementListenerMap extends NodeMap {
      *            the expression
      */
     private record ExpressionEntry(String key) implements Entry {
+    }
+
+    /**
+     * An {@link com.vaadin.flow.component.EventData} value that the build has
+     * put into the bundle as a function. The key is the expression, as for an
+     * {@link ExpressionEntry}, but the client is sent the identifier of the
+     * function instead of compiling the expression, see
+     * {@link BundledEventData}.
+     *
+     * @param key
+     *            the expression
+     */
+    private record BundledExpressionEntry(String key) implements Entry {
     }
 
     /**
@@ -209,6 +223,7 @@ public class ElementListenerMap extends NodeMap {
          *         constant pool
          */
         private boolean isShared() {
+            // A bundled expression captures nothing
             return !(entry instanceof SnippetEntry snippet)
                     || snippet.call().hasOnlyPlainSnippetCaptures();
         }
@@ -227,12 +242,22 @@ public class ElementListenerMap extends NodeMap {
          * debounce settings, as the key is the expression. For a snippet, this
          * is an object with the function, the debounce settings, the side
          * effect and the captures. The captures are encoded now, so that an
-         * element is sent with the id that it has now.
+         * element is sent with the id that it has now. An expression that the
+         * bundle has a function for is sent like a snippet without captures, so
+         * the client runs the function instead of compiling the key.
          *
          * @return the debounce settings for an expression, or the settings
          *         object for a snippet, not <code>null</code>
          */
         public JsonNode toJson() {
+            if (entry instanceof BundledExpressionEntry(String key)) {
+                ObjectNode json = JacksonUtils.createObjectNode();
+                json.put(JsonConstants.EVENT_SETTINGS_FUNCTION,
+                        BundledEventData.getFunctionId(key));
+                json.set(JsonConstants.EVENT_SETTINGS_DEBOUNCE,
+                        debounceToJson());
+                return json;
+            }
             if (!(entry instanceof SnippetEntry snippet)) {
                 return debounceToJson();
             }
@@ -288,6 +313,8 @@ public class ElementListenerMap extends NodeMap {
          * addEventData(List), and is replaced with a copy when adding.
          */
         private List<String> eventDataExpressions;
+        // Shared like eventDataExpressions
+        private List<String> bundledEventData;
         private List<DomEventData<?>> eventDataSnippets;
         private Entry filter;
 
@@ -347,7 +374,7 @@ public class ElementListenerMap extends NodeMap {
         public DomListenerRegistration addEventData(List<String> eventData) {
             requireEventData(eventData);
             if (eventData.stream()
-                    .anyMatch(DomEventListenerWrapper::isCompiledByClient)) {
+                    .anyMatch(ElementListenerMap::isCompiledByClient)) {
                 CspViolationReporter.reportStringJavaScript();
             }
 
@@ -362,6 +389,20 @@ public class ElementListenerMap extends NodeMap {
             requireEventData(eventData);
 
             appendEventData(eventData);
+
+            listenerMap.updateEventSettings(type);
+        }
+
+        private void addBundledEventData(List<String> eventData) {
+            requireEventData(eventData);
+
+            if (bundledEventData == null) {
+                bundledEventData = List.copyOf(eventData);
+            } else if (!bundledEventData.containsAll(eventData)) {
+                bundledEventData = Stream
+                        .concat(bundledEventData.stream(), eventData.stream())
+                        .distinct().toList();
+            }
 
             listenerMap.updateEventSettings(type);
         }
@@ -515,32 +556,6 @@ public class ElementListenerMap extends NodeMap {
             return this;
         }
 
-        // The client reads a synchronized property, the state node closest
-        // to the event target or a property path, also one that leads to the
-        // element to map to a state node, and calls preventDefault() or
-        // stopPropagation(), without compiling anything
-        private static boolean isCompiledByClient(String eventData) {
-            String expression = eventData
-                    .startsWith(JsonConstants.MAP_STATE_NODE_EVENT_DATA)
-                            ? eventData.substring(
-                                    JsonConstants.MAP_STATE_NODE_EVENT_DATA
-                                            .length())
-                            : eventData;
-            return !eventData
-                    .startsWith(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN)
-                    && !eventData
-                            .equals(JsonConstants.MAP_STATE_NODE_EVENT_DATA)
-                    && !eventData
-                            .equals(JsonConstants.EVENT_DATA_PREVENT_DEFAULT)
-                    && !eventData
-                            .equals(JsonConstants.EVENT_DATA_STOP_PROPAGATION)
-                    && !isPropertyPath(expression);
-        }
-
-        private static boolean isPropertyPath(String expression) {
-            return PROPERTY_PATH.matcher(expression).matches();
-        }
-
         private boolean isPropertySynchronized(String propertyName) {
             return hasEventData(
                     JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + propertyName);
@@ -556,6 +571,39 @@ public class ElementListenerMap extends NodeMap {
             allowInert = true;
             return this;
         }
+    }
+
+    /**
+     * Checks whether the client compiles the given event data from a string.
+     * The client reads a synchronized property, the state node closest to the
+     * event target or a property path, also one that leads to the element to
+     * map to a state node, and calls <code>preventDefault()</code> or
+     * <code>stopPropagation()</code>, without compiling anything.
+     *
+     * @param eventData
+     *            the event data, as passed to
+     *            {@link DomListenerRegistration#addEventData(String)}, not
+     *            <code>null</code>
+     * @return <code>true</code> if the client compiles the event data with
+     *         <code>new Function</code>, which a content security policy
+     *         without <code>unsafe-eval</code> does not allow
+     */
+    public static boolean isCompiledByClient(String eventData) {
+        String expression = eventData
+                .startsWith(JsonConstants.MAP_STATE_NODE_EVENT_DATA)
+                        ? eventData.substring(
+                                JsonConstants.MAP_STATE_NODE_EVENT_DATA
+                                        .length())
+                        : eventData;
+        return !eventData.startsWith(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN)
+                && !eventData.equals(JsonConstants.MAP_STATE_NODE_EVENT_DATA)
+                && !eventData.equals(JsonConstants.EVENT_DATA_PREVENT_DEFAULT)
+                && !eventData.equals(JsonConstants.EVENT_DATA_STOP_PROPAGATION)
+                && !isPropertyPath(expression);
+    }
+
+    private static boolean isPropertyPath(String expression) {
+        return PROPERTY_PATH.matcher(expression).matches();
     }
 
     /**
@@ -653,6 +701,12 @@ public class ElementListenerMap extends NodeMap {
                     ensureExpression.apply(makeConditional(expression, filter));
                 }
             }
+            if (wrapper.bundledEventData != null) {
+                for (String expression : wrapper.bundledEventData) {
+                    ensureExpression
+                            .apply(new BundledExpressionEntry(expression));
+                }
+            }
             if (wrapper.eventDataSnippets != null) {
                 for (DomEventData<?> eventData : wrapper.eventDataSnippets) {
                     ensureExpression.apply(SnippetEntry.of(eventData));
@@ -725,6 +779,8 @@ public class ElementListenerMap extends NodeMap {
         case ExpressionEntry(String key) ->
             new ExpressionEntry("(" + key + ") && event." + method + "()");
         case SnippetEntry snippet -> snippet.withSideEffect(method);
+        case BundledExpressionEntry bundled -> throw new IllegalStateException(
+                "Event data from the bundle is never the filter of a listener");
         };
     }
 
@@ -867,8 +923,8 @@ public class ElementListenerMap extends NodeMap {
         // Declared snippets have no expression
         return collectEventExpressions(eventName).values().stream()
                 .map(settings -> settings.entry)
-                .filter(ExpressionEntry.class::isInstance).map(Entry::key)
-                .collect(Collectors.toUnmodifiableSet());
+                .filter(entry -> !(entry instanceof SnippetEntry))
+                .map(Entry::key).collect(Collectors.toUnmodifiableSet());
     }
 
     /**
@@ -914,6 +970,30 @@ public class ElementListenerMap extends NodeMap {
                     "The registration must be one returned by an ElementListenerMap");
         }
         wrapper.addEventDataWithoutCspReport(eventData);
+    }
+
+    /**
+     * Adds {@link com.vaadin.flow.component.EventData} values to a registration
+     * of this map like {@link DomListenerRegistration#addEventData(List)}, for
+     * values that the build has put into the bundle as functions, see
+     * {@link BundledEventData}. The client runs the function of the bundle
+     * instead of compiling the value, and sends the result under the value, so
+     * nothing is reported as JavaScript sent as a string.
+     *
+     * @param registration
+     *            a registration returned by
+     *            {@link #add(String, DomEventListener)}, not <code>null</code>
+     * @param eventData
+     *            the event data values, not <code>null</code> and not
+     *            containing <code>null</code>
+     */
+    public static void addBundledEventData(DomListenerRegistration registration,
+            List<String> eventData) {
+        if (!(registration instanceof DomEventListenerWrapper wrapper)) {
+            throw new IllegalArgumentException(
+                    "The registration must be one returned by an ElementListenerMap");
+        }
+        wrapper.addBundledEventData(eventData);
     }
 
     /**

@@ -24,13 +24,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
@@ -55,6 +62,11 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
  * snippet. A definition that does not pass
  * {@link JsDefinitionProxy#checkDefinition(Class)} is left out, with an error
  * in the log.
+ * <p>
+ * The snippet registry also holds the {@link EventData} values of the
+ * {@link DomEvent} classes on the class path that the client would otherwise
+ * compile from a string, see {@link BundledEventData}, so that the server can
+ * send the identifier of a function instead of the value.
  * <p>
  * This is what lets the client run a server-initiated call without compiling
  * anything from a string: the server sends the identifier of the function to
@@ -122,6 +134,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                 "Generating the file needs a class finder to scan for the JavaScript definitions with");
         return renderFileContent(
                 classFinder.getAnnotatedClasses(JsDefinition.class),
+                classFinder.getAnnotatedClasses(DomEvent.class),
                 !options.isProductionMode());
     }
 
@@ -142,12 +155,99 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      */
     static String renderFileContent(Collection<Class<?>> definitions,
             boolean withNames) {
+        return renderFileContent(definitions, List.of(), withNames);
+    }
+
+    /**
+     * Renders the file that registers the JavaScript of the given definition
+     * interfaces and the {@link EventData} values of the given event types that
+     * {@link BundledEventData} puts into the bundle.
+     *
+     * @param definitions
+     *            the JavaScript definitions to render, not <code>null</code>
+     * @param eventTypes
+     *            the classes annotated with {@link DomEvent} to render the
+     *            event data of, not <code>null</code>
+     * @param withNames
+     *            whether to register what a message about a call names it by,
+     *            which is for a development bundle
+     * @return the content of the generated file
+     */
+    static String renderFileContent(Collection<Class<?>> definitions,
+            Collection<Class<?>> eventTypes, boolean withNames) {
         List<String> lines = new ArrayList<>(renderHeader(withNames));
         definitions.stream().sorted(Comparator.comparing(Class::getName))
                 .forEach(definition -> lines
                         .addAll(renderDefinitionLines(definition, withNames)));
+        lines.addAll(renderEventDataLines(eventTypes, withNames));
         lines.addAll(FOOTER);
         return String.join(System.lineSeparator(), lines);
+    }
+
+    /**
+     * Renders one snippet per distinct {@link EventData} value of the given
+     * event types that {@link BundledEventData} puts into the bundle, under the
+     * identifier the server sends for it. The snippet captures nothing, and the
+     * function it evaluates to is called with the event and the element, the
+     * same names the client compiles such a value with.
+     */
+    private static List<String> renderEventDataLines(
+            Collection<Class<?>> eventTypes, boolean withNames) {
+        // By identifier, for an output that does not depend on the order of
+        // the scan, each with the first event type that declares it
+        Map<String, String> expressions = new TreeMap<>();
+        Map<String, String> declaredBy = new HashMap<>();
+        eventTypes.stream().sorted(Comparator.comparing(Class::getName))
+                .forEach(eventType -> findBundledEventData(eventType)
+                        .forEach(expression -> {
+                            String functionId = BundledEventData
+                                    .getFunctionId(expression);
+                            expressions.putIfAbsent(functionId, expression);
+                            declaredBy.putIfAbsent(functionId,
+                                    eventType.getName());
+                        }));
+
+        List<String> lines = new ArrayList<>();
+        expressions.forEach((functionId, expression) -> {
+            String id = quote(functionId);
+            lines.add(String.format(
+                    "window.Vaadin.Flow.jsSnippets[%s] = function () {", id));
+            lines.add("  return function (event, element) {");
+            // On lines of their own, so that a value ending with a comment
+            // does not comment out what closes it
+            lines.add("    return (");
+            lines.add(expression);
+            lines.add("    );");
+            lines.add("  };");
+            lines.add("};");
+            if (withNames) {
+                lines.add(String.format(
+                        "window.Vaadin.Flow.jsDefinitionNames[%s] = %s;", id,
+                        quote(declaredBy.get(functionId) + " @EventData(\""
+                                + expression + "\")")));
+            }
+        });
+        return lines.stream().flatMap(
+                line -> Arrays.stream(line.split(System.lineSeparator())))
+                .toList();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<String> findBundledEventData(Class<?> eventType) {
+        if (!ComponentEvent.class.isAssignableFrom(eventType)) {
+            return List.of();
+        }
+        try {
+            return BundledEventData.getBundledEventData(
+                    (Class<? extends ComponentEvent<?>>) eventType);
+        } catch (IllegalArgumentException e) {
+            // Left out rather than failing the build, as for a definition.
+            // Listening to the event fails at runtime with the same message.
+            getLogger().warn(
+                    "Leaving the event data of {} out of the bundle: {}",
+                    eventType.getName(), e.getMessage());
+            return List.of();
+        }
     }
 
     /**
@@ -440,7 +540,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     }
 
     private static String quote(String value) {
-        return "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
+        return "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"")
+                .replace("\n", "\\n").replace("\r", "\\r") + "\"";
     }
 
     @Override
