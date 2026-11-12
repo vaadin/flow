@@ -633,12 +633,12 @@ public final class JsDefinitionProxy {
 
         @Override
         public boolean equals(@Nullable Object obj) {
-            return obj instanceof DeclaredSnippetHandler other
-                    && snippetType == other.snippetType
-                    && call.definitionType() == other.call.definitionType()
-                    && call.methodName().equals(other.call.methodName())
+            return obj instanceof DeclaredSnippetHandler(Class<?> otherType, JsCall otherCall)
+                    && snippetType == otherType
+                    && call.definitionType() == otherCall.definitionType()
+                    && call.methodName().equals(otherCall.methodName())
                     && Arrays.deepEquals(call.flattenArguments().toArray(),
-                            other.call.flattenArguments().toArray());
+                            otherCall.flattenArguments().toArray());
         }
 
         @Override
