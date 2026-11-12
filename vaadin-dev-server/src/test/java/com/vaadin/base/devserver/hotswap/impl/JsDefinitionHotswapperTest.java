@@ -46,6 +46,7 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -251,9 +252,23 @@ class JsDefinitionHotswapperTest {
             assertTrue(cleared.contains(TemplateJs.class),
                     "what was cached of the definition depends on the type: "
                             + cleared);
+            assertFalse(cleared.contains(GreeterJs.class),
+                    "a definition not returning the type is left alone");
         } finally {
             registration.remove();
         }
+    }
+
+    @Test
+    void snippetTypeChangedWithADefinitionReturningIt_reportedOnce()
+            throws IOException {
+        writeGeneratedDefinitionsFor(TemplateJs.class);
+        editGeneratedDefinitions("return function (item) {",
+                "return function (row) {");
+
+        classesChanged(TemplateSnippet.class, TemplateJs.class);
+
+        assertEquals(List.of(TemplateJs.class.getName()), hotswapper.reported);
     }
 
     @Test
