@@ -800,8 +800,8 @@ public interface DomListenerRegistration extends Registration {
      * @return this registration, for chaining
      * @throws IllegalArgumentException
      *             if a property of the class does not give a property path,
-     *             such as a property with a name that is not a JavaScript
-     *             identifier
+     *             such as a property with a name that has other characters than
+     *             ASCII letters, digits, <code>_</code> and <code>$</code>
      * @see DomEvent#getEventDetail(Class)
      * @see DomEvent#getEventDetail(TypeReference)
      * @since 25.0

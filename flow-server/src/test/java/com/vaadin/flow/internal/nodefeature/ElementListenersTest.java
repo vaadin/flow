@@ -1443,23 +1443,27 @@ public class ElementListenersTest
 
     @Test
     void addEventData_topLevelPropertyNotEventOrElement_throwsWithoutAdding() {
-        class SimpleEventData {
-            private String message;
-            private int code;
-
-            public String getMessage() {
-                return message;
-            }
-
-            public int getCode() {
-                return code;
-            }
+        record EventDetails(int button) {
+        }
+        record MixedEventData(EventDetails event, String message) {
         }
 
         DomListenerRegistration registration = ns.add("custom", noOp);
 
         assertThrows(IllegalArgumentException.class,
-                () -> registration.addEventData(SimpleEventData.class));
+                () -> registration.addEventData(MixedEventData.class));
+        assertEquals(Set.of(), getExpressions("custom"));
+    }
+
+    @Test
+    void addEventDetail_propertyNotAsciiIdentifier_throwsWithoutAdding() {
+        record Detail(int a, int größe) {
+        }
+
+        DomListenerRegistration registration = ns.add("custom", noOp);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> registration.addEventDetail(Detail.class));
         assertEquals(Set.of(), getExpressions("custom"));
     }
 
