@@ -567,15 +567,29 @@ class JsDefinitionProxyTest {
         assertTrue(label.toString().contains("TemplateSnippet"),
                 label.toString());
         assertEquals(label, SerializationUtils.roundtrip(label));
+        SelfReference unencodable = new SelfReference();
+        assertThrows(RuntimeException.class, () -> templates.echo(unencodable),
+                "a capture the client can not receive should fail when declared");
+    }
+
+    @Test
+    void createSnippets_snippetTypeOfTheApplication_equalWhenArgumentsHaveEqualContents() {
+        TemplateJs templates = JsDefinitionProxy
+                .createSnippets(TemplateJs.class);
+
         TemplateSnippet joined = templates.join("a", "b");
         assertEquals(templates.join("a", "b"), joined,
                 "trailing arguments should be compared by their contents");
         assertEquals(templates.join("a", "b").hashCode(), joined.hashCode());
         assertNotEquals(templates.join("a", "c"), joined);
         assertEquals(joined, SerializationUtils.roundtrip(joined));
-        SelfReference unencodable = new SelfReference();
-        assertThrows(RuntimeException.class, () -> templates.echo(unencodable),
-                "a capture the client can not receive should fail when declared");
+
+        TemplateSnippet echoed = templates.echo(new String[] { "a" });
+        assertEquals(templates.echo(new String[] { "a" }), echoed,
+                "an array argument should be compared by its contents");
+        assertEquals(templates.echo(new String[] { "a" }).hashCode(),
+                echoed.hashCode());
+        assertNotEquals(templates.echo(new String[] { "b" }), echoed);
     }
 
     @Test
