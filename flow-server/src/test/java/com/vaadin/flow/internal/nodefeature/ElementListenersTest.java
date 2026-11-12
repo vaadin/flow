@@ -32,6 +32,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
@@ -71,6 +73,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -170,8 +174,11 @@ public class ElementListenersTest
 
     @Test
     void addEventDataList_existingExpressions_merged() {
-        ns.add("eventType", noOp).addEventData("data1")
-                .addEventData(List.of("data1", "data2"));
+        DomListenerRegistration registration = ns.add("eventType", noOp)
+                .addEventData("data1");
+
+        ElementListenerMap.addEventData(registration,
+                List.of("data1", "data2"));
 
         assertEquals(Set.of("data1", "data2"), getExpressions("eventType"));
     }
@@ -182,7 +189,42 @@ public class ElementListenersTest
         List<String> eventData = Arrays.asList("data1", null);
 
         assertThrows(IllegalArgumentException.class,
-                () -> registration.addEventData(eventData));
+                () -> ElementListenerMap.addEventData(registration, eventData));
+    }
+
+    @Test
+    void defaultMethods_otherRegistration_addEachWithAddEventData() {
+        DomListenerRegistration registration = mock(
+                DomListenerRegistration.class, CALLS_REAL_METHODS);
+
+        registration.preventDefault().synchronizeProperty("value");
+
+        verify(registration)
+                .addEventData(JsonConstants.EVENT_DATA_PREVENT_DEFAULT);
+        verify(registration).addEventData(
+                JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + "value");
+    }
+
+    @Test
+    void addEventDataPath_propertyPath_addedWithPathAsKey() {
+        ns.add("eventType", noOp).addEventDataPath("event.detail?.itemKey")
+                .addEventDataPath("element");
+
+        assertEquals(Set.of("event.detail?.itemKey", "element"),
+                getExpressions("eventType"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "event.x * 2", "event.composedPath()[0]",
+            "window.location", "event.", "event..x", "detail.value", "" })
+    void addEventDataPath_notPropertyPath_throwsWithoutAdding(String path) {
+        DomListenerRegistration registration = ns.add("eventType", noOp);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> registration.addEventDataPath(path));
+        assertThrows(IllegalArgumentException.class,
+                () -> registration.addEventDataElementPath(path));
+        assertEquals(Set.of(), getExpressions("eventType"));
     }
 
     @Test
@@ -1073,8 +1115,10 @@ public class ElementListenersTest
         assertNull(capturedTarget.get(), "no element should be reported");
     }
 
-    @Test
-    void addEventDataElement_targetNodeInJsonData_elementMapped() {
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void addEventDataElement_targetNodeInJsonData_elementMapped(
+            boolean usePath) {
         Element parent = new Element("parent");
         Element child = new Element("child");
         Element sibling = new Element("sibling");
@@ -1082,7 +1126,8 @@ public class ElementListenersTest
         new StateTree(new UI().getInternals(), ElementChildrenList.class)
                 .getUI().getElement().appendChild(parent, sibling);
         final String eventType = "click";
-        final String expression = "expression";
+        final String expression = usePath ? "event.target.parentElement"
+                : "expression";
         final String key = JsonConstants.MAP_STATE_NODE_EVENT_DATA + expression;
 
         AtomicReference<DomEvent> capturedTarget = new AtomicReference<>();
@@ -1094,7 +1139,11 @@ public class ElementListenersTest
         Set<String> expressions = getExpressions(listenerMap, eventType);
         assertEquals(0, expressions.size());
 
-        registration.addEventDataElement(expression);
+        if (usePath) {
+            registration.addEventDataElementPath(expression);
+        } else {
+            registration.addEventDataElement(expression);
+        }
         expressions = getExpressions(listenerMap, eventType);
 
         assertEquals(1, expressions.size());
@@ -1120,7 +1169,7 @@ public class ElementListenersTest
     }
 
     @Test
-    void addEventDataElement_eventTarget_usesMapEventTargetInstead() {
+    void addEventDataElementPath_eventTarget_usesMapEventTargetInstead() {
         Element parent = new Element("parent");
         Element child = new Element("child");
         parent.appendChild(child);
@@ -1134,7 +1183,7 @@ public class ElementListenersTest
         final ElementListenerMap listenerMap = parent.getNode()
                 .getFeature(ElementListenerMap.class);
 
-        registration.addEventDataElement("event.target");
+        registration.addEventDataElementPath("event.target");
         Set<String> expressions = getExpressions(listenerMap, eventType);
 
         assertEquals(1, expressions.size());
@@ -1472,8 +1521,20 @@ public class ElementListenersTest
     }
 
     @Test
-    void testAddEventDataWithSimpleBean() {
-        // Test with a simple bean (non-record)
+    void addEventData_topLevelPropertyNotEventOrElement_added() {
+        record EventDetails(int button) {
+        }
+        record MixedEventData(EventDetails event, String message) {
+        }
+
+        ns.add("custom", noOp).addEventData(MixedEventData.class);
+
+        assertEquals(Set.of("event.button", "message"),
+                getExpressions("custom"));
+    }
+
+    @Test
+    void addEventData_simpleBean_propertiesFromGettersAdded() {
         class SimpleEventData {
             private String message;
             private int code;
@@ -1487,15 +1548,20 @@ public class ElementListenersTest
             }
         }
 
-        DomListenerRegistration registration = ns.add("custom", noOp);
-        registration.addEventData(SimpleEventData.class);
+        ns.add("custom", noOp).addEventData(SimpleEventData.class);
 
-        Set<String> expressions = getExpressions("custom");
+        assertEquals(Set.of("message", "code"), getExpressions("custom"));
+    }
 
-        // Should have captured both fields
-        assertTrue(expressions.contains("message"), "Should capture message");
-        assertTrue(expressions.contains("code"), "Should capture code");
-        assertEquals(2, expressions.size(), "Should have 2 expressions");
+    @Test
+    void addEventDetail_propertyNotAsciiIdentifier_added() {
+        record Detail(int a, int größe) {
+        }
+
+        ns.add("custom", noOp).addEventDetail(Detail.class);
+
+        assertEquals(Set.of("event.detail.a", "event.detail.größe"),
+                getExpressions("custom"));
     }
 
     @Test

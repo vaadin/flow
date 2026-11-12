@@ -68,7 +68,7 @@ public class ComponentEventBusUtil {
      * <p>
      * The same unmodifiable list is returned for every call so that all
      * listeners of the event type can share it, see
-     * {@link DomListenerRegistration#addEventData(List)}.
+     * {@link com.vaadin.flow.internal.nodefeature.ElementListenerMap#addEventData(DomListenerRegistration, List)}.
      *
      * @param eventType
      *            the component event type

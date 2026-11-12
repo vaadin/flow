@@ -27,8 +27,8 @@ import com.vaadin.flow.router.Route;
 /**
  * The most ordinary thing an application does: a click listener on a component,
  * whose event carries data read from the DOM event, a DOM event listener with
- * an event data expression on a plain element, and a component event whose
- * event data is an expression that the build puts into the bundle, also for a
+ * an event data path on a plain element, and a component event whose event
+ * data is an expression that the build puts into the bundle, also for a
  * component that the expression returns.
  */
 @Route("click")
@@ -48,7 +48,7 @@ public class ClickView extends Div {
         area.getElement().addEventListener("click",
                 event -> clientX.setText("x="
                         + event.getEventData().get("event.clientX").asInt()))
-                .addEventData("event.clientX");
+                .addEventDataPath("event.clientX");
 
         Span offset = new Span();
         offset.setId("offset");
