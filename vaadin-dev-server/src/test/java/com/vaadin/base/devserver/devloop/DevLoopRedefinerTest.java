@@ -33,9 +33,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsCall;
@@ -301,6 +305,39 @@ class DevLoopRedefinerTest {
         // declares, so an edited expression is a different one.
         assertNotEquals(imports,
                 DevLoopRedefiner.frontendDependencies(EditedGreeterJs.class));
+    }
+
+    @DomEvent("offset")
+    public static class OffsetEvent extends ComponentEvent<Component> {
+        public OffsetEvent(Component source, boolean fromClient,
+                @EventData("event.clientX - 1") double offset, // NOSONAR
+                @EventData("event.clientY") double clientY) {
+            super(source, fromClient);
+        }
+    }
+
+    @DomEvent("offset")
+    public static class EditedOffsetEvent extends ComponentEvent<Component> {
+        public EditedOffsetEvent(Component source, boolean fromClient,
+                @EventData("event.clientX - 2") double offset, // NOSONAR
+                @EventData("event.clientY") double clientY) {
+            super(source, fromClient);
+        }
+    }
+
+    @Test
+    void frontendDependencies_seesTheEventDataTheBuildBundles() {
+        // An @EventData value the client would compile is generated into the
+        // bundle, so an edited one only reaches the browser through a restart
+        String imports = DevLoopRedefiner
+                .frontendDependencies(OffsetEvent.class);
+
+        assertEquals(
+                "eventdata:"
+                        + BundledEventData.getFunctionId("event.clientX - 1"),
+                imports);
+        assertNotEquals(imports,
+                DevLoopRedefiner.frontendDependencies(EditedOffsetEvent.class));
     }
 
     @Test

@@ -85,7 +85,10 @@ expressions of a Polymer template listener. The third kind is what an
 An `ElementListenerMap` value is an object keyed by the JavaScript
 expressions the client evaluates when the event fires. The value of each
 key says whether that expression is also a filter that decides whether
-the event is sent at all, and takes one of exactly three forms:
+the event is sent at all. For an expression the client compiles or reads
+itself, it takes one of exactly three forms (a function from the bundle
+has an object instead, see
+[Declared event data and filters](#declared-event-data-and-filters)):
 
 - `false` — a plain expression, evaluated and sent as event data.
 - `true` — a filter with no debounce.
@@ -137,7 +140,10 @@ nothing from a string. Such an entry is keyed by `@` followed by a short
 hash of the function and its captured values (`JsCall.createSnippetKey()`).
 No JavaScript expression starts with `@`, so this key never equals the
 key of an expression. Its value is an object, not one of the three
-debounce forms above, which is how the client tells the two apart:
+debounce forms above, which is how the client tells that it runs a
+function from the bundle rather than compiling or reading the key. The
+key alone does not tell it: a bundled `@EventData` value, described
+below, keeps the expression as its key. The object holds:
 
 - `f` — the id of the declared function. The client calls
   `window.Vaadin.Flow.jsSnippets[id]` with the captures, and calls what
