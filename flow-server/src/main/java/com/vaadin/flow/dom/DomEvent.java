@@ -108,12 +108,11 @@ public class DomEvent extends EventObject {
 
     static Element extractElement(JsonNode eventData, Element source,
             String key, boolean lookUnderUI) {
-        assert key.startsWith(JsonConstants.MAP_STATE_NODE_EVENT_DATA);
         if (!eventData.has(key)) {
             return null;
         }
         final JsonNode reportedStateNodeId = eventData.get(key);
-        if (reportedStateNodeId == null) {
+        if (reportedStateNodeId == null || reportedStateNodeId.isNull()) {
             return null;
         }
         int id = reportedStateNodeId.intValue();
@@ -254,7 +253,9 @@ public class DomEvent extends EventObject {
      * together with this event. The value has the type that the declaring
      * method defines. For example, for a method that returns
      * <code>DomEventData&lt;String&gt;</code>, the value is a
-     * <code>String</code>.
+     * <code>String</code>. For <code>DomEventData&lt;Element&gt;</code>, the
+     * value is the element, like with
+     * {@link #getEventDataElement(DomEventData)}, or <code>null</code>.
      * <p>
      * Pass the instance that you added to the listener. If all arguments of the
      * event data are plain values (strings, numbers, booleans, characters,
@@ -274,10 +275,14 @@ public class DomEvent extends EventObject {
      * @throws IllegalArgumentException
      *             if the value cannot be read as the declared type
      */
+    @SuppressWarnings("unchecked")
     public <T> T getEventData(DomEventData<T> eventData) {
         Objects.requireNonNull(eventData, "Event data cannot be null");
-        JsonNode value = this.eventData
-                .get(ElementListenerMap.getEventDataKey(eventData));
+        String key = ElementListenerMap.getEventDataKey(eventData);
+        if (eventData.isElementValue()) {
+            return (T) extractElement(this.eventData, getSource(), key, true);
+        }
+        JsonNode value = this.eventData.get(key);
         if (value == null) {
             return null;
         }
@@ -330,6 +335,12 @@ public class DomEvent extends EventObject {
      * <p>
      * In case you want the {@code event.target} element, use
      * {@link #getEventTarget()} instead.
+     * <p>
+     * The browser compiles the expression from a string, so it does not work
+     * with a Content Security Policy that does not allow
+     * <code>unsafe-eval</code>, unless it is a property path. For an element
+     * from declared event data, which works without that, use
+     * {@link #getEventDataElement(DomEventData)}.
      *
      * @param eventDataExpression
      *            the expression that was executed on the client to retrieve the
@@ -348,6 +359,48 @@ public class DomEvent extends EventObject {
                             + eventDataExpression,
                     true));
         }
+    }
+
+    /**
+     * Gets the closest {@link Element} corresponding to the DOM node that the
+     * given declared event data returned in the browser. This works for event
+     * data added with
+     * {@link DomListenerRegistration#addEventData(DomEventData)}.
+     * <p>
+     * If the DOM node is not created or controlled by the server side, the
+     * closest parent element that is controlled is returned instead. Invisible
+     * elements are not reported.
+     * <p>
+     * Unlike {@link #getEventDataElement(String)}, the browser runs a function
+     * from the bundle instead of compiling an expression from a string, so this
+     * also works with a Content Security Policy that does not allow
+     * <code>unsafe-eval</code>.
+     *
+     * <pre>
+     * &#64;JsDefinition
+     * public interface PathJs extends Serializable {
+     *
+     *     &#64;JsExpression("return event.composedPath()[0];")
+     *     DomEventData&lt;Element&gt; originalTarget();
+     * }
+     *
+     * DomEventData&lt;Element&gt; target = JsSnippets.of(PathJs.class)
+     *         .originalTarget();
+     * element.addEventListener("click",
+     *         event -&gt; event.getEventDataElement(target).ifPresent(this::show))
+     *         .addEventData(target);
+     * </pre>
+     *
+     * @param eventData
+     *            event data that returns an element, added to the listener, not
+     *            <code>null</code>
+     * @return the element that corresponds to the returned DOM node, or an
+     *         empty optional if there is none
+     * @see #getEventData(DomEventData)
+     */
+    public Optional<Element> getEventDataElement(
+            DomEventData<Element> eventData) {
+        return Optional.ofNullable(getEventData(eventData));
     }
 
     /**

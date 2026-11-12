@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -387,6 +388,9 @@ public class ElementListenersTest
 
         @JsExpression("return [];")
         DomEventData<List<Point>> points();
+
+        @JsExpression("return event.composedPath()[0];")
+        DomEventData<Element> originalTarget();
     }
 
     public record Point(int x, int y) {
@@ -465,6 +469,60 @@ public class ElementListenersTest
         assertEquals("[\".container\"]",
                 settings.get(JsonConstants.EVENT_SETTINGS_CAPTURES).toString());
         assertFalse(settings.has(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT));
+        assertFalse(settings.has(JsonConstants.EVENT_SETTINGS_MAP_ELEMENT));
+    }
+
+    @Test
+    void declaredElementEventData_settingsMapElement() {
+        ns.add("foo", noOp).addEventData(JS.originalTarget());
+
+        JsonNode settings = eventSettings(ns, "foo")
+                .get(ElementListenerMap.getEventDataKey(JS.originalTarget()));
+
+        assertTrue(settings.get(JsonConstants.EVENT_SETTINGS_MAP_ELEMENT)
+                .asBoolean());
+    }
+
+    @Test
+    void declaredElementEventData_nodeIdMappedToElement() {
+        Element parent = new Element("parent");
+        Element child = new Element("child");
+        Element sibling = new Element("sibling");
+        parent.appendChild(child);
+        new StateTree(new UI().getInternals(), ElementChildrenList.class)
+                .getUI().getElement().appendChild(parent, sibling);
+        DomEventData<Element> target = JS.originalTarget();
+        String key = ElementListenerMap.getEventDataKey(target);
+
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put(key, child.getNode().getId());
+        DomEvent event = new DomEvent(parent, "click", fromClient);
+        assertEquals(Optional.of(child), event.getEventDataElement(target));
+        assertEquals(child, event.getEventData(target));
+
+        // Also an element outside of the source element
+        fromClient.put(key, sibling.getNode().getId());
+        assertEquals(Optional.of(sibling),
+                new DomEvent(parent, "click", fromClient)
+                        .getEventDataElement(target));
+
+        // No state node
+        fromClient.put(key, -1);
+        assertEquals(Optional.empty(), new DomEvent(parent, "click", fromClient)
+                .getEventDataElement(target));
+
+        // No value, from a function that is missing from the bundle
+        fromClient.putNull(key);
+        DomEvent withoutValue = new DomEvent(parent, "click", fromClient);
+        assertEquals(Optional.empty(),
+                withoutValue.getEventDataElement(target));
+        assertNull(withoutValue.getEventData(target));
+
+        // Invisible elements are not reported
+        sibling.setVisible(false);
+        fromClient.put(key, sibling.getNode().getId());
+        assertEquals(Optional.empty(), new DomEvent(parent, "click", fromClient)
+                .getEventDataElement(target));
     }
 
     @Test
