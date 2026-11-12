@@ -181,13 +181,7 @@ class CspModeTest {
                         }).setFilter("event.x == 1")),
                 // The deprecated locator is an expression for the browser
                 call(JsFunction.class, "of",
-                        CspModeTest::delegateShortcutToStringLocator),
-                // An element the client maps to a state node is not put
-                // into the bundle
-                call(DomListenerRegistration.class, "addEventData",
-                        ui -> ComponentUtil.addListener(ui,
-                                ElementTargetEvent.class, e -> {
-                                })));
+                        CspModeTest::delegateShortcutToStringLocator));
     }
 
     private static Arguments call(Class<?> api, String method,
@@ -251,6 +245,11 @@ class CspModeTest {
             // the bundle
             ComponentUtil.addListener(clickable, OffsetEvent.class, e -> {
             });
+            // also a value of an element, whose function returns the DOM node
+            // that the client maps to a state node
+            ComponentUtil.addListener(clickable, ElementTargetEvent.class,
+                    e -> {
+                    });
             // Loads the chunk of the route with a function from the bundle
             ui.getInternals().addComponentDependencies(RouteView.class);
             // Shortcuts send their keys and options as data to JavaScript in

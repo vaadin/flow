@@ -198,10 +198,14 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         Map<String, String> declaredBy = new HashMap<>();
         eventTypes.stream().sorted(Comparator.comparing(Class::getName))
                 .forEach(eventType -> findBundledEventData(eventType)
-                        .forEach(expression -> {
+                        .forEach(eventData -> {
+                            // A value mapped to an element shares the
+                            // function of its expression, and the client maps
+                            // what the function returns
                             String functionId = BundledEventData
-                                    .getFunctionId(expression);
-                            expressions.putIfAbsent(functionId, expression);
+                                    .getFunctionId(eventData);
+                            expressions.putIfAbsent(functionId,
+                                    BundledEventData.getExpression(eventData));
                             declaredBy.putIfAbsent(functionId,
                                     eventType.getName());
                         }));

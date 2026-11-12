@@ -30,7 +30,8 @@ import com.vaadin.testbench.BrowserTest;
  * Event data that is a property path of the event is read in the browser
  * without compiling JavaScript, for a component event and for a DOM event
  * listener, and the event data of a component event that is any other
- * expression runs from the bundle.
+ * expression runs from the bundle, also when the client maps what it returns to
+ * a component.
  */
 public class ClickIT extends AbstractCspStrictIT {
 
@@ -71,9 +72,11 @@ public class ClickIT extends AbstractCspStrictIT {
                 .perform();
 
         waitUntil(ExpectedConditions.textMatches(By.id("offset"),
-                // A value the bundle has no function for arrives as 0, and
-                // the click lands in the middle of the area
-                Pattern.compile("offset=[1-9]\\d*")));
+                // A value the bundle has no function for can not be compiled
+                // here, so the event would not be sent. The click lands in the
+                // middle of the area, and the component is mapped from the
+                // DOM node
+                Pattern.compile("offset=[1-9]\\d* marker=offset-marker")));
         assertNoCspViolations();
     }
 }

@@ -131,15 +131,20 @@ public class ElementListenerMap extends NodeMap {
      * function instead of compiling the expression, see
      * {@link BundledEventData}.
      * <p>
+     * The key of a value mapped to a component or an element starts with
+     * {@link JsonConstants#MAP_STATE_NODE_EVENT_DATA}, as for an expression,
+     * and the client is also told to map what the function returns.
+     * <p>
      * When the bundle has no function for the identifier, for example because
      * the class that declares the value changed after the build, the client
-     * compiles the key as it does for an {@link ExpressionEntry}. If compiling
-     * is blocked too, by a Content Security Policy without
-     * <code>unsafe-eval</code>, the event is not sent, rather than sent with no
-     * value for the key.
+     * compiles the key as it does for an {@link ExpressionEntry}, without the
+     * prefix of a mapped value. If compiling is blocked too, by a Content
+     * Security Policy without <code>unsafe-eval</code>, the event is not sent,
+     * rather than sent with no value for the key.
      *
      * @param key
-     *            the expression
+     *            the expression, with the prefix of a mapped value if it has
+     *            one
      */
     private record BundledExpressionEntry(String key) implements Entry {
     }
@@ -268,6 +273,9 @@ public class ElementListenerMap extends NodeMap {
                         BundledEventData.getFunctionId(key));
                 json.set(JsonConstants.EVENT_SETTINGS_DEBOUNCE,
                         debounceToJson());
+                if (BundledEventData.isMappedToElement(key)) {
+                    json.put(JsonConstants.EVENT_SETTINGS_MAP_ELEMENT, true);
+                }
                 return json;
             }
             if (!(entry instanceof SnippetEntry snippet)) {

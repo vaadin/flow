@@ -40,10 +40,17 @@ import com.vaadin.flow.shared.JsonConstants;
  * The build and the server both decide through this class which values those
  * are and what their identifiers are, so they always agree.
  * <p>
- * A value that maps to a component or an element, and the values of a
- * {@link PrebuiltEventData} event, which are keys rather than JavaScript, are
- * not put into the bundle. Neither is a value that the client reads without
- * compiling it, such as a property path like <code>event.clientX</code>.
+ * A value that maps to a component or an element is in the event data with the
+ * prefix {@link JsonConstants#MAP_STATE_NODE_EVENT_DATA}. Its function is the
+ * expression without the prefix, so it shares the function of the same
+ * expression used as a plain value, and the server tells the client with
+ * {@link JsonConstants#EVENT_SETTINGS_MAP_ELEMENT} to map what the function
+ * returns.
+ * <p>
+ * The values of a {@link PrebuiltEventData} event, which are keys rather than
+ * JavaScript, are not put into the bundle. Neither is a value that the client
+ * reads without compiling it, such as a property path like
+ * <code>event.clientX</code>.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -103,27 +110,58 @@ public final class BundledEventData {
 
     /**
      * Gets the identifier of the function that the bundle registers for the
-     * given event data value, which is what the server sends instead of the
-     * value. A hash of the value, so that nothing in the browser names the
-     * class that declared it.
+     * given bundled event data, which is what the server sends instead of the
+     * expression. A hash of the expression, so that nothing in the browser
+     * names the class that declared it. A value mapped to a component or an
+     * element has the identifier of its expression without the prefix.
      *
-     * @param expression
-     *            an {@link EventData} value, not <code>null</code>
+     * @param eventData
+     *            event data that {@link #getBundledEventData(Class)} returns,
+     *            not <code>null</code>
      * @return the identifier of the function, not <code>null</code>
      */
-    public static String getFunctionId(String expression) {
+    public static String getFunctionId(String eventData) {
         // The function of a JsCall is hashed from what starts with a digit,
         // "(" or "executionContext,", so this never shares their hash input
-        return StringUtil.getHash("eventData:" + expression,
+        return StringUtil.getHash("eventData:" + getExpression(eventData),
                 StandardCharsets.UTF_8);
     }
 
+    /**
+     * Gets the JavaScript expression of the given bundled event data, which is
+     * what the function of the bundle returns: the event data without the
+     * prefix of a value mapped to a component or an element.
+     *
+     * @param eventData
+     *            event data that {@link #getBundledEventData(Class)} returns,
+     *            not <code>null</code>
+     * @return the expression, not <code>null</code>
+     */
+    public static String getExpression(String eventData) {
+        return isMappedToElement(eventData)
+                ? eventData.substring(
+                        JsonConstants.MAP_STATE_NODE_EVENT_DATA.length())
+                : eventData;
+    }
+
+    /**
+     * Checks whether the client maps what the expression of the given event
+     * data returns to the closest state node, which is how a value of a
+     * component or an element parameter is sent.
+     *
+     * @param eventData
+     *            event data that {@link #getBundledEventData(Class)} returns,
+     *            not <code>null</code>
+     * @return <code>true</code> if the value is mapped to a component or an
+     *         element
+     */
+    public static boolean isMappedToElement(String eventData) {
+        return eventData.startsWith(JsonConstants.MAP_STATE_NODE_EVENT_DATA);
+    }
+
     private static boolean isBundled(String eventData) {
-        // A value mapped to a state node is sent with a prefix that tells the
-        // client to map what the expression returns. Not bundled yet: the
-        // settings of a bundled value would need EVENT_SETTINGS_MAP_ELEMENT,
-        // and the compile fallback of the client the prefix stripped
-        return !eventData.startsWith(JsonConstants.MAP_STATE_NODE_EVENT_DATA)
-                && ElementListenerMap.isCompiledByClient(eventData);
+        // A bare prefix, for event.target, and a mapped property path are read
+        // by the client without compiling them, so they are not bundled
+        return ElementListenerMap.isCompiledByClient(eventData);
     }
 }

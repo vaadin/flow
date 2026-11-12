@@ -28,7 +28,8 @@ import com.vaadin.flow.router.Route;
  * The most ordinary thing an application does: a click listener on a component,
  * whose event carries data read from the DOM event, a DOM event listener with
  * an event data expression on a plain element, and a component event whose
- * event data is an expression that the build puts into the bundle.
+ * event data is an expression that the build puts into the bundle, also for a
+ * component that the expression returns.
  */
 @Route("click")
 public class ClickView extends Div {
@@ -51,30 +52,42 @@ public class ClickView extends Div {
 
         Span offset = new Span();
         offset.setId("offset");
-        Div offsetArea = new Div("Click here too");
+        Span marker = new Span("Click here too");
+        marker.setId("offset-marker");
+        marker.addClassName("marker");
+        Div offsetArea = new Div(marker);
         offsetArea.setId("offset-area");
         ComponentUtil.addListener(offsetArea, OffsetClickEvent.class,
-                event -> offset.setText("offset=" + event.getOffset()));
+                event -> offset.setText("offset=" + event.getOffset()
+                        + " marker=" + event.getMarker().getId().orElse("")));
 
         add(button, clicked, area, clientX, offsetArea, offset);
     }
 
     /**
      * A click whose event data is computed by an expression rather than read
-     * from a property path.
+     * from a property path, and a component found by an expression, which the
+     * client maps from the DOM node that the expression returns.
      */
     @DomEvent("click")
     public static class OffsetClickEvent extends ComponentEvent<Div> {
         private final int offset;
+        private final Span marker;
 
         public OffsetClickEvent(Div source, boolean fromClient,
-                @EventData("Math.round(event.clientX - element.getBoundingClientRect().left)") int offset) {
+                @EventData("Math.round(event.clientX - element.getBoundingClientRect().left)") int offset,
+                @EventData("element.querySelector('.marker')") Span marker) {
             super(source, fromClient);
             this.offset = offset;
+            this.marker = marker;
         }
 
         public int getOffset() {
             return offset;
+        }
+
+        public Span getMarker() {
+            return marker;
         }
     }
 }

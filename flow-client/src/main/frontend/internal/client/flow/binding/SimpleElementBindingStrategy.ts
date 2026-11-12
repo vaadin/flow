@@ -1264,7 +1264,7 @@ function handleDomEvent(event: Event, context: BindingContext): void {
       // A key that is not a snippet key is a bundled @EventData value
       const compiled = key.startsWith(JsonConstants.EVENT_SNIPPET_KEY_PREFIX)
         ? null
-        : compileIfMissingFromBundle(key, settings[JsonConstants.EVENT_SETTINGS_FUNCTION]);
+        : compileIfMissingFromBundle(key, settings, node.getTree());
       eventData![key] =
         compiled === null ? evaluateSnippet(settings, node.getTree(), event, element) : compiled(event, element);
       continue;
@@ -1561,15 +1561,27 @@ const warnedMissingBundledExpressions = new Set<string>();
  * would give the server an event without the value, which it would accept or
  * fail on far from the cause.
  *
- * @param expression - the key of the entry, which is the expression
- * @param functionId - the id of the function of the bundle for it
+ * The key of a value mapped to a component or an element starts with
+ * MAP_STATE_NODE_EVENT_DATA, and its settings have EVENT_SETTINGS_MAP_ELEMENT.
+ * The expression without the prefix is compiled, and the function that is
+ * returned maps the DOM node that it returns to the closest state node id, as
+ * the function of the bundle would be mapped.
+ *
+ * @param key - the key of the entry: the expression, with the prefix of a
+ * mapped value if it has one
+ * @param settings - the settings of the entry, which name the function of the
+ * bundle for it
+ * @param tree - the state tree to map a returned DOM node with
  * @returns the compiled expression, or null if the bundle has the function,
  * which the caller then runs as a declared snippet
  */
-function compileIfMissingFromBundle(expression: string, functionId: string): EventExpression | null {
+function compileIfMissingFromBundle(key: string, settings: SnippetSettings, tree: StateTree): EventExpression | null {
+  const functionId = settings[JsonConstants.EVENT_SETTINGS_FUNCTION];
   if (findDeclaredSnippet(functionId) !== undefined) {
     return null;
   }
+  const mapToStateNode = settings[JsonConstants.EVENT_SETTINGS_MAP_ELEMENT] === true;
+  const expression = mapToStateNode ? key.substring(MAP_STATE_NODE_EVENT_DATA.length) : key;
 
   let compiled: EventExpression;
   try {
@@ -1587,6 +1599,9 @@ function compileIfMissingFromBundle(expression: string, functionId: string): Eve
       `No JavaScript in the bundle for the @EventData value "${expression}", so it is compiled in the browser. ` +
         'The build did not collect it, for example because the class that declares it changed after the build. Build the frontend again or restart the application to put the value into the bundle.'
     );
+  }
+  if (mapToStateNode) {
+    return (event, element) => getClosestStateNodeIdToDomNode(tree, compiled(event, element), expression);
   }
   return compiled;
 }

@@ -41,6 +41,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsCalledWith;
@@ -338,6 +339,24 @@ class DevLoopRedefinerTest {
                 imports);
         assertNotEquals(imports,
                 DevLoopRedefiner.frontendDependencies(EditedOffsetEvent.class));
+    }
+
+    @DomEvent("child")
+    public static class ChildEvent extends ComponentEvent<Component> {
+        public ChildEvent(Component source, boolean fromClient,
+                @EventData("element.querySelector('span')") Element child) { // NOSONAR
+            super(source, fromClient);
+        }
+    }
+
+    @Test
+    void frontendDependencies_seesTheEventDataOfAnElementByItsExpression() {
+        // The bundle has the function of the expression, without the prefix
+        // that tells the client to map what it returns to a state node
+        assertEquals(
+                "eventdata:" + BundledEventData
+                        .getFunctionId("element.querySelector('span')"),
+                DevLoopRedefiner.frontendDependencies(ChildEvent.class));
     }
 
     @DomEvent("offset")

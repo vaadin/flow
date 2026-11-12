@@ -839,13 +839,14 @@ class ComponentEventBusTest {
         public OffsetEvent(Component source, boolean fromClient,
                 @EventData(OFFSET) double offset,
                 @EventData("event.clientX") double clientX, // NOSONAR
-                @EventData("event.composedPath()[0]") Element target) {
+                @EventData(PATH_TARGET) Element target) { // NOSONAR
             super(source, fromClient);
             this.offset = offset;
         }
     }
 
     private static final String OFFSET = "event.clientX - element.offsetLeft";
+    private static final String PATH_TARGET = "event.composedPath()[0]";
 
     @Test
     void addListener_expressionEventData_sentAsTheFunctionOfTheBundle() {
@@ -866,10 +867,16 @@ class ComponentEventBusTest {
                         .asString());
         assertTrue(settings.get("event.clientX").isBoolean(),
                 "the client reads a property path without compiling it");
-        assertTrue(
-                settings.get(JsonConstants.MAP_STATE_NODE_EVENT_DATA
-                        + "event.composedPath()[0]").isBoolean(),
-                "the client maps what the expression of an element returns to a state node");
+        // A value mapped to an element runs the function of its expression,
+        // and the client maps what the function returns to a state node
+        JsonNode mapped = settings
+                .get(JsonConstants.MAP_STATE_NODE_EVENT_DATA + PATH_TARGET);
+        assertEquals(BundledEventData.getFunctionId(PATH_TARGET),
+                mapped.get(JsonConstants.EVENT_SETTINGS_FUNCTION).asString());
+        assertTrue(mapped.get(JsonConstants.EVENT_SETTINGS_MAP_ELEMENT)
+                .asBoolean());
+        assertFalse(settings.get(OFFSET)
+                .has(JsonConstants.EVENT_SETTINGS_MAP_ELEMENT));
 
         ObjectNode eventData = JacksonUtils.createObjectNode();
         eventData.put(OFFSET, 42.5);

@@ -46,6 +46,7 @@ import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
+import com.vaadin.flow.shared.JsonConstants;
 
 import static com.vaadin.flow.internal.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
@@ -370,8 +371,26 @@ class TaskGenerateJsDefinitionsTest {
         assertFalse(content.contains("event.clientX" + System.lineSeparator()),
                 "the client reads a property path without compiling it: "
                         + content);
-        assertFalse(content.contains("event.composedPath()[0]"),
-                "the client maps what the expression of an element returns to a state node: "
+        // The client maps what the function of a value of an element returns
+        // to a state node, so the function is the expression without the
+        // prefix, shared with the same expression used as a plain value
+        String mappedId = BundledEventData
+                .getFunctionId(JsonConstants.MAP_STATE_NODE_EVENT_DATA
+                        + "event.composedPath()[0]");
+        assertEquals(BundledEventData.getFunctionId("event.composedPath()[0]"),
+                mappedId);
+        assertTrue(
+                content.contains(String.join(System.lineSeparator(),
+                        "window.Vaadin.Flow.jsSnippets[\"" + mappedId
+                                + "\"] = function () {",
+                        "  return function (event, element) {", "    return (",
+                        "event.composedPath()[0]", "    );")),
+                "a value of an element should be a function of its expression: "
+                        + content);
+        assertFalse(
+                content.contains(JsonConstants.MAP_STATE_NODE_EVENT_DATA
+                        + "event.composedPath()"),
+                "the prefix of a value of an element is not JavaScript: "
                         + content);
         assertFalse(content.contains("values[0]"),
                 "the event data of a prebuilt event are keys, not JavaScript: "

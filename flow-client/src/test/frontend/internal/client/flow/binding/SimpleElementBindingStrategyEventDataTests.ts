@@ -254,6 +254,17 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
       expect(harness.collectedEventData[0]).to.deep.equal({ [expression]: 'click true' });
     });
 
+    it('maps what the function from the bundle returns for a mapped key', () => {
+      const key = `${MAP_STATE_NODE_EVENT_DATA}element.firstElementChild`;
+      snippets()['fn-id'] = () => (_event, target) => target.firstElementChild;
+      bindWithClickSettings({ [key]: { f: 'fn-id', d: false, e: true } });
+      const { childNode } = addChild('span');
+
+      element.click();
+
+      expect(harness.collectedEventData[0]).to.deep.equal({ [key]: childNode.getId() });
+    });
+
     it('does not send the event for a bundled expression missing from the bundle', () => {
       // An expression of its own, as a compiled expression is cached
       const expression = 'event.type + " blocked"';
@@ -283,6 +294,27 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
       expect(errors[0]).to.contain(`@EventData value "${expression}"`);
       expect(errors[0]).to.contain('the event is not sent');
     });
+  });
+
+  it('compiles a mapped bundled expression missing from the bundle without its prefix and maps it', () => {
+    // An expression of its own, as a compiled expression is cached
+    const expression = 'element.firstElementChild || null';
+    const key = `${MAP_STATE_NODE_EVENT_DATA}${expression}`;
+    const warnings: string[] = [];
+    const originalWarn = console.warn;
+    console.warn = (message: unknown) => warnings.push(String(message));
+    try {
+      bindWithClickSettings({ [key]: { f: 'missing-bundled-mapped', d: false, e: true } });
+      const { childNode } = addChild('span');
+
+      element.click();
+
+      expect(harness.collectedEventData[0]).to.deep.equal({ [key]: childNode.getId() });
+    } finally {
+      console.warn = originalWarn;
+    }
+    expect(warnings).to.have.length(1);
+    expect(warnings[0]).to.contain(`@EventData value "${expression}"`);
   });
 
   it('compiles a bundled expression missing from the bundle and warns once', () => {

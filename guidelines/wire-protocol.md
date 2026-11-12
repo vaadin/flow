@@ -197,22 +197,30 @@ from a string is generated into `window.Vaadin.Flow.jsSnippets` as a
 function of the event and the element, without captures. Its entry keeps
 the expression as its key, so the server reads the value as before, but
 the value is an object with only `f` and `d`, and the client runs the
-function instead of compiling the key. The client tells such an entry
+function instead of compiling the key. A value mapped to a component or an
+element keeps its key with the `]` prefix, its function is the expression
+without the prefix, and its object also has `e: true`, so the client sends
+the id of the closest state node to the DOM node that the function returns.
+The client tells such an entry
 from a declared snippet by its key, which does not start with `@`
 (`JsonConstants.EVENT_SNIPPET_KEY_PREFIX`). When the bundle has no
 function for it, for example because the class changed after the build,
-the client compiles the key and logs a warning once. When compiling is
+the client compiles the key, without the `]` prefix of a mapped value, and
+logs a warning once. When compiling is
 blocked too, under a Content Security Policy without `unsafe-eval`, the
 client logs an error and the event is not sent, so the server never gets
 an event without the value. A declared snippet that is missing from the
 bundle has no expression to fall back to, and the client sends `null`
 for it. `BundledEventData` decides for
 both the build and the server which values those are and what their ids
-are: property paths, values mapped to a component or an element, and the
-keys of a `@PrebuiltEventData` event stay plain expressions.
+are: property paths, including mapped ones such as `]event.target`, and
+the keys of a `@PrebuiltEventData` event stay plain expressions.
 
 ```json
-{ "event.clientX - element.offsetLeft": { "f": "3a1c…77e0", "d": false } }
+{
+  "event.clientX - element.offsetLeft": { "f": "3a1c…77e0", "d": false },
+  "]element.querySelector('.item')": { "f": "6532…c1f6", "d": false, "e": true }
+}
 ```
 
 ### Constraints this puts on new code
