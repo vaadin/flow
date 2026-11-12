@@ -35,9 +35,12 @@ import com.vaadin.flow.component.internal.AllowInert;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
+import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEventHandler;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.JsonConstants;
@@ -52,12 +55,17 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @Isolated
 class PublishedServerEventHandlerRpcHandlerTest {
 
-    private VaadinService service;
+    private MockServletServiceSessionSetup.TestVaadinServletService service;
 
     private VaadinSession session;
 
@@ -117,10 +125,12 @@ class PublishedServerEventHandlerRpcHandlerTest {
     public static class DecoderParameters extends Component {
 
         private boolean isInvoked;
+        private Long longValue;
 
         @ClientCallable
         private void method(Long longValue, Title title) {
             isInvoked = true;
+            this.longValue = longValue;
         }
     }
 
@@ -298,6 +308,64 @@ class PublishedServerEventHandlerRpcHandlerTest {
                 component.getClass(), "method", params, -1);
 
         assertTrue(component.isInvoked);
+    }
+
+    @Test
+    void methodWithDecoderParameters_polymerHandlerLookedUpOncePerContext() {
+        MockVaadinContext context = new MockVaadinContext();
+        service.setContext(context);
+        Lookup lookup = context.getAttribute(Lookup.class);
+
+        DecoderParameters component = new DecoderParameters();
+        UI ui = new UI();
+        ui.getInternals().setSession(session);
+        ui.add(component);
+
+        for (int i = 0; i < 2; i++) {
+            ArrayNode params = JacksonUtils.createArrayNode();
+            params.add("264");
+            params.add("MRS");
+            PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                    component.getClass(), "method", params, -1);
+        }
+
+        assertTrue(component.isInvoked);
+        verify(lookup, times(1))
+                .lookup(DeprecatedPolymerPublishedEventHandler.class);
+    }
+
+    @Test
+    void methodWithDecoderParameters_cachedPolymerHandlerDecodesArguments() {
+        MockVaadinContext context = new MockVaadinContext();
+        service.setContext(context);
+        Lookup lookup = context.getAttribute(Lookup.class);
+        DeprecatedPolymerPublishedEventHandler handler = mock(
+                DeprecatedPolymerPublishedEventHandler.class);
+        when(lookup.lookup(DeprecatedPolymerPublishedEventHandler.class))
+                .thenReturn(handler);
+        when(handler.isTemplateModelValue(any(), any(), eq(Long.class)))
+                .thenReturn(true);
+        when(handler.getTemplateItem(any(), any(), eq(Long.class)))
+                .thenReturn(42L);
+
+        DecoderParameters component = new DecoderParameters();
+        UI ui = new UI();
+        ui.getInternals().setSession(session);
+        ui.add(component);
+
+        for (int i = 0; i < 2; i++) {
+            ArrayNode params = JacksonUtils.createArrayNode();
+            params.add("264");
+            params.add("MRS");
+            component.longValue = null;
+            PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                    component.getClass(), "method", params, -1);
+            assertEquals(42L, component.longValue);
+        }
+
+        verify(handler, times(2)).getTemplateItem(any(), any(), eq(Long.class));
+        verify(lookup, times(1))
+                .lookup(DeprecatedPolymerPublishedEventHandler.class);
     }
 
     @Test
