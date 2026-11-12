@@ -202,6 +202,7 @@ public class Dependency implements Serializable {
      *             browser loads dependencies before it applies the changes of
      *             the same round trip, and a detached element cannot be
      *             referenced
+     * @since 25.4
      */
     public Dependency(JsFunction dynamicImport) {
         // LAZY for the same reason as in Dependency(Type, String)
@@ -320,6 +321,7 @@ public class Dependency implements Serializable {
      *
      * @return the encoded function, or {@code null} for a dependency that is
      *         loaded from its URL or a JavaScript expression
+     * @since 25.4
      */
     @JsonIgnore
     public JsonNode getEncodedDynamicImport() {

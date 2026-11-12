@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
@@ -25,12 +23,10 @@ import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-// Asserts on the generated JavaScript, which only the deprecated JsFunction
-// getters expose
-@SuppressWarnings("removal")
 class DomEventTriggerTest {
 
     @Test
@@ -48,21 +44,16 @@ class DomEventTriggerTest {
         // Install JS references action at $0 and event name at $1 — no user
         // content leaks into the body, both are captures.
         JsFunction install = singleInstallFn(ui);
-        assertEquals(
-                "this.addEventListener($1, $0);"
-                        + "return () => this.removeEventListener($1, $0);",
-                install.getBody());
+        assertEquals("listenToEvent", snippetOf(TriggerJs.class, install));
         assertEquals("click", install.getCaptures().get(1));
 
         // The install $0 is the action's JsFunction directly — no intermediate
         // composed handler layer. The action is also the DOM event listener.
         JsFunction action = actionOf(install);
-        assertEquals(List.of("event", "context"), action.getArgumentNames());
 
         // SetPropertyAction body shape; target captured as $0, property name
-        // string capture at $1, source JsFunction invoked as $2(event,
-        // context).
-        assertEquals("$0[$1] = $2(event, context)", action.getBody());
+        // string capture at $1, source JsFunction invoked as $2(event).
+        assertEquals("setProperty", snippetOf(TriggerJs.class, action));
         assertSame(field.getElement(), action.getCaptures().get(0));
         assertEquals("value", action.getCaptures().get(1));
     }

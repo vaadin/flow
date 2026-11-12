@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -1396,11 +1395,11 @@ public class DataCommunicatorTest {
 
         verify(dataProvider, times(3)).fetch(queryCaptor.capture());
 
-        List<Item> items = stream.collect(Collectors.toList());
+        List<Item> items = stream.toList();
         assertEquals(30, items.size());
 
-        assertEquals(IntStream.range(0, 30).mapToObj(Item::new)
-                .collect(Collectors.toList()), items);
+        assertEquals(IntStream.range(0, 30).mapToObj(Item::new).toList(),
+                items);
 
         List<Query> allQueries = queryCaptor.getAllValues();
         assertEquals(3, allQueries.size());
@@ -1446,11 +1445,11 @@ public class DataCommunicatorTest {
 
         verify(dataProvider).fetch(queryCaptor.capture());
 
-        List<Item> items = stream.collect(Collectors.toList());
+        List<Item> items = stream.toList();
         assertEquals(50, items.size());
 
-        assertEquals(IntStream.range(0, 50).mapToObj(Item::new)
-                .collect(Collectors.toList()), items);
+        assertEquals(IntStream.range(0, 50).mapToObj(Item::new).toList(),
+                items);
 
         Query query = queryCaptor.getValue();
         assertEquals(0, query.getOffset());
@@ -1476,11 +1475,11 @@ public class DataCommunicatorTest {
 
         verify(dataProvider).fetch(queryCaptor.capture());
 
-        List<Item> items = stream.collect(Collectors.toList());
+        List<Item> items = stream.toList();
         assertEquals(42, items.size());
 
-        assertEquals(IntStream.range(10, 52).mapToObj(Item::new)
-                .collect(Collectors.toList()), items);
+        assertEquals(IntStream.range(10, 52).mapToObj(Item::new).toList(),
+                items);
 
         Query query = queryCaptor.getValue();
         assertEquals(10, query.getOffset());
@@ -1508,11 +1507,11 @@ public class DataCommunicatorTest {
 
         verify(dataProvider).fetch(queryCaptor.capture());
 
-        List<Item> items = stream.collect(Collectors.toList());
+        List<Item> items = stream.toList();
         assertEquals(123, items.size());
 
-        assertEquals(IntStream.range(0, 123).mapToObj(Item::new)
-                .collect(Collectors.toList()), items);
+        assertEquals(IntStream.range(0, 123).mapToObj(Item::new).toList(),
+                items);
 
         List<Query> allQueries = queryCaptor.getAllValues();
         assertEquals(1, allQueries.size());

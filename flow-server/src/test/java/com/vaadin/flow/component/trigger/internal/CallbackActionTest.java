@@ -30,13 +30,11 @@ import com.vaadin.tests.util.MockUI;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleReturnChannel;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-// Asserts on the generated JavaScript, which only the deprecated JsFunction
-// getters expose
-@SuppressWarnings("removal")
 class CallbackActionTest {
 
     @Test
@@ -74,7 +72,7 @@ class CallbackActionTest {
         JsFunction action = actionOf(singleInstallFn(ui));
         // $0 = the return channel; $1 = the source input's JsFunction. The
         // body forwards the source-fn's value straight into the channel call.
-        assertEquals("$0($1(event, context));", action.getBody());
+        assertEquals("sendToChannel", snippetOf(TriggerJs.class, action));
         assertEquals(2, action.getCaptures().size());
         assertTrue(
                 action.getCaptures()
@@ -98,7 +96,7 @@ class CallbackActionTest {
 
         // No value to forward, so the channel ($0) is called with no arguments.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0();", action.getBody());
+        assertEquals("callChannel", snippetOf(TriggerJs.class, action));
         assertTrue(
                 action.getCaptures()
                         .get(0) instanceof ReturnChannelRegistration,

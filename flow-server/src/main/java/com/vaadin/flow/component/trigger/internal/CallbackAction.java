@@ -30,6 +30,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
+import com.vaadin.flow.js.JsSnippets;
 
 /**
  * Forwards a value from the trigger's handler scope back to the server and
@@ -74,6 +75,8 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * @since 25.2
  */
 public class CallbackAction<T> extends Action {
+
+    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
 
     private final Action.@Nullable Input<? extends T> source;
     private final SerializableConsumer<ArrayNode> dispatch;
@@ -136,14 +139,11 @@ public class CallbackAction<T> extends Action {
         if (source == null) {
             // Value-less: there is nothing to forward, so the channel is called
             // with no arguments.
-            return JsFunction.of("$0();", channel);
+            return TRIGGER_JS.callChannel(channel);
         }
-        // $0 = the return channel; $1 = the source input's JsFunction.
         // Invoking the source with `event` produces its value, which is
         // forwarded straight into the channel call.
-        return JsFunction
-                .of("$0($1(event, context));", channel, source.toJs(trigger))
-                .withArguments("event", "context");
+        return TRIGGER_JS.sendToChannel(channel, source.toJs(trigger));
     }
 
     private ReturnChannelRegistration channelFor(StateNode hostNode) {

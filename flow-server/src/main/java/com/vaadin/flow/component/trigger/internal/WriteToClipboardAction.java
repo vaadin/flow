@@ -15,13 +15,19 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.js.JsCalledWith;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 
 /**
  * Writes a {@code ClipboardItem} to the user's clipboard via
@@ -55,6 +61,10 @@ import com.vaadin.flow.function.SerializableRunnable;
  * @since 25.2
  */
 public class WriteToClipboardAction extends PromiseAction<String> {
+
+    private static final WriteToClipboardJs WRITE_TO_CLIPBOARD_JS = JsSnippets
+            .of(WriteToClipboardJs.class);
+    private static final ValueJs VALUE_JS = JsSnippets.of(ValueJs.class);
 
     private final Action.@Nullable Input<String> textInput;
     private final Action.@Nullable Input<String> htmlInput;
@@ -227,17 +237,41 @@ public class WriteToClipboardAction extends PromiseAction<String> {
         // a no-op input that returns null, so the TS helper sees null and
         // skips that MIME type. Keeping the call shape uniform across all
         // combinations means no per-action JS assembly.
-        // Created per call rather than held in a constant, so that the csp
-        // mode reporting of JsFunction.of runs for a call, not a class load
-        JsFunction nullInput = JsFunction.of("return null");
+        JsFunction nullInput = VALUE_JS.nullValue();
         JsFunction text = textInput != null ? textInput.toJs(trigger)
                 : nullInput;
         JsFunction html = htmlInput != null ? htmlInput.toJs(trigger)
                 : nullInput;
         JsFunction image = imageInput != null ? imageInput.toJs(trigger)
                 : nullInput;
-        return JsFunction.of(
-                "return window.Vaadin.Flow.clipboard.writePayload($0(event, context), $1(event, context), $2(event, context))",
-                text, html, image).withArguments("event", "context");
+        return WRITE_TO_CLIPBOARD_JS.writeToClipboard(text, html, image);
+    }
+
+    /**
+     * How the clipboard is written, as a snippet for
+     * {@link JsSnippets#of(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    @JsDefinition
+    public interface WriteToClipboardJs extends Serializable {
+
+        /**
+         * An action that writes the values of the given inputs to the
+         * clipboard, skipping each one that returns <code>null</code>.
+         *
+         * @param text
+         *            the input producing the <code>text/plain</code> payload
+         * @param html
+         *            the input producing the <code>text/html</code> payload
+         * @param image
+         *            the input producing the source <code>&lt;img&gt;</code> of
+         *            the <code>image/png</code> payload
+         * @return the action function, which returns the promise of the write
+         */
+        @JsExpression("return window.Vaadin.Flow.clipboard.writePayload($0(event, context), $1(event, context), $2(event, context))")
+        @JsCalledWith({ "event", "context" })
+        JsFunction writeToClipboard(JsFunction text, JsFunction html,
+                JsFunction image);
     }
 }

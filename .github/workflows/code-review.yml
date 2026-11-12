@@ -117,10 +117,10 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '26.13.0'
+          node-version: '26.13.1'
 
       - name: Run code review
-        uses: vaadin/github-actions/code-review@fdb11ea65f1b4ba33aacdcae1c7f59b425be3d20 # main
+        uses: vaadin/github-actions/code-review@2c9bd830f448599af76fa9a124360189f4613542 # main
         with:
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           pr-number: ${{ env.PR_NUMBER }}

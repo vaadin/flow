@@ -22,7 +22,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -80,8 +79,8 @@ public class DepsTests {
     public static void assertImportsWithFilter(
             Map<ChunkInfo, List<String>> actualUrls, Predicate<String> filter,
             String... expectedUrls) {
-        assertEquals(List.of(expectedUrls), merge(actualUrls).stream()
-                .filter(filter).collect(Collectors.toList()));
+        assertEquals(List.of(expectedUrls),
+                merge(actualUrls).stream().filter(filter).toList());
     }
 
     /**

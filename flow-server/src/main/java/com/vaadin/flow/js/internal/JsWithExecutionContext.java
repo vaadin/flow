@@ -42,6 +42,8 @@ import com.vaadin.flow.js.JsExpression;
  * <p>
  * For internal use only. The context exposes the internals of the client, which
  * are not an API. May be renamed or removed in any release.
+ * 
+ * @since 25.4
  */
 @Documented
 @Target(ElementType.METHOD)

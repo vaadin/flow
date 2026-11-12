@@ -23,12 +23,11 @@ import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-// Asserts on the generated JavaScript, which only the deprecated JsFunction
-// getters expose
-@SuppressWarnings("removal")
 class ShareActionTest {
 
     @Test
@@ -47,9 +46,7 @@ class ShareActionTest {
         // JsFunction with the event; the literal values are captured, not
         // stringified into the body.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(
-                "return navigator.share({title:$0(event, context),text:$1(event, context),url:$2(event, context)})",
-                action.getBody());
+        assertEquals("share", snippetOf(ShareAction.ShareJs.class, action));
         assertEquals("Hi", ((JsFunction) action.getCaptures().get(0))
                 .getCaptures().get(0));
         assertEquals("World", ((JsFunction) action.getCaptures().get(1))
@@ -70,11 +67,13 @@ class ShareActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
+        // Absent slots are passed as null, which leaves them out of the data
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("return navigator.share({url:$0(event, context)})",
-                action.getBody());
+        assertEquals("share", snippetOf(ShareAction.ShareJs.class, action));
+        assertNull(action.getCaptures().get(0));
+        assertNull(action.getCaptures().get(1));
         assertEquals("https://vaadin.com",
-                ((JsFunction) action.getCaptures().get(0)).getCaptures()
+                ((JsFunction) action.getCaptures().get(2)).getCaptures()
                         .get(0));
     }
 
@@ -92,14 +91,15 @@ class ShareActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         // With outcome handling the action wraps the inner promise function
-        // with OBSERVE_PROMISE + the return channel; the inner $1 still calls
-        // navigator.share.
+        // with the outcome report to the return channel; the inner function
+        // still calls navigator.share.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0($1(event, context), $2)", action.getBody());
+        assertEquals("reportOutcome", snippetOf(TriggerJs.class, action));
 
-        JsFunction inner = (JsFunction) action.getCaptures().get(1);
-        assertEquals("return navigator.share({title:$0(event, context)})",
-                inner.getBody());
+        JsFunction inner = (JsFunction) action.getCaptures().get(0);
+        assertEquals("share", snippetOf(ShareAction.ShareJs.class, inner));
+        assertNull(inner.getCaptures().get(1));
+        assertNull(inner.getCaptures().get(2));
     }
 
     @Test

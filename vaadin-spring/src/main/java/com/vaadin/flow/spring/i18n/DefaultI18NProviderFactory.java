@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Condition;
@@ -72,8 +71,7 @@ public class DefaultI18NProviderFactory implements Condition, Serializable {
             if (translations.length > 0) {
                 List<Locale> locales = I18NUtil.collectLocalesFromFileNames(
                         Arrays.stream(translations).map(Resource::getFilename)
-                                .filter(Objects::nonNull)
-                                .collect(Collectors.toList()));
+                                .filter(Objects::nonNull).toList());
                 // Makes use of the RestartClassLoader to invalidate the
                 // ResourceBundle cache on SpringBoot application dev mode
                 // reload. See https://github.com/vaadin/hilla/issues/2554

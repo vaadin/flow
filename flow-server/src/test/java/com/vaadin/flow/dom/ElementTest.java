@@ -63,6 +63,7 @@ import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
+import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration.InitializerJs;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.StateNode;
@@ -1415,7 +1416,7 @@ class ElementTest extends AbstractNodeTest {
         style.set("borderColor", "blue");
         style.set("border-foo", "bar");
 
-        List<String> styles = style.getNames().collect(Collectors.toList());
+        List<String> styles = style.getNames().toList();
         assertEquals(2, styles.size());
         assertTrue(styles.contains("border-color"));
         assertTrue(styles.contains("border-foo"));
@@ -1428,7 +1429,7 @@ class ElementTest extends AbstractNodeTest {
         Style style = element.getStyle();
         style.set("borderColor", "blue");
         style.set("borderColor", null);
-        List<String> styles = style.getNames().collect(Collectors.toList());
+        List<String> styles = style.getNames().toList();
         assertFalse(styles.contains("borderColor"));
     }
 
@@ -2749,7 +2750,16 @@ class ElementTest extends AbstractNodeTest {
                 () -> element.addJsInitializer(null));
     }
 
+    private static void assertInitializerCall(String methodName,
+            JavaScriptInvocation invocation) {
+        JsCall call = invocation.getJsCall();
+        assertNotNull(call, "Expected a declared initializer call");
+        assertEquals(InitializerJs.class, call.definitionType());
+        assertEquals(methodName, call.methodName());
+    }
+
     @Test
+    @SuppressWarnings("removal")
     void addJsInitializer_runsOnAttach_emitsInitInvocation() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
@@ -2763,19 +2773,17 @@ class ElementTest extends AbstractNodeTest {
         assertEquals(1, pending.size());
 
         JavaScriptInvocation invocation = pending.get(0).getInvocation();
-        assertTrue(
-                invocation.getExpression().contains("this.registerInitializer"),
-                "Wrapper expression should delegate to registerInitializer");
+        assertInitializerCall("init", invocation);
         assertFalse(invocation.getExpression().contains("return () => {};"),
                 "Wrapper expression must not embed user JavaScript");
 
         List<Object> params = invocation.getParameters();
         assertEquals(3, params.size(),
-                "Expected [element, initializerId, userFunction]");
-        assertEquals(element, params.get(0));
-        assertEquals(Integer.valueOf(0), params.get(1));
-        assertInstanceOf(JsFunction.class, params.get(2));
-        JsFunction userFn = (JsFunction) params.get(2);
+                "Expected [initializerId, userFunction, element]");
+        assertEquals(Integer.valueOf(0), params.get(0));
+        assertInstanceOf(JsFunction.class, params.get(1));
+        assertEquals(element, params.get(2));
+        JsFunction userFn = (JsFunction) params.get(1);
         assertEquals("return () => {};", userFn.getBody());
         assertEquals(List.of("foo"), userFn.getCaptures());
     }
@@ -2827,8 +2835,7 @@ class ElementTest extends AbstractNodeTest {
                 .dumpPendingJavaScriptInvocations();
         assertEquals(1, pending.size(),
                 "Init should be re-emitted when the client discarded the DOM");
-        assertTrue(pending.get(0).getInvocation().getExpression()
-                .contains("this.registerInitializer"));
+        assertInitializerCall("init", pending.get(0).getInvocation());
     }
 
     @Test
@@ -2847,8 +2854,7 @@ class ElementTest extends AbstractNodeTest {
         List<PendingJavaScriptInvocation> pending = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         assertEquals(1, pending.size());
-        assertTrue(pending.get(0).getInvocation().getExpression()
-                .contains("this.disposeInitializer"));
+        assertInitializerCall("dispose", pending.get(0).getInvocation());
     }
 
     @Test
@@ -2941,11 +2947,11 @@ class ElementTest extends AbstractNodeTest {
         List<PendingJavaScriptInvocation> pending = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         assertEquals(2, pending.size());
-        // Init params are [element, initializerId, userFunction].
+        // Init params are [initializerId, userFunction, element].
         assertEquals(Integer.valueOf(0),
-                pending.get(0).getInvocation().getParameters().get(1));
+                pending.get(0).getInvocation().getParameters().get(0));
         assertEquals(Integer.valueOf(1),
-                pending.get(1).getInvocation().getParameters().get(1));
+                pending.get(1).getInvocation().getParameters().get(0));
     }
 
     @Test
@@ -2965,10 +2971,9 @@ class ElementTest extends AbstractNodeTest {
                 .dumpPendingJavaScriptInvocations();
         assertEquals(1, pending.size());
         JavaScriptInvocation invocation = pending.get(0).getInvocation();
-        assertTrue(
-                invocation.getExpression().contains("this.disposeInitializer"));
-        // Dispose params are [element, initializerId].
-        assertEquals(Integer.valueOf(0), invocation.getParameters().get(1));
+        assertInitializerCall("dispose", invocation);
+        // Dispose params are [initializerId, element].
+        assertEquals(Integer.valueOf(0), invocation.getParameters().get(0));
     }
 
     @Test
@@ -3088,7 +3093,7 @@ class ElementTest extends AbstractNodeTest {
         element.getProperty("foo");
         element.hasProperty("foo");
         element.removeProperty("foo");
-        element.getPropertyNames().collect(Collectors.toList());
+        element.getPropertyNames().toList();
 
         assertFalse(element.getNode()
                 .getFeatureIfInitialized(ElementPropertyMap.class).isPresent(),
@@ -3102,7 +3107,7 @@ class ElementTest extends AbstractNodeTest {
         element.getAttribute("foo");
         element.hasAttribute("foo");
         element.removeAttribute("foo");
-        element.getAttributeNames().collect(Collectors.toList());
+        element.getAttributeNames().toList();
 
         assertFalse(element.getNode()
                 .getFeatureIfInitialized(ElementAttributeMap.class).isPresent(),

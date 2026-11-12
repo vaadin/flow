@@ -76,7 +76,7 @@ public class FrontendTools {
      * 
      * @since 4.0
      */
-    public static final String DEFAULT_NODE_VERSION = "v26.13.0";
+    public static final String DEFAULT_NODE_VERSION = "v26.13.1";
     /**
      * This is the version shipped with the default Node version.
      * 
@@ -451,6 +451,7 @@ public class FrontendTools {
      *
      * @return the list of all commands in sequence that need to be executed to
      *         have npx running
+     * @since 25.4
      */
     public List<String> getNpxExecutable() {
         return getNpmCliToolExecutable(BuildTool.NPX);

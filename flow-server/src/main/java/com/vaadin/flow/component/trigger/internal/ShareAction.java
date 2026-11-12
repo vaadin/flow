@@ -15,14 +15,17 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.Serializable;
 
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.js.JsCalledWith;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 
 /**
  * Invokes the browser's native share sheet via {@code navigator.share} when the
@@ -48,6 +51,8 @@ import com.vaadin.flow.function.SerializableRunnable;
  * @since 25.2
  */
 public class ShareAction extends PromiseAction<Void> {
+
+    private static final ShareJs SHARE_JS = JsSnippets.of(ShareJs.class);
 
     private final Action.@Nullable Input<String> titleInput;
     private final Action.@Nullable Input<String> textInput;
@@ -130,33 +135,48 @@ public class ShareAction extends PromiseAction<Void> {
 
     @Override
     protected JsFunction toPromiseJs(Trigger trigger) {
-        // navigator.share({title:$0(event, context), ...}) with only the slots
-        // that were set; each slot's value is produced on the client by
-        // invoking the input's JsFunction with the trigger event. validate()
-        // already ensures at least one slot is present, so the object is never
-        // empty (the Web Share API rejects a call with no payload fields).
-        StringBuilder expression = new StringBuilder(
-                "return navigator.share({");
-        List<JsFunction> args = new ArrayList<>();
-        appendSlot(expression, args, "title", titleInput, trigger);
-        appendSlot(expression, args, "text", textInput, trigger);
-        appendSlot(expression, args, "url", urlInput, trigger);
-        expression.append("})");
-        return JsFunction.of(expression.toString(), args.toArray())
-                .withArguments("event", "context");
+        // Absent slots are passed as null and left out of the share data.
+        // validate() already ensures at least one slot is present, so the data
+        // is never empty (the Web Share API rejects a call with no payload
+        // fields).
+        return SHARE_JS.share(toJs(titleInput, trigger),
+                toJs(textInput, trigger), toJs(urlInput, trigger));
     }
 
-    private static void appendSlot(StringBuilder expression,
-            List<JsFunction> args, String key,
+    private static @Nullable JsFunction toJs(
             Action.@Nullable Input<String> input, Trigger trigger) {
-        if (input == null) {
-            return;
-        }
-        if (!args.isEmpty()) {
-            expression.append(',');
-        }
-        expression.append(key).append(":$").append(args.size())
-                .append("(event, context)");
-        args.add(input.toJs(trigger));
+        return input == null ? null : input.toJs(trigger);
+    }
+
+    /**
+     * How the share sheet is opened, as a snippet for
+     * {@link JsSnippets#of(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    @JsDefinition
+    public interface ShareJs extends Serializable {
+
+        /**
+         * An action that opens the share sheet with the values of the given
+         * inputs, leaving out each field whose input is <code>null</code>.
+         *
+         * @param title
+         *            the input producing the title, or <code>null</code>
+         * @param text
+         *            the input producing the text, or <code>null</code>
+         * @param url
+         *            the input producing the URL, or <code>null</code>
+         * @return the action function, which returns the promise of the share
+         */
+        @JsExpression("""
+                const data = {};
+                if ($0) data.title = $0(event, context);
+                if ($1) data.text = $1(event, context);
+                if ($2) data.url = $2(event, context);
+                return navigator.share(data);""")
+        @JsCalledWith({ "event", "context" })
+        JsFunction share(@Nullable JsFunction title, @Nullable JsFunction text,
+                @Nullable JsFunction url);
     }
 }

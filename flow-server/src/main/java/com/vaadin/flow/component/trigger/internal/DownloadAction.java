@@ -15,11 +15,16 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsCalledWith;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
@@ -78,6 +83,9 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * @since 25.2
  */
 public class DownloadAction extends Action {
+
+    private static final DownloadJs DOWNLOAD_JS = JsSnippets
+            .of(DownloadJs.class);
 
     private final Action.Input<String> urlInput;
     private final Action.@Nullable Input<String> filenameInput;
@@ -158,25 +166,42 @@ public class DownloadAction extends Action {
 
     @Override
     protected JsFunction toJs(Trigger trigger) {
-        // Two body shapes — with or without a filename argument — keep the
-        // emitted JS minimal. Both URL and filename are JsFunctions invoked
-        // with event so any handler-scoped inputs read live state. The event
-        // itself is passed last so the client can click the anchor next to
-        // the trigger element, keeping a surrounding overlay open, while
-        // url-only overrides of the client helper keep working.
-        if (filenameInput == null) {
-            return JsFunction.of(
-                    "window.Vaadin.Flow.download.start($0(event, context), undefined, event)",
-                    urlInput.toJs(trigger)).withArguments("event", "context");
-        }
-        return JsFunction.of(
-                "window.Vaadin.Flow.download.start($0(event, context), $1(event, context), event)",
-                urlInput.toJs(trigger), filenameInput.toJs(trigger))
-                .withArguments("event", "context");
+        // Both URL and filename are inputs invoked with event so any
+        // handler-scoped inputs read live state, and a missing filename is
+        // passed as null. The event itself is passed last so the client can
+        // click the anchor next to the trigger element, keeping a surrounding
+        // overlay open, while url-only overrides of the client helper keep
+        // working.
+        return DOWNLOAD_JS.download(urlInput.toJs(trigger),
+                filenameInput == null ? null : filenameInput.toJs(trigger));
     }
 
     private static LiteralInput<String> literal(String value, String name) {
         return new LiteralInput<>(
                 Objects.requireNonNull(value, name + " must not be null"));
+    }
+
+    /**
+     * How a download is started, as a snippet for {@link JsSnippets#of(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    @JsDefinition
+    public interface DownloadJs extends Serializable {
+
+        /**
+         * An action that downloads from the URL of an input, next to the
+         * element the event of the trigger happened on.
+         *
+         * @param url
+         *            the input producing the URL
+         * @param filename
+         *            the input producing the suggested filename, or
+         *            <code>null</code> for none
+         * @return the action function
+         */
+        @JsExpression("window.Vaadin.Flow.download.start($0(event, context), $1 ? $1(event, context) : undefined, event)")
+        @JsCalledWith({ "event", "context" })
+        JsFunction download(JsFunction url, @Nullable JsFunction filename);
     }
 }

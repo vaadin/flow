@@ -24,13 +24,11 @@ import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-// Asserts on the generated JavaScript, which only the deprecated JsFunction
-// getters expose
-@SuppressWarnings("removal")
 class RequestFullscreenActionTest {
 
     private UI ui;
@@ -57,9 +55,8 @@ class RequestFullscreenActionTest {
 
         // Fire-and-forget: action function is the inner promise function.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(
-                "return window.Vaadin.Flow.fullscreen.requestPageFullscreen()",
-                action.getBody());
+        assertEquals("requestPageFullscreen", snippetOf(
+                RequestFullscreenAction.RequestFullscreenJs.class, action));
     }
 
     @Test
@@ -74,15 +71,14 @@ class RequestFullscreenActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // With callbacks: outer function is the observer wrapper; the inner
-        // function is captured at $1 and contains the actual fullscreen call.
+        // With callbacks: outer function reports the outcome; the inner
+        // function is captured at $0 and makes the actual fullscreen call.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0($1(event, context), $2)", action.getBody());
+        assertEquals("reportOutcome", snippetOf(TriggerJs.class, action));
 
-        JsFunction inner = (JsFunction) action.getCaptures().get(1);
-        assertEquals(
-                "return window.Vaadin.Flow.fullscreen.requestPageFullscreen()",
-                inner.getBody());
+        JsFunction inner = (JsFunction) action.getCaptures().get(0);
+        assertEquals("requestPageFullscreen", snippetOf(
+                RequestFullscreenAction.RequestFullscreenJs.class, inner));
     }
 
     @Test
@@ -98,9 +94,8 @@ class RequestFullscreenActionTest {
 
         // $0 = target element, $1 = wrapper element from UIInternals.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals(
-                "return window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1)",
-                action.getBody());
+        assertEquals("requestComponentFullscreen", snippetOf(
+                RequestFullscreenAction.RequestFullscreenJs.class, action));
         assertSame(panel.getElement(), action.getCaptures().get(0));
         assertSame(ui.getInternals().getWrapperElement(),
                 action.getCaptures().get(1));
@@ -120,12 +115,11 @@ class RequestFullscreenActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0($1(event, context), $2)", action.getBody());
+        assertEquals("reportOutcome", snippetOf(TriggerJs.class, action));
 
-        JsFunction inner = (JsFunction) action.getCaptures().get(1);
-        assertEquals(
-                "return window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1)",
-                inner.getBody());
+        JsFunction inner = (JsFunction) action.getCaptures().get(0);
+        assertEquals("requestComponentFullscreen", snippetOf(
+                RequestFullscreenAction.RequestFullscreenJs.class, inner));
         assertSame(panel.getElement(), inner.getCaptures().get(0));
         assertSame(ui.getInternals().getWrapperElement(),
                 inner.getCaptures().get(1));
