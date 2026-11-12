@@ -504,11 +504,12 @@ public interface DomListenerRegistration extends Registration {
      * @deprecated JavaScript that is sent as a string is compiled by the
      *             browser. Use {@link #addEventDataElementPath(String)} for a
      *             property path, such as
-     *             <code>event.target.parentElement</code>. There is no
-     *             replacement yet for an element from any other expression,
-     *             such as <code>event.composedPath()[0]</code>: a
-     *             {@link DomEventData} value is not mapped to a server-side
-     *             element, so keep using this method for such expressions.
+     *             <code>event.target.parentElement</code>. For any other
+     *             expression, such as <code>event.composedPath()[0]</code>,
+     *             declare <code>DomEventData&lt;Element&gt;</code> in a
+     *             {@link com.vaadin.flow.js.JsDefinition} interface, add it
+     *             with {@link #addEventData(DomEventData)} and read it with
+     *             {@link DomEvent#getEventDataElement(DomEventData)}.
      */
     @Deprecated(since = "25.4")
     default DomListenerRegistration addEventDataElement(String eventData) {
