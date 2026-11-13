@@ -29,10 +29,10 @@ import com.vaadin.flow.js.JsSnippets;
 /**
  * The JavaScript that the built-in triggers and actions share, as snippets for
  * {@link JsSnippets#of(Class)}: the actions that report to the server through a
- * return channel or write an element property, and the installers that hook an
- * action up to its trigger in the browser. What a single action does in the
- * browser is declared next to that action, and the inputs that produce a value
- * are in {@link ValueJs}.
+ * return channel or write an element property, the installers that hook an
+ * action up to its trigger in the browser, and the input that reads the trigger
+ * context. What a single action does in the browser is declared next to that
+ * action, and the other inputs that produce a value are in {@link ValueJs}.
  * <p>
  * An action is a function that does its work, called with the event of the
  * trigger as <code>event</code> and with what the trigger fired for as
