@@ -90,7 +90,7 @@ export function publishClient(
     // The Java block also re-publishes client.isActive here, with the same
     // function it published above; the port publishes it once.
     // The Java block publishes this as function(parameter) and ignores the
-    // argument; the published arity is kept.
+    // argument; the published function accepts and ignores one as well.
     client.getVersionInfo = entry((_parameter?: unknown) => ({ flow: configuration.getServletVersion() }));
     client.debug = entry(() => ac.debug());
     client.getNodeInfo = entry((nodeId: number) => ({

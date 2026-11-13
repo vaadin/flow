@@ -80,18 +80,34 @@ describe('publishClient', () => {
     expect(stubs.sendEventMessage.calledWith(2, 'click', null)).to.be.true;
   });
 
-  it('reports an error thrown by a published function instead of rethrowing it', () => {
-    const stubs = fakeConnectionStubs();
-    const error = new TypeError('unknown node');
-    stubs.addDomSetListener.throws(error);
-    stubs.resolveUri.throws(error);
-    const handleError = sinon.stub();
-    publishClient(asConnection(stubs), fakeConfig(), handleError);
-    const client = $wnd.Vaadin.Flow.clients.ROOT;
+  // Every published function, the connection method it delegates to, and the
+  // arguments to call it with.
+  const publishedFunctions: Array<[string, keyof ReturnType<typeof fakeConnectionStubs>, unknown[]]> = [
+    ['isActive', 'isActive', []],
+    ['getByNodeId', 'getDomElementByNodeId', [4]],
+    ['getNodeId', 'getNodeId', [document.body]],
+    ['getUIId', 'getUIId', []],
+    ['addDomBindingListener', 'addDomSetListener', [4, () => {}]],
+    ['poll', 'poll', []],
+    ['connectWebComponent', 'connectWebComponent', [{}]],
+    ['resolveUri', 'resolveUri', ['foo']],
+    ['sendEventMessage', 'sendEventMessage', [2, 'click', null]],
+    ['getProfilingData', 'getProfilingData', []],
+    ['debug', 'debug', []],
+    ['getNodeInfo', 'getJavaClass', [5]]
+  ];
 
-    expect(client.addDomBindingListener(4, () => {})).to.be.undefined;
-    expect(client.resolveUri('foo')).to.be.undefined;
-    expect(handleError.args).to.deep.equal([[error], [error]]);
+  publishedFunctions.forEach(([name, delegate, args]) => {
+    it(`reports an error thrown by ${name} instead of rethrowing it`, () => {
+      const stubs = fakeConnectionStubs();
+      const error = new TypeError('unknown node');
+      stubs[delegate].throws(error);
+      const handleError = sinon.stub();
+      publishClient(asConnection(stubs), fakeConfig({ production: false, requestTiming: true }), handleError);
+
+      expect($wnd.Vaadin.Flow.clients.ROOT[name](...args)).to.be.undefined;
+      expect(handleError.args).to.deep.equal([[error]]);
+    });
   });
 
   it('publishes the client events, typed so only the listed events can be dispatched', () => {

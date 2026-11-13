@@ -11,6 +11,8 @@ import { getScheduler } from '../../../../main/frontend/internal/client/Tracking
 import { onModuleLoad } from '../../../../main/frontend/internal/client/bootstrap/Bootstrapper';
 import { StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
 import { StateTree } from '../../../../main/frontend/internal/client/flow/StateTree';
+import sinon from 'sinon';
+import { SystemErrorHandler } from '../../../../main/frontend/internal/client/SystemErrorHandler';
 import { inertRegistry } from './flow/stateTreeTestRegistry';
 
 // A registry whose services are fakes but whose state tree is real: the fakes
@@ -224,6 +226,36 @@ describe('ApplicationConnection', () => {
         // No UIDL handled yet -> the application still has work to do.
         expect(connection.isActive()).to.be.true;
       } finally {
+        (window as { Vaadin?: unknown }).Vaadin = savedVaadin;
+      }
+    });
+
+    it('reports an error thrown by the published client API to the system error handler', () => {
+      // An integration may ask for a node that a navigation already removed. As
+      // with GWT's $entry, the call reports the error and returns normally.
+      const savedVaadin = (window as { Vaadin?: unknown }).Vaadin;
+      (window as { Vaadin?: unknown }).Vaadin = { Flow: { clients: {} }, connectionState: { state: '' } };
+      const handleErrorObject = sinon.stub(SystemErrorHandler.prototype, 'handleErrorObject');
+      try {
+        const config = new ApplicationConfiguration();
+        config.setApplicationId('ROOT-3');
+        config.setServiceUrl('/app');
+        config.setUIId(0);
+        config.setHeartbeatInterval(-1);
+        ApplicationConnection.create(config);
+        const client = (
+          window as unknown as {
+            Vaadin: {
+              Flow: { clients: Record<string, { addDomBindingListener(nodeId: number, cb: () => void): unknown }> };
+            };
+          }
+        ).Vaadin.Flow.clients.ROOT;
+
+        expect(client.addDomBindingListener(4711, () => {})).to.be.undefined;
+        expect(handleErrorObject.calledOnce).to.be.true;
+        expect(handleErrorObject.firstCall.args[0]).to.be.instanceOf(TypeError);
+      } finally {
+        handleErrorObject.restore();
         (window as { Vaadin?: unknown }).Vaadin = savedVaadin;
       }
     });
