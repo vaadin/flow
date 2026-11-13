@@ -57,6 +57,12 @@ import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 class NodeResolver implements java.io.Serializable {
 
     /**
+     * The file in the Node installation directory that lets only one build at a
+     * time install Node there.
+     */
+    static final String INSTALL_LOCK_FILE = ".vaadin-node-install.lock";
+
+    /**
      * Information about the active node/npm installation that will be used. All
      * fields are required and non-null.
      *
@@ -336,6 +342,37 @@ class NodeResolver implements java.io.Serializable {
         if (active != null) {
             getLogger().debug("Node {} is already installed in {}", nodeVersion,
                     alternativeDir);
+            return active;
+        }
+
+        // Installing is not atomic and all builds on the machine share the
+        // directory, so a concurrent install would overwrite and delete the
+        // files that this one is copying
+        if (!alternativeDirFile.isDirectory() && !alternativeDirFile.mkdirs()) {
+            throw new IllegalStateException(
+                    "Failed to create the Node installation directory "
+                            + alternativeDirFile);
+        }
+        LockFile lock = new LockFile(
+                new File(alternativeDirFile, INSTALL_LOCK_FILE).toPath(),
+                "Node installation");
+        lock.acquire();
+        try {
+            return installAlternativeNode(nodeInstaller, alternativeDirFile);
+        } finally {
+            lock.release();
+        }
+    }
+
+    private ActiveNodeInstallation installAlternativeNode(
+            NodeInstaller nodeInstaller, File alternativeDirFile) {
+        // Another build may have installed it while this one was waiting for
+        // the lock
+        ActiveNodeInstallation active = tryUseInstalled(
+                NodeInstallation.forVersion(alternativeDirFile, nodeVersion));
+        if (active != null) {
+            getLogger().debug("Node {} was installed in {} by another build",
+                    nodeVersion, alternativeDir);
             return active;
         }
 

@@ -23,6 +23,8 @@ import java.nio.file.Files;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
@@ -124,6 +126,28 @@ class NodeResolverTest {
                 "An installation unused for over 6 months should be removed once a new version is installed");
         assertTrue(recent.getDirectory().isDirectory(),
                 "A recently used installation should be kept");
+    }
+
+    @Test
+    void resolve_whileAnotherBuildInstalls_waitsAndUsesItsInstallation()
+            throws Exception {
+        requireShellStubs();
+        LockFile otherBuild = new LockFile(
+                new File(vaadinHome, NodeResolver.INSTALL_LOCK_FILE).toPath(),
+                "test");
+        otherBuild.acquire();
+        CompletableFuture<ActiveNodeInstallation> resolved = CompletableFuture
+                .supplyAsync(() -> resolve(VERSION));
+
+        Thread.sleep(200);
+        assertFalse(resolved.isDone(),
+                "Resolving should wait while another build is installing");
+        // Nothing is downloadable, so installing again would fail
+        NodeInstallation installation = stubInstallation(VERSION);
+        otherBuild.release();
+
+        assertEquals(installation.getNodeExecutable().getAbsolutePath(),
+                resolved.get(30, TimeUnit.SECONDS).nodeExecutable());
     }
 
     @Test
