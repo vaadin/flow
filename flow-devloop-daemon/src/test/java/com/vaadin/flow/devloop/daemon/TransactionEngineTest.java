@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -114,7 +115,8 @@ class TransactionEngineTest {
     }
 
     @Test
-    void apply_recordsTheSourcesItCompiledWithTheLaunch() throws Exception {
+    void apply_compilesUnderTheLaunchsLockAndRecordsTheSources()
+            throws Exception {
         // A view added while the app runs may go live without a restart, so
         // no launch records it, and the launch after a branch switch that drops
         // it would leave its class - and its route - behind.
@@ -126,6 +128,10 @@ class TransactionEngineTest {
                 Map.of("app", classpath), OptionalInt.empty());
         Launch launch = mock(Launch.class);
         when(launch.project(any())).thenReturn(project);
+        // The launch's, as a restart's catch-up build writes the same
+        // target/classes.
+        ReentrantLock compileLock = new ReentrantLock();
+        when(launch.compileLock()).thenReturn(compileLock);
         TransactionEngine engine = new TransactionEngine(launch,
                 new AppProcess(root, null));
         engine.apply(line -> {
@@ -134,8 +140,21 @@ class TransactionEngineTest {
         Path about = module.sourceDir().resolve("app/About.java");
         Files.createDirectories(about.getParent());
         Files.writeString(about, "package app; public class About {}");
-        engine.apply(line -> {
-        }, false);
+        Thread apply;
+        compileLock.lock();
+        try {
+            apply = Thread.ofVirtual().start(() -> engine.apply(line -> {
+            }, false));
+            long deadline = System.nanoTime() + 10_000_000_000L;
+            while (!compileLock.hasQueuedThread(apply)) {
+                assertTrue(System.nanoTime() < deadline,
+                        "the apply never waited for the launch's compile lock");
+                Thread.sleep(10);
+            }
+        } finally {
+            compileLock.unlock();
+        }
+        apply.join(30_000);
 
         verify(launch).recordCompiledSources(List.of(about));
     }

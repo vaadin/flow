@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterEach;
@@ -629,6 +630,41 @@ class LaunchTest {
 
         assertEquals(2, runs(runs));
         assertFalse(Files.exists(app.artifactFor(about)));
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    void catchUpSources_waitsForTheCompileLock(@TempDir Path repo)
+            throws Exception {
+        // An apply compiling into target/classes holds it; a restart's build
+        // must not write the same class files at the same time.
+        Launch launch = appWithSources(repo);
+        Path runs = fakeMaven(repo, 0);
+        Reactor.Module app = Reactor.Module.of(repo, "app");
+        writeSource(app, "Edited", 3_000);
+        writeClass(app, "Edited", 2_000);
+        Launch.Project project = project(app);
+        ReentrantLock lock = launch.compileLock();
+
+        Thread catchUp;
+        lock.lock();
+        try {
+            catchUp = Thread.ofVirtual()
+                    .start(() -> launch.catchUpSources(project, false, text -> {
+                    }));
+            long deadline = System.nanoTime() + 10_000_000_000L;
+            while (!lock.hasQueuedThread(catchUp)) {
+                assertTrue(System.nanoTime() < deadline,
+                        "the catch-up never waited for the compile lock");
+                Thread.sleep(10);
+            }
+            assertEquals(0, runs(runs));
+        } finally {
+            lock.unlock();
+        }
+        catchUp.join(10_000);
+
+        assertEquals(1, runs(runs));
     }
 
     @Test

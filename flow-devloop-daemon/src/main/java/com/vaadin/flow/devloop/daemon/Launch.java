@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -169,6 +170,14 @@ final class Launch {
 
     /** Which poms moved the last time the stamp was rewritten, app-relative. */
     private volatile List<String> changedPoms = List.of();
+
+    /**
+     * Held by whatever compiles into the loop's {@code target/classes}: an
+     * apply's compile, and the Maven runs a launch or a resolve makes. A
+     * restart is not serialized with an apply, so without it the two can write
+     * the same class files at once. Fair, so they run in arrival order.
+     */
+    private final ReentrantLock compileLock = new ReentrantLock(true);
 
     /** The JVM chosen for the application; see {@link #appJvm()}. */
     private volatile Jvm.Jdk appJvm;
@@ -339,7 +348,13 @@ final class Launch {
                 // into
                 // the stamp - otherwise it would never be watched at all.
                 rereadReactor(tee);
-                runMaven(tee);
+                // Its compile writes target/classes, as an apply's does.
+                compileLock.lock();
+                try {
+                    runMaven(tee);
+                } finally {
+                    compileLock.unlock();
+                }
                 writeStamp();
                 resolutions.incrementAndGet();
             }
@@ -391,6 +406,11 @@ final class Launch {
         return current != null && !classpathUnusable && stampIsCurrent()
                 ? Optional.of(current)
                 : Optional.empty();
+    }
+
+    /** See {@link #compileLock}. */
+    ReentrantLock compileLock() {
+        return compileLock;
     }
 
     /**
@@ -1304,6 +1324,19 @@ final class Launch {
      *            where to say that a build is needed, and why
      */
     void catchUpSources(Project project, boolean retryFailedBuild,
+            Log progress) {
+        // Under the apply's compile lock: a restart is not serialized with an
+        // apply, and two compiles writing one target/classes leave it holding
+        // a mix of both.
+        compileLock.lock();
+        try {
+            catchUpSourcesLocked(project, retryFailedBuild, progress);
+        } finally {
+            compileLock.unlock();
+        }
+    }
+
+    private void catchUpSourcesLocked(Project project, boolean retryFailedBuild,
             Log progress) {
         if (resolutionError != null) {
             progress.line("WARNING: not checking the sources against "

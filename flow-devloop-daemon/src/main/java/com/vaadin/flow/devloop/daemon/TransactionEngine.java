@@ -231,7 +231,11 @@ final class TransactionEngine {
     private final Launch launch;
     private final AppProcess app;
     private final AtomicInteger ids = new AtomicInteger();
-    private final ReentrantLock compileLock = new ReentrantLock(true);
+    /**
+     * Shared with the launch, whose Maven runs write the same
+     * {@code target/classes}; see {@link Launch#compileLock()}.
+     */
+    private final ReentrantLock compileLock;
     /**
      * Serializes the whole body of {@link #apply}, not just the javac call.
      * <p>
@@ -264,6 +268,8 @@ final class TransactionEngine {
     TransactionEngine(Launch launch, AppProcess app) {
         this.launch = launch;
         this.app = app;
+        this.compileLock = launch != null ? launch.compileLock()
+                : new ReentrantLock(true);
     }
 
     /**
