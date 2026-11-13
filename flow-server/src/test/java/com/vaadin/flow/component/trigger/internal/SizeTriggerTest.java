@@ -79,12 +79,14 @@ class SizeTriggerTest {
         List<JsFunction> installs = installFns(ui);
         JsFunction widthSource = (JsFunction) actionOf(installs.get(0))
                 .getCaptures().get(2);
-        assertEquals("eventProperty", snippetOf(ValueJs.class, widthSource));
+        assertEquals("readEventProperty",
+                snippetOf(ValueJs.class, widthSource));
         assertEquals("width", widthSource.getCaptures().get(0));
 
         JsFunction heightSource = (JsFunction) actionOf(installs.get(1))
                 .getCaptures().get(2);
-        assertEquals("eventProperty", snippetOf(ValueJs.class, heightSource));
+        assertEquals("readEventProperty",
+                snippetOf(ValueJs.class, heightSource));
         assertEquals("height", heightSource.getCaptures().get(0));
     }
 
@@ -106,7 +108,7 @@ class SizeTriggerTest {
 
         JsFunction sizeSource = (JsFunction) actionOf(singleInstallFn(ui))
                 .getCaptures().get(2);
-        assertEquals("event", snippetOf(ValueJs.class, sizeSource));
+        assertEquals("returnEvent", snippetOf(ValueJs.class, sizeSource));
         assertEquals(List.of(), sizeSource.getCaptures());
     }
 

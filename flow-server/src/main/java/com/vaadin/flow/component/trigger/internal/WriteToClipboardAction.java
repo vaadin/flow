@@ -237,7 +237,7 @@ public class WriteToClipboardAction extends PromiseAction<String> {
         // a no-op input that returns null, so the TS helper sees null and
         // skips that MIME type. Keeping the call shape uniform across all
         // combinations means no per-action JS assembly.
-        JsFunction nullInput = VALUE_JS.nullValue();
+        JsFunction nullInput = VALUE_JS.returnNull();
         JsFunction text = textInput != null ? textInput.toJs(trigger)
                 : nullInput;
         JsFunction html = htmlInput != null ? htmlInput.toJs(trigger)

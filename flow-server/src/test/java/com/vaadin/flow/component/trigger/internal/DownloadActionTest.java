@@ -94,7 +94,7 @@ class DownloadActionTest {
 
         JsFunction action = actionOf(singleInstallFn(ui));
         JsFunction urlFn = (JsFunction) action.getCaptures().get(0);
-        assertEquals("property", snippetOf(ValueJs.class, urlFn));
+        assertEquals("readProperty", snippetOf(ValueJs.class, urlFn));
         assertEquals("value", urlFn.getCaptures().get(1));
     }
 
@@ -192,7 +192,7 @@ class DownloadActionTest {
         assertTrue(capture instanceof JsFunction,
                 "expected JsFunction at capture " + captureIndex);
         JsFunction inputFn = (JsFunction) capture;
-        assertEquals("value", snippetOf(ValueJs.class, inputFn),
+        assertEquals("returnValue", snippetOf(ValueJs.class, inputFn),
                 "expected LiteralInput shape");
         assertEquals(expectedValue, inputFn.getCaptures().get(0));
     }

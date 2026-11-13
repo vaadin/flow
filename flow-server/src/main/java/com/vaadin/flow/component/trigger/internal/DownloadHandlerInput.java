@@ -66,7 +66,7 @@ final class DownloadHandlerInput extends Action.Input<String> {
             uri = register(trigger);
             uriByTrigger.put(trigger, uri);
         }
-        return VALUE_JS.value(uri.toASCIIString());
+        return VALUE_JS.returnValue(uri.toASCIIString());
     }
 
     private URI register(Trigger trigger) {

@@ -69,6 +69,6 @@ public final class LiteralInput<T> extends Action.Input<T> {
     public JsFunction toJs(Trigger trigger) {
         // The value is captured (not stringified into the body), so Jackson
         // handles all encoding — quoting, escaping, nested objects, etc.
-        return VALUE_JS.value(value);
+        return VALUE_JS.returnValue(value);
     }
 }
