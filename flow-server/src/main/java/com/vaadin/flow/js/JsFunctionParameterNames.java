@@ -45,40 +45,38 @@ import com.vaadin.flow.dom.JsFunction;
  * position. The expression is the body of the function, so it must
  * <code>return</code> a value if the caller expects one.
  * <p>
- * For example, a snippet that shares the page with the Web Share API, with a
- * title and a text given on the server, and a URL computed in the browser by a
- * function given as an argument, which is called with the click event:
+ * For example, a snippet for a click listener on a link that shares the link
+ * with the Web Share API instead of following it. The title and the text are
+ * given on the server, and the URL is read from the clicked link through the
+ * click <code>event</code>:
  *
  * <pre>
  * &#64;JsDefinition
  * public interface ShareJs extends Serializable {
  *
  *     &#64;JsExpression("""
- *             const data = { title: $0, text: $1 };
- *             if ($2) data.url = $2(event);
- *             return navigator.share(data);""")
+ *             event.preventDefault();
+ *             return navigator.share({
+ *                 title: $0, text: $1, url: event.currentTarget.href });""")
  *     &#64;JsFunctionParameterNames("event")
- *     JsFunction share(String title, String text, JsFunction url);
- *
- *     &#64;JsExpression("return location.href;")
- *     JsFunction currentUrl();
+ *     JsFunction share(String title, String text);
  * }
  * </pre>
  *
  * The build generates the following JavaScript for <code>share</code>. The
  * outer function takes the arguments of the Java call as its parameters
- * <code>$0</code>, <code>$1</code> and <code>$2</code>. The client calls it
- * once, with the values sent from the server, when it receives the snippet. The
- * inner function is what the snippet evaluates to. Its parameters are the names
- * of this annotation, its body is the expression, and it sees <code>$0</code>,
- * <code>$1</code> and <code>$2</code> through the closure:
+ * <code>$0</code> and <code>$1</code>. The client calls it once, with the
+ * values sent from the server, when it receives the snippet. The inner function
+ * is what the snippet evaluates to. Its parameters are the names of this
+ * annotation, its body is the expression, and it sees <code>$0</code> and
+ * <code>$1</code> through the closure:
  *
  * <pre>
- * function ($0, $1, $2) {
+ * function ($0, $1) {
  *   return function (event) {
- *     const data = { title: $0, text: $1 };
- *     if ($2) data.url = $2(event);
- *     return navigator.share(data);
+ *     event.preventDefault();
+ *     return navigator.share({
+ *         title: $0, text: $1, url: event.currentTarget.href });
  *   };
  * }
  * </pre>
@@ -95,16 +93,13 @@ import com.vaadin.flow.dom.JsFunction;
  *     void onClick(JsFunction listener);
  * }
  *
- * ShareJs share = JsSnippets.of(ShareJs.class);
- * button.getElement().executeJs(ClickJs.class).onClick(
- *         share.share("Quarterly report", "Have a look", share.currentUrl()));
+ * Anchor link = new Anchor("/reports/q3", "Share the report");
+ * link.getElement().executeJs(ClickJs.class).onClick(JsSnippets
+ *         .of(ShareJs.class).share("Quarterly report", "Have a look"));
  * </pre>
  *
- * Inside the snippet of <code>share</code>, <code>$0</code> and <code>$1</code>
- * are the two strings, and <code>$2</code> is the function of
- * <code>currentUrl()</code>, which ignores the <code>event</code> it is called
- * with. All of the JavaScript is declared in the definition and generated into
- * the bundle, so nothing is compiled from a string in the browser.
+ * All of the JavaScript is declared in the definitions and generated into the
+ * bundle, so nothing is compiled from a string in the browser.
  * <p>
  * Inside the function, <code>this</code> is whatever the caller calls it with.
  * <p>
