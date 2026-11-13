@@ -37,7 +37,7 @@ import com.vaadin.flow.dom.Element;
  * public interface LoggerJs extends Serializable {
  *
  *     &#64;JsExpression("console.log($0, value);")
- *     &#64;JsCalledWith("value")
+ *     &#64;JsFunctionParameterNames("value")
  *     JsFunction createLogger(String prefix);
  * }
  *
@@ -78,7 +78,7 @@ import com.vaadin.flow.dom.Element;
  * <code>unsafe-eval</code>.
  *
  * @see JsSnippet
- * @see JsCalledWith
+ * @see JsFunctionParameterNames
  * @since 25.4
  */
 public final class JsSnippets {

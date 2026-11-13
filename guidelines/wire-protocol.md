@@ -349,7 +349,7 @@ travels as a single-key wrapper object whose key is reserved:
   `window.Vaadin.Flow.jsSnippets` and calls that function with the
   captures; what it returns is the decoded value, so nothing is compiled
   from a string. That is a function whose body is the declared expression
-  and whose parameters are the names of `@JsCalledWith`, or none without
+  and whose parameters are the names of `@JsFunctionParameterNames`, or none without
   it, so no declared JavaScript runs while decoding. The registry is
   separate from `jsDefinitions` because a snippet function is not
   `async`: whatever it is passed to may need its value synchronously. A

@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.util.List;
+import java.util.Objects;
+
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
@@ -27,6 +30,7 @@ import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippet
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ShareActionTest {
 
@@ -67,9 +71,19 @@ class ShareActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // Absent slots are passed as null, which leaves them out of the data
+        // Absent slots are passed as null, which the guards leave out of the
+        // data
         JsFunction action = actionOf(singleInstallFn(ui));
         assertEquals("share", snippetOf(ShareAction.ShareJs.class, action));
+        String expression = Objects.requireNonNull(action.getDeclaredCall())
+                .getExpression();
+        for (String guard : List.of("if ($0) data.title = $0(event, context);",
+                "if ($1) data.text = $1(event, context);",
+                "if ($2) data.url = $2(event, context);")) {
+            assertTrue(expression.contains(guard),
+                    "each field must only be set when its input is present: "
+                            + guard);
+        }
         assertNull(action.getCaptures().get(0));
         assertNull(action.getCaptures().get(1));
         assertEquals("https://vaadin.com",

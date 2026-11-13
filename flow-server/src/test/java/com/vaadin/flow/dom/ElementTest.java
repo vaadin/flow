@@ -46,9 +46,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -78,9 +81,9 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -2759,12 +2762,17 @@ class ElementTest extends AbstractNodeTest {
                 () -> element.addJsInitializer((JsFunction) null));
     }
 
-    @Test
-    void addJsInitializer_snippet_emitsInitWithDeclaredFunction() {
+    static Stream<JsFunction> initializersWithoutRuntimeArguments() {
+        return Stream.of(JsSnippets.of(InitializerSnippetsJs.class)
+                .toggleClass("active"), JsFunction.of("return null;"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("initializersWithoutRuntimeArguments")
+    void addJsInitializer_function_emitsInitWithFunction(
+            JsFunction initializer) {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
-        JsFunction initializer = JsSnippets.of(InitializerSnippetsJs.class)
-                .toggleClass("active");
         element.addJsInitializer(initializer);
         ui.getElement().appendChild(element);
 
@@ -2777,12 +2785,7 @@ class ElementTest extends AbstractNodeTest {
         assertInitializerCall("init", invocation);
         assertEquals(List.of(0, initializer, element),
                 invocation.getParameters(),
-                "the declared function should be sent as it is, so that nothing is compiled from a string");
-        JsCall declared = initializer.getDeclaredCall();
-        assertNotNull(declared);
-        assertEquals(InitializerSnippetsJs.class, declared.definitionType());
-        assertEquals("toggleClass", declared.methodName());
-        assertEquals(List.of("active"), initializer.getCaptures());
+                "the function should be sent as it is, so that a snippet is not compiled from a string");
     }
 
     @Test
@@ -2804,11 +2807,16 @@ class ElementTest extends AbstractNodeTest {
         assertInitializerCall("dispose", pending.get(0).getInvocation());
     }
 
-    @Test
-    void addJsInitializer_snippetWithCalledWith_throws() {
+    static Stream<JsFunction> initializersWithRuntimeArguments() {
+        return Stream.of(JsSnippets.of(InitializerSnippetsJs.class).logEvent(),
+                JsFunction.of("console.log(event)").withArguments("event"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("initializersWithRuntimeArguments")
+    void addJsInitializer_functionWithRuntimeArguments_throws(
+            JsFunction listener) {
         Element element = ElementFactory.createDiv();
-        JsFunction listener = JsSnippets.of(InitializerSnippetsJs.class)
-                .logEvent();
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
@@ -2826,7 +2834,7 @@ class ElementTest extends AbstractNodeTest {
         JsFunction toggleClass(String className);
 
         @JsExpression("console.log(event);")
-        @JsCalledWith("event")
+        @JsFunctionParameterNames("event")
         JsFunction logEvent();
     }
 

@@ -22,9 +22,9 @@ import org.jspecify.annotations.Nullable;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippets;
 
 /**
@@ -175,7 +175,7 @@ public class ShareAction extends PromiseAction<Void> {
                 if ($1) data.text = $1(event, context);
                 if ($2) data.url = $2(event, context);
                 return navigator.share(data);""")
-        @JsCalledWith({ "event", "context" })
+        @JsFunctionParameterNames({ "event", "context" })
         JsFunction share(@Nullable JsFunction title, @Nullable JsFunction text,
                 @Nullable JsFunction url);
     }

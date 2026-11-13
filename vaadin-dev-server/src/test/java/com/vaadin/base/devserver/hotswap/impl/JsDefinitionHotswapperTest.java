@@ -33,9 +33,9 @@ import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.ReflectionCache;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.Mode;
@@ -66,7 +66,7 @@ class JsDefinitionHotswapperTest {
         void count(Integer from);
     }
 
-    @JsCalledWith({ "item" })
+    @JsFunctionParameterNames({ "item" })
     interface TemplateSnippet extends JsSnippet {
     }
 

@@ -233,7 +233,8 @@ class SinkTriggerTest {
                 // The installers call the action with whatever their trigger
                 // supplies; only the snippets that are themselves called with
                 // event take part in the action's calling convention.
-                List<String> calledWith = JsCall.getCalledWithNames(method);
+                List<String> calledWith = JsCall
+                        .getFunctionParameterNames(method);
                 if (calledWith.isEmpty()) {
                     assertFalse(expression.value().contains("event"),
                             name + " uses event without being called with it");
@@ -273,7 +274,7 @@ class SinkTriggerTest {
     private static void assertCalledWithContext(JsFunction function) {
         assertEquals(List.of("event", "context"),
                 Objects.requireNonNull(function.getDeclaredCall())
-                        .getCalledWithNames());
+                        .getFunctionParameterNames());
     }
 
     @SuppressWarnings("unchecked")
