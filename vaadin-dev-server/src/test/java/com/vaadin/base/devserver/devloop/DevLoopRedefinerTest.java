@@ -333,7 +333,7 @@ class DevLoopRedefinerTest {
                 DevLoopRedefiner.frontendDependencies(EditedGreeterJs.class));
     }
 
-    @DomEvent("offset")
+    @DomEvent(value = "offset", filter = "event.button === 0")
     public static class OffsetEvent extends ComponentEvent<Component> {
         public OffsetEvent(Component source, boolean fromClient,
                 @EventData("event.clientX - 1") double offset, // NOSONAR
@@ -342,7 +342,7 @@ class DevLoopRedefinerTest {
         }
     }
 
-    @DomEvent("offset")
+    @DomEvent(value = "offset", filter = "event.button === 0")
     public static class EditedOffsetEvent extends ComponentEvent<Component> {
         public EditedOffsetEvent(Component source, boolean fromClient,
                 @EventData("event.clientX - 2") double offset, // NOSONAR
@@ -351,19 +351,34 @@ class DevLoopRedefinerTest {
         }
     }
 
+    @DomEvent(value = "offset", filter = "event.button === 1")
+    public static class EditedFilterOffsetEvent
+            extends ComponentEvent<Component> {
+        public EditedFilterOffsetEvent(Component source, boolean fromClient,
+                @EventData("event.clientX - 1") double offset, // NOSONAR
+                @EventData("event.clientY") double clientY) {
+            super(source, fromClient);
+        }
+    }
+
     @Test
-    void frontendDependencies_seesTheEventDataTheBuildBundles() {
-        // An @EventData value the client would compile is generated into the
-        // bundle, so an edited one only reaches the browser through a restart
+    void frontendDependencies_seesTheEventDataAndFilterTheBuildBundles() {
+        // An @EventData value or a filter the client would compile is
+        // generated into the bundle, so an edited one only reaches the browser
+        // through a restart
         String imports = DevLoopRedefiner
                 .frontendDependencies(OffsetEvent.class);
 
         assertEquals(
                 "eventdata:"
-                        + BundledEventData.getFunctionId("event.clientX - 1"),
+                        + BundledEventData.getFunctionId("event.clientX - 1")
+                        + ";eventfilter:"
+                        + BundledEventData.getFunctionId("event.button === 0"),
                 imports);
         assertNotEquals(imports,
                 DevLoopRedefiner.frontendDependencies(EditedOffsetEvent.class));
+        assertNotEquals(imports, DevLoopRedefiner
+                .frontendDependencies(EditedFilterOffsetEvent.class));
     }
 
     @DomEvent("child")

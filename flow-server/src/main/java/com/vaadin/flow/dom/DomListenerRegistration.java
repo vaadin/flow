@@ -173,9 +173,15 @@ public interface DomListenerRegistration extends Registration {
      * <code>?.</code>, such as <code>event.isTrusted</code>, is read in the
      * browser without compiling it. Any other expression is compiled by the
      * browser from a string, so it does not work with a Content Security Policy
-     * that does not allow <code>unsafe-eval</code>. To filter events without
-     * that, declare the filter in a {@link com.vaadin.flow.js.JsDefinition}
-     * interface and use {@link #setFilterExpression(DomEventFilter)}.
+     * that does not allow <code>unsafe-eval</code>. Many filters can be written
+     * as a path, as the value only has to be truthy: for example
+     * <code>event.key?.length</code> passes the same events as
+     * <code>typeof(event.key) === 'string' &amp;&amp; event.key.length &gt;
+     * 0</code>. To filter events in other ways, declare the filter in a
+     * {@link com.vaadin.flow.js.JsDefinition} interface and use
+     * {@link #setFilterExpression(DomEventFilter)}. The
+     * {@link com.vaadin.flow.component.DomEvent#filter()} of a component event
+     * is put into the frontend bundle when the application is built instead.
      *
      * @param filter
      *            the JavaScript filter expression, or <code>null</code> to

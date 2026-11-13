@@ -412,7 +412,8 @@ public class JsonConstants implements Serializable {
      * Starts the key of a declared snippet that the client runs when an event
      * occurs. No JavaScript expression starts with <code>@</code>, so the key
      * of a snippet is never equal to the key of an expression. An
-     * {@link com.vaadin.flow.component.EventData} value that the build puts
+     * {@link com.vaadin.flow.component.EventData} value or a
+     * {@link com.vaadin.flow.component.DomEvent#filter()} that the build puts
      * into the bundle has snippet settings too, but its key is the expression,
      * which the client compiles when the bundle has no function for it.
      */
