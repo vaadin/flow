@@ -69,6 +69,9 @@ class DevLoopDaemonSurvivalIT {
         if (!cli.run("ping").isLive()) {
             cli.run("stop").assertExitCode(0);
         }
+        // Answered by the daemon now, which a ping that only reports must not
+        // mistake for there being none.
+        cli.run("ping").assertExitCode(0);
 
         long daemon = daemonPid();
         assertTrue(ProcessHandle.of(daemon).isPresent(),

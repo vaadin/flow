@@ -26,6 +26,7 @@ took.
   `./mvnw -q dependency:sources` once and read the sources. Reading `javap` output out of
   `~/.m2` is the last resort — one method name per call, it spends minutes on what either of the
   other two answers at once.
-- **Windows.** A checkout carries no executable bit, so `.vaadin/vaadin-dev` may refuse to run:
-  use `bash .vaadin/vaadin-dev` in the Bash tool, or the `.cmd` launcher beside it from
-  `cmd`/PowerShell. Same arguments, same exit codes.
+- **Windows.** Run `.vaadin/vaadin-dev.cmd` in the Bash tool too: Git Bash hands a `.cmd` file to
+  `cmd`, and the arguments are the same. Avoid `bash .vaadin/vaadin-dev` there — as the
+  instructions above say, under Git Bash it cannot confirm a daemon that is running but not
+  answering, so it cannot name the pid to kill.

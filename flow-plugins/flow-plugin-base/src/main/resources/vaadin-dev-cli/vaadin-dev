@@ -252,6 +252,25 @@ recorded_daemon_lingers() { # $1=pid
     done
 }
 
+# Waits for a daemon that has answered shutdown to finish exiting. It replies
+# before it stops the application it owns, which can take up to half a minute,
+# and only then removes its handshake. Returning earlier would let the next
+# command find a closed port, a live pid and a matching start time, and call a
+# healthy daemon wedged.
+await_daemon_exit() {
+    local pid end=$(( SECONDS + 40 ))
+    pid="$(read_prop pid)" || return 0
+    while [[ -f "$HANDSHAKE" ]]; do
+        recorded_daemon_alive "$pid"
+        (( $? == 1 )) && return 0
+        if (( SECONDS >= end )); then
+            echo "vaadin-dev: the daemon (pid $pid) is still shutting down" >&2
+            return 0
+        fi
+        sleep 0.1
+    done
+}
+
 java_bin() {
     if [[ -n "${JAVA_HOME:-}" && -x "$JAVA_HOME/bin/java" ]]; then
         printf '%s' "$JAVA_HOME/bin/java"
@@ -729,6 +748,9 @@ main() {
         send "$port" "$token" "$cmd" "$@"
         status=$?
         (( status == 99 )) && { echo "vaadin-dev: cannot reach daemon" >&2; exit 70; }
+    fi
+    if [[ "$cmd" == shutdown ]] && (( status == 0 )); then
+        await_daemon_exit
     fi
     exit "$status"
 }
