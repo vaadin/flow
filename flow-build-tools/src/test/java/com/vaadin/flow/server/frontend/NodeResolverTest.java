@@ -215,9 +215,8 @@ class NodeResolverTest {
     }
 
     private LockFile lockInstallOf(String version) {
-        return new LockFile(
-                NodeResolver.getInstallLockFile(vaadinHome, version).toPath(),
-                "test");
+        return new LockFile(NodeInstallation.forVersion(vaadinHome, version)
+                .getInstallLockFile().toPath(), "test");
     }
 
     private ActiveNodeInstallation resolve(String nodeVersion) {

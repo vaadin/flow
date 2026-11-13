@@ -59,25 +59,6 @@ import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 class NodeResolver implements java.io.Serializable {
 
     /**
-     * Gets the file that lets only one build at a time install the given
-     * version. Different versions install into separate directories, so they
-     * can be installed at the same time.
-     *
-     * @param installDirectory
-     *            the directory holding the installations
-     * @param version
-     *            the Node version to install
-     * @return the lock file
-     */
-    static File getInstallLockFile(File installDirectory, String version) {
-        return new File(installDirectory,
-                ".vaadin-"
-                        + NodeInstallation.forVersion(installDirectory, version)
-                                .getDirectory().getName()
-                        + "-install.lock");
-    }
-
-    /**
      * Information about the active node/npm installation that will be used. All
      * fields are required and non-null.
      *
@@ -372,7 +353,8 @@ class NodeResolver implements java.io.Serializable {
                     e);
         }
         LockFile lock = new LockFile(
-                getInstallLockFile(alternativeDirFile, nodeVersion).toPath(),
+                NodeInstallation.forVersion(alternativeDirFile, nodeVersion)
+                        .getInstallLockFile().toPath(),
                 "Node installation");
         lock.acquire();
         try {
