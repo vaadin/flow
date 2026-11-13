@@ -580,7 +580,8 @@ class JsDefinitionProxyTest {
         // Including a proxy that is not a snippet, such as the definition
         for (Object other : Arrays.asList(null, JsFunction.of("return 1"),
                 templates)) {
-            assertNotEquals(other, label);
+            assertNotEquals(label, other,
+                    "a snippet should not be equal to " + other);
         }
         assertTrue(label.toString().contains("TemplateSnippet"),
                 label.toString());
