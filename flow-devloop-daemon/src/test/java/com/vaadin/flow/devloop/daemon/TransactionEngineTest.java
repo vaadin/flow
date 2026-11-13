@@ -148,6 +148,38 @@ class TransactionEngineTest {
     }
 
     @Test
+    void apply_removesTheClassesOfADeletedSourceUnderTheLaunchsLock()
+            throws Throwable {
+        // A restart's catch-up build removes the classes of deleted sources
+        // too, and must not do so while an apply is.
+        Path app = Files.createDirectories(root.resolve("app"));
+        Reactor.Module module = Reactor.Module.of(app, "app");
+        Path about = module.sourceDir().resolve("app/About.java");
+        Files.createDirectories(about.getParent());
+        Files.writeString(about, "package app; public class About {}");
+        Path aboutClass = module.artifactFor(about);
+        Files.createDirectories(aboutClass.getParent());
+        Files.write(aboutClass, new byte[0]);
+        String classpath = module.classesDir().toString();
+        Launch.Project project = new Launch.Project(List.of(module), classpath,
+                Map.of("app", classpath), OptionalInt.empty());
+        Launch launch = mock(Launch.class);
+        when(launch.project(any())).thenReturn(project);
+        ReentrantLock compileLock = new ReentrantLock();
+        when(launch.compileLock()).thenReturn(compileLock);
+        TransactionEngine engine = new TransactionEngine(launch,
+                new AppProcess(root, null));
+        engine.apply(line -> {
+        }, false);
+
+        Files.delete(about);
+        LaunchTest.whileQueuedOn(compileLock, () -> engine.apply(line -> {
+        }, false), () -> assertTrue(Files.exists(aboutClass)));
+
+        assertFalse(Files.exists(aboutClass));
+    }
+
+    @Test
     void onConnectorClosed_willNotClearAConnectorARestartReplaced() {
         // The predecessor's socket closes on its own schedule, which can be
         // after the new app has registered; clearing then would leave the
