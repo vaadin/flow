@@ -19,13 +19,17 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
-import tools.jackson.databind.JsonNode;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
+import com.vaadin.flow.dom.DomEventData;
+import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.streams.UploadHandler;
 import com.vaadin.flow.shared.Registration;
 
@@ -78,22 +82,14 @@ import com.vaadin.flow.shared.Registration;
  */
 public final class Clipboard implements Serializable {
 
-    // The same string is used both as the JS expression evaluated client-side
-    // and as the lookup key in DomEvent#getEventData() server-side. Any drift
-    // between the two would silently produce a null value, so the expressions
-    // are kept in a single constant each. `?.` guards against synthetic events
-    // without a DataTransfer; `|| null` collapses the empty string (the
-    // browser's value for an absent MIME type) and the optional-chain
-    // short-circuit into JSON null.
-    private static final String PASTE_TEXT_EXPR = "event.clipboardData?.getData('text/plain') || null";
-    private static final String PASTE_HTML_EXPR = "event.clipboardData?.getData('text/html') || null";
+    private static final PasteJs PASTE_JS = JsSnippets.of(PasteJs.class);
 
-    // Walks event.composedPath() so the check sees through open shadow DOMs
-    // (e.g. a Vaadin web component's internal <input>). Matches input,
-    // textarea, or anything with isContentEditable; the filter passes only
-    // when none of those are in the path.
-    private static final String PASTE_FILTER_SKIP_EDITABLE = "!event.composedPath().some(function(e){"
-            + "return e.tagName&&(e.tagName==='INPUT'||e.tagName==='TEXTAREA'||e.isContentEditable===true);})";
+    // The same instances are added to the listener and used to read the
+    // values in it, so the two can not drift apart.
+    private static final DomEventData<String> PASTE_TEXT = PASTE_JS
+            .readClipboardData("text/plain");
+    private static final DomEventData<String> PASTE_HTML = PASTE_JS
+            .readClipboardData("text/html");
 
     // DOM event the client paste-upload helper dispatches once every upload of
     // a paste has settled. A server-side listener for it (registered in
@@ -302,7 +298,6 @@ public final class Clipboard implements Serializable {
             SerializableConsumer<PasteEvent> listener) {
         DomListenerRegistration registration = host.getElement()
                 .addEventListener("paste", domEvent -> {
-                    JsonNode data = domEvent.getEventData();
                     // mapEventTargetElement() does the DOM ancestor walk in
                     // the browser to find the closest Flow-tracked element to
                     // event.target. That gives DOM-truth (not state-tree
@@ -310,23 +305,17 @@ public final class Clipboard implements Serializable {
                     // slotted content, etc.).
                     Element targetElement = domEvent.getEventTarget()
                             .orElse(null);
-                    // The JS `|| null` already collapses "" and missing MIME
-                    // types to JSON null; asStringOpt() then yields empty for
-                    // those, so callers see null (not "").
+                    // The snippet already collapses "" and missing MIME types
+                    // to null, so callers see null (not "").
                     listener.accept(new PasteEvent(host,
-                            data.optional(PASTE_TEXT_EXPR)
-                                    .flatMap(JsonNode::asStringOpt)
-                                    .orElse(null),
-                            data.optional(PASTE_HTML_EXPR)
-                                    .flatMap(JsonNode::asStringOpt)
-                                    .orElse(null),
-                            targetElement));
+                            domEvent.getEventData(PASTE_TEXT),
+                            domEvent.getEventData(PASTE_HTML), targetElement));
                 });
-        registration.addEventData(PASTE_TEXT_EXPR);
-        registration.addEventData(PASTE_HTML_EXPR);
+        registration.addEventData(PASTE_TEXT);
+        registration.addEventData(PASTE_HTML);
         registration.mapEventTargetElement();
         if (!options.includeInputFieldPastes()) {
-            registration.setFilter(PASTE_FILTER_SKIP_EDITABLE);
+            registration.setFilterExpression(PASTE_JS.isOutsideEditableField());
         }
         return registration::remove;
     }
@@ -349,12 +338,8 @@ public final class Clipboard implements Serializable {
         // POSTs one upload per file. addJsInitializer re-runs the install on a
         // real re-attach and invokes the returned cleanup (removeEventListener)
         // when the registration is removed or the client DOM node is discarded.
-        Registration jsRegistration = element.addJsInitializer("""
-                const upload = (event) => window.Vaadin.Flow.clipboard
-                        .uploadPastedFiles(event, this, $0);
-                this.addEventListener('paste', upload);
-                return () => this.removeEventListener('paste', upload);""",
-                attributeName);
+        Registration jsRegistration = element
+                .addJsInitializer(PASTE_JS.uploadPastedFiles(attributeName));
 
         // Once the helper has finished POSTing a paste's files it dispatches
         // FILE_PASTE_FINISHED_EVENT on the element. This listener does nothing
@@ -373,5 +358,59 @@ public final class Clipboard implements Serializable {
             finishedRegistration.remove();
             element.removeAttribute(attributeName);
         };
+    }
+
+    /**
+     * How pastes are handled in the browser, as snippets for
+     * {@link JsSnippets#of(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    @JsDefinition
+    public interface PasteJs extends Serializable {
+
+        /**
+         * Event data that reads the pasted data of a MIME type. Optional
+         * chaining handles synthetic events without a
+         * <code>DataTransfer</code>, and <code>|| null</code> turns the empty
+         * string, which the browser returns for a missing MIME type, into
+         * <code>null</code>.
+         *
+         * @param mimeType
+         *            the MIME type to read, such as <code>text/plain</code>
+         * @return the event data
+         */
+        @JsExpression("return event.clipboardData?.getData($0) || null;")
+        DomEventData<String> readClipboardData(String mimeType);
+
+        /**
+         * A filter that passes a paste only when it does not target a form
+         * field: an <code>input</code>, a <code>textarea</code> or an editable
+         * element. It walks <code>event.composedPath()</code>, so it also finds
+         * a field inside the open shadow DOM of a web component.
+         *
+         * @return the filter
+         */
+        @JsExpression("""
+                return !event.composedPath().some(e => e.tagName
+                        && (e.tagName === 'INPUT' || e.tagName === 'TEXTAREA'
+                                || e.isContentEditable === true));""")
+        DomEventFilter isOutsideEditableField();
+
+        /**
+         * An initializer that uploads the files of each paste on the element to
+         * the URL in the given attribute of the element, and returns the
+         * function that stops listening.
+         *
+         * @param urlAttribute
+         *            the name of the attribute that holds the upload URL
+         * @return the initializer function
+         */
+        @JsExpression("""
+                const upload = (event) => window.Vaadin.Flow.clipboard
+                        .uploadPastedFiles(event, this, $0);
+                this.addEventListener('paste', upload);
+                return () => this.removeEventListener('paste', upload);""")
+        JsFunction uploadPastedFiles(String urlAttribute);
     }
 }
