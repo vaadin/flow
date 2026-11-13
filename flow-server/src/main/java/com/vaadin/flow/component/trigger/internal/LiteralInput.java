@@ -17,7 +17,6 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
-import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsSnippets;
 
@@ -51,7 +50,8 @@ import com.vaadin.flow.js.JsSnippets;
  */
 public final class LiteralInput<T> extends Action.Input<T> {
 
-    private static final ValueJs VALUE_JS = JsSnippets.of(ValueJs.class);
+    private static final TriggerInputJs TRIGGER_INPUT_JS = JsSnippets
+            .of(TriggerInputJs.class);
 
     private final T value;
 
@@ -69,6 +69,6 @@ public final class LiteralInput<T> extends Action.Input<T> {
     public JsFunction toJs(Trigger trigger) {
         // The value is captured (not stringified into the body), so Jackson
         // handles all encoding — quoting, escaping, nested objects, etc.
-        return VALUE_JS.returnValue(value);
+        return TRIGGER_INPUT_JS.returnValue(value);
     }
 }

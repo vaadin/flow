@@ -20,7 +20,6 @@ import java.util.Objects;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
@@ -105,7 +104,7 @@ class OpenInNewTabActionTest {
                 snippetOf(OpenInNewTabAction.OpenInNewTabJs.class, action));
 
         JsFunction url = (JsFunction) action.getCaptures().get(0);
-        assertEquals("readProperty", snippetOf(ValueJs.class, url));
+        assertEquals("readProperty", snippetOf(TriggerInputJs.class, url));
         assertEquals(field.getElement(), url.getCaptures().get(0));
         assertEquals("value", url.getCaptures().get(1));
     }

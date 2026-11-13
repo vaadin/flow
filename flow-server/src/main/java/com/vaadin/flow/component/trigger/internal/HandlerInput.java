@@ -17,7 +17,6 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
-import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsSnippets;
 
@@ -43,7 +42,8 @@ import com.vaadin.flow.js.JsSnippets;
  */
 public final class HandlerInput<T> extends Action.Input<T> {
 
-    private static final ValueJs VALUE_JS = JsSnippets.of(ValueJs.class);
+    private static final TriggerInputJs TRIGGER_INPUT_JS = JsSnippets
+            .of(TriggerInputJs.class);
 
     private final String propertyName;
     private final Class<? extends Trigger> ownerClass;
@@ -72,6 +72,6 @@ public final class HandlerInput<T> extends Action.Input<T> {
                     + ownerClass.getSimpleName() + " and cannot be used in a "
                     + trigger.getClass().getSimpleName() + " handler");
         }
-        return VALUE_JS.readEventProperty(propertyName);
+        return TRIGGER_INPUT_JS.readEventProperty(propertyName);
     }
 }

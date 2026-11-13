@@ -35,7 +35,6 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.clipboard.Clipboard;
-import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -255,12 +254,12 @@ class SinkTriggerTest {
         assertCalledWithContext(write);
         JsFunction text = (JsFunction) write.getCaptures().get(0);
         assertEquals("readContextValue",
-                TriggerTestUtil.snippetOf(TriggerJs.class, text));
+                TriggerTestUtil.snippetOf(TriggerInputJs.class, text));
         assertCalledWithContext(text);
         assertEquals(List.of("args", "0"), text.getCaptures());
         // Text only: the html slot stays empty.
-        assertEquals("returnNull", TriggerTestUtil.snippetOf(ValueJs.class,
-                (JsFunction) write.getCaptures().get(1)));
+        assertEquals("returnNull", TriggerTestUtil.snippetOf(
+                TriggerInputJs.class, (JsFunction) write.getCaptures().get(1)));
     }
 
     private static ReturnChannelRegistration singleChannel(JsFunction action) {

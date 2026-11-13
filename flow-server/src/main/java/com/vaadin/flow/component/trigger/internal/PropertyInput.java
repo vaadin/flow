@@ -18,7 +18,6 @@ package com.vaadin.flow.component.trigger.internal;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsSnippets;
@@ -44,7 +43,8 @@ import com.vaadin.flow.js.JsSnippets;
  */
 public class PropertyInput<T> extends Action.Input<T> {
 
-    private static final ValueJs VALUE_JS = JsSnippets.of(ValueJs.class);
+    private static final TriggerInputJs TRIGGER_INPUT_JS = JsSnippets
+            .of(TriggerInputJs.class);
 
     private final Element target;
     private final String propertyName;
@@ -72,6 +72,6 @@ public class PropertyInput<T> extends Action.Input<T> {
         // Both target (Element) and propertyName (String) are JsFunction
         // captures — JsFunction's wire encoding handles Element-to-DOM-ref
         // mapping and JSON-quotes the property name.
-        return VALUE_JS.readProperty(target, propertyName);
+        return TRIGGER_INPUT_JS.readProperty(target, propertyName);
     }
 }

@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
-import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration.InitializerJs;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -99,7 +98,8 @@ class SignalInputTest {
         // input's JsFunction, then verify the generated property-name shape.
         JsFunction action = actionOf(singleInstallFn(ui));
         JsFunction textInput = (JsFunction) action.getCaptures().get(0);
-        assertEquals("readProperty", snippetOf(ValueJs.class, textInput));
+        assertEquals("readProperty",
+                snippetOf(TriggerInputJs.class, textInput));
         String property = (String) textInput.getCaptures().get(1);
         assertTrue(PROPERTY_NAME.matcher(property).matches(),
                 "Unexpected property name: " + property);

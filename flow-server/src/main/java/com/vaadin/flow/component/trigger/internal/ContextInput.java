@@ -38,7 +38,8 @@ import com.vaadin.flow.js.JsSnippets;
  */
 public class ContextInput<T> extends Action.Input<T> {
 
-    private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
+    private static final TriggerInputJs TRIGGER_INPUT_JS = JsSnippets
+            .of(TriggerInputJs.class);
 
     private final String contextProperty;
     private final String valueProperty;
@@ -61,6 +62,7 @@ public class ContextInput<T> extends Action.Input<T> {
     @Override
     public JsFunction toJs(Trigger trigger) {
         // A missing value becomes null, which actions treat as absent.
-        return TRIGGER_JS.readContextValue(contextProperty, valueProperty);
+        return TRIGGER_INPUT_JS.readContextValue(contextProperty,
+                valueProperty);
     }
 }

@@ -18,13 +18,13 @@ package com.vaadin.flow.component.trigger;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.component.trigger.internal.Action;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
 import com.vaadin.flow.component.trigger.internal.DomEventTrigger;
 import com.vaadin.flow.component.trigger.internal.HandlerInput;
 import com.vaadin.flow.component.trigger.internal.MouseEventTrigger;
 import com.vaadin.flow.component.trigger.internal.Trigger;
+import com.vaadin.flow.component.trigger.internal.TriggerInputJs;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 
@@ -97,7 +97,8 @@ class CrossPackageExtensionTest {
         assertNull(rendered.getDeclaredCall(),
                 "a custom action keeps its own JavaScript");
         JsFunction source = (JsFunction) rendered.getCaptures().get(0);
-        assertEquals("readEventProperty", snippetOf(ValueJs.class, source));
+        assertEquals("readEventProperty",
+                snippetOf(TriggerInputJs.class, source));
         assertEquals("screenX", source.getCaptures().get(0));
     }
 
@@ -106,7 +107,8 @@ class CrossPackageExtensionTest {
         JsFunction rendered = InputEventTrigger.data
                 .toJs(new InputEventTrigger(new Div()));
 
-        assertEquals("readEventProperty", snippetOf(ValueJs.class, rendered));
+        assertEquals("readEventProperty",
+                snippetOf(TriggerInputJs.class, rendered));
         assertEquals("data", rendered.getCaptures().get(0));
     }
 

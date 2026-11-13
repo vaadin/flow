@@ -17,7 +17,6 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.io.Serializable;
 
-import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
@@ -29,10 +28,10 @@ import com.vaadin.flow.js.JsSnippets;
 /**
  * The JavaScript that the built-in triggers and actions share, as snippets for
  * {@link JsSnippets#of(Class)}: the actions that report to the server through a
- * return channel or write an element property, the installers that hook an
- * action up to its trigger in the browser, and the input that reads the trigger
- * context. What a single action does in the browser is declared next to that
- * action, and the other inputs that produce a value are in {@link ValueJs}.
+ * return channel or write an element property, and the installers that hook an
+ * action up to its trigger in the browser. What a single action does in the
+ * browser is declared next to that action, and the inputs that produce a value
+ * are in {@link TriggerInputJs}.
  * <p>
  * An action is a function that does its work, called with the event of the
  * trigger as <code>event</code> and with what the trigger fired for as
@@ -71,21 +70,6 @@ public interface TriggerJs extends Serializable {
     @JsCalledWith({ "event", "context" })
     JsFunction sendToChannel(ReturnChannelRegistration channel,
             JsFunction source);
-
-    /**
-     * An input that reads a property of a member of the trigger context, such
-     * as an argument a template called the action with, or <code>null</code>
-     * when the trigger supplies no context or the value is missing.
-     *
-     * @param member
-     *            the name of the context member to read from
-     * @param property
-     *            the name of the property of that member
-     * @return the input function
-     */
-    @JsExpression("return context?.[$0]?.[$1] ?? null")
-    @JsCalledWith({ "event", "context" })
-    JsFunction readContextValue(String member, String property);
 
     /**
      * An action that assigns the value of an input to a property of an element.
