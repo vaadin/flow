@@ -112,10 +112,20 @@ class CspModeTest {
     private static class RouteView extends Component {
     }
 
-    @DomEvent("custom-event")
-    public static class KeyedEvent extends ComponentEvent<UI> {
-        public KeyedEvent(UI source, boolean fromClient,
-                @EventData("key") String key) {
+    @DomEvent("offset-event")
+    public static class OffsetEvent extends ComponentEvent<Component> {
+        // Only the event data annotations of the parameters are used
+        public OffsetEvent(Component source, boolean fromClient,
+                @EventData("event.clientX - element.offsetLeft") double offset) { // NOSONAR
+            super(source, fromClient);
+        }
+    }
+
+    @DomEvent("element-target-event")
+    public static class ElementTargetEvent extends ComponentEvent<Component> {
+        // Only the event data annotations of the parameters are used
+        public ElementTargetEvent(Component source, boolean fromClient,
+                @EventData("event.composedPath()[0]") Element target) { // NOSONAR
             super(source, fromClient);
         }
     }
@@ -183,12 +193,7 @@ class CspModeTest {
                         }).setFilter("event.x == 1")),
                 // The deprecated locator is an expression for the browser
                 call(JsFunction.class, "of",
-                        CspModeTest::delegateShortcutToStringLocator),
-                // A key of client-built data only for Flow's own events
-                call(DomListenerRegistration.class, "addEventData",
-                        ui -> ComponentUtil.addListener(ui, KeyedEvent.class,
-                                e -> {
-                                })));
+                        CspModeTest::delegateShortcutToStringLocator));
     }
 
     private static Arguments call(Class<?> api, String method,
@@ -252,6 +257,15 @@ class CspModeTest {
             });
             clickable.addDoubleClickListener(e -> {
             });
+            // The build puts the event data that is not a property path into
+            // the bundle
+            ComponentUtil.addListener(clickable, OffsetEvent.class, e -> {
+            });
+            // also a value of an element, whose function returns the DOM node
+            // that the client maps to a state node
+            ComponentUtil.addListener(clickable, ElementTargetEvent.class,
+                    e -> {
+                    });
             // Loads the chunk of the route with a function from the bundle
             ui.getInternals().addComponentDependencies(RouteView.class);
             // Shortcuts send their keys and options as data to JavaScript in

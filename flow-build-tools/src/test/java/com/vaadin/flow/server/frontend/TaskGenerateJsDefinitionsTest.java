@@ -18,17 +18,26 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.internal.BundledEventData;
+import com.vaadin.flow.component.internal.PrebuiltEventData;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.DomEventFilter;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.js.JsCall;
@@ -37,6 +46,7 @@ import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
+import com.vaadin.flow.shared.JsonConstants;
 
 import static com.vaadin.flow.internal.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
@@ -126,6 +136,58 @@ class TaskGenerateJsDefinitionsTest {
         @JsExpression("$executionContext.stopApplication()")
         @JsWithExecutionContext
         void stop();
+    }
+
+    private static final String OFFSET_EXPRESSION = "event.clientX - element.getBoundingClientRect().left";
+
+    @DomEvent("offset")
+    public static class OffsetEvent extends ComponentEvent<Component> {
+        public OffsetEvent(Component source, boolean fromClient,
+                @EventData(OFFSET_EXPRESSION) double offset,
+                @EventData("event.clientX") double clientX,
+                @EventData("event.composedPath()[0]") Element target) {
+            super(source, fromClient);
+        }
+    }
+
+    private static final String COMMENTED_EXPRESSION = "event.clientY // y\n + 1";
+
+    @DomEvent("other-offset")
+    public static class OtherOffsetEvent extends ComponentEvent<Component> {
+        public OtherOffsetEvent(Component source, boolean fromClient,
+                @EventData(OFFSET_EXPRESSION) double offset,
+                @EventData(COMMENTED_EXPRESSION) double commented) {
+            super(source, fromClient);
+        }
+    }
+
+    /**
+     * Listened to as a DOM event through the annotation of its superclass.
+     */
+    public static class InheritingOffsetEvent extends OffsetEvent {
+        public InheritingOffsetEvent(Component source, boolean fromClient,
+                @EventData(INHERITING_EXPRESSION) double offset) { // NOSONAR
+            super(source, fromClient, 0, 0, null);
+        }
+    }
+
+    private static final String INHERITING_EXPRESSION = "event.pageX - 1";
+
+    @DomEvent("no-dom-event-constructor")
+    public static class NoDomEventConstructorEvent
+            extends ComponentEvent<Component> {
+        public NoDomEventConstructorEvent(Component source) {
+            super(source, false);
+        }
+    }
+
+    @DomEvent("prebuilt")
+    @PrebuiltEventData
+    public static class PrebuiltEvent extends ComponentEvent<Component> {
+        public PrebuiltEvent(Component source, boolean fromClient,
+                @EventData("values[0]") String value) {
+            super(source, fromClient);
+        }
     }
 
     @TempDir
@@ -259,6 +321,120 @@ class TaskGenerateJsDefinitionsTest {
                         "  return function (event, element) {", KEY_EXPRESSION,
                         "  };", "};")),
                 "a DOM event filter should be a function of the event and the element: "
+                        + content);
+    }
+
+    @Test
+    void domEventClass_registersASnippetPerEventDataTheClientWouldCompile() {
+        String functionId = BundledEventData.getFunctionId(OFFSET_EXPRESSION);
+        Options withEvents = new Options(mock(Lookup.class),
+                // An event that can not be listened to is left out without
+                // failing the build
+                new DefaultClassFinder(Set.of(OffsetEvent.class,
+                        OtherOffsetEvent.class, PrebuiltEvent.class,
+                        NoDomEventConstructorEvent.class)),
+                null).withFrontendDirectory(frontendFolder)
+                .withProductionMode(false);
+        String content = new TaskGenerateJsDefinitions(withEvents)
+                .getFileContent();
+        String function = String.join(System.lineSeparator(),
+                "window.Vaadin.Flow.jsSnippets[\"" + functionId
+                        + "\"] = function () {",
+                "  return function (event, element) {", "    return (",
+                OFFSET_EXPRESSION, "    );", "  };", "};");
+
+        assertTrue(content.contains(function),
+                "the value should be a function of the event and the element, under the identifier the server sends: "
+                        + content);
+        assertEquals(content.indexOf(function), content.lastIndexOf(function),
+                "a value that two events declare should be registered once: "
+                        + content);
+        assertTrue(
+                content.contains("window.Vaadin.Flow.jsDefinitionNames[\""
+                        + functionId + "\"] = \"" + OffsetEvent.class.getName()
+                        + " @EventData(\\\"" + OFFSET_EXPRESSION + "\\\")\";"),
+                "a development bundle should name what declared the value: "
+                        + content);
+        String commentedId = BundledEventData
+                .getFunctionId(COMMENTED_EXPRESSION);
+        assertTrue(
+                content.contains(
+                        String.join(System.lineSeparator(), "    return (",
+                                "event.clientY // y", " + 1", "    );")),
+                "a value ending with a comment should not comment out what closes it: "
+                        + content);
+        assertTrue(content.contains("window.Vaadin.Flow.jsDefinitionNames[\""
+                + commentedId + "\"] = \"" + OtherOffsetEvent.class.getName()
+                + " @EventData(\\\"event.clientY // y\\n + 1\\\")\";"),
+                "the name of a value on several lines should stay on one line: "
+                        + content);
+        assertFalse(content.contains("event.clientX" + System.lineSeparator()),
+                "the client reads a property path without compiling it: "
+                        + content);
+        // The client maps what the function of a value of an element returns
+        // to a state node, so the function is the expression without the
+        // prefix, shared with the same expression used as a plain value
+        String mappedId = BundledEventData
+                .getFunctionId(JsonConstants.MAP_STATE_NODE_EVENT_DATA
+                        + "event.composedPath()[0]");
+        assertEquals(BundledEventData.getFunctionId("event.composedPath()[0]"),
+                mappedId);
+        assertTrue(
+                content.contains(String.join(System.lineSeparator(),
+                        "window.Vaadin.Flow.jsSnippets[\"" + mappedId
+                                + "\"] = function () {",
+                        "  return function (event, element) {", "    return (",
+                        "event.composedPath()[0]", "    );")),
+                "a value of an element should be a function of its expression: "
+                        + content);
+        assertFalse(
+                content.contains(JsonConstants.MAP_STATE_NODE_EVENT_DATA
+                        + "event.composedPath()"),
+                "the prefix of a value of an element is not JavaScript: "
+                        + content);
+        assertFalse(content.contains("values[0]"),
+                "the event data of a prebuilt event are keys, not JavaScript: "
+                        + content);
+    }
+
+    @Test
+    void domEventSubclass_inheritingTheAnnotation_registersItsEventData() {
+        // Like the class finder of a build, which reports only the classes an
+        // annotation is written on
+        DefaultClassFinder declaredOnly = new DefaultClassFinder(
+                Set.of(OffsetEvent.class, InheritingOffsetEvent.class)) {
+            @Override
+            public Set<Class<?>> getAnnotatedClasses(
+                    Class<? extends Annotation> annotation) {
+                return super.getAnnotatedClasses(annotation).stream().filter(
+                        type -> type.getDeclaredAnnotation(annotation) != null)
+                        .collect(Collectors.toSet());
+            }
+        };
+        String content = new TaskGenerateJsDefinitions(
+                new Options(mock(Lookup.class), declaredOnly, null)
+                        .withFrontendDirectory(frontendFolder)
+                        .withProductionMode(true))
+                .getFileContent();
+
+        assertTrue(content.contains("window.Vaadin.Flow.jsSnippets[\""
+                + BundledEventData.getFunctionId(INHERITING_EXPRESSION)
+                + "\"]"), content);
+    }
+
+    @Test
+    void domEventClass_productionMode_namesNothingOfTheJava() {
+        Options production = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(OffsetEvent.class)), null)
+                .withFrontendDirectory(frontendFolder).withProductionMode(true);
+        String content = new TaskGenerateJsDefinitions(production)
+                .getFileContent();
+
+        assertTrue(content.contains("window.Vaadin.Flow.jsSnippets[\""
+                + BundledEventData.getFunctionId(OFFSET_EXPRESSION) + "\"]"),
+                "the value should still be in the bundle: " + content);
+        assertFalse(content.contains(OffsetEvent.class.getName()),
+                "a production bundle should not tell a browser what declared the value: "
                         + content);
     }
 
