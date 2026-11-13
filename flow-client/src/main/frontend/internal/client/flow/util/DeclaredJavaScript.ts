@@ -27,6 +27,7 @@ type DeclaredFunction = (this: unknown, ...args: unknown[]) => unknown;
 
 type DeclaredJavaScript = {
   jsDefinitions?: Record<string, DeclaredFunction>;
+  jsDefinitionsWithExecutionContext?: Record<string, DeclaredFunction>;
   jsSnippets?: Record<string, DeclaredFunction>;
   jsDefinitionNames?: Record<string, string>;
 };
@@ -53,6 +54,17 @@ export function findDeclaredFunction(functionId: string): DeclaredFunction | und
 }
 
 /**
+ * Looks up the function that the build generated for a method that runs its
+ * JavaScript when called and gets the execution context, which it takes as
+ * its first parameter. The build registers such a function apart from the
+ * others, so where it is found is what decides that it gets the context, not
+ * anything in the message that calls it.
+ */
+export function findDeclaredFunctionWithExecutionContext(functionId: string): DeclaredFunction | undefined {
+  return getOwnEntry(getDeclaredJavaScript().jsDefinitionsWithExecutionContext, functionId);
+}
+
+/**
  * Looks up the function that the build generated for a method that declares a
  * snippet, which takes the captures and returns the value of the snippet.
  */
@@ -73,5 +85,5 @@ export function getNameOf(functionId: string): string {
  * The message for a function that the bundle does not have.
  */
 export function describeMissingFunction(functionId: string): string {
-  return `No JavaScript in the bundle for ${getNameOf(functionId)}. The JavaScript definition is annotated with @JsDefinition, but the build did not collect it.`;
+  return `No JavaScript in the bundle for ${getNameOf(functionId)}. The build collects the JavaScript of @JsDefinition interfaces and of @EventData values, but did not collect this one.`;
 }

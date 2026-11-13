@@ -27,25 +27,35 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
+import com.vaadin.flow.dom.DomEventData;
+import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JavaScriptSemantics;
+import com.vaadin.flow.internal.ParameterizedConstantPoolKey;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -60,12 +70,27 @@ import com.vaadin.flow.shared.JsonConstants;
  */
 public class ElementListenerMap extends NodeMap {
     /**
-     * Dummy filter string that always passes.
+     * Dummy filter string that always passes. The client runs it without
+     * compiling it.
      */
-    public static final String ALWAYS_TRUE_FILTER = "1";
+    public static final String ALWAYS_TRUE_FILTER = JsonConstants.EVENT_FILTER_ALWAYS_TRUE;
 
     private static final EnumSet<DebouncePhase> NO_TIMEOUT_PHASES = EnumSet
             .of(DebouncePhase.LEADING);
+
+    /**
+     * {@code event} or {@code element}, followed by any number of {@code .name}
+     * or {@code ?.name} segments. The client reads such a path without
+     * compiling it, see {@code PropertyPathExpression.ts}, which matches the
+     * same paths. The quantifiers are possessive so that a long input can't
+     * cause deep backtracking; a segment always starts with a dot, so nothing
+     * needs to be backtracked.
+     */
+    private static final Pattern PROPERTY_PATH = Pattern
+            .compile("(event|element)(\\??\\.[A-Za-z_$][\\w$]*+)*+");
+
+    private static final Entry ALWAYS_TRUE_ENTRY = new ExpressionEntry(
+            ALWAYS_TRUE_FILTER);
 
     // Server-side only data
     private Map<String, List<DomEventListenerWrapper>> listeners;
@@ -79,8 +104,144 @@ public class ElementListenerMap extends NodeMap {
         INSTANCE
     }
 
-    private static class ExpressionSettings implements Serializable {
-        private Map<Integer, Set<DebouncePhase>> debounceSettings = new HashMap<>();
+    /**
+     * Something that the client runs when an event occurs: a JavaScript
+     * expression or a declared snippet. The client sends the value of the entry
+     * to the server under the key of the entry.
+     */
+    sealed interface Entry extends Serializable
+            permits ExpressionEntry, BundledExpressionEntry, SnippetEntry {
+        String key();
+    }
+
+    /**
+     * A JavaScript expression. The key is the expression itself, for example
+     * <code>event.clientX</code>.
+     *
+     * @param key
+     *            the expression
+     */
+    private record ExpressionEntry(String key) implements Entry {
+    }
+
+    /**
+     * An {@link com.vaadin.flow.component.EventData} value that the build has
+     * put into the bundle as a function. The key is the expression, as for an
+     * {@link ExpressionEntry}, but the client is sent the identifier of the
+     * function instead of compiling the expression, see
+     * {@link BundledEventData}.
+     * <p>
+     * The key of a value mapped to a component or an element starts with
+     * {@link JsonConstants#MAP_STATE_NODE_EVENT_DATA}, as for an expression,
+     * and the client is also told to map what the function returns.
+     * <p>
+     * When the bundle has no function for the identifier, for example because
+     * the class that declares the value changed after the build, the client
+     * compiles the key as it does for an {@link ExpressionEntry}, without the
+     * prefix of a mapped value. If compiling is blocked too, by a Content
+     * Security Policy without <code>unsafe-eval</code>, the event is not sent,
+     * rather than sent with no value for the key.
+     *
+     * @param key
+     *            the expression, with the prefix of a mapped value if it has
+     *            one
+     */
+    private record BundledExpressionEntry(String key) implements Entry {
+    }
+
+    /**
+     * A function declared in the bundle, with the values it captures, that the
+     * client runs when an event occurs: a filter added with
+     * {@link DomListenerRegistration#setFilterExpression(DomEventFilter)} or
+     * event data added with
+     * {@link DomListenerRegistration#addEventData(DomEventData)}. The client
+     * runs the call and sends the value it returns to the server under the key
+     * of the entry.
+     * <p>
+     * The key is <code>@</code> followed by the key of the snippet, see
+     * {@link JsCall#createSnippetKey()}.
+     * <p>
+     * An entry can have a side effect: the name of a method of the event,
+     * <code>preventDefault</code> or <code>stopPropagation</code>. The client
+     * then calls the method when the call returns a truthy value. This is used
+     * for <code>addEventData("event.preventDefault()")</code> on a listener
+     * with a declared filter: the event is prevented only when the filter
+     * passes. The key then ends with <code>.</code> and the name of the method,
+     * so it is different from the key of the filter itself. Such an entry is
+     * not a filter, as it doesn't decide which listeners are notified.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param key
+     *            the key that the client sends the value under, not
+     *            <code>null</code>
+     * @param call
+     *            the call that the client runs, not <code>null</code>
+     * @param sideEffect
+     *            the name of the method of the event that the client calls when
+     *            the call returns a truthy value, or <code>null</code> if there
+     *            is no side effect
+     * @param filter
+     *            <code>true</code> if the entry is the filter of a listener,
+     *            which is notified only when the value is truthy, even if the
+     *            same call is also event data; <code>false</code> if it is only
+     *            event data or has a side effect
+     * @param mapElement
+     *            <code>true</code> if the call returns a DOM node that the
+     *            client sends as the id of the closest state node, for event
+     *            data of an {@link com.vaadin.flow.dom.Element};
+     *            <code>false</code> otherwise
+     * @see #getSnippetEntries(String)
+     */
+    public record SnippetEntry(String key, JsCall call,
+            @Nullable String sideEffect, boolean filter,
+            boolean mapElement) implements Entry {
+
+        static SnippetEntry of(DomEventData<?> eventData) {
+            return new SnippetEntry(getEventDataKey(eventData),
+                    eventData.getDeclaredCall(), null, false,
+                    eventData.isElementValue());
+        }
+
+        static SnippetEntry of(DomEventFilter filter) {
+            return new SnippetEntry(
+                    JsonConstants.EVENT_SNIPPET_KEY_PREFIX
+                            + filter.getSnippetKey(),
+                    filter.getDeclaredCall(), null, true, false);
+        }
+
+        SnippetEntry withSideEffect(String method) {
+            return new SnippetEntry(key + "." + method, call, method, false,
+                    false);
+        }
+    }
+
+    /**
+     * The settings of one entry for an event type: the entry and its debounce
+     * settings.
+     */
+    private static final class ExpressionSettings implements Serializable {
+        private Entry entry;
+        private final Map<Integer, Set<DebouncePhase>> debounceSettings = new HashMap<>();
+
+        private ExpressionSettings(Entry entry) {
+            this.entry = entry;
+        }
+
+        /**
+         * Checks whether these settings are the same for every element that
+         * uses them, so that they can be shared through the constant pool. A
+         * snippet that captures for example an element is sent for each element
+         * instead.
+         *
+         * @return <code>true</code> if the settings can be sent through the
+         *         constant pool
+         */
+        private boolean isShared() {
+            // A bundled expression captures nothing
+            return !(entry instanceof SnippetEntry snippet)
+                    || snippet.call().hasOnlyPlainSnippetCaptures();
+        }
 
         public void addDebouncePhases(int timeout, Set<DebouncePhase> phases) {
             debounceSettings.merge(Integer.valueOf(timeout), phases,
@@ -91,7 +252,54 @@ public class ElementListenerMap extends NodeMap {
                     });
         }
 
+        /**
+         * Creates the JSON for the client. For an expression, this is only the
+         * debounce settings, as the key is the expression. For a snippet, this
+         * is an object with the function, the debounce settings, the side
+         * effect, whether the value is mapped to an element, and the captures.
+         * The captures are encoded now, so that an element is sent with the id
+         * that it has now. An expression that the bundle has a function for is
+         * sent like a snippet without captures, so the client runs the function
+         * instead of compiling the key, and compiles the key only when the
+         * bundle has no such function.
+         *
+         * @return the debounce settings for an expression, or the settings
+         *         object for a snippet, not <code>null</code>
+         */
         public JsonNode toJson() {
+            if (entry instanceof BundledExpressionEntry(String key)) {
+                ObjectNode json = JacksonUtils.createObjectNode();
+                json.put(JsonConstants.EVENT_SETTINGS_FUNCTION,
+                        BundledEventData.getFunctionId(key));
+                json.set(JsonConstants.EVENT_SETTINGS_DEBOUNCE,
+                        debounceToJson());
+                if (BundledEventData.isMappedToElement(key)) {
+                    json.put(JsonConstants.EVENT_SETTINGS_MAP_ELEMENT, true);
+                }
+                return json;
+            }
+            if (!(entry instanceof SnippetEntry snippet)) {
+                return debounceToJson();
+            }
+            ObjectNode json = JacksonUtils.createObjectNode();
+            json.put(JsonConstants.EVENT_SETTINGS_FUNCTION,
+                    snippet.call().getFunctionId());
+            json.set(JsonConstants.EVENT_SETTINGS_DEBOUNCE, debounceToJson());
+            if (snippet.sideEffect() != null) {
+                json.put(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT,
+                        snippet.sideEffect());
+            }
+            if (snippet.mapElement()) {
+                json.put(JsonConstants.EVENT_SETTINGS_MAP_ELEMENT, true);
+            }
+            ArrayNode captures = snippet.call().encodeSnippetCaptures();
+            if (!captures.isEmpty()) {
+                json.set(JsonConstants.EVENT_SETTINGS_CAPTURES, captures);
+            }
+            return json;
+        }
+
+        private JsonNode debounceToJson() {
             if (debounceSettings.isEmpty()) {
                 return JacksonUtils.createNode(false);
             } else if (debounceSettings.size() == 1
@@ -101,10 +309,10 @@ public class ElementListenerMap extends NodeMap {
             } else {
                 // [[timeout1, phase1, phase2, ...], [timeout2, phase1, ...]]
                 return debounceSettings.entrySet().stream()
-                        .map(entry -> Stream.concat(
+                        .map(debounce -> Stream.concat(
                                 Stream.of(JacksonUtils
-                                        .createNode(entry.getKey().intValue())),
-                                entry.getValue().stream()
+                                        .createNode(debounce.getKey())),
+                                debounce.getValue().stream()
                                         .map(DebouncePhase::getIdentifier)
                                         .map(JacksonUtils::createNode))
                                 .collect(JacksonUtils.asArray()))
@@ -125,10 +333,14 @@ public class ElementListenerMap extends NodeMap {
          * Exactly sized unmodifiable list rather than a set: listeners hold a
          * handful of expressions, so a hash set would cost several times more
          * memory for each one. The list may be shared with other listeners, see
-         * addEventData(List), and is replaced with a copy when adding.
+         * ElementListenerMap.addEventData, and is replaced with a copy when
+         * adding.
          */
         private List<String> eventDataExpressions;
-        private String filter;
+        // Shared like eventDataExpressions
+        private List<String> bundledEventData;
+        private List<DomEventData<?>> eventDataSnippets;
+        private Entry filter;
 
         private int debounceTimeout = 0;
         private EnumSet<DebouncePhase> debouncePhases = NO_TIMEOUT_PHASES;
@@ -165,25 +377,56 @@ public class ElementListenerMap extends NodeMap {
             }
         }
 
+        /**
+         * @deprecated see {@link DomListenerRegistration#addEventData(String)}
+         */
         @Override
+        @Deprecated(since = "25.4")
         public DomListenerRegistration addEventData(String eventData) {
             if (eventData == null) {
                 throw new IllegalArgumentException(
                         "The event data expression must not be null");
             }
-            if (isCompiledByClient(eventData)) {
+            return addEventData(List.of(eventData));
+        }
+
+        private DomListenerRegistration addEventData(List<String> eventData) {
+            requireEventData(eventData);
+            if (eventData.stream()
+                    .anyMatch(ElementListenerMap::isCompiledByClient)) {
                 CspViolationReporter.reportStringJavaScript();
             }
 
-            appendEventData(List.of(eventData));
+            appendEventData(eventData);
 
             listenerMap.updateEventSettings(type);
 
             return this;
         }
 
-        @Override
-        public DomListenerRegistration addEventData(List<String> eventData) {
+        private void addEventDataWithoutCspReport(List<String> eventData) {
+            requireEventData(eventData);
+
+            appendEventData(eventData);
+
+            listenerMap.updateEventSettings(type);
+        }
+
+        private void addBundledEventData(List<String> eventData) {
+            requireEventData(eventData);
+
+            if (bundledEventData == null) {
+                bundledEventData = List.copyOf(eventData);
+            } else if (!bundledEventData.containsAll(eventData)) {
+                bundledEventData = Stream
+                        .concat(bundledEventData.stream(), eventData.stream())
+                        .distinct().toList();
+            }
+
+            listenerMap.updateEventSettings(type);
+        }
+
+        private static void requireEventData(List<String> eventData) {
             if (eventData == null) {
                 throw new IllegalArgumentException(
                         "The event data expressions must not be null");
@@ -194,16 +437,6 @@ public class ElementListenerMap extends NodeMap {
                             "The event data expression must not be null");
                 }
             }
-            if (eventData.stream()
-                    .anyMatch(DomEventListenerWrapper::isCompiledByClient)) {
-                CspViolationReporter.reportStringJavaScript();
-            }
-
-            appendEventData(eventData);
-
-            listenerMap.updateEventSettings(type);
-
-            return this;
         }
 
         private void appendEventData(List<String> eventData) {
@@ -216,6 +449,25 @@ public class ElementListenerMap extends NodeMap {
                                 eventData.stream())
                         .distinct().toList();
             }
+        }
+
+        @Override
+        public DomListenerRegistration addEventData(DomEventData<?> eventData) {
+            Objects.requireNonNull(eventData, "Event data cannot be null");
+
+            if (eventDataSnippets == null) {
+                // Most listeners have one value, not the default ten
+                eventDataSnippets = new ArrayList<>(1);
+            }
+            String key = eventData.getSnippetKey();
+            if (eventDataSnippets.stream()
+                    .noneMatch(added -> added.getSnippetKey().equals(key))) {
+                eventDataSnippets.add(eventData);
+            }
+
+            listenerMap.updateEventSettings(type);
+
+            return this;
         }
 
         @Override
@@ -232,9 +484,21 @@ public class ElementListenerMap extends NodeMap {
 
         @Override
         public DomListenerRegistration setFilter(String filter) {
-            if (filter != null) {
+            if (filter != null && !isPropertyPath(filter)) {
                 CspViolationReporter.reportStringJavaScript();
             }
+            return updateFilter(
+                    filter == null ? null : new ExpressionEntry(filter));
+        }
+
+        @Override
+        public DomListenerRegistration setFilterExpression(
+                DomEventFilter filter) {
+            return updateFilter(
+                    filter == null ? null : SnippetEntry.of(filter));
+        }
+
+        private DomListenerRegistration updateFilter(Entry filter) {
             this.filter = filter;
 
             listenerMap.updateEventSettings(type);
@@ -244,7 +508,8 @@ public class ElementListenerMap extends NodeMap {
 
         @Override
         public String getFilter() {
-            return filter;
+            // A declared filter has no expression to return
+            return filter instanceof ExpressionEntry(String key) ? key : null;
         }
 
         boolean matchesFilter(JsonNode eventData) {
@@ -258,11 +523,10 @@ public class ElementListenerMap extends NodeMap {
                 return false;
             }
 
-            if (eventData.has(filter)) {
-                return eventData.get(filter).booleanValue();
-            } else {
-                return false;
-            }
+            // The browser sends the value that the filter returned, which does
+            // not have to be a boolean. The value of a filter that did not
+            // pass is also sent when another filter of the event passed.
+            return JavaScriptSemantics.isTrueish(eventData.get(filter.key()));
         }
 
         @Override
@@ -311,15 +575,6 @@ public class ElementListenerMap extends NodeMap {
             return this;
         }
 
-        // The client reads a synchronized property, or the state node closest
-        // to the event target, without compiling anything
-        private static boolean isCompiledByClient(String eventData) {
-            return !eventData
-                    .startsWith(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN)
-                    && !eventData
-                            .equals(JsonConstants.MAP_STATE_NODE_EVENT_DATA);
-        }
-
         private boolean isPropertySynchronized(String propertyName) {
             return hasEventData(
                     JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + propertyName);
@@ -346,6 +601,35 @@ public class ElementListenerMap extends NodeMap {
      */
     public ElementListenerMap(StateNode node) {
         super(node);
+    }
+
+    /**
+     * Checks whether the client compiles the given event data from a string.
+     * The client reads a synchronized property, the state node closest to the
+     * event target or a property path, also one that leads to the element to
+     * map to a state node, and calls <code>preventDefault()</code> or
+     * <code>stopPropagation()</code>, without compiling anything.
+     *
+     * @param eventData
+     *            the event data, as passed to
+     *            {@link DomListenerRegistration#addEventData(String)}, not
+     *            <code>null</code>
+     * @return <code>true</code> if the client compiles the event data with
+     *         <code>new Function</code>, which a content security policy
+     *         without <code>unsafe-eval</code> does not allow
+     */
+    public static boolean isCompiledByClient(String eventData) {
+        String expression = eventData
+                .startsWith(JsonConstants.MAP_STATE_NODE_EVENT_DATA)
+                        ? eventData.substring(
+                                JsonConstants.MAP_STATE_NODE_EVENT_DATA
+                                        .length())
+                        : eventData;
+        return !eventData.startsWith(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN)
+                && !eventData.equals(JsonConstants.MAP_STATE_NODE_EVENT_DATA)
+                && !eventData.equals(JsonConstants.EVENT_DATA_PREVENT_DEFAULT)
+                && !eventData.equals(JsonConstants.EVENT_DATA_STOP_PROPAGATION)
+                && !isPropertyPath(expression);
     }
 
     /**
@@ -408,49 +692,51 @@ public class ElementListenerMap extends NodeMap {
         boolean hasUnfilteredListener = false;
         boolean hasFilteredListener = false;
 
-        Function<String, ExpressionSettings> ensureExpression = expression -> expressions
-                .computeIfAbsent(expression, (key -> new ExpressionSettings()));
+        Function<Entry, ExpressionSettings> ensureExpression = entry -> {
+            ExpressionSettings settings = expressions.computeIfAbsent(
+                    entry.key(), key -> new ExpressionSettings(entry));
+            // The same call can be the filter of one listener and event data
+            // of another, which share a key. The value then still decides
+            // whether the filtered listener is notified.
+            if (entry instanceof SnippetEntry snippet && snippet.filter()) {
+                settings.entry = snippet;
+            }
+            // The same expression can be event data of a component event and
+            // be added as a string by another listener. Running it from the
+            // bundle gives the same value without compiling it.
+            if (entry instanceof BundledExpressionEntry) {
+                settings.entry = entry;
+            }
+            return settings;
+        };
 
         Collection<DomEventListenerWrapper> wrappers = getWrappers(eventType);
 
         for (DomEventListenerWrapper wrapper : wrappers) {
-            String filter = wrapper.getFilter();
+            Entry filter = wrapper.filter;
 
             // Process event data expressions, handling preventDefault and
             // stopPropagation specially
             if (wrapper.eventDataExpressions != null) {
                 for (String expression : wrapper.eventDataExpressions) {
-                    // Check for preventDefault and stopPropagation
-                    if ("event.preventDefault()".equals(expression)) {
-                        if (filter != null && !filter.isEmpty()) {
-                            // If there's a filter, make preventDefault
-                            // conditional
-                            ensureExpression.apply("(" + filter
-                                    + ") && event.preventDefault()");
-                        } else {
-                            // No filter, keep it as is
-                            ensureExpression.apply(expression);
-                        }
-                    } else if ("event.stopPropagation()".equals(expression)) {
-                        if (filter != null && !filter.isEmpty()) {
-                            // If there's a filter, make stopPropagation
-                            // conditional
-                            ensureExpression.apply("(" + filter
-                                    + ") && event.stopPropagation()");
-                        } else {
-                            // No filter, keep it as is
-                            ensureExpression.apply(expression);
-                        }
-                    } else {
-                        // Other expressions, add as is
-                        ensureExpression.apply(expression);
-                    }
+                    ensureExpression.apply(makeConditional(expression, filter));
+                }
+            }
+            if (wrapper.bundledEventData != null) {
+                for (String expression : wrapper.bundledEventData) {
+                    ensureExpression
+                            .apply(new BundledExpressionEntry(expression));
+                }
+            }
+            if (wrapper.eventDataSnippets != null) {
+                for (DomEventData<?> eventData : wrapper.eventDataSnippets) {
+                    ensureExpression.apply(SnippetEntry.of(eventData));
                 }
             }
 
             int timeout = wrapper.debounceTimeout;
             if (timeout > 0 && filter == null) {
-                filter = ALWAYS_TRUE_FILTER;
+                filter = ALWAYS_TRUE_ENTRY;
             }
 
             if (filter == null) {
@@ -471,11 +757,52 @@ public class ElementListenerMap extends NodeMap {
              * Include a filter that always passes to ensure that unfiltered
              * listeners are still notified.
              */
-            ensureExpression.apply(ALWAYS_TRUE_FILTER).addDebouncePhases(0,
+            ensureExpression.apply(ALWAYS_TRUE_ENTRY).addDebouncePhases(0,
                     NO_TIMEOUT_PHASES);
         }
 
         return expressions;
+    }
+
+    /**
+     * Gets the entry for an event data expression of a listener with the given
+     * filter. If the expression is <code>event.preventDefault()</code> or
+     * <code>event.stopPropagation()</code> and the listener has a filter, the
+     * method of the event is called only when the filter passes:
+     * <ul>
+     * <li>For a filter expression, for example <code>event.key ===
+     * 'Enter'</code>, the entry is the expression <code>(event.key ===
+     * 'Enter') &amp;&amp; event.preventDefault()</code>.</li>
+     * <li>For a declared filter, the entry runs the filter and has the method
+     * as its side effect. Nothing is made from strings, so no JavaScript is
+     * compiled in the browser.</li>
+     * </ul>
+     *
+     * @param expression
+     *            the event data expression, not <code>null</code>
+     * @param filter
+     *            the filter of the listener, or <code>null</code> if it has
+     *            none
+     * @return the entry to send for the expression, not <code>null</code>
+     */
+    private static Entry makeConditional(String expression, Entry filter) {
+        String method = switch (expression) {
+        case JsonConstants.EVENT_DATA_PREVENT_DEFAULT -> "preventDefault";
+        case JsonConstants.EVENT_DATA_STOP_PROPAGATION -> "stopPropagation";
+        default -> null;
+        };
+        if (method == null || filter == null) {
+            return new ExpressionEntry(expression);
+        }
+        return switch (filter) {
+        case ExpressionEntry(String key) when key.isEmpty() ->
+            new ExpressionEntry(expression);
+        case ExpressionEntry(String key) ->
+            new ExpressionEntry("(" + key + ") && event." + method + "()");
+        case SnippetEntry snippet -> snippet.withSideEffect(method);
+        case BundledExpressionEntry bundled -> throw new IllegalStateException(
+                "Event data from the bundle is never the filter of a listener");
+        };
     }
 
     private void updateEventSettings(String eventType) {
@@ -490,13 +817,29 @@ public class ElementListenerMap extends NodeMap {
         return true;
     }
 
-    private ConstantPoolKey createEventSettingsKey(String eventType) {
-        Map<String, ExpressionSettings> eventSettings = collectEventExpressions(
-                eventType);
-        ObjectNode eventSettingsJson = JacksonUtils.createObject(eventSettings,
-                ExpressionSettings::toJson);
+    /**
+     * Creates the value that is sent to the client for an event type. The
+     * settings that are the same for every element are sent through the
+     * constant pool. If there are settings for this element only, such as a
+     * snippet that captures an element, the value is the constant pool key
+     * together with those settings.
+     *
+     * @param eventType
+     *            the event type, not <code>null</code>
+     * @return a {@link ConstantPoolKey}, or a
+     *         {@link ParameterizedConstantPoolKey} if some settings are for
+     *         this element only
+     */
+    private Serializable createEventSettingsKey(String eventType) {
+        ObjectNode shared = JacksonUtils.createObjectNode();
+        ObjectNode ownSettings = JacksonUtils.createObjectNode();
+        collectEventExpressions(eventType).forEach(
+                (key, settings) -> (settings.isShared() ? shared : ownSettings)
+                        .set(key, settings.toJson()));
 
-        return new ConstantPoolKey(eventSettingsJson);
+        ConstantPoolKey sharedKey = new ConstantPoolKey(shared);
+        return ownSettings.isEmpty() ? sharedKey
+                : new ParameterizedConstantPoolKey(sharedKey, ownSettings);
     }
 
     @Override
@@ -597,8 +940,143 @@ public class ElementListenerMap extends NodeMap {
      * @since 3.0
      */
     public Set<String> getExpressions(String eventName) {
-        assert eventName != null;
-        return collectEventExpressions(eventName).keySet();
+        Objects.requireNonNull(eventName, "Event name cannot be null");
+        // Declared snippets have no expression
+        return collectEventExpressions(eventName).values().stream()
+                .map(settings -> settings.entry)
+                .filter(entry -> !(entry instanceof SnippetEntry))
+                .map(Entry::key).collect(Collectors.toUnmodifiableSet());
+    }
+
+    /**
+     * Gets the declared snippets that the client runs for the given event name:
+     * the filters and the event data that are declared as JavaScript functions
+     * of the bundle instead of as expressions. Together with
+     * {@link #getExpressions(String)}, this is everything the client runs when
+     * the event occurs. This method is currently only provided to facilitate
+     * testing, such as simulating events on the server.
+     *
+     * @param eventName
+     *            the name of the event, not <code>null</code>
+     * @return an unmodifiable set of the declared snippets, not
+     *         <code>null</code>
+     */
+    public Set<SnippetEntry> getSnippetEntries(String eventName) {
+        Objects.requireNonNull(eventName, "Event name cannot be null");
+        return collectEventExpressions(eventName).values().stream()
+                .map(settings -> settings.entry)
+                .filter(SnippetEntry.class::isInstance)
+                .map(SnippetEntry.class::cast)
+                .collect(Collectors.toUnmodifiableSet());
+    }
+
+    /**
+     * Checks whether the given expression is a property path that the browser
+     * reads without compiling it: <code>event</code> or <code>element</code>
+     * followed by property names that each start with <code>.</code> or
+     * <code>?.</code>.
+     *
+     * @param expression
+     *            the expression to check, not <code>null</code>
+     * @return <code>true</code> if the expression is a property path,
+     *         <code>false</code> otherwise
+     */
+    public static boolean isPropertyPath(String expression) {
+        return PROPERTY_PATH.matcher(expression).matches();
+    }
+
+    /**
+     * Adds event data to a registration. Reports the event data that the
+     * browser compiles from a string, which is any data other than a property
+     * path or a token of the internal data that Flow adds, such as a
+     * synchronized property. Keeps the given list if it is unmodifiable and the
+     * registration has no event data yet, so that listeners that add the same
+     * data can share one list.
+     * <p>
+     * A registration that is not one of this map gets each value with
+     * {@link DomListenerRegistration#addEventData(String)}.
+     *
+     * @param registration
+     *            the registration to add the event data to, not
+     *            <code>null</code>
+     * @param eventData
+     *            the event data, not <code>null</code> and not containing
+     *            <code>null</code>
+     * @throws com.vaadin.flow.server.CspViolationException
+     *             in the {@link com.vaadin.flow.server.CspMode#STRICT} Content
+     *             Security Policy mode, if any value is compiled by the browser
+     */
+    @SuppressWarnings("deprecation")
+    public static void addEventData(DomListenerRegistration registration,
+            List<String> eventData) {
+        Objects.requireNonNull(registration, "Registration cannot be null");
+        if (registration instanceof DomEventListenerWrapper wrapper) {
+            wrapper.addEventData(eventData);
+        } else {
+            DomEventListenerWrapper.requireEventData(eventData);
+            eventData.forEach(registration::addEventData);
+        }
+    }
+
+    /**
+     * Adds event data to a registration of this map like
+     * {@link #addEventData(DomListenerRegistration, List)}, but without
+     * reporting them as JavaScript sent as a string. For the keys of data that
+     * client code builds and sends with <code>sendEventMessage</code>, which
+     * the client never compiles.
+     *
+     * @param registration
+     *            a registration returned by
+     *            {@link #add(String, DomEventListener)}, not <code>null</code>
+     * @param eventData
+     *            the keys of the event data, not <code>null</code> and not
+     *            containing <code>null</code>
+     */
+    public static void addEventDataWithoutCspReport(
+            DomListenerRegistration registration, List<String> eventData) {
+        if (!(registration instanceof DomEventListenerWrapper wrapper)) {
+            throw new IllegalArgumentException(
+                    "The registration must be one returned by an ElementListenerMap");
+        }
+        wrapper.addEventDataWithoutCspReport(eventData);
+    }
+
+    /**
+     * Adds {@link com.vaadin.flow.component.EventData} values to a registration
+     * of this map like {@link #addEventData(DomListenerRegistration, List)},
+     * for values that the build has put into the bundle as functions, see
+     * {@link BundledEventData}. The client runs the function of the bundle
+     * instead of compiling the value, and sends the result under the value, so
+     * nothing is reported as JavaScript sent as a string.
+     *
+     * @param registration
+     *            a registration returned by
+     *            {@link #add(String, DomEventListener)}, not <code>null</code>
+     * @param eventData
+     *            the event data values, not <code>null</code> and not
+     *            containing <code>null</code>
+     */
+    public static void addBundledEventData(DomListenerRegistration registration,
+            List<String> eventData) {
+        if (!(registration instanceof DomEventListenerWrapper wrapper)) {
+            throw new IllegalArgumentException(
+                    "The registration must be one returned by an ElementListenerMap");
+        }
+        wrapper.addBundledEventData(eventData);
+    }
+
+    /**
+     * Gets the key that the client sends the value of the given event data
+     * under. The key does not change after the event data is created.
+     *
+     * @param eventData
+     *            the event data, not <code>null</code>
+     * @return the key of the value, not <code>null</code>
+     */
+    public static String getEventDataKey(DomEventData<?> eventData) {
+        Objects.requireNonNull(eventData, "Event data cannot be null");
+        return JsonConstants.EVENT_SNIPPET_KEY_PREFIX
+                + eventData.getSnippetKey();
     }
 
     /**

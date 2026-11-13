@@ -81,7 +81,7 @@ public class DomEventFilterView extends Div {
             addMessage("input:%s, phase:%s".formatted(
                     e.getEventData().get("element.value").asString(),
                     e.getPhase()));
-        }).addEventData("element.value").debounce(1000);
+        }).addEventDataPath("element.value").debounce(1000);
         debounce.addEventListener("click", e -> {
             addMessage("click");
         });
@@ -92,7 +92,8 @@ public class DomEventFilterView extends Div {
             addMessage("input:%s, phase:%s".formatted(
                     e.getEventData().get("element.value").asString(),
                     e.getPhase()));
-        }).addEventData("element.value").debounce(1000, DebouncePhase.LEADING);
+        }).addEventDataPath("element.value").debounce(1000,
+                DebouncePhase.LEADING);
 
         Element leadingAndTrailing = new Element("input");
         leadingAndTrailing.setAttribute("id", "leading-trailing");
@@ -100,8 +101,8 @@ public class DomEventFilterView extends Div {
             addMessage("input:%s, phase:%s".formatted(
                     e.getEventData().get("element.value").asString(),
                     e.getPhase()));
-        }).addEventData("element.value").debounce(1000, DebouncePhase.LEADING,
-                DebouncePhase.TRAILING);
+        }).addEventDataPath("element.value").debounce(1000,
+                DebouncePhase.LEADING, DebouncePhase.TRAILING);
 
         Element throttle = new Element("input");
         throttle.setAttribute("id", "throttle");
@@ -109,8 +110,9 @@ public class DomEventFilterView extends Div {
             addMessage("input:%s, phase:%s".formatted(
                     e.getEventData().get("element.value").asString(),
                     e.getPhase()));
-        }).addEventData("element.value").throttle(2000); // this is leading +
-                                                         // intermediate
+        }).addEventDataPath("element.value").throttle(2000); // this is leading
+                                                             // +
+        // intermediate
         throttle.addEventListener("click", e -> {
             addMessage("click");
         });
@@ -121,10 +123,11 @@ public class DomEventFilterView extends Div {
             addMessage("godmode:%s, phase:%s".formatted(
                     e.getEventData().get("element.value").asString(),
                     e.getPhase()));
-        }).addEventData("element.value").debounce(1000, DebouncePhase.LEADING,
-                DebouncePhase.TRAILING, DebouncePhase.INTERMEDIATE); // this is
-                                                                     // leading
-                                                                     // +
+        }).addEventDataPath("element.value").debounce(1000,
+                DebouncePhase.LEADING, DebouncePhase.TRAILING,
+                DebouncePhase.INTERMEDIATE); // this is
+                                             // leading
+                                             // +
 
         Element twoEvents = new Element("input");
         twoEvents.setAttribute("id", "twoEvents");
@@ -151,7 +154,7 @@ public class DomEventFilterView extends Div {
                             + e.getEventData().get("event.id").doubleValue()
                             + " phase: " + e.getPhase());
                 });
-        keyreg.addEventData("event.id");
+        keyreg.addEventDataPath("event.id");
         // lazily listen k-events
         keyreg.debounce(3000);
 
@@ -161,7 +164,7 @@ public class DomEventFilterView extends Div {
                             + e.getEventData().get("event.id").doubleValue());
                 });
         // this are listened eagerly, k-events should still come before
-        greg.addEventData("event.id");
+        greg.addEventDataPath("event.id");
 
         DebounceComponent component = new DebounceComponent();
         component.setId("debounce-component");

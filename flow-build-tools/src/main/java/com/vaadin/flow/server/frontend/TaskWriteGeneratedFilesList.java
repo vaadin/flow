@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +68,7 @@ public class TaskWriteGeneratedFilesList implements FallibleCommand {
         List<String> relativePaths = generatedFilesSupport
                 .getFiles(frontendGeneratedFolder).stream()
                 .map(frontendGeneratedFolder::relativize).map(Path::toString)
-                .sorted().collect(Collectors.toList());
+                .sorted().toList();
         Path manifest = frontendGeneratedFolder
                 .resolve(FrontendUtils.GENERATED_FILES_LIST_NAME);
         try {

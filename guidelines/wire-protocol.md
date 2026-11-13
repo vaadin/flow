@@ -85,7 +85,10 @@ expressions of a Polymer template listener. The third kind is what an
 An `ElementListenerMap` value is an object keyed by the JavaScript
 expressions the client evaluates when the event fires. The value of each
 key says whether that expression is also a filter that decides whether
-the event is sent at all, and takes one of exactly three forms:
+the event is sent at all. For an expression the client compiles or reads
+itself, it takes one of exactly three forms (a function from the bundle
+has an object instead, see
+[Declared event data and filters](#declared-event-data-and-filters)):
 
 - `false` — a plain expression, evaluated and sent as event data.
 - `true` — a filter with no debounce.
@@ -129,13 +132,106 @@ over `json.toString()` — the compact form, without the spaces the
 snippet is pretty-printed with. Anything that changes the serialized
 form, key order included, changes the id.
 
+#### Declared event data and filters
+
+`addEventData(DomEventData)` and `setFilterExpression(DomEventFilter)` use a
+function that a `@JsDefinition` method declares, so the client compiles
+nothing from a string. Such an entry is keyed by `@` followed by a short
+hash of the function and its captured values (`JsCall.createSnippetKey()`).
+No JavaScript expression starts with `@`, so this key never equals the
+key of an expression. Its value is an object, not one of the three
+debounce forms above, which is how the client tells that it runs a
+function from the bundle rather than compiling or reading the key. The
+key alone does not tell it: a bundled `@EventData` value, described
+below, keeps the expression as its key. The object holds:
+
+- `f` — the id of the declared function. The client calls
+  `window.Vaadin.Flow.jsSnippets[id]` with the captures, and calls what
+  that returns with the event and the element.
+- `d` — the debounce settings, in the same three forms as above.
+- `c` — the captured values, left out when there are none.
+- `s` — `preventDefault` or `stopPropagation`, for
+  `preventDefault()` or `stopPropagation()` on a listener with a declared
+  filter. The entry runs the filter, and the client calls that method of
+  the event only when the filter passes. Its key is the key of the filter
+  followed by `.` and the method name.
+- `e` — `true` for event data declared as `DomEventData<Element>`, left
+  out otherwise. The function returns a DOM node, and the client sends the
+  id of the closest state node instead (`-1` when there is none), like it
+  does for an expression added with `addEventDataElement(String)`. The
+  server resolves the id to the element with the same lookup.
+
+```json
+{
+  "event.clientX": false,
+  "@<key of the filter>": { "f": "8f66…a044", "d": true, "c": ["Enter"] }
+}
+```
+
+Here `<key of the filter>` stands for the 11 characters of the hash, and
+`8f66…a044` for the 64 characters of the function id.
+
+When all captured values are plain (strings, numbers, booleans, enums or
+`null`), the entry is the same for every element, so it is pooled with the
+other entries. A snippet that captures anything else, such as an element,
+is sent for this element only, because an element is encoded with its
+node id at the time the settings are sent. The `put` value is then a
+`ParameterizedConstantPoolKey`, encoded as `[poolId, settings]`, where
+`settings` holds the entries of this element in the same form. Pooled
+captures are part of the pooled value, so each distinct captured value
+adds one pool entry, like a value concatenated into an expression (see
+the constraints below). Captures sent for one element only do not:
+
+```json
+["RBNvo1WzZ4o=", { "@<key>": { "f": "…", "d": false, "c": [{ "@v-node": 12 }] } }]
+```
+
+The client merges the two before it runs the entries. The value of a
+declared entry is sent back under its key, and
+`DomEvent.getEventData(DomEventData)` reads it with
+`ElementListenerMap.getEventDataKey(DomEventData)`.
+
+An `@EventData` value of a `@DomEvent` class is known when the
+application is built, so a value that the client would otherwise compile
+from a string is generated into `window.Vaadin.Flow.jsSnippets` as a
+function of the event and the element, without captures. Its entry keeps
+the expression as its key, so the server reads the value as before, but
+the value is an object with only `f` and `d`, and the client runs the
+function instead of compiling the key. A value mapped to a component or an
+element keeps its key with the `]` prefix, its function is the expression
+without the prefix, and its object also has `e: true`, so the client sends
+the id of the closest state node to the DOM node that the function returns.
+The client tells such an entry
+from a declared snippet by its key, which does not start with `@`
+(`JsonConstants.EVENT_SNIPPET_KEY_PREFIX`). When the bundle has no
+function for it, for example because the class changed after the build,
+the client compiles the key, without the `]` prefix of a mapped value, and
+logs a warning once. When compiling is
+blocked too, under a Content Security Policy without `unsafe-eval`, the
+client logs an error and the event is not sent, so the server never gets
+an event without the value. A declared snippet that is missing from the
+bundle has no expression to fall back to, and the client sends `null`
+for it. `BundledEventData` decides for
+both the build and the server which values those are and what their ids
+are: property paths, including mapped ones such as `]event.target`, and
+the keys of a `@PrebuiltEventData` event stay plain expressions.
+
+```json
+{
+  "event.clientX - element.offsetLeft": { "f": "3a1c…77e0", "d": false },
+  "]element.querySelector('.item')": { "f": "6532…c1f6", "d": false, "e": true }
+}
+```
+
 ### Constraints this puts on new code
 
 - **Nothing is ever evicted, on either side.** The pool grows for the
   lifetime of the UI. A constant pool key is right for a value with few
   distinct shapes repeated over many nodes, and wrong for anything that
   varies per node or per interaction — that just leaks a JSON value per
-  interaction into a map that is never cleaned.
+  interaction into a map that is never cleaned. Declared event data and
+  filters with plain captures are pooled too, so a capture that varies
+  per node, such as a row id, adds one entry per value.
 - **An id names one value, forever.** The client's
   `ConstantPool.importFromJson` accepts a key it already holds only with
   the value it already holds — the same message can legitimately be read
@@ -283,10 +379,19 @@ invocation dropped.
   `stopApplication`, …) that framework-authored expressions rely on.
 - For an object it looks the function up in
   `window.Vaadin.Flow.jsDefinitions`, which the generated bundle fills,
-  and applies it to the element with the arguments. There is no context
-  object on this path. A function missing from the bundle, or a
-  parameter count that does not match it, is reported through the error
-  channel rather than run.
+  and applies it to the element with the arguments. A function missing
+  from the bundle, or a parameter count that does not match it, is
+  reported through the error channel rather than run.
+- A method annotated with the internal `@JsWithExecutionContext` is
+  generated into `window.Vaadin.Flow.jsDefinitionsWithExecutionContext`
+  instead, as a function taking the same context object an expression
+  runs against as its first parameter, `$executionContext`, ahead of the
+  arguments; `this` is still the element. The client passes the context
+  only to a function it finds in that registry, so the bundle decides
+  which functions get it and nothing on the wire can ask for it. The
+  marker is part of the function id, so the same JavaScript with and
+  without it is two functions. It is for framework code that needs the
+  callbacks of the context, such as `stopApplication`, and not an API.
 
 **An invocation referencing a node that is not bound yet is deferred, not
 dropped**: the processor registers a DOM-node listener and retries the

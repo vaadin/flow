@@ -72,6 +72,9 @@ import type { BindingStrategy } from './BindingStrategy';
 import { Debouncer } from './Debouncer';
 import { bindServerEventHandlerNames } from './ServerEventHandlerBinder';
 import { Console } from '../../Console';
+import { decodeCopyWithTypeInfo, evaluateDeclaredSnippet } from '../util/ClientJsonCodec';
+import { describeMissingFunction, findDeclaredSnippet } from '../util/DeclaredJavaScript';
+import { createPropertyPathExpression } from '../util/PropertyPathExpression';
 
 // com.vaadin.client.flow.binding.SimpleElementBindingStrategy.HIDDEN_ATTRIBUTE
 const HIDDEN_ATTRIBUTE = 'hidden';
@@ -101,6 +104,36 @@ type Command = () => void;
  * @returns Result of evaluated function
  */
 type EventExpression = (event: Event, element: Element) => unknown;
+
+/**
+ * The settings of a declared snippet that the client runs when an event
+ * occurs. Its key is `@` followed by the key of the snippet, or, for an
+ * `@EventData` value that the build put into the bundle, the expression
+ * itself, which the client compiles when the bundle has no function for it.
+ * The settings of an expression that the client compiles or reads are only
+ * its debounce settings, and its key is the expression.
+ */
+type SnippetSettings = {
+  /** The id of the declared function; EVENT_SETTINGS_FUNCTION. */
+  [JsonConstants.EVENT_SETTINGS_FUNCTION]: string;
+  /** Debounce settings: `false`, `true` or `[[timeout, phase, ...], ...]`; EVENT_SETTINGS_DEBOUNCE. */
+  [JsonConstants.EVENT_SETTINGS_DEBOUNCE]: unknown;
+  /** The captured values, if any; EVENT_SETTINGS_CAPTURES. */
+  [JsonConstants.EVENT_SETTINGS_CAPTURES]?: unknown[];
+  /** The method of the event to call when the value is truthy; EVENT_SETTINGS_SIDE_EFFECT. */
+  [JsonConstants.EVENT_SETTINGS_SIDE_EFFECT]?: string;
+  /** Whether the value is a DOM node to send as the closest state node id; EVENT_SETTINGS_MAP_ELEMENT. */
+  [JsonConstants.EVENT_SETTINGS_MAP_ELEMENT]?: boolean;
+};
+
+/**
+ * Checks whether the settings of an entry are the settings of a declared
+ * snippet, whatever its key. The settings of an expression that the client
+ * compiles or reads are `false`, `true` or an array.
+ */
+function isSnippetSettings(settings: unknown): settings is SnippetSettings {
+  return typeof settings === 'object' && settings !== null && !Array.isArray(settings);
+}
 
 let expressionCache: Map<string, EventExpression> | null = null;
 
@@ -1202,29 +1235,54 @@ function handleDomEvent(event: Event, context: BindingContext): void {
 
   const listenerMap = getDomEventListenerMap(node);
   const constantPool = node.getTree().getRegistry().getConstantPool();
-  const expressionConstantKey = listenerMap.getProperty(type).getValue() as string;
+
+  // The value is one of these:
+  // - the constant pool key of the settings that are shared by all elements, or
+  // - a pair of that key and the settings of this element only, for example
+  //   for a snippet that captures an element
+  const settingsValue = listenerMap.getProperty(type).getValue() as [string, Record<string, unknown>] | string;
+  const [expressionConstantKey, ownSettings] = typeof settingsValue === 'string' ? [settingsValue, {}] : settingsValue;
   assert(expressionConstantKey !== null, 'There must be an expression constant key for the event type');
   assert(constantPool.has(expressionConstantKey), 'The constant pool must contain the expression constant key');
 
-  const expressionSettings = constantPool.get<Record<string, unknown>>(expressionConstantKey);
+  const expressionSettings: Record<string, unknown> = {
+    ...constantPool.get<Record<string, unknown>>(expressionConstantKey),
+    ...ownSettings
+  };
   const expressions = Object.keys(expressionSettings);
+
+  // The debounce settings by the key of each entry
+  const debounceSettings: Record<string, unknown> = {};
 
   const eventData: Record<string, unknown> | null = expressions.length === 0 ? null : {};
   const synchronizeProperties = new Set<string>();
 
-  for (const expressionString of expressions) {
-    if (expressionString.startsWith(SYNCHRONIZE_PROPERTY_TOKEN)) {
-      synchronizeProperties.add(expressionString.substring(SYNCHRONIZE_PROPERTY_TOKEN.length));
-    } else if (expressionString === MAP_STATE_NODE_EVENT_DATA) {
+  for (const key of expressions) {
+    const settings = expressionSettings[key];
+    if (isSnippetSettings(settings)) {
+      debounceSettings[key] = settings[JsonConstants.EVENT_SETTINGS_DEBOUNCE];
+      // A key that is not a snippet key is a bundled @EventData value
+      const compiled = key.startsWith(JsonConstants.EVENT_SNIPPET_KEY_PREFIX)
+        ? null
+        : compileIfMissingFromBundle(key, settings, node.getTree());
+      eventData![key] =
+        compiled === null ? evaluateSnippet(settings, node.getTree(), event, element) : compiled(event, element);
+      continue;
+    }
+    debounceSettings[key] = settings;
+
+    if (key.startsWith(SYNCHRONIZE_PROPERTY_TOKEN)) {
+      synchronizeProperties.add(key.substring(SYNCHRONIZE_PROPERTY_TOKEN.length));
+    } else if (key === MAP_STATE_NODE_EVENT_DATA) {
       // map event.target to the closest state node
       eventData![MAP_STATE_NODE_EVENT_DATA] = getClosestStateNodeIdToEventTarget(node, event.target);
-    } else if (expressionString.startsWith(MAP_STATE_NODE_EVENT_DATA)) {
+    } else if (key.startsWith(MAP_STATE_NODE_EVENT_DATA)) {
       // map an element returned by JS to the closest state node
-      const jsEvaluation = expressionString.substring(MAP_STATE_NODE_EVENT_DATA.length);
+      const jsEvaluation = key.substring(MAP_STATE_NODE_EVENT_DATA.length);
       const expressionValue = getOrCreateExpression(jsEvaluation)(event, element);
-      eventData![expressionString] = getClosestStateNodeIdToDomNode(node.getTree(), expressionValue, jsEvaluation);
+      eventData![key] = getClosestStateNodeIdToDomNode(node.getTree(), expressionValue, jsEvaluation);
     } else {
-      eventData![expressionString] = getOrCreateExpression(expressionString)(event, element);
+      eventData![key] = getOrCreateExpression(key)(event, element);
     }
   }
 
@@ -1239,7 +1297,7 @@ function handleDomEvent(event: Event, context: BindingContext): void {
 
   const sendCommand = (debouncePhase: string | null): void => sendEventToServer(node, type, eventData, debouncePhase);
 
-  const sendNow = resolveFilters(element, type, expressionSettings, eventData, sendCommand, commands);
+  const sendNow = resolveFilters(element, type, debounceSettings, eventData, sendCommand, commands);
 
   if (sendNow) {
     // Send if there were no filters or at least one matched.
@@ -1438,10 +1496,140 @@ function updateAttributeValue(
 }
 
 /**
+ * Runs a declared snippet for an event and returns its value. The function of
+ * the bundle is called with the captured values, and the result is called with
+ * the event and the element.
+ *
+ * A captured element keeps the node id that it had when the settings were
+ * sent. If the server has removed that node since, the function gets null for
+ * it, and the event is still sent.
+ *
+ * If the bundle has no function for the snippet, the error goes to the console
+ * and the value is null, so the event is still sent for the other entries of
+ * the listener.
+ *
+ * A snippet can have a side effect, `preventDefault` or `stopPropagation`. Then
+ * the method of the event is called only if the value is truthy. This way, the
+ * method is called only when the filter of the listener passes.
+ *
+ * A snippet of an element returns a DOM node. Its value is the id of the
+ * closest state node, or -1 if there is none, like for an expression of an
+ * element.
+ */
+function evaluateSnippet(settings: SnippetSettings, tree: StateTree, event: Event, element: Element): unknown {
+  const functionId = settings[JsonConstants.EVENT_SETTINGS_FUNCTION];
+  if (findDeclaredSnippet(functionId) === undefined) {
+    // Checked here, because the value that evaluateDeclaredSnippet returns
+    // for a missing function throws when it is called, inside the handler
+    // of the DOM event
+    Console.error(describeMissingFunction(functionId));
+    return null;
+  }
+
+  const captures = (settings[JsonConstants.EVENT_SETTINGS_CAPTURES] ?? []).map((capture) =>
+    decodeCopyWithTypeInfo(tree, capture)
+  );
+  const snippet = evaluateDeclaredSnippet(functionId, captures);
+  const value = (snippet as EventExpression)(event, element);
+
+  const sideEffect = settings[JsonConstants.EVENT_SETTINGS_SIDE_EFFECT];
+  if (value && (sideEffect === 'preventDefault' || sideEffect === 'stopPropagation')) {
+    event[sideEffect]();
+  }
+  if (settings[JsonConstants.EVENT_SETTINGS_MAP_ELEMENT]) {
+    return getClosestStateNodeIdToDomNode(tree, value, functionId);
+  }
+  return value;
+}
+
+/**
+ * The ids of the bundled `@EventData` values that the bundle has no function
+ * for and that the client has warned about, so that it warns once per value
+ * rather than on every event.
+ */
+const warnedMissingBundledExpressions = new Set<string>();
+
+/**
+ * Compiles an `@EventData` value that the build put into the bundle when the
+ * bundle has no function for it, for example because the class that declares
+ * the value changed after the build. The expression is compiled as the server
+ * would otherwise have sent it, and a warning goes to the console once.
+ *
+ * If compiling is blocked too, by a Content Security Policy without
+ * `unsafe-eval`, an error that names the value goes to the console and the
+ * error of compiling is thrown, so the event is not sent. Sending null instead
+ * would give the server an event without the value, which it would accept or
+ * fail on far from the cause.
+ *
+ * The key of a value mapped to a component or an element starts with
+ * MAP_STATE_NODE_EVENT_DATA, and its settings have EVENT_SETTINGS_MAP_ELEMENT.
+ * The expression without the prefix is compiled, and the function that is
+ * returned maps the DOM node that it returns to the closest state node id, as
+ * the function of the bundle would be mapped.
+ *
+ * @param key - the key of the entry: the expression, with the prefix of a
+ * mapped value if it has one
+ * @param settings - the settings of the entry, which name the function of the
+ * bundle for it
+ * @param tree - the state tree to map a returned DOM node with
+ * @returns the compiled expression, or null if the bundle has the function,
+ * which the caller then runs as a declared snippet
+ */
+function compileIfMissingFromBundle(key: string, settings: SnippetSettings, tree: StateTree): EventExpression | null {
+  const functionId = settings[JsonConstants.EVENT_SETTINGS_FUNCTION];
+  if (findDeclaredSnippet(functionId) !== undefined) {
+    return null;
+  }
+  const mapToStateNode = settings[JsonConstants.EVENT_SETTINGS_MAP_ELEMENT] === true;
+  const expression = mapToStateNode ? key.substring(MAP_STATE_NODE_EVENT_DATA.length) : key;
+
+  let compiled: EventExpression;
+  try {
+    compiled = getOrCreateExpression(expression);
+  } catch (error) {
+    Console.error(
+      `No JavaScript in the bundle for the @EventData value "${expression}", and compiling it in the browser failed, so the event is not sent. ` +
+        "A Content Security Policy without 'unsafe-eval' blocks compiling it. Build the frontend again or restart the application to put the value into the bundle."
+    );
+    throw error;
+  }
+  if (!warnedMissingBundledExpressions.has(functionId)) {
+    warnedMissingBundledExpressions.add(functionId);
+    Console.warn(
+      `No JavaScript in the bundle for the @EventData value "${expression}", so it is compiled in the browser. ` +
+        'The build did not collect it, for example because the class that declares it changed after the build. Build the frontend again or restart the application to put the value into the bundle.'
+    );
+  }
+  if (mapToStateNode) {
+    return (event, element) => getClosestStateNodeIdToDomNode(tree, compiled(event, element), expression);
+  }
+  return compiled;
+}
+
+/**
+ * Expressions that Flow itself sends, and that the client runs without
+ * compiling them. They work under a Content Security Policy without
+ * `unsafe-eval`. Each function returns the same value as the compiled
+ * expression would.
+ */
+const BUILT_IN_EXPRESSIONS = new Map<string, EventExpression>([
+  [JsonConstants.EVENT_FILTER_ALWAYS_TRUE, () => 1],
+  [JsonConstants.EVENT_DATA_PREVENT_DEFAULT, (event) => event.preventDefault()],
+  [JsonConstants.EVENT_DATA_STOP_PROPAGATION, (event) => event.stopPropagation()]
+]);
+
+/**
  * Parses an event-data expression into a function `(event, element) => value`,
  * caching the result per expression string; mirrors getOrCreateExpression.
+ * The expressions that Flow itself sends are not compiled, see
+ * BUILT_IN_EXPRESSIONS, and neither are property paths, see
+ * createPropertyPathExpression.
  */
 function getOrCreateExpression(expressionString: string): EventExpression {
+  const builtIn = BUILT_IN_EXPRESSIONS.get(expressionString);
+  if (builtIn !== undefined) {
+    return builtIn;
+  }
   if (expressionCache === null) {
     expressionCache = new Map();
   }
@@ -1449,7 +1637,9 @@ function getOrCreateExpression(expressionString: string): EventExpression {
 
   if (expression === undefined) {
     // Mirrors NativeFunction.create; the server controls these expressions.
-    expression = new Function('event', 'element', `return (${expressionString})`) as EventExpression;
+    expression =
+      createPropertyPathExpression(expressionString) ??
+      (new Function('event', 'element', `return (${expressionString})`) as EventExpression);
     expressionCache.set(expressionString, expression);
   }
 

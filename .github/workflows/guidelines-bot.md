@@ -21,6 +21,11 @@ on:
         required: false
         default: "7"
 
+# Only vaadin/flow runs the bot: a copy of this repository that has the
+# organization secrets would otherwise spend the shared API credits and open
+# pull requests of its own.
+if: github.repository == 'vaadin/flow'
+
 # The agent only reads the repository and the API. Opening the pull request is
 # done by the safe-outputs job, which has its own scoped write permission.
 permissions:
