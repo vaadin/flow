@@ -28,5 +28,5 @@ took.
   other two answers at once.
 - **Windows.** Run `.vaadin/vaadin-dev.cmd` in the Bash tool too: Git Bash hands a `.cmd` file to
   `cmd`, and the arguments are the same. Avoid `bash .vaadin/vaadin-dev` there — as the
-  instructions above say, under Git Bash it cannot confirm a daemon that is running but not
-  answering, so it cannot name the pid to kill.
+  instructions above say, under Git Bash it cannot confirm that a pid that does not answer is
+  the daemon, so it removes the record instead of exiting `70`.
