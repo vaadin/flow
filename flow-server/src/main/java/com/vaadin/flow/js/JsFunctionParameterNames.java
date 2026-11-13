@@ -61,24 +61,33 @@ import com.vaadin.flow.dom.JsFunction;
  *             return navigator.share(data);""")
  *     &#64;JsFunctionParameterNames("event")
  *     JsFunction share(JsFunction title, JsFunction text, JsFunction url);
+ *
+ *     &#64;JsExpression("return location.href;")
+ *     JsFunction currentUrl();
  * }
  * </pre>
  *
- * On the client, the snippet works like this function, where <code>$0</code>,
- * <code>$1</code> and <code>$2</code> are the values that
- * <code>share(title, text, url)</code> was called with on the server:
+ * The build generates the following JavaScript for <code>share</code>. The
+ * outer function takes the arguments of the Java call as its parameters
+ * <code>$0</code>, <code>$1</code> and <code>$2</code>. The client calls it
+ * once, with the values sent from the server, when it receives the snippet. The
+ * inner function is what the snippet evaluates to. Its parameters are the names
+ * of this annotation, its body is the expression, and it sees <code>$0</code>,
+ * <code>$1</code> and <code>$2</code> through the closure:
  *
  * <pre>
- * function (event) {
- *   const data = {};
- *   if ($0) data.title = $0(event);
- *   if ($1) data.text = $1(event);
- *   if ($2) data.url = $2(event);
- *   return navigator.share(data);
+ * function ($0, $1, $2) {
+ *   return function (event) {
+ *     const data = {};
+ *     if ($0) data.title = $0(event);
+ *     if ($1) data.text = $1(event);
+ *     if ($2) data.url = $2(event);
+ *     return navigator.share(data);
+ *   };
  * }
  * </pre>
  *
- * The snippet is then passed to code that calls the function, such as a
+ * The snippet is then passed to code that calls the inner function, such as a
  * definition that registers it as a click listener. The browser calls a
  * listener with the click event, which the snippet sees as <code>event</code>:
  *
@@ -91,10 +100,16 @@ import com.vaadin.flow.dom.JsFunction;
  * }
  *
  * ShareJs share = JsSnippets.of(ShareJs.class);
- * button.getElement().executeJs(ClickJs.class).onClick(
- *         share.share(null, null, JsFunction.of("return location.href;")));
+ * button.getElement().executeJs(ClickJs.class)
+ *         .onClick(share.share(null, null, share.currentUrl()));
  * </pre>
  *
+ * Inside the snippet of <code>share</code>, <code>$0</code> and <code>$1</code>
+ * are <code>null</code>, and <code>$2</code> is the function of
+ * <code>currentUrl()</code>, which ignores the <code>event</code> it is called
+ * with. All of the JavaScript is declared in the definition and generated into
+ * the bundle, so nothing is compiled from a string in the browser.
+ * <p>
  * Inside the function, <code>this</code> is whatever the caller calls it with.
  * <p>
  * Without this annotation the function takes no parameters, and the expression
