@@ -35,6 +35,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.type.TypeFactory;
@@ -112,8 +113,9 @@ public final class JsDefinitionProxy {
     private static final String RETURN_TYPES = "An interface declares either"
             + " JavaScript to run, with methods returning void,"
             + " JavaScriptResult or PendingJavaScriptResult, or snippets, with"
-            + " methods returning JsFunction, JsSnippet, DomEventFilter or"
-            + " DomEventData, but not both";
+            + " methods returning JsFunction, JsSnippet, DomEventFilter,"
+            + " DomEventData or an interface that extends JsSnippet, but not"
+            + " both";
 
     private JsDefinitionProxy() {
         // Only static members
@@ -277,6 +279,7 @@ public final class JsDefinitionProxy {
                     : !returnsInvocationResult(method)) {
                 unanswerable.add(method.getName());
             } else if (snippets) {
+                checkSnippetType(definitionType, method);
                 if (method.isAnnotationPresent(JsWithExecutionContext.class)) {
                     throw new IllegalArgumentException(definitionType.getName()
                             + " has " + method.getName()
@@ -320,6 +323,34 @@ public final class JsDefinitionProxy {
                     + " that declares JavaScript is for. Annotate every method"
                     + " with @JsExpression, and compose the calls in the class"
                     + " that makes them");
+        }
+    }
+
+    /**
+     * Checks that a snippet type of the application, which a proxy implements,
+     * declares no instance methods, since there is nothing on the server to run
+     * them: the snippet only becomes something that can be called on the
+     * client.
+     */
+    private static void checkSnippetType(Class<?> definitionType,
+            Method method) {
+        Class<?> snippetType = method.getReturnType();
+        if (!isApplicationSnippetType(snippetType)) {
+            return;
+        }
+        List<String> declared = Stream.of(snippetType.getMethods())
+                .filter(declaredMethod -> !Modifier
+                        .isStatic(declaredMethod.getModifiers()))
+                .map(Method::getName).sorted().toList();
+        if (!declared.isEmpty()) {
+            throw new IllegalArgumentException(definitionType.getName()
+                    + " has " + method.getName() + " returning "
+                    + snippetType.getName() + ", which declares "
+                    + String.join(", ", declared)
+                    + ". A snippet type that extends JsSnippet only names what"
+                    + " a snippet is for, and the snippet only becomes"
+                    + " something to call on the client, so the type can not"
+                    + " declare instance methods");
         }
     }
 
@@ -427,7 +458,10 @@ public final class JsDefinitionProxy {
      * <ul>
      * <li>a {@link JsFunction}, if the return type allows it, or</li>
      * <li>a {@link DomEventFilter} or a {@link DomEventData}, which a DOM event
-     * listener runs.</li>
+     * listener runs, or</li>
+     * <li>an implementation of an interface that extends {@link JsSnippet},
+     * which a component or an application declares for what it invokes on the
+     * client.</li>
      * </ul>
      *
      * @return the factory, or <code>null</code> if the type is not a snippet
@@ -442,6 +476,57 @@ public final class JsDefinitionProxy {
         } else if (JsSnippet.class.isAssignableFrom(returnType)
                 && returnType.isAssignableFrom(JsFunction.class)) {
             return (call, genericType) -> JsFunction.ofDeclaredCall(call);
+        } else if (isApplicationSnippetType(returnType)) {
+            return (call, genericType) -> createDeclaredSnippet(returnType,
+                    call);
+        }
+        return null;
+    }
+
+    /**
+     * Checks whether the given type is a snippet type that an application or a
+     * component declares, as an interface that extends {@link JsSnippet}, and
+     * that a proxy implements when a snippet method returns it.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param type
+     *            the type to check, not <code>null</code>
+     * @return <code>true</code> if the type is a snippet type of the
+     *         application, <code>false</code> otherwise
+     */
+    public static boolean isApplicationSnippetType(Class<?> type) {
+        return type.isInterface() && type != JsSnippet.class
+                && JsSnippet.class.isAssignableFrom(type);
+    }
+
+    private static JsSnippet createDeclaredSnippet(Class<?> snippetType,
+            JsCall call) {
+        // Fail fast at the call that captures an unsupported value, as a
+        // JsFunction does
+        call.encodeSnippetCaptures();
+        return (JsSnippet) Proxy.newProxyInstance(snippetType.getClassLoader(),
+                new Class<?>[] { snippetType },
+                new DeclaredSnippetHandler(snippetType, call));
+    }
+
+    /**
+     * Gets the call that declared the given snippet, if it is an implementation
+     * of a snippet type of the application, which is sent to the client as the
+     * function the call names and the arguments of the call.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param snippet
+     *            the snippet, not <code>null</code>
+     * @return the declaring call, or <code>null</code> if the snippet is of one
+     *         of the snippet types of Flow
+     */
+    public static @Nullable JsCall findDeclaredCall(JsSnippet snippet) {
+        if (Proxy.isProxyClass(snippet.getClass())
+                && Proxy.getInvocationHandler(
+                        snippet) instanceof DeclaredSnippetHandler handler) {
+            return handler.call();
         }
         return null;
     }
@@ -531,6 +616,49 @@ public final class JsDefinitionProxy {
         public CompletableFuture<T> toCompletableFuture() {
             return TypedJavaScriptResultUtil.toCompletableFuture(pending,
                     json -> JacksonCodec.decodeAs(json, valueType));
+        }
+    }
+
+    /**
+     * Implements a snippet type of the application, whose only methods are the
+     * ones of {@link Object}: two snippets are equal when they are declared by
+     * the same method with equal arguments. An array argument, such as the
+     * trailing arguments of a variadic method, is compared by its current
+     * contents, as for a declared {@link JsFunction}.
+     */
+    private record DeclaredSnippetHandler(Class<?> snippetType,
+            JsCall call) implements InvocationHandler, Serializable {
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) {
+            // The type declares no instance methods, so only equals, hashCode
+            // and toString of Object reach this
+            return switch (method.getName()) {
+            case "equals" ->
+                args[0] != null && Proxy.isProxyClass(args[0].getClass())
+                        && equals(Proxy.getInvocationHandler(args[0]));
+            case "hashCode" -> hashCode();
+            default -> snippetType.getSimpleName() + "["
+                    + call.definitionType().getSimpleName() + "."
+                    + call.methodName() + "]";
+            };
+        }
+
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            return obj instanceof DeclaredSnippetHandler(Class<?> otherType, JsCall otherCall)
+                    && snippetType == otherType
+                    && call.definitionType() == otherCall.definitionType()
+                    && call.methodName().equals(otherCall.methodName())
+                    && Arrays.deepEquals(call.flattenArguments().toArray(),
+                            otherCall.flattenArguments().toArray());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(snippetType, call.definitionType(),
+                    call.methodName(),
+                    Arrays.deepHashCode(call.flattenArguments().toArray()));
         }
     }
 

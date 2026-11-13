@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -31,17 +32,22 @@ import org.junit.jupiter.api.io.TempDir;
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.TaskGenerateJsDefinitions;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -58,6 +64,16 @@ class JsDefinitionHotswapperTest {
     interface CounterJs extends Serializable {
         @JsExpression("this.count = ($0 || 0) + 1")
         void count(Integer from);
+    }
+
+    @JsCalledWith({ "item" })
+    interface TemplateSnippet extends JsSnippet {
+    }
+
+    @JsDefinition
+    interface TemplateJs extends Serializable {
+        @JsExpression("return item.name + $0;")
+        TemplateSnippet label(String suffix);
     }
 
     static class NotADefinition {
@@ -213,6 +229,69 @@ class JsDefinitionHotswapperTest {
         classesChanged(GreeterJs.class);
 
         assertEquals(List.of(GreeterJs.class.getName()), hotswapper.reported);
+    }
+
+    @Test
+    void snippetTypeChanged_definitionsReturningItReportedAndCacheCleared()
+            throws IOException {
+        writeGeneratedDefinitionsFor(GreeterJs.class);
+        writeGeneratedDefinitionsFor(TemplateJs.class);
+        // What the file holds for the definition when the type declared
+        // other names than it does now
+        editGeneratedDefinitions("return function (item) {",
+                "return function (row) {");
+        // A definition that is no longer on the class path, which is skipped
+        Files.writeString(generatedFile().toPath(),
+                "window.Vaadin.Flow.jsDefinitionNames[\"gone\"] = \"com.example.GoneJs.run/0\";"
+                        + System.lineSeparator(),
+                StandardCharsets.UTF_8, StandardOpenOption.APPEND);
+        List<Class<?>> cleared = new ArrayList<>();
+        Registration registration = ReflectionCache
+                .addClearAllAction(cleared::add);
+
+        try {
+            classesChanged(TemplateSnippet.class);
+
+            assertEquals(List.of(TemplateJs.class.getName()),
+                    hotswapper.reported,
+                    "the definition returning the type now declares other JavaScript than the bundle carries");
+            assertTrue(cleared.contains(TemplateJs.class),
+                    "what was cached of the definition depends on the type: "
+                            + cleared);
+            assertFalse(cleared.contains(GreeterJs.class),
+                    "a definition not returning the type is left alone");
+        } finally {
+            registration.remove();
+        }
+    }
+
+    @Test
+    void snippetTypeChangedWithADefinitionReturningIt_reportedOnce()
+            throws IOException {
+        writeGeneratedDefinitionsFor(TemplateJs.class);
+        editGeneratedDefinitions("return function (item) {",
+                "return function (row) {");
+
+        classesChanged(TemplateSnippet.class, TemplateJs.class);
+
+        assertEquals(List.of(TemplateJs.class.getName()), hotswapper.reported);
+    }
+
+    @Test
+    void snippetTypeChanged_frontendDevServerRunning_definitionsReturningItApplied()
+            throws IOException {
+        writeGeneratedDefinitionsFor(TemplateJs.class);
+        editGeneratedDefinitions("return function (item) {",
+                "return function (row) {");
+        withFrontendDevServer();
+
+        classesChanged(TemplateSnippet.class);
+
+        assertTrue(hotswapper.reported.isEmpty(),
+                hotswapper.reported::toString);
+        assertTrue(
+                readGeneratedDefinitions().contains("return function (item) {"),
+                "what the browser reloads is called with the names the type declares now");
     }
 
     @Test

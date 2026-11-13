@@ -41,9 +41,11 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -238,6 +240,44 @@ class JacksonCodecTest {
                 objectMapper.createArrayNode().add("Greeting:"));
         ObjectNode expected = objectMapper.createObjectNode();
         expected.set("@v-fn", payload);
+
+        assertJsonEquals(expected, json);
+    }
+
+    @JsCalledWith({ "html", "item" })
+    interface TemplateSnippet extends JsSnippet {
+    }
+
+    @JsDefinition
+    interface TemplateJs extends Serializable {
+        @JsExpression("return html`<b>${$0}: ${item.name}</b>`;")
+        TemplateSnippet label(String prefix);
+
+        @JsExpression("return html`<i>${$0(html, item)}</i>`;")
+        TemplateSnippet wrap(TemplateSnippet inner);
+    }
+
+    @Test
+    void encodeWithTypeInfo_snippetTypeOfTheApplication_namesTheFunctionWithItsCaptures()
+            throws NoSuchMethodException {
+        TemplateJs templates = JsSnippets.of(TemplateJs.class);
+
+        JsonNode json = JacksonCodec
+                .encodeWithTypeInfo(templates.wrap(templates.label("Name")));
+
+        // The captured snippet is encoded the same way, for the client to
+        // call it from the one that captures it
+        ObjectNode label = objectMapper.createObjectNode();
+        label.put("id", JsCall
+                .functionId(TemplateJs.class.getMethod("label", String.class)));
+        label.set("captures", objectMapper.createArrayNode().add("Name"));
+        ObjectNode wrap = objectMapper.createObjectNode();
+        wrap.put("id", JsCall.functionId(
+                TemplateJs.class.getMethod("wrap", TemplateSnippet.class)));
+        wrap.set("captures", objectMapper.createArrayNode()
+                .add(objectMapper.createObjectNode().set("@v-fn", label)));
+        ObjectNode expected = objectMapper.createObjectNode();
+        expected.set("@v-fn", wrap);
 
         assertJsonEquals(expected, json);
     }

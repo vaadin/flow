@@ -25,10 +25,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
@@ -108,6 +112,11 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     // What a message about a call names it by, which is of no use to a browser
     // running the application and is left out of a production bundle
     private static final String NAMES = "window.Vaadin.Flow.jsDefinitionNames = window.Vaadin.Flow.jsDefinitionNames || {};";
+
+    // A name as nameOf renders it, with the interface it names in the group
+    private static final Pattern DEFINITION_NAME = Pattern.compile(
+            "^window\\.Vaadin\\.Flow\\.jsDefinitionNames\\[\"[^\"]*\"\\] = \"([^\"/]+)\\.[^.\"/]+/\\d+\";$",
+            Pattern.MULTILINE);
 
     // Writing this file again while the application runs replaces it in the
     // browser that has it: everything above only writes into the registry, so
@@ -293,6 +302,30 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         return definitions.stream()
                 .filter(definition -> !isInGeneratedFile(definition, generated))
                 .toList();
+    }
+
+    /**
+     * The names of the JavaScript definitions that the generated file names a
+     * function of, for a caller that has to find which of them a change of
+     * another class affects without scanning for them. Only a file written for
+     * a development build names what declared its functions.
+     *
+     * @param options
+     *            where the file is, not <code>null</code>
+     * @return the binary names of the definitions, empty when there is no file
+     *         or it names nothing
+     */
+    public static Set<String> findDefinitionNamesInGeneratedFile(
+            Options options) {
+        String generated = readGeneratedFile(options);
+        Set<String> names = new LinkedHashSet<>();
+        if (generated != null) {
+            Matcher matcher = DEFINITION_NAME.matcher(generated);
+            while (matcher.find()) {
+                names.add(matcher.group(1));
+            }
+        }
+        return names;
     }
 
     /**

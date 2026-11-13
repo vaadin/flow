@@ -44,6 +44,7 @@ import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.shared.JsonConstants;
@@ -72,6 +73,8 @@ class TaskGenerateJsDefinitionsTest {
 
     private static final String KEY_EXPRESSION = "return event.key === $0;";
 
+    private static final String TEMPLATE_EXPRESSION = "return html`${$0}: ${item.name}`;";
+
     private static final String SNIPPETS_REGISTRY = "window.Vaadin.Flow.jsSnippets = window.Vaadin.Flow.jsSnippets || {};";
 
     private static final String CONTEXT_REGISTRY = "window.Vaadin.Flow.jsDefinitionsWithExecutionContext = window.Vaadin.Flow.jsDefinitionsWithExecutionContext || {};";
@@ -95,6 +98,16 @@ class TaskGenerateJsDefinitionsTest {
 
         @JsExpression(TICK_EXPRESSION)
         JsFunction createTicker(String label);
+    }
+
+    @JsCalledWith({ "html", "item" })
+    public interface TemplateSnippet extends JsSnippet {
+    }
+
+    @JsDefinition
+    public interface TemplateJs extends Serializable {
+        @JsExpression(TEMPLATE_EXPRESSION)
+        TemplateSnippet label(String prefix);
     }
 
     @JsDefinition
@@ -321,6 +334,24 @@ class TaskGenerateJsDefinitionsTest {
                         "  return function (event, element) {", KEY_EXPRESSION,
                         "  };", "};")),
                 "a DOM event filter should be a function of the event and the element: "
+                        + content);
+    }
+
+    @Test
+    void snippetTypeOfTheApplication_isCalledWithTheNamesItsTypeDeclares()
+            throws NoSuchMethodException {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(TemplateJs.class), false);
+
+        assertTrue(
+                content.contains(String.join(System.lineSeparator(),
+                        "window.Vaadin.Flow.jsSnippets[\""
+                                + JsCall.functionId(TemplateJs.class
+                                        .getMethod("label", String.class))
+                                + "\"] = function ($0) {",
+                        "  return function (html, item) {", TEMPLATE_EXPRESSION,
+                        "  };", "};")),
+                "a snippet type that is not Flow's own should be generated like one of Flow's: "
                         + content);
     }
 

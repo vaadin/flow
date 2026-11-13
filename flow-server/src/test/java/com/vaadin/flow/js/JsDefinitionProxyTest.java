@@ -22,6 +22,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -172,6 +173,47 @@ class JsDefinitionProxyTest {
 
         @JsExpression("return (value) => console.log($0, value);")
         JsSnippet createSnippet(String prefix);
+    }
+
+    @JsCalledWith({ "html", "item" })
+    interface TemplateSnippet extends JsSnippet {
+        // Allowed, as it is not something the snippet has to implement
+        static String describe() {
+            return "template";
+        }
+    }
+
+    @JsDefinition
+    interface TemplateJs extends Serializable {
+        @JsExpression("return html`<b>${$0}: ${item.name}</b>`;")
+        TemplateSnippet label(String prefix);
+
+        @JsExpression("return html`${$0}`;")
+        TemplateSnippet echo(Object value);
+
+        @JsExpression("return html`${$0.join(' ')}`;")
+        TemplateSnippet join(String... parts);
+    }
+
+    @JsDefinition
+    interface OtherTemplateJs extends Serializable {
+        @JsExpression("return html`<i>${$0}: ${item.name}</i>`;")
+        TemplateSnippet label(String prefix);
+    }
+
+    interface ActionSnippet extends JsSnippet {
+        void run();
+
+        default void runTwice() {
+            run();
+            run();
+        }
+    }
+
+    @JsDefinition
+    interface ActionJs extends Serializable {
+        @JsExpression("console.log('run');")
+        ActionSnippet createAction();
     }
 
     @JsDefinition
@@ -514,6 +556,73 @@ class JsDefinitionProxyTest {
                 events.isKey("Enter").getDeclaredCall());
         assertEquals(new JsCall(EventJs.class, "attribute", List.of("id")),
                 events.attribute("id").getDeclaredCall());
+    }
+
+    @Test
+    void createSnippets_snippetTypeOfTheApplication_answersWithAnImplementationOfIt() {
+        TemplateJs templates = JsDefinitionProxy
+                .createSnippets(TemplateJs.class);
+
+        TemplateSnippet label = templates.label("Name");
+
+        assertEquals(new JsCall(TemplateJs.class, "label", List.of("Name")),
+                JsDefinitionProxy.findDeclaredCall(label),
+                "the snippet should name what declared it, for the client to look it up by");
+        assertEquals(templates.label("Name"), label);
+        assertEquals(templates.label("Name").hashCode(), label.hashCode());
+        assertNotEquals(templates.label("Other"), label);
+        assertNotEquals(templates.echo("Name"), label);
+        assertNotEquals(
+                JsDefinitionProxy.createSnippets(OtherTemplateJs.class)
+                        .label("Name"),
+                label,
+                "a method of the same name in another definition declares another function");
+        // Including a proxy that is not a snippet, such as the definition
+        for (Object other : Arrays.asList(null, JsFunction.of("return 1"),
+                templates)) {
+            assertNotEquals(label, other,
+                    "a snippet should not be equal to " + other);
+        }
+        assertTrue(label.toString().contains("TemplateSnippet"),
+                label.toString());
+        assertEquals(label, SerializationUtils.roundtrip(label));
+        SelfReference unencodable = new SelfReference();
+        assertThrows(RuntimeException.class, () -> templates.echo(unencodable),
+                "a capture the client can not receive should fail when declared");
+    }
+
+    @Test
+    void createSnippets_snippetTypeOfTheApplication_equalWhenArgumentsHaveEqualContents() {
+        TemplateJs templates = JsDefinitionProxy
+                .createSnippets(TemplateJs.class);
+
+        TemplateSnippet joined = templates.join("a", "b");
+        assertEquals(templates.join("a", "b"), joined,
+                "trailing arguments should be compared by their contents");
+        assertEquals(templates.join("a", "b").hashCode(), joined.hashCode());
+        assertNotEquals(templates.join("a", "c"), joined);
+        assertEquals(joined, SerializationUtils.roundtrip(joined));
+
+        TemplateSnippet echoed = templates.echo(new String[] { "a" });
+        assertEquals(templates.echo(new String[] { "a" }), echoed,
+                "an array argument should be compared by its contents");
+        assertEquals(templates.echo(new String[] { "a" }).hashCode(),
+                echoed.hashCode());
+        assertNotEquals(templates.echo(new String[] { "b" }), echoed);
+    }
+
+    @Test
+    void checkDefinition_snippetTypeOfTheApplicationWithMethods_throws() {
+        // Nothing could implement them, as the snippet only exists on the
+        // client
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> JsDefinitionProxy.checkDefinition(ActionJs.class));
+
+        assertTrue(
+                exception.getMessage().contains(ActionSnippet.class.getName())
+                        && exception.getMessage().contains("run, runTwice"),
+                exception.getMessage());
     }
 
     @Test
