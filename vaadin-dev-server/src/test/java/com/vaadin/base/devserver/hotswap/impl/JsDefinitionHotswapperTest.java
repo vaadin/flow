@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -239,6 +240,11 @@ class JsDefinitionHotswapperTest {
         // other names than it does now
         editGeneratedDefinitions("return function (item) {",
                 "return function (row) {");
+        // A definition that is no longer on the class path, which is skipped
+        Files.writeString(generatedFile().toPath(),
+                "window.Vaadin.Flow.jsDefinitionNames[\"gone\"] = \"com.example.GoneJs.run/0\";"
+                        + System.lineSeparator(),
+                StandardCharsets.UTF_8, StandardOpenOption.APPEND);
         List<Class<?>> cleared = new ArrayList<>();
         Registration registration = ReflectionCache
                 .addClearAllAction(cleared::add);

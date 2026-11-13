@@ -47,6 +47,7 @@ import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.theme.Theme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -263,6 +264,30 @@ class DevLoopRedefinerTest {
                 .frontendDependencies(RenamedParameterLoggerJs.class));
         assertNotEquals(imports,
                 DevLoopRedefiner.frontendDependencies(UnwrappedLoggerJs.class));
+    }
+
+    @JsCalledWith({ "html", "item" })
+    interface TemplateSnippet extends JsSnippet {
+    }
+
+    @JsCalledWith({ "html", "model" })
+    interface RenamedParameterTemplateSnippet extends JsSnippet {
+    }
+
+    interface UnnamedTemplateSnippet extends JsSnippet {
+    }
+
+    @Test
+    void frontendDependencies_seesTheParametersASnippetTypeDeclares() {
+        // The names on a snippet type are parameters of the generated function
+        // of every definition returning it, while only the type is redefined
+        String imports = DevLoopRedefiner
+                .frontendDependencies(TemplateSnippet.class);
+
+        assertNotEquals(imports, DevLoopRedefiner
+                .frontendDependencies(RenamedParameterTemplateSnippet.class));
+        assertNotEquals(imports, DevLoopRedefiner
+                .frontendDependencies(UnnamedTemplateSnippet.class));
     }
 
     @Test

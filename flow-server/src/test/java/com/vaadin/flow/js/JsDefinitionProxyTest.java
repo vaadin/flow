@@ -194,6 +194,12 @@ class JsDefinitionProxyTest {
         TemplateSnippet join(String... parts);
     }
 
+    @JsDefinition
+    interface OtherTemplateJs extends Serializable {
+        @JsExpression("return html`<i>${$0}: ${item.name}</i>`;")
+        TemplateSnippet label(String prefix);
+    }
+
     interface ActionSnippet extends JsSnippet {
         void run();
 
@@ -565,6 +571,15 @@ class JsDefinitionProxyTest {
         assertEquals(templates.label("Name").hashCode(), label.hashCode());
         assertNotEquals(templates.label("Other"), label);
         assertNotEquals(templates.echo("Name"), label);
+        assertNotEquals(
+                JsDefinitionProxy.createSnippets(OtherTemplateJs.class)
+                        .label("Name"),
+                label,
+                "a method of the same name in another definition declares another function");
+        assertNotEquals(null, label);
+        assertNotEquals(JsFunction.of("return 1"), label);
+        assertNotEquals(templates, label,
+                "a proxy that is not a snippet should not be equal to one");
         assertTrue(label.toString().contains("TemplateSnippet"),
                 label.toString());
         assertEquals(label, SerializationUtils.roundtrip(label));
