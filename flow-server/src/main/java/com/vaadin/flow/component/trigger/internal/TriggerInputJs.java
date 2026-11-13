@@ -19,9 +19,9 @@ import java.io.Serializable;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippets;
 
 /**
@@ -76,7 +76,7 @@ public interface TriggerInputJs extends Serializable {
      * @return the input function
      */
     @JsExpression("return event[$0]")
-    @JsCalledWith("event")
+    @JsFunctionParameterNames("event")
     JsFunction readEventProperty(String propertyName);
 
     /**
@@ -85,6 +85,6 @@ public interface TriggerInputJs extends Serializable {
      * @return the input function
      */
     @JsExpression("return event")
-    @JsCalledWith("event")
+    @JsFunctionParameterNames("event")
     JsFunction returnEvent();
 }

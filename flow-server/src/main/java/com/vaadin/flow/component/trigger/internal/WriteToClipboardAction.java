@@ -23,9 +23,9 @@ import org.jspecify.annotations.Nullable;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippets;
 
 /**
@@ -270,7 +270,7 @@ public class WriteToClipboardAction extends PromiseAction<String> {
          * @return the action function, which returns the promise of the write
          */
         @JsExpression("return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event), $2(event))")
-        @JsCalledWith("event")
+        @JsFunctionParameterNames("event")
         JsFunction writeToClipboard(JsFunction text, JsFunction html,
                 JsFunction image);
     }

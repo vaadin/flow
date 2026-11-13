@@ -20,9 +20,9 @@ import java.io.Serializable;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippets;
 
 /**
@@ -64,7 +64,7 @@ public interface TriggerJs extends Serializable {
      * @return the action function
      */
     @JsExpression("$0($1(event));")
-    @JsCalledWith("event")
+    @JsFunctionParameterNames("event")
     JsFunction sendToChannel(ReturnChannelRegistration channel,
             JsFunction source);
 
@@ -80,7 +80,7 @@ public interface TriggerJs extends Serializable {
      * @return the action function
      */
     @JsExpression("$0[$1] = $2(event)")
-    @JsCalledWith("event")
+    @JsFunctionParameterNames("event")
     JsFunction setProperty(Element target, String propertyName,
             JsFunction source);
 
@@ -100,7 +100,7 @@ public interface TriggerJs extends Serializable {
             .catch(e => $1({ok: false, error: {\
             name: (e && e.name) ? e.name : '',\
             message: (e && e.message) ? e.message : String(e)}}));""")
-    @JsCalledWith("event")
+    @JsFunctionParameterNames("event")
     JsFunction reportOutcome(JsFunction promise,
             ReturnChannelRegistration channel);
 

@@ -20,9 +20,9 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 import com.vaadin.flow.dom.JsFunction;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
@@ -255,7 +255,7 @@ public class OpenInNewTabAction extends Action {
          */
         @JsExpression("((u) => /^[\\x00-\\x20]*javascript:/i.test(String(u))"
                 + " || window.open(u, \"_blank\", $1(event)))($0(event))")
-        @JsCalledWith("event")
+        @JsFunctionParameterNames("event")
         JsFunction openInNewTab(JsFunction url, JsFunction features);
     }
 }

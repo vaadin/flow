@@ -81,9 +81,9 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -2834,7 +2834,7 @@ class ElementTest extends AbstractNodeTest {
         JsFunction toggleClass(String className);
 
         @JsExpression("console.log(event);")
-        @JsCalledWith("event")
+        @JsFunctionParameterNames("event")
         JsFunction logEvent();
     }
 

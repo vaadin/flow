@@ -21,9 +21,9 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.dom.JsFunction;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
@@ -201,7 +201,7 @@ public class DownloadAction extends Action {
          * @return the action function
          */
         @JsExpression("window.Vaadin.Flow.download.start($0(event), $1 ? $1(event) : undefined, event)")
-        @JsCalledWith("event")
+        @JsFunctionParameterNames("event")
         JsFunction download(JsFunction url, @Nullable JsFunction filename);
     }
 }

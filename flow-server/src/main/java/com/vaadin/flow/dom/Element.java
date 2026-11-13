@@ -2171,7 +2171,7 @@ public class Element extends Node<Element> {
      * <p>
      * The function is called with this element as <code>this</code> and no
      * arguments, so a function that declares runtime arguments, with
-     * {@link com.vaadin.flow.js.JsCalledWith} or
+     * {@link com.vaadin.flow.js.JsFunctionParameterNames} or
      * {@link JsFunction#withArguments(String...)}, is refused. The arguments of
      * the Java call that created the snippet are available as <code>$0</code>,
      * <code>$1</code>, &hellip; in its expression. The function must return a
@@ -2191,18 +2191,18 @@ public class Element extends Node<Element> {
     public Registration addJsInitializer(JsFunction initializer) {
         Objects.requireNonNull(initializer, "Initializer cannot be null");
         // No separate check of the JsCall is needed: JsFunction.ofDeclaredCall
-        // stores the @JsCalledWith names of the call as the argument names,
-        // so this covers a snippet as well as JsFunction.of with
+        // stores the names in @JsFunctionParameterNames as the argument
+        // names, so this covers a snippet as well as JsFunction.of with
         // withArguments
         List<String> argumentNames = initializer.getArgumentNames();
         if (!argumentNames.isEmpty()) {
             throw new IllegalArgumentException("An initializer is called with"
                     + " no arguments, but the function declares "
                     + argumentNames
-                    + " with @JsCalledWith or withArguments. Declare the"
-                    + " initializer without runtime arguments, and pass the"
-                    + " values it needs as arguments of the snippet method"
-                    + " or as captures.");
+                    + " with @JsFunctionParameterNames or withArguments."
+                    + " Declare the initializer without runtime arguments,"
+                    + " and pass the values it needs as arguments of the"
+                    + " snippet method or as captures.");
         }
         return new ElementJsInitializerRegistration(getNode(), initializer);
     }
