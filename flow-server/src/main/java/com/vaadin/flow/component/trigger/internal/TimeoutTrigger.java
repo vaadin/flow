@@ -20,7 +20,6 @@ import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.JsFunction;
-import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.shared.Registration;
 
@@ -70,7 +69,7 @@ public class TimeoutTrigger extends Trigger {
     protected Registration install(JsFunction action) {
         // The installer returns a function that clears the timer when the
         // registration is removed
-        return new ElementJsInitializerRegistration(getHost().getNode(),
+        return getHost().addJsInitializer(
                 TRIGGER_JS.runAfterTimeout(action, delayMillis));
     }
 }

@@ -34,8 +34,8 @@ import com.vaadin.flow.shared.Registration;
 
 /**
  * Server-side bookkeeping for a JavaScript initializer registered through
- * {@link Element#addJsInitializer(String, Object...)}, or by framework code
- * with an initializer declared as a {@link JsSnippets snippet}.
+ * {@link Element#addJsInitializer(String, Object...)} or
+ * {@link Element#addJsInitializer(JsFunction)}.
  * <p>
  * Re-emits the init invocation each time the client acquires a fresh DOM for
  * this element, and emits a matching dispose when the registration is removed.
@@ -90,9 +90,8 @@ public final class ElementJsInitializerRegistration implements Registration {
      * The initializer is applied with the element as <code>this</code> and no
      * arguments, and returns a cleanup function, <code>null</code> or
      * <code>undefined</code>, as described for
-     * {@link Element#addJsInitializer(String, Object...)}. Framework code
-     * passes one declared as a {@link JsSnippets snippet}, so that nothing is
-     * compiled from a string in the browser.
+     * {@link Element#addJsInitializer(String, Object...)}. One declared as a
+     * {@link JsSnippets snippet} is not compiled from a string in the browser.
      *
      * @param node
      *            the owning state node, not {@code null}
