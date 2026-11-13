@@ -41,4 +41,16 @@ class JsDefinitionIT extends AbstractChromeIT {
                 .id(JsDefinitionView.RESULT_ID);
         waitUntil(driver -> "a-1-true".equals(result.getText()));
     }
+
+    @Test
+    void runSnippet_greetingShown() {
+        open();
+
+        $(NativeButtonElement.class).id(JsDefinitionView.RUN_SNIPPET_ID)
+                .click();
+
+        SpanElement result = $(SpanElement.class)
+                .id(JsDefinitionView.SNIPPET_RESULT_ID);
+        waitUntil(driver -> "Hello, native image".equals(result.getText()));
+    }
 }
