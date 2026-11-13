@@ -63,6 +63,19 @@ class DomEventTest {
         assertSettings(FilterEvent.class, "a == b", 0);
     }
 
+    @DomEvent(value = "event", filter = "event.isTrusted")
+    public static class PathFilterEvent extends ComponentEvent<Component> {
+        public PathFilterEvent(Component source, boolean fromClient) {
+            super(source, fromClient);
+        }
+    }
+
+    @Test
+    void pathFilter() {
+        // Read by the client without compiling it, so not in the bundle
+        assertSettings(PathFilterEvent.class, "event.isTrusted", 0);
+    }
+
     @DomEvent(value = "event", debounce = @DebounceSettings(timeout = 200, phases = {
             DebouncePhase.INTERMEDIATE, DebouncePhase.TRAILING }))
     public static class DebounceTimeoutPhasesEvent
@@ -126,7 +139,9 @@ class DomEventTest {
         }, JacksonUtils.getKeys(settings));
 
         JsonNode debounceSettings = settings.get(expectedFilter);
-        if (!ElementListenerMap.ALWAYS_TRUE_FILTER.equals(expectedFilter)) {
+        // The filter that always passes is added by Flow, not by the event
+        if (!ElementListenerMap.ALWAYS_TRUE_FILTER.equals(expectedFilter)
+                && BundledEventData.isBundledFilter(expectedFilter)) {
             // A filter that is not a property path runs the function of the
             // bundle, with the debounce settings beside it
             assertEquals(BundledEventData.getFunctionId(expectedFilter),
