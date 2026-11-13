@@ -682,6 +682,10 @@ final class TransactionEngine {
                 }
                 tx.classes = result.writtenClasses();
                 compiled = result;
+                // A source added now may go live without a restart, and the
+                // next launch has to know of it to clean up its class should
+                // it be gone by then.
+                launch.recordCompiledSources(changes.modified());
                 if (!result.removedClasses().isEmpty()) {
                     // The deletion leg's reasoning, for a class the compile
                     // took away from a source that is still there - a nested

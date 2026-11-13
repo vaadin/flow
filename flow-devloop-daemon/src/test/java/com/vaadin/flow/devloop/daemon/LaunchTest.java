@@ -481,7 +481,7 @@ class LaunchTest {
 
     @Test
     @DisabledOnOs(OS.WINDOWS)
-    void catchUpSources_failedBuild_triesAgainOnTheNextLaunch(
+    void catchUpSources_failedBuild_triesAgainOnceASourceMoves(
             @TempDir Path repo) throws IOException {
         Launch launch = appWithSources(repo);
         Reactor.Module app = Reactor.Module.of(repo, "app");
@@ -502,13 +502,113 @@ class LaunchTest {
                 () -> "progress: " + progress);
         assertTrue(Files.exists(app.artifactFor(sourceOf(app, "About"))),
                 "nothing is removed on the strength of a failed build");
+        // Offline only: going online cannot fix a compile error.
+        assertEquals(1, runs(runs));
 
+        // Nothing moved, so the build that failed is not run again.
         fakeMaven(repo, 0);
         launch.catchUpSources(project, text -> {
         });
-        // Offline, then online, for the failed build; once for this one.
-        assertEquals(3, runs(runs));
+        assertEquals(1, runs(runs));
+
+        writeSource(app, "Fixed", 3_000);
+        launch.catchUpSources(project, text -> {
+        });
+        assertEquals(2, runs(runs));
         assertFalse(Files.exists(app.artifactFor(sourceOf(app, "About"))));
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    void catchUpSources_classesThatCannotBeRemoved_recordsTheLaunchAnyway(
+            @TempDir Path repo) throws IOException {
+        Launch launch = appWithSources(repo);
+        Path runs = fakeMaven(repo, 0);
+        Reactor.Module app = Reactor.Module.of(repo, "app");
+        writeSource(app, "About", 1_000);
+        writeClass(app, "About", 2_000);
+        Launch.Project project = project(app);
+        launch.catchUpSources(project, text -> {
+        });
+        Files.delete(sourceOf(app, "About"));
+        Path classes = app.artifactFor(sourceOf(app, "About")).getParent();
+        assertTrue(classes.toFile().setWritable(false));
+        try {
+            List<String> progress = new ArrayList<>();
+            launch.catchUpSources(project, progress::add);
+            assertTrue(
+                    progress.stream()
+                            .anyMatch(line -> line.startsWith(
+                                    "WARNING: could not remove the classes")),
+                    () -> "progress: " + progress);
+            assertFalse(
+                    progress.stream()
+                            .anyMatch(line -> line
+                                    .contains("building the sources failed")),
+                    () -> "progress: " + progress);
+
+            // Building again would not remove them either.
+            launch.catchUpSources(project, text -> {
+            });
+            assertEquals(1, runs(runs));
+        } finally {
+            classes.toFile().setWritable(true);
+        }
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    void catchUpSources_sourceAnApplyCompiledThenDeleted_removesItsClass(
+            @TempDir Path repo) throws IOException {
+        // A view added during a session goes live without a restart, so no
+        // launch records it; a later branch switch that drops it must still
+        // take its route away.
+        Launch launch = appWithSources(repo);
+        Path runs = fakeMaven(repo, 0);
+        Reactor.Module app = Reactor.Module.of(repo, "app");
+        writeSource(app, "Kept", 1_000);
+        writeClass(app, "Kept", 2_000);
+        Launch.Project project = project(app);
+        launch.catchUpSources(project, text -> {
+        });
+
+        writeSource(app, "About", 3_000);
+        writeClass(app, "About", 4_000);
+        launch.recordCompiledSources(List.of(sourceOf(app, "About")));
+        Files.delete(sourceOf(app, "About"));
+        launch.catchUpSources(project, text -> {
+        });
+
+        assertEquals(1, runs(runs));
+        assertFalse(Files.exists(app.artifactFor(sourceOf(app, "About"))));
+        assertTrue(Files.exists(app.artifactFor(sourceOf(app, "Kept"))));
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    void catchUpSources_buildDoesNotResolve_doesNotBuild(@TempDir Path repo)
+            throws IOException {
+        Launch launch = appWithSources(repo);
+        Reactor.Module app = Reactor.Module.of(repo, "app");
+        fakeMaven(repo, 0, "mkdir -p target/devloop && echo '"
+                + app.classesDir() + "' > target/devloop/cp.txt");
+        Launch.Project project = launch.project(text -> {
+        });
+        Files.setLastModifiedTime(repo.resolve("pom.xml"),
+                FileTime.fromMillis(System.currentTimeMillis() + 10_000));
+        Path runs = fakeMaven(repo, 1);
+        launch.project(text -> {
+        });
+        assertTrue(launch.resolutionError().isPresent());
+        long resolveRuns = runs(runs);
+        writeSource(app, "Edited", 3_000);
+        writeClass(app, "Edited", 2_000);
+
+        launch.catchUpSources(project, text -> {
+        });
+
+        assertEquals(resolveRuns, runs(runs),
+                "a build of poms that do not resolve fails too");
     }
 
     @Test

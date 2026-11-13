@@ -72,8 +72,8 @@ Under `<app>/target/devloop/`: `daemon.log` (the daemon's stdout — which is wh
 `System.out` here is correct and SLF4J would not be), `app.log` (the app's stdout
 and stderr, the only place a "Port 8080 was already in use" exists), `cp.txt`
 (the resolved classpath), `cp.stamp` (a fingerprint of every pom in the reactor),
-`sources.txt` (every Java source of the loop as of the last launch, with its
-modification time),
+`sources.txt` (every Java source of the loop as of the last launch, and every
+source an apply compiled since, with its modification time),
 `jvm-args.txt` (the app JVM's argument file — a reactor classpath is well past
 Windows' 32 kB command-line limit). Each in-loop module gets its own
 `<module>/target/devloop/cp.txt` and `model.properties`.
@@ -87,8 +87,12 @@ still there. If it finds one, it runs the same Maven `compile` the resolve
 does, whose incremental build recompiles the module and deletes the classes its
 previous compile wrote. Classes an apply wrote are not in Maven's record, so
 whatever classes of a deleted source the build left are then removed the way an
-apply removes them. A failed build is reported, the launch goes ahead on the
-classes there are, and the next launch tries again.
+apply removes them. A failed build is reported and the launch goes ahead on the
+classes there are. The build runs offline only, is skipped while the poms do not
+resolve, and after a failure is not run again until a source or a pom changes.
+Only a source neither a launch nor an apply saw — one whose class came from a
+build outside the loop, such as an IDE's — can leave a class behind until a
+full build.
 
 **`model.properties` is how the daemon knows what starts the application**,
 written by `DevLoopBuildExtension` as each resolve reads the projects and read
