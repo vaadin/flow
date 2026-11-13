@@ -46,6 +46,9 @@
         <configuration>
           <container>
             <containerId>jetty12x</containerId>
+            <systemProperties>
+              <vaadin.csp>${vaadin.csp}</vaadin.csp>
+            </systemProperties>
           </container>
           <configuration>
             <type>standalone</type>

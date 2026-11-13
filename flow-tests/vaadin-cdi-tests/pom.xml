@@ -136,6 +136,11 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <skipTests>${cdi.container.tests.skip}</skipTests>
+          <systemPropertyVariables>
+            <!-- ArchiveProvider turns it into a context parameter of each
+                 deployment, as the containers take no shared JVM options -->
+            <vaadin.csp>${vaadin.csp}</vaadin.csp>
+          </systemPropertyVariables>
         </configuration>
       </plugin>
       <plugin>
