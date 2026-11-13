@@ -74,6 +74,8 @@ and stderr, the only place a "Port 8080 was already in use" exists), `cp.txt`
 (the resolved classpath), `cp.stamp` (a fingerprint of every pom in the reactor),
 `sources.txt` (every Java source of the loop as of the last launch, and every
 source an apply compiled since, with its modification time),
+`sources-failed.txt` (what the last catch-up build that failed ran against;
+deleting it makes the next restart try that build again),
 `jvm-args.txt` (the app JVM's argument file — a reactor classpath is well past
 Windows' 32 kB command-line limit). Each in-loop module gets its own
 `<module>/target/devloop/cp.txt` and `model.properties`.
@@ -89,7 +91,8 @@ previous compile wrote. Classes an apply wrote are not in Maven's record, so
 whatever classes of a deleted source the build left are then removed the way an
 apply removes them. A failed build is reported and the launch goes ahead on the
 classes there are. The build runs offline only, is skipped while the poms do not
-resolve, and after a failure is not run again until a source or a pom changes.
+resolve, and after a failure is not run again before a source or a pom changes
+or the next `start`.
 Only a source neither a launch nor an apply saw — one whose class came from a
 build outside the loop, such as an IDE's — can leave a class behind until a
 full build.

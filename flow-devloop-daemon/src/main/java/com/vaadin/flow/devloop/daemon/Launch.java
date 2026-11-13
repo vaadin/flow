@@ -1245,7 +1245,7 @@ final class Launch {
                             + "the build does not currently resolve: "
                             + resolutionError);
         }
-        catchUpSources(resolved, tee);
+        catchUpSources(resolved, "start".equals(launchKind), tee);
         AppRuntime appRuntime = runtime();
         List<String> jvmFlags = composeJvmFlags(tee,
                 appRuntime.extraJvmFlags());
@@ -1289,15 +1289,22 @@ final class Launch {
      * only, as the resolve that came before it has fetched what the build needs
      * and going online cannot fix a compile error, and it is not run again
      * until a source or a pom moves: a compile error in a file nobody is
-     * working on would otherwise cost a Maven run before every restart. Nor is
-     * it run while the poms do not resolve, as a build of those fails too.
+     * working on would otherwise cost a Maven run before every restart. A
+     * {@code start} tries it again regardless, as a build can also fail for a
+     * reason that is gone by then - an interrupted run, a locked local
+     * repository. Nor is it run while the poms do not resolve, as a build of
+     * those fails too.
      *
      * @param project
      *            the resolved build about to be launched
+     * @param retryFailedBuild
+     *            whether to build even when the last build of the same sources
+     *            and poms failed
      * @param progress
      *            where to say that a build is needed, and why
      */
-    void catchUpSources(Project project, Log progress) {
+    void catchUpSources(Project project, boolean retryFailedBuild,
+            Log progress) {
         if (resolutionError != null) {
             progress.line("WARNING: not checking the sources against "
                     + "target/classes while the build does not resolve");
@@ -1308,13 +1315,14 @@ final class Launch {
         List<Path> behind = sourcesAheadOfClasses(project, sources, recorded);
         if (!behind.isEmpty()) {
             String attempt = inventoryText(sources) + currentStamp();
-            if (attempt.equals(readOrEmpty(failedCatchUpFile()))) {
+            if (!retryFailedBuild
+                    && attempt.equals(readOrEmpty(failedCatchUpFile()))) {
                 progress.line("WARNING: target/classes is behind the sources ("
                         + summarise(
                                 behind.stream().map(this::relative).toList())
                         + "), and the last build of them failed; launching "
                         + "with the classes from the last build until a "
-                        + "source or pom changes");
+                        + "source or pom changes, or the next start");
                 return;
             }
             progress.line("target/classes is behind the sources ("
@@ -1349,7 +1357,7 @@ final class Launch {
                         + "); they stay until a clean build");
             }
         }
-        writeSourceInventory(sources);
+        writeLaunchInventory(sources, recorded);
     }
 
     /**
@@ -1472,8 +1480,21 @@ final class Launch {
         return recorded;
     }
 
-    private synchronized void writeSourceInventory(Map<Path, Long> sources) {
-        writeQuietly(sourceInventoryFile(), inventoryText(sources));
+    /**
+     * Records the sources a launch found, keeping any an apply recorded while
+     * the launch was building: a restart is not serialized with an apply, and
+     * the walk the launch took before its build cannot have seen them.
+     */
+    private synchronized void writeLaunchInventory(Map<Path, Long> sources,
+            Map<Path, Long> recordedBefore) {
+        Map<Path, Long> next = new LinkedHashMap<>(sources);
+        readSourceInventory().forEach((source, modified) -> {
+            if (!recordedBefore.containsKey(source) && !next.containsKey(source)
+                    && Files.exists(source)) {
+                next.put(source, modified);
+            }
+        });
+        writeQuietly(sourceInventoryFile(), inventoryText(next));
     }
 
     /**
@@ -1503,7 +1524,7 @@ final class Launch {
             }
         }
         if (added) {
-            writeSourceInventory(recorded);
+            writeQuietly(sourceInventoryFile(), inventoryText(recorded));
         }
     }
 

@@ -33,7 +33,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -109,6 +111,33 @@ class TransactionEngineTest {
         } finally {
             alive.destroy();
         }
+    }
+
+    @Test
+    void apply_recordsTheSourcesItCompiledWithTheLaunch() throws Exception {
+        // A view added while the app runs may go live without a restart, so
+        // no launch records it, and the launch after a branch switch that drops
+        // it would leave its class - and its route - behind.
+        Path app = Files.createDirectories(root.resolve("app"));
+        Files.createDirectories(app.resolve("target/classes"));
+        Reactor.Module module = Reactor.Module.of(app, "app");
+        String classpath = module.classesDir().toString();
+        Launch.Project project = new Launch.Project(List.of(module), classpath,
+                Map.of("app", classpath), OptionalInt.empty());
+        Launch launch = mock(Launch.class);
+        when(launch.project(any())).thenReturn(project);
+        TransactionEngine engine = new TransactionEngine(launch,
+                new AppProcess(root, null));
+        engine.apply(line -> {
+        }, false);
+
+        Path about = module.sourceDir().resolve("app/About.java");
+        Files.createDirectories(about.getParent());
+        Files.writeString(about, "package app; public class About {}");
+        engine.apply(line -> {
+        }, false);
+
+        verify(launch).recordCompiledSources(List.of(about));
     }
 
     @Test

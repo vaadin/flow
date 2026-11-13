@@ -37,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 /**
  * Classpath membership is what decides whether a pom edit restarts the app.
@@ -376,26 +377,26 @@ class LaunchTest {
         writeSource(app, "package-info", 1_000);
         Launch.Project project = project(app);
 
-        launch.catchUpSources(project, text -> {
+        launch.catchUpSources(project, false, text -> {
         });
         assertEquals(0, runs(runs), "nothing was behind, so no build");
 
         writeSource(app, "Edited", 3_000);
         writeClass(app, "Edited", 2_000);
         List<String> progress = new ArrayList<>();
-        launch.catchUpSources(project, progress::add);
+        launch.catchUpSources(project, false, progress::add);
         assertEquals(1, runs(runs));
         assertTrue(progress.get(0).contains("src/main/java/app/Edited.java"),
                 () -> "progress: " + progress);
 
         // The class is still older, as a build may leave it - for a source
         // dated in the future, or one that declares no class of its name.
-        launch.catchUpSources(project, text -> {
+        launch.catchUpSources(project, false, text -> {
         });
         assertEquals(1, runs(runs), "a source built for once is not again");
 
         writeSource(app, "Added", 4_000);
-        launch.catchUpSources(project, text -> {
+        launch.catchUpSources(project, false, text -> {
         });
         assertEquals(2, runs(runs));
     }
@@ -413,11 +414,11 @@ class LaunchTest {
         writeSource(app, "Kept", 1_000);
         writeClass(app, "Kept", 2_000);
         Launch.Project project = project(app);
-        launch.catchUpSources(project, text -> {
+        launch.catchUpSources(project, false, text -> {
         });
 
         Files.delete(sourceOf(app, "About"));
-        launch.catchUpSources(project, text -> {
+        launch.catchUpSources(project, false, text -> {
         });
 
         // A class an apply wrote is not one Maven's incremental build knows
@@ -428,7 +429,7 @@ class LaunchTest {
                 Files.exists(app.artifactFor(sourceOf(app, "About$Content"))));
         assertTrue(Files.exists(app.artifactFor(sourceOf(app, "Kept"))));
 
-        launch.catchUpSources(project, text -> {
+        launch.catchUpSources(project, false, text -> {
         });
         assertEquals(1, runs(runs));
     }
@@ -445,12 +446,12 @@ class LaunchTest {
         writeClass(app, "About", 2_000);
         Path about = app.artifactFor(sourceOf(app, "About"));
         Launch.Project project = project(app);
-        launch.catchUpSources(project, text -> {
+        launch.catchUpSources(project, false, text -> {
         });
         Files.delete(sourceOf(app, "About"));
         fakeMaven(repo, 0, "touch '" + about + "'");
 
-        launch.catchUpSources(project, text -> {
+        launch.catchUpSources(project, false, text -> {
         });
 
         assertTrue(Files.exists(about));
@@ -468,12 +469,12 @@ class LaunchTest {
         writeSource(app, "About", 1_000);
         writeClass(app, "About", 2_000);
         Launch.Project project = project(app);
-        launch.catchUpSources(project, text -> {
+        launch.catchUpSources(project, false, text -> {
         });
 
         Files.delete(app.artifactFor(sourceOf(app, "About")));
         Files.delete(sourceOf(app, "About"));
-        launch.catchUpSources(project, text -> {
+        launch.catchUpSources(project, false, text -> {
         });
 
         assertEquals(0, runs(runs));
@@ -481,20 +482,20 @@ class LaunchTest {
 
     @Test
     @DisabledOnOs(OS.WINDOWS)
-    void catchUpSources_failedBuild_triesAgainOnceASourceMoves(
+    void catchUpSources_failedBuild_triesAgainOnStartOrOnceASourceOrPomMoves(
             @TempDir Path repo) throws IOException {
         Launch launch = appWithSources(repo);
         Reactor.Module app = Reactor.Module.of(repo, "app");
         writeSource(app, "About", 1_000);
         writeClass(app, "About", 2_000);
         Launch.Project project = project(app);
-        launch.catchUpSources(project, text -> {
+        launch.catchUpSources(project, false, text -> {
         });
         Files.delete(sourceOf(app, "About"));
         Path runs = fakeMaven(repo, 1);
 
         List<String> progress = new ArrayList<>();
-        launch.catchUpSources(project, progress::add);
+        launch.catchUpSources(project, false, progress::add);
         assertTrue(
                 progress.stream()
                         .anyMatch(line -> line.startsWith(
@@ -505,16 +506,27 @@ class LaunchTest {
         // Offline only: going online cannot fix a compile error.
         assertEquals(1, runs(runs));
 
-        // Nothing moved, so the build that failed is not run again.
-        fakeMaven(repo, 0);
-        launch.catchUpSources(project, text -> {
+        // Nothing moved, so a restart does not run the build that failed.
+        launch.catchUpSources(project, false, text -> {
         });
         assertEquals(1, runs(runs));
 
-        writeSource(app, "Fixed", 3_000);
-        launch.catchUpSources(project, text -> {
+        // A start does: the failure may have had a cause that is gone now.
+        launch.catchUpSources(project, true, text -> {
         });
         assertEquals(2, runs(runs));
+
+        Files.setLastModifiedTime(repo.resolve("pom.xml"),
+                FileTime.fromMillis(5_000));
+        launch.catchUpSources(project, false, text -> {
+        });
+        assertEquals(3, runs(runs));
+
+        fakeMaven(repo, 0);
+        writeSource(app, "Fixed", 3_000);
+        launch.catchUpSources(project, false, text -> {
+        });
+        assertEquals(4, runs(runs));
         assertFalse(Files.exists(app.artifactFor(sourceOf(app, "About"))));
     }
 
@@ -528,14 +540,16 @@ class LaunchTest {
         writeSource(app, "About", 1_000);
         writeClass(app, "About", 2_000);
         Launch.Project project = project(app);
-        launch.catchUpSources(project, text -> {
+        launch.catchUpSources(project, false, text -> {
         });
         Files.delete(sourceOf(app, "About"));
         Path classes = app.artifactFor(sourceOf(app, "About")).getParent();
         assertTrue(classes.toFile().setWritable(false));
         try {
+            // Root deletes from a read-only directory all the same.
+            assumeFalse(Files.isWritable(classes));
             List<String> progress = new ArrayList<>();
-            launch.catchUpSources(project, progress::add);
+            launch.catchUpSources(project, false, progress::add);
             assertTrue(
                     progress.stream()
                             .anyMatch(line -> line.startsWith(
@@ -548,7 +562,7 @@ class LaunchTest {
                     () -> "progress: " + progress);
 
             // Building again would not remove them either.
-            launch.catchUpSources(project, text -> {
+            launch.catchUpSources(project, false, text -> {
             });
             assertEquals(1, runs(runs));
         } finally {
@@ -569,19 +583,52 @@ class LaunchTest {
         writeSource(app, "Kept", 1_000);
         writeClass(app, "Kept", 2_000);
         Launch.Project project = project(app);
-        launch.catchUpSources(project, text -> {
+        launch.catchUpSources(project, false, text -> {
         });
 
         writeSource(app, "About", 3_000);
         writeClass(app, "About", 4_000);
         launch.recordCompiledSources(List.of(sourceOf(app, "About")));
         Files.delete(sourceOf(app, "About"));
-        launch.catchUpSources(project, text -> {
+        launch.catchUpSources(project, false, text -> {
         });
 
         assertEquals(1, runs(runs));
         assertFalse(Files.exists(app.artifactFor(sourceOf(app, "About"))));
         assertTrue(Files.exists(app.artifactFor(sourceOf(app, "Kept"))));
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    void catchUpSources_keepsASourceAnApplyRecordedDuringTheBuild(
+            @TempDir Path repo) throws IOException {
+        // A restart is not serialized with an apply, so one can record a new
+        // source while the launch is building from a walk that predates it.
+        Launch launch = appWithSources(repo);
+        Reactor.Module app = Reactor.Module.of(repo, "app");
+        writeSource(app, "Kept", 1_000);
+        writeClass(app, "Kept", 2_000);
+        Launch.Project project = project(app);
+        launch.catchUpSources(project, false, text -> {
+        });
+        Path about = sourceOf(app, "About");
+        Path runs = fakeMaven(repo, 0,
+                "printf 'package app;' > '" + about + "'\n"
+                        + "printf '%s\\t1000\\n' '" + about + "' >> '"
+                        + repo.resolve("target/devloop/sources.txt") + "'");
+        writeSource(app, "Kept", 3_000);
+
+        launch.catchUpSources(project, false, text -> {
+        });
+        assertEquals(1, runs(runs));
+        fakeMaven(repo, 0);
+        writeClass(app, "About", 4_000);
+        Files.delete(about);
+        launch.catchUpSources(project, false, text -> {
+        });
+
+        assertEquals(2, runs(runs));
+        assertFalse(Files.exists(app.artifactFor(about)));
     }
 
     @Test
@@ -604,7 +651,7 @@ class LaunchTest {
         writeSource(app, "Edited", 3_000);
         writeClass(app, "Edited", 2_000);
 
-        launch.catchUpSources(project, text -> {
+        launch.catchUpSources(project, false, text -> {
         });
 
         assertEquals(resolveRuns, runs(runs),
