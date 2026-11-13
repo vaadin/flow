@@ -65,6 +65,9 @@
     <vaadin.devServerPort>0</vaadin.devServerPort>
     <vaadin.frontend.hotdeploy>true</vaadin.frontend.hotdeploy>
     <vaadin.devmode.hostsAllowed>*</vaadin.devmode.hostsAllowed>
+    <!-- Content Security Policy mode of the test applications: off, warn or
+            strict. Run with -Dvaadin.csp=off to test without it. -->
+    <vaadin.csp>strict</vaadin.csp>
   </properties>
 
   <dependencies>
@@ -209,6 +212,7 @@
               <vaadin.devmode.vite.options>${vaadin.devmode.vite.options}</vaadin.devmode.vite.options>
               <vaadin.frontend.hotdeploy>${vaadin.frontend.hotdeploy}</vaadin.frontend.hotdeploy>
               <vaadin.devmode.hostsAllowed>${vaadin.devmode.hostsAllowed}</vaadin.devmode.hostsAllowed>
+              <vaadin.csp>${vaadin.csp}</vaadin.csp>
             </systemProperties>
           </configuration>
           <dependencies>
