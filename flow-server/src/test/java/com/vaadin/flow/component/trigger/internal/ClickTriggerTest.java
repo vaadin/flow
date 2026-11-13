@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
-import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
@@ -55,12 +54,14 @@ class ClickTriggerTest {
         List<JsFunction> installs = installFns(ui);
         JsFunction source0 = (JsFunction) actionOf(installs.get(0))
                 .getCaptures().get(2);
-        assertEquals("readEventProperty", snippetOf(ValueJs.class, source0));
+        assertEquals("readEventProperty",
+                snippetOf(TriggerInputJs.class, source0));
         assertEquals("screenX", source0.getCaptures().get(0));
 
         JsFunction source1 = (JsFunction) actionOf(installs.get(1))
                 .getCaptures().get(2);
-        assertEquals("readEventProperty", snippetOf(ValueJs.class, source1));
+        assertEquals("readEventProperty",
+                snippetOf(TriggerInputJs.class, source1));
         assertEquals("screenY", source1.getCaptures().get(0));
     }
 

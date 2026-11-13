@@ -20,7 +20,6 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsSnippets;
@@ -58,7 +57,8 @@ import com.vaadin.flow.js.JsSnippets;
 public class SetPropertyAction<T> extends Action {
 
     private static final TriggerJs TRIGGER_JS = JsSnippets.of(TriggerJs.class);
-    private static final ValueJs VALUE_JS = JsSnippets.of(ValueJs.class);
+    private static final TriggerInputJs TRIGGER_INPUT_JS = JsSnippets
+            .of(TriggerInputJs.class);
 
     /**
      * Singleton input that yields a JS {@code null}. Used by the
@@ -68,7 +68,7 @@ public class SetPropertyAction<T> extends Action {
     private static final Action.Input<Object> NULL_LITERAL = new Action.Input<>() {
         @Override
         public JsFunction toJs(Trigger trigger) {
-            return VALUE_JS.returnNull();
+            return TRIGGER_INPUT_JS.returnNull();
         }
     };
 

@@ -24,8 +24,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
-import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.component.trigger.internal.DownloadAction;
+import com.vaadin.flow.component.trigger.internal.TriggerInputJs;
 import com.vaadin.flow.component.trigger.internal.TriggerTestUtil;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.server.StreamResourceRegistry;
@@ -80,7 +80,7 @@ class DownloadTest {
         JsFunction action = actionOf(singleInstallFn());
         assertEquals("download",
                 snippetOf(DownloadAction.DownloadJs.class, action));
-        assertEquals("returnValue", snippetOf(ValueJs.class,
+        assertEquals("returnValue", snippetOf(TriggerInputJs.class,
                 ((JsFunction) action.getCaptures().get(1))));
         assertEquals("b.bin", ((JsFunction) action.getCaptures().get(1))
                 .getCaptures().get(0));

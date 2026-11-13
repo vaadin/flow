@@ -20,7 +20,6 @@ import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
-import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
@@ -64,7 +63,8 @@ public class WriteToClipboardAction extends PromiseAction<String> {
 
     private static final WriteToClipboardJs WRITE_TO_CLIPBOARD_JS = JsSnippets
             .of(WriteToClipboardJs.class);
-    private static final ValueJs VALUE_JS = JsSnippets.of(ValueJs.class);
+    private static final TriggerInputJs TRIGGER_INPUT_JS = JsSnippets
+            .of(TriggerInputJs.class);
 
     private final Action.@Nullable Input<String> textInput;
     private final Action.@Nullable Input<String> htmlInput;
@@ -237,7 +237,7 @@ public class WriteToClipboardAction extends PromiseAction<String> {
         // a no-op input that returns null, so the TS helper sees null and
         // skips that MIME type. Keeping the call shape uniform across all
         // combinations means no per-action JS assembly.
-        JsFunction nullInput = VALUE_JS.returnNull();
+        JsFunction nullInput = TRIGGER_INPUT_JS.returnNull();
         JsFunction text = textInput != null ? textInput.toJs(trigger)
                 : nullInput;
         JsFunction html = htmlInput != null ? htmlInput.toJs(trigger)
