@@ -18,15 +18,23 @@ package com.vaadin.flow.component.trigger.internal;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.trigger.internal.TriggerSimulator.BrowserRejectedException;
 import com.vaadin.flow.component.trigger.internal.TriggerSimulator.EventListener;
 import com.vaadin.flow.component.trigger.internal.TriggerSimulator.NotSimulatedException;
+import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
@@ -78,19 +86,23 @@ class TriggerSimulatorTest {
         assertEquals(List.of("Typed|null"), written);
     }
 
-    @Test
-    void outcome_deliveredBySettlementTask() {
+    @ParameterizedTest
+    @CsvSource(value = { "Hello, NULL, copied Hello",
+            "NULL, <b>Hi</b>, copied <b>Hi</b>" }, nullValues = "NULL")
+    void outcome_deliveredBySettlementTask(@Nullable String text,
+            @Nullable String html, String expected) {
         List<String> outcomes = new ArrayList<>();
-        new ClickTrigger(button).triggers(
-                new WriteToClipboardAction(new LiteralInput<>("Hello"), null,
-                        copied -> outcomes.add("copied " + copied),
-                        error -> outcomes.add("error " + error)));
+        new ClickTrigger(button).triggers(new WriteToClipboardAction(
+                text == null ? null : new LiteralInput<>(text),
+                html == null ? null : new LiteralInput<>(html),
+                copied -> outcomes.add("copied " + copied),
+                error -> outcomes.add("error " + error)));
 
         Runnable settle = readListener().handleEvent(browser);
         assertEquals(List.of(), outcomes);
 
         settle.run();
-        assertEquals(List.of("copied Hello"), outcomes);
+        assertEquals(List.of(expected), outcomes);
     }
 
     @Test
@@ -109,18 +121,53 @@ class TriggerSimulatorTest {
                 errors);
     }
 
-    @Test
-    void imageCopy_notSimulated_writesNothing() {
-        TagComponent image = new TagComponent("img");
-        ui.getElement().appendChild(image.getElement());
-        new ClickTrigger(button).triggers(new WriteToClipboardAction(
-                new LiteralInput<>("Hello"), null, new ImageBlobInput(image)));
+    static Stream<Arguments> notSimulatedActions() {
+        TriggerInputJs inputJs = JsSnippets.of(TriggerInputJs.class);
+        return Stream.of(Arguments.of("image",
+                (Function<TagComponent, Action>) other -> new WriteToClipboardAction(
+                        new LiteralInput<>("Hello"), null,
+                        new ImageBlobInput(other))),
+                Arguments.of("not a string",
+                        (Function<TagComponent, Action>) other -> {
+                            @SuppressWarnings({ "unchecked", "rawtypes" })
+                            Action.Input<String> number = (Action.Input) new LiteralInput<>(
+                                    42);
+                            return new WriteToClipboardAction(number, null);
+                        }),
+                Arguments.of("'value', which is not set on the server",
+                        (Function<TagComponent, Action>) other -> new WriteToClipboardAction(
+                                new PropertyInput<>(other, "value",
+                                        String.class),
+                                null)),
+                Arguments.of("TriggerInputJs.returnEvent",
+                        (Function<TagComponent, Action>) other -> new Action() {
+                            @Override
+                            protected JsFunction toJs(Trigger trigger) {
+                                return inputJs.returnEvent();
+                            }
+                        }),
+                Arguments.of("compiled from a string",
+                        (Function<TagComponent, Action>) other -> new Action() {
+                            @Override
+                            protected JsFunction toJs(Trigger trigger) {
+                                return JsFunction.of("return 1");
+                            }
+                        }));
+    }
+
+    @ParameterizedTest
+    @MethodSource("notSimulatedActions")
+    void actionNotSimulated_throwsAndWritesNothing(String reason,
+            Function<TagComponent, Action> action) {
+        TagComponent other = new TagComponent("img");
+        ui.getElement().appendChild(other.getElement());
+        new ClickTrigger(button).triggers(action.apply(other));
         EventListener listener = readListener();
 
         NotSimulatedException e = assertThrows(NotSimulatedException.class,
                 () -> listener.handleEvent(browser));
 
-        assertTrue(String.valueOf(e.getMessage()).contains("image"),
+        assertTrue(String.valueOf(e.getMessage()).contains(reason),
                 e.getMessage());
         assertEquals(List.of(), written);
     }

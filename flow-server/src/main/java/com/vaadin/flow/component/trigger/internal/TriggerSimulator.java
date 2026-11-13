@@ -192,8 +192,8 @@ public final class TriggerSimulator {
             case "returnNull":
                 return null;
             case "readProperty":
-                return ((Element) args.get(0))
-                        .getPropertyRaw((String) args.get(1));
+                return readProperty((Element) args.get(0),
+                        (String) args.get(1));
             default:
                 throw notSimulated(call);
             }
@@ -221,14 +221,30 @@ public final class TriggerSimulator {
         if (type == TriggerJs.class && "reportOutcome".equals(method)) {
             Object result = evaluate((JsFunction) args.get(0), browser,
                     settlements);
-            Settled settled = result instanceof Settled s ? s
-                    : new Settled(true, result, null);
+            if (!(result instanceof Settled settled)) {
+                // The JavaScript calls then() on the result, which only a
+                // promise has
+                throw new NotSimulatedException(
+                        "Reporting the outcome of a value that is not a"
+                                + " promise is not simulated");
+            }
             ReturnChannelRegistration channel = (ReturnChannelRegistration) args
                     .get(1);
             settlements.add(() -> channel.invoke(encodeOutcome(settled)));
             return null;
         }
         throw notSimulated(call);
+    }
+
+    private static @Nullable Object readProperty(Element element, String name) {
+        // A property that the server has not set may still have a value in
+        // the browser, such as one that SignalInput mirrors there with
+        // executeJs, so its value is not known here
+        if (!element.hasProperty(name)) {
+            throw new NotSimulatedException("Reading the property '" + name
+                    + "', which is not set on the server, is not simulated");
+        }
+        return element.getPropertyRaw(name);
     }
 
     private static @Nullable String asText(@Nullable Object value) {
