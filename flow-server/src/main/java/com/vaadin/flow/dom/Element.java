@@ -2190,6 +2190,10 @@ public class Element extends Node<Element> {
     @SuppressWarnings("removal")
     public Registration addJsInitializer(JsFunction initializer) {
         Objects.requireNonNull(initializer, "Initializer cannot be null");
+        // No separate check of the JsCall is needed: JsFunction.ofDeclaredCall
+        // stores the @JsCalledWith names of the call as the argument names,
+        // so this covers a snippet as well as JsFunction.of with
+        // withArguments
         List<String> argumentNames = initializer.getArgumentNames();
         if (!argumentNames.isEmpty()) {
             throw new IllegalArgumentException("An initializer is called with"
