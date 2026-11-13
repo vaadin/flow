@@ -168,7 +168,9 @@ What is different is worth knowing:
   answering"; `shutdown` does not stop it, so kill the pid it names, then `start` spawns a fresh
   one. Where the pid's start time cannot be read (a `ps` without `-o`, as in Git Bash or
   busybox), a pid that does not answer may be one an unrelated process reused, so its record is
-  removed instead, with a note to kill the pid first if it is a wedged daemon.
+  removed instead, with a note naming the pid. `status` and `ping` then report no daemon, while
+  `apply`, `start` and `shutdown` exit `70` with `daemon did not come up` if it really is a
+  wedged daemon: kill the pid from the note, then retry.
 - Every command reports a fresh daemon (`up=0s`), or `status` reports no daemon running, with
   the app `stopped`, and `vaadin-dev` says the recorded daemon "left its handshake behind" —
   something outside the loop is killing the processes each command created, so the daemon and

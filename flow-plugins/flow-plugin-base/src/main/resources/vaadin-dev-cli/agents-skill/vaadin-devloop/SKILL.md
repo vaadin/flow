@@ -85,9 +85,11 @@ elsewhere, if your shell will not execute the script, run `bash .vaadin/vaadin-d
 Every command, option and exit code is identical whichever you use, with one exception: where
 `ps` cannot report a process's start time (Git Bash, busybox), the bash launcher cannot tell a
 daemon that is running but not answering from an unrelated process that reused its pid, so it
-removes the record and carries on instead of exiting `70` and naming the pid. The PowerShell
-launcher behind `vaadin-dev.cmd` exits `70` wherever it can read the start time, which is why
-Windows should stick to it.
+removes the record with a note naming the pid. `status` and `ping` then report no daemon;
+`apply`, `start` and `shutdown` try a fresh daemon, which cannot come up beside a wedged one, so
+they exit `70` with `daemon did not come up` - kill the pid from the note, then retry. The
+PowerShell launcher behind `vaadin-dev.cmd` exits `70` and names the pid wherever it can read
+the start time, which is why Windows should stick to it.
 
 **Never start the application through Maven** (`spring-boot:run`, `jetty:run`, an IDE run
 configuration): the daemon owns the app, and a second process fights it for the HTTP port. The
