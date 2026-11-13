@@ -109,6 +109,7 @@ import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.router.AccessDeniedException;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -141,7 +142,8 @@ import com.vaadin.quarkus.graal.QuarkusJSR356AsyncSupport;
  * <li>Generates stub classes for DAU integration if license checker is not
  * present at runtime
  * <li>Registers classes for reflection
- * <li>Registers the JDK proxies of the JavaScript definitions
+ * <li>Registers the JDK proxies of the JavaScript definitions and of the
+ * snippet types they return
  * <li>Registers the service providers Flow loads with {@link ServiceLoader}
  * </ul>
  */
@@ -154,6 +156,9 @@ public class VaadinQuarkusNativeProcessor {
 
     private static final DotName JS_DEFINITION = DotName
             .createSimple(JsDefinition.class);
+
+    private static final DotName JS_SNIPPET = DotName
+            .createSimple(JsSnippet.class);
 
     private static final DotName JAVASCRIPT_RESULT = DotName
             .createSimple(JavaScriptResult.class);
@@ -413,6 +418,11 @@ public class VaadinQuarkusNativeProcessor {
      * that is how the annotations the definition is validated against are read,
      * and how the generic return type of an inherited method returning a typed
      * JavaScriptResult is resolved.
+     *
+     * A method that returns an interface extending JsSnippet gets a JDK proxy
+     * of that snippet type, so the snippet types the definitions return are
+     * registered the same way. Reflection on a snippet type is how the check
+     * that it declares no methods and its JsCalledWith names are read.
      */
     @BuildStep(onlyIf = IsNativeBuild.class)
     void registerJsDefinitionProxies(CombinedIndexBuildItem combinedIndex,
@@ -423,15 +433,36 @@ public class VaadinQuarkusNativeProcessor {
         if (definitions.isEmpty()) {
             return;
         }
-        definitions.stream()
-                .map(definition -> new NativeImageProxyDefinitionBuildItem(
-                        definition.name().toString()))
-                .forEach(proxyDefinition::produce);
         Set<String> interfaces = new HashSet<>();
         definitions.forEach(definition -> collectInterfaces(definition.name(),
                 index, interfaces));
+        Set<String> snippetTypes = collectSnippetTypes(interfaces, index);
+        Stream.concat(
+                definitions.stream()
+                        .map(definition -> definition.name().toString()),
+                snippetTypes.stream())
+                .map(NativeImageProxyDefinitionBuildItem::new)
+                .forEach(proxyDefinition::produce);
+        interfaces.addAll(snippetTypes);
         reflectiveClass.produce(ReflectiveClassBuildItem
                 .builder(interfaces.toArray(String[]::new)).methods().build());
+    }
+
+    /**
+     * Collects the snippet types that the methods of the given interfaces
+     * return: interfaces that extend {@link JsSnippet}, which are known only
+     * when they are in the index.
+     */
+    private static Set<String> collectSnippetTypes(Set<String> interfaces,
+            IndexView index) {
+        Set<DotName> snippetTypes = index.getAllKnownSubinterfaces(JS_SNIPPET)
+                .stream().map(ClassInfo::name).collect(Collectors.toSet());
+        return interfaces.stream().map(index::getClassByName)
+                .filter(Objects::nonNull)
+                .flatMap(type -> type.methods().stream())
+                .map(method -> method.returnType().name())
+                .filter(snippetTypes::contains).map(DotName::toString)
+                .collect(Collectors.toSet());
     }
 
     /**

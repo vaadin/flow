@@ -57,6 +57,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Layout;
@@ -368,13 +369,23 @@ public class VaadinBeanFactoryInitializationAotProcessor
      * for a proxy that is known at build time, and reflection on the interface
      * and the interfaces it extends, which is how the annotations it is
      * validated against and the generic return types of its methods are read.
-     * The types that its typed results are converted to are registered for
-     * Jackson.
+     * The snippet types its methods return get a proxy too, and reflection,
+     * which is how the check that a snippet type declares no methods and its
+     * JsCalledWith names are read. The types that its typed results are
+     * converted to are registered for Jackson.
      */
     private void registerJsDefinition(RuntimeHints hints,
             Class<?> definitionType) {
         hints.proxies().registerJdkProxy(definitionType);
         registerInterfaceHierarchy(hints, definitionType);
+        for (Method method : definitionType.getMethods()) {
+            Class<?> returnType = method.getReturnType();
+            if (JsDefinitionProxy.isApplicationSnippetType(returnType)) {
+                hints.proxies().registerJdkProxy(returnType);
+                hints.reflection().registerType(returnType,
+                        MemberCategory.INVOKE_PUBLIC_METHODS);
+            }
+        }
         Set<Class<?>> resultTypes = getJsResultTypes(definitionType);
         if (!resultTypes.isEmpty()) {
             new BindingReflectionHintsRegistrar().registerReflectionHints(

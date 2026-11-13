@@ -57,7 +57,9 @@ import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -411,6 +413,38 @@ class VaadinQuarkusNativeProcessorTest {
     }
 
     @Test
+    void testRegisterJsDefinitionProxies_registersReturnedSnippetTypes()
+            throws IOException {
+        Indexer indexer = new Indexer();
+        indexer.indexClass(TemplatesJs.class);
+        indexer.indexClass(BaseTemplatesJs.class);
+        indexer.indexClass(ItemTemplate.class);
+        indexer.indexClass(UnusedTemplate.class);
+        Index jsIndex = indexer.complete();
+        List<NativeImageProxyDefinitionBuildItem> proxies = new ArrayList<>();
+        List<ReflectiveClassBuildItem> reflective = new ArrayList<>();
+
+        processor.registerJsDefinitionProxies(
+                new CombinedIndexBuildItem(jsIndex, jsIndex), proxies::add,
+                reflective::add);
+
+        // The snippet type is returned by an inherited method. JsFunction is
+        // a class that Flow creates itself, and a snippet type no definition
+        // returns is never implemented.
+        assertEquals(
+                Set.of(TemplatesJs.class.getName(),
+                        ItemTemplate.class.getName()),
+                proxies.stream().flatMap(item -> item.getClasses().stream())
+                        .collect(Collectors.toSet()),
+                "Should register the returned snippet type as a proxy");
+        assertTrue(
+                reflective.stream()
+                        .flatMap(item -> item.getClassNames().stream())
+                        .anyMatch(ItemTemplate.class.getName()::equals),
+                "Should register the snippet type for reflection");
+    }
+
+    @Test
     void testDetectJsResultTypes_collectsConvertedTypes() throws IOException {
         Indexer indexer = new Indexer();
         indexer.indexClass(SimpleDtoJs.class);
@@ -484,6 +518,21 @@ class VaadinQuarkusNativeProcessorTest {
         JavaScriptResult<List<OtherDto>> readOthers();
 
         JavaScriptResult<ObjectNode> readNode();
+    }
+
+    public interface ItemTemplate extends JsSnippet {
+    }
+
+    public interface UnusedTemplate extends JsSnippet {
+    }
+
+    public interface BaseTemplatesJs {
+        ItemTemplate status(String label);
+    }
+
+    @JsDefinition
+    public interface TemplatesJs extends BaseTemplatesJs {
+        JsFunction format(String pattern);
     }
 
     public static class CustomException extends RuntimeException {

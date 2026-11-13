@@ -59,6 +59,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -777,6 +778,22 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     }
 
     @Test
+    void processAheadOfTime_jsDefinition_returnedSnippetTypeRegistered() {
+        RuntimeHints hints = processAotForHints(
+                createProcessorWithJsDefinitions(TestSnippetJs.class));
+
+        // Returned by an inherited method, so that is covered too
+        assertThat(RuntimeHintsPredicates.proxies()
+                .forInterfaces(TestItemTemplate.class))
+                .as("Returned snippet type should be registered as a JDK proxy")
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(TestItemTemplate.class))
+                .as("Returned snippet type should be registered for reflection")
+                .accepts(hints);
+    }
+
+    @Test
     void getJsDefinitionTypes_findsAnnotatedInterfaces() {
         VaadinBeanFactoryInitializationAotProcessor processor = new VaadinBeanFactoryInitializationAotProcessor();
 
@@ -785,7 +802,8 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
 
         assertThat(definitions)
                 .as("Should find @JsDefinition annotated interfaces")
-                .containsExactly(TestJsDefinition.class);
+                .containsExactlyInAnyOrder(TestJsDefinition.class,
+                        TestSnippetJs.class);
     }
 
     @Test
@@ -1200,6 +1218,18 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
 
         @JsExpression("return {}")
         JavaScriptResult<ObjectNode> readNode();
+    }
+
+    public interface TestItemTemplate extends JsSnippet {
+    }
+
+    public interface TestBaseSnippetJs {
+        @JsExpression("return $0")
+        TestItemTemplate status(String label);
+    }
+
+    @JsDefinition
+    public interface TestSnippetJs extends TestBaseSnippetJs {
     }
 
     public interface TestValueJs<T> {
