@@ -41,6 +41,7 @@ import com.vaadin.flow.testutil.FrontendStubs;
 import static com.vaadin.flow.server.frontend.NodeInstallation.LAST_USED_FILE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
@@ -132,9 +133,7 @@ class NodeResolverTest {
     void resolve_whileAnotherBuildInstalls_waitsAndUsesItsInstallation()
             throws Exception {
         requireShellStubs();
-        LockFile otherBuild = new LockFile(
-                new File(vaadinHome, NodeResolver.INSTALL_LOCK_FILE).toPath(),
-                "test");
+        LockFile otherBuild = lockInstallOf(VERSION);
         otherBuild.acquire();
         CompletableFuture<ActiveNodeInstallation> resolved = CompletableFuture
                 .supplyAsync(() -> resolve(VERSION));
@@ -148,6 +147,26 @@ class NodeResolverTest {
 
         assertEquals(installation.getNodeExecutable().getAbsolutePath(),
                 resolved.get(30, TimeUnit.SECONDS).nodeExecutable());
+    }
+
+    @Test
+    void resolve_whileAnotherBuildInstallsOtherVersion_installsWithoutWaiting()
+            throws Exception {
+        requireShellStubs();
+        LockFile otherBuild = lockInstallOf("v22.0.0");
+        otherBuild.acquire();
+        prepareDownloadableNode(VERSION);
+        try {
+            ActiveNodeInstallation active = assertTimeoutPreemptively(
+                    Duration.ofSeconds(30), () -> resolve(VERSION));
+
+            assertEquals(
+                    NodeInstallation.forVersion(vaadinHome, VERSION)
+                            .getNodeExecutable().getAbsolutePath(),
+                    active.nodeExecutable());
+        } finally {
+            otherBuild.release();
+        }
     }
 
     @Test
@@ -193,6 +212,12 @@ class NodeResolverTest {
                 resolver.isSupportedGlobalVersion(
                         new FrontendVersion(maximumMajor + 1, 0, 0)),
                 "A version newer than the maximum major version should be rejected");
+    }
+
+    private LockFile lockInstallOf(String version) {
+        return new LockFile(
+                NodeResolver.getInstallLockFile(vaadinHome, version).toPath(),
+                "test");
     }
 
     private ActiveNodeInstallation resolve(String nodeVersion) {

@@ -59,10 +59,23 @@ import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 class NodeResolver implements java.io.Serializable {
 
     /**
-     * The file in the Node installation directory that lets only one build at a
-     * time install Node there.
+     * Gets the file that lets only one build at a time install the given
+     * version. Different versions install into separate directories, so they
+     * can be installed at the same time.
+     *
+     * @param installDirectory
+     *            the directory holding the installations
+     * @param version
+     *            the Node version to install
+     * @return the lock file
      */
-    static final String INSTALL_LOCK_FILE = ".vaadin-node-install.lock";
+    static File getInstallLockFile(File installDirectory, String version) {
+        return new File(installDirectory,
+                ".vaadin-"
+                        + NodeInstallation.forVersion(installDirectory, version)
+                                .getDirectory().getName()
+                        + "-install.lock");
+    }
 
     /**
      * Information about the active node/npm installation that will be used. All
@@ -348,8 +361,8 @@ class NodeResolver implements java.io.Serializable {
         }
 
         // Installing is not atomic and all builds on the machine share the
-        // directory, so a concurrent install would overwrite and delete the
-        // files that this one is copying
+        // directory, so a concurrent install of the same version would
+        // overwrite and delete the files that this one is copying
         try {
             Files.createDirectories(alternativeDirFile.toPath());
         } catch (IOException e) {
@@ -359,7 +372,7 @@ class NodeResolver implements java.io.Serializable {
                     e);
         }
         LockFile lock = new LockFile(
-                new File(alternativeDirFile, INSTALL_LOCK_FILE).toPath(),
+                getInstallLockFile(alternativeDirFile, nodeVersion).toPath(),
                 "Node installation");
         lock.acquire();
         try {
