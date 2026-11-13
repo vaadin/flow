@@ -37,7 +37,7 @@ public class TimingInfoReportedView extends Div {
             + "if (array.length != 5) { "
             + "  div.appendChild(document.createTextNode('ERROR: expected 5 values, got '+array.length())); "
             + "}"
-            + "for (i = 0; i < array.length; i++) { "
+            + "for (var i = 0; i < array.length; i++) { "
             + "  var value = 0+array[i];"
             + "  if ( value <0 || value >10000) {"
             + "     div.appendChild(document.createTextNode('ERROR: expected value "
