@@ -67,7 +67,9 @@ import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ThemeUtils;
 import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.theme.Theme;
@@ -1468,6 +1470,16 @@ final class DevLoopRedefiner {
                     imports.add("jsdefinition:" + fingerprintOf(method));
                 }
             }
+        }
+        // The names a snippet type of the application declares are the
+        // parameters of every generated function that returns it, which lives
+        // in the bundle as well, so editing them needs the same restart even
+        // though no definition is redefined along with the type
+        if (JsDefinitionProxy.isApplicationSnippetType(type)) {
+            JsCalledWith calledWith = type
+                    .getDeclaredAnnotation(JsCalledWith.class);
+            imports.add("jssnippet:" + (calledWith == null ? ""
+                    : String.join(",", calledWith.value())));
         }
         // An @EventData value that the client would compile is generated into
         // the bundle in the same way, and identified by the same kind of hash
