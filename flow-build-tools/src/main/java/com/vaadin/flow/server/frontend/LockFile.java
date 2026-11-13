@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -39,7 +41,7 @@ import com.vaadin.flow.server.frontend.NodeTasks.NodeTasksLockInfo;
  * <p>
  * A lock left behind by a process that no longer runs is taken over.
  */
-class LockFile {
+class LockFile implements Serializable {
 
     private static final String TAKEOVER_SUFFIX = ".takeover";
 
@@ -54,7 +56,7 @@ class LockFile {
     private static final Duration UNREADABLE_GRACE_PERIOD = Duration
             .ofSeconds(5);
 
-    private final Path path;
+    private final File file;
     private final String holderName;
 
     /**
@@ -66,7 +68,7 @@ class LockFile {
      *            what holds the lock, used in log messages
      */
     LockFile(Path path, String holderName) {
-        this.path = path;
+        this.file = path.toFile();
         this.holderName = holderName;
     }
 
@@ -86,29 +88,29 @@ class LockFile {
                 // Held by someone else, see below whether to wait
             } catch (IOException e) {
                 getLogger().error("Error writing lock file ({})",
-                        path.toAbsolutePath(), e);
+                        path().toAbsolutePath(), e);
                 return;
             }
 
             List<String> content;
             try {
-                content = Files.readAllLines(path, StandardCharsets.UTF_8);
+                content = Files.readAllLines(path(), StandardCharsets.UTF_8);
             } catch (NoSuchFileException e) {
                 // Released in the meantime
                 continue;
             } catch (IOException e) {
                 getLogger().debug("Could not read lock file ({})",
-                        path.toAbsolutePath(), e);
+                        path().toAbsolutePath(), e);
                 sleep();
                 continue;
             }
 
             NodeTasksLockInfo lockInfo = parseLockInfo(content);
             if (lockInfo == null) {
-                if (isOlderThanGracePeriod(path)) {
+                if (isOlderThanGracePeriod(path())) {
                     getLogger().warn(
                             "Removing the unreadable lock file ({}) of {}",
-                            path.toAbsolutePath(), holderName);
+                            path().toAbsolutePath(), holderName);
                     removeAbandonedLock(content);
                 } else {
                     // The holder has not yet written its content
@@ -133,9 +135,9 @@ class LockFile {
      * Releases the lock, provided that this process holds it.
      */
     void release() {
-        if (!Files.exists(path)) {
+        if (!Files.exists(path())) {
             getLogger().warn("Somebody else has removed the lock file ({})",
-                    path.toAbsolutePath());
+                    path().toAbsolutePath());
             return;
         }
 
@@ -144,13 +146,13 @@ class LockFile {
             if (pid != ProcessHandle.current().pid()) {
                 getLogger().warn(
                         "Another process ({}) has overwritten the lock file ({})",
-                        pid, path.toAbsolutePath());
+                        pid, path().toAbsolutePath());
                 return;
             }
-            FileIOUtils.deleteQuietly(path);
+            FileIOUtils.deleteQuietly(path());
         } catch (Exception e) {
             getLogger().error("Error releasing lock file ({})",
-                    path.toAbsolutePath());
+                    path().toAbsolutePath());
         }
     }
 
@@ -175,8 +177,8 @@ class LockFile {
      * someone else is never removed.
      */
     private void removeAbandonedLock(List<String> abandonedContent) {
-        Path takeover = path
-                .resolveSibling(path.getFileName() + TAKEOVER_SUFFIX);
+        Path takeover = path()
+                .resolveSibling(path().getFileName() + TAKEOVER_SUFFIX);
         try {
             Files.createFile(takeover);
         } catch (FileAlreadyExistsException e) {
@@ -189,20 +191,20 @@ class LockFile {
             return;
         } catch (IOException e) {
             getLogger().error("Error removing the abandoned lock file ({})",
-                    path.toAbsolutePath(), e);
+                    path().toAbsolutePath(), e);
             sleep();
             return;
         }
         try {
-            if (abandonedContent
-                    .equals(Files.readAllLines(path, StandardCharsets.UTF_8))) {
-                Files.delete(path);
+            if (abandonedContent.equals(
+                    Files.readAllLines(path(), StandardCharsets.UTF_8))) {
+                Files.delete(path());
             }
         } catch (NoSuchFileException e) {
             // Released in the meantime
         } catch (IOException e) {
             getLogger().error("Error removing the abandoned lock file ({})",
-                    path.toAbsolutePath(), e);
+                    path().toAbsolutePath(), e);
         } finally {
             FileIOUtils.deleteQuietly(takeover);
         }
@@ -215,9 +217,9 @@ class LockFile {
                 .orElse(false);
     }
 
-    private static boolean isOlderThanGracePeriod(Path file) {
+    private static boolean isOlderThanGracePeriod(Path candidate) {
         try {
-            return Files.getLastModifiedTime(file).toInstant()
+            return Files.getLastModifiedTime(candidate).toInstant()
                     .isBefore(Instant.now().minus(UNREADABLE_GRACE_PERIOD));
         } catch (IOException e) {
             return false;
@@ -226,7 +228,7 @@ class LockFile {
 
     private NodeTasksLockInfo readLockFile() throws IOException {
         NodeTasksLockInfo lockInfo = parseLockInfo(
-                Files.readAllLines(path, StandardCharsets.UTF_8));
+                Files.readAllLines(path(), StandardCharsets.UTF_8));
         if (lockInfo == null) {
             throw new IllegalStateException("Invalid lock file content");
         }
@@ -254,13 +256,17 @@ class LockFile {
         String commandLine = normalizeCommandLine(currentProcess.info());
         List<String> lines = List.of(Long.toString(currentProcess.pid()),
                 commandLine);
-        Files.write(path, lines, StandardCharsets.UTF_8,
+        Files.write(path(), lines, StandardCharsets.UTF_8,
                 StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
     }
 
     private static String normalizeCommandLine(ProcessHandle.Info processInfo) {
         return processInfo.commandLine()
                 .map(line -> line.replaceAll("\\r?\\n", " \\\\n")).orElse("");
+    }
+
+    private Path path() {
+        return file.toPath();
     }
 
     private static Logger getLogger() {
