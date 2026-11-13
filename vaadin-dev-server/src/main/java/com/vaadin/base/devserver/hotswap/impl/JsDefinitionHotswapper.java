@@ -15,7 +15,11 @@
  */
 package com.vaadin.base.devserver.hotswap.impl;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -25,8 +29,12 @@ import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinService;
@@ -57,6 +65,14 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * so the declared JavaScript of every method and the number of arguments it
  * takes have to match for an interface to pass silently.
  * <p>
+ * A snippet type of the application, an interface that extends
+ * {@link JsSnippet}, can declare with {@link JsCalledWith} what the functions
+ * of the definition methods returning it are called with. Redefining such a
+ * type changes the JavaScript of those definitions, so they are written again
+ * or reported as if they had been redefined themselves. They are found among
+ * the definitions the generated file names, which is every one a browser can
+ * run.
+ * <p>
  * For internal use only. May be renamed or removed in a future release.
  * 
  * @since 25.4
@@ -65,15 +81,32 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
 
     @Override
     public void onClassesChange(HotswapClassEvent event) {
-        List<Class<?>> definitions = event.getChangedClasses().stream()
+        Set<Class<?>> changed = event.getChangedClasses();
+        List<Class<?>> definitions = new ArrayList<>(changed.stream()
                 .filter(type -> type.isAnnotationPresent(JsDefinition.class))
-                .toList();
-        if (definitions.isEmpty()) {
+                .toList());
+        List<Class<?>> snippetTypes = changed.stream()
+                .filter(JsDefinitionProxy::isApplicationSnippetType).toList();
+        if (definitions.isEmpty() && snippetTypes.isEmpty()) {
             return;
         }
 
         VaadinService service = event.getVaadinService();
         Options options = buildOptions(service);
+
+        for (Class<?> definition : findDefinitionsReturning(options,
+                snippetTypes)) {
+            // Not redefined itself, so what was cached of it, such as the
+            // identifiers of its functions, is not cleared after the
+            // hotswappers run and would still be what the type declared before
+            ReflectionCache.clearAll(definition);
+            if (!definitions.contains(definition)) {
+                definitions.add(definition);
+            }
+        }
+        if (definitions.isEmpty()) {
+            return;
+        }
 
         List<Class<?>> missing;
         if (canReplaceInTheBrowser(service)) {
@@ -92,6 +125,52 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
         if (!missing.isEmpty()) {
             warnAboutMissingDefinitions(missing);
         }
+    }
+
+    /**
+     * The definitions named by the generated file that have a method returning
+     * one of the given snippet types. A name that can not be loaded is skipped:
+     * it is a definition that is no longer on the class path.
+     */
+    private static List<Class<?>> findDefinitionsReturning(Options options,
+            List<Class<?>> snippetTypes) {
+        if (snippetTypes.isEmpty()) {
+            return List.of();
+        }
+        List<Class<?>> definitions = new ArrayList<>();
+        for (String name : TaskGenerateJsDefinitions
+                .findDefinitionNamesInGeneratedFile(options)) {
+            Class<?> definition = load(name, snippetTypes);
+            if (definition != null && Arrays.stream(definition.getMethods())
+                    .map(Method::getReturnType)
+                    .anyMatch(snippetTypes::contains)) {
+                definitions.add(definition);
+            }
+        }
+        return definitions;
+    }
+
+    /**
+     * Loads a definition with the loader of one of the snippet types it may
+     * return, or with the context class loader, which is what loads the
+     * application when the definition comes from it and the snippet type from a
+     * library.
+     */
+    private static Class<?> load(String name, List<Class<?>> snippetTypes) {
+        List<ClassLoader> loaders = new ArrayList<>();
+        loaders.add(Thread.currentThread().getContextClassLoader());
+        snippetTypes.forEach(type -> loaders.add(type.getClassLoader()));
+        for (ClassLoader loader : loaders) {
+            if (loader == null) {
+                continue;
+            }
+            try {
+                return Class.forName(name, false, loader);
+            } catch (ClassNotFoundException | LinkageError e) {
+                getLogger().debug("Could not load {} with {}", name, loader, e);
+            }
+        }
+        return null;
     }
 
     private static boolean canReplaceInTheBrowser(VaadinService service) {

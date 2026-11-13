@@ -368,6 +368,16 @@ export const JsonConstants = {
   EVENT_SETTINGS_SIDE_EFFECT: 's',
 
   /**
+   * Starts the key of a declared snippet that the client runs when an event
+   * occurs. No JavaScript expression starts with `@`, so the key of a snippet
+   * is never equal to the key of an expression. An `@EventData` value that the
+   * build puts into the bundle has snippet settings too, but its key is the
+   * expression, which the client compiles when the bundle has no function for
+   * it.
+   */
+  EVENT_SNIPPET_KEY_PREFIX: '@',
+
+  /**
    * Key in the settings of a declared snippet that the client runs when an
    * event occurs. The value is `true` when the snippet returns a DOM node that
    * the client sends as the id of the closest state node, like for the keys
