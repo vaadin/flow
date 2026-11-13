@@ -25,7 +25,6 @@ import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,12 +41,15 @@ import com.vaadin.flow.server.frontend.NodeTasks.NodeTasksLockInfo;
  */
 class LockFile {
 
+    private static final String TAKEOVER_SUFFIX = ".takeover";
+
     private static final Duration POLL_INTERVAL = Duration.ofMillis(500);
 
     /**
      * How long an unreadable lock file is given to get its content written
-     * before it is considered broken, as creating the file and writing its
-     * content are separate steps for the process taking the lock.
+     * before it is considered abandoned, as creating the file and writing its
+     * content are separate steps for the process taking the lock. Also how long
+     * a takeover file may exist before it is considered abandoned.
      */
     private static final Duration UNREADABLE_GRACE_PERIOD = Duration
             .ofSeconds(5);
@@ -88,30 +90,31 @@ class LockFile {
                 return;
             }
 
-            NodeTasksLockInfo lockInfo;
+            List<String> content;
             try {
-                lockInfo = readLockFile();
+                content = Files.readAllLines(path, StandardCharsets.UTF_8);
             } catch (NoSuchFileException e) {
                 // Released in the meantime
                 continue;
-            } catch (Exception e) {
-                if (isRecentlyModified()) {
-                    // The holder has not yet written its content
-                    sleep();
-                } else {
-                    getLogger().error(
-                            "Removing the unreadable lock file ({}) of {}",
-                            path.toAbsolutePath(), holderName, e);
-                    FileIOUtils.deleteQuietly(path);
-                }
+            } catch (IOException e) {
+                getLogger().debug("Could not read lock file ({})",
+                        path.toAbsolutePath(), e);
+                sleep();
                 continue;
             }
 
-            Optional<ProcessHandle> processHandle = ProcessHandle
-                    .of(lockInfo.pid());
-            if (processHandle.isPresent()
-                    && normalizeCommandLine(processHandle.get().info())
-                            .equals(lockInfo.commandLine())) {
+            NodeTasksLockInfo lockInfo = parseLockInfo(content);
+            if (lockInfo == null) {
+                if (isOlderThanGracePeriod(path)) {
+                    getLogger().warn(
+                            "Removing the unreadable lock file ({}) of {}",
+                            path.toAbsolutePath(), holderName);
+                    removeAbandonedLock(content);
+                } else {
+                    // The holder has not yet written its content
+                    sleep();
+                }
+            } else if (isRunning(lockInfo)) {
                 if (!loggedWaiting) {
                     getLogger().info(
                             "Waiting for a previous instance of {} (pid: {}) to finish...",
@@ -121,7 +124,7 @@ class LockFile {
                 sleep();
             } else {
                 // The process has died without removing the lock file
-                FileIOUtils.deleteQuietly(path);
+                removeAbandonedLock(content);
             }
         }
     }
@@ -161,25 +164,85 @@ class LockFile {
         }
     }
 
-    private boolean isRecentlyModified() {
+    /**
+     * Removes the lock file, provided that it still has the content of the
+     * abandoned lock.
+     * <p>
+     * Several waiters can find the same abandoned lock, and one of them may
+     * already have removed it and taken the lock by the time another gets to
+     * remove it. Removing happens one waiter at a time, under a takeover file,
+     * and only after checking the content again, so that the lock just taken by
+     * someone else is never removed.
+     */
+    private void removeAbandonedLock(List<String> abandonedContent) {
+        Path takeover = path
+                .resolveSibling(path.getFileName() + TAKEOVER_SUFFIX);
         try {
-            return Files.getLastModifiedTime(path).toInstant()
-                    .isAfter(Instant.now().minus(UNREADABLE_GRACE_PERIOD));
+            Files.createFile(takeover);
+        } catch (FileAlreadyExistsException e) {
+            // Left behind by a waiter that died while removing a lock
+            if (isOlderThanGracePeriod(takeover)) {
+                FileIOUtils.deleteQuietly(takeover);
+            } else {
+                sleep();
+            }
+            return;
+        } catch (IOException e) {
+            getLogger().error("Error removing the abandoned lock file ({})",
+                    path.toAbsolutePath(), e);
+            sleep();
+            return;
+        }
+        try {
+            if (abandonedContent
+                    .equals(Files.readAllLines(path, StandardCharsets.UTF_8))) {
+                Files.delete(path);
+            }
+        } catch (NoSuchFileException e) {
+            // Released in the meantime
+        } catch (IOException e) {
+            getLogger().error("Error removing the abandoned lock file ({})",
+                    path.toAbsolutePath(), e);
+        } finally {
+            FileIOUtils.deleteQuietly(takeover);
+        }
+    }
+
+    private static boolean isRunning(NodeTasksLockInfo lockInfo) {
+        return ProcessHandle.of(lockInfo.pid())
+                .map(process -> normalizeCommandLine(process.info())
+                        .equals(lockInfo.commandLine()))
+                .orElse(false);
+    }
+
+    private static boolean isOlderThanGracePeriod(Path file) {
+        try {
+            return Files.getLastModifiedTime(file).toInstant()
+                    .isBefore(Instant.now().minus(UNREADABLE_GRACE_PERIOD));
         } catch (IOException e) {
             return false;
         }
     }
 
-    private NodeTasksLockInfo readLockFile()
-            throws NumberFormatException, IOException {
-        List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
-        if (lines.size() != 2) {
-            throw new IllegalStateException(
-                    "Invalid lock file. It should contain 2 rows but contains "
-                            + lines);
+    private NodeTasksLockInfo readLockFile() throws IOException {
+        NodeTasksLockInfo lockInfo = parseLockInfo(
+                Files.readAllLines(path, StandardCharsets.UTF_8));
+        if (lockInfo == null) {
+            throw new IllegalStateException("Invalid lock file content");
         }
-        return new NodeTasksLockInfo(Long.parseLong(lines.get(0)),
-                lines.get(1));
+        return lockInfo;
+    }
+
+    private static NodeTasksLockInfo parseLockInfo(List<String> lines) {
+        if (lines.size() != 2) {
+            return null;
+        }
+        try {
+            return new NodeTasksLockInfo(Long.parseLong(lines.get(0)),
+                    lines.get(1));
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     /**

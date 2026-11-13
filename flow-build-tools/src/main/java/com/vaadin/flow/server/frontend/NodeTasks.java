@@ -388,8 +388,9 @@ public class NodeTasks implements FallibleCommand {
     }
 
     /**
-     * The content of the lock file that prevents concurrent frontend builds in
-     * the same project.
+     * The content of a lock file, naming the process holding the lock. Such a
+     * lock prevents concurrent frontend builds in the same project, and
+     * concurrent installs of Node into the same directory.
      *
      * @param pid
      *            the id of the process holding the lock

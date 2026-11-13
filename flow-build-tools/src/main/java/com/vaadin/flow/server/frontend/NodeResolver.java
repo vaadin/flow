@@ -16,8 +16,10 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Objects;
 
@@ -348,10 +350,13 @@ class NodeResolver implements java.io.Serializable {
         // Installing is not atomic and all builds on the machine share the
         // directory, so a concurrent install would overwrite and delete the
         // files that this one is copying
-        if (!alternativeDirFile.isDirectory() && !alternativeDirFile.mkdirs()) {
+        try {
+            Files.createDirectories(alternativeDirFile.toPath());
+        } catch (IOException e) {
             throw new IllegalStateException(
                     "Failed to create the Node installation directory "
-                            + alternativeDirFile);
+                            + alternativeDirFile,
+                    e);
         }
         LockFile lock = new LockFile(
                 new File(alternativeDirFile, INSTALL_LOCK_FILE).toPath(),
