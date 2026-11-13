@@ -25,7 +25,6 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.tests.util.MockUI;
@@ -60,16 +59,16 @@ class WriteToClipboardActionTest {
 
         // $0 is the text input — a PropertyInput that reads from the field.
         JsFunction text = (JsFunction) action.getCaptures().get(0);
-        assertEquals("readProperty", snippetOf(ValueJs.class, text));
+        assertEquals("readProperty", snippetOf(TriggerInputJs.class, text));
 
         // $1 is the html slot — the no-op "return null" stand-in.
         JsFunction html = (JsFunction) action.getCaptures().get(1);
-        assertEquals("returnNull", snippetOf(ValueJs.class, html));
+        assertEquals("returnNull", snippetOf(TriggerInputJs.class, html));
         assertEquals(List.of(), html.getCaptures());
 
         // $2 is the image slot — also the no-op stand-in.
         JsFunction image = (JsFunction) action.getCaptures().get(2);
-        assertEquals("returnNull", snippetOf(ValueJs.class, image));
+        assertEquals("returnNull", snippetOf(TriggerInputJs.class, image));
         assertEquals(List.of(), image.getCaptures());
     }
 
@@ -97,7 +96,7 @@ class WriteToClipboardActionTest {
 
         // image slot is the no-op stand-in.
         JsFunction image = (JsFunction) action.getCaptures().get(2);
-        assertEquals("returnNull", snippetOf(ValueJs.class, image));
+        assertEquals("returnNull", snippetOf(TriggerInputJs.class, image));
     }
 
     @Test
@@ -118,7 +117,7 @@ class WriteToClipboardActionTest {
 
         // $0 is the text slot — the no-op stand-in.
         JsFunction text = (JsFunction) action.getCaptures().get(0);
-        assertEquals("returnNull", snippetOf(ValueJs.class, text));
+        assertEquals("returnNull", snippetOf(TriggerInputJs.class, text));
 
         // $1 is the html literal input.
         JsFunction html = (JsFunction) action.getCaptures().get(1);
@@ -126,7 +125,7 @@ class WriteToClipboardActionTest {
 
         // $2 is the image slot — the no-op stand-in.
         JsFunction image = (JsFunction) action.getCaptures().get(2);
-        assertEquals("returnNull", snippetOf(ValueJs.class, image));
+        assertEquals("returnNull", snippetOf(TriggerInputJs.class, image));
     }
 
     @Test
@@ -146,15 +145,15 @@ class WriteToClipboardActionTest {
                 WriteToClipboardAction.WriteToClipboardJs.class, action));
 
         // $0 and $1 are the no-op stand-ins.
-        assertEquals("returnNull", snippetOf(ValueJs.class,
+        assertEquals("returnNull", snippetOf(TriggerInputJs.class,
                 (JsFunction) action.getCaptures().get(0)));
-        assertEquals("returnNull", snippetOf(ValueJs.class,
+        assertEquals("returnNull", snippetOf(TriggerInputJs.class,
                 (JsFunction) action.getCaptures().get(1)));
 
         // $2 is the image input — yields the source <img> element verbatim,
         // captured at $0 of its JsFunction.
         JsFunction image = (JsFunction) action.getCaptures().get(2);
-        assertEquals("returnValue", snippetOf(ValueJs.class, image));
+        assertEquals("returnValue", snippetOf(TriggerInputJs.class, image));
         assertSame(img.getElement(), image.getCaptures().get(0));
     }
 

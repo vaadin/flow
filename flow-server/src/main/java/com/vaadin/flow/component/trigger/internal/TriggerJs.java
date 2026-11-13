@@ -17,7 +17,6 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.io.Serializable;
 
-import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
@@ -32,7 +31,7 @@ import com.vaadin.flow.js.JsSnippets;
  * return channel or write an element property, and the installers that hook an
  * action up to its trigger in the browser. What a single action does in the
  * browser is declared next to that action, and the inputs that produce a value
- * are in {@link ValueJs}.
+ * are in {@link TriggerInputJs}.
  * <p>
  * An action is a function that does its work, called with the event of the
  * trigger as <code>event</code>. An installer is applied to the host element of

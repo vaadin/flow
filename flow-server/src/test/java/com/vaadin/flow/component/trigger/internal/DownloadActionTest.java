@@ -21,7 +21,6 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinSession;
@@ -94,7 +93,7 @@ class DownloadActionTest {
 
         JsFunction action = actionOf(singleInstallFn(ui));
         JsFunction urlFn = (JsFunction) action.getCaptures().get(0);
-        assertEquals("readProperty", snippetOf(ValueJs.class, urlFn));
+        assertEquals("readProperty", snippetOf(TriggerInputJs.class, urlFn));
         assertEquals("value", urlFn.getCaptures().get(1));
     }
 
@@ -192,7 +191,7 @@ class DownloadActionTest {
         assertTrue(capture instanceof JsFunction,
                 "expected JsFunction at capture " + captureIndex);
         JsFunction inputFn = (JsFunction) capture;
-        assertEquals("returnValue", snippetOf(ValueJs.class, inputFn),
+        assertEquals("returnValue", snippetOf(TriggerInputJs.class, inputFn),
                 "expected LiteralInput shape");
         assertEquals(expectedValue, inputFn.getCaptures().get(0));
     }

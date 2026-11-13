@@ -19,7 +19,6 @@ import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsSnippets;
@@ -41,7 +40,8 @@ import com.vaadin.flow.js.JsSnippets;
  */
 public class ImageBlobInput extends Action.Input<Object> {
 
-    private static final ValueJs VALUE_JS = JsSnippets.of(ValueJs.class);
+    private static final TriggerInputJs TRIGGER_INPUT_JS = JsSnippets
+            .of(TriggerInputJs.class);
 
     private final Element source;
 
@@ -82,6 +82,6 @@ public class ImageBlobInput extends Action.Input<Object> {
 
     @Override
     public JsFunction toJs(Trigger trigger) {
-        return VALUE_JS.returnValue(source);
+        return TRIGGER_INPUT_JS.returnValue(source);
     }
 }

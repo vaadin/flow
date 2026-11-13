@@ -20,7 +20,6 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsDefinition;
@@ -65,7 +64,8 @@ import com.vaadin.flow.signals.Signal;
  */
 public class SignalInput<T> extends Action.Input<T> {
 
-    private static final ValueJs VALUE_JS = JsSnippets.of(ValueJs.class);
+    private static final TriggerInputJs TRIGGER_INPUT_JS = JsSnippets
+            .of(TriggerInputJs.class);
 
     // Generates unique property-name suffixes; a long won't realistically
     // overflow. Class reload during devmode hotdeploy resets it, but the
@@ -105,7 +105,7 @@ public class SignalInput<T> extends Action.Input<T> {
         installEffectIfNeeded();
         // Matches PropertyInput's shape — both read a property from a known
         // element.
-        return VALUE_JS.readProperty(owner.getElement(), propertyName);
+        return TRIGGER_INPUT_JS.readProperty(owner.getElement(), propertyName);
     }
 
     private void installEffectIfNeeded() {

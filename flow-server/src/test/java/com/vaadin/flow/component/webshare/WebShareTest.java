@@ -24,8 +24,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
-import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.component.trigger.internal.ShareAction;
+import com.vaadin.flow.component.trigger.internal.TriggerInputJs;
 import com.vaadin.flow.component.trigger.internal.TriggerTestUtil;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
@@ -105,7 +105,8 @@ class WebShareTest {
         JsFunction handler = handlerFn(ui);
         assertEquals("share", snippetOf(ShareAction.ShareJs.class, handler));
         JsFunction titleInput = (JsFunction) handler.getCaptures().get(0);
-        assertEquals("readProperty", snippetOf(ValueJs.class, titleInput));
+        assertEquals("readProperty",
+                snippetOf(TriggerInputJs.class, titleInput));
         assertEquals("value", titleInput.getCaptures().get(1));
     }
 

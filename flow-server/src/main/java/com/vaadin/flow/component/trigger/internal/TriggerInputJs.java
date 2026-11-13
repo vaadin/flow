@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.internal;
+package com.vaadin.flow.component.trigger.internal;
 
 import java.io.Serializable;
 
@@ -25,15 +25,17 @@ import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippets;
 
 /**
- * Snippets for {@link JsSnippets#of(Class)} that produce a value when they are
- * called: a fixed one, a property of an element, or the event or a property of
- * the event they are called with as <code>event</code>. They are meant to be
- * passed to another snippet that calls them for the value it works on.
+ * The JavaScript of the built-in trigger inputs, as snippets for
+ * {@link JsSnippets#of(Class)}: what {@link Action.Input#toJs(Trigger)}
+ * returns. An input is a function that produces a value when it is called: a
+ * fixed one, a property of an element, or the event or a property of the event
+ * it is called with as <code>event</code>. It is passed to an action, which
+ * calls it for the value it works on.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
 @JsDefinition
-public interface ValueJs extends Serializable {
+public interface TriggerInputJs extends Serializable {
 
     /**
      * An input that returns the given value.

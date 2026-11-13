@@ -20,7 +20,6 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
@@ -80,13 +79,13 @@ class SizeTriggerTest {
         JsFunction widthSource = (JsFunction) actionOf(installs.get(0))
                 .getCaptures().get(2);
         assertEquals("readEventProperty",
-                snippetOf(ValueJs.class, widthSource));
+                snippetOf(TriggerInputJs.class, widthSource));
         assertEquals("width", widthSource.getCaptures().get(0));
 
         JsFunction heightSource = (JsFunction) actionOf(installs.get(1))
                 .getCaptures().get(2);
         assertEquals("readEventProperty",
-                snippetOf(ValueJs.class, heightSource));
+                snippetOf(TriggerInputJs.class, heightSource));
         assertEquals("height", heightSource.getCaptures().get(0));
     }
 
@@ -108,7 +107,8 @@ class SizeTriggerTest {
 
         JsFunction sizeSource = (JsFunction) actionOf(singleInstallFn(ui))
                 .getCaptures().get(2);
-        assertEquals("returnEvent", snippetOf(ValueJs.class, sizeSource));
+        assertEquals("returnEvent",
+                snippetOf(TriggerInputJs.class, sizeSource));
         assertEquals(List.of(), sizeSource.getCaptures());
     }
 
