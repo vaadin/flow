@@ -81,8 +81,8 @@ describe('publishClient', () => {
     expect(stubs.sendEventMessage.calledWith(2, 'click', null)).to.be.true;
   });
 
-  // Every published function, the connection method it delegates to, and the
-  // arguments to call it with.
+  // Every published function that delegates to the connection, the connection
+  // method, and the arguments to call it with.
   const publishedFunctions: Array<[string, keyof ReturnType<typeof fakeConnectionStubs>, unknown[]]> = [
     ['isActive', 'isActive', []],
     ['getByNodeId', 'getDomElementByNodeId', [4]],
@@ -105,13 +105,18 @@ describe('publishClient', () => {
       stubs[delegate].throws(error);
       // Stubbed so the asynchronous rethrow does not fail the test run.
       const reportStacktrace = sinon.stub(Console, 'reportStacktrace');
+      const consoleError = sinon.stub(Console, 'error');
       try {
         publishClient(asConnection(stubs), fakeConfig({ production: false, requestTiming: true }));
 
         expect($wnd.Vaadin.Flow.clients.ROOT[name](...args)).to.be.undefined;
         expect(reportStacktrace.args).to.deep.equal([[error]]);
+        expect(consoleError.args).to.deep.equal([
+          [`Exception is thrown by client.${name}. Stacktrace will be dumped separately.`]
+        ]);
       } finally {
         reportStacktrace.restore();
+        consoleError.restore();
       }
     });
   });
