@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.test.dom;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.KeyDownEvent;
@@ -24,11 +26,22 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DefaultErrorHandler;
 
 @Route("keyboard-event")
 public class KeyboardEventView extends Div {
+
+    @JsDefinition
+    public interface KeyUpJs extends Serializable {
+
+        @JsExpression("$0.dispatchEvent(new KeyboardEvent('keyup', {}))")
+        void dispatchEmptyKeyUp(Element target);
+    }
+
     private Input input = new Input();
     private NativeButton sendInvalidKeyUp = new NativeButton();
 
@@ -58,9 +71,8 @@ public class KeyboardEventView extends Div {
 
         sendInvalidKeyUp.setId("sendInvalidKeyUp");
         sendInvalidKeyUp.addClickListener(event -> {
-            getUI().ifPresent(ui -> ui.getPage().executeJs(
-                    "$0.dispatchEvent(new KeyboardEvent('keyup', {}))",
-                    input.getElement()));
+            getUI().ifPresent(ui -> ui.getPage().executeJs(KeyUpJs.class)
+                    .dispatchEmptyKeyUp(input.getElement()));
         });
         add(sendInvalidKeyUp, keyUpParagraph);
         UI.getCurrent().getSession().setErrorHandler(event -> keyUpParagraph

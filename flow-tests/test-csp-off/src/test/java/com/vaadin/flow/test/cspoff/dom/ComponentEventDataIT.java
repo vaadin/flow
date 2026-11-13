@@ -13,17 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.test.dom;
+package com.vaadin.flow.test.cspoff.dom;
 
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
-import com.vaadin.flow.test.TestFor;
+import com.vaadin.flow.test.cspoff.TestFor;
 import com.vaadin.testbench.BrowserTest;
 
-import static com.vaadin.flow.test.dom.AbstractEventDataView.EMPTY_VALUE;
+import static com.vaadin.flow.test.cspoff.dom.AbstractEventDataView.EMPTY_VALUE;
 
 @TestFor(ComponentEventDataView.class)
 public class ComponentEventDataIT extends AbstractEventDataIT {

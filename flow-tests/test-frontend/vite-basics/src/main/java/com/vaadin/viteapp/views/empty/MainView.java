@@ -15,6 +15,8 @@
  */
 package com.vaadin.viteapp.views.empty;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
@@ -22,6 +24,9 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.ui.dependencies.ThemableTextField;
 
@@ -43,6 +48,17 @@ public class MainView extends Div {
     public static final String OUTSIDE = "outsideButton";
     public static final String OUTSIDE_RESULT = "outsideResult";
 
+    @JsDefinition
+    public interface MainJs extends Serializable {
+
+        @JsExpression("const json = window.loadJson(json => $0.innerText=json);")
+        void loadAndShowJson(Element container);
+
+        @JsExpression(OUTSIDE_RESULT
+                + ".innerText = window.packageOutsideNpm() + ' - ' + window.package2OutsideNpm();")
+        void showOutsideResult();
+    }
+
     public MainView() {
         Image img = new Image("themes/vite-basics/images/plant.png",
                 "placeholder plant");
@@ -62,9 +78,8 @@ public class MainView extends Div {
         jsonContainer.setId(JSON_CONTAINER);
         NativeButton loadAndShowJson = new NativeButton("Load and show JSON",
                 e -> {
-                    getElement().executeJs(
-                            "const json = window.loadJson(json => $0.innerText=json);",
-                            jsonContainer);
+                    getElement().executeJs(MainJs.class)
+                            .loadAndShowJson(jsonContainer.getElement());
                 });
         loadAndShowJson.setId(LOAD_AND_SHOW_JSON);
         add(button, loadAndShowJson, jsonContainer);
@@ -73,8 +88,7 @@ public class MainView extends Div {
 
         NativeButton checkOutsideJs = new NativeButton("Check outside JS",
                 e -> {
-                    getElement().executeJs(OUTSIDE_RESULT
-                            + ".innerText = window.packageOutsideNpm() + ' - ' + window.package2OutsideNpm();");
+                    getElement().executeJs(MainJs.class).showOutsideResult();
                 });
         checkOutsideJs.setId(OUTSIDE);
         add(checkOutsideJs);

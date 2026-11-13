@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.test.cspoff.dependencies;
 
 import java.io.Serializable;
 
@@ -25,9 +25,9 @@ import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.flow.test.cspoff.AbstractDivView;
 
-@Route(value = "com.vaadin.flow.uitest.ui.JsFunctionView", layout = ViewTestLayout.class)
+@Route("js-function")
 public class JsFunctionView extends AbstractDivView {
 
     @JsDefinition

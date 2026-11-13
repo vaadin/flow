@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.navigate;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -24,6 +25,8 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Pre;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -36,6 +39,13 @@ public class HelloWorldView extends Span implements BeforeEnterObserver {
     public static final String NAVIGATE_ABOUT = "navigate-about";
     public static final String IS_CONNECTED_ON_INIT = "is-connected-on-init";
     public static final String IS_CONNECTED_ON_ATTACH = "is-connected-on-attach";
+
+    @JsDefinition
+    public interface ConnectedJs extends Serializable {
+
+        @JsExpression("this.textContent=String(this.isConnected)")
+        void showIsConnected();
+    }
 
     private final Span isConnectedOnInit = new Span("");
     private final Span isConnectedOnAttach = new Span("");
@@ -69,8 +79,7 @@ public class HelloWorldView extends Span implements BeforeEnterObserver {
     }
 
     private void updateIsConnected(Span output) {
-        output.getElement()
-                .executeJs("this.textContent=String(this.isConnected)");
+        output.getElement().executeJs(ConnectedJs.class).showIsConnected();
     }
 
     @Override

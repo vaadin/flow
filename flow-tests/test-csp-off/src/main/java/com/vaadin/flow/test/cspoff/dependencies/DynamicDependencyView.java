@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.dependencies;
+package com.vaadin.flow.test.cspoff.dependencies;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
@@ -21,7 +21,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 
-@Route("com.vaadin.flow.uitest.ui.dependencies.DynamicDependencyView")
+@Route("dynamic-dependency")
 public class DynamicDependencyView extends Div {
     private final Div newComponent = new Div();
 

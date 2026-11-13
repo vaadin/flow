@@ -15,8 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui.dependencies;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 /**
@@ -27,6 +31,15 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
  * @since 1.0.
  */
 public class DependenciesLoadingBaseView extends AbstractDivView {
+
+    @JsDefinition
+    public interface AttachTestDivJs extends Serializable {
+
+        // See eager.js for attachTestDiv code
+        @JsExpression("window.attachTestDiv($0)")
+        void attachTestDiv(String text);
+    }
+
     static final String PRELOADED_DIV_ID = "preloadedDiv";
     static final String INLINE_CSS_TEST_DIV_ID = "inlineCssTestDiv";
     static final String DOM_CHANGE_TEXT = "I appear after inline and eager dependencies and before lazy";
@@ -46,8 +59,8 @@ public class DependenciesLoadingBaseView extends AbstractDivView {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        // See eager.js for attachTestDiv code
-        getPage().executeJs("window.attachTestDiv($0)", DOM_CHANGE_TEXT);
+        getPage().executeJs(AttachTestDivJs.class)
+                .attachTestDiv(DOM_CHANGE_TEXT);
     }
 
 }

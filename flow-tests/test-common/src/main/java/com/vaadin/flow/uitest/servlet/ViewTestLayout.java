@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.uitest.servlet;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -25,6 +26,8 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.Route;
@@ -32,6 +35,13 @@ import com.vaadin.flow.router.RouterLayout;
 
 public class ViewTestLayout extends Div
         implements RouterLayout, AfterNavigationObserver {
+
+    @JsDefinition
+    public interface ViewSelectJs extends Serializable {
+
+        @JsExpression("setTimeout(function() {$0.value = $1}, 0)")
+        void selectLater(Element select, String path);
+    }
 
     private Element element = ElementFactory.createDiv();
     private Element viewContainer = ElementFactory.createDiv();
@@ -89,9 +99,8 @@ public class ViewTestLayout extends Div
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
         // Defer value setting until all option elements have been attached
-        UI.getCurrent().getPage().executeJs(
-                "setTimeout(function() {$0.value = $1}, 0)", viewSelect,
-                event.getLocation().getPath());
+        UI.getCurrent().getPage().executeJs(ViewSelectJs.class)
+                .selectLater(viewSelect, event.getLocation().getPath());
     }
 
 }

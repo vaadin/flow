@@ -91,6 +91,7 @@ moving a test.
 | `TransferProgressListenerView`'s `@Push` | **replaced** by enabling push for the view's UI in `onAttach`: Spring Boot only accepts `@Push` on the `AppShellConfigurator`, and the test only needs push for that one view |
 | `DownloadHandlerIT`'s callback-exception case asserted Jetty's error page text | **rewritten** to assert the HTTP 500 status, which does not depend on the container |
 | `test-spring-common` × {war, jar, undertow, contextpath, reverseproxy, scan, …} | **retain**: 10+ sibling modules already run its ITs by reusing its `test-jar`, so migrating it has to turn those into reuse-runs instead of moving the source away |
+| string-based JavaScript ITs (`ExecJavaScript`, `JsFunction`, `JavaScriptReturnValue`, `DynamicDependency`, `TrackMessageSize` from `test-root-context`; `DomEventFilter`, `ComponentEventData` from `test-default`) × `csp=strict` | **home moved to `test-csp-off`**: every module now runs with `csp=strict`, in which these APIs throw, so the ITs that exercise them run in the one module that pins `csp=off`. Tests that used such an API only as a helper stayed home, with the JavaScript declared instead. The `test-root-context` ITs were ported to JUnit 6 and lost the Tomcat 10 reuse-run, for the same reason as the `dom` ITs |
 
 Every source module's migration PR updates this ledger so each retain/drop is
 explicit.

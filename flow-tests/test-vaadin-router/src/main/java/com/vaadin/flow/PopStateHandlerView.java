@@ -15,13 +15,31 @@
  */
 package com.vaadin.flow;
 
+import java.io.Serializable;
+
+import com.vaadin.flow.dom.DomEventData;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
 @Route("com.vaadin.flow.PopStateHandlerView")
 public class PopStateHandlerView extends RouterLinkView {
+
+    @JsDefinition
+    public interface HistoryJs extends Serializable {
+
+        @JsExpression("window.history.pushState(null, null, event.target.textContent)")
+        DomEventData<String> pushState();
+
+        @JsExpression("window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: {  url: event.target.textContent, replace: false } }))")
+        DomEventData<String> dispatchNavigate();
+    }
+
+    private static final HistoryJs HISTORY_JS = JsSnippets.of(HistoryJs.class);
 
     @Override
     protected void addLinks() {
@@ -44,10 +62,10 @@ public class PopStateHandlerView extends RouterLinkView {
     protected Element createPushStateButtons(String target) {
         Element button = ElementFactory.createButton(target).setAttribute("id",
                 target);
-        String historyPush = "window.history.pushState(null, null, event.target.textContent)";
+        DomEventData<String> historyPush = HISTORY_JS.pushState();
         if (VaadinSession.getCurrent().getService().getDeploymentConfiguration()
                 .isReactEnabled()) {
-            historyPush = "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: {  url: event.target.textContent, replace: false } }))";
+            historyPush = HISTORY_JS.dispatchNavigate();
         }
         button.addEventListener("click", e -> {
         }).addEventData(historyPush);

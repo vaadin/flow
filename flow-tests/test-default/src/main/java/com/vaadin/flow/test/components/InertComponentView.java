@@ -15,16 +15,27 @@
  */
 package com.vaadin.flow.test.components;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 
 @Route("inert-component")
 public class InertComponentView extends Div {
+
+    @JsDefinition
+    public interface OutletJs extends Serializable {
+
+        @JsExpression("document.getElementById('outlet').style.height = 'auto';")
+        void collapseOutlet();
+    }
 
     static final String LINK = "link-to-another-view";
     static final String NEW_BOX = "new-box";
@@ -44,8 +55,8 @@ public class InertComponentView extends Div {
 
         // collapse outlet so that the added boxes are rendered inside visible
         // browser window
-        getUI().ifPresent(ui -> ui.getPage().executeJs(
-                "document.getElementById('outlet').style.height = 'auto';"));
+        getUI().ifPresent(
+                ui -> ui.getPage().executeJs(OutletJs.class).collapseOutlet());
 
         add(new Box(false));
     }

@@ -13,20 +13,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.test.cspoff.dependencies;
 
 import java.util.Arrays;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.test.cspoff.AbstractCspOffIT;
+import com.vaadin.flow.test.cspoff.TestFor;
+import com.vaadin.testbench.BrowserTest;
 
-public class JavaScriptReturnValueIT extends ChromeBrowserTest {
-    @Test
+import static org.junit.jupiter.api.Assertions.fail;
+
+@TestFor(JavaScriptReturnValueView.class)
+public class JavaScriptReturnValueIT extends AbstractCspOffIT {
+    @BrowserTest
     public void testAllCombinations() {
         open();
 
@@ -59,23 +63,23 @@ public class JavaScriptReturnValueIT extends ChromeBrowserTest {
 
         if ("timeout".equals(type)) {
             try {
-                Assert.assertEquals(
+                Assertions.assertEquals("Running...",
+                        findElement(By.id("status")).getText(),
                         "Result should not be there immediately for "
-                                + combinationId,
-                        "Running...", findElement(By.id("status")).getText());
+                                + combinationId);
 
                 waitUntil(ExpectedConditions.textToBe(By.id("status"),
                         expectedStatus), 2);
             } catch (TimeoutException e) {
-                Assert.fail("Didn't reach expected result for " + combinationId
+                fail("Didn't reach expected result for " + combinationId
                         + ". Expected " + expectedStatus + " but got "
                         + findElement(By.id("status")).getText());
                 e.printStackTrace();
             }
         } else {
             String actualStatus = findElement(By.id("status")).getText();
-            Assert.assertEquals("Unexpected result for " + combinationId,
-                    expectedStatus, actualStatus);
+            Assertions.assertEquals(expectedStatus, actualStatus,
+                    "Unexpected result for " + combinationId);
         }
     }
 
