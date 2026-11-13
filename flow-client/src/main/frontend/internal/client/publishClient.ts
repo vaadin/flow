@@ -15,6 +15,7 @@
  */
 
 import type { ApplicationConfiguration, ApplicationConnection } from './clientApi';
+import { Console } from './Console';
 
 /**
  * Builds the per-application client API object published on
@@ -24,10 +25,12 @@ import type { ApplicationConfiguration, ApplicationConnection } from './clientAp
  * `publishDevelopmentModeJavascriptMethods` blocks in
  * com.vaadin.client.ApplicationConnection: it delegates to the methods of the
  * {@link ApplicationConnection} instance. Like `$entry` in those blocks, every
- * published function reports an error it throws to the given error handler and
- * returns `undefined` instead of rethrowing it. Integrations call these
- * functions from their own code, where a rethrown error aborts the caller and
- * may be swallowed there without ever reaching the browser console.
+ * published function catches an error it throws and returns `undefined`.
+ * Integrations call these functions from their own code, where a rethrown error
+ * aborts the caller and may be swallowed there without ever reaching the browser
+ * console. The caught error is rethrown asynchronously instead, so the browser
+ * reports it with its stack also in production mode, and the uncaught error
+ * handler shows it in development mode.
  *
  * Called by ApplicationConnection.create with the constructed instance. The live
  * page still runs the GWT engine, so the JSNI publication is what actually
@@ -39,21 +42,20 @@ import type { ApplicationConfiguration, ApplicationConnection } from './clientAp
  *          application id the client is published under, whether the client runs
  *          in production mode, whether request timing info should be made
  *          available, and the web component tags exported by this UI
- * @param handleError - reports an error thrown by a published function
  */
 export function publishClient(
   applicationConnection: ApplicationConnection,
-  configuration: ApplicationConfiguration,
-  handleError: (error: unknown) => void
+  configuration: ApplicationConfiguration
 ): void {
   const ac = applicationConnection;
   const entry =
-    <A extends unknown[], R>(fn: (...args: A) => R) =>
+    <A extends unknown[], R>(name: string, fn: (...args: A) => R) =>
     (...args: A): R | undefined => {
       try {
         return fn(...args);
       } catch (error) {
-        handleError(error);
+        Console.reportStacktrace(error);
+        Console.error(`Exception is thrown by client.${name}. Stacktrace will be dumped separately.`);
         return undefined;
       }
     };
@@ -65,16 +67,18 @@ export function publishClient(
   const applicationId = configuration.getApplicationId().replace(/-\d+$/, '');
 
   const client: Record<string, unknown> = {
-    isActive: entry(() => ac.isActive()),
-    getByNodeId: entry((nodeId: number) => ac.getDomElementByNodeId(nodeId)),
-    getNodeId: entry((element: Element) => ac.getNodeId(element)),
-    getUIId: entry(() => ac.getUIId()),
-    addDomBindingListener: entry((nodeId: number, callback: () => void) => ac.addDomSetListener(nodeId, callback)),
+    isActive: entry('isActive', () => ac.isActive()),
+    getByNodeId: entry('getByNodeId', (nodeId: number) => ac.getDomElementByNodeId(nodeId)),
+    getNodeId: entry('getNodeId', (element: Element) => ac.getNodeId(element)),
+    getUIId: entry('getUIId', () => ac.getUIId()),
+    addDomBindingListener: entry('addDomBindingListener', (nodeId: number, callback: () => void) =>
+      ac.addDomSetListener(nodeId, callback)
+    ),
     productionMode,
-    poll: entry(() => ac.poll()),
-    connectWebComponent: entry((eventData: object) => ac.connectWebComponent(eventData)),
-    resolveUri: entry((uri: string) => ac.resolveUri(uri)),
-    sendEventMessage: entry((nodeId: number, eventType: string, eventData: object | null) =>
+    poll: entry('poll', () => ac.poll()),
+    connectWebComponent: entry('connectWebComponent', (eventData: object) => ac.connectWebComponent(eventData)),
+    resolveUri: entry('resolveUri', (uri: string) => ac.resolveUri(uri)),
+    sendEventMessage: entry('sendEventMessage', (nodeId: number, eventType: string, eventData: object | null) =>
       ac.sendEventMessage(nodeId, eventType, eventData)
     ),
     initializing: false,
@@ -83,7 +87,7 @@ export function publishClient(
   };
 
   if (configuration.isRequestTiming()) {
-    client.getProfilingData = entry(() => ac.getProfilingData());
+    client.getProfilingData = entry('getProfilingData', () => ac.getProfilingData());
   }
 
   if (!productionMode) {
@@ -91,9 +95,11 @@ export function publishClient(
     // function it published above; the port publishes it once.
     // The Java block publishes this as function(parameter) and ignores the
     // argument; the published function accepts and ignores one as well.
-    client.getVersionInfo = entry((_parameter?: unknown) => ({ flow: configuration.getServletVersion() }));
-    client.debug = entry(() => ac.debug());
-    client.getNodeInfo = entry((nodeId: number) => ({
+    client.getVersionInfo = entry('getVersionInfo', (_parameter?: unknown) => ({
+      flow: configuration.getServletVersion()
+    }));
+    client.debug = entry('debug', () => ac.debug());
+    client.getNodeInfo = entry('getNodeInfo', (nodeId: number) => ({
       element: ac.getDomElementByNodeId(nodeId),
       javaClass: ac.getJavaClass(nodeId),
       hiddenByServer: ac.isHiddenByServer(nodeId),

@@ -130,7 +130,7 @@ export class ApplicationConnection implements PublishedClient {
 
     const connection = new ApplicationConnection(registry);
     registry.setApplicationConnection(connection);
-    publishClient(connection, applicationConfiguration, (error) => systemErrorHandler.handleErrorObject(error));
+    publishClient(connection, applicationConfiguration);
     return connection;
   }
 

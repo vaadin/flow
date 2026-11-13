@@ -12,7 +12,7 @@ import { onModuleLoad } from '../../../../main/frontend/internal/client/bootstra
 import { StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
 import { StateTree } from '../../../../main/frontend/internal/client/flow/StateTree';
 import sinon from 'sinon';
-import { SystemErrorHandler } from '../../../../main/frontend/internal/client/SystemErrorHandler';
+import { Console } from '../../../../main/frontend/internal/client/Console';
 import { inertRegistry } from './flow/stateTreeTestRegistry';
 
 // A registry whose services are fakes but whose state tree is real: the fakes
@@ -230,12 +230,12 @@ describe('ApplicationConnection', () => {
       }
     });
 
-    it('reports an error thrown by the published client API to the system error handler', () => {
+    it('reports an error thrown by the published client API instead of rethrowing it', () => {
       // An integration may ask for a node that a navigation already removed. As
       // with GWT's $entry, the call reports the error and returns normally.
       const savedVaadin = (window as { Vaadin?: unknown }).Vaadin;
       (window as { Vaadin?: unknown }).Vaadin = { Flow: { clients: {} }, connectionState: { state: '' } };
-      const handleErrorObject = sinon.stub(SystemErrorHandler.prototype, 'handleErrorObject');
+      const reportStacktrace = sinon.stub(Console, 'reportStacktrace');
       try {
         const config = new ApplicationConfiguration();
         config.setApplicationId('ROOT-3');
@@ -252,10 +252,10 @@ describe('ApplicationConnection', () => {
         ).Vaadin.Flow.clients.ROOT;
 
         expect(client.addDomBindingListener(4711, () => {})).to.be.undefined;
-        expect(handleErrorObject.calledOnce).to.be.true;
-        expect(handleErrorObject.firstCall.args[0]).to.be.instanceOf(TypeError);
+        expect(reportStacktrace.calledOnce).to.be.true;
+        expect(reportStacktrace.firstCall.args[0]).to.be.instanceOf(TypeError);
       } finally {
-        handleErrorObject.restore();
+        reportStacktrace.restore();
         (window as { Vaadin?: unknown }).Vaadin = savedVaadin;
       }
     });
