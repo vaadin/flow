@@ -78,10 +78,23 @@ public abstract class AbstractCspStrictIT extends AbstractBrowserIT {
      */
     protected HttpResponse<String> fetchBootstrapPage()
             throws IOException, InterruptedException {
+        return fetch(getTestPath());
+    }
+
+    /**
+     * Fetches a page of the application without a browser, to check the
+     * response headers and the HTML as sent.
+     *
+     * @param path
+     *            the path of the page, starting with a "/"
+     * @return the response
+     */
+    protected HttpResponse<String> fetch(String path)
+            throws IOException, InterruptedException {
         try (HttpClient client = HttpClient.newHttpClient()) {
             return client.send(HttpRequest
-                    .newBuilder(URI.create(getRootURL() + getTestPath()))
-                    .build(), HttpResponse.BodyHandlers.ofString());
+                    .newBuilder(URI.create(getRootURL() + path)).build(),
+                    HttpResponse.BodyHandlers.ofString());
         }
     }
 
