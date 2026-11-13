@@ -110,6 +110,13 @@ public final class JsFunction implements JsSnippet {
     /**
      * Creates a JavaScript function value with the given body and captured
      * parameters.
+     * <p>
+     * The function is compiled in the browser from its body, which a content
+     * security policy without <code>unsafe-eval</code> does not allow, so the
+     * {@link CspMode} of the application reports or refuses it. A function
+     * declared by a method of a {@link JsDefinition} interface is collected
+     * into the bundle instead, and the browser is sent only its identifier and
+     * the captures. The class documentation shows how to declare one.
      *
      * @param body
      *            the JavaScript function body, with captures referenced as
