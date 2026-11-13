@@ -19,8 +19,14 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.trigger.internal.Action;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
+import com.vaadin.flow.component.trigger.internal.ContextInput;
+import com.vaadin.flow.component.trigger.internal.PromiseAction.Error;
+import com.vaadin.flow.component.trigger.internal.WriteToClipboardAction;
 import com.vaadin.flow.dom.DomEventData;
 import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -46,7 +52,9 @@ import com.vaadin.flow.shared.Registration;
  * }</pre>
  *
  * The Clipboard API requires a fresh user gesture for each write, so actions
- * only run during the DOM event that fires the underlying trigger.
+ * only run during the DOM event that fires the underlying trigger. For copy
+ * affordances rendered on the client, where there is no component to bind to,
+ * {@link #writeText()} creates an unbound action instead.
  * <p>
  * Read-side support is exposed through
  * {@link #onPaste(Component, SerializableConsumer) onPaste}, which forwards the
@@ -156,6 +164,68 @@ public final class Clipboard implements Serializable {
     public static ClipboardBinding onClick(Component component) {
         Objects.requireNonNull(component, "component must not be null");
         return new ClipboardBinding(new ClickTrigger(component));
+    }
+
+    /**
+     * Creates a clipboard write that is not bound to any component, for copy
+     * affordances rendered on the client where there is no server-side
+     * component to bind to. The action copies the first argument it is called
+     * with as {@code text/plain}, so the template decides what to copy:
+     *
+     * <pre>{@code
+     * LitRenderer.<Customer> of(
+     *         "<span>${item.email}</span><button @click=${() => copy(item.email)}>Copy</button>")
+     *         .withProperty("email", Customer::email)
+     *         .withClientAction("copy", Clipboard.writeText());
+     * }</pre>
+     *
+     * The action still runs inside the browser's own event handler, so the user
+     * gesture is valid, exactly as with {@link #onClick(Component)}. The
+     * outcome of the write is not reported back; use
+     * {@link #writeText(SerializableConsumer, SerializableConsumer)} to confirm
+     * the copy or report a failure.
+     *
+     * @return an action not bound to any trigger, to be handed to whatever
+     *         fires it
+     */
+    public static Action writeText() {
+        return new WriteToClipboardAction(new ContextInput<>("args", "0"),
+                null);
+    }
+
+    /**
+     * Like {@link #writeText()} but reports the outcome of each write back to
+     * the server, so the application can confirm the copy or explain why it
+     * failed:
+     *
+     * <pre>{@code
+     * LitRenderer.<Customer> of(
+     *         "<span>${item.email}</span><button @click=${() => copy(item.email)}>Copy</button>")
+     *         .withProperty("email", Customer::email)
+     *         .withClientAction("copy", Clipboard.writeText(
+     *                 copied -> Notification.show("Copied " + copied),
+     *                 err -> Notification.show("Failed: " + err.message())));
+     * }</pre>
+     *
+     * The action is still bound once, however many elements call it, so the
+     * callbacks are shared too: {@code onCopied} receives the string that was
+     * copied, which is how the application tells the calls apart.
+     *
+     * @param onCopied
+     *            UI-thread callback receiving the copied string, not
+     *            {@code null}
+     * @param onError
+     *            UI-thread callback receiving the browser's error, for example
+     *            when the page is not a secure context or the write permission
+     *            is denied, not {@code null}
+     * @return an action not bound to any trigger, to be handed to whatever
+     *         fires it
+     */
+    public static Action writeText(
+            SerializableConsumer<@Nullable String> onCopied,
+            SerializableConsumer<Error> onError) {
+        return new WriteToClipboardAction(new ContextInput<>("args", "0"), null,
+                onCopied, onError);
     }
 
     /**

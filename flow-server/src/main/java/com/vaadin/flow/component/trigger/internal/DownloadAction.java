@@ -200,8 +200,8 @@ public class DownloadAction extends Action {
          *            <code>null</code> for none
          * @return the action function
          */
-        @JsExpression("window.Vaadin.Flow.download.start($0(event), $1 ? $1(event) : undefined, event)")
-        @JsFunctionParameterNames("event")
+        @JsExpression("window.Vaadin.Flow.download.start($0(event, context), $1 ? $1(event, context) : undefined, event)")
+        @JsFunctionParameterNames({ "event", "context" })
         JsFunction download(JsFunction url, @Nullable JsFunction filename);
     }
 }

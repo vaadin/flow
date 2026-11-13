@@ -122,15 +122,15 @@ public abstract class PromiseAction<T> extends Action {
 
     /**
      * Subclasses return a {@link JsFunction} that, when invoked with the
-     * trigger's event, evaluates to a {@code Promise}. The value the promise
-     * resolves with is decoded to {@code T} on the server and handed to
-     * {@code onSuccess}. To deliver a typed value, subclasses can wrap their
-     * API call in an IIFE inside the function body — for example, copying a
-     * string and resolving with it:
+     * trigger's {@code event} and {@code context}, evaluates to a
+     * {@code Promise}. The value the promise resolves with is decoded to
+     * {@code T} on the server and handed to {@code onSuccess}. To deliver a
+     * typed value, subclasses can wrap their API call in an IIFE inside the
+     * function body — for example, copying a string and resolving with it:
      *
      * <pre>
-     * &#64;JsExpression("return ((v) =&gt; navigator.clipboard.writeText(v).then(() =&gt; v))($0(event))")
-     * &#64;JsFunctionParameterNames("event")
+     * &#64;JsExpression("return ((v) =&gt; navigator.clipboard.writeText(v).then(() =&gt; v))($0(event, context))")
+     * &#64;JsFunctionParameterNames({ "event", "context" })
      * JsFunction writeText(JsFunction text);
      *
      * // In toPromiseJs, with WRITE_TEXT_JS = JsSnippets.of(WriteTextJs.class)

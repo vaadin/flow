@@ -171,11 +171,11 @@ public class ShareAction extends PromiseAction<Void> {
          */
         @JsExpression("""
                 const data = {};
-                if ($0) data.title = $0(event);
-                if ($1) data.text = $1(event);
-                if ($2) data.url = $2(event);
+                if ($0) data.title = $0(event, context);
+                if ($1) data.text = $1(event, context);
+                if ($2) data.url = $2(event, context);
                 return navigator.share(data);""")
-        @JsFunctionParameterNames("event")
+        @JsFunctionParameterNames({ "event", "context" })
         JsFunction share(@Nullable JsFunction title, @Nullable JsFunction text,
                 @Nullable JsFunction url);
     }
