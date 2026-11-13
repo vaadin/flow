@@ -78,8 +78,10 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
@@ -2747,7 +2749,85 @@ class ElementTest extends AbstractNodeTest {
     void addJsInitializer_nullExpression_throws() {
         Element element = ElementFactory.createDiv();
         assertThrows(NullPointerException.class,
-                () -> element.addJsInitializer(null));
+                () -> element.addJsInitializer((String) null));
+    }
+
+    @Test
+    void addJsInitializer_nullFunction_throws() {
+        Element element = ElementFactory.createDiv();
+        assertThrows(NullPointerException.class,
+                () -> element.addJsInitializer((JsFunction) null));
+    }
+
+    @Test
+    void addJsInitializer_snippet_emitsInitWithDeclaredFunction() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        JsFunction initializer = JsSnippets.of(InitializerSnippetsJs.class)
+                .toggleClass("active");
+        element.addJsInitializer(initializer);
+        ui.getElement().appendChild(element);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pending.size());
+        JavaScriptInvocation invocation = pending.get(0).getInvocation();
+        assertInitializerCall("init", invocation);
+        assertEquals(List.of(0, initializer, element),
+                invocation.getParameters(),
+                "the declared function should be sent as it is, so that nothing is compiled from a string");
+        JsCall declared = initializer.getDeclaredCall();
+        assertNotNull(declared);
+        assertEquals(InitializerSnippetsJs.class, declared.definitionType());
+        assertEquals("toggleClass", declared.methodName());
+        assertEquals(List.of("active"), initializer.getCaptures());
+    }
+
+    @Test
+    void addJsInitializer_snippetRemoved_sendsDispose() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        Registration registration = element.addJsInitializer(JsSnippets
+                .of(InitializerSnippetsJs.class).toggleClass("active"));
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        ui.getInternals().dumpPendingJavaScriptInvocations();
+
+        registration.remove();
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pending.size());
+        assertInitializerCall("dispose", pending.get(0).getInvocation());
+    }
+
+    @Test
+    void addJsInitializer_snippetWithCalledWith_throws() {
+        Element element = ElementFactory.createDiv();
+        JsFunction listener = JsSnippets.of(InitializerSnippetsJs.class)
+                .logEvent();
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> element.addJsInitializer(listener));
+        assertTrue(exception.getMessage().contains("[event]"),
+                "the message should name the declared arguments: "
+                        + exception.getMessage());
+    }
+
+    @JsDefinition
+    interface InitializerSnippetsJs extends Serializable {
+        @JsExpression("""
+                this.classList.add($0);
+                return () => this.classList.remove($0);""")
+        JsFunction toggleClass(String className);
+
+        @JsExpression("console.log(event);")
+        @JsCalledWith("event")
+        JsFunction logEvent();
     }
 
     private static void assertInitializerCall(String methodName,

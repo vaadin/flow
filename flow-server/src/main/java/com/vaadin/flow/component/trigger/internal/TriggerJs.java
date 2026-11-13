@@ -37,8 +37,8 @@ import com.vaadin.flow.js.JsSnippets;
  * An action is a function that does its work, called with the event of the
  * trigger as <code>event</code>. An installer is applied to the host element of
  * the trigger and returns the function that uninstalls it, as an initializer of
- * {@link Element#addJsInitializer(String, Object...)} does. Functions are
- * composed by passing one snippet as an argument of another, which calls it.
+ * {@link Element#addJsInitializer(JsFunction)} does. Functions are composed by
+ * passing one snippet as an argument of another, which calls it.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
