@@ -686,7 +686,7 @@ class LaunchTest {
                 assertFalse(task.isDone(), "the call never took the lock");
                 assertTrue(System.nanoTime() < deadline,
                         "the call never waited for the lock");
-                Thread.sleep(10);
+                Thread.onSpinWait();
             }
             whileQueued.execute();
         } finally {
