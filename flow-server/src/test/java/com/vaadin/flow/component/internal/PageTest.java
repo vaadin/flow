@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,10 @@ import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
@@ -174,9 +179,27 @@ class PageTest {
         assertCaptureRejected(capture);
     }
 
-    @Test
-    void addDynamicImportFunction_elementInNestedFunction_throws() {
-        assertCaptureRejected(JsFunction.of("return $0", new Element("div")));
+    @JsDefinition
+    interface ElementSnippets extends Serializable {
+        @JsExpression("return $0;")
+        ElementSnippet capture(Element element);
+    }
+
+    interface ElementSnippet extends JsSnippet {
+    }
+
+    static Stream<Object> nestedSnippetsWithElement() {
+        // Detached, so only the check on the Java values can catch them
+        return Stream.of(JsFunction.of("return $0", new Element("div")),
+                JsSnippets.of(ElementSnippets.class)
+                        .capture(new Element("div")));
+    }
+
+    @ParameterizedTest
+    @MethodSource("nestedSnippetsWithElement")
+    void addDynamicImportFunction_elementInNestedSnippet_throws(
+            Object capture) {
+        assertCaptureRejected(capture);
     }
 
     @Test

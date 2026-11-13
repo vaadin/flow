@@ -55,6 +55,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
@@ -97,6 +98,12 @@ class CspModeTest {
         JsFunction locateFirstChild();
     }
 
+    record AsciiDetail(int x, String label) {
+    }
+
+    record NonAsciiDetail(int größe) {
+    }
+
     @Tag("div")
     private static class Clickable extends Component
             implements ClickNotifier<Clickable> {
@@ -107,10 +114,20 @@ class CspModeTest {
     private static class RouteView extends Component {
     }
 
-    @DomEvent("custom-event")
-    public static class KeyedEvent extends ComponentEvent<UI> {
-        public KeyedEvent(UI source, boolean fromClient,
-                @EventData("key") String key) {
+    @DomEvent("offset-event")
+    public static class OffsetEvent extends ComponentEvent<Component> {
+        // Only the event data annotations of the parameters are used
+        public OffsetEvent(Component source, boolean fromClient,
+                @EventData("event.clientX - element.offsetLeft") double offset) { // NOSONAR
+            super(source, fromClient);
+        }
+    }
+
+    @DomEvent("element-target-event")
+    public static class ElementTargetEvent extends ComponentEvent<Component> {
+        // Only the event data annotations of the parameters are used
+        public ElementTargetEvent(Component source, boolean fromClient,
+                @EventData("event.composedPath()[0]") Element target) { // NOSONAR
             super(source, fromClient);
         }
     }
@@ -146,11 +163,9 @@ class CspModeTest {
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).addEventData("event.x * 2")),
                 call(DomListenerRegistration.class, "addEventData",
-                        ui -> ui.getElement().addEventListener("click", e -> {
-                        }).addEventData(List.of("event?.x()"))),
-                call(DomListenerRegistration.class, "addEventData",
-                        ui -> ui.getElement().addEventListener("click", e -> {
-                        }).addEventData(
+                        ui -> ElementListenerMap.addEventData(
+                                ui.getElement().addEventListener("click", e -> {
+                                }),
                                 List.of(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN
                                         + "value", "event.x[0]"))),
                 call(DomListenerRegistration.class, "addEventData",
@@ -168,17 +183,19 @@ class CspModeTest {
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).addEventDataElement("document.head")),
+                // Not a property path the browser reads without compiling
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ui.getElement().addEventListener("click", e -> {
+                        }).addEventDetail(NonAsciiDetail.class)),
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ui.getElement().addEventListener("click", e -> {
+                        }).addEventData(AsciiDetail.class)),
                 call(DomListenerRegistration.class, "setFilter",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).setFilter("event.x == 1")),
                 // The deprecated locator is an expression for the browser
                 call(JsFunction.class, "of",
-                        CspModeTest::delegateShortcutToStringLocator),
-                // A key of client-built data only for Flow's own events
-                call(DomListenerRegistration.class, "addEventData",
-                        ui -> ComponentUtil.addListener(ui, KeyedEvent.class,
-                                e -> {
-                                })));
+                        CspModeTest::delegateShortcutToStringLocator));
     }
 
     private static Arguments call(Class<?> api, String method,
@@ -209,8 +226,8 @@ class CspModeTest {
                     .addEventListener("click", e -> {
                     });
             registration.setFilter(null);
-            registration.addEventData(List.of());
-            registration.addEventData(
+            ElementListenerMap.addEventData(registration, List.of());
+            ElementListenerMap.addEventData(registration,
                     List.of(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + "value",
                             JsonConstants.MAP_STATE_NODE_EVENT_DATA));
             registration.synchronizeProperty("value");
@@ -218,8 +235,12 @@ class CspModeTest {
             // The client reads property paths without compiling them
             registration.addEventData("event.detail.value");
             registration.addEventData("event.detail?.value");
-            registration.addEventData(List.of("element.value", "event"));
+            ElementListenerMap.addEventData(registration,
+                    List.of("element.value", "event"));
+            registration.addEventDataPath("event.detail?.value");
+            registration.addEventDataElementPath("event.target.parentElement");
             registration.addEventDetail();
+            registration.addEventDetail(AsciiDetail.class);
             registration.addEventDataElement("event.target.parentElement");
             registration.setFilter("event.isTrusted");
             // The client runs these without compiling them, also when Flow
@@ -238,6 +259,15 @@ class CspModeTest {
             });
             clickable.addDoubleClickListener(e -> {
             });
+            // The build puts the event data that is not a property path into
+            // the bundle
+            ComponentUtil.addListener(clickable, OffsetEvent.class, e -> {
+            });
+            // also a value of an element, whose function returns the DOM node
+            // that the client maps to a state node
+            ComponentUtil.addListener(clickable, ElementTargetEvent.class,
+                    e -> {
+                    });
             // Loads the chunk of the route with a function from the bundle
             ui.getInternals().addComponentDependencies(RouteView.class);
             // Shortcuts send their keys and options as data to JavaScript in

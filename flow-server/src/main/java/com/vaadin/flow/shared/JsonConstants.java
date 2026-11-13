@@ -409,6 +409,25 @@ public class JsonConstants implements Serializable {
     public static final String EVENT_SETTINGS_SIDE_EFFECT = "s";
 
     /**
+     * Starts the key of a declared snippet that the client runs when an event
+     * occurs. No JavaScript expression starts with <code>@</code>, so the key
+     * of a snippet is never equal to the key of an expression. An
+     * {@link com.vaadin.flow.component.EventData} value that the build puts
+     * into the bundle has snippet settings too, but its key is the expression,
+     * which the client compiles when the bundle has no function for it.
+     */
+    public static final String EVENT_SNIPPET_KEY_PREFIX = "@";
+
+    /**
+     * Key in the settings of a declared snippet that the client runs when an
+     * event occurs. The value is <code>true</code> when the snippet returns a
+     * DOM node that the client sends as the id of the closest state node, like
+     * for the keys that start with {@link #MAP_STATE_NODE_EVENT_DATA}. A
+     * snippet that returns any other value does not have this key.
+     */
+    public static final String EVENT_SETTINGS_MAP_ELEMENT = "e";
+
+    /**
      * RPC type value used for return channel messages.
      * 
      * @since 2.0

@@ -107,8 +107,11 @@ type EventExpression = (event: Event, element: Element) => unknown;
 
 /**
  * The settings of a declared snippet that the client runs when an event
- * occurs. The settings of a JavaScript expression are only its debounce
- * settings, and its key is the expression.
+ * occurs. Its key is `@` followed by the key of the snippet, or, for an
+ * `@EventData` value that the build put into the bundle, the expression
+ * itself, which the client compiles when the bundle has no function for it.
+ * The settings of an expression that the client compiles or reads are only
+ * its debounce settings, and its key is the expression.
  */
 type SnippetSettings = {
   /** The id of the declared function; EVENT_SETTINGS_FUNCTION. */
@@ -119,11 +122,14 @@ type SnippetSettings = {
   [JsonConstants.EVENT_SETTINGS_CAPTURES]?: unknown[];
   /** The method of the event to call when the value is truthy; EVENT_SETTINGS_SIDE_EFFECT. */
   [JsonConstants.EVENT_SETTINGS_SIDE_EFFECT]?: string;
+  /** Whether the value is a DOM node to send as the closest state node id; EVENT_SETTINGS_MAP_ELEMENT. */
+  [JsonConstants.EVENT_SETTINGS_MAP_ELEMENT]?: boolean;
 };
 
 /**
  * Checks whether the settings of an entry are the settings of a declared
- * snippet. The settings of an expression are `false`, `true` or an array.
+ * snippet, whatever its key. The settings of an expression that the client
+ * compiles or reads are `false`, `true` or an array.
  */
 function isSnippetSettings(settings: unknown): settings is SnippetSettings {
   return typeof settings === 'object' && settings !== null && !Array.isArray(settings);
@@ -1255,7 +1261,12 @@ function handleDomEvent(event: Event, context: BindingContext): void {
     const settings = expressionSettings[key];
     if (isSnippetSettings(settings)) {
       debounceSettings[key] = settings[JsonConstants.EVENT_SETTINGS_DEBOUNCE];
-      eventData![key] = evaluateSnippet(settings, node.getTree(), event, element);
+      // A key that is not a snippet key is a bundled @EventData value
+      const compiled = key.startsWith(JsonConstants.EVENT_SNIPPET_KEY_PREFIX)
+        ? null
+        : compileIfMissingFromBundle(key, settings, node.getTree());
+      eventData![key] =
+        compiled === null ? evaluateSnippet(settings, node.getTree(), event, element) : compiled(event, element);
       continue;
     }
     debounceSettings[key] = settings;
@@ -1500,6 +1511,10 @@ function updateAttributeValue(
  * A snippet can have a side effect, `preventDefault` or `stopPropagation`. Then
  * the method of the event is called only if the value is truthy. This way, the
  * method is called only when the filter of the listener passes.
+ *
+ * A snippet of an element returns a DOM node. Its value is the id of the
+ * closest state node, or -1 if there is none, like for an expression of an
+ * element.
  */
 function evaluateSnippet(settings: SnippetSettings, tree: StateTree, event: Event, element: Element): unknown {
   const functionId = settings[JsonConstants.EVENT_SETTINGS_FUNCTION];
@@ -1521,7 +1536,74 @@ function evaluateSnippet(settings: SnippetSettings, tree: StateTree, event: Even
   if (value && (sideEffect === 'preventDefault' || sideEffect === 'stopPropagation')) {
     event[sideEffect]();
   }
+  if (settings[JsonConstants.EVENT_SETTINGS_MAP_ELEMENT]) {
+    return getClosestStateNodeIdToDomNode(tree, value, functionId);
+  }
   return value;
+}
+
+/**
+ * The ids of the bundled `@EventData` values that the bundle has no function
+ * for and that the client has warned about, so that it warns once per value
+ * rather than on every event.
+ */
+const warnedMissingBundledExpressions = new Set<string>();
+
+/**
+ * Compiles an `@EventData` value that the build put into the bundle when the
+ * bundle has no function for it, for example because the class that declares
+ * the value changed after the build. The expression is compiled as the server
+ * would otherwise have sent it, and a warning goes to the console once.
+ *
+ * If compiling is blocked too, by a Content Security Policy without
+ * `unsafe-eval`, an error that names the value goes to the console and the
+ * error of compiling is thrown, so the event is not sent. Sending null instead
+ * would give the server an event without the value, which it would accept or
+ * fail on far from the cause.
+ *
+ * The key of a value mapped to a component or an element starts with
+ * MAP_STATE_NODE_EVENT_DATA, and its settings have EVENT_SETTINGS_MAP_ELEMENT.
+ * The expression without the prefix is compiled, and the function that is
+ * returned maps the DOM node that it returns to the closest state node id, as
+ * the function of the bundle would be mapped.
+ *
+ * @param key - the key of the entry: the expression, with the prefix of a
+ * mapped value if it has one
+ * @param settings - the settings of the entry, which name the function of the
+ * bundle for it
+ * @param tree - the state tree to map a returned DOM node with
+ * @returns the compiled expression, or null if the bundle has the function,
+ * which the caller then runs as a declared snippet
+ */
+function compileIfMissingFromBundle(key: string, settings: SnippetSettings, tree: StateTree): EventExpression | null {
+  const functionId = settings[JsonConstants.EVENT_SETTINGS_FUNCTION];
+  if (findDeclaredSnippet(functionId) !== undefined) {
+    return null;
+  }
+  const mapToStateNode = settings[JsonConstants.EVENT_SETTINGS_MAP_ELEMENT] === true;
+  const expression = mapToStateNode ? key.substring(MAP_STATE_NODE_EVENT_DATA.length) : key;
+
+  let compiled: EventExpression;
+  try {
+    compiled = getOrCreateExpression(expression);
+  } catch (error) {
+    Console.error(
+      `No JavaScript in the bundle for the @EventData value "${expression}", and compiling it in the browser failed, so the event is not sent. ` +
+        "A Content Security Policy without 'unsafe-eval' blocks compiling it. Build the frontend again or restart the application to put the value into the bundle."
+    );
+    throw error;
+  }
+  if (!warnedMissingBundledExpressions.has(functionId)) {
+    warnedMissingBundledExpressions.add(functionId);
+    Console.warn(
+      `No JavaScript in the bundle for the @EventData value "${expression}", so it is compiled in the browser. ` +
+        'The build did not collect it, for example because the class that declares it changed after the build. Build the frontend again or restart the application to put the value into the bundle.'
+    );
+  }
+  if (mapToStateNode) {
+    return (event, element) => getClosestStateNodeIdToDomNode(tree, compiled(event, element), expression);
+  }
+  return compiled;
 }
 
 /**

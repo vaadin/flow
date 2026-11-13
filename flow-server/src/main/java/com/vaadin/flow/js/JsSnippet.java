@@ -50,6 +50,28 @@ import com.vaadin.flow.dom.JsFunction;
  * passed to calls with arguments of its own, which {@link JsCalledWith} names.
  * {@link DomEventFilter} and {@link DomEventData} are snippet types that a DOM
  * event listener runs for every event.
+ * <p>
+ * A component or an application can declare a snippet type of its own for what
+ * it invokes on the client, as an interface that extends this one and declares
+ * no instance methods. It names what the snippet is for, so an API can accept
+ * only snippets of that kind, and it can declare the parameters every snippet
+ * of it is called with by annotating the type with {@link JsCalledWith}:
+ *
+ * <pre>
+ * &#64;JsCalledWith({ "html", "item" })
+ * public interface ItemTemplate extends JsSnippet {
+ * }
+ *
+ * &#64;JsDefinition
+ * public interface OrderTemplates extends Serializable {
+ *     &#64;JsExpression("return html`&lt;b&gt;${$0}: ${item.status}&lt;/b&gt;`;")
+ *     ItemTemplate status(String label);
+ * }
+ * </pre>
+ *
+ * {@link JsSnippets#of(Class)} implements the type, and a snippet of it is sent
+ * to the client like a {@link JsFunction} that a {@link JsDefinition} interface
+ * declares: as the function the client calls with those parameters.
  *
  * @see JsSnippets#of(Class)
  * @see JsCalledWith

@@ -78,7 +78,7 @@ public class DebounceSynchronizePropertyView
                     registration = null;
                 }
             }
-        }).addEventData("element.checked");
+        }).addEventDataPath("element.checked");
 
         NativeLabel label = new NativeLabel(caption);
         label.getElement().insertChild(0, checkbox);

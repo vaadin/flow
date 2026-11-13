@@ -721,7 +721,7 @@ public class Page implements Serializable {
                             new ArrayList<>(resizeListeners)
                                     .forEach(l -> l.browserWindowResized(evt));
                         }
-                    }).addEventData("event.w").addEventData("event.h")
+                    }).addEventDataPath("event.w").addEventDataPath("event.h")
                     .debounce(300).allowInert();
         }
     }

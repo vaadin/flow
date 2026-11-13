@@ -15,3 +15,13 @@ declare module 'csstype' {
     [index: `--${string}`]: any;
   }
 }
+
+// Plain CSS imports and CSS modules, e.g. `import './view.css'` and
+// `import styles from './view.module.css'`. '*.module.css' must come before
+// '*.css', as TypeScript uses the first matching declaration.
+declare module '*.module.css' {
+  const classes: Readonly<Record<string, string>>;
+  export default classes;
+}
+
+declare module '*.css' {}

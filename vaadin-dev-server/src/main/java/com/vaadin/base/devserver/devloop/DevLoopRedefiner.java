@@ -54,17 +54,22 @@ import com.vaadin.base.devserver.ThemeLiveUpdater;
 import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.base.devserver.hotswap.Hotswapper;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ThemeUtils;
 import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.theme.Theme;
@@ -1466,6 +1471,22 @@ final class DevLoopRedefiner {
                 }
             }
         }
+        // The names a snippet type of the application declares are the
+        // parameters of every generated function that returns it, which lives
+        // in the bundle as well, so editing them needs the same restart even
+        // though no definition is redefined along with the type
+        if (JsDefinitionProxy.isApplicationSnippetType(type)) {
+            JsCalledWith calledWith = type
+                    .getDeclaredAnnotation(JsCalledWith.class);
+            imports.add("jssnippet:" + (calledWith == null ? ""
+                    : String.join(",", calledWith.value())));
+        }
+        // An @EventData value that the client would compile is generated into
+        // the bundle in the same way, and identified by the same kind of hash
+        if (type.isAnnotationPresent(DomEvent.class)
+                && ComponentEvent.class.isAssignableFrom(type)) {
+            imports.addAll(eventDataFingerprints(type));
+        }
         for (NpmPackage npmPackage : type
                 .getDeclaredAnnotationsByType(NpmPackage.class)) {
             imports.add(
@@ -1485,6 +1506,31 @@ final class DevLoopRedefiner {
         }
         java.util.Collections.sort(imports);
         return String.join(";", imports);
+    }
+
+    /**
+     * What identifies the functions the build generates for the
+     * {@link com.vaadin.flow.component.EventData} values of a DOM event type.
+     * Scanned without a cache, as the build does, so the comparison sees what
+     * the class declares now.
+     */
+    @SuppressWarnings("unchecked")
+    private static List<String> eventDataFingerprints(Class<?> type) {
+        try {
+            return BundledEventData
+                    .getBundledEventData(
+                            (Class<? extends ComponentEvent<?>>) type)
+                    .stream()
+                    .map(expression -> "eventdata:"
+                            + BundledEventData.getFunctionId(expression))
+                    .toList();
+        } catch (IllegalArgumentException e) {
+            // An event the build leaves out: what is wrong with it still tells
+            // one edit from another, and listening to it reports the reason
+            LOGGER.debug("Fingerprinting {} by why it can not be listened to",
+                    type, e);
+            return List.of("eventdata:invalid:" + e.getMessage());
+        }
     }
 
     /**

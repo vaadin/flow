@@ -20,6 +20,7 @@ import java.lang.reflect.Constructor;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
+import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.internal.ReflectionCache;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -68,6 +69,17 @@ class ComponentEventBusUtilTest {
         component.addListener(MappedToDomEvent.class, e -> {
         });
         assertTrue(cache.contains(MappedToDomEvent.class));
+    }
+
+    @Test
+    void bundledEventData_leavesNothingInTheCache() {
+        // The build reads it with a class loader that it closes afterwards
+        ReflectionCache<ComponentEvent<?>, ?> cache = ComponentEventBusUtil.cache;
+        cache.clear();
+
+        BundledEventData.getBundledEventData(MappedToDomEvent.class);
+
+        assertFalse(cache.contains(MappedToDomEvent.class));
     }
 
     @Test
