@@ -55,6 +55,7 @@
                         <containerId>tomcat10x</containerId>
                         <systemProperties>
                             <vaadin.frontend.url.es5>context://frontend-es6/</vaadin.frontend.url.es5>
+                            <vaadin.csp>${vaadin.csp}</vaadin.csp>
                         </systemProperties>
                         <artifactInstaller>
                             <groupId>org.apache.tomcat</groupId>

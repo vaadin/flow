@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.test.dom;
+package com.vaadin.flow.test.cspoff.dom;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,14 +22,14 @@ import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.test.AbstractDefaultIT;
-import com.vaadin.flow.test.TestFor;
+import com.vaadin.flow.test.cspoff.AbstractCspOffIT;
+import com.vaadin.flow.test.cspoff.TestFor;
 import com.vaadin.testbench.BrowserTest;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
 @TestFor(DomEventFilterView.class)
-public class DomEventFilterIT extends AbstractDefaultIT {
+public class DomEventFilterIT extends AbstractCspOffIT {
 
     @BrowserTest
     public void filtering() {

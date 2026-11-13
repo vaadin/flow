@@ -213,6 +213,9 @@
             <option>
               <value>-Dvaadin.frontend.hotdeploy=false</value>
             </option>
+            <option>
+              <value>-Dvaadin.csp=${vaadin.csp}</value>
+            </option>
           </javaCommandLineOptions>
         </configuration>
         <!-- No executions: the daemon owns the application process. -->

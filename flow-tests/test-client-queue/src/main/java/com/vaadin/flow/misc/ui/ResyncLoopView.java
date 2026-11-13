@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.misc.ui;
 
+import java.io.Serializable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,12 +25,22 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Command;
 
 @Route("resync-loop")
 public class ResyncLoopView extends Div {
+
+    @JsDefinition
+    public interface CallbackJs extends Serializable {
+
+        @JsExpression("return true;")
+        PendingJavaScriptResult returnTrue();
+    }
 
     public static final String ACCESS_MODE = "accessMode";
     public static final String ACCESS_MODE_ACCESS = "accessModeAccess";
@@ -97,7 +108,7 @@ public class ResyncLoopView extends Div {
                 ui.accessSynchronously(action);
             }
         });
-        ui.getElement().executeJs("return true;")
+        ui.getElement().executeJs(CallbackJs.class).returnTrue()
                 .then(val -> jsCallbackSpan.setText("JS Callback completed: "
                         + jsCallbackCounter.incrementAndGet()));
     }

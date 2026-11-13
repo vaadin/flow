@@ -65,6 +65,9 @@
     <vaadin.devServerPort>0</vaadin.devServerPort>
     <vaadin.frontend.hotdeploy>true</vaadin.frontend.hotdeploy>
     <vaadin.devmode.hostsAllowed>*</vaadin.devmode.hostsAllowed>
+    <!-- Content Security Policy mode of the test applications: off, warn or
+            strict. Run with -Dvaadin.csp=off to test without it. -->
+    <vaadin.csp>strict</vaadin.csp>
   </properties>
 
   <dependencies>
@@ -113,6 +116,17 @@
   <build>
     <pluginManagement>
       <plugins>
+        <!-- spring-boot:start for the modules that run a Spring Boot
+             application -->
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <configuration>
+            <systemPropertyVariables>
+              <vaadin.csp>${vaadin.csp}</vaadin.csp>
+            </systemPropertyVariables>
+          </configuration>
+        </plugin>
         <plugin>
           <groupId>com.vaadin</groupId>
           <artifactId>flow-maven-plugin</artifactId>
@@ -209,6 +223,7 @@
               <vaadin.devmode.vite.options>${vaadin.devmode.vite.options}</vaadin.devmode.vite.options>
               <vaadin.frontend.hotdeploy>${vaadin.frontend.hotdeploy}</vaadin.frontend.hotdeploy>
               <vaadin.devmode.hostsAllowed>${vaadin.devmode.hostsAllowed}</vaadin.devmode.hostsAllowed>
+              <vaadin.csp>${vaadin.csp}</vaadin.csp>
             </systemProperties>
           </configuration>
           <dependencies>
@@ -351,6 +366,7 @@
       <modules>
         <module>test-default</module>
         <module>test-csp-strict</module>
+        <module>test-csp-off</module>
         <module>test-pwa</module>
         <module>test-pwa/pom-production.xml</module>
         <module>test-pwa/pom-devbundle.xml</module>

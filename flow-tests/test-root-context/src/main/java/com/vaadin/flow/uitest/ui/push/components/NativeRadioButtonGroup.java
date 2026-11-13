@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui.push.components;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
@@ -24,8 +25,19 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeLabel;
+import com.vaadin.flow.dom.DomEventFilter;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 
 public class NativeRadioButtonGroup<T> extends Composite<Div> {
+
+    @JsDefinition
+    public interface FilterJs extends Serializable {
+        @JsExpression("return element.checked;")
+        DomEventFilter isChecked();
+    }
+
     private final String group;
     private T selected;
 
@@ -48,7 +60,7 @@ public class NativeRadioButtonGroup<T> extends Composite<Div> {
         input.getElement().addEventListener("change", event -> {
             selected = value;
             listeners.forEach(listener -> listener.accept(selected));
-        }).setFilter("element.checked");
+        }).setFilterExpression(JsSnippets.of(FilterJs.class).isChecked());
 
         // Preselect first option
         if (selected == null) {

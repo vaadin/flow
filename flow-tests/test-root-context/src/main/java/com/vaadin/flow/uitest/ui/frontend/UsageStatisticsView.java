@@ -15,12 +15,16 @@
  */
 package com.vaadin.flow.uitest.ui.frontend;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -31,15 +35,27 @@ import com.vaadin.flow.uitest.ui.template.HiddenTemplateView;
 @JsModule("@vaadin/vaadin-development-mode-detector/vaadin-development-mode-detector.js")
 @Route(value = "com.vaadin.flow.uitest.ui.frontend.UsageStatisticsView", layout = ViewTestLayout.class)
 public class UsageStatisticsView extends Div {
+
+    @JsDefinition
+    public interface StatisticsJs extends Serializable {
+        @JsExpression("var basket = localStorage.getItem('vaadin.statistics.basket'); if (basket) basket = JSON.parse(basket); console.log(basket)")
+        void printBasket();
+
+        @JsExpression("localStorage.removeItem('vaadin.statistics.basket')")
+        void clearBasket();
+
+        @JsExpression("window.Vaadin.runIfDevelopmentMode('vaadin-usage-statistics');")
+        void runUsageStatistics();
+    }
+
     public UsageStatisticsView() {
         NativeButton print = new NativeButton(
                 "Print usage statistics to the console", e -> {
-                    getUI().get().getPage().executeJs(
-                            "var basket = localStorage.getItem('vaadin.statistics.basket'); if (basket) basket = JSON.parse(basket); console.log(basket)");
+                    getUI().get().getPage().executeJs(StatisticsJs.class)
+                            .printBasket();
                 });
         NativeButton clear = new NativeButton("Clear usage statistics", e -> {
-            getUI().get().getPage().executeJs(
-                    "localStorage.removeItem('vaadin.statistics.basket')");
+            getUI().get().getPage().executeJs(StatisticsJs.class).clearBasket();
         });
         NativeButton push = new NativeButton("Enable push", e -> getUI().get()
                 .getPushConfiguration().setPushMode(PushMode.AUTOMATIC));
@@ -55,7 +71,7 @@ public class UsageStatisticsView extends Div {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        attachEvent.getUI().getPage().executeJs(
-                "window.Vaadin.runIfDevelopmentMode('vaadin-usage-statistics');");
+        attachEvent.getUI().getPage().executeJs(StatisticsJs.class)
+                .runUsageStatistics();
     }
 }

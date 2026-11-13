@@ -186,6 +186,9 @@
             <option>
               <value>-Dvaadin.frontend.hotdeploy=false</value>
             </option>
+            <option>
+              <value>-Dvaadin.csp=${vaadin.csp}</value>
+            </option>
           </javaCommandLineOptions>
           <!-- At the root context, so the view is at http://localhost:8896/ -->
           <contextRoot>/</contextRoot>

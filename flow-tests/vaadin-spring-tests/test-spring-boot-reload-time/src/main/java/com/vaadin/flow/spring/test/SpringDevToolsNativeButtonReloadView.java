@@ -51,7 +51,8 @@ public class SpringDevToolsNativeButtonReloadView extends Div {
 
                 }).addEventDataPath("event.detail.result");
 
-        UI.getCurrent().getPage().executeJs(
-                "window.benchmark.measureRender($0);", startTriggerButton);
+        UI.getCurrent().getPage()
+                .executeJs(SpringDevToolsReloadUtils.BenchmarkJs.class)
+                .measureRender(startTriggerButton.getElement());
     }
 }

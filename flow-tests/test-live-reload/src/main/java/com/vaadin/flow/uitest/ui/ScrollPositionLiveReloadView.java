@@ -15,12 +15,16 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
@@ -46,6 +50,13 @@ public class ScrollPositionLiveReloadView extends AbstractLiveReloadView
     // Long enough for the Flow client to have processed the initial UIDL and
     // reported being idle before the containers can be scrolled
     private static final int RENDER_LATE_DELAY_MS = 2000;
+
+    @JsDefinition
+    public interface RenderLateJs extends Serializable {
+
+        @JsExpression("setTimeout(() => Array.from(this.children).forEach(child => child.style.display = ''), $0)")
+        void showChildrenLater(int delayMs);
+    }
 
     private final Div outerScroll = new Div();
 
@@ -158,9 +169,8 @@ public class ScrollPositionLiveReloadView extends AbstractLiveReloadView
             // move when the content appears.
             outerScroll.getChildren().forEach(child -> child.getElement()
                     .getStyle().setDisplay(Style.Display.NONE));
-            outerScroll.getElement().executeJs(
-                    "setTimeout(() => Array.from(this.children).forEach(child => child.style.display = ''), $0)",
-                    RENDER_LATE_DELAY_MS);
+            outerScroll.getElement().executeJs(RenderLateJs.class)
+                    .showChildrenLater(RENDER_LATE_DELAY_MS);
         }
     }
 }

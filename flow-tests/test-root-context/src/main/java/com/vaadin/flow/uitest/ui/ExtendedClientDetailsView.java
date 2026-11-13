@@ -15,16 +15,27 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.page.ColorScheme;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ExtendedClientDetailsView", layout = ViewTestLayout.class)
 public class ExtendedClientDetailsView extends AbstractDivView {
+
+    @JsDefinition
+    public interface FakeDetailsJs extends Serializable {
+        @JsExpression("{" + "window.devicePixelRatio = 2.0;"
+                + "navigator.msMaxTouchPoints = 1;" + "}")
+        void setTestValues();
+    }
 
     @Override
     protected void onShow() {
@@ -51,8 +62,7 @@ public class ExtendedClientDetailsView extends AbstractDivView {
         NativeButton setValuesButton = new NativeButton("Set test values",
                 event -> {
                     getUI().ifPresent(ui -> ui.getPage()
-                            .executeJs("{" + "window.devicePixelRatio = 2.0;"
-                                    + "navigator.msMaxTouchPoints = 1;" + "}"));
+                            .executeJs(FakeDetailsJs.class).setTestValues());
                 });
         setValuesButton.setId("set-values");
 
