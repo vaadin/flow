@@ -73,6 +73,12 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-webmvc</artifactId>
     </dependency>
+    <!-- Push over WebSocket, the default transport, needs Spring WebSocket
+         in an embedded server; without it push falls back to long polling -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-websocket</artifactId>
+    </dependency>
 
     <!-- JUnit 6 (Jupiter) + TestBench JUnit 5+ base classes for the ITs -->
     <dependency>

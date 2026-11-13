@@ -311,14 +311,20 @@ public class ComponentEventBus implements Serializable {
         registration.setDisabledUpdateMode(mode);
 
         List<String> eventData = ComponentEventBusUtil
-                .getListenerEventData(eventType);
+                .getExpressionEventData(eventType);
         if (AnnotationReader
                 .getAnnotationFor(eventType, PrebuiltEventData.class)
                 .isPresent()) {
             ElementListenerMap.addEventDataWithoutCspReport(registration,
                     eventData);
         } else {
-            registration.addEventData(eventData);
+            ElementListenerMap.addEventData(registration, eventData);
+        }
+        List<String> bundledEventData = ComponentEventBusUtil
+                .getBundledEventData(eventType);
+        if (!bundledEventData.isEmpty()) {
+            ElementListenerMap.addBundledEventData(registration,
+                    bundledEventData);
         }
 
         if (!"".equals(filter)) {
