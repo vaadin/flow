@@ -1370,7 +1370,7 @@ public class StateNode implements Serializable {
      * Outside of the listeners this method is effectively the same as
      * {@link #isAttached()}.
      */
-    private boolean isRegistered() {
+    boolean isRegistered() {
         return isAttached() && getOwner().hasNode(this);
     }
 

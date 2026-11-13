@@ -372,14 +372,20 @@ public class StateTree implements NodeOwner {
         assert context != null : "The 'context' parameter can not be null";
         assert execution != null : "The 'execution' parameter can not be null";
 
-        if (context.isAttached()) {
-            pendingExecutionNodes.add(context);
-        }
-
         BeforeClientResponseEntry entry = new BeforeClientResponseEntry(
                 nextBeforeClientResponseIndex, context, execution);
         nextBeforeClientResponseIndex++;
-        return context.addBeforeClientResponseEntry(entry);
+        ExecutionRegistration registration = context
+                .addBeforeClientResponseEntry(entry);
+
+        if (context.isRegistered()) {
+            pendingExecutionNodes.add(context);
+        } else if (context.isAttached()) {
+            // The node is being detached: it is already unregistered, which
+            // discarded its other executions, so this one is discarded too
+            discard(entry);
+        }
+        return registration;
     }
 
     /**
