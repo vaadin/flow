@@ -46,7 +46,66 @@ env:
     -Daether.connector.http.retryHandler.serviceUnavailable=429,500,502,503,504,403
     -Daether.connector.http.connectionMaxTtl=25
 jobs:
+  changes:
+    name: Detect docs-only changes
+    # A change that only touches Markdown in the repository root or in
+    # guidelines/ cannot affect the build or any test, so build is skipped for
+    # it and every job that needs build is skipped with it. A skipped job
+    # counts as passed for the required checks, which is why test-results only
+    # stands down when this job positively reports docs-only: if this job
+    # fails, build is skipped too and test-results reports the failure.
+    # Same diff base as the gated test jobs below: a push or a manual run has
+    # nothing to compare against and always builds.
+    timeout-minutes: 10
+    runs-on: ubuntu-26.04
+    outputs:
+      docs-only: ${{ steps.decide.outputs.docs-only }}
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: ${{env._HEAD_SHA}}
+          fetch-depth: 0  # Full history required to diff against the merge base
+      - name: Decide whether only docs changed
+        id: decide
+        run: |
+          set -euo pipefail
+          docs_only=false
+          DIFF_BASE=
+          case "$GITHUB_EVENT_NAME" in
+            pull_request)
+              if git fetch --no-tags origin \
+                  "+refs/heads/$_BASE_REF:refs/remotes/origin/$_BASE_REF"; then
+                DIFF_BASE=$(git merge-base HEAD "refs/remotes/origin/$_BASE_REF" || true)
+              fi
+              ;;
+            merge_group)
+              DIFF_BASE=$_MERGE_GROUP_BASE_SHA
+              ;;
+            *)
+              ;;
+          esac
+          if [ -z "$DIFF_BASE" ]; then
+            echo "No base to compare against, running the build."
+          elif ! CHANGED=$(git diff --name-only --no-renames "$DIFF_BASE" HEAD); then
+            echo "Could not diff against $DIFF_BASE, running the build."
+          elif [ -z "$CHANGED" ]; then
+            echo "No changed files found, running the build."
+          else
+            OTHER=$(printf '%s\n' "$CHANGED" | grep -vE '^([^/]+|guidelines/.+)\.md$' || true)
+            if [ -z "$OTHER" ]; then
+              echo "Only Markdown docs in the root or guidelines/ changed, skipping build and tests:" \
+                | tee -a "$GITHUB_STEP_SUMMARY"
+              printf '%s\n' "$CHANGED" | tee -a "$GITHUB_STEP_SUMMARY"
+              docs_only=true
+            else
+              echo "Changes that need the build:"
+              printf '%s\n' "$OTHER"
+            fi
+          fi
+          echo "docs-only=$docs_only" >> "$GITHUB_OUTPUT"
   build:
+    needs: changes
+    if: ${{ needs.changes.outputs.docs-only != 'true' }}
     timeout-minutes: 30
     runs-on: ubuntu-26.04
     outputs:
@@ -970,8 +1029,10 @@ jobs:
     # failure() || success() it would be skipped when any matrix entry
     # was cancelled, and a skipped required check satisfies branch
     # protection — letting auto-merge proceed past a cancelled IT.
-    if: ${{ always() && !github.event.pull_request.head.repo.fork }}
-    needs: [unit-tests, it-tests, cdi-tests, quarkus-tests]
+    # A docs-only change skips the tests, and with them this job; anything
+    # else, including the changes job failing, still runs it.
+    if: ${{ always() && !github.event.pull_request.head.repo.fork && needs.changes.outputs.docs-only != 'true' }}
+    needs: [changes, unit-tests, it-tests, cdi-tests, quarkus-tests]
     runs-on: ubuntu-26.04
     steps:
       - name: Merge Artifacts
@@ -1004,8 +1065,8 @@ jobs:
     # The saved-workspace artifact can only be deleted once every job that
     # restores it has run: deleting it in test-results could race with the
     # Sonar analysis, which starts as soon as the unit tests finish.
-    if: ${{ always() && !github.event.pull_request.head.repo.fork }}
-    needs: [test-results, sonar-analysis, gradle-tests]
+    if: ${{ always() && !github.event.pull_request.head.repo.fork && needs.changes.outputs.docs-only != 'true' }}
+    needs: [changes, test-results, sonar-analysis, gradle-tests]
     runs-on: ubuntu-26.04
     steps:
       - uses: geekyeggo/delete-artifact@176a747ab7e287e3ff4787bf8a148716375ca118 # v6.0.0

@@ -215,6 +215,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentMetaData(\\$.*)?",
                 "com\\.vaadin\\.flow\\.js\\.JsCall\\$DeclaredMethod",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentTracker",
+                "com\\.vaadin\\.flow\\.component\\.internal\\.BundledEventData",
+                "com\\.vaadin\\.flow\\.component\\.internal\\.DomEventInfo",
                 "com\\.vaadin\\.flow\\.dom\\.ElementEffect",
                 "com\\.vaadin\\.flow\\.dom\\.ElementFactory",
                 "com\\.vaadin\\.flow\\.dom\\.NodeVisitor",
