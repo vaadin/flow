@@ -105,7 +105,7 @@ class WebShareTest {
         JsFunction handler = handlerFn(ui);
         assertEquals("share", snippetOf(ShareAction.ShareJs.class, handler));
         JsFunction titleInput = (JsFunction) handler.getCaptures().get(0);
-        assertEquals("property", snippetOf(ValueJs.class, titleInput));
+        assertEquals("readProperty", snippetOf(ValueJs.class, titleInput));
         assertEquals("value", titleInput.getCaptures().get(1));
     }
 

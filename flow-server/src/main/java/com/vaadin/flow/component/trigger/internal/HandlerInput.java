@@ -72,6 +72,6 @@ public final class HandlerInput<T> extends Action.Input<T> {
                     + ownerClass.getSimpleName() + " and cannot be used in a "
                     + trigger.getClass().getSimpleName() + " handler");
         }
-        return VALUE_JS.eventProperty(propertyName);
+        return VALUE_JS.readEventProperty(propertyName);
     }
 }

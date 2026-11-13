@@ -43,7 +43,7 @@ public interface ValueJs extends Serializable {
      * @return the input function
      */
     @JsExpression("return $0")
-    JsFunction value(Object value);
+    JsFunction returnValue(Object value);
 
     /**
      * An input that returns <code>null</code>, for a slot that is not given an
@@ -52,7 +52,7 @@ public interface ValueJs extends Serializable {
      * @return the input function
      */
     @JsExpression("return null")
-    JsFunction nullValue();
+    JsFunction returnNull();
 
     /**
      * An input that reads a property of an element when it is called.
@@ -64,7 +64,7 @@ public interface ValueJs extends Serializable {
      * @return the input function
      */
     @JsExpression("return $0[$1]")
-    JsFunction property(Element target, String propertyName);
+    JsFunction readProperty(Element target, String propertyName);
 
     /**
      * An input that reads a property of the event it is called with.
@@ -75,7 +75,7 @@ public interface ValueJs extends Serializable {
      */
     @JsExpression("return event[$0]")
     @JsCalledWith("event")
-    JsFunction eventProperty(String propertyName);
+    JsFunction readEventProperty(String propertyName);
 
     /**
      * An input that returns the event it is called with.
@@ -84,5 +84,5 @@ public interface ValueJs extends Serializable {
      */
     @JsExpression("return event")
     @JsCalledWith("event")
-    JsFunction event();
+    JsFunction returnEvent();
 }

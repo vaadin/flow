@@ -105,7 +105,7 @@ public class SignalInput<T> extends Action.Input<T> {
         installEffectIfNeeded();
         // Matches PropertyInput's shape — both read a property from a known
         // element.
-        return VALUE_JS.property(owner.getElement(), propertyName);
+        return VALUE_JS.readProperty(owner.getElement(), propertyName);
     }
 
     private void installEffectIfNeeded() {

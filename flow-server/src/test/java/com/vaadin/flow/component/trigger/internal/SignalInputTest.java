@@ -99,7 +99,7 @@ class SignalInputTest {
         // input's JsFunction, then verify the generated property-name shape.
         JsFunction action = actionOf(singleInstallFn(ui));
         JsFunction textInput = (JsFunction) action.getCaptures().get(0);
-        assertEquals("property", snippetOf(ValueJs.class, textInput));
+        assertEquals("readProperty", snippetOf(ValueJs.class, textInput));
         String property = (String) textInput.getCaptures().get(1);
         assertTrue(PROPERTY_NAME.matcher(property).matches(),
                 "Unexpected property name: " + property);

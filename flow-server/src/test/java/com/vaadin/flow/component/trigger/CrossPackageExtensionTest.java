@@ -97,7 +97,7 @@ class CrossPackageExtensionTest {
         assertNull(rendered.getDeclaredCall(),
                 "a custom action keeps its own JavaScript");
         JsFunction source = (JsFunction) rendered.getCaptures().get(0);
-        assertEquals("eventProperty", snippetOf(ValueJs.class, source));
+        assertEquals("readEventProperty", snippetOf(ValueJs.class, source));
         assertEquals("screenX", source.getCaptures().get(0));
     }
 
@@ -106,7 +106,7 @@ class CrossPackageExtensionTest {
         JsFunction rendered = InputEventTrigger.data
                 .toJs(new InputEventTrigger(new Div()));
 
-        assertEquals("eventProperty", snippetOf(ValueJs.class, rendered));
+        assertEquals("readEventProperty", snippetOf(ValueJs.class, rendered));
         assertEquals("data", rendered.getCaptures().get(0));
     }
 

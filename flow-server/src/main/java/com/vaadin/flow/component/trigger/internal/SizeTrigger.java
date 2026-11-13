@@ -127,7 +127,7 @@ public class SizeTrigger extends Trigger {
                             + " and cannot be used in a "
                             + trigger.getClass().getSimpleName() + " handler");
                 }
-                return VALUE_JS.event();
+                return VALUE_JS.returnEvent();
             }
         };
     }

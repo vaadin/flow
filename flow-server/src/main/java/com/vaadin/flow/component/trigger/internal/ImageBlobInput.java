@@ -82,6 +82,6 @@ public class ImageBlobInput extends Action.Input<Object> {
 
     @Override
     public JsFunction toJs(Trigger trigger) {
-        return VALUE_JS.value(source);
+        return VALUE_JS.returnValue(source);
     }
 }
