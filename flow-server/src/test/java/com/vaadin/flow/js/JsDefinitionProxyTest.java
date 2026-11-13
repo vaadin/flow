@@ -22,6 +22,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -576,10 +577,11 @@ class JsDefinitionProxyTest {
                         .label("Name"),
                 label,
                 "a method of the same name in another definition declares another function");
-        assertNotEquals(null, label);
-        assertNotEquals(JsFunction.of("return 1"), label);
-        assertNotEquals(templates, label,
-                "a proxy that is not a snippet should not be equal to one");
+        // Including a proxy that is not a snippet, such as the definition
+        for (Object other : Arrays.asList(null, JsFunction.of("return 1"),
+                templates)) {
+            assertNotEquals(other, label);
+        }
         assertTrue(label.toString().contains("TemplateSnippet"),
                 label.toString());
         assertEquals(label, SerializationUtils.roundtrip(label));
