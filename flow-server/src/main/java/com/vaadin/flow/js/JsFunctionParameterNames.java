@@ -46,8 +46,8 @@ import com.vaadin.flow.dom.JsFunction;
  * <code>return</code> a value if the caller expects one.
  * <p>
  * For example, a snippet that shares the page with the Web Share API, with a
- * title and a text given on the server, and a URL computed from the click event
- * by a function given as an argument:
+ * title and a text given on the server, and a URL computed in the browser by a
+ * function given as an argument, which is called with the click event:
  *
  * <pre>
  * &#64;JsDefinition
