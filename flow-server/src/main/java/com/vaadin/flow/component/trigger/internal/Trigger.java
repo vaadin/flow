@@ -23,7 +23,6 @@ import java.util.Objects;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
-import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
@@ -57,9 +56,9 @@ import com.vaadin.flow.shared.Registration;
  * {@link #install(JsFunction)} — so a call with N actions yields N
  * registrations, all detached by {@link #remove()}. Subclasses implement
  * {@code install} to wire the rendered {@link JsFunction} to whatever client
- * API the trigger wraps (typically with an
- * {@link ElementJsInitializerRegistration} whose initializer is a snippet that
- * captures the action alongside whatever literal values it needs).
+ * API the trigger wraps (typically with
+ * {@link Element#addJsInitializer(JsFunction)} and an initializer declared as a
+ * snippet that captures the action alongside whatever literal values it needs).
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  * 
@@ -213,11 +212,11 @@ public abstract class Trigger implements Serializable {
      * the {@link Registration} that detaches it. Called once per action passed
      * to {@link #triggers(Action...)}.
      * <p>
-     * Implementations typically register an
-     * {@link ElementJsInitializerRegistration} on the host with an initializer
-     * that hands the action {@link JsFunction} to whatever client API the
-     * trigger wraps. The initializer is declared as a snippet, so that nothing
-     * is compiled from a string in the browser:
+     * Implementations typically pass
+     * {@link Element#addJsInitializer(JsFunction) getHost().addJsInitializer}
+     * an initializer that hands the action {@link JsFunction} to whatever
+     * client API the trigger wraps. The initializer is declared as a snippet,
+     * so that nothing is compiled from a string in the browser:
      *
      * <pre>
      * &#64;JsExpression("this.addEventListener($1, $0);"
@@ -225,7 +224,7 @@ public abstract class Trigger implements Serializable {
      * JsFunction listenToEvent(JsFunction action, String eventName);
      *
      * // In install, with LISTEN_JS = JsSnippets.of(ListenJs.class)
-     * return new ElementJsInitializerRegistration(getHost().getNode(),
+     * return getHost().addJsInitializer(
      *         LISTEN_JS.listenToEvent(action, eventName));
      * </pre>
      *

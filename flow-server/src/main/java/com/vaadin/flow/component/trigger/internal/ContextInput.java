@@ -61,6 +61,6 @@ public class ContextInput<T> extends Action.Input<T> {
     @Override
     public JsFunction toJs(Trigger trigger) {
         // A missing value becomes null, which actions treat as absent.
-        return TRIGGER_JS.contextValue(contextProperty, valueProperty);
+        return TRIGGER_JS.readContextValue(contextProperty, valueProperty);
     }
 }

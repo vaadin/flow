@@ -105,7 +105,7 @@ class OpenInNewTabActionTest {
                 snippetOf(OpenInNewTabAction.OpenInNewTabJs.class, action));
 
         JsFunction url = (JsFunction) action.getCaptures().get(0);
-        assertEquals("property", snippetOf(ValueJs.class, url));
+        assertEquals("readProperty", snippetOf(ValueJs.class, url));
         assertEquals(field.getElement(), url.getCaptures().get(0));
         assertEquals("value", url.getCaptures().get(1));
     }

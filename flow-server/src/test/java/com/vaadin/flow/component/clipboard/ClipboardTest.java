@@ -117,7 +117,7 @@ class ClipboardTest {
         // PropertyInput renders as `return $0[$1]` and captures (element,
         // "value").
         JsFunction textInput = (JsFunction) actionFn(ui).getCaptures().get(0);
-        assertEquals("property", snippetOf(ValueJs.class, textInput));
+        assertEquals("readProperty", snippetOf(ValueJs.class, textInput));
         assertSame(field.getElement(), textInput.getCaptures().get(0));
         assertEquals("value", textInput.getCaptures().get(1));
     }
@@ -163,7 +163,7 @@ class ClipboardTest {
         // ImageBlobInput renders as `return $0` and captures the image
         // element. The action puts it at slot 2.
         JsFunction imageInput = (JsFunction) actionFn(ui).getCaptures().get(2);
-        assertEquals("value", snippetOf(ValueJs.class, imageInput));
+        assertEquals("returnValue", snippetOf(ValueJs.class, imageInput));
         assertSame(image.getElement(), imageInput.getCaptures().get(0));
     }
 
@@ -197,7 +197,7 @@ class ClipboardTest {
         Clipboard.onClick(button).write(ClipboardContent.create().text(field));
 
         JsFunction textInput = (JsFunction) actionFn(ui).getCaptures().get(0);
-        assertEquals("property", snippetOf(ValueJs.class, textInput));
+        assertEquals("readProperty", snippetOf(ValueJs.class, textInput));
         assertEquals("value", textInput.getCaptures().get(1));
     }
 

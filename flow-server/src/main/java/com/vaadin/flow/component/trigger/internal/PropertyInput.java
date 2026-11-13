@@ -72,6 +72,6 @@ public class PropertyInput<T> extends Action.Input<T> {
         // Both target (Element) and propertyName (String) are JsFunction
         // captures — JsFunction's wire encoding handles Element-to-DOM-ref
         // mapping and JSON-quotes the property name.
-        return VALUE_JS.property(target, propertyName);
+        return VALUE_JS.readProperty(target, propertyName);
     }
 }

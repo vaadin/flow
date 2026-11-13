@@ -80,7 +80,7 @@ class DownloadTest {
         JsFunction action = actionOf(singleInstallFn());
         assertEquals("download",
                 snippetOf(DownloadAction.DownloadJs.class, action));
-        assertEquals("value", snippetOf(ValueJs.class,
+        assertEquals("returnValue", snippetOf(ValueJs.class,
                 ((JsFunction) action.getCaptures().get(1))));
         assertEquals("b.bin", ((JsFunction) action.getCaptures().get(1))
                 .getCaptures().get(0));

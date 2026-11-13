@@ -254,12 +254,12 @@ class SinkTriggerTest {
                 WriteToClipboardAction.WriteToClipboardJs.class, write));
         assertCalledWithContext(write);
         JsFunction text = (JsFunction) write.getCaptures().get(0);
-        assertEquals("contextValue",
+        assertEquals("readContextValue",
                 TriggerTestUtil.snippetOf(TriggerJs.class, text));
         assertCalledWithContext(text);
         assertEquals(List.of("args", "0"), text.getCaptures());
         // Text only: the html slot stays empty.
-        assertEquals("nullValue", TriggerTestUtil.snippetOf(ValueJs.class,
+        assertEquals("returnNull", TriggerTestUtil.snippetOf(ValueJs.class,
                 (JsFunction) write.getCaptures().get(1)));
     }
 

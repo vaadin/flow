@@ -40,8 +40,8 @@ import com.vaadin.flow.js.JsSnippets;
  * no such notion. An action passes both on to the inputs it calls. An installer
  * is applied to the host element of the trigger and returns the function that
  * uninstalls it, as an initializer of
- * {@link Element#addJsInitializer(String, Object...)} does. Functions are
- * composed by passing one snippet as an argument of another, which calls it.
+ * {@link Element#addJsInitializer(JsFunction)} does. Functions are composed by
+ * passing one snippet as an argument of another, which calls it.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -85,7 +85,7 @@ public interface TriggerJs extends Serializable {
      */
     @JsExpression("return context?.[$0]?.[$1] ?? null")
     @JsCalledWith({ "event", "context" })
-    JsFunction contextValue(String member, String property);
+    JsFunction readContextValue(String member, String property);
 
     /**
      * An action that assigns the value of an input to a property of an element.

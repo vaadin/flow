@@ -22,7 +22,6 @@ import com.vaadin.flow.component.Size;
 import com.vaadin.flow.component.internal.ValueJs;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
-import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.shared.Registration;
 
@@ -127,7 +126,7 @@ public class SizeTrigger extends Trigger {
                             + " and cannot be used in a "
                             + trigger.getClass().getSimpleName() + " handler");
                 }
-                return VALUE_JS.event();
+                return VALUE_JS.returnEvent();
             }
         };
     }
@@ -138,7 +137,6 @@ public class SizeTrigger extends Trigger {
         // cleanup shape an initializer returns, so we just propagate it.
         // The callback receives a {width, height} object that the action
         // treats as its `event` argument.
-        return new ElementJsInitializerRegistration(getHost().getNode(),
-                TRIGGER_JS.observeSize(action));
+        return getHost().addJsInitializer(TRIGGER_JS.observeSize(action));
     }
 }

@@ -55,12 +55,12 @@ class ClickTriggerTest {
         List<JsFunction> installs = installFns(ui);
         JsFunction source0 = (JsFunction) actionOf(installs.get(0))
                 .getCaptures().get(2);
-        assertEquals("eventProperty", snippetOf(ValueJs.class, source0));
+        assertEquals("readEventProperty", snippetOf(ValueJs.class, source0));
         assertEquals("screenX", source0.getCaptures().get(0));
 
         JsFunction source1 = (JsFunction) actionOf(installs.get(1))
                 .getCaptures().get(2);
-        assertEquals("eventProperty", snippetOf(ValueJs.class, source1));
+        assertEquals("readEventProperty", snippetOf(ValueJs.class, source1));
         assertEquals("screenY", source1.getCaptures().get(0));
     }
 
