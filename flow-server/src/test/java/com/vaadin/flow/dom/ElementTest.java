@@ -46,9 +46,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -2804,11 +2807,16 @@ class ElementTest extends AbstractNodeTest {
         assertInitializerCall("dispose", pending.get(0).getInvocation());
     }
 
-    @Test
-    void addJsInitializer_snippetWithCalledWith_throws() {
+    static Stream<JsFunction> initializersWithRuntimeArguments() {
+        return Stream.of(JsSnippets.of(InitializerSnippetsJs.class).logEvent(),
+                JsFunction.of("console.log(event)").withArguments("event"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("initializersWithRuntimeArguments")
+    void addJsInitializer_functionWithRuntimeArguments_throws(
+            JsFunction listener) {
         Element element = ElementFactory.createDiv();
-        JsFunction listener = JsSnippets.of(InitializerSnippetsJs.class)
-                .logEvent();
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
