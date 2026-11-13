@@ -1,4 +1,6 @@
 import { expect } from '@open-wc/testing';
+import sinon from 'sinon';
+import { Console } from '../../../../../main/frontend/internal/client/Console';
 import { UIState } from '../../../../../main/frontend/internal/client/UILifecycle';
 import { ExecuteJavaScriptProcessor } from '../../../../../main/frontend/internal/client/flow/ExecuteJavaScriptProcessor';
 import { ExistingElementMap } from '../../../../../main/frontend/internal/client/ExistingElementMap';
@@ -230,6 +232,72 @@ describe('ExecuteJavaScriptProcessor', () => {
       await Promise.resolve();
 
       expect(resolved).to.eql(['answer']);
+    });
+
+    describe('an error in the function', () => {
+      let reported: unknown[];
+      let logged: unknown[];
+
+      beforeEach(() => {
+        reported = [];
+        logged = [];
+        sinon.stub(Console, 'reportStacktrace').callsFake((exception: unknown) => reported.push(exception));
+        sinon.stub(Console, 'error').callsFake((message: unknown) => logged.push(message));
+      });
+
+      afterEach(() => {
+        sinon.restore();
+      });
+
+      async function settle(): Promise<void> {
+        await Promise.resolve();
+        await Promise.resolve();
+      }
+
+      const failures: Array<[string, (error: Error) => DefinitionFunction]> = [
+        [
+          'thrown',
+          (error) => () => {
+            throw error;
+          }
+        ],
+        ['rejected by the async function', (error) => async () => Promise.reject(error)]
+      ];
+
+      failures.forEach(([how, definition]) => {
+        it(`is reported when ${how} and the call is not subscribed to`, async () => {
+          const error = new Error('boom');
+          registerDefinition(GREETING, definition(error), 'ErrorJs.throwError');
+
+          run([{ tagName: 'div' }, greeting]);
+          await settle();
+
+          expect(reported).to.eql([error]);
+          expect(logged).to.eql([
+            'Exception is thrown while running ErrorJs.throwError. Stacktrace will be dumped separately.'
+          ]);
+        });
+
+        it(`is reported and sent to the error channel when ${how} and the call is subscribed to`, async () => {
+          const error = new Error('boom');
+          registerDefinition(VALUE, definition(error), 'ErrorJs.value');
+          const resolved: unknown[] = [];
+          const errors: unknown[] = [];
+
+          run([
+            { tagName: 'div' },
+            (returned: unknown) => resolved.push(returned),
+            (e: unknown) => errors.push(e),
+            value
+          ]);
+          await settle();
+
+          expect(reported).to.eql([error]);
+          expect(logged).to.have.lengthOf(1);
+          expect(resolved).to.eql([]);
+          expect(errors).to.eql(['Error: boom']);
+        });
+      });
     });
 
     it('does not run a call whose parameters do not match the function', () => {
