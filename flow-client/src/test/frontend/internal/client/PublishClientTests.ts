@@ -57,14 +57,14 @@ describe('publishClient', () => {
   });
 
   it('publishes under the TestBench id (window-name suffix stripped)', () => {
-    publishClient(asConnection(fakeConnectionStubs()), fakeConfig());
+    publishClient(asConnection(fakeConnectionStubs()), fakeConfig(), sinon.stub());
     expect($wnd.Vaadin.Flow.clients.ROOT).to.exist;
     expect($wnd.Vaadin.Flow.clients['ROOT-1234567']).to.be.undefined;
   });
 
   it('exposes the core API and delegates to the connection', () => {
     const stubs = fakeConnectionStubs();
-    publishClient(asConnection(stubs), fakeConfig());
+    publishClient(asConnection(stubs), fakeConfig(), sinon.stub());
     const client = $wnd.Vaadin.Flow.clients.ROOT;
 
     expect(client.productionMode).to.be.true;
@@ -80,15 +80,29 @@ describe('publishClient', () => {
     expect(stubs.sendEventMessage.calledWith(2, 'click', null)).to.be.true;
   });
 
+  it('reports an error thrown by a published function instead of rethrowing it', () => {
+    const stubs = fakeConnectionStubs();
+    const error = new TypeError('unknown node');
+    stubs.addDomSetListener.throws(error);
+    stubs.resolveUri.throws(error);
+    const handleError = sinon.stub();
+    publishClient(asConnection(stubs), fakeConfig(), handleError);
+    const client = $wnd.Vaadin.Flow.clients.ROOT;
+
+    expect(client.addDomBindingListener(4, () => {})).to.be.undefined;
+    expect(client.resolveUri('foo')).to.be.undefined;
+    expect(handleError.args).to.deep.equal([[error], [error]]);
+  });
+
   it('publishes the client events, typed so only the listed events can be dispatched', () => {
-    publishClient(asConnection(fakeConnectionStubs()), fakeConfig());
+    publishClient(asConnection(fakeConnectionStubs()), fakeConfig(), sinon.stub());
     expect($wnd.Vaadin.Flow.clients.ROOT.events).to.equal(events);
     // @ts-expect-error -- only the events listed for the client can be dispatched on it
     expect(() => events.dispatchEvent(new Event('vaadin-request'))).to.not.throw();
   });
 
   it('omits dev-only and profiling methods in production without request timing', () => {
-    publishClient(asConnection(fakeConnectionStubs()), fakeConfig());
+    publishClient(asConnection(fakeConnectionStubs()), fakeConfig(), sinon.stub());
     const client = $wnd.Vaadin.Flow.clients.ROOT;
     expect(client.getProfilingData).to.be.undefined;
     expect(client.debug).to.be.undefined;
@@ -98,7 +112,7 @@ describe('publishClient', () => {
 
   it('adds getProfilingData when request timing is enabled', () => {
     const stubs = fakeConnectionStubs();
-    publishClient(asConnection(stubs), fakeConfig({ requestTiming: true }));
+    publishClient(asConnection(stubs), fakeConfig({ requestTiming: true }), sinon.stub());
     const client = $wnd.Vaadin.Flow.clients.ROOT;
     expect(client.getProfilingData()).to.deep.equal([1, 2]);
     expect(stubs.getProfilingData.called).to.be.true;
@@ -106,7 +120,7 @@ describe('publishClient', () => {
 
   it('adds dev-mode methods when not in production', () => {
     const stubs = fakeConnectionStubs();
-    publishClient(asConnection(stubs), fakeConfig({ production: false }));
+    publishClient(asConnection(stubs), fakeConfig({ production: false }), sinon.stub());
     const client = $wnd.Vaadin.Flow.clients.ROOT;
 
     expect(client.productionMode).to.be.false;
