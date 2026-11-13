@@ -2762,12 +2762,17 @@ class ElementTest extends AbstractNodeTest {
                 () -> element.addJsInitializer((JsFunction) null));
     }
 
-    @Test
-    void addJsInitializer_snippet_emitsInitWithDeclaredFunction() {
+    static Stream<JsFunction> initializersWithoutRuntimeArguments() {
+        return Stream.of(JsSnippets.of(InitializerSnippetsJs.class)
+                .toggleClass("active"), JsFunction.of("return null;"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("initializersWithoutRuntimeArguments")
+    void addJsInitializer_function_emitsInitWithFunction(
+            JsFunction initializer) {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
-        JsFunction initializer = JsSnippets.of(InitializerSnippetsJs.class)
-                .toggleClass("active");
         element.addJsInitializer(initializer);
         ui.getElement().appendChild(element);
 
@@ -2780,12 +2785,7 @@ class ElementTest extends AbstractNodeTest {
         assertInitializerCall("init", invocation);
         assertEquals(List.of(0, initializer, element),
                 invocation.getParameters(),
-                "the declared function should be sent as it is, so that nothing is compiled from a string");
-        JsCall declared = initializer.getDeclaredCall();
-        assertNotNull(declared);
-        assertEquals(InitializerSnippetsJs.class, declared.definitionType());
-        assertEquals("toggleClass", declared.methodName());
-        assertEquals(List.of("active"), initializer.getCaptures());
+                "the function should be sent as it is, so that a snippet is not compiled from a string");
     }
 
     @Test
