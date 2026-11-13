@@ -21,7 +21,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
-import com.vaadin.flow.js.JsCalledWith;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippet;
@@ -54,7 +54,7 @@ public class JsDefinitionView extends Div {
      * A snippet type of the application, not a built-in one such as
      * {@code JsFunction}.
      */
-    @JsCalledWith("name")
+    @JsFunctionParameterNames("name")
     public interface Greeting extends JsSnippet {
     }
 

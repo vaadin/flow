@@ -371,8 +371,8 @@ public class VaadinBeanFactoryInitializationAotProcessor
      * validated against and the generic return types of its methods are read.
      * The snippet types its methods return get a proxy too, and reflection,
      * which is how the check that a snippet type declares no methods and its
-     * JsCalledWith names are read. The types that its typed results are
-     * converted to are registered for Jackson.
+     * {@code @JsFunctionParameterNames} names are read. The types that its
+     * typed results are converted to are registered for Jackson.
      */
     private void registerJsDefinition(RuntimeHints hints,
             Class<?> definitionType) {
