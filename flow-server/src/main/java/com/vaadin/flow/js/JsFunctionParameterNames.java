@@ -45,22 +45,20 @@ import com.vaadin.flow.dom.JsFunction;
  * position. The expression is the body of the function, so it must
  * <code>return</code> a value if the caller expects one.
  * <p>
- * For example, a snippet that shares the page with the Web Share API, where the
- * title, text and URL are computed from the click event by functions given as
- * arguments:
+ * For example, a snippet that shares the page with the Web Share API, with a
+ * title and a text given on the server, and a URL computed from the click event
+ * by a function given as an argument:
  *
  * <pre>
  * &#64;JsDefinition
  * public interface ShareJs extends Serializable {
  *
  *     &#64;JsExpression("""
- *             const data = {};
- *             if ($0) data.title = $0(event);
- *             if ($1) data.text = $1(event);
+ *             const data = { title: $0, text: $1 };
  *             if ($2) data.url = $2(event);
  *             return navigator.share(data);""")
  *     &#64;JsFunctionParameterNames("event")
- *     JsFunction share(JsFunction title, JsFunction text, JsFunction url);
+ *     JsFunction share(String title, String text, JsFunction url);
  *
  *     &#64;JsExpression("return location.href;")
  *     JsFunction currentUrl();
@@ -78,9 +76,7 @@ import com.vaadin.flow.dom.JsFunction;
  * <pre>
  * function ($0, $1, $2) {
  *   return function (event) {
- *     const data = {};
- *     if ($0) data.title = $0(event);
- *     if ($1) data.text = $1(event);
+ *     const data = { title: $0, text: $1 };
  *     if ($2) data.url = $2(event);
  *     return navigator.share(data);
  *   };
@@ -100,12 +96,12 @@ import com.vaadin.flow.dom.JsFunction;
  * }
  *
  * ShareJs share = JsSnippets.of(ShareJs.class);
- * button.getElement().executeJs(ClickJs.class)
- *         .onClick(share.share(null, null, share.currentUrl()));
+ * button.getElement().executeJs(ClickJs.class).onClick(
+ *         share.share("Quarterly report", "Have a look", share.currentUrl()));
  * </pre>
  *
  * Inside the snippet of <code>share</code>, <code>$0</code> and <code>$1</code>
- * are <code>null</code>, and <code>$2</code> is the function of
+ * are the two strings, and <code>$2</code> is the function of
  * <code>currentUrl()</code>, which ignores the <code>event</code> it is called
  * with. All of the JavaScript is declared in the definition and generated into
  * the bundle, so nothing is compiled from a string in the browser.
