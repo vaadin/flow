@@ -16,11 +16,14 @@
 package com.vaadin.flow.test.cspstrict.springsecurity;
 
 import java.io.IOException;
+import java.net.CookieManager;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
 
@@ -36,6 +39,12 @@ public class SpringSecurityPolicyIT {
 
     private static final String HEADER = "Content-Security-Policy";
 
+    private static final Pattern BUNDLE_SCRIPT = Pattern
+            .compile("VAADIN/build/[^\"']+\\.js");
+
+    private static final Pattern DOWNLOAD_URL = Pattern
+            .compile("VAADIN/dynamic/resource/[^\"\\\\]+");
+
     /**
      * Failsafe passes the {@code server.port} property of the pom as the
      * {@code serverPort} system property. The fallback is for running a test
@@ -45,50 +54,85 @@ public class SpringSecurityPolicyIT {
             + System.getProperty("serverPort", "8891");
 
     @Test
-    public void bootstrapPage_carriesOnlyThePolicyOfVaadin() throws Exception {
-        List<String> policies = fetch("/").headers().allValues(HEADER);
+    public void bootstrapPage_carriesOnlyThePolicyOfVaadinWithTheAddedDirective()
+            throws Exception {
+        try (HttpClient client = HttpClient.newHttpClient()) {
+            List<String> policies = fetch(client, "/").headers()
+                    .allValues(HEADER);
 
-        assertEquals(1, policies.size(),
-                "The bootstrap page should have one policy: " + policies);
-        String policy = policies.get(0);
-        assertTrue(policy.contains("script-src 'nonce-"),
-                "The policy should be the nonce-based one of Vaadin: "
-                        + policy);
-        assertFalse(policy.contains("form-action"),
-                "The policy of Spring Security should not be merged in: "
-                        + policy);
+            assertEquals(1, policies.size(),
+                    "The bootstrap page should have one policy: " + policies);
+            String policy = policies.get(0);
+            assertTrue(policy.contains("script-src 'nonce-"),
+                    "The policy should be the nonce-based one of Vaadin: "
+                            + policy);
+            assertFalse(policy.contains("form-action"),
+                    "The policy of Spring Security should not be merged in: "
+                            + policy);
+            String directive = PolicyAdjuster.DIRECTIVE + " "
+                    + PolicyAdjuster.SOURCE;
+            assertTrue(List.of(policy.split("; ")).contains(directive),
+                    "No " + directive + " in the policy: " + policy);
+        }
     }
 
     @Test
-    public void bootstrapPage_carriesTheDirectiveAddedThroughTheListener()
+    public void bundleScript_carriesThePolicyOfSpringSecurity()
             throws Exception {
-        String policy = fetch("/").headers().firstValue(HEADER).orElseThrow(
-                () -> new AssertionError("No " + HEADER + " header"));
+        try (HttpClient client = HttpClient.newHttpClient()) {
+            String script = find(BUNDLE_SCRIPT, fetch(client, "/").body());
 
-        String directive = PolicyAdjuster.DIRECTIVE + " "
-                + PolicyAdjuster.SOURCE;
-        assertTrue(List.of(policy.split("; ")).contains(directive),
-                "No " + directive + " in the policy: " + policy);
+            HttpResponse<String> response = fetch(client, "/" + script);
+
+            assertEquals(200, response.statusCode());
+            assertEquals(List.of(SecurityConfig.SPRING_SECURITY_POLICY),
+                    response.headers().allValues(HEADER));
+        }
+    }
+
+    @Test
+    public void download_carriesThePolicyOfSpringSecurity() throws Exception {
+        // The download URL belongs to a UI, which belongs to a session. The
+        // response to the request that creates the UI has the URL
+        try (HttpClient client = HttpClient.newBuilder()
+                .cookieHandler(new CookieManager()).build()) {
+            String url = find(DOWNLOAD_URL,
+                    fetch(client, "/?v-r=init&location=").body());
+
+            HttpResponse<String> response = fetch(client, "/" + url);
+
+            assertEquals(200, response.statusCode());
+            assertEquals(DownloadLink.CONTENT_TYPE,
+                    response.headers().firstValue("Content-Type").orElse(null));
+            assertEquals(List.of(SecurityConfig.SPRING_SECURITY_POLICY),
+                    response.headers().allValues(HEADER));
+        }
     }
 
     @Test
     public void responseOfSpringSecurity_carriesThePolicyOfSpringSecurity()
             throws Exception {
-        // Not a public view, and no login view to redirect to: Spring
-        // Security answers the request itself
-        HttpResponse<String> response = fetch("/needs-login");
+        try (HttpClient client = HttpClient.newHttpClient()) {
+            // Not a public view, and no login view to redirect to: Spring
+            // Security answers the request itself
+            HttpResponse<String> response = fetch(client, "/needs-login");
 
-        assertEquals(403, response.statusCode());
-        assertEquals(List.of(SecurityConfig.SPRING_SECURITY_POLICY),
-                response.headers().allValues(HEADER));
+            assertEquals(403, response.statusCode());
+            assertEquals(List.of(SecurityConfig.SPRING_SECURITY_POLICY),
+                    response.headers().allValues(HEADER));
+        }
     }
 
-    private static HttpResponse<String> fetch(String path)
+    private static String find(Pattern pattern, String body) {
+        Matcher matcher = pattern.matcher(body);
+        assertTrue(matcher.find(), "No " + pattern + " in: " + body);
+        return matcher.group();
+    }
+
+    private static HttpResponse<String> fetch(HttpClient client, String path)
             throws IOException, InterruptedException {
-        try (HttpClient client = HttpClient.newHttpClient()) {
-            return client.send(
-                    HttpRequest.newBuilder(URI.create(ROOT_URL + path)).build(),
-                    HttpResponse.BodyHandlers.ofString());
-        }
+        return client.send(
+                HttpRequest.newBuilder(URI.create(ROOT_URL + path)).build(),
+                HttpResponse.BodyHandlers.ofString());
     }
 }
