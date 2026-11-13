@@ -177,9 +177,10 @@ class TriggerSimulatorTest {
         new TimeoutTrigger(button, Duration.ofMillis(100)).triggers(
                 new WriteToClipboardAction(new LiteralInput<>("Hello"), null));
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        JsFunction initializer = singleInstallFn(ui);
 
         NotSimulatedException e = assertThrows(NotSimulatedException.class,
-                () -> TriggerSimulator.readEventListener(singleInstallFn(ui)));
+                () -> TriggerSimulator.readEventListener(initializer));
 
         assertTrue(String.valueOf(e.getMessage()).contains("runAfterTimeout"),
                 e.getMessage());
