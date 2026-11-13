@@ -588,6 +588,12 @@ public class Page implements Serializable {
      * <code>'prefix' + $0</code> instead of <code>'prefix$0'</code> and
      * <code>value[$0]</code> instead of <code>value.$0</code> since JavaScript
      * variables aren't evaluated inside strings or property names.
+     * <p>
+     * The expression is sent to the browser and compiled there, which a content
+     * security policy without <code>unsafe-eval</code> does not allow, so the
+     * {@link CspMode} of the application reports or refuses the call.
+     * {@link #executeJs(Class)} runs JavaScript that is declared in Java and
+     * collected into the bundle instead, and sends no expression.
      *
      * @param expression
      *            the JavaScript expression to invoke
@@ -595,6 +601,7 @@ public class Page implements Serializable {
      *            parameters to pass to the expression
      * @return a pending result that can be used to get a value returned from
      *         the expression
+     * @see #executeJs(Class)
      * @since 25.0
      * @throws CspViolationException
      *             in the {@link CspMode#STRICT} Content Security Policy mode
