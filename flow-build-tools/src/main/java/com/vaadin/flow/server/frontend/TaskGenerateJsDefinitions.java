@@ -550,8 +550,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                 function.add(String.format(
                         "window.Vaadin.Flow.jsSnippets[%s] = function (%s) {",
                         functionId, parameters));
-                function.add(String.format("  return function (%s) {",
-                        String.join(", ", JsCall.getCalledWithNames(method))));
+                function.add(String.format("  return function (%s) {", String
+                        .join(", ", JsCall.getFunctionParameterNames(method))));
                 function.add(expression);
                 function.add("  };");
                 function.add("};");

@@ -35,9 +35,9 @@ import com.vaadin.flow.dom.JsFunction;
  * a definition obtained from {@link Element#executeJs(Class)}. When the client
  * decodes the argument, it gets a function with those arguments bound, and the
  * expression runs when the invoker calls that function, as described for
- * {@link JsCalledWith}. Nothing is compiled from a string in the browser, so a
- * snippet passed that way works under a content security policy that does not
- * allow <code>unsafe-eval</code>. Passed to
+ * {@link JsFunctionParameterNames}. Nothing is compiled from a string in the
+ * browser, so a snippet passed that way works under a content security policy
+ * that does not allow <code>unsafe-eval</code>. Passed to
  * {@link Element#executeJs(String, Object...)} it works as well, but the
  * expression of that call is itself compiled from a string.
  * <p>
@@ -47,18 +47,20 @@ import com.vaadin.flow.dom.JsFunction;
  * nothing to release.
  * <p>
  * {@link JsFunction} is the snippet type for a function that whoever it is
- * passed to calls with arguments of its own, which {@link JsCalledWith} names.
- * {@link DomEventFilter} and {@link DomEventData} are snippet types that a DOM
- * event listener runs for every event.
+ * passed to calls with arguments of its own, which
+ * {@link JsFunctionParameterNames} names. {@link DomEventFilter} and
+ * {@link DomEventData} are snippet types that a DOM event listener runs for
+ * every event.
  * <p>
  * A component or an application can declare a snippet type of its own for what
  * it invokes on the client, as an interface that extends this one and declares
  * no instance methods. It names what the snippet is for, so an API can accept
  * only snippets of that kind, and it can declare the parameters every snippet
- * of it is called with by annotating the type with {@link JsCalledWith}:
+ * of it is called with by annotating the type with
+ * {@link JsFunctionParameterNames}:
  *
  * <pre>
- * &#64;JsCalledWith({ "html", "item" })
+ * &#64;JsFunctionParameterNames({ "html", "item" })
  * public interface ItemTemplate extends JsSnippet {
  * }
  *
@@ -74,7 +76,7 @@ import com.vaadin.flow.dom.JsFunction;
  * declares: as the function the client calls with those parameters.
  *
  * @see JsSnippets#of(Class)
- * @see JsCalledWith
+ * @see JsFunctionParameterNames
  * @since 25.4
  */
 public interface JsSnippet extends Serializable {

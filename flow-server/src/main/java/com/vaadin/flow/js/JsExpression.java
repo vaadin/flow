@@ -38,8 +38,8 @@ import com.vaadin.flow.dom.Element;
  * {@link JsSnippets#of(Class)} instead, and runs nothing when it is called. Its
  * arguments are still <code>$0</code>, <code>$1</code>, &hellip;, but the
  * expression is evaluated later by what the snippet is passed to, and
- * <code>this</code> is whatever that invoker supplies. See {@link JsCalledWith}
- * for the parameters it is called with.
+ * <code>this</code> is whatever that invoker supplies. See
+ * {@link JsFunctionParameterNames} for the parameters it is called with.
  *
  * @see Element#executeJs(Class)
  * @see JsSnippets#of(Class)

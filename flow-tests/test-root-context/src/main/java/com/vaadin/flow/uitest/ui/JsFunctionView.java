@@ -20,9 +20,9 @@ import java.io.Serializable;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.JsFunction;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -33,7 +33,7 @@ public class JsFunctionView extends AbstractDivView {
     @JsDefinition
     public interface GreeterJs extends Serializable {
         @JsExpression("this.textContent = $0 + ' ' + name;")
-        @JsCalledWith("name")
+        @JsFunctionParameterNames("name")
         JsFunction createGreeter(String greeting);
     }
 

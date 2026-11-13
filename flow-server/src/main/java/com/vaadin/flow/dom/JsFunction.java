@@ -25,8 +25,8 @@ import org.jspecify.annotations.Nullable;
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.CspMode;
@@ -70,7 +70,7 @@ import com.vaadin.flow.server.CspViolationException;
  * public interface LoggerJs extends Serializable {
  *
  *     &#64;JsExpression("console.log($0, value);")
- *     &#64;JsCalledWith("value")
+ *     &#64;JsFunctionParameterNames("value")
  *     JsFunction createLogger(String prefix);
  * }
  *
@@ -86,7 +86,7 @@ import com.vaadin.flow.server.CspViolationException;
  * </pre>
  *
  * Such a function has no body on the server, and its runtime arguments are
- * declared by {@link JsCalledWith} rather than with
+ * declared by {@link JsFunctionParameterNames} rather than with
  * {@link #withArguments(String...)}.
  *
  * @author Vaadin Ltd
@@ -166,7 +166,8 @@ public final class JsFunction implements JsSnippet {
         // Fail fast at the call that captures an unsupported value, as of does
         call.encodeSnippetCaptures();
         List<Object> captures = call.flattenArguments();
-        return new JsFunction(null, call, captures, call.getCalledWithNames());
+        return new JsFunction(null, call, captures,
+                call.getFunctionParameterNames());
     }
 
     /**
@@ -204,13 +205,13 @@ public final class JsFunction implements JsSnippet {
      *             if argument names have already been set on this instance, or
      *             if this function is declared by a {@link JsDefinition}
      *             interface, which declares its arguments with
-     *             {@link JsCalledWith}
+     *             {@link JsFunctionParameterNames}
      */
     public JsFunction withArguments(String... argumentNames) {
         if (declaredCall != null) {
             throw new IllegalStateException(
                     "The arguments of a function declared by a @JsDefinition"
-                            + " interface are declared with @JsCalledWith,"
+                            + " interface are declared with @JsFunctionParameterNames,"
                             + " as they are part of the JavaScript in the bundle");
         }
         if (!this.argumentNames.isEmpty()) {
@@ -257,16 +258,16 @@ public final class JsFunction implements JsSnippet {
 
     /**
      * The names of the runtime arguments declared via
-     * {@link #withArguments(String...)}, or with {@link JsCalledWith} for a
-     * function declared by a {@link JsDefinition} interface, in positional
-     * order.
+     * {@link #withArguments(String...)}, or with
+     * {@link JsFunctionParameterNames} for a function declared by a
+     * {@link JsDefinition} interface, in positional order.
      *
      * @return an unmodifiable list of argument names; empty if none were
      *         declared
      * @deprecated The names are part of the JavaScript of the function, which
      *             is what the client compiles from them. They are the ones
      *             passed to {@link #withArguments(String...)} or declared with
-     *             {@link JsCalledWith}.
+     *             {@link JsFunctionParameterNames}.
      */
     @Deprecated(since = "25.4", forRemoval = true)
     public List<String> getArgumentNames() {
