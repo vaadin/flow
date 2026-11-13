@@ -272,9 +272,10 @@ export class ExecuteJavaScriptProcessor {
    * which is what makes this path work under a content security policy that
    * does not allow `unsafe-eval`.
    *
-   * An error in the function, thrown or as a rejection of the promise it
-   * returns, is logged with its stack trace, and also sent through the error
-   * channel when the call is subscribed to.
+   * An error that the function throws is logged with its stack trace and sent
+   * through the error channel when the call is subscribed to. A rejection of
+   * the promise it returns is sent through the error channel when the call is
+   * subscribed to, and logged with its stack trace when it is not.
    *
    * Protected instead of private for testing purposes, as `invoke` is.
    *
@@ -345,9 +346,13 @@ export class ExecuteJavaScriptProcessor {
         withExecutionContext === undefined ? args : [this.#createExecutionContext(nodeParameters), ...args]
       );
       // The bundle generates the function as async, so an error in it rejects
-      // the returned promise instead of throwing. Handle the rejection also
-      // when the call is not subscribed to, or the error goes unreported.
-      Promise.resolve(result).then(onSuccess, reportError);
+      // the returned promise instead of throwing. A subscribed call hands the
+      // rejection to the server, which may expect it, as executeJs(String)
+      // does. Otherwise nothing would report it, so it is logged.
+      Promise.resolve(result).then(
+        onSuccess,
+        onError === undefined ? reportError : (error: unknown) => onError(`${error}`)
+      );
     } catch (exception) {
       reportError(exception);
     }

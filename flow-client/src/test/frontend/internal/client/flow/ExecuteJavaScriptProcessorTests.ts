@@ -254,18 +254,13 @@ describe('ExecuteJavaScriptProcessor', () => {
         await Promise.resolve();
       }
 
-      const failures: Array<[string, (error: Error) => DefinitionFunction]> = [
-        [
-          'thrown',
-          (error) => () => {
-            throw error;
-          }
-        ],
-        ['rejected by the async function', (error) => async () => Promise.reject(error)]
-      ];
+      const throwing = (error: Error) => (): never => {
+        throw error;
+      };
+      const rejecting = (error: Error) => async () => Promise.reject(error);
 
-      failures.forEach(([how, definition]) => {
-        it(`is reported when ${how} and the call is not subscribed to`, async () => {
+      [throwing, rejecting].forEach((definition) => {
+        it(`is reported when ${definition === throwing ? 'thrown' : 'rejected'} and the call is not subscribed to`, async () => {
           const error = new Error('boom');
           registerDefinition(GREETING, definition(error), 'ErrorJs.throwError');
 
@@ -277,26 +272,42 @@ describe('ExecuteJavaScriptProcessor', () => {
             'Exception is thrown while running ErrorJs.throwError. Stacktrace will be dumped separately.'
           ]);
         });
+      });
 
-        it(`is reported and sent to the error channel when ${how} and the call is subscribed to`, async () => {
-          const error = new Error('boom');
-          registerDefinition(VALUE, definition(error), 'ErrorJs.value');
-          const resolved: unknown[] = [];
-          const errors: unknown[] = [];
+      function runSubscribed(definition: DefinitionFunction): { resolved: unknown[]; errors: unknown[] } {
+        registerDefinition(VALUE, definition, 'ErrorJs.value');
+        const resolved: unknown[] = [];
+        const errors: unknown[] = [];
+        run([
+          { tagName: 'div' },
+          (returned: unknown) => resolved.push(returned),
+          (e: unknown) => errors.push(e),
+          value
+        ]);
+        return { resolved, errors };
+      }
 
-          run([
-            { tagName: 'div' },
-            (returned: unknown) => resolved.push(returned),
-            (e: unknown) => errors.push(e),
-            value
-          ]);
-          await settle();
+      it('is reported and sent to the error channel when thrown and the call is subscribed to', async () => {
+        const error = new Error('boom');
+        const { resolved, errors } = runSubscribed(throwing(error));
+        await settle();
 
-          expect(reported).to.eql([error]);
-          expect(logged).to.have.lengthOf(1);
-          expect(resolved).to.eql([]);
-          expect(errors).to.eql(['Error: boom']);
-        });
+        expect(reported).to.eql([error]);
+        expect(logged).to.have.lengthOf(1);
+        expect(resolved).to.eql([]);
+        expect(errors).to.eql(['Error: boom']);
+      });
+
+      it('is only sent to the error channel when rejected and the call is subscribed to', async () => {
+        // The server may expect the rejection, as for a denied permission,
+        // and executeJs(String) does not log it either
+        const { resolved, errors } = runSubscribed(rejecting(new Error('boom')));
+        await settle();
+
+        expect(errors).to.eql(['Error: boom']);
+        expect(resolved).to.eql([]);
+        expect(reported).to.eql([]);
+        expect(logged).to.eql([]);
       });
     });
 
