@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.util.Objects;
+
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
@@ -29,6 +31,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ShareActionTest {
+
+    private static final String GUARDED_SHARE = """
+            const data = {};
+            if ($0) data.title = $0(event);
+            if ($1) data.text = $1(event);
+            if ($2) data.url = $2(event);
+            return navigator.share(data);""";
 
     @Test
     void fireAndForget_allSlots_emitsNavigatorShareWithEachInputFunction() {
@@ -67,9 +76,14 @@ class ShareActionTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        // Absent slots are passed as null, which leaves them out of the data
+        // Absent slots are passed as null, which the guards leave out of the
+        // data
         JsFunction action = actionOf(singleInstallFn(ui));
         assertEquals("share", snippetOf(ShareAction.ShareJs.class, action));
+        assertEquals(GUARDED_SHARE,
+                Objects.requireNonNull(action.getDeclaredCall())
+                        .getExpression(),
+                "each field must only be set when its input is present");
         assertNull(action.getCaptures().get(0));
         assertNull(action.getCaptures().get(1));
         assertEquals("https://vaadin.com",
