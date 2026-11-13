@@ -172,10 +172,11 @@ final class Launch {
     private volatile List<String> changedPoms = List.of();
 
     /**
-     * Held by whatever compiles into the loop's {@code target/classes}: an
-     * apply's compile, and the Maven runs a launch or a resolve makes. A
-     * restart is not serialized with an apply, so without it the two can write
-     * the same class files at once. Fair, so they run in arrival order.
+     * Held by whatever writes to the loop's {@code target/classes}: an apply's
+     * compile and class removal, and the Maven runs a launch or a resolve
+     * makes. A restart is not serialized with an apply, so without it the two
+     * can write the same class files at once. Fair, so they run in arrival
+     * order.
      */
     private final ReentrantLock compileLock = new ReentrantLock(true);
 
@@ -1314,6 +1315,9 @@ final class Launch {
      * reason that is gone by then - an interrupted run, a locked local
      * repository. Nor is it run while the poms do not resolve, as a build of
      * those fails too.
+     * <p>
+     * Runs under {@link #compileLock()}, so a launch waits for an apply's
+     * compile to finish, and an apply waits for this build.
      *
      * @param project
      *            the resolved build about to be launched

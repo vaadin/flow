@@ -572,8 +572,13 @@ final class TransactionEngine {
                     // back from, so leaving it there deletes nothing: the route
                     // goes on answering and the bean goes on being found until
                     // the next full Maven build.
-                    tx.classesRemoved = compile
-                            .removeClassArtifacts(changes.deleted()).size();
+                    compileLock.lock();
+                    try {
+                        tx.classesRemoved = compile
+                                .removeClassArtifacts(changes.deleted()).size();
+                    } finally {
+                        compileLock.unlock();
+                    }
                 } catch (java.io.IOException e) {
                     return finish(tx, Outcome.FAILED,
                             "class removal: " + e.getMessage(), "none",

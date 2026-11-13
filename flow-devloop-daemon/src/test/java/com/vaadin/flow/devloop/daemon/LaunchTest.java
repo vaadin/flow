@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
@@ -31,6 +33,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.OS;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -635,7 +638,7 @@ class LaunchTest {
     @Test
     @DisabledOnOs(OS.WINDOWS)
     void catchUpSources_waitsForTheCompileLock(@TempDir Path repo)
-            throws Exception {
+            throws Throwable {
         // An apply compiling into target/classes holds it; a restart's build
         // must not write the same class files at the same time.
         Launch launch = appWithSources(repo);
@@ -644,27 +647,52 @@ class LaunchTest {
         writeSource(app, "Edited", 3_000);
         writeClass(app, "Edited", 2_000);
         Launch.Project project = project(app);
-        ReentrantLock lock = launch.compileLock();
 
-        Thread catchUp;
+        whileQueuedOn(launch.compileLock(),
+                () -> launch.catchUpSources(project, false, text -> {
+                }), () -> assertEquals(0, runs(runs)));
+
+        assertEquals(1, runs(runs));
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    void project_resolvesUnderTheCompileLock(@TempDir Path repo)
+            throws Throwable {
+        // The resolve compiles into target/classes too.
+        Launch launch = appWithSources(repo);
+        Reactor.Module app = Reactor.Module.of(repo, "app");
+        Path runs = fakeMaven(repo, 0, "mkdir -p target/devloop && echo '"
+                + app.classesDir() + "' > target/devloop/cp.txt");
+
+        whileQueuedOn(launch.compileLock(), () -> launch.project(text -> {
+        }), () -> assertEquals(0, runs(runs)));
+
+        assertEquals(1, runs(runs));
+    }
+
+    /**
+     * Runs the call on another thread while holding the lock, checks once it
+     * waits for it, then lets it go and rethrows whatever it threw.
+     */
+    static void whileQueuedOn(ReentrantLock lock, Runnable call,
+            Executable whileQueued) throws Throwable {
+        FutureTask<Void> task = new FutureTask<>(call, null);
         lock.lock();
         try {
-            catchUp = Thread.ofVirtual()
-                    .start(() -> launch.catchUpSources(project, false, text -> {
-                    }));
+            Thread thread = Thread.ofVirtual().start(task);
             long deadline = System.nanoTime() + 10_000_000_000L;
-            while (!lock.hasQueuedThread(catchUp)) {
+            while (!lock.hasQueuedThread(thread)) {
+                assertFalse(task.isDone(), "the call never took the lock");
                 assertTrue(System.nanoTime() < deadline,
-                        "the catch-up never waited for the compile lock");
+                        "the call never waited for the lock");
                 Thread.sleep(10);
             }
-            assertEquals(0, runs(runs));
+            whileQueued.execute();
         } finally {
             lock.unlock();
         }
-        catchUp.join(10_000);
-
-        assertEquals(1, runs(runs));
+        task.get(30, TimeUnit.SECONDS);
     }
 
     @Test

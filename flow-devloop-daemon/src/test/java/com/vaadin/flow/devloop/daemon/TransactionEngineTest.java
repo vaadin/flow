@@ -116,7 +116,7 @@ class TransactionEngineTest {
 
     @Test
     void apply_compilesUnderTheLaunchsLockAndRecordsTheSources()
-            throws Exception {
+            throws Throwable {
         // A view added while the app runs may go live without a restart, so
         // no launch records it, and the launch after a branch switch that drops
         // it would leave its class - and its route - behind.
@@ -140,21 +140,9 @@ class TransactionEngineTest {
         Path about = module.sourceDir().resolve("app/About.java");
         Files.createDirectories(about.getParent());
         Files.writeString(about, "package app; public class About {}");
-        Thread apply;
-        compileLock.lock();
-        try {
-            apply = Thread.ofVirtual().start(() -> engine.apply(line -> {
-            }, false));
-            long deadline = System.nanoTime() + 10_000_000_000L;
-            while (!compileLock.hasQueuedThread(apply)) {
-                assertTrue(System.nanoTime() < deadline,
-                        "the apply never waited for the launch's compile lock");
-                Thread.sleep(10);
-            }
-        } finally {
-            compileLock.unlock();
-        }
-        apply.join(30_000);
+        LaunchTest.whileQueuedOn(compileLock, () -> engine.apply(line -> {
+        }, false), () -> {
+        });
 
         verify(launch).recordCompiledSources(List.of(about));
     }
