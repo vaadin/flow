@@ -145,6 +145,20 @@ final class VaadinDevCli {
         this.launcher = launcher;
     }
 
+    /** The launcher this CLI runs commands through. */
+    Launcher launcher() {
+        return launcher;
+    }
+
+    /**
+     * Whether this launcher can read a process's start time, which is how it
+     * tells a live daemon from an unrelated process that reused its pid. Git
+     * Bash's ps cannot report one.
+     */
+    boolean readsStartTime() {
+        return launcher == Launcher.CMD || !WINDOWS;
+    }
+
     /**
      * The CLI for an application, using whichever launcher runs on this
      * platform.

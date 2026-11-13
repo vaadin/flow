@@ -166,9 +166,9 @@ What is different is worth knowing:
   whole log is the target application's `target/devloop/app.log`. Daemon wedged → every
   command, `status` included, exits `70` and says the recorded daemon "is running but not
   answering"; `shutdown` does not stop it, so kill the pid it names, then `start` spawns a fresh
-  one. Where the pid's start time cannot be read (Git Bash's `ps`), a pid that does not answer
-  may be one an unrelated process reused, so its record is removed instead, with a note to
-  kill the pid first if it is a wedged daemon.
+  one. Where the pid's start time cannot be read (a `ps` without `-o`, as in Git Bash or
+  busybox), a pid that does not answer may be one an unrelated process reused, so its record is
+  removed instead, with a note to kill the pid first if it is a wedged daemon.
 - Every command reports a fresh daemon (`up=0s`), or `status` reports no daemon running, with
   the app `stopped`, and `vaadin-dev` says the recorded daemon "left its handshake behind" —
   something outside the loop is killing the processes each command created, so the daemon and

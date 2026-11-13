@@ -28,6 +28,7 @@ import org.junit.jupiter.api.parallel.Isolated;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * The exit code is the contract agents depend on, so it has to mean the same
@@ -129,6 +130,10 @@ class DevLoopCliContractIT {
                                 .orElseThrow().toEpochMilli()
                         + "\n");
         VaadinDevCli cli = VaadinDevCli.of(AbstractDevLoopIT.APP);
+        // Git Bash's ps cannot report the start time that confirms the pid, so
+        // there the record is reaped instead; see the unconfirmed-pid test.
+        assumeTrue(cli.readsStartTime(),
+                "the launcher here cannot confirm a live pid");
 
         String pid = Long.toString(ProcessHandle.current().pid());
         // Each command waits out the grace an exiting daemon gets, so one that
@@ -164,8 +169,9 @@ class DevLoopCliContractIT {
         assertReapedUnconfirmed(cli.run("--app", app.toString(), "status"),
                 handshake);
 
-        // The PowerShell launcher reads the start time without ps.
-        if (!VaadinDevCli.WINDOWS) {
+        // Only the bash launcher asks ps; the PowerShell one reads the start
+        // time itself.
+        if (cli.launcher() == VaadinDevCli.Launcher.BASH) {
             Path bin = Files.createDirectories(app.resolve("bin"));
             Path ps = bin.resolve("ps");
             Files.writeString(ps, "#!/bin/sh\nexit 1\n");
@@ -204,22 +210,20 @@ class DevLoopCliContractIT {
         Files.createDirectories(handshake.getParent());
         Path ready = app.resolve("ready");
         Path exiting = app.resolve("Exiting.java");
-        Files.writeString(exiting,
-                """
-                                        import java.nio.file.Files;
-                                        import java.nio.file.Path;
-                        import java.util.Map;
+        Files.writeString(exiting, """
+                import java.nio.file.Files;
+                import java.nio.file.Path;
 
-                                        public class Exiting {
-                                            public static void main(String[] args) throws Exception {
-                                                Files.createFile(Path.of(args[1]));
-                                                Thread.sleep(3500);
-                                                if (args[2].equals("remove")) {
-                                                    Files.delete(Path.of(args[0]));
-                                                }
-                                            }
-                                        }
-                                        """);
+                public class Exiting {
+                    public static void main(String[] args) throws Exception {
+                        Files.createFile(Path.of(args[1]));
+                        Thread.sleep(3500);
+                        if (args[2].equals("remove")) {
+                            Files.delete(Path.of(args[0]));
+                        }
+                    }
+                }
+                """);
         VaadinDevCli cli = VaadinDevCli.of(AbstractDevLoopIT.APP);
 
         for (String exit : new String[] { "remove", "keep" }) {
