@@ -253,6 +253,17 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
     expect(harness.collectedEventData[0]).to.deep.equal({ '@sum': '7 click true' });
   });
 
+  it('maps a DOM node returned by a declared snippet of an element to the closest state node id', () => {
+    snippets()['fn-id'] = () => (_event, target) => target.firstElementChild!.firstChild;
+    bindWithClickSettings({ '@target': { f: 'fn-id', d: false, e: true } });
+    const { childElement, childNode } = addChild('span');
+    childElement.appendChild(document.createTextNode('text'));
+
+    element.click();
+
+    expect(harness.collectedEventData[0]).to.deep.equal({ '@target': childNode.getId() });
+  });
+
   it('runs a declared snippet without captures', () => {
     snippets()['fn-id'] = () => (event) => event.type;
     bindWithClickSettings({ '@type': { f: 'fn-id', d: false } });
