@@ -13,52 +13,54 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.test.cspoff.dependencies;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.test.cspoff.AbstractCspOffIT;
+import com.vaadin.flow.test.cspoff.TestFor;
+import com.vaadin.testbench.BrowserTest;
 
-public class JsFunctionIT extends ChromeBrowserTest {
+@TestFor(JsFunctionView.class)
+public class JsFunctionIT extends AbstractCspOffIT {
 
-    @Test
+    @BrowserTest
     public void capturedValuesArePreBound() {
         open();
         findElement(By.id("captureButton")).click();
         WebElement result = waitUntil(d -> findElement(By.id("captureResult")));
-        Assert.assertEquals("Hello World", result.getText());
+        Assertions.assertEquals("Hello World", result.getText());
     }
 
-    @Test
+    @BrowserTest
     public void runtimeArgumentsAreForwarded() {
         open();
         findElement(By.id("argsButton")).click();
         WebElement result = waitUntil(d -> findElement(By.id("argsResult")));
-        Assert.assertEquals("alpha:beta", result.getText());
+        Assertions.assertEquals("alpha:beta", result.getText());
     }
 
-    @Test
+    @BrowserTest
     public void elementCaptureResolvesToDomNode() {
         open();
         findElement(By.id("elementCaptureButton")).click();
         WebElement result = waitUntil(
                 d -> findElement(By.id("elementCaptureResult")));
-        Assert.assertEquals("mutated via capture", result.getText());
+        Assertions.assertEquals("mutated via capture", result.getText());
     }
 
-    @Test
+    @BrowserTest
     public void callerControlsThisBinding() {
         open();
         findElement(By.id("thisRespectButton")).click();
         WebElement result = waitUntil(
                 d -> findElement(By.id("thisRespectResult")));
-        Assert.assertEquals("this is the host element", result.getText());
+        Assertions.assertEquals("this is the host element", result.getText());
     }
 
-    @Test
+    @BrowserTest
     public void declaredFunctionRunsFromTheBundle() {
         open();
         findElement(By.id("declaredButton")).click();

@@ -15,18 +15,28 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("js-injected-template")
 @JsModule("./JsInjectedElement.js")
 public class JsInjectedElement extends PolymerTemplate<TemplateModel> {
 
+    @JsDefinition
+    public interface ClientHandlerJs extends Serializable {
+        @JsExpression("this.clientHandler()")
+        void callClientHandler();
+    }
+
     public JsInjectedElement() {
-        getElement().executeJs("this.clientHandler()");
+        getElement().executeJs(ClientHandlerJs.class).callClientHandler();
     }
 
     @ClientCallable

@@ -13,42 +13,47 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.dependencies;
+package com.vaadin.flow.test.cspoff.dependencies;
 
 import java.util.List;
 
 import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.logging.LogEntry;
+import org.openqa.selenium.logging.LogType;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.test.cspoff.AbstractCspOffIT;
+import com.vaadin.flow.test.cspoff.TestFor;
+import com.vaadin.testbench.BrowserTest;
 
-public class DynamicDependencyIT extends ChromeBrowserTest {
+import static org.hamcrest.MatcherAssert.assertThat;
 
-    @Test
+@TestFor(DynamicDependencyView.class)
+public class DynamicDependencyIT extends AbstractCspOffIT {
+
+    @BrowserTest
     public void dynamicDependencyIsExecutedBeforeOtherMessageProcessing() {
         open();
 
         WebElement depElement = findElement(By.id("dep"));
         // true means that the added component (a new one) is not yet in the DOM
-        Assert.assertEquals(Boolean.TRUE.toString(), depElement.getText());
+        Assertions.assertEquals(Boolean.TRUE.toString(), depElement.getText());
     }
 
-    @Test
+    @BrowserTest
     public void dependecyIsNoPromise_errorLogged() {
         testErrorCase("nopromise", "result is not a Promise");
     }
 
-    @Test
+    @BrowserTest
     public void dependecyLoaderThrows_errorLogged()
             throws InterruptedException {
         testErrorCase("throw", "Throw on purpose");
     }
 
-    @Test
+    @BrowserTest
     public void dependecyLoaderRejects_errorLogged()
             throws InterruptedException {
         testErrorCase("reject", "Reject on purpose");
@@ -60,14 +65,21 @@ public class DynamicDependencyIT extends ChromeBrowserTest {
         findElement(By.id(caseName)).click();
 
         String statusText = findElement(By.id("new-component")).getText();
-        Assert.assertEquals("Div updated for " + caseName, statusText);
+        Assertions.assertEquals("Div updated for " + caseName, statusText);
 
-        List<LogEntry> entries = getLogEntries(java.util.logging.Level.SEVERE);
-        Assert.assertEquals(2, entries.size());
+        getCommandExecutor().waitForVaadin();
+        List<LogEntry> entries = getDriver().manage().logs()
+                .get(LogType.BROWSER).getAll().stream()
+                .filter(entry -> entry.getLevel()
+                        .intValue() >= java.util.logging.Level.SEVERE
+                                .intValue())
+                .filter(entry -> !entry.getMessage().contains("favicon.ico"))
+                .toList();
+        Assertions.assertEquals(2, entries.size());
 
-        Assert.assertThat(entries.get(0).getMessage(),
+        assertThat(entries.get(0).getMessage(),
                 Matchers.containsString(errorMessageSnippet));
-        Assert.assertThat(entries.get(1).getMessage(),
+        assertThat(entries.get(1).getMessage(),
                 Matchers.containsString("could not be loaded"));
     }
 }

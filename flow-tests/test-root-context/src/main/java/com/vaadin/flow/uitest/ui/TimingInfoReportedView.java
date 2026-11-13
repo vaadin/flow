@@ -15,9 +15,13 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -47,12 +51,18 @@ public class TimingInfoReportedView extends Div {
             + "},0);";
   //@formatter:on
 
+    @JsDefinition
+    public interface TimingsJs extends Serializable {
+        @JsExpression(REPORT_TIMINGS)
+        void reportTimings();
+    }
+
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        getElement().executeJs(REPORT_TIMINGS);
+        getElement().executeJs(TimingsJs.class).reportTimings();
         NativeButton button = new NativeButton("test request");
-        button.addClickListener(
-                event -> getElement().executeJs(REPORT_TIMINGS));
+        button.addClickListener(event -> getElement().executeJs(TimingsJs.class)
+                .reportTimings());
         add(button);
     }
 

@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.util.function.Supplier;
 
@@ -28,6 +29,9 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
@@ -44,6 +48,26 @@ import com.vaadin.flow.server.streams.UploadHandler;
  * packages.
  */
 public final class LoanApplicationUpload {
+
+    @JsDefinition
+    public interface UploadJs extends Serializable {
+
+        @JsExpression("""
+                this.addEventListener('change', () => {
+                    const file = this.files[0];
+                    if (!file) return;
+                    fetch($0, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': file.type || 'application/octet-stream',
+                            'X-Filename': encodeURIComponent(file.name)
+                        },
+                        body: file
+                    }).then(() => $1.click());
+                });
+                """)
+        void uploadOnChange(String uploadUrl, Element sync);
+    }
 
     private LoanApplicationUpload() {
     }
@@ -97,22 +121,8 @@ public final class LoanApplicationUpload {
         Input uploadInput = new Input();
         uploadInput.setType("file");
         uploadInput.setId("uploadInput");
-        uploadInput.getElement().executeJs(
-                """
-                        this.addEventListener('change', () => {
-                            const file = this.files[0];
-                            if (!file) return;
-                            fetch($0, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': file.type || 'application/octet-stream',
-                                    'X-Filename': encodeURIComponent(file.name)
-                                },
-                                body: file
-                            }).then(() => $1.click());
-                        });
-                        """,
-                uploadUrl, uploadSync.getElement());
+        uploadInput.getElement().executeJs(UploadJs.class)
+                .uploadOnChange(uploadUrl, uploadSync.getElement());
 
         view.add(new H4("Upload your loan application"), uploadInput,
                 uploadSync);

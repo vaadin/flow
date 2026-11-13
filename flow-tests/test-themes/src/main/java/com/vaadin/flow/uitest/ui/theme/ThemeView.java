@@ -15,14 +15,25 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Route;
 
 @Route("com.vaadin.flow.uitest.ui.theme.ThemeView")
 public class ThemeView extends Div {
+
+    @JsDefinition
+    public interface BodyJs extends Serializable {
+
+        @JsExpression("document.body.classList.add('bg')")
+        void addBackgroundClass();
+    }
 
     public static final String TEST_TEXT_ID = "test-text";
     public static final String SNOWFLAKE_ID = "fortawesome";
@@ -37,8 +48,7 @@ public class ThemeView extends Div {
     public static final String SUN_ID = "sun";
 
     public ThemeView() {
-        UI.getCurrent().getPage()
-                .executeJs("document.body.classList.add('bg')");
+        UI.getCurrent().getPage().executeJs(BodyJs.class).addBackgroundClass();
         final Span textSpan = new Span("This is the theme test view");
         textSpan.setId(TEST_TEXT_ID);
 

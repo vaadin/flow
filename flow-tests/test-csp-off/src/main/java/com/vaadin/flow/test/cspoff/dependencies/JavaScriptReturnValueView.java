@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.test.cspoff.dependencies;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -27,9 +27,9 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.flow.test.cspoff.AbstractDivView;
 
-@Route(value = "com.vaadin.flow.uitest.ui.JavaScriptReturnValueView", layout = ViewTestLayout.class)
+@Route("java-script-return-value")
 public class JavaScriptReturnValueView extends AbstractDivView {
 
     public JavaScriptReturnValueView() {

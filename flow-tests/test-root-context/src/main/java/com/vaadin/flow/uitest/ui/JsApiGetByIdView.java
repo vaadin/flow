@@ -15,14 +15,25 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.html.NativeLabel;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.JsApiGetByIdView", layout = ViewTestLayout.class)
 @JavaScript("./js-get-by-id.js")
 public class JsApiGetByIdView extends AbstractDivView {
+
+    @JsDefinition
+    public interface ConnectorJs extends Serializable {
+        @JsExpression("window.jsApiConnector.jsFunction($0, $1, $2)")
+        void connect(Element target, String appId, int nodeId);
+    }
 
     public JsApiGetByIdView() {
         NativeLabel label = new NativeLabel("Original label");
@@ -34,9 +45,10 @@ public class JsApiGetByIdView extends AbstractDivView {
         add(target);
 
         getElement().getNode()
-                .runWhenAttached(ui -> ui.getPage().executeJs(
-                        "window.jsApiConnector.jsFunction($0, this.$appId, $1)",
-                        target, label.getElement().getNode().getId()));
+                .runWhenAttached(ui -> ui.getPage().executeJs(ConnectorJs.class)
+                        .connect(target.getElement(),
+                                ui.getInternals().getAppId(),
+                                label.getElement().getNode().getId()));
 
         add(createButton("Update target", "update",
                 event -> target.getElement().callJsFunction("operation")));

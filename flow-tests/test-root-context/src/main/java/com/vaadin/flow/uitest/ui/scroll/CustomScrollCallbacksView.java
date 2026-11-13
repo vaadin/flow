@@ -15,10 +15,15 @@
  */
 package com.vaadin.flow.uitest.ui.scroll;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
@@ -30,6 +35,16 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 @Route(value = "com.vaadin.flow.uitest.ui.scroll.CustomScrollCallbacksView", layout = ViewTestLayout.class)
 public class CustomScrollCallbacksView extends AbstractDivView
         implements HasUrlParameter<String> {
+
+    @JsDefinition
+    public interface ScrollCallbacksJs extends Serializable {
+        @JsExpression("window.Vaadin.Flow.setScrollPosition = function(xAndY) { $0.textContent += JSON.stringify(xAndY) + '\\n' }")
+        void logSetScrollPosition(Element log);
+
+        @JsExpression("window.Vaadin.Flow.getScrollPosition = function() { return [42, -window.pageYOffset] }")
+        void fakeGetScrollPosition();
+    }
+
     private final Div viewName = new Div();
     private final Div log = new Div();
 
@@ -39,11 +54,10 @@ public class CustomScrollCallbacksView extends AbstractDivView
         log.setId("log");
         log.getStyle().set("white-space", "pre");
 
-        UI.getCurrent().getPage().executeJs(
-                "window.Vaadin.Flow.setScrollPosition = function(xAndY) { $0.textContent += JSON.stringify(xAndY) + '\\n' }",
-                log);
-        UI.getCurrent().getPage().executeJs(
-                "window.Vaadin.Flow.getScrollPosition = function() { return [42, -window.pageYOffset] }");
+        ScrollCallbacksJs callbacks = UI.getCurrent().getPage()
+                .executeJs(ScrollCallbacksJs.class);
+        callbacks.logSetScrollPosition(log.getElement());
+        callbacks.fakeGetScrollPosition();
 
         RouterLink navigate = new RouterLink("Navigate",
                 CustomScrollCallbacksView.class, "navigated");

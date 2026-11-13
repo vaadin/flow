@@ -15,23 +15,34 @@
  */
 package com.vaadin.flow.test.components;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.NativeLabel;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Route;
 
 @JavaScript("./in-memory-connector.js")
 @Route("in-memory-children")
 public class InMemoryChildrenView extends Div {
 
+    @JsDefinition
+    public interface ConnectorJs extends Serializable {
+
+        @JsExpression("window.inMemoryConnector.init(this, $0)")
+        void init(Element inMemory);
+    }
+
     public InMemoryChildrenView() {
         NativeLabel label = new NativeLabel();
         label.setId("in-memory");
         label.setText("In memory element");
         getElement().appendVirtualChild(label.getElement());
-        getElement().executeJs("window.inMemoryConnector.init(this, $0)",
-                label);
+        getElement().executeJs(ConnectorJs.class).init(label.getElement());
         Div target = new Div();
         target.setId("target");
         add(target);

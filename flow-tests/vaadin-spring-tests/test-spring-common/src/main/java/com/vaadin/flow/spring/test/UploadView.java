@@ -17,11 +17,15 @@ package com.vaadin.flow.spring.test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResourceRegistry;
@@ -32,6 +36,26 @@ import com.vaadin.flow.server.streams.UploadHandler;
 public class UploadView extends Div {
 
     public static final String UPLOAD_ID = "upl";
+
+    @JsDefinition
+    public interface UploadJs extends Serializable {
+
+        @JsExpression("""
+                this.addEventListener('change', () => {
+                    const file = this.files[0];
+                    if (!file) return;
+                    fetch($0, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': file.type || 'application/octet-stream',
+                            'X-Filename': encodeURIComponent(file.name)
+                        },
+                        body: file
+                    }).then(() => $1.click());
+                });
+                """)
+        void uploadOnChange(String uploadUrl, Element sync);
+    }
 
     public UploadView() {
         UploadHandler handler = event -> {
@@ -76,22 +100,8 @@ public class UploadView extends Div {
         // multipart/form-data, since the test-spring servlet is not
         // @MultipartConfig-annotated and Vaadin's UploadHandler accepts
         // both forms (raw body is the default in 25.0+).
-        upload.getElement().executeJs(
-                """
-                        this.addEventListener('change', () => {
-                            const file = this.files[0];
-                            if (!file) return;
-                            fetch($0, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': file.type || 'application/octet-stream',
-                                    'X-Filename': encodeURIComponent(file.name)
-                                },
-                                body: file
-                            }).then(() => $1.click());
-                        });
-                        """,
-                uploadUrl, sync.getElement());
+        upload.getElement().executeJs(UploadJs.class).uploadOnChange(uploadUrl,
+                sync.getElement());
         add(upload, sync);
     }
 }

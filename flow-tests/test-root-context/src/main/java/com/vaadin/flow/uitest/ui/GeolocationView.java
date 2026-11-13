@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.geolocation.Geolocation;
 import com.vaadin.flow.component.geolocation.GeolocationOptions;
@@ -22,11 +24,77 @@ import com.vaadin.flow.component.geolocation.GeolocationPosition;
 import com.vaadin.flow.component.geolocation.GeolocationWatcher;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.GeolocationView", layout = ViewTestLayout.class)
 public class GeolocationView extends AbstractDivView {
+
+    @JsDefinition
+    public interface GeolocationJs extends Serializable {
+        @JsExpression("""
+                const debugEl = document.getElementById('debug');
+                const info = [];
+                info.push('Vaadin: ' + (typeof window.Vaadin));
+                info.push('Flow: ' + (typeof window.Vaadin?.Flow));
+                info.push('geolocation: ' + (typeof window.Vaadin?.Flow?.geolocation));
+                if (window.Vaadin?.Flow?.geolocation) {
+                    info.push('get: ' + (typeof window.Vaadin.Flow.geolocation.get));
+                    info.push('watch: ' + (typeof window.Vaadin.Flow.geolocation.watch));
+                }
+                debugEl.textContent = info.join(', ');
+                """)
+        void reportGeolocationApi();
+
+        @JsExpression("""
+                const mockCoords = (lat, lon) => ({
+                    coords: {
+                        latitude: lat,
+                        longitude: lon,
+                        accuracy: 10.0,
+                        altitude: 25.5,
+                        altitudeAccuracy: 5.0,
+                        heading: 90.0,
+                        speed: 1.5
+                    },
+                    timestamp: Date.now()
+                });
+                const watches = new Map();
+                let nextWatchId = 1;
+                Object.defineProperty(navigator, 'geolocation', {
+                    value: {
+                        getCurrentPosition: function(success, error, options) {
+                            setTimeout(function() {
+                                if (options && options.maximumAge === 9999) {
+                                    error({ code: 1, message: 'User denied geolocation' });
+                                } else {
+                                    success(mockCoords(60.1699, 24.9384));
+                                }
+                            }, 0);
+                        },
+                        watchPosition: function(success, error, options) {
+                            const id = nextWatchId++;
+                            const interval = setInterval(function() {
+                                success(mockCoords(60.1699, 24.9384));
+                            }, 50);
+                            watches.set(id, interval);
+                            return id;
+                        },
+                        clearWatch: function(id) {
+                            const interval = watches.get(id);
+                            if (interval) {
+                                clearInterval(interval);
+                                watches.delete(id);
+                            }
+                        }
+                    },
+                    configurable: true
+                });
+                """)
+        void mockGeolocation();
+    }
 
     private GeolocationWatcher signalWatcher;
     private GeolocationWatcher listenerWatcher;
@@ -40,19 +108,8 @@ public class GeolocationView extends AbstractDivView {
         add(debug);
 
         // Check if geolocation API is available and report status
-        UI.getCurrent().getPage().executeJs(
-                """
-                        const debugEl = document.getElementById('debug');
-                        const info = [];
-                        info.push('Vaadin: ' + (typeof window.Vaadin));
-                        info.push('Flow: ' + (typeof window.Vaadin?.Flow));
-                        info.push('geolocation: ' + (typeof window.Vaadin?.Flow?.geolocation));
-                        if (window.Vaadin?.Flow?.geolocation) {
-                            info.push('get: ' + (typeof window.Vaadin.Flow.geolocation.get));
-                            info.push('watch: ' + (typeof window.Vaadin.Flow.geolocation.watch));
-                        }
-                        debugEl.textContent = info.join(', ');
-                        """);
+        UI.getCurrent().getPage().executeJs(GeolocationJs.class)
+                .reportGeolocationApi();
 
         // Mock navigator.geolocation so tests work without real permissions.
         // The mock reacts to the options passed in:
@@ -60,52 +117,8 @@ public class GeolocationView extends AbstractDivView {
         // (used to drive the error branch deterministically).
         // - watchPosition emits a new position every 50 ms, each with a
         // different timestamp, until clearWatch is called.
-        UI.getCurrent().getPage().executeJs(
-                """
-                        const mockCoords = (lat, lon) => ({
-                            coords: {
-                                latitude: lat,
-                                longitude: lon,
-                                accuracy: 10.0,
-                                altitude: 25.5,
-                                altitudeAccuracy: 5.0,
-                                heading: 90.0,
-                                speed: 1.5
-                            },
-                            timestamp: Date.now()
-                        });
-                        const watches = new Map();
-                        let nextWatchId = 1;
-                        Object.defineProperty(navigator, 'geolocation', {
-                            value: {
-                                getCurrentPosition: function(success, error, options) {
-                                    setTimeout(function() {
-                                        if (options && options.maximumAge === 9999) {
-                                            error({ code: 1, message: 'User denied geolocation' });
-                                        } else {
-                                            success(mockCoords(60.1699, 24.9384));
-                                        }
-                                    }, 0);
-                                },
-                                watchPosition: function(success, error, options) {
-                                    const id = nextWatchId++;
-                                    const interval = setInterval(function() {
-                                        success(mockCoords(60.1699, 24.9384));
-                                    }, 50);
-                                    watches.set(id, interval);
-                                    return id;
-                                },
-                                clearWatch: function(id) {
-                                    const interval = watches.get(id);
-                                    if (interval) {
-                                        clearInterval(interval);
-                                        watches.delete(id);
-                                    }
-                                }
-                            },
-                            configurable: true
-                        });
-                        """);
+        UI.getCurrent().getPage().executeJs(GeolocationJs.class)
+                .mockGeolocation();
 
         NativeButton getButton = createButton("Get Position", "getButton",
                 e -> Geolocation.getPosition(pos -> {

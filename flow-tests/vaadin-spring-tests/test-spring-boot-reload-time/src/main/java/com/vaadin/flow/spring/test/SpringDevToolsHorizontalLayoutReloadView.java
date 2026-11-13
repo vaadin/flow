@@ -59,6 +59,7 @@ public class SpringDevToolsHorizontalLayoutReloadView extends Div {
         }).addEventDataPath("event.detail.result");
 
         UI.getCurrent().getPage()
-                .executeJs("window.benchmark.measureRender($0);", layout);
+                .executeJs(SpringDevToolsReloadUtils.BenchmarkJs.class)
+                .measureRender(layout.getElement());
     }
 }

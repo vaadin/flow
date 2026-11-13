@@ -15,9 +15,15 @@
  */
 package com.vaadin.flow.test.components;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.Shortcuts;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 
@@ -26,6 +32,21 @@ import com.vaadin.flow.router.Route;
 public class ComplexDialogShortcutView extends DialogShortcutView {
 
     public static final String OVERLAY_ID = "overlay";
+
+    @JsDefinition
+    public interface OverlayLocatorJs extends Serializable {
+
+        @JsExpression("return document.getElementById($0);")
+        JsFunction locateById(String id);
+    }
+
+    @JsDefinition
+    public interface OverlayJs extends Serializable {
+
+        @JsExpression("document.getElementById($0).appendChild(this.firstElementChild);")
+        void moveContent(String overlayId);
+    }
+
     private Div fakeOverlayElement;
 
     public ComplexDialogShortcutView() {
@@ -36,16 +57,15 @@ public class ComplexDialogShortcutView extends DialogShortcutView {
         super.open(dialog);
         // the shortcut listener is not added yet, add the element locator data
         final String overlayId = OVERLAY_ID + dialog.index;
-        final String overlayFetchJS = "document.getElementById('" + overlayId
-                + "')";
-        Shortcuts.setShortcutListenOnElement(overlayFetchJS, dialog);
+        Shortcuts.setShortcutListenOnElementLocator(
+                JsSnippets.of(OverlayLocatorJs.class).locateById(overlayId),
+                dialog);
         // simulate a fake overlay element
         fakeOverlayElement = new Div();
         fakeOverlayElement.setId(overlayId);
         getUI().orElse(UI.getCurrent()).add(fakeOverlayElement);
         // transport the dialog contents to overlay element
-        dialog.getElement().executeJs(
-                overlayFetchJS + ".appendChild(this.firstElementChild);");
+        dialog.getElement().executeJs(OverlayJs.class).moveContent(overlayId);
     }
 
     @Override

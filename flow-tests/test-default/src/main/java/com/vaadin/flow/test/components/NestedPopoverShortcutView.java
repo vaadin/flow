@@ -114,11 +114,13 @@ public class NestedPopoverShortcutView extends Div {
 
         final NativeButton openParent = new NativeButton("Open parent overlay",
                 e -> parentOverlay.getElement()
-                        .executeJs("this.showPopover();"));
+                        .executeJs(PopoverOwnerShortcutView.PopoverJs.class)
+                        .showPopover());
         openParent.setId(OPEN_PARENT_BUTTON);
         final NativeButton openNested = new NativeButton("Open nested overlay",
                 e -> nestedOverlay.getElement()
-                        .executeJs("this.showPopover();"));
+                        .executeJs(PopoverOwnerShortcutView.PopoverJs.class)
+                        .showPopover());
         openNested.setId(OPEN_NESTED_BUTTON);
 
         // Plain server round-trip used by tests as an ordered barrier: Flow

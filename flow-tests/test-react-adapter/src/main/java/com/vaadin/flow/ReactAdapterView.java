@@ -15,9 +15,13 @@
  */
 package com.vaadin.flow;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Route;
 
 @Route("com.vaadin.flow.ReactAdapterView")
@@ -28,6 +32,16 @@ public class ReactAdapterView extends Div {
     public static final String OWN_ROOT_VALUE = "own root value";
 
     public static final String OWN_ROOT_SERVER_VALUE = "own root server value";
+
+    @JsDefinition
+    public interface ReconnectJs extends Serializable {
+
+        @JsExpression("document.body.appendChild(this); this.remove(); document.body.appendChild(this);")
+        void moveToBody();
+
+        @JsExpression("this.remove(); document.body.appendChild(this);")
+        void reconnectInBody();
+    }
 
     public ReactAdapterView() {
         var input = new ReactInput("initialValue");
@@ -82,16 +96,14 @@ public class ReactAdapterView extends Div {
         // and re-adds it in the same task, before its root has been created.
         var moveToBodyButton = new NativeButton("Move to body", event -> {
             ownRootContainer.add(ownRootInput);
-            ownRootInput.getElement()
-                    .executeJs("document.body.appendChild(this); this.remove();"
-                            + " document.body.appendChild(this);");
+            ownRootInput.getElement().executeJs(ReconnectJs.class).moveToBody();
         });
         moveToBodyButton.setId("moveOwnRootInputToBodyButton");
 
         // Removes and re-adds the element after its root has rendered.
         var reconnectButton = new NativeButton("Reconnect in body",
-                event -> ownRootInput.getElement().executeJs(
-                        "this.remove(); document.body.appendChild(this);"));
+                event -> ownRootInput.getElement().executeJs(ReconnectJs.class)
+                        .reconnectInBody());
         reconnectButton.setId("reconnectOwnRootInputButton");
 
         var setOwnRootValueButton = new NativeButton("Set own root value",

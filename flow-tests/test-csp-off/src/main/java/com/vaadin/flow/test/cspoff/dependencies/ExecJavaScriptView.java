@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.test.cspoff.dependencies;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -32,9 +32,9 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.flow.test.cspoff.AbstractDivView;
 
-@Route(value = "com.vaadin.flow.uitest.ui.ExecJavaScriptView", layout = ViewTestLayout.class)
+@Route("exec-java-script")
 public class ExecJavaScriptView extends AbstractDivView {
 
     @Override

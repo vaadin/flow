@@ -15,16 +15,27 @@
  */
 package com.vaadin.flow.test.devmode;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.NativeLabel;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 @Route("browser-logging")
 @JavaScript(value = "./consoleLoggingProxy.js", loadMode = LoadMode.INLINE)
 public class BrowserLoggingView extends Div {
+
+    @JsDefinition
+    public interface ErrorJs extends Serializable {
+
+        @JsExpression("null.foo")
+        void throwError();
+    }
 
     public BrowserLoggingView() {
         NativeLabel label = new NativeLabel("Just a label");
@@ -33,7 +44,8 @@ public class BrowserLoggingView extends Div {
 
         NativeButton causeException = new NativeButton(
                 "Cause client side exception", e -> {
-                    getUI().get().getPage().executeJs("null.foo");
+                    getUI().get().getPage().executeJs(ErrorJs.class)
+                            .throwError();
                 });
         causeException.setId("exception");
         add(causeException);

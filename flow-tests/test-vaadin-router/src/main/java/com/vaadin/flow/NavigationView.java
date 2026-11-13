@@ -15,10 +15,15 @@
  */
 package com.vaadin.flow;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
@@ -34,6 +39,25 @@ public class NavigationView extends Div {
     public static final String POSTPONE_ID = "postpone-view-link";
 
     public static final String SET_PARAMETER_COUNTER_ID = "set-parameter-counter";
+
+    @JsDefinition
+    public interface NavigatedListenerJs extends Serializable {
+
+        @JsExpression("""
+                if(!window.test) {
+                    window.addEventListener('vaadin-navigated', (e) => {
+                        console.log('vaadin-navigated :: navigated to ' + window.location.pathname, e);
+                        window.testMessage = 'navigated to ' + window.location.pathname;
+                    });
+                    window.addEventListener('vaadin-router-location-changed', (e) => {
+                        console.log('location-changed :: navigated to ' + window.location.pathname, e);
+                        window.testMessage = 'navigated to ' + window.location.pathname;
+                    });
+                    window.test = true;
+                }
+                """)
+        PendingJavaScriptResult listenForNavigation();
+    }
 
     public NavigationView() {
         Anchor anchorNavigation = new Anchor("com.vaadin.flow.AnchorView",
@@ -70,21 +94,7 @@ public class NavigationView extends Div {
         // vaadin-router fires a vaadin-router-location-changed for client side
         // navigation, whereas server side History changes fires a
         // vaadin-navigated
-        getElement()
-                .executeJs(
-                        """
-                                if(!window.test) {
-                                    window.addEventListener('vaadin-navigated', (e) => {
-                                        console.log('vaadin-navigated :: navigated to ' + window.location.pathname, e);
-                                        window.testMessage = 'navigated to ' + window.location.pathname;
-                                    });
-                                    window.addEventListener('vaadin-router-location-changed', (e) => {
-                                        console.log('location-changed :: navigated to ' + window.location.pathname, e);
-                                        window.testMessage = 'navigated to ' + window.location.pathname;
-                                    });
-                                    window.test = true;
-                                }
-                                """)
+        getElement().executeJs(NavigatedListenerJs.class).listenForNavigation()
                 // Make element visible only after the listeners are installed
                 // so the test can wait for this condition before starting
                 // asserting

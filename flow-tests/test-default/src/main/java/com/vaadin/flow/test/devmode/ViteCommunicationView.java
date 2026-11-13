@@ -15,33 +15,43 @@
  */
 package com.vaadin.flow.test.devmode;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Route;
 
 @Route("vite-communication")
 @JsModule("./vite-communication.ts")
 public class ViteCommunicationView extends Div {
 
+    @JsDefinition
+    public interface ViteJs extends Serializable {
+
+        @JsExpression("""
+                window.importmetahot.on('test-event-response', (event) => {
+                    document.querySelector('#response').innerText += 'Got event test-event-response with data ' + JSON.stringify(event) + '';
+                });
+                """)
+        void listenForResponse();
+
+        @JsExpression("window.importmetahot.send('test-event', {foo: 'bar'});")
+        void sendTestEvent();
+    }
+
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
         UI ui = attachEvent.getUI();
-        Page page = ui.getPage();
-        page.executeJs(
-                """
-                        window.importmetahot.on('test-event-response', (event) => {
-                            document.querySelector('#response').innerText += 'Got event test-event-response with data ' + JSON.stringify(event) + '';
-                        });
-                        """);
+        ui.getPage().executeJs(ViteJs.class).listenForResponse();
 
         NativeButton sendMessage = new NativeButton("Send message",
-                e -> ui.getPage().executeJs(
-                        "window.importmetahot.send('test-event', {foo: 'bar'});"));
+                e -> ui.getPage().executeJs(ViteJs.class).sendTestEvent());
         sendMessage.setId("send");
         Div response = new Div();
         response.setId("response");
