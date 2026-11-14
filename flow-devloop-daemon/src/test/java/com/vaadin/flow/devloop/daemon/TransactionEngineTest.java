@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -33,7 +34,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -109,6 +112,71 @@ class TransactionEngineTest {
         } finally {
             alive.destroy();
         }
+    }
+
+    @Test
+    void apply_compilesUnderTheLaunchsLockAndRecordsTheSources()
+            throws Throwable {
+        // A view added while the app runs may go live without a restart, so
+        // no launch records it, and the launch after a branch switch that drops
+        // it would leave its class - and its route - behind.
+        Path app = Files.createDirectories(root.resolve("app"));
+        Files.createDirectories(app.resolve("target/classes"));
+        Reactor.Module module = Reactor.Module.of(app, "app");
+        String classpath = module.classesDir().toString();
+        Launch.Project project = new Launch.Project(List.of(module), classpath,
+                Map.of("app", classpath), OptionalInt.empty());
+        Launch launch = mock(Launch.class);
+        when(launch.project(any())).thenReturn(project);
+        // The launch's, as a restart's catch-up build writes the same
+        // target/classes.
+        ReentrantLock compileLock = new ReentrantLock();
+        when(launch.compileLock()).thenReturn(compileLock);
+        TransactionEngine engine = new TransactionEngine(launch,
+                new AppProcess(root, null));
+        engine.apply(line -> {
+        }, false);
+
+        Path about = module.sourceDir().resolve("app/About.java");
+        Files.createDirectories(about.getParent());
+        Files.writeString(about, "package app; public class About {}");
+        LaunchTest.whileQueuedOn(compileLock, () -> engine.apply(line -> {
+        }, false), () -> {
+        });
+
+        verify(launch).recordCompiledSources(List.of(about));
+    }
+
+    @Test
+    void apply_removesTheClassesOfADeletedSourceUnderTheLaunchsLock()
+            throws Throwable {
+        // A restart's catch-up build removes the classes of deleted sources
+        // too, and must not do so while an apply is.
+        Path app = Files.createDirectories(root.resolve("app"));
+        Reactor.Module module = Reactor.Module.of(app, "app");
+        Path about = module.sourceDir().resolve("app/About.java");
+        Files.createDirectories(about.getParent());
+        Files.writeString(about, "package app; public class About {}");
+        Path aboutClass = module.artifactFor(about);
+        Files.createDirectories(aboutClass.getParent());
+        Files.write(aboutClass, new byte[0]);
+        String classpath = module.classesDir().toString();
+        Launch.Project project = new Launch.Project(List.of(module), classpath,
+                Map.of("app", classpath), OptionalInt.empty());
+        Launch launch = mock(Launch.class);
+        when(launch.project(any())).thenReturn(project);
+        ReentrantLock compileLock = new ReentrantLock();
+        when(launch.compileLock()).thenReturn(compileLock);
+        TransactionEngine engine = new TransactionEngine(launch,
+                new AppProcess(root, null));
+        engine.apply(line -> {
+        }, false);
+
+        Files.delete(about);
+        LaunchTest.whileQueuedOn(compileLock, () -> engine.apply(line -> {
+        }, false), () -> assertTrue(Files.exists(aboutClass)));
+
+        assertFalse(Files.exists(aboutClass));
     }
 
     @Test
