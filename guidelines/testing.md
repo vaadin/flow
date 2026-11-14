@@ -1,5 +1,10 @@
 # Testing
 
+The rules for writing and debugging tests are in the Testing section of
+[`CONVENTIONS.md`](../CONVENTIONS.md#testing). This chapter covers where the
+tests live and how to build an integration test for a feature that wraps a
+browser API.
+
 ## Where tests live
 
 **Unit tests** live in `src/test/java/` in each module. They use JUnit and make
@@ -15,64 +20,31 @@ belongs in.
 TypeScript tests run with Web Test Runner in a headless browser; run them with
 `npm test` in `flow-client`.
 
-## Writing tests
+## Testing a browser-API wrapper
 
-- **Write the tests that should pass first.** If they expose problems in
-  the implementation, fix the implementation afterwards — don't rewrite
-  the tests to match a broken implementation.
-- Keep the unit test count minimal — only the essential cases. More tests
-  are not better; focused tests are.
-- Assert the observable outcome — DOM state, response, emitted event,
-  public API result — not how it is produced. A test must fail when the
-  behavior breaks and keep passing through a refactor that preserves it.
-- Test the code under change, not framework behavior that is already
-  covered elsewhere.
-- When changing an existing test's setup — swapping a mock, a fixture or
-  a helper — keep every case it already covered.
-- Don't depend on JVM defaults (locale, time zone, charset). Set them
-  explicitly, or choose a value that differs from the default, so the
-  test cannot pass without exercising the code.
-- Only add an IT when the behavior needs a browser and a server round
-  trip. Client-only logic belongs in the client-side tests in
-  `flow-client/src/test/frontend/`.
-- Before adding a new IT view or test class, look for an existing view
-  or class that exercises the same area and extend it.
-- For browser-facing features that need an IT, put the view in the
-  module [flow-tests/README.md](../flow-tests/README.md) selects — for the
-  default configuration that is `flow-tests/test-default/`. Mock the
-  relevant browser API and exercise both happy-path and error branches.
-  Use an option value to trigger errors deterministically (for
-  geolocation, `maximumAge === -1` works). If the API streams updates (e.g.
-  `watchPosition`), use `setInterval` to simulate them and verify
-  that the matching cancel call (e.g. `clearWatch`) actually stops
-  them.
-- ITs assert concrete outputs, not just "not null". If floating-point
-  arithmetic would make assertions brittle, simplify the mock to emit
-  stable values (different timestamps suffice for uniqueness).
-- After an action that triggers an asynchronous update — a server round
-  trip, a React or Lit re-render, a `setTimeout` or
-  `requestAnimationFrame` — wait for the expected state with
-  `waitUntil(...)` or `waitForElementPresent(...)` instead of asserting
-  right away. Never use a fixed `Thread.sleep` to wait for a state the
-  test can poll for.
-- Keep the failure message when an assertion becomes a wait: catch
-  `TimeoutException` and fail with the message and the expected and
-  actual values, as `verifyTitle` in
-  [PageIT](../flow-tests/test-default/src/test/java/com/vaadin/flow/test/dom/PageIT.java)
-  does. A bare `TimeoutException` does not say what went wrong.
-- Call `checkLogsForErrors()` right after each step that could log a
-  browser error, not only at the end of the test, so a failure points
-  at the step that caused it.
-- Add a short settle pause before snapshotting counts after a
-  stop-like action — an in-flight event can still land right after the
-  stop marker appears in the DOM.
-- When improving existing tests, verify actual behavior rather than just
-  "not null" — assert the JSON structure and content for serialization, and
-  cover the edge cases the change actually introduces.
+A browser-facing feature needs an IT, and a real browser API is rarely
+deterministic enough to test against — it asks for permission, depends on the
+device, or never fails on demand. Mock the browser API in the test view
+instead:
 
-## Debugging failures
+- Trigger the error branch with an option value rather than with timing. For
+  geolocation, `maximumAge === -1` works.
+- If the API streams updates (e.g. `watchPosition`), simulate them with
+  `setInterval`, and verify that the matching cancel call (e.g. `clearWatch`)
+  actually stops them.
+- If floating-point arithmetic would make the assertions brittle, simplify the
+  mock to emit stable values — different timestamps are enough to tell updates
+  apart.
+- Add a short settle pause before counting updates after a stop-like action.
+  An event already in flight can still land right after the stop marker
+  appears in the DOM.
 
-- Analyze *why* a test fails, code does not compile, or a build breaks, before
-  changing anything. Do not start rewriting code.
-- When an integration test fails, use Playwright to see what the browser is
-  actually doing in the UI, rather than guessing at the cause.
+## Waiting for a state
+
+When an assertion becomes a wait, a bare `TimeoutException` does not say what
+went wrong. `verifyTitle` in
+[PageIT](../flow-tests/test-default/src/test/java/com/vaadin/flow/test/dom/PageIT.java)
+shows how to keep the failure message, with the expected and the actual value.
+
+Calling `checkLogsForErrors()` after each step rather than once at the end
+means a failure points at the step that caused it.
