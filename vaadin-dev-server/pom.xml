@@ -45,6 +45,17 @@
       <artifactId>flow-devloop-daemon</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!-- The Flow client. Not used from this module's code either: its frontend
+         sources are input to the frontend build, and it travels the same
+         route - in through the optional com.vaadin:vaadin-dev dependency a
+         project declares. That puts the client on the classpath of every
+         build of the project, the production build included, and keeps it
+         out of what the application deploys. -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-client</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>license-checker</artifactId>
