@@ -30,6 +30,7 @@ import { currentVisibility } from './PageVisibility';
 import { currentScreenOrientationAngle, currentScreenOrientationType } from './ScreenOrientation';
 import './Shortcut';
 import './WakeLock';
+import './WebNotification';
 import './WebPush';
 import { isShareSupported } from './WebShare';
 
@@ -152,6 +153,12 @@ export async function collectBrowserDetails(): Promise<Record<string, string>> {
   const wakeLock = $wnd.Vaadin.Flow?.wakeLock;
   if (wakeLock) {
     params['v-wla'] = wakeLock.queryAvailability();
+  }
+
+  /* Notification permission — same guard rationale as geolocation. */
+  const webNotification = $wnd.Vaadin.Flow?.webNotification;
+  if (webNotification) {
+    params['v-wnp'] = webNotification.queryPermission();
   }
 
   /* Web Share API support */

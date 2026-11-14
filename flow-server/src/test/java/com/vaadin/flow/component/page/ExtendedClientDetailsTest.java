@@ -21,6 +21,10 @@ import java.time.ZonedDateTime;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.component.webnotification.WebNotification;
+import com.vaadin.flow.component.webnotification.WebNotificationPermission;
+import com.vaadin.tests.util.MockUI;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -162,6 +166,17 @@ class ExtendedClientDetailsTest {
 
         detailsBuilder.setNavigatorPlatform(null);
         assertNull(detailsBuilder.buildDetails().getNavigatorPlatform());
+    }
+
+    @Test
+    void notificationPermissionReported_seedsPermissionSignal() {
+        MockUI ui = new MockUI();
+
+        ExtendedClientDetails.updateFromValues(ui,
+                key -> "v-wnp".equals(key) ? "GRANTED" : null);
+
+        assertEquals(WebNotificationPermission.GRANTED,
+                WebNotification.permissionSignal(ui).peek());
     }
 
     /**
