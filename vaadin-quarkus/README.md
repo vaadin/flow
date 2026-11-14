@@ -28,6 +28,35 @@ The integration tests live in `flow-tests/vaadin-quarkus-tests`.
 To try the extension out, start from
 https://github.com/vaadin/base-starter-flow-quarkus/.
 
+## Native image builds starting with Quarkus 3.33.3.3
+
+Starting with Quarkus 3.33.3.3, the native image build of a Vaadin
+application fails while it analyses the application, with:
+
+```
+Error: Class initialization of io.vertx.core.json.Json failed.
+...
+Caused by: java.lang.NoClassDefFoundError: com/fasterxml/jackson/core/util/ByteArrayBuilder
+```
+
+Vert.x needs Jackson 2 core (`com.fasterxml.jackson.core:jackson-core`), but
+`quarkus-undertow` excludes it from Vert.x, and since that release no other
+dependency brings it in. Vaadin itself uses Jackson 3, which does not help
+here. This is a Quarkus bug, tracked in
+[quarkusio/quarkus#56989](https://github.com/quarkusio/quarkus/issues/56989).
+JVM mode is not affected unless the application uses the Vert.x JSON API.
+
+Until a Quarkus release with the fix is out, either stay on Quarkus 3.33.3.2 or
+earlier, or add Jackson 2 core to the application. The Quarkus BOM manages
+its version:
+
+```xml
+<dependency>
+  <groupId>com.fasterxml.jackson.core</groupId>
+  <artifactId>jackson-core</artifactId>
+</dependency>
+```
+
 ## devUI URL
 
 After executing the quarkus project with dev profile `mvn quarkus:dev`, the
