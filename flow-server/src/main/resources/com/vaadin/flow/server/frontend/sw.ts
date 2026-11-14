@@ -299,13 +299,20 @@ self.addEventListener('notificationclick', (e) => {
   e.waitUntil(focusOrOpenWindow());
 });
 
+/**
+ * Brings the application to the front: focuses a window that already shows it,
+ * or opens one at the service worker's scope, which is the application's root
+ * URL including any context path.
+ */
 async function focusOrOpenWindow() {
-  const url = new URL('/', self.location.origin).href;
+  const url = self.registration.scope;
 
+  // Only the windows this service worker controls are matched, so every one
+  // of them belongs to the application.
   const allWindows = await self.clients.matchAll({
     type: 'window'
   });
-  const appWindow = allWindows.find((w) => w.url === url);
+  const appWindow = allWindows.find((w) => w.url === url) ?? allWindows[0];
 
   if (appWindow) {
     return appWindow.focus();
