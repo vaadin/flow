@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import javax.imageio.ImageIO;
+
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +40,7 @@ import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -110,10 +114,16 @@ class TaskGeneratePWAIconsTest {
     }
 
     @Test
-    void execute_PWA_baseIconNotFound_generateIconsFromDefaultLogo()
+    void execute_PWA_baseIconNotFound_generateIconsFromAppName()
             throws ExecutionFailedException, IOException {
         task.execute();
         assertIconsGenerated();
+        // The initials of the application name on a default blue, since the
+        // theme color is the default white
+        BufferedImage icon = ImageIO.read(iconsOutDirectory
+                .resolve(Path.of("custom", "icons", "logo-512x512.png"))
+                .toFile());
+        assertEquals(0x0d72f8, icon.getRGB(0, 511) & 0xffffff);
     }
 
     @Test
