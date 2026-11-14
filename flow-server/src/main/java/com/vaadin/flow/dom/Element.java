@@ -2118,6 +2118,11 @@ public class Element extends Node<Element> {
      * function, {@code null}, or {@code undefined} (the latter being the
      * implicit value when there is no {@code return}). Returning any other
      * value, including a promise, is logged as an error on the client.
+     * <p>
+     * The browser compiles the expression from a string, which a Content
+     * Security Policy without <code>unsafe-eval</code> blocks. Use
+     * {@link #addJsInitializer(JsFunction)} with an initializer declared as a
+     * snippet to run nothing compiled from a string.
      *
      * @param expression
      *            the JavaScript expression to invoke, not <code>null</code>
@@ -2134,6 +2139,72 @@ public class Element extends Node<Element> {
         Objects.requireNonNull(expression, "Expression cannot be null");
         return new ElementJsInitializerRegistration(getNode(), expression,
                 parameters == null ? new Object[0] : parameters);
+    }
+
+    /**
+     * Registers a JavaScript initializer that runs in the browser each time a
+     * client-side DOM node is created for this element, and whose returned
+     * cleanup callback is invoked when that DOM node is discarded or the
+     * returned registration is removed.
+     * <p>
+     * This works like {@link #addJsInitializer(String, Object...)}, but takes
+     * the initializer as a function rather than as an expression. Declared as a
+     * snippet by a {@link JsDefinition} interface, the function is in the
+     * frontend bundle, so nothing is compiled from a string in the browser and
+     * the initializer works under a Content Security Policy that does not allow
+     * <code>unsafe-eval</code>:
+     *
+     * <pre>
+     * &#64;JsDefinition
+     * public interface ListenJs extends Serializable {
+     *
+     *     &#64;JsExpression("""
+     *             const listener = () =&gt; this.classList.toggle($0);
+     *             this.addEventListener('click', listener);
+     *             return () =&gt; this.removeEventListener('click', listener);""")
+     *     JsFunction toggleOnClick(String className);
+     * }
+     *
+     * element.addJsInitializer(
+     *         JsSnippets.of(ListenJs.class).toggleOnClick("active"));
+     * </pre>
+     * <p>
+     * The function is called with this element as <code>this</code> and no
+     * arguments, so a function that declares runtime arguments, with
+     * {@link com.vaadin.flow.js.JsFunctionParameterNames} or
+     * {@link JsFunction#withArguments(String...)}, is refused. The arguments of
+     * the Java call that created the snippet are available as <code>$0</code>,
+     * <code>$1</code>, &hellip; in its expression. The function must return a
+     * cleanup function, <code>null</code> or <code>undefined</code>, and the
+     * initializer is run and cleaned up at the same moments as one added with
+     * {@link #addJsInitializer(String, Object...)}.
+     *
+     * @param initializer
+     *            the function to run on the element, not <code>null</code>
+     * @return a registration that, when removed, invokes the cleanup callback
+     *         on the client
+     * @throws IllegalArgumentException
+     *             if the initializer declares runtime arguments
+     * @since 25.4
+     */
+    @SuppressWarnings("removal")
+    public Registration addJsInitializer(JsFunction initializer) {
+        Objects.requireNonNull(initializer, "Initializer cannot be null");
+        // No separate check of the JsCall is needed: JsFunction.ofDeclaredCall
+        // stores the names in @JsFunctionParameterNames as the argument
+        // names, so this covers a snippet as well as JsFunction.of with
+        // withArguments
+        List<String> argumentNames = initializer.getArgumentNames();
+        if (!argumentNames.isEmpty()) {
+            throw new IllegalArgumentException("An initializer is called with"
+                    + " no arguments, but the function declares "
+                    + argumentNames
+                    + " with @JsFunctionParameterNames or withArguments."
+                    + " Declare the initializer without runtime arguments,"
+                    + " and pass the values it needs as arguments of the"
+                    + " snippet method or as captures.");
+        }
+        return new ElementJsInitializerRegistration(getNode(), initializer);
     }
 
     private PendingJavaScriptResult scheduleJavaScriptInvocation(

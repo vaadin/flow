@@ -342,8 +342,8 @@ travels as a single-key wrapper object whose key is reserved:
   a callback that sends a `channel` RPC back to the server.
 - `{"@v-fn": {"body": …, "captures": […], "args": […]}}` — a `JsFunction`,
   manifested on the client as a real function with its captures pre-bound.
-  This is how `Element.addJsInitializer` ships a user expression as a
-  parameter of a fixed framework expression.
+  This is how `Element.addJsInitializer` ships a user expression as an
+  argument of the declared framework call that runs initializers.
 - `{"@v-fn": {"id": …, "captures": […]}}` — a `JsFunction` declared as a
   `JsSnippet` by a `@JsDefinition` method. The client looks the id up in
   `window.Vaadin.Flow.jsSnippets` and calls that function with the

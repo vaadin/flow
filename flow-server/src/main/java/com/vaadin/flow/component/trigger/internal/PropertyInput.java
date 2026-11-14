@@ -20,6 +20,7 @@ import java.util.Objects;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsSnippets;
 
 /**
  * Reads a JavaScript property from a target component's root element at the
@@ -41,6 +42,9 @@ import com.vaadin.flow.dom.JsFunction;
  * @since 25.2
  */
 public class PropertyInput<T> extends Action.Input<T> {
+
+    private static final TriggerInputJs TRIGGER_INPUT_JS = JsSnippets
+            .of(TriggerInputJs.class);
 
     private final Element target;
     private final String propertyName;
@@ -68,6 +72,6 @@ public class PropertyInput<T> extends Action.Input<T> {
         // Both target (Element) and propertyName (String) are JsFunction
         // captures — JsFunction's wire encoding handles Element-to-DOM-ref
         // mapping and JSON-quotes the property name.
-        return JsFunction.of("return $0[$1]", target, propertyName);
+        return TRIGGER_INPUT_JS.readProperty(target, propertyName);
     }
 }

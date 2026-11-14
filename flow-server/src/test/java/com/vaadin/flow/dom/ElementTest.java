@@ -46,9 +46,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -63,6 +66,7 @@ import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
+import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration.InitializerJs;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.StateNode;
@@ -79,6 +83,8 @@ import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
@@ -2746,10 +2752,102 @@ class ElementTest extends AbstractNodeTest {
     void addJsInitializer_nullExpression_throws() {
         Element element = ElementFactory.createDiv();
         assertThrows(NullPointerException.class,
-                () -> element.addJsInitializer(null));
+                () -> element.addJsInitializer((String) null));
     }
 
     @Test
+    void addJsInitializer_nullFunction_throws() {
+        Element element = ElementFactory.createDiv();
+        assertThrows(NullPointerException.class,
+                () -> element.addJsInitializer((JsFunction) null));
+    }
+
+    static Stream<JsFunction> initializersWithoutRuntimeArguments() {
+        return Stream.of(JsSnippets.of(InitializerSnippetsJs.class)
+                .toggleClass("active"), JsFunction.of("return null;"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("initializersWithoutRuntimeArguments")
+    void addJsInitializer_function_emitsInitWithFunction(
+            JsFunction initializer) {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        element.addJsInitializer(initializer);
+        ui.getElement().appendChild(element);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pending.size());
+        JavaScriptInvocation invocation = pending.get(0).getInvocation();
+        assertInitializerCall("init", invocation);
+        assertEquals(List.of(0, initializer, element),
+                invocation.getParameters(),
+                "the function should be sent as it is, so that a snippet is not compiled from a string");
+    }
+
+    @Test
+    void addJsInitializer_snippetRemoved_sendsDispose() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        Registration registration = element.addJsInitializer(JsSnippets
+                .of(InitializerSnippetsJs.class).toggleClass("active"));
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        ui.getInternals().dumpPendingJavaScriptInvocations();
+
+        registration.remove();
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pending = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pending.size());
+        assertInitializerCall("dispose", pending.get(0).getInvocation());
+    }
+
+    static Stream<JsFunction> initializersWithRuntimeArguments() {
+        return Stream.of(JsSnippets.of(InitializerSnippetsJs.class).logEvent(),
+                JsFunction.of("console.log(event)").withArguments("event"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("initializersWithRuntimeArguments")
+    void addJsInitializer_functionWithRuntimeArguments_throws(
+            JsFunction listener) {
+        Element element = ElementFactory.createDiv();
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> element.addJsInitializer(listener));
+        assertTrue(exception.getMessage().contains("[event]"),
+                "the message should name the declared arguments: "
+                        + exception.getMessage());
+    }
+
+    @JsDefinition
+    interface InitializerSnippetsJs extends Serializable {
+        @JsExpression("""
+                this.classList.add($0);
+                return () => this.classList.remove($0);""")
+        JsFunction toggleClass(String className);
+
+        @JsExpression("console.log(event);")
+        @JsFunctionParameterNames("event")
+        JsFunction logEvent();
+    }
+
+    private static void assertInitializerCall(String methodName,
+            JavaScriptInvocation invocation) {
+        JsCall call = invocation.getJsCall();
+        assertNotNull(call, "Expected a declared initializer call");
+        assertEquals(InitializerJs.class, call.definitionType());
+        assertEquals(methodName, call.methodName());
+    }
+
+    @Test
+    @SuppressWarnings("removal")
     void addJsInitializer_runsOnAttach_emitsInitInvocation() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
@@ -2763,19 +2861,17 @@ class ElementTest extends AbstractNodeTest {
         assertEquals(1, pending.size());
 
         JavaScriptInvocation invocation = pending.get(0).getInvocation();
-        assertTrue(
-                invocation.getExpression().contains("this.registerInitializer"),
-                "Wrapper expression should delegate to registerInitializer");
+        assertInitializerCall("init", invocation);
         assertFalse(invocation.getExpression().contains("return () => {};"),
                 "Wrapper expression must not embed user JavaScript");
 
         List<Object> params = invocation.getParameters();
         assertEquals(3, params.size(),
-                "Expected [element, initializerId, userFunction]");
-        assertEquals(element, params.get(0));
-        assertEquals(Integer.valueOf(0), params.get(1));
-        assertInstanceOf(JsFunction.class, params.get(2));
-        JsFunction userFn = (JsFunction) params.get(2);
+                "Expected [initializerId, userFunction, element]");
+        assertEquals(Integer.valueOf(0), params.get(0));
+        assertInstanceOf(JsFunction.class, params.get(1));
+        assertEquals(element, params.get(2));
+        JsFunction userFn = (JsFunction) params.get(1);
         assertEquals("return () => {};", userFn.getBody());
         assertEquals(List.of("foo"), userFn.getCaptures());
     }
@@ -2827,8 +2923,7 @@ class ElementTest extends AbstractNodeTest {
                 .dumpPendingJavaScriptInvocations();
         assertEquals(1, pending.size(),
                 "Init should be re-emitted when the client discarded the DOM");
-        assertTrue(pending.get(0).getInvocation().getExpression()
-                .contains("this.registerInitializer"));
+        assertInitializerCall("init", pending.get(0).getInvocation());
     }
 
     @Test
@@ -2847,8 +2942,7 @@ class ElementTest extends AbstractNodeTest {
         List<PendingJavaScriptInvocation> pending = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         assertEquals(1, pending.size());
-        assertTrue(pending.get(0).getInvocation().getExpression()
-                .contains("this.disposeInitializer"));
+        assertInitializerCall("dispose", pending.get(0).getInvocation());
     }
 
     @Test
@@ -2941,11 +3035,11 @@ class ElementTest extends AbstractNodeTest {
         List<PendingJavaScriptInvocation> pending = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         assertEquals(2, pending.size());
-        // Init params are [element, initializerId, userFunction].
+        // Init params are [initializerId, userFunction, element].
         assertEquals(Integer.valueOf(0),
-                pending.get(0).getInvocation().getParameters().get(1));
+                pending.get(0).getInvocation().getParameters().get(0));
         assertEquals(Integer.valueOf(1),
-                pending.get(1).getInvocation().getParameters().get(1));
+                pending.get(1).getInvocation().getParameters().get(0));
     }
 
     @Test
@@ -2965,10 +3059,9 @@ class ElementTest extends AbstractNodeTest {
                 .dumpPendingJavaScriptInvocations();
         assertEquals(1, pending.size());
         JavaScriptInvocation invocation = pending.get(0).getInvocation();
-        assertTrue(
-                invocation.getExpression().contains("this.disposeInitializer"));
-        // Dispose params are [element, initializerId].
-        assertEquals(Integer.valueOf(0), invocation.getParameters().get(1));
+        assertInitializerCall("dispose", invocation);
+        // Dispose params are [initializerId, element].
+        assertEquals(Integer.valueOf(0), invocation.getParameters().get(0));
     }
 
     @Test

@@ -15,15 +15,33 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.JsInitializerView", layout = ViewTestLayout.class)
 public class JsInitializerView extends AbstractDivView {
+
+    @JsDefinition
+    public interface CounterJs extends Serializable {
+        @JsExpression("""
+                $0.textContent = String(parseInt($0.textContent, 10) + 1);
+                return () => {
+                    $1.textContent = String(parseInt($1.textContent, 10) + 1);
+                };""")
+        JsFunction countInitAndCleanup(Element initCounter,
+                Element cleanupCounter);
+    }
 
     private final Div target = new Div();
     private final Span initCounter = new Span("0");
@@ -70,15 +88,9 @@ public class JsInitializerView extends AbstractDivView {
         }
         // The initializer bumps the init counter on each install and returns
         // a cleanup that bumps the cleanup counter when invoked.
-        registration = target.getElement().addJsInitializer(
-                """
-                        const initEl = $0;
-                        const cleanupEl = $1;
-                        initEl.textContent = String(parseInt(initEl.textContent, 10) + 1);
-                        return () => {
-                            cleanupEl.textContent = String(parseInt(cleanupEl.textContent, 10) + 1);
-                        };
-                        """,
-                initCounter.getElement(), cleanupCounter.getElement());
+        registration = target.getElement()
+                .addJsInitializer(JsSnippets.of(CounterJs.class)
+                        .countInitAndCleanup(initCounter.getElement(),
+                                cleanupCounter.getElement()));
     }
 }

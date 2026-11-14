@@ -29,19 +29,25 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
-import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.component.trigger.internal.ReadFromClipboardAction;
+import com.vaadin.flow.component.trigger.internal.TriggerInputJs;
+import com.vaadin.flow.component.trigger.internal.TriggerTestUtil;
+import com.vaadin.flow.component.trigger.internal.WriteToClipboardAction;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.UploadHandler;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -95,7 +101,8 @@ class ClipboardTest {
         // Action calls the TS helper; literal is captured by the text input
         // JsFunction at action $0.
         JsFunction action = actionFn(ui);
-        assertTrue(action.getBody().contains("writePayload"), action.getBody());
+        assertEquals("writeToClipboard", snippetOf(
+                WriteToClipboardAction.WriteToClipboardJs.class, action));
         JsFunction textInput = (JsFunction) action.getCaptures().get(0);
         assertEquals("Hello", textInput.getCaptures().get(0));
     }
@@ -112,7 +119,8 @@ class ClipboardTest {
         // PropertyInput renders as `return $0[$1]` and captures (element,
         // "value").
         JsFunction textInput = (JsFunction) actionFn(ui).getCaptures().get(0);
-        assertEquals("return $0[$1]", textInput.getBody());
+        assertEquals("readProperty",
+                snippetOf(TriggerInputJs.class, textInput));
         assertSame(field.getElement(), textInput.getCaptures().get(0));
         assertEquals("value", textInput.getCaptures().get(1));
     }
@@ -158,7 +166,8 @@ class ClipboardTest {
         // ImageBlobInput renders as `return $0` and captures the image
         // element. The action puts it at slot 2.
         JsFunction imageInput = (JsFunction) actionFn(ui).getCaptures().get(2);
-        assertEquals("return $0", imageInput.getBody());
+        assertEquals("returnValue",
+                snippetOf(TriggerInputJs.class, imageInput));
         assertSame(image.getElement(), imageInput.getCaptures().get(0));
     }
 
@@ -192,7 +201,8 @@ class ClipboardTest {
         Clipboard.onClick(button).write(ClipboardContent.create().text(field));
 
         JsFunction textInput = (JsFunction) actionFn(ui).getCaptures().get(0);
-        assertEquals("return $0[$1]", textInput.getBody());
+        assertEquals("readProperty",
+                snippetOf(TriggerInputJs.class, textInput));
         assertEquals("value", textInput.getCaptures().get(1));
     }
 
@@ -220,14 +230,11 @@ class ClipboardTest {
         AtomicReference<PasteEvent> received = new AtomicReference<>();
         Clipboard.onPaste(target, received::set);
 
-        // Must match the JS expressions in Clipboard.onPaste byte-for-byte —
-        // DomListenerRegistration uses the expression string as the JSON key
-        // under which the evaluated result appears in DomEvent#getEventData().
-        String textExpr = "event.clipboardData?.getData('text/plain') || null";
-        String htmlExpr = "event.clipboardData?.getData('text/html') || null";
+        // The browser sends each declared event data value under the key of
+        // the snippet, which equal arguments reproduce.
         ObjectNode data = JacksonUtils.createObjectNode();
-        data.put(textExpr, "plain");
-        data.put(htmlExpr, "<b>html</b>");
+        data.put(clipboardDataKey("text/plain"), "plain");
+        data.put(clipboardDataKey("text/html"), "<b>html</b>");
 
         target.getElement().getNode().getFeature(ElementListenerMap.class)
                 .fireEvent(new DomEvent(target.getElement(), "paste", data));
@@ -261,9 +268,8 @@ class ClipboardTest {
         Clipboard.onPaste(ui, PasteOptions.includingInputFields(),
                 received::set);
 
-        String textExpr = "event.clipboardData?.getData('text/plain') || null";
         ObjectNode data = JacksonUtils.createObjectNode();
-        data.put(textExpr, "from-bg");
+        data.put(clipboardDataKey("text/plain"), "from-bg");
 
         ui.getElement().getNode().getFeature(ElementListenerMap.class)
                 .fireEvent(new DomEvent(ui.getElement(), "paste", data));
@@ -272,6 +278,45 @@ class ClipboardTest {
         assertNotNull(event);
         assertSame(ui, event.getSource());
         assertEquals("from-bg", event.getText());
+    }
+
+    @Test
+    void onPaste_defaults_forwardsOnlyPastesThatPassDeclaredFilter() {
+        UI ui = new MockUI();
+        TestButton target = new TestButton();
+        ui.getElement().appendChild(target.getElement());
+
+        List<PasteEvent> received = new ArrayList<>();
+        Clipboard.onPaste(target, PasteOptions.defaults(), received::add);
+
+        // The browser sends the result of the declared filter under the key
+        // of the filter snippet. The filter itself, walking the composed path
+        // for form fields, is covered end-to-end by TriggerPasteIT.
+        String filterKey = JsonConstants.EVENT_SNIPPET_KEY_PREFIX
+                + JsSnippets.of(Clipboard.PasteJs.class)
+                        .isOutsideEditableField().getSnippetKey();
+        ElementListenerMap listeners = target.getElement().getNode()
+                .getFeature(ElementListenerMap.class);
+
+        ObjectNode intoField = JacksonUtils.createObjectNode();
+        intoField.put(filterKey, false);
+        intoField.put(clipboardDataKey("text/plain"), "into-field");
+        listeners.fireEvent(
+                new DomEvent(target.getElement(), "paste", intoField));
+
+        ObjectNode intoPage = JacksonUtils.createObjectNode();
+        intoPage.put(filterKey, true);
+        intoPage.put(clipboardDataKey("text/plain"), "into-page");
+        listeners.fireEvent(
+                new DomEvent(target.getElement(), "paste", intoPage));
+
+        assertEquals(List.of("into-page"),
+                received.stream().map(PasteEvent::getText).toList());
+    }
+
+    private static String clipboardDataKey(String mimeType) {
+        return ElementListenerMap.getEventDataKey(JsSnippets
+                .of(Clipboard.PasteJs.class).readClipboardData(mimeType));
     }
 
     @Test
@@ -287,9 +332,9 @@ class ClipboardTest {
         // Observed PromiseAction wraps the inner call; the inner JsFunction
         // delegates to the TS readPayload helper.
         JsFunction action = actionFn(ui);
-        JsFunction inner = (JsFunction) action.getCaptures().get(1);
-        assertEquals("return window.Vaadin.Flow.clipboard.readPayload()",
-                inner.getBody());
+        JsFunction inner = (JsFunction) action.getCaptures().get(0);
+        assertEquals("readFromClipboard", snippetOf(
+                ReadFromClipboardAction.ReadFromClipboardJs.class, inner));
     }
 
     @Test
@@ -396,17 +441,14 @@ class ClipboardTest {
                 "upload URL should point at the dynamic resource handler, got "
                         + url);
 
-        // The paste handling is installed via addJsInitializer: a native paste
-        // listener that delegates to the TS helper
-        // window.Vaadin.Flow.clipboard.uploadPastedFiles, capturing the
-        // per-registration attribute name so the helper can read the upload
-        // URL client-side.
+        // The paste handling is installed via addJsInitializer with a declared
+        // snippet, so nothing is compiled from a string in the browser. It
+        // captures the per-registration attribute name so the helper can read
+        // the upload URL client-side.
         JsFunction install = installFn(ui);
-        assertTrue(install.getBody().contains("uploadPastedFiles"),
-                "initializer should call the clipboard upload helper");
-        assertTrue(install.getBody().contains("addEventListener('paste'"),
-                "initializer should attach a native paste listener");
-        assertTrue(install.getCaptures().contains(uploadAttribute),
+        assertEquals("uploadPastedFiles",
+                snippetOf(Clipboard.PasteJs.class, install));
+        assertEquals(List.of(uploadAttribute), install.getCaptures(),
                 "initializer should capture the per-registration upload attribute");
     }
 
@@ -476,9 +518,6 @@ class ClipboardTest {
                 .dumpPendingJavaScriptInvocations();
         assertEquals(1, pending.size(),
                 "Expected exactly one pending JS invocation");
-        JavaScriptInvocation invocation = pending.get(0).getInvocation();
-        Object o = invocation.getParameters().get(2);
-        assertTrue(o instanceof JsFunction, "Expected $2 to be a JsFunction");
-        return (JsFunction) o;
+        return TriggerTestUtil.installFn(pending.get(0).getInvocation());
     }
 }
