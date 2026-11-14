@@ -291,6 +291,35 @@ Follow the existing implementations when you add one to an extension point,
 including one that is in review at the same time, instead of introducing a
 second shape for the same thing.
 
+Give every published runtime jar a stable JPMS module name, written to its
+manifest as `Automatic-Module-Name`. Derive the name from the Maven coordinates
+only, never from what the jar contains, so it stays the same when code moves
+between jars. The same rule applies to the Flow, component and platform jars,
+so the names stay consistent across repositories:
+
+- The name is the group ID followed by the artifact ID, with a leading `vaadin-`
+  dropped from the artifact ID and dashes replaced by dots (`flow-server` →
+  `com.vaadin.flow.server`, `flow-html-components` →
+  `com.vaadin.flow.html.components`, `vaadin-spring` → `com.vaadin.spring`,
+  `vaadin-quarkus-deployment` → `com.vaadin.quarkus.deployment`).
+- An artifact ID of just `vaadin` gives the group ID alone (`com.vaadin`).
+- Do not hand-pick a different name for a jar, even when it would match its
+  packages.
+
+A name must be unique across all Vaadin jars. The derivation can map two
+artifacts to one name (`vaadin-foo` and `foo`, or `com.vaadin:flow-server` and
+`com.vaadin.flow:server`), so choose the artifact ID of a new jar so that its
+name does not collide with an existing one.
+
+Name the jars that end up in an application's module graph, which includes
+Quarkus deployment jars, because Quarkus resolves them as modules when it builds
+the application. Test jars, build and test tooling, and jars that no module
+descriptor is expected to `requires` get no name, so they keep the one derived
+from their file name. In this repository, set the name with the
+`jpms.module.name` property in the module's `pom.xml`; the root pom writes the
+manifest entry and omits it when the property is empty. A released name can not
+change, because other modules `requires` it.
+
 ## Dev Loop
 
 These cover `flow-devloop-daemon`, the in-app connector in `vaadin-dev-server`

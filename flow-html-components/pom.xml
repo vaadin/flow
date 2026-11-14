@@ -11,7 +11,9 @@
   <name>Flow HTML Components</name>
   <description>${project.name}</description>
 
-  <properties/>
+  <properties>
+    <jpms.module.name>com.vaadin.flow.html.components</jpms.module.name>
+  </properties>
   <dependencies>
 
     <dependency>
