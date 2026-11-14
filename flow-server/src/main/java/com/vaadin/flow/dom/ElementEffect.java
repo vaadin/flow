@@ -28,6 +28,7 @@ import org.jspecify.annotations.Nullable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UIDetachedException;
+import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableExecutor;
 import com.vaadin.flow.function.SerializableFunction;
@@ -35,6 +36,7 @@ import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.DeniedSignalUsageException;
 import com.vaadin.flow.signals.EffectContext;
+import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalEnvironment;
 import com.vaadin.flow.signals.function.ContextualEffectAction;
@@ -66,19 +68,51 @@ public final class ElementEffect implements Serializable {
      * exceptions are not caught (probe / unattached mode).
      */
     private @Nullable SerializableBiConsumer<Exception, Element> errorHandler = null;
+    /**
+     * Where an effect that is not run before attach was created, recorded in
+     * development mode so that a failure on attach can point at the code that
+     * created the effect. {@code null} when not recorded.
+     */
+    private final @Nullable Throwable creationSite;
 
     public ElementEffect(Element owner, EffectAction effectFunction) {
         this(owner, (ContextualEffectAction) ctx -> effectFunction.execute());
     }
 
     public ElementEffect(Element owner, ContextualEffectAction effectFunction) {
+        this(owner, effectFunction, true);
+    }
+
+    /**
+     * Creates an element effect.
+     *
+     * @param owner
+     *            the owner element, not <code>null</code>
+     * @param effectFunction
+     *            the effect function, not <code>null</code>
+     * @param runBeforeAttach
+     *            <code>true</code> to run the effect function once right away
+     *            when the owner is not attached, so that a binding applies its
+     *            value and reports errors at the call site; <code>false</code>
+     *            to run it only when the owner is attached, in which case the
+     *            call site is recorded in development mode and added to errors
+     *            reported on attach
+     */
+    private ElementEffect(Element owner, ContextualEffectAction effectFunction,
+            boolean runBeforeAttach) {
         Objects.requireNonNull(owner, "Owner element cannot be null");
         Objects.requireNonNull(effectFunction,
                 "Effect function cannot be null");
         this.effectFunction = effectFunction;
         this.owner = owner;
 
-        if (!owner.getNode().isAttached()) {
+        boolean attached = owner.getNode().isAttached();
+        creationSite = attached || runBeforeAttach
+                || ComponentTracker.isDisabled() ? null
+                        : new Throwable(
+                                "The signal effect that failed was created here");
+
+        if (!attached && runBeforeAttach) {
             // Element is not yet attached: run a probe immediately so that
             // structural errors (e.g. MissingSignalUsageException) are reported
             // at the call site rather than delayed until attach. The probe uses
@@ -109,7 +143,7 @@ public final class ElementEffect implements Serializable {
         SerializableBiConsumer<Exception, Element> handler = errorHandler;
         if (handler == null) {
             // Probe run: nothing is caught so that the exception surfaces at
-            // the call site (e.g. inside bindText / Signal.effect).
+            // the call site (e.g. inside bindText).
             effectFunction.execute(ctx);
             return;
         }
@@ -119,18 +153,27 @@ public final class ElementEffect implements Serializable {
             // Programming error: signal.get() used in wrong context
             // (e.g. inside bindChildren factory). Always propagate so
             // the caller gets an immediate exception.
+            addCreationSite(e);
             throw e;
         } catch (Exception e) {
             // Exception rather than RuntimeException since the JVM allows
             // throwing checked exceptions without declaring them
+            addCreationSite(e);
             handler.accept(e, owner);
+        }
+    }
+
+    private void addCreationSite(Exception e) {
+        if (creationSite != null) {
+            e.addSuppressed(creationSite);
         }
     }
 
     /**
      * Creates a Signal effect that is owned by a given element. The effect is
      * enabled when the element is attached and automatically disabled when it
-     * is detached.
+     * is detached. The effect function is not run before the element is
+     * attached. If the element is already attached, it is run right away.
      * <p>
      * Example of usage:
      *
@@ -155,19 +198,23 @@ public final class ElementEffect implements Serializable {
      */
     public static Registration effect(Element owner,
             EffectAction effectFunction) {
-        ElementEffect effect = new ElementEffect(owner, effectFunction);
+        Objects.requireNonNull(effectFunction,
+                "Effect function cannot be null");
+        ElementEffect effect = new ElementEffect(owner,
+                ctx -> effectFunction.execute(), false);
         return effect::close;
     }
 
     /**
      * Creates a context-aware Signal effect that is owned by a given element.
      * The effect is enabled when the element is attached and automatically
-     * disabled when it is detached. The effect action receives an
-     * {@link EffectContext} providing information about why the effect is
-     * running, allowing the callback to distinguish between the initial
-     * execution, updates triggered by the effect owner's requests, and updates
-     * triggered by background changes (such as a background thread or another
-     * user modifying a shared signal).
+     * disabled when it is detached. The effect function is not run before the
+     * element is attached. If the element is already attached, it is run right
+     * away. The effect action receives an {@link EffectContext} providing
+     * information about why the effect is running, allowing the callback to
+     * distinguish between the initial execution, updates triggered by the
+     * effect owner's requests, and updates triggered by background changes
+     * (such as a background thread or another user modifying a shared signal).
      * <p>
      * Example of usage:
      *
@@ -197,7 +244,7 @@ public final class ElementEffect implements Serializable {
      */
     public static Registration effect(Element owner,
             ContextualEffectAction effectFunction) {
-        ElementEffect effect = new ElementEffect(owner, effectFunction);
+        ElementEffect effect = new ElementEffect(owner, effectFunction, false);
         return effect::close;
     }
 
@@ -300,10 +347,15 @@ public final class ElementEffect implements Serializable {
         };
 
         if (effect == null) {
-            // First attach for the already-attached path (effect not yet
-            // created): create the Effect directly with the UI dispatcher so
-            // that the initial run uses the proper execution context.
-            effect = new Effect(this::executeAction, uiDispatcher);
+            // First attach when the effect was not run before attach: create
+            // the Effect directly with the UI dispatcher so that the initial
+            // run uses the proper execution context.
+            try {
+                effect = new Effect(this::executeAction, uiDispatcher);
+            } catch (MissingSignalUsageException e) {
+                addCreationSite(e);
+                throw e;
+            }
         } else {
             // Re-attach after detach (or the not-attached probe path):
             // swap the dispatcher and activate. activate() will only re-run
