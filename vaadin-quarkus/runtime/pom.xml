@@ -61,19 +61,6 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-websockets</artifactId>
     </dependency>
-    <!--
-      Vert.x needs Jackson 2 core: io.vertx.core.json.Json reaches it when the
-      class is initialized, which a native image build does eagerly. Vert.x
-      depends on it, but quarkus-undertow pulls Vert.x in through
-      quarkus-http-vertx-backend, which excludes it, and that path wins over
-      the one through quarkus-websockets. Without this declaration Jackson 2
-      core is on the classpath only if some unrelated dependency happens to
-      bring it along.
-    -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-    </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>flow-server</artifactId>
