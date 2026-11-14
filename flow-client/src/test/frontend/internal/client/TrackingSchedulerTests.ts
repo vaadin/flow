@@ -1,5 +1,6 @@
 import { expect } from '@open-wc/testing';
 import { TrackingScheduler } from '../../../../main/frontend/internal/client/TrackingScheduler';
+import { ACTIVITY_CHANGED_EVENT } from '../../../../main/frontend/internal/client/ActivityNotifier';
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -34,5 +35,26 @@ describe('TrackingScheduler', () => {
     await settle();
     expect(order).to.deep.equal([1, 2]);
     expect(scheduler.hasWorkQueued()).to.be.false;
+  });
+
+  it('notifies once all deferred commands have run', async () => {
+    const scheduler = new TrackingScheduler();
+    const queuedWhenNotified: boolean[] = [];
+    const listener = () => queuedWhenNotified.push(scheduler.hasWorkQueued());
+    window.addEventListener(ACTIVITY_CHANGED_EVENT, listener);
+    try {
+      // The second command schedules a third one before the notification
+      // from an early decrement would be dispatched, so such a notification
+      // would see work still queued
+      scheduler.scheduleDeferred(() => {});
+      scheduler.scheduleDeferred(() => scheduler.scheduleDeferred(() => {}));
+
+      for (let i = 0; i < 5; i++) {
+        await settle();
+      }
+      expect(queuedWhenNotified).to.deep.equal([false]);
+    } finally {
+      window.removeEventListener(ACTIVITY_CHANGED_EVENT, listener);
+    }
   });
 });
