@@ -119,6 +119,18 @@ final class NodeInstallation {
     }
 
     /**
+     * Gets the file that lets only one build at a time install this version.
+     * Different versions install into separate directories, so they can be
+     * installed at the same time.
+     *
+     * @return the lock file, next to the installation directory
+     */
+    File getInstallLockFile() {
+        return new File(directory.getParentFile(),
+                ".vaadin-" + directory.getName() + "-install.lock");
+    }
+
+    /**
      * Gets the version this installation is named after, e.g. {@code v24.10.0}.
      *
      * @return the version of the installation

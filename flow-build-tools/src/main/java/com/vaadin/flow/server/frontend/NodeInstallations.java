@@ -121,10 +121,11 @@ final class NodeInstallations {
      * {@value NodeInstallation#DIRECTORY_PREFIX} naming of an auto-installed
      * Node.js are touched; anything else in the directory is left alone.
      * <p>
-     * The installation currently in use is never removed, and neither is the
-     * last remaining installation, so the directory always keeps at least one
-     * Node.js version. An installation whose last use is unknown is not removed
-     * either: it gets a marker so that its retention period starts from now.
+     * The installation currently in use is never removed, nor one that another
+     * build is installing right now, nor the last remaining installation, so
+     * the directory always keeps at least one Node.js version. An installation
+     * whose last use is unknown is not removed either: it gets a marker so that
+     * its retention period starts from now.
      *
      * @param installDirectory
      *            the directory holding the installations, typically
@@ -161,7 +162,10 @@ final class NodeInstallations {
                         "Node.js installation {} has no {} marker, starting its retention period now",
                         installation, NodeInstallation.LAST_USED_FILE);
                 installation.markUsed();
-            } else if (lastUsed.get().isBefore(threshold)) {
+            } else if (lastUsed.get().isBefore(threshold)
+                    && !installation.getInstallLockFile().exists()) {
+                // A locked installation is being installed again by another
+                // build, as installs of different versions run concurrently
                 unused.add(installation);
             }
         }

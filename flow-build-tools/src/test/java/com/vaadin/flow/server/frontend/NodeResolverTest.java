@@ -23,6 +23,8 @@ import java.nio.file.Files;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
@@ -39,6 +41,7 @@ import com.vaadin.flow.testutil.FrontendStubs;
 import static com.vaadin.flow.server.frontend.NodeInstallation.LAST_USED_FILE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
@@ -127,6 +130,46 @@ class NodeResolverTest {
     }
 
     @Test
+    void resolve_whileAnotherBuildInstalls_waitsAndUsesItsInstallation()
+            throws Exception {
+        requireShellStubs();
+        LockFile otherBuild = lockInstallOf(VERSION);
+        otherBuild.acquire();
+        CompletableFuture<ActiveNodeInstallation> resolved = CompletableFuture
+                .supplyAsync(() -> resolve(VERSION));
+
+        Thread.sleep(200);
+        assertFalse(resolved.isDone(),
+                "Resolving should wait while another build is installing");
+        // Nothing is downloadable, so installing again would fail
+        NodeInstallation installation = stubInstallation(VERSION);
+        otherBuild.release();
+
+        assertEquals(installation.getNodeExecutable().getAbsolutePath(),
+                resolved.get(30, TimeUnit.SECONDS).nodeExecutable());
+    }
+
+    @Test
+    void resolve_whileAnotherBuildInstallsOtherVersion_installsWithoutWaiting()
+            throws Exception {
+        requireShellStubs();
+        LockFile otherBuild = lockInstallOf("v22.0.0");
+        otherBuild.acquire();
+        prepareDownloadableNode(VERSION);
+        try {
+            ActiveNodeInstallation active = assertTimeoutPreemptively(
+                    Duration.ofSeconds(30), () -> resolve(VERSION));
+
+            assertEquals(
+                    NodeInstallation.forVersion(vaadinHome, VERSION)
+                            .getNodeExecutable().getAbsolutePath(),
+                    active.nodeExecutable());
+        } finally {
+            otherBuild.release();
+        }
+    }
+
+    @Test
     void resolve_configuredVersionTooOld_isStillUsedAsConfigured()
             throws IOException {
         NodeInstallation installation = stubInstallation(OUTDATED_VERSION);
@@ -169,6 +212,11 @@ class NodeResolverTest {
                 resolver.isSupportedGlobalVersion(
                         new FrontendVersion(maximumMajor + 1, 0, 0)),
                 "A version newer than the maximum major version should be rejected");
+    }
+
+    private LockFile lockInstallOf(String version) {
+        return new LockFile(NodeInstallation.forVersion(vaadinHome, version)
+                .getInstallLockFile().toPath(), "test");
     }
 
     private ActiveNodeInstallation resolve(String nodeVersion) {

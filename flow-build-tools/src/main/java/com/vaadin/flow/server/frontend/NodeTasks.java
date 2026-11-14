@@ -16,18 +16,13 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -104,7 +99,7 @@ public class NodeTasks implements FallibleCommand {
 
     private final List<FallibleCommand> commands = new ArrayList<>();
 
-    private Path lockFile;
+    private final LockFile lock;
 
     /**
      * Initialize tasks with the given options.
@@ -119,8 +114,10 @@ public class NodeTasks implements FallibleCommand {
 
         // Lock file is created in the project root folder and not in target/ so
         // that Maven does not remove it
-        lockFile = new File(options.getNpmFolder(), ".vaadin-node-tasks.lock")
-                .toPath();
+        lock = new LockFile(
+                new File(options.getNpmFolder(), ".vaadin-node-tasks.lock")
+                        .toPath(),
+                getClass().getSimpleName());
 
         ClassFinder classFinder = options.getClassFinder();
 
@@ -371,7 +368,7 @@ public class NodeTasks implements FallibleCommand {
 
     @Override
     public void execute() throws ExecutionFailedException {
-        getLock();
+        lock.acquire();
         try {
             sortCommands(commands);
             GeneratedFilesSupport generatedFilesSupport = new GeneratedFilesSupport();
@@ -386,90 +383,14 @@ public class NodeTasks implements FallibleCommand {
                         durationInNs.toMillis());
             }
         } finally {
-            releaseLock();
-        }
-    }
-
-    private void getLock() {
-        boolean loggedWaiting = false;
-
-        while (lockFile.toFile().exists()) {
-            NodeTasksLockInfo lockInfo;
-            try {
-                lockInfo = readLockFile();
-            } catch (Exception e) {
-                getLogger().error("Error waiting for another "
-                        + getClass().getSimpleName() + " process to finish", e);
-                break;
-            }
-
-            try {
-                Optional<ProcessHandle> processHandle = ProcessHandle
-                        .of(lockInfo.pid());
-
-                if (processHandle.isPresent()
-                        && normalizeCommandLine(processHandle.get().info())
-                                .equals(lockInfo.commandLine())) {
-                    if (!loggedWaiting) {
-                        getLogger().info("Waiting for a previous instance of "
-                                + getClass().getSimpleName() + " (pid: "
-                                + lockInfo.pid() + ") to finish...");
-                        loggedWaiting = true;
-                    }
-                    Thread.sleep(500);
-                } else {
-                    // The process has died without removing the lock file
-                    FileIOUtils.deleteQuietly(lockFile);
-                }
-            } catch (InterruptedException e) {
-                // Restore interrupted state
-                Thread.currentThread().interrupt();
-
-                throw new RuntimeException(
-                        "Interrupted while waiting for another "
-                                + getClass().getSimpleName() + " process (pid: "
-                                + lockInfo.pid() + ") to finish",
-                        e);
-            } catch (Exception e) {
-                getLogger().error("Error waiting for another "
-                        + getClass().getSimpleName() + " process (pid: "
-                        + lockInfo.pid() + ") to finish", e);
-            }
-        }
-
-        try {
-            writeLockFile();
-        } catch (IOException e) {
-            getLogger().error("Error writing lock file ({})",
-                    lockFile.toFile().getAbsolutePath(), e);
-        }
-    }
-
-    private void releaseLock() {
-        if (!lockFile.toFile().exists()) {
-            getLogger().warn("Somebody else has removed the lock file ({})",
-                    lockFile.toFile().getAbsolutePath());
-            return;
-        }
-
-        try {
-            long pid = readLockFile().pid();
-            if (pid != ProcessHandle.current().pid()) {
-                getLogger().warn(
-                        "Another process ({}) has overwritten the lock file ({})",
-                        pid, lockFile.toFile().getAbsolutePath());
-                return;
-            }
-            FileIOUtils.deleteQuietly(lockFile);
-        } catch (Exception e) {
-            getLogger().error("Error releasing lock file ({})",
-                    lockFile.toFile().getAbsolutePath());
+            lock.release();
         }
     }
 
     /**
-     * The content of the lock file that prevents concurrent frontend builds in
-     * the same project.
+     * The content of a lock file, naming the process holding the lock. Such a
+     * lock prevents concurrent frontend builds in the same project, and
+     * concurrent installs of Node into the same directory.
      *
      * @param pid
      *            the id of the process holding the lock
@@ -479,32 +400,6 @@ public class NodeTasks implements FallibleCommand {
      */
     public record NodeTasksLockInfo(long pid,
             String commandLine) implements Serializable {
-    }
-
-    private NodeTasksLockInfo readLockFile()
-            throws NumberFormatException, IOException {
-        List<String> lines = Files.readAllLines(lockFile,
-                StandardCharsets.UTF_8);
-        if (lines.size() != 2) {
-            throw new IllegalStateException(
-                    "Invalid lock file. It should contain 2 rows but contains "
-                            + lines);
-        }
-        return new NodeTasksLockInfo(Long.parseLong(lines.get(0)),
-                lines.get(1));
-    }
-
-    private void writeLockFile() throws IOException {
-        ProcessHandle currentProcess = ProcessHandle.current();
-        long myPid = currentProcess.pid();
-        String commandLine = normalizeCommandLine(currentProcess.info());
-        List<String> lines = List.of(Long.toString(myPid), commandLine);
-        Files.write(lockFile, lines, StandardCharsets.UTF_8);
-    }
-
-    private String normalizeCommandLine(ProcessHandle.Info processInfo) {
-        return processInfo.commandLine()
-                .map(line -> line.replaceAll("\\r?\\n", " \\\\n")).orElse("");
     }
 
     private Logger getLogger() {

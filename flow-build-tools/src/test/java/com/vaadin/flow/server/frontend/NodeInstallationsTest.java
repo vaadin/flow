@@ -44,6 +44,8 @@ class NodeInstallationsTest {
         NodeInstallation inUse = installation("node-v24.19.0", LONG_AGO);
         NodeInstallation stale = installation("node-v20.0.0", LONG_AGO);
         NodeInstallation recent = installation("node-v22.0.0", RECENTLY);
+        NodeInstallation reinstalling = installation("node-v21.0.0", LONG_AGO);
+        assertTrue(reinstalling.getInstallLockFile().createNewFile());
 
         // The remains of an earlier removal, and neighbours in ~/.vaadin that
         // are none of our business
@@ -64,6 +66,8 @@ class NodeInstallationsTest {
                 "The installation in use should be kept even when stale");
         assertTrue(exists(recent),
                 "A recently used installation should be kept");
+        assertTrue(exists(reinstalling),
+                "An installation that another build is installing should be kept");
         assertFalse(remains.exists(),
                 "The remains of an earlier removal should be cleaned up");
         assertTrue(legacyNodeFolder.isDirectory(),
