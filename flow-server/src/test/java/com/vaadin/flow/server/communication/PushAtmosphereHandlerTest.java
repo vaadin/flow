@@ -18,17 +18,24 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import org.atmosphere.cpr.ApplicationConfig;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
+import org.atmosphere.cpr.AtmosphereResourceEvent;
+import org.atmosphere.cpr.AtmosphereResourceImpl;
 import org.atmosphere.cpr.AtmosphereResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinServletService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class PushAtmosphereHandlerTest {
@@ -85,6 +92,35 @@ class PushAtmosphereHandlerTest {
         // response shouldn't contain async
         assertEquals("{\"meta\":{\"async\":true,\"sessionExpired\":true}}",
                 responseContent, "Invalid response");
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "false, false", "true, false", "false, true" })
+    void onStateChange_messageWrittenOnlyWhileClientConnected(boolean cancelled,
+            boolean closedByClient) throws IOException {
+        PushHandler pushHandler = mock(PushHandler.class);
+        atmosphereHandler.setPushHandler(pushHandler);
+
+        AtmosphereResourceImpl resourceImpl = mock(
+                AtmosphereResourceImpl.class);
+        when(resourceImpl.getRequest()).thenReturn(request);
+        when(resourceImpl.getRequest(false)).thenReturn(request);
+        when(resourceImpl.getResponse()).thenReturn(response);
+        when(request.getAttribute(ApplicationConfig.PROPERTY_USE_STREAM))
+                .thenReturn(false);
+
+        AtmosphereResourceEvent event = mock(AtmosphereResourceEvent.class);
+        when(event.getResource()).thenReturn(resourceImpl);
+        when(event.getMessage()).thenReturn("pending push message");
+        when(event.isCancelled()).thenReturn(cancelled);
+        when(event.isClosedByClient()).thenReturn(closedByClient);
+
+        atmosphereHandler.onStateChange(event);
+
+        boolean connected = !cancelled && !closedByClient;
+        verify(printWriter, times(connected ? 1 : 0))
+                .write("pending push message");
+        verify(pushHandler, times(cancelled ? 1 : 0)).connectionLost(event);
     }
 
 }
