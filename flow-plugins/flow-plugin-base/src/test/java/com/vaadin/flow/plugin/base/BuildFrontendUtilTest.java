@@ -269,6 +269,22 @@ class BuildFrontendUtilTest {
     }
 
     @Test
+    void propagateBuildInfo_npmAllowExoticVersions_writtenOnlyWhenEnabled()
+            throws Exception {
+        File tokenFile = prepareAndAssertTokenFile();
+        assertFalse(JacksonUtils.readTree(Files.readString(tokenFile.toPath()))
+                .has(InitParameters.NPM_ALLOW_EXOTIC_VERSIONS));
+
+        when(adapter.isNpmAllowExoticVersions()).thenReturn(true);
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+
+        JsonNode buildInfo = JacksonUtils
+                .readTree(Files.readString(tokenFile.toPath()));
+        assertTrue(buildInfo.get(InitParameters.NPM_ALLOW_EXOTIC_VERSIONS)
+                .booleanValue());
+    }
+
+    @Test
     void prepareFrontend_shouldCleanUnusedGeneratedFiles() throws Exception {
         fillAdapter();
         File frontendGeneratedFolder = new File(
@@ -323,6 +339,7 @@ class BuildFrontendUtilTest {
         when(adapter.isPrepareFrontendCacheDisabled()).thenReturn(true);
         when(adapter.isFrontendHotdeploy()).thenReturn(true);
         when(adapter.isNpmExcludeWebComponents()).thenReturn(true);
+        when(adapter.isNpmAllowExoticVersions()).thenReturn(true);
         when(adapter.frontendExtraFileExtensions()).thenReturn(List.of("svg"));
 
         File tokenFile = prepareAndAssertTokenFile();

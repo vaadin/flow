@@ -139,6 +139,10 @@ internal class BuildFrontendInputProperties(
         config.npmExcludeWebComponents
 
     @Input
+    fun getNpmAllowExoticVersions(): Provider<Boolean> =
+        config.npmAllowExoticVersions
+
+    @Input
     fun getCleanFrontendFiles(): Provider<Boolean> =
         config.cleanFrontendFiles
 
