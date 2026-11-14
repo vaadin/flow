@@ -28,7 +28,11 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
@@ -84,6 +88,9 @@ class RequestUtilTest {
 
     @Autowired
     RequestUtil requestUtil;
+
+    @Autowired
+    ObjectProvider<VaadinRolePrefixHolder> rolePrefixHolder;
 
     @MockitoSpyBean
     NavigationAccessControl accessControl;
@@ -736,27 +743,62 @@ class RequestUtilTest {
         assertTrue(authorizationResult.isGranted());
     }
 
-    @Test
-    void authorizeHillaRoute_hasAllowedRole_granted() {
+    @ParameterizedTest
+    @ValueSource(strings = { "foo", "ROLE_foo" })
+    void authorizeHillaRoute_hasAllowedRole_granted(String allowedRole) {
         MockHttpServletRequest request = createRequest("/hilla", null);
         when(fileRouterRequestUtil.isSecuredRoute(request)).thenReturn(true);
         when(fileRouterRequestUtil.getAllowedAuthorities(request))
-                .thenReturn(Set.of("foo"));
-        var authorizationResult = requestUtil.authorizeHillaRoute(
-                () -> new TestingAuthenticationToken("user", "pass", "foo"),
-                new RequestAuthorizationContext(request));
+                .thenReturn(Set.of(allowedRole));
+        var authorizationResult = requestUtil
+                .authorizeHillaRoute(
+                        () -> new TestingAuthenticationToken("user", "pass",
+                                "ROLE_foo"),
+                        new RequestAuthorizationContext(request));
         assertTrue(authorizationResult.isGranted());
     }
 
-    @Test
-    void authorizeHillaRoute_missingAllowedRole_notGranted() {
+    @ParameterizedTest
+    @ValueSource(strings = { "bar", "foo" })
+    void authorizeHillaRoute_missingAllowedRole_notGranted(String allowedRole) {
+        // The authority "foo" is not the role "foo", which is "ROLE_foo"
         MockHttpServletRequest request = createRequest("/hilla", null);
         when(fileRouterRequestUtil.isSecuredRoute(request)).thenReturn(true);
         when(fileRouterRequestUtil.getAllowedAuthorities(request))
-                .thenReturn(Set.of("bar"));
+                .thenReturn(Set.of(allowedRole));
         var authorizationResult = requestUtil.authorizeHillaRoute(
                 () -> new TestingAuthenticationToken("user", "pass", "foo"),
                 new RequestAuthorizationContext(request));
         assertFalse(authorizationResult.isGranted());
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = { "CUSTOM_,foo,CUSTOM_foo,ROLE_foo",
+            "CUSTOM_,CUSTOM_foo,CUSTOM_foo,ROLE_foo", "'',foo,foo,ROLE_foo",
+            ",foo,ROLE_foo,foo" })
+    void authorizeHillaRoute_configuredRolePrefix_used(String rolePrefix,
+            String allowedRole, String grantedAuthority,
+            String deniedAuthority) {
+        MockHttpServletRequest request = createRequest("/hilla", null);
+        when(fileRouterRequestUtil.isSecuredRoute(request)).thenReturn(true);
+        when(fileRouterRequestUtil.getAllowedAuthorities(request))
+                .thenReturn(Set.of(allowedRole));
+        requestUtil.setRolePrefixHolder(new VaadinRolePrefixHolder(rolePrefix));
+        try {
+            assertTrue(requestUtil
+                    .authorizeHillaRoute(
+                            () -> new TestingAuthenticationToken("user", "pass",
+                                    grantedAuthority),
+                            new RequestAuthorizationContext(request))
+                    .isGranted());
+            assertFalse(requestUtil
+                    .authorizeHillaRoute(
+                            () -> new TestingAuthenticationToken("user", "pass",
+                                    deniedAuthority),
+                            new RequestAuthorizationContext(request))
+                    .isGranted());
+        } finally {
+            requestUtil.setRolePrefixHolder(rolePrefixHolder.getIfAvailable());
+        }
     }
 }
