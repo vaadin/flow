@@ -17,6 +17,12 @@ updates:
       # only patch releases of the current LTS are proposed.
       - dependency-name: "io.quarkus:*"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      # These releases break the native image build of applications that use
+      # quarkus-undertow with Jackson 3 and without Jackson 2 core
+      # (https://github.com/quarkusio/quarkus/issues/56989). Remove once a
+      # 3.33 release with the fix is out.
+      - dependency-name: "io.quarkus:*"
+        versions: ["3.33.3.3", "3.33.4", "3.33.4.1", "3.33.4.2"]
       # Stay on ClassGraph 4.x. ClassGraph 6 requires JDK 25 or newer, while
       # Flow still supports JDK 21, and moving to 5.x is a deliberate decision.
       - dependency-name: "io.github.classgraph:classgraph"
