@@ -761,56 +761,30 @@ class PushHandlerTest {
     }
 
     @Test
-    void connectionLost_connectWithoutSession_doNotSendNotification() {
-        try {
-            AtmosphereResource resource = mock(AtmosphereResource.class);
-            when(resource.uuid()).thenReturn("1");
-            try {
-                MockVaadinServletService service = new MockVaadinServletService() {
-                    @Override
-                    public com.vaadin.flow.server.VaadinSession findVaadinSession(
-                            VaadinRequest request)
-                            throws SessionExpiredException {
-                        // simulating expired session.
-                        throw new SessionExpiredException();
-                    }
-
-                    @Override
-                    public UI findUI(VaadinRequest request) {
-                        return null;
-                    }
-                };
-                setProductionMode(service, false);
-
-                VaadinSession.setCurrent(null);
-                PushHandler handler = new PushHandler(service);
-
-                AtmosphereRequest request = mock(AtmosphereRequest.class);
-                when(resource.getRequest()).thenReturn(request);
-
-                AtmosphereResourceEvent event = mock(
-                        AtmosphereResourceEvent.class);
-                when(event.getResource()).thenReturn(resource);
-
-                AtmosphereResponse response = mock(AtmosphereResponse.class);
-                when(response.getWriter()).thenReturn(mock(PrintWriter.class));
-                when(resource.getResponse()).thenReturn(response);
-
-                when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
-
-                // Connection lost without session (could be with session too,
-                // simplified for the test).
-                handler.connectionLost(event);
-                handler.onConnect(resource); // connecting without session
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+    void connectionLost_reconnectWithoutSession_sessionExpiredNotificationSent()
+            throws Exception {
+        // The container closes the connection when the session ends, such as
+        // Tomcat for a session with an authenticated user, and the client
+        // reconnects with the same tracking id
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinSession findVaadinSession(VaadinRequest request)
+                    throws SessionExpiredException {
+                throw new SessionExpiredException();
             }
-            assertNull(VaadinSession.getCurrent());
-            verify(resource, times(0)).getResponse();
-        } finally {
-            VaadinSession.setCurrent(null);
-        }
+        };
+        setProductionMode(service, false);
+        AtomicReference<AtmosphereResource> res = new AtomicReference<>();
+
+        runTest(service, (handler, resource) -> {
+            when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
+            handler.connectionLost(mockEvent(resource));
+            handler.onConnect(resource);
+            res.set(resource);
+        });
+
+        verify(res.get().getResponse().getWriter())
+                .write(VaadinService.createSessionExpiredJSON(true));
     }
 
     @Test
