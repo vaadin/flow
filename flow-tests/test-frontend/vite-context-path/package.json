@@ -32,7 +32,7 @@
     "transform-ast": "2.4.4",
     "typescript": "npm:@typescript/typescript6@6.0.2",
     "vite": "8.3.6",
-    "vite-plugin-checker": "0.14.5"
+    "vite-plugin-checker": "1.0.0"
   },
   "vaadin": {
     "dependencies": {
@@ -61,7 +61,7 @@
       "transform-ast": "2.4.4",
       "typescript": "npm:@typescript/typescript6@6.0.2",
       "vite": "8.3.6",
-      "vite-plugin-checker": "0.14.5"
+      "vite-plugin-checker": "1.0.0"
     },
     "hash": "47c37d7f31a468ff3a5e499b8c15ae71b6afc2dd690e652b3db1a0065996febd"
   }
