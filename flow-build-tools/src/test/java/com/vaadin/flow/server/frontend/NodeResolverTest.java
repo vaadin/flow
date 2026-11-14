@@ -29,10 +29,18 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.Platform;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.NodeResolver.ActiveNodeInstallation;
 import com.vaadin.flow.testutil.FrontendStubs;
 
@@ -55,6 +63,8 @@ class NodeResolverTest {
      * A version that the current frontend tooling cannot run on.
      */
     private static final String OUTDATED_VERSION = "v18.14.1";
+
+    private static final File GLOBAL_NODE_FOLDER = new File("/opt/node/bin");
 
     private static final Instant LONG_AGO = Instant.now()
             .minus(Duration.ofDays(400));
@@ -144,31 +154,90 @@ class NodeResolverTest {
     void globalNode_versionsInTheSupportedRangeAreAccepted() {
         NodeResolver resolver = resolver(VERSION);
 
-        assertTrue(
-                resolver.isSupportedGlobalVersion(
-                        FrontendTools.SUPPORTED_NODE_VERSION),
+        assertTrue(resolver.isSupportedGlobalVersion(
+                FrontendTools.SUPPORTED_NODE_VERSION, GLOBAL_NODE_FOLDER),
                 "The minimum supported version should be accepted");
         assertTrue(
                 resolver.isSupportedGlobalVersion(new FrontendVersion(
-                        FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION, 99, 0)),
+                        FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION, 99, 0),
+                        GLOBAL_NODE_FOLDER),
                 "A later release of the maximum supported major version should be accepted");
     }
 
     @Test
-    void globalNode_versionsOutsideTheSupportedRangeAreRejected() {
+    void globalNode_versionOlderThanMinimumIsRejected() {
         NodeResolver resolver = resolver(VERSION);
         int minimumMajor = FrontendTools.SUPPORTED_NODE_VERSION
                 .getMajorVersion();
-        int maximumMajor = FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION;
 
         assertFalse(
                 resolver.isSupportedGlobalVersion(
-                        new FrontendVersion(minimumMajor - 1, 99, 0)),
+                        new FrontendVersion(minimumMajor - 1, 99, 0),
+                        GLOBAL_NODE_FOLDER),
                 "A version older than the minimum should be rejected");
-        assertFalse(
-                resolver.isSupportedGlobalVersion(
-                        new FrontendVersion(maximumMajor + 1, 0, 0)),
-                "A version newer than the maximum major version should be rejected");
+    }
+
+    @Test
+    void globalNode_newerThanMaximumWithoutInstalledNode_warnsHowToUseItAnyway() {
+        int newerMajor = FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION + 1;
+        Logger logger = Mockito.spy(Logger.class);
+
+        rejectNewerGlobalVersion(newerMajor, logger);
+
+        ArgumentCaptor<String> format = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Object[]> arguments = ArgumentCaptor
+                .forClass(Object[].class);
+        Mockito.verify(logger).warn(format.capture(), arguments.capture());
+        assertTellsHowToUseNewerNode(format, arguments, newerMajor);
+    }
+
+    @Test
+    void globalNode_newerThanMaximumWithInstalledNode_isNotWarnedAbout()
+            throws IOException {
+        stubInstallation(VERSION);
+        int newerMajor = FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION + 1;
+        Logger logger = Mockito.spy(Logger.class);
+
+        rejectNewerGlobalVersion(newerMajor, logger);
+
+        Mockito.verify(logger, Mockito.never()).warn(Mockito.anyString(),
+                Mockito.any(Object[].class));
+        ArgumentCaptor<String> format = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Object[]> arguments = ArgumentCaptor
+                .forClass(Object[].class);
+        Mockito.verify(logger).info(format.capture(), arguments.capture());
+        assertTellsHowToUseNewerNode(format, arguments, newerMajor);
+    }
+
+    private static void assertTellsHowToUseNewerNode(
+            ArgumentCaptor<String> format, ArgumentCaptor<Object[]> arguments,
+            int newerMajor) {
+        String message = MessageFormatter
+                .arrayFormat(format.getValue(), arguments.getValue())
+                .getMessage();
+        assertTrue(message.contains("version " + newerMajor + ".x"),
+                "The message should name the global Node.js version: "
+                        + message);
+        assertTrue(
+                message.contains("set the '" + Constants.VAADIN_PREFIX
+                        + InitParameters.NODE_FOLDER + "' property"),
+                "The message should tell how to use the global Node.js anyway: "
+                        + message);
+        assertTrue(message.endsWith(GLOBAL_NODE_FOLDER.getAbsolutePath()),
+                "The message should name the global Node.js folder: "
+                        + message);
+    }
+
+    private void rejectNewerGlobalVersion(int major, Logger logger) {
+        NodeResolver resolver = resolver(VERSION);
+        try (MockedStatic<LoggerFactory> loggerFactory = Mockito
+                .mockStatic(LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
+            loggerFactory
+                    .when(() -> LoggerFactory.getLogger(NodeResolver.class))
+                    .thenReturn(logger);
+            assertFalse(resolver.isSupportedGlobalVersion(
+                    new FrontendVersion(major, 0, 0), GLOBAL_NODE_FOLDER));
+        }
     }
 
     private ActiveNodeInstallation resolve(String nodeVersion) {
