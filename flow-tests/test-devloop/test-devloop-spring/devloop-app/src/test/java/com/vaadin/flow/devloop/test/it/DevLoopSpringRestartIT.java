@@ -29,6 +29,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * The changes a redefine cannot make live, and the reason each one gives.
@@ -199,6 +200,10 @@ class DevLoopSpringRestartIT extends AbstractDevLoopIT {
         // module, so a source already on disk would be compiled and scanned
         // into the application it is meant to be missing from.
         cli.run("shutdown").assertExitCode(0);
+        // The daemon answers shutdown before it has stopped the application,
+        // so returning then would hand the start below a daemon still exiting.
+        assertFalse(Files.exists(APP.resolve(".vaadin/daemon.properties")),
+                "shutdown returned before the daemon had exited");
         cli.run("start").assertExitCode(0);
         Path source = MUTABLE.resolve("ExtraBean.java");
         patch.create(source,

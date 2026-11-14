@@ -57,7 +57,7 @@ usage: vaadin-dev [--app <dir>] <command> [options]
   stop              stop the app
   restart           stop then start
   shutdown          stop the daemon (and the app it owns)
-  ping              check the daemon is alive
+  ping              check the daemon is alive (exits 1 when none is running)
 
   start|restart --jvm-args "<flags>"
                     extra JVM flags for the app, after the loop's own, e.g.
@@ -70,9 +70,12 @@ usage: vaadin-dev [--app <dir>] <command> [options]
                     diagnostic: push named classes at the running app and print
                     the raw reply, without apply's escalation policy
 
-The daemon starts automatically on first use and serves this application only. When the
-application is one module of a Maven reactor, every reactor module it depends on is in the
-loop too: apply scans, compiles and hot-reloads those the same way. status names them.
+The daemon starts automatically on the first command other than status or ping, and serves
+this application only. The app inherits the environment of the shell that spawned the daemon,
+so a variable set for a later start is not seen: shutdown first, or pass -D flags with
+start --jvm-args. When the application is one module of a Maven reactor, every reactor module
+it depends on is in the loop too: apply scans, compiles and hot-reloads those the same way.
+status names them.
 
   --app <dir>              the application to act on (default: the directory this
                            script is in, or the one above it when the script is
@@ -215,6 +218,60 @@ function Read-Handshake([string] $key) {
         }
     }
     return $null
+}
+
+# Whether the daemon the handshake records is still running, decided from its
+# process. A live pid is not enough: once the daemon is killed its pid can be
+# handed to an unrelated process, so the recorded start time has to match too -
+# the same check the daemon makes. Answers 'alive', 'gone', or 'unconfirmed'
+# when the pid is alive but nothing tells it apart from a reused one: no start
+# time recorded, or one the process does not reveal.
+function Get-RecordedDaemonState([int] $processId) {
+    try { $process = Get-Process -Id $processId -ErrorAction Stop }
+    catch { return 'gone' }
+    $recorded = 0L
+    if (-not [long]::TryParse((Read-Handshake 'startEpochMillis'), [ref]$recorded) -or
+            $recorded -le 0) {
+        return 'unconfirmed'
+    }
+    try { $started = $process.StartTime } catch { return 'unconfirmed' }
+    if (-not $started) { return 'unconfirmed' }
+    $actual = ([DateTimeOffset] $started).ToUnixTimeMilliseconds()
+    if ([Math]::Abs($actual - $recorded) -lt 2000) { return 'alive' }
+    return 'gone'
+}
+
+# Whether the recorded daemon is still running once it has had a moment to
+# exit, answered as Get-RecordedDaemonState does. A daemon that has just
+# answered a shutdown, or shut itself down when idle, has closed its port but
+# not yet exited and removed its handshake, and is not wedged.
+function Get-RecordedDaemonLingering([int] $processId) {
+    $clock = [Diagnostics.Stopwatch]::StartNew()
+    while ($true) {
+        $state = Get-RecordedDaemonState $processId
+        if ($state -eq 'gone' -or $clock.Elapsed.TotalSeconds -ge 5) { return $state }
+        Start-Sleep -Milliseconds 100
+    }
+}
+
+# Waits for a daemon that has answered shutdown to finish exiting. It replies
+# before it stops the application it owns, which can take up to half a minute,
+# and only then removes its handshake. Returning earlier would let the next
+# command find a closed port, a live pid and a matching start time, and call a
+# healthy daemon wedged.
+function Wait-DaemonExit {
+    $recorded = Read-Handshake 'pid'
+    if (-not $recorded) { return }
+    $clock = [Diagnostics.Stopwatch]::StartNew()
+    while (Test-Path -LiteralPath $handshake) {
+        if ((Get-RecordedDaemonState ([int]$recorded)) -eq 'gone') { return }
+        if ($clock.Elapsed.TotalSeconds -ge 40) {
+            [Console]::Error.WriteLine("vaadin-dev: the daemon (pid $recorded) " +
+                "is still shutting down")
+            return
+        }
+        Start-Sleep -Milliseconds 100
+    }
 }
 
 function Get-JavaBinary {
@@ -600,6 +657,31 @@ function Send-Command([int] $port, [string] $token, [string[]] $words) {
     }
 }
 
+# status and ping only report on the daemon, so they never spawn one. A daemon
+# fixes its environment - and so the app's - to the shell that spawned it, and
+# one spawned by a status would quietly hand the app that shell's environment
+# instead of the one the start that follows was run with.
+function Test-ReportsOnly([string] $verb) {
+    return $verb -in @('status', 'ping')
+}
+
+# The answer a reporting command gives when there is no daemon to ask, as an exit
+# code. The JSON has every member the daemon's own status --json has, so a reader
+# finds each one; those only a daemon could fill in are null.
+function Write-NoDaemon([string] $verb, [string[]] $arguments) {
+    if ($verb -eq 'ping') {
+        [Console]::Out.WriteLine("no daemon running for $root")
+        return 1
+    }
+    if ($arguments -contains '--json') {
+        [Console]::Out.WriteLine(
+            '{"app":{"state":"stopped","pid":null,"exitCode":null,"failureReason":null,"registered":false,"owner":null,"mode":null,"frontend":null,"logErrors":[]},"modules":null,"daemon":null,"transaction":null}')
+    } else {
+        [Console]::Out.WriteLine('stopped  (no daemon running; start spawns one)')
+    }
+    return 0
+}
+
 # --- main --------------------------------------------------------------------
 if ($rest.Count -eq 0 -or $rest[0] -in @('-h', '--help', 'help')) {
     Write-Usage
@@ -613,6 +695,7 @@ try {
     $port = Read-Handshake 'port'
     $token = Read-Handshake 'token'
     if (-not $port -or -not $token) {
+        if (Test-ReportsOnly $command) { exit (Write-NoDaemon $command $commandArgs) }
         if (-not (Start-Daemon)) { exit 70 }
         $port = Read-Handshake 'port'
         $token = Read-Handshake 'token'
@@ -620,8 +703,17 @@ try {
 
     $status = Send-Command ([int]$port) $token $words
 
-    # 99 means the recorded daemon is not answering: the record is stale, so reap
-    # it and try once more with a fresh daemon.
+    # 99 means the recorded daemon is not answering. Whether there is still a
+    # daemon is decided from its process, given up to five seconds to finish
+    # exiting - so a wedged daemon costs every command that long before it exits
+    # 70. A live one keeps its record whatever the command: it still holds the
+    # daemon lock, so a fresh daemon could not come up beside it, and without
+    # the record nothing names the pid to kill. Only when its start time cannot
+    # be checked is it reaped anyway, as it may be an unrelated process that
+    # reused the pid. A daemon that exited on its own took its handshake with
+    # it; a killed one leaves a stale record, which is reaped. Either way a
+    # command that only reports then answers that there is none, any other tries
+    # once more with a fresh daemon.
     #
     # Said out loud, because the application went with it. A daemon that shuts
     # down deletes its own handshake, so a handshake still naming a process that
@@ -630,28 +722,39 @@ try {
     # stopped it.
     if ($status -eq 99) {
         $recorded = Read-Handshake 'pid'
-        $alive = $false
+        $state = 'gone'
         if ($recorded) {
-            try { $alive = [bool] (Get-Process -Id ([int]$recorded) -ErrorAction Stop) }
-            catch { $alive = $false }
+            $state = Get-RecordedDaemonLingering ([int]$recorded)
         }
-        if ($alive) {
+        if ($state -eq 'alive') {
             [Console]::Error.WriteLine("vaadin-dev: the daemon recorded for " +
-                "$root (pid $recorded) is running but not answering. Reaping " +
-                "the record and starting a fresh daemon.")
-        } else {
+                "$root (pid $recorded) is running but not answering. Kill pid " +
+                "$recorded, then 'vaadin-dev start' spawns a fresh one.")
+            exit 70
+        }
+        # Unconfirmed, the pid may well belong to an unrelated process now, and
+        # keeping the record would wedge every command on it for good.
+        if ($state -eq 'unconfirmed') {
+            [Console]::Error.WriteLine("vaadin-dev: the daemon recorded for " +
+                "$root (pid $recorded) does not answer, and its start time " +
+                "cannot be read here to tell it from an unrelated process " +
+                "that reused the pid, so its record was removed. If that pid " +
+                "is a wedged daemon, kill it before 'vaadin-dev start'.")
+            Remove-Item -LiteralPath $handshake -Force -ErrorAction SilentlyContinue
+        } elseif (Test-Path -LiteralPath $handshake) {
             $named = if ($recorded) { $recorded } else { 'unknown' }
             [Console]::Error.WriteLine("vaadin-dev: the daemon recorded for " +
                 "$root (pid $named) is gone and left its handshake behind, so " +
                 "it was killed rather than shut down - the application it " +
-                "owned stopped with it. Starting a fresh daemon; the app needs " +
-                "'vaadin-dev start' again.")
+                "owned stopped with it. The app needs 'vaadin-dev start' " +
+                "again.")
             [Console]::Error.WriteLine("vaadin-dev: if that repeats on every " +
                 "command, whatever runs vaadin-dev is killing the processes " +
                 "each command created; see ""When it goes wrong"" in the " +
                 "vaadin-devloop skill reference.")
+            Remove-Item -LiteralPath $handshake -Force -ErrorAction SilentlyContinue
         }
-        Remove-Item -LiteralPath $handshake -Force -ErrorAction SilentlyContinue
+        if (Test-ReportsOnly $command) { exit (Write-NoDaemon $command $commandArgs) }
         if (-not (Start-Daemon)) { exit 70 }
         $port = Read-Handshake 'port'
         $token = Read-Handshake 'token'
@@ -661,6 +764,7 @@ try {
             exit 70
         }
     }
+    if ($command -eq 'shutdown' -and $status -eq 0) { Wait-DaemonExit }
     exit $status
 } finally {
     Clear-Spinner
