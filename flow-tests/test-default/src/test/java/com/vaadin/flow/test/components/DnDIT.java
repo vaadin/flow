@@ -110,9 +110,8 @@ public class DnDIT extends AbstractDefaultIT {
         waitForElementPresent(By.id("event-2"));
 
         TestBenchElement eventlog = getEventlog(2);
-        String expected = "2: DragImage: <img alt=\"Gift\" src=\"/images/gift.png\">";
-        Assertions.assertEquals(expected, eventlog.getText(),
-                "Invalid drag image");
+        assertDragImage(eventlog, "2: DragImage: <img ", ">", "alt=\"Gift\"",
+                "src=\"/images/gift.png\"");
     }
 
     @BrowserTest
@@ -200,9 +199,10 @@ public class DnDIT extends AbstractDefaultIT {
         waitForElementPresent(By.id("event-2"));
 
         TestBenchElement eventlog = getEventlog(2);
-        String expected = "2: DragImage: <div id=\"box-no-effect\" style=\"width:100px;border:1px solid;margin:10px;height:60px\">no-effect</div>";
-        Assertions.assertEquals(expected, eventlog.getText(),
-                "Invalid drag image");
+        assertDragImage(eventlog,
+                "2: DragImage: <div id=\"box-no-effect\" style=\"",
+                "\">no-effect</div>", "width:100px", "border:1px solid",
+                "margin:10px", "height:60px");
     }
 
     @BrowserTest
@@ -218,9 +218,8 @@ public class DnDIT extends AbstractDefaultIT {
 
         waitForElementPresent(By.id("event-2"));
         TestBenchElement eventlog = getEventlog(2);
-        String expected = "2: DragImage: <img alt=\"Gift\" src=\"/images/gift.png\">";
-        Assertions.assertEquals(expected, eventlog.getText(),
-                "Invalid drag image");
+        assertDragImage(eventlog, "2: DragImage: <img ", ">", "alt=\"Gift\"",
+                "src=\"/images/gift.png\"");
     }
 
     private void dragBoxToLanes(TestBenchElement boxElement,
@@ -278,6 +277,26 @@ public class DnDIT extends AbstractDefaultIT {
                 .toString();
         Assertions.assertEquals(expected, eventlog.getText(),
                 "Invalid drop event details");
+    }
+
+    /**
+     * Asserts the logged drag image HTML without depending on the order of
+     * attributes or style declarations, which is not defined.
+     */
+    private void assertDragImage(TestBenchElement eventlog, String prefix,
+            String suffix, String... fragments) {
+        String text = eventlog.getText();
+        assertTrue(text.startsWith(prefix) && text.endsWith(suffix),
+                "Invalid drag image: " + text);
+        int expectedLength = prefix.length() + suffix.length();
+        for (String fragment : fragments) {
+            assertTrue(text.contains(fragment), "Invalid drag image: " + text);
+            expectedLength += fragment.length();
+        }
+        // Separators: one between attributes or one per style declaration
+        expectedLength += fragments.length - 1;
+        Assertions.assertEquals(expectedLength, text.length(),
+                "Invalid drag image: " + text);
     }
 
     private TestBenchElement getEventlog(int i) {
