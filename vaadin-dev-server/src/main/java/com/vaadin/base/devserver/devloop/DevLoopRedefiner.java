@@ -1481,8 +1481,9 @@ final class DevLoopRedefiner {
             imports.add("jssnippet:" + (parameterNames == null ? ""
                     : String.join(",", parameterNames.value())));
         }
-        // An @EventData value that the client would compile is generated into
-        // the bundle in the same way, and identified by the same kind of hash
+        // An @EventData value or a @DomEvent filter that the client would
+        // compile is generated into the bundle in the same way, and identified
+        // by the same kind of hash
         if (type.isAnnotationPresent(DomEvent.class)
                 && ComponentEvent.class.isAssignableFrom(type)) {
             imports.addAll(eventDataFingerprints(type));
@@ -1510,12 +1511,23 @@ final class DevLoopRedefiner {
 
     /**
      * What identifies the functions the build generates for the
-     * {@link com.vaadin.flow.component.EventData} values of a DOM event type.
-     * Scanned without a cache, as the build does, so the comparison sees what
-     * the class declares now.
+     * {@link com.vaadin.flow.component.EventData} values and the
+     * {@link DomEvent#filter()} of a DOM event type. Scanned without a cache,
+     * as the build does, so the comparison sees what the class declares now.
      */
-    @SuppressWarnings("unchecked")
     private static List<String> eventDataFingerprints(Class<?> type) {
+        List<String> fingerprints = new ArrayList<>(
+                bundledEventDataFingerprints(type));
+        String filter = BundledEventData.getBundledFilter(type);
+        if (filter != null) {
+            fingerprints.add(
+                    "eventfilter:" + BundledEventData.getFunctionId(filter));
+        }
+        return fingerprints;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<String> bundledEventDataFingerprints(Class<?> type) {
         try {
             return BundledEventData
                     .getBundledEventData(

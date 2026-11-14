@@ -113,7 +113,7 @@ class CspModeTest {
     private static class RouteView extends Component {
     }
 
-    @DomEvent("offset-event")
+    @DomEvent(value = "offset-event", filter = "event.button === 0", preventDefault = true)
     public static class OffsetEvent extends ComponentEvent<Component> {
         // Only the event data annotations of the parameters are used
         public OffsetEvent(Component source, boolean fromClient,
@@ -261,8 +261,9 @@ class CspModeTest {
             // The filter of the key up event is a property path
             ComponentUtil.addListener(clickable, KeyUpEvent.class, e -> {
             });
-            // The build puts the event data that is not a property path into
-            // the bundle
+            // The build puts the event data and the filter that are not
+            // property paths into the bundle, also when the filter decides
+            // whether the default is prevented
             ComponentUtil.addListener(clickable, OffsetEvent.class, e -> {
             });
             // also a value of an element, whose function returns the DOM node

@@ -831,7 +831,7 @@ class ComponentEventBusTest {
                 .getExpressions("element-data-event"), expressions);
     }
 
-    @DomEvent("offset-event")
+    @DomEvent(value = "offset-event", filter = BUTTON_FILTER)
     public static class OffsetEvent extends ComponentEvent<Component> {
         private final double offset;
 
@@ -847,9 +847,10 @@ class ComponentEventBusTest {
 
     private static final String OFFSET = "event.clientX - element.offsetLeft";
     private static final String PATH_TARGET = "event.composedPath()[0]";
+    private static final String BUTTON_FILTER = "event.button === 0";
 
     @Test
-    void addListener_expressionEventData_sentAsTheFunctionOfTheBundle() {
+    void addListener_expressionEventDataAndFilter_sentAsTheFunctionsOfTheBundle() {
         TestComponent component = new TestComponent();
         AtomicReference<OffsetEvent> received = new AtomicReference<>();
         component.addListener(OffsetEvent.class, received::set);
@@ -877,9 +878,17 @@ class ComponentEventBusTest {
                 .asBoolean());
         assertFalse(settings.get(OFFSET)
                 .has(JsonConstants.EVENT_SETTINGS_MAP_ELEMENT));
+        // The filter runs the function of the bundle as well
+        assertEquals(BundledEventData.getFunctionId(BUTTON_FILTER),
+                settings.get(BUTTON_FILTER)
+                        .get(JsonConstants.EVENT_SETTINGS_FUNCTION).asString());
 
         ObjectNode eventData = JacksonUtils.createObjectNode();
         eventData.put(OFFSET, 42.5);
+        eventData.put(BUTTON_FILTER, false);
+        fireDomEvent(component, "offset-event", eventData);
+        assertNull(received.get());
+        eventData.put(BUTTON_FILTER, true);
         fireDomEvent(component, "offset-event", eventData);
         assertEquals(42.5, received.get().offset);
     }

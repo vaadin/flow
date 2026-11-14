@@ -291,7 +291,7 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
       expect(harness.collectedNodes).to.have.length(0);
       expect(reported).to.have.length(1);
       expect(reported[0]).to.be.instanceOf(EvalError);
-      expect(errors[0]).to.contain(`@EventData value "${expression}"`);
+      expect(errors[0]).to.contain(`@EventData value or @DomEvent filter "${expression}"`);
       expect(errors[0]).to.contain('the event is not sent');
     });
   });
@@ -314,7 +314,7 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
       console.warn = originalWarn;
     }
     expect(warnings).to.have.length(1);
-    expect(warnings[0]).to.contain(`@EventData value "${expression}"`);
+    expect(warnings[0]).to.contain(`@EventData value or @DomEvent filter "${expression}"`);
   });
 
   it('compiles a bundled expression missing from the bundle and warns once', () => {
@@ -337,7 +337,7 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
       { [expression]: 'click compiled' }
     ]);
     expect(warnings).to.have.length(1);
-    expect(warnings[0]).to.contain(`@EventData value "${expression}"`);
+    expect(warnings[0]).to.contain(`@EventData value or @DomEvent filter "${expression}"`);
   });
 
   it('runs a declared snippet with its captures, the event and the element', () => {

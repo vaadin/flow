@@ -154,7 +154,8 @@ below, keeps the expression as its key. The object holds:
   `preventDefault()` or `stopPropagation()` on a listener with a declared
   filter. The entry runs the filter, and the client calls that method of
   the event only when the filter passes. Its key is the key of the filter
-  followed by `.` and the method name.
+  followed by `.` and the method name. A bundled `@DomEvent` filter,
+  described below, uses `s` too, with a different key.
 - `e` — `true` for event data declared as `DomEventData<Element>`, left
   out otherwise. The function returns a DOM node, and the client sends the
   id of the closest state node instead (`-1` when there is none), like it
@@ -220,6 +221,23 @@ the keys of a `@PrebuiltEventData` event stay plain expressions.
 {
   "event.clientX - element.offsetLeft": { "f": "3a1c…77e0", "d": false },
   "]element.querySelector('.item')": { "f": "6532…c1f6", "d": false, "e": true }
+}
+```
+
+The `filter` of a `@DomEvent` class is sent the same way when it is not a
+property path, and shares the function of an `@EventData` value with the
+same expression. Its object has the debounce settings of a filter in `d`.
+For `preventDefault()` or `stopPropagation()` on a listener with such a
+filter, the key is the conditional expression that a string filter would
+get, such as `(event.button === 0) && event.preventDefault()`, and the
+object has the function of the filter and `s`. The client runs the
+function and calls the method when it returns a truthy value, or compiles
+the key when the bundle has no function for it, which does the same.
+
+```json
+{
+  "event.button === 0": { "f": "9d02…5b1e", "d": true },
+  "(event.button === 0) && event.preventDefault()": { "f": "9d02…5b1e", "d": false, "s": "preventDefault" }
 }
 ```
 

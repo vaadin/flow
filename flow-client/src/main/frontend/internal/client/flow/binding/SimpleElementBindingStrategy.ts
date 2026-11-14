@@ -108,8 +108,9 @@ type EventExpression = (event: Event, element: Element) => unknown;
 /**
  * The settings of a declared snippet that the client runs when an event
  * occurs. Its key is `@` followed by the key of the snippet, or, for an
- * `@EventData` value that the build put into the bundle, the expression
- * itself, which the client compiles when the bundle has no function for it.
+ * `@EventData` value or a `@DomEvent` filter that the build put into the
+ * bundle, the expression itself, which the client compiles when the bundle has
+ * no function for it.
  * The settings of an expression that the client compiles or reads are only
  * its debounce settings, and its key is the expression.
  */
@@ -1261,7 +1262,8 @@ function handleDomEvent(event: Event, context: BindingContext): void {
     const settings = expressionSettings[key];
     if (isSnippetSettings(settings)) {
       debounceSettings[key] = settings[JsonConstants.EVENT_SETTINGS_DEBOUNCE];
-      // A key that is not a snippet key is a bundled @EventData value
+      // A key that is not a snippet key is a bundled @EventData value or
+      // @DomEvent filter
       const compiled = key.startsWith(JsonConstants.EVENT_SNIPPET_KEY_PREFIX)
         ? null
         : compileIfMissingFromBundle(key, settings, node.getTree());
@@ -1543,16 +1545,16 @@ function evaluateSnippet(settings: SnippetSettings, tree: StateTree, event: Even
 }
 
 /**
- * The ids of the bundled `@EventData` values that the bundle has no function
- * for and that the client has warned about, so that it warns once per value
- * rather than on every event.
+ * The ids of the bundled `@EventData` values and `@DomEvent` filters that the
+ * bundle has no function for and that the client has warned about, so that it
+ * warns once per value rather than on every event.
  */
 const warnedMissingBundledExpressions = new Set<string>();
 
 /**
- * Compiles an `@EventData` value that the build put into the bundle when the
- * bundle has no function for it, for example because the class that declares
- * the value changed after the build. The expression is compiled as the server
+ * Compiles an `@EventData` value or a `@DomEvent` filter that the build put
+ * into the bundle when the bundle has no function for it, for example because
+ * the class that declares the value changed after the build. The expression is compiled as the server
  * would otherwise have sent it, and a warning goes to the console once.
  *
  * If compiling is blocked too, by a Content Security Policy without
@@ -1566,6 +1568,10 @@ const warnedMissingBundledExpressions = new Set<string>();
  * The expression without the prefix is compiled, and the function that is
  * returned maps the DOM node that it returns to the closest state node id, as
  * the function of the bundle would be mapped.
+ *
+ * The key of a filter with a side effect is the conditional expression, such as
+ * `(filter) && event.preventDefault()`, which calls the method when compiled
+ * as the function of the bundle with the side effect would.
  *
  * @param key - the key of the entry: the expression, with the prefix of a
  * mapped value if it has one
@@ -1588,7 +1594,7 @@ function compileIfMissingFromBundle(key: string, settings: SnippetSettings, tree
     compiled = getOrCreateExpression(expression);
   } catch (error) {
     Console.error(
-      `No JavaScript in the bundle for the @EventData value "${expression}", and compiling it in the browser failed, so the event is not sent. ` +
+      `No JavaScript in the bundle for the @EventData value or @DomEvent filter "${expression}", and compiling it in the browser failed, so the event is not sent. ` +
         "A Content Security Policy without 'unsafe-eval' blocks compiling it. Build the frontend again or restart the application to put the value into the bundle."
     );
     throw error;
@@ -1596,7 +1602,7 @@ function compileIfMissingFromBundle(key: string, settings: SnippetSettings, tree
   if (!warnedMissingBundledExpressions.has(functionId)) {
     warnedMissingBundledExpressions.add(functionId);
     Console.warn(
-      `No JavaScript in the bundle for the @EventData value "${expression}", so it is compiled in the browser. ` +
+      `No JavaScript in the bundle for the @EventData value or @DomEvent filter "${expression}", so it is compiled in the browser. ` +
         'The build did not collect it, for example because the class that declares it changed after the build. Build the frontend again or restart the application to put the value into the bundle.'
     );
   }

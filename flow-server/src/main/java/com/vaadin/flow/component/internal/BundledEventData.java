@@ -18,6 +18,8 @@ package com.vaadin.flow.component.internal;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventBusUtil;
 import com.vaadin.flow.component.DomEvent;
@@ -52,6 +54,12 @@ import com.vaadin.flow.shared.JsonConstants;
  * reads without compiling it, such as a property path like
  * <code>event.clientX</code>.
  * <p>
+ * The {@link DomEvent#filter()} of an event type is a JavaScript expression in
+ * an annotation too, and the client runs it like event data, so a filter that
+ * is not a property path is put into the bundle in the same way, see
+ * {@link #getBundledFilter(Class)}. A filter and event data with the same
+ * expression share one function.
+ * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
 public final class BundledEventData {
@@ -83,6 +91,40 @@ public final class BundledEventData {
     }
 
     /**
+     * Gets the {@link DomEvent#filter()} of the given event type if the build
+     * puts it into the bundle as a function, which is a filter that is not a
+     * property path. The event type is read like the build reads it, also when
+     * it inherits the annotation.
+     *
+     * @param eventType
+     *            a component event type annotated with {@link DomEvent}, not
+     *            <code>null</code>
+     * @return the filter, or <code>null</code> if the event type has no filter
+     *         or the client reads it without compiling it
+     */
+    public static @Nullable String getBundledFilter(Class<?> eventType) {
+        DomEvent domEvent = eventType.getAnnotation(DomEvent.class);
+        return domEvent != null && isBundledFilter(domEvent.filter())
+                ? domEvent.filter()
+                : null;
+    }
+
+    /**
+     * Checks whether the given {@link DomEvent#filter()} is put into the bundle
+     * as a function, which is a filter that is not empty and not a property
+     * path that the client reads without compiling it.
+     *
+     * @param filter
+     *            the filter of a {@link DomEvent} annotation, not
+     *            <code>null</code>
+     * @return <code>true</code> if the server sends the identifier of the
+     *         function of the bundle for the filter
+     */
+    public static boolean isBundledFilter(String filter) {
+        return !filter.isEmpty() && !ElementListenerMap.isPropertyPath(filter);
+    }
+
+    /**
      * Selects the event data that the build puts into the bundle as functions
      * from the event data of the given event type.
      *
@@ -110,14 +152,16 @@ public final class BundledEventData {
 
     /**
      * Gets the identifier of the function that the bundle registers for the
-     * given bundled event data, which is what the server sends instead of the
-     * expression. A hash of the expression, so that nothing in the browser
-     * names the class that declared it. A value mapped to a component or an
-     * element has the identifier of its expression without the prefix.
+     * given bundled event data or filter, which is what the server sends
+     * instead of the expression. A hash of the expression, so that nothing in
+     * the browser names the class that declared it. A value mapped to a
+     * component or an element has the identifier of its expression without the
+     * prefix.
      *
      * @param eventData
      *            event data that {@link #getBundledEventData(Class)} returns,
-     *            not <code>null</code>
+     *            or a filter that {@link #getBundledFilter(Class)} returns, not
+     *            <code>null</code>
      * @return the identifier of the function, not <code>null</code>
      */
     public static String getFunctionId(String eventData) {
