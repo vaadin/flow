@@ -46,6 +46,7 @@ import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.ParentLayout;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteBaseData;
@@ -574,6 +575,24 @@ public class RouteUtil {
             Set<Class<?>> classes) {
         return classes.stream().filter(Component.class::isAssignableFrom)
                 .map(clazz -> (Class<? extends Component>) clazz);
+    }
+
+    /**
+     * Checks whether the navigation chain of the given route target is
+     * preserved on page refresh, i.e. whether the target or one of its parent
+     * layouts is annotated with {@link PreserveOnRefresh}.
+     *
+     * @param routeTargetType
+     *            the route target type
+     * @param routeLayoutTypes
+     *            the parent layout types of the route target
+     * @return {@code true} if the navigation chain is preserved on refresh
+     */
+    public static boolean isPreserveOnRefreshTarget(Class<?> routeTargetType,
+            List<Class<? extends RouterLayout>> routeLayoutTypes) {
+        return routeTargetType.isAnnotationPresent(PreserveOnRefresh.class)
+                || routeLayoutTypes.stream().anyMatch(layoutType -> layoutType
+                        .isAnnotationPresent(PreserveOnRefresh.class));
     }
 
     /**
