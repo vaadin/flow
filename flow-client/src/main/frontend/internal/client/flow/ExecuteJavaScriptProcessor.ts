@@ -272,6 +272,11 @@ export class ExecuteJavaScriptProcessor {
    * which is what makes this path work under a content security policy that
    * does not allow `unsafe-eval`.
    *
+   * An error that the function throws is logged with its stack trace and sent
+   * through the error channel when the call is subscribed to. A rejection of
+   * the promise it returns is sent through the error channel when the call is
+   * subscribed to, and logged with its stack trace when it is not.
+   *
    * Protected instead of private for testing purposes, as `invoke` is.
    *
    * @param functionId - the identifier of the function to run
@@ -329,19 +334,27 @@ export class ExecuteJavaScriptProcessor {
     // The element the definition was obtained from is the parameter after the
     // arguments, and it is what the function runs against.
     const thisArg = parameters[argumentCount];
+    const reportError = (exception: unknown): void => {
+      Console.reportStacktrace(exception);
+      Console.error(`Exception is thrown while running ${name}. Stacktrace will be dumped separately.`);
+      onError?.(`${exception}`);
+    };
     try {
       const args = parameters.slice(0, argumentCount);
       const result = fn.apply(
         thisArg,
         withExecutionContext === undefined ? args : [this.#createExecutionContext(nodeParameters), ...args]
       );
-      if (onSuccess !== undefined) {
-        Promise.resolve(result).then(onSuccess, (error: unknown) => onError?.(`${error}`));
-      }
+      // The bundle generates the function as async, so an error in it rejects
+      // the returned promise instead of throwing. A subscribed call hands the
+      // rejection to the server, which may expect it, as executeJs(String)
+      // does. Otherwise nothing would report it, so it is logged.
+      Promise.resolve(result).then(
+        onSuccess,
+        onError === undefined ? reportError : (error: unknown) => onError(`${error}`)
+      );
     } catch (exception) {
-      Console.reportStacktrace(exception);
-      Console.error(`Exception is thrown while running ${name}. Stacktrace will be dumped separately.`);
-      onError?.(`${exception}`);
+      reportError(exception);
     }
   }
 }
