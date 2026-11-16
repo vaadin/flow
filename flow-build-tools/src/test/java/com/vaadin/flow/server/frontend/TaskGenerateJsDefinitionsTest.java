@@ -153,7 +153,7 @@ class TaskGenerateJsDefinitionsTest {
 
     private static final String OFFSET_EXPRESSION = "event.clientX - element.getBoundingClientRect().left";
 
-    @DomEvent("offset")
+    @DomEvent(value = "offset", filter = "event.isTrusted")
     public static class OffsetEvent extends ComponentEvent<Component> {
         public OffsetEvent(Component source, boolean fromClient,
                 @EventData(OFFSET_EXPRESSION) double offset,
@@ -165,7 +165,9 @@ class TaskGenerateJsDefinitionsTest {
 
     private static final String COMMENTED_EXPRESSION = "event.clientY // y\n + 1";
 
-    @DomEvent("other-offset")
+    private static final String FILTER = "event.button === 2";
+
+    @DomEvent(value = "other-offset", filter = FILTER)
     public static class OtherOffsetEvent extends ComponentEvent<Component> {
         public OtherOffsetEvent(Component source, boolean fromClient,
                 @EventData(OFFSET_EXPRESSION) double offset,
@@ -401,6 +403,22 @@ class TaskGenerateJsDefinitionsTest {
                         + content);
         assertFalse(content.contains("event.clientX" + System.lineSeparator()),
                 "the client reads a property path without compiling it: "
+                        + content);
+        String filterId = BundledEventData.getFunctionId(FILTER);
+        assertTrue(
+                content.contains(String.join(System.lineSeparator(),
+                        "window.Vaadin.Flow.jsSnippets[\"" + filterId
+                                + "\"] = function () {",
+                        "  return function (event, element) {", "    return (",
+                        FILTER, "    );")),
+                "a filter should be a function like event data: " + content);
+        assertTrue(content.contains("window.Vaadin.Flow.jsDefinitionNames[\""
+                + filterId + "\"] = \"" + OtherOffsetEvent.class.getName()
+                + " @DomEvent(filter = \\\"" + FILTER + "\\\")\";"),
+                "a development bundle should name what declared the filter: "
+                        + content);
+        assertFalse(content.contains("event.isTrusted"),
+                "the client reads a filter that is a property path without compiling it: "
                         + content);
         // The client maps what the function of a value of an element returns
         // to a state node, so the function is the expression without the
