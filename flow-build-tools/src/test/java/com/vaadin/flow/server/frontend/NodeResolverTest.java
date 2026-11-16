@@ -31,7 +31,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.MessageFormatter;
@@ -49,6 +48,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 /**
  * Covers how {@link NodeResolver} treats the installations in
@@ -180,14 +186,14 @@ class NodeResolverTest {
     @Test
     void globalNode_newerThanMaximumWithoutInstalledNode_warnsHowToUseItAnyway() {
         int newerMajor = FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION + 1;
-        Logger logger = Mockito.spy(Logger.class);
+        Logger logger = spy(Logger.class);
 
         rejectNewerGlobalVersion(newerMajor, logger);
 
         ArgumentCaptor<String> format = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<Object[]> arguments = ArgumentCaptor
                 .forClass(Object[].class);
-        Mockito.verify(logger).warn(format.capture(), arguments.capture());
+        verify(logger).warn(format.capture(), arguments.capture());
         assertTellsHowToUseNewerNode(format, arguments, newerMajor);
     }
 
@@ -196,16 +202,15 @@ class NodeResolverTest {
             throws IOException {
         stubInstallation(VERSION);
         int newerMajor = FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION + 1;
-        Logger logger = Mockito.spy(Logger.class);
+        Logger logger = spy(Logger.class);
 
         rejectNewerGlobalVersion(newerMajor, logger);
 
-        Mockito.verify(logger, Mockito.never()).warn(Mockito.anyString(),
-                Mockito.any(Object[].class));
+        verify(logger, never()).warn(anyString(), any(Object[].class));
         ArgumentCaptor<String> format = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<Object[]> arguments = ArgumentCaptor
                 .forClass(Object[].class);
-        Mockito.verify(logger).info(format.capture(), arguments.capture());
+        verify(logger).info(format.capture(), arguments.capture());
         assertTellsHowToUseNewerNode(format, arguments, newerMajor);
     }
 
@@ -230,8 +235,8 @@ class NodeResolverTest {
 
     private void rejectNewerGlobalVersion(int major, Logger logger) {
         NodeResolver resolver = resolver(VERSION);
-        try (MockedStatic<LoggerFactory> loggerFactory = Mockito
-                .mockStatic(LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class, CALLS_REAL_METHODS)) {
             loggerFactory
                     .when(() -> LoggerFactory.getLogger(NodeResolver.class))
                     .thenReturn(logger);

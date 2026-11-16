@@ -557,6 +557,17 @@ class VaadinSmokeTest : AbstractGradleTest() {
         assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinPrepareFrontend")
     }
 
+    @Test
+    fun testPrepareFrontend_nodeFolderSystemProperty_usedForNodeResolution() {
+        val missingNodeFolder = File(testProject.dir, "missing-node")
+
+        val result = testProject.buildAndFail("vaadinPrepareFrontend",
+            "-Dvaadin.${InitParameters.NODE_FOLDER}=${missingNodeFolder.absolutePath}")
+
+        assertContains(result.output,
+            "Configured node folder does not exist: ${missingNodeFolder.absolutePath}")
+    }
+
     // When Hilla is detected, frontend hot deploy should be automatically
     // enabled and as a consequence prepare frontend task should create react
     // related files
