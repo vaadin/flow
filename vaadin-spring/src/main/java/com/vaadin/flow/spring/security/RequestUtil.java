@@ -455,11 +455,11 @@ public class RequestUtil {
             return false;
         }
 
-        NavigationContext navigationContext = new NavigationContext(router,
-                targetView,
-                new Location(path,
-                        QueryParameters.full(request.getParameterMap())),
-                target.getRouteParameters(), null, role -> false, false, false);
+        Location location = new Location(path,
+                QueryParameters.full(request.getParameterMap()));
+        NavigationContext navigationContext = NavigationContext
+                .forPublicRouteCheck(router, targetView, location,
+                        target.getRouteParameters());
 
         AccessCheckResult result = navigationAccessControl
                 .checkAccess(navigationContext, productionMode);
@@ -467,9 +467,8 @@ public class RequestUtil {
         if (isAllowed) {
             getLogger().debug("{} refers to a public view", path);
         } else {
-            getLogger().debug(
-                    "Access to {} denied by Flow navigation access control. {}",
-                    path, result.reason());
+            getLogger().debug("{} is not a public view. {}", path,
+                    result.reason());
         }
         return isAllowed;
     }

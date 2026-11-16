@@ -1,0 +1,52 @@
+name: Formatter Suggestions
+
+# Reports the result of formatter.yml on the pull request: a comment listing
+# the files that are not formatted, and a review suggesting the changes
+# `mvn spotless:apply` makes, so that the author can accept them from the pull
+# request page. See the formatter-suggestions action of vaadin/github-actions.
+#
+# formatter.yml runs code of the pull request and so gets no write access, as
+# a pull request from a fork does not get it anyway. This workflow has write
+# access, so it runs from the default branch and only reads the diff uploaded
+# by that run as text: it neither checks out nor runs anything from the pull
+# request.
+on:
+  workflow_run:
+    workflows: [Formatter]
+    types: [completed]
+
+concurrency:
+  group: >-
+    ${{ github.workflow }}-${{ github.event.workflow_run.head_repository.full_name }}-${{
+    github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    name: Suggest formatting changes
+    # Merge groups have no pull request to report on, and a cancelled run was
+    # superseded by a newer one
+    if: >-
+      github.event.workflow_run.event == 'pull_request'
+      && github.event.workflow_run.conclusion != 'cancelled'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Report on the pull request
+        uses: vaadin/github-actions/formatter-suggestions@aa988b8310613280895c08e7cf981b573590fcbf # main
+        with:
+          fix-command: mvn spotless:apply
+          # Only uploaded by this branch's formatter.yml. The copies on
+          # maintenance branches, also named Formatter, post their own comment
+          # and upload formatter-diff, so their runs are skipped.
+          artifact-name: formatter-suggestions-diff
+          # The marker of the comments already on open pull requests
+          comment-marker: '<!-- tc-formatter -->'

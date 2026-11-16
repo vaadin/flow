@@ -78,6 +78,7 @@ public final class WebShare implements Serializable {
      *            {@code null}
      * @return a binding for chaining the content to share on click
      * @see WebShareBinding
+     * @since 25.4
      */
     public static WebShareBinding onClick(Component component) {
         Objects.requireNonNull(component, "component must not be null");

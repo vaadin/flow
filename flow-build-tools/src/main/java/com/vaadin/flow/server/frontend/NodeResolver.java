@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.internal.FrontendVersion;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.installer.InstallationException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
@@ -164,7 +165,8 @@ class NodeResolver implements java.io.Serializable {
 
             if (installation != null) {
                 if (!isSupportedGlobalVersion(
-                        new FrontendVersion(installation.nodeVersion()))) {
+                        new FrontendVersion(installation.nodeVersion()),
+                        nodeExecutable.getParentFile())) {
                     return null;
                 }
 
@@ -183,14 +185,23 @@ class NodeResolver implements java.io.Serializable {
      * Checks that a globally installed Node.js is one that Flow is tested
      * against: at least {@link FrontendTools#SUPPORTED_NODE_VERSION} and at
      * most {@link FrontendTools#MAX_SUPPORTED_NODE_MAJOR_VERSION}, which is the
-     * long-term support line Flow is built on.
+     * long-term support line Flow is built on. A newer version is rejected with
+     * a message that tells how to use it anyway through the
+     * {@link InitParameters#NODE_FOLDER} setting, naming the folder to set it
+     * to. The message is a warning only when the Node.js to use instead is not
+     * yet installed in the alternative directory, as the build then depends on
+     * downloading it.
      *
      * @param version
      *            the version of the globally installed Node.js
+     * @param globalNodeFolder
+     *            the folder that contains the globally installed Node.js
+     *            executable
      * @return true when the globally installed Node.js can be used, false when
      *         the one in the alternative directory should be used instead
      */
-    boolean isSupportedGlobalVersion(FrontendVersion version) {
+    boolean isSupportedGlobalVersion(FrontendVersion version,
+            File globalNodeFolder) {
         if (version.isOlderThan(FrontendTools.SUPPORTED_NODE_VERSION)) {
             getLogger().info(
                     "The globally installed Node.js version {} is older than the required minimum version {}. Using Node.js from {}.",
@@ -202,11 +213,21 @@ class NodeResolver implements java.io.Serializable {
 
         if (version
                 .getMajorVersion() > FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION) {
-            getLogger().info(
-                    "The globally installed Node.js version {}.x is newer than the maximum supported version {}.x and may not be compatible. Using Node.js from {}.",
-                    version.getMajorVersion(),
+            String message = "The globally installed Node.js version {}.x is newer than the maximum supported version {}.x and may not be compatible. Using Node.js from {}. To use the newer Node.js anyway, at your own risk, set the '{}' property to the folder that contains it: {}";
+            Object[] arguments = { version.getMajorVersion(),
                     FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION,
-                    alternativeDir);
+                    alternativeDir,
+                    Constants.VAADIN_PREFIX + InitParameters.NODE_FOLDER,
+                    globalNodeFolder.getAbsolutePath() };
+            // A setup that already works should not get a warning on every
+            // build, only one that is about to depend on a download
+            if (NodeInstallation
+                    .forVersion(new File(alternativeDir), nodeVersion)
+                    .hasNodeExecutable()) {
+                getLogger().info(message, arguments);
+            } else {
+                getLogger().warn(message, arguments);
+            }
             return false;
         }
 

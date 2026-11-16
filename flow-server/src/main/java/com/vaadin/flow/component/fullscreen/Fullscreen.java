@@ -72,6 +72,7 @@ public final class Fullscreen implements Serializable {
      *            {@code null}
      * @return a binding for chaining the fullscreen request on click
      * @see FullscreenBinding
+     * @since 25.4
      */
     public static FullscreenBinding onClick(Component component) {
         Objects.requireNonNull(component, "component must not be null");

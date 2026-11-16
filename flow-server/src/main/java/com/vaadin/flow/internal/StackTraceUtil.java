@@ -19,6 +19,8 @@ package com.vaadin.flow.internal;
  * Helpers for finding the application code in a stack trace.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.4
  */
 public final class StackTraceUtil {
 

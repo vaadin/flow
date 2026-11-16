@@ -25,7 +25,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -630,7 +629,7 @@ class FullDependenciesScannerTest {
         // Check the order for VaadinBowerComponent class
         List<String> modulesPerClass = modules.stream().filter(
                 module -> module.startsWith("@vaadin/vaadin-date-picker"))
-                .collect(Collectors.toList());
+                .toList();
         assertEquals("@vaadin/vaadin-date-picker/src/vaadin-date-picker.js",
                 modulesPerClass.get(0));
         assertEquals("@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js",
@@ -639,7 +638,7 @@ class FullDependenciesScannerTest {
         // Check the order for TranslatedImports class
         modulesPerClass = modules.stream().filter(
                 module -> module.startsWith("@vaadin/vaadin-mixed-component"))
-                .collect(Collectors.toList());
+                .toList();
         assertEquals(
                 "@vaadin/vaadin-mixed-component/src/vaadin-mixed-component.js",
                 modulesPerClass.get(0));

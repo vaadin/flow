@@ -346,6 +346,8 @@ public interface PluginAdapterBase {
      * <p>
      * For Maven builds this is always `false`, because no caching of
      * `prepare-frontend` goal is supported.
+     *
+     * @return {@code true} if the task should always run
      */
     boolean isPrepareFrontendCacheDisabled();
 

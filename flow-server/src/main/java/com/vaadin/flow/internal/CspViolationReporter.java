@@ -42,6 +42,8 @@ import com.vaadin.flow.server.VaadinService;
  * stack trace that starts at the API and leads to the code that called it.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.4
  */
 public final class CspViolationReporter {
 

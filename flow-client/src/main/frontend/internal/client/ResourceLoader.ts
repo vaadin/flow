@@ -350,15 +350,23 @@ export class ResourceLoader {
    * Loads a dynamic import via the provided JS `expression` and reports
    * the result via the `resourceLoadListener`.
    *
+   * A function that the server sends as a value rather than as an expression
+   * is passed as `load`, so nothing is compiled from a string; the expression
+   * then only names the import in the event and in error messages.
+   *
    * @param expression - the JS expression which returns a Promise
    * @param resourceLoadListener - a listener to report the Promise result exection
+   * @param load - the function which returns the Promise, compiled from the expression if not given
    */
-  loadDynamicImport(expression: string, resourceLoadListener: ResourceLoadListener): void {
+  loadDynamicImport(
+    expression: string,
+    resourceLoadListener: ResourceLoadListener,
+    load: () => unknown = new Function(expression) as () => unknown
+  ): void {
     const event = this.#makeEvent(expression);
-    const fn = new Function(expression) as () => unknown;
     runPromiseExpression(
       expression,
-      () => fn(),
+      () => load(),
       () => resourceLoadListener.onLoad(event),
       () => resourceLoadListener.onError(event)
     );

@@ -48,6 +48,7 @@ import java.io.Serializable;
  * them handles continues to the session lookup and the request handlers.
  *
  * @author Vaadin Ltd
+ * @since 25.4
  */
 @FunctionalInterface
 public interface SessionlessRequestHandler extends Serializable {

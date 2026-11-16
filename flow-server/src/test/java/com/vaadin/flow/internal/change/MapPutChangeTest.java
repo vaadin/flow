@@ -17,10 +17,14 @@ package com.vaadin.flow.internal.change;
 
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.ConstantPool;
+import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.ParameterizedConstantPoolKey;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateNodeTest;
 import com.vaadin.flow.internal.nodefeature.AbstractNodeFeatureTest;
@@ -88,6 +92,29 @@ class MapPutChangeTest {
         JsonNode nodeValue = json.get(JsonConstants.CHANGE_PUT_NODE_VALUE);
         assertSame(JsonNodeType.NUMBER, nodeValue.getNodeType());
         assertEquals(value.getId(), nodeValue.intValue());
+    }
+
+    @Test
+    void testParameterizedConstantPoolValueType() {
+        ObjectNode sharedValue = JacksonUtils.createObjectNode();
+        sharedValue.put("shared", "value");
+        ObjectNode parameters = JacksonUtils.createObjectNode();
+        parameters.put("instance", "value");
+
+        MapPutChange change = new MapPutChange(feature, "myKey",
+                new ParameterizedConstantPoolKey(
+                        new ConstantPoolKey(sharedValue), parameters));
+
+        ConstantPool constantPool = new ConstantPool();
+        ObjectNode json = change.toJson(constantPool);
+
+        // The shared part is sent as a constant pool reference while the
+        // parameters are sent as-is
+        ArrayNode value = (ArrayNode) json.get(JsonConstants.CHANGE_PUT_VALUE);
+        assertEquals(2, value.size());
+        assertEquals(sharedValue,
+                constantPool.dumpConstants().get(value.get(0).stringValue()));
+        assertEquals(parameters, value.get(1));
     }
 
     private JsonNode getValue(Object input) {
