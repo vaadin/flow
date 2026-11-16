@@ -40,12 +40,12 @@
     "strip-css-comments": "5.0.0",
     "transform-ast": "2.4.4",
     "typescript": "5.9.3",
-    "vite": "7.3.7",
+    "vite": "7.3.8",
     "vite-plugin-checker": "0.14.5",
     "workbox-build": "7.3.0",
     "workbox-core": "7.3.0",
     "workbox-precaching": "7.3.0",
-    "@babel/types": "7.29.11",
+    "@babel/types": "7.29.14",
     "magic-string": "0.30.21"
   },
   "overrides": {
@@ -107,12 +107,12 @@
       "strip-css-comments": "5.0.0",
       "transform-ast": "2.4.4",
       "typescript": "5.9.3",
-      "vite": "7.3.7",
+      "vite": "7.3.8",
       "vite-plugin-checker": "0.14.5",
       "workbox-build": "7.3.0",
       "workbox-core": "7.3.0",
       "workbox-precaching": "7.3.0",
-      "@babel/types": "7.29.11",
+      "@babel/types": "7.29.14",
       "magic-string": "0.30.21"
     },
     "hash": "a429730a4a0f3d5a3ceb4ad1b25ca7df8cf614383519552bc3d5c6237402c1d7"
