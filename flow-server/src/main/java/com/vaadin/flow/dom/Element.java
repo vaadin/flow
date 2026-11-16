@@ -44,6 +44,7 @@ import com.vaadin.flow.component.Size;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.trigger.internal.SetSignalAction;
@@ -296,6 +297,7 @@ public class Element extends Node<Element> {
      *            the name of the attribute
      * @param signal
      *            the signal to bind, not <code>null</code>
+     * @return the binding, which can be used to react to updates
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setAttribute(String, String)
@@ -985,6 +987,9 @@ public class Element extends Node<Element> {
      *            calling {@link #setProperty(String, String)} (or any overload)
      *            on the bound property will invoke this callback instead of
      *            throwing.
+     * @param <T>
+     *            the type of the signal value
+     * @return the binding, which can be used to react to updates
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setProperty(String, String)
@@ -1446,6 +1451,7 @@ public class Element extends Node<Element> {
      *
      * @param signal
      *            the signal to bind, not <code>null</code>
+     * @return the binding, which can be used to react to updates
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setText(String)
@@ -1984,7 +1990,10 @@ public class Element extends Node<Element> {
      * the arguments of the call as <code>$0</code>, <code>$1</code>, and so on,
      * after pending DOM updates, and deferred while the element is not attached
      * or not visible. A method that returns {@link PendingJavaScriptResult} can
-     * be used to retrieve the <code>return</code> value the same way.
+     * be used to retrieve the <code>return</code> value the same way. A method
+     * that returns {@link JavaScriptResult} with a type argument, such as
+     * <code>JavaScriptResult&lt;Integer&gt;</code>, hands the value to its
+     * handlers already converted to that type.
      * <p>
      * What differs is that nothing about the JavaScript is decided at the call
      * site: the build collects the declarations of every JavaScript definition
@@ -1998,9 +2007,17 @@ public class Element extends Node<Element> {
      * driver of the client side that can not run JavaScript can recognize it,
      * or run it on its own implementation of the same interface.
      * <p>
-     * Every method of the interface declares JavaScript and returns either
-     * <code>void</code> or {@link PendingJavaScriptResult}. One that is
-     * implemented in Java instead - a <code>default</code> or a
+     * Every method of the interface declares JavaScript and returns
+     * <code>void</code>, {@link JavaScriptResult} with a type argument that is
+     * known from the interface, or {@link PendingJavaScriptResult}. The type
+     * argument is known when it is a concrete type, such as
+     * <code>JavaScriptResult&lt;Integer&gt;</code>, or a type variable of an
+     * interface that the definition extends and binds to a concrete type, such
+     * as <code>T</code> in <code>JavaScriptResult&lt;T&gt;</code> when the
+     * definition extends <code>ValueJs&lt;Integer&gt;</code>. A type variable
+     * of the method itself, a wildcard or a raw {@link JavaScriptResult} does
+     * not say what to convert the value to, so such a method is refused. One
+     * that is implemented in Java instead - a <code>default</code> or a
      * <code>static</code> method - is not what such an interface is for, so the
      * interface is refused rather than partly run in the browser.
      * <p>
@@ -2101,6 +2118,11 @@ public class Element extends Node<Element> {
      * function, {@code null}, or {@code undefined} (the latter being the
      * implicit value when there is no {@code return}). Returning any other
      * value, including a promise, is logged as an error on the client.
+     * <p>
+     * The browser compiles the expression from a string, which a Content
+     * Security Policy without <code>unsafe-eval</code> blocks. Use
+     * {@link #addJsInitializer(JsFunction)} with an initializer declared as a
+     * snippet to run nothing compiled from a string.
      *
      * @param expression
      *            the JavaScript expression to invoke, not <code>null</code>
@@ -2117,6 +2139,72 @@ public class Element extends Node<Element> {
         Objects.requireNonNull(expression, "Expression cannot be null");
         return new ElementJsInitializerRegistration(getNode(), expression,
                 parameters == null ? new Object[0] : parameters);
+    }
+
+    /**
+     * Registers a JavaScript initializer that runs in the browser each time a
+     * client-side DOM node is created for this element, and whose returned
+     * cleanup callback is invoked when that DOM node is discarded or the
+     * returned registration is removed.
+     * <p>
+     * This works like {@link #addJsInitializer(String, Object...)}, but takes
+     * the initializer as a function rather than as an expression. Declared as a
+     * snippet by a {@link JsDefinition} interface, the function is in the
+     * frontend bundle, so nothing is compiled from a string in the browser and
+     * the initializer works under a Content Security Policy that does not allow
+     * <code>unsafe-eval</code>:
+     *
+     * <pre>
+     * &#64;JsDefinition
+     * public interface ListenJs extends Serializable {
+     *
+     *     &#64;JsExpression("""
+     *             const listener = () =&gt; this.classList.toggle($0);
+     *             this.addEventListener('click', listener);
+     *             return () =&gt; this.removeEventListener('click', listener);""")
+     *     JsFunction toggleOnClick(String className);
+     * }
+     *
+     * element.addJsInitializer(
+     *         JsSnippets.of(ListenJs.class).toggleOnClick("active"));
+     * </pre>
+     * <p>
+     * The function is called with this element as <code>this</code> and no
+     * arguments, so a function that declares runtime arguments, with
+     * {@link com.vaadin.flow.js.JsFunctionParameterNames} or
+     * {@link JsFunction#withArguments(String...)}, is refused. The arguments of
+     * the Java call that created the snippet are available as <code>$0</code>,
+     * <code>$1</code>, &hellip; in its expression. The function must return a
+     * cleanup function, <code>null</code> or <code>undefined</code>, and the
+     * initializer is run and cleaned up at the same moments as one added with
+     * {@link #addJsInitializer(String, Object...)}.
+     *
+     * @param initializer
+     *            the function to run on the element, not <code>null</code>
+     * @return a registration that, when removed, invokes the cleanup callback
+     *         on the client
+     * @throws IllegalArgumentException
+     *             if the initializer declares runtime arguments
+     * @since 25.4
+     */
+    @SuppressWarnings("removal")
+    public Registration addJsInitializer(JsFunction initializer) {
+        Objects.requireNonNull(initializer, "Initializer cannot be null");
+        // No separate check of the JsCall is needed: JsFunction.ofDeclaredCall
+        // stores the names in @JsFunctionParameterNames as the argument
+        // names, so this covers a snippet as well as JsFunction.of with
+        // withArguments
+        List<String> argumentNames = initializer.getArgumentNames();
+        if (!argumentNames.isEmpty()) {
+            throw new IllegalArgumentException("An initializer is called with"
+                    + " no arguments, but the function declares "
+                    + argumentNames
+                    + " with @JsFunctionParameterNames or withArguments."
+                    + " Declare the initializer without runtime arguments,"
+                    + " and pass the values it needs as arguments of the"
+                    + " snippet method or as captures.");
+        }
+        return new ElementJsInitializerRegistration(getNode(), initializer);
     }
 
     private PendingJavaScriptResult scheduleJavaScriptInvocation(
@@ -2225,6 +2313,7 @@ public class Element extends Node<Element> {
      *
      * @param visibleSignal
      *            the signal to bind, not <code>null</code>
+     * @return the binding, which can be used to react to updates
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setVisible(boolean)
@@ -2284,6 +2373,7 @@ public class Element extends Node<Element> {
      *
      * @param enabledSignal
      *            the signal to bind, not <code>null</code>
+     * @return the binding, which can be used to react to updates
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setEnabled(boolean)
@@ -2521,6 +2611,8 @@ public class Element extends Node<Element> {
     /**
      * JavaScript that Flow runs on an element, as a JavaScript definition for
      * {@link #executeJs(Class)}.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface ElementJs extends Serializable {

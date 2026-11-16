@@ -28,24 +28,26 @@ case "$currentBranch" in
   24.*) reject="@vaadin/common-frontend" ;;
 esac
 
-# @babel/* must stay on the 7.x line: Babel 8 is not compatible, so cap it at
-# minor on every branch. The packages are excluded from the main update pass
-# below and updated separately with a forced "minor" target, which keeps 7.x
-# patches/minors flowing while blocking the jump to 8.x.
-babelFilter="@babel/*"
-mainReject="$babelFilter${reject:+ $reject}"
+# Packages capped at minor on every branch. They are excluded from the main
+# update pass below and updated separately with a forced "minor" target, which
+# keeps patches/minors flowing while blocking the next major.
+# - @babel/*: Babel 8 is not compatible, so it must stay on the 7.x line.
+# - vite-plugin-checker: 1.0.0 shows errors in a drawer loaded from
+#   /VAADIN/__checker/, which Flow does not forward to the Vite dev server.
+minorFilter="@babel/* vite-plugin-checker"
+mainReject="$minorFilter${reject:+ $reject}"
 
 echo "Current branch: $currentBranch"
 echo "Update strategy: $updateTarget"
 echo "Rejected packages (main pass): $mainReject"
-echo "Capped at minor: $babelFilter"
+echo "Capped at minor: $minorFilter"
 
 for a in "$depsFolder"/*
 do
   pushd $a
   npx npm-check-updates@$ncuVersion -u -t "$updateTarget" --cooldown $cooldown --reject "$mainReject"
-  # Babel: never cross into the incompatible 8.x major.
-  npx npm-check-updates@$ncuVersion -u -t minor --cooldown $cooldown --filter "$babelFilter"
+  # Never cross into a major that is not compatible yet.
+  npx npm-check-updates@$ncuVersion -u -t minor --cooldown $cooldown --filter "$minorFilter"
   popd
 done
 

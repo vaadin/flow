@@ -39,7 +39,6 @@ public class FaviconHandler implements SessionlessRequestHandler {
     public boolean handleRequest(VaadinRequest request,
             VaadinResponse response) {
         boolean isFavicon = request instanceof VaadinServletRequest httpRequest
-                && httpRequest.getContextPath().isEmpty()
                 && httpRequest.getServletPath().isEmpty()
                 && "/favicon.ico".equals(httpRequest.getPathInfo());
         if (isFavicon) {

@@ -25,8 +25,8 @@ import org.jspecify.annotations.Nullable;
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.CspMode;
@@ -70,7 +70,7 @@ import com.vaadin.flow.server.CspViolationException;
  * public interface LoggerJs extends Serializable {
  *
  *     &#64;JsExpression("console.log($0, value);")
- *     &#64;JsCalledWith("value")
+ *     &#64;JsFunctionParameterNames("value")
  *     JsFunction createLogger(String prefix);
  * }
  *
@@ -86,7 +86,7 @@ import com.vaadin.flow.server.CspViolationException;
  * </pre>
  *
  * Such a function has no body on the server, and its runtime arguments are
- * declared by {@link JsCalledWith} rather than with
+ * declared by {@link JsFunctionParameterNames} rather than with
  * {@link #withArguments(String...)}.
  *
  * @author Vaadin Ltd
@@ -163,18 +163,11 @@ public final class JsFunction implements JsSnippet {
      */
     public static JsFunction ofDeclaredCall(JsCall call) {
         Objects.requireNonNull(call, "call");
-        if (!call.isSnippet()) {
-            throw new IllegalArgumentException("Method " + call.methodName()
-                    + " of " + call.definitionType().getName()
-                    + " does not declare a JsSnippet, so a call of it runs"
-                    + " JavaScript rather than declaring a function");
-        }
-        List<Object> captures = call.flattenArguments();
         // Fail fast at the call that captures an unsupported value, as of does
-        for (Object capture : captures) {
-            JacksonCodec.encodeWithTypeInfo(capture);
-        }
-        return new JsFunction(null, call, captures, call.getCalledWithNames());
+        call.encodeSnippetCaptures();
+        List<Object> captures = call.flattenArguments();
+        return new JsFunction(null, call, captures,
+                call.getFunctionParameterNames());
     }
 
     /**
@@ -212,13 +205,13 @@ public final class JsFunction implements JsSnippet {
      *             if argument names have already been set on this instance, or
      *             if this function is declared by a {@link JsDefinition}
      *             interface, which declares its arguments with
-     *             {@link JsCalledWith}
+     *             {@link JsFunctionParameterNames}
      */
     public JsFunction withArguments(String... argumentNames) {
         if (declaredCall != null) {
             throw new IllegalStateException(
                     "The arguments of a function declared by a @JsDefinition"
-                            + " interface are declared with @JsCalledWith,"
+                            + " interface are declared with @JsFunctionParameterNames,"
                             + " as they are part of the JavaScript in the bundle");
         }
         if (!this.argumentNames.isEmpty()) {
@@ -265,19 +258,53 @@ public final class JsFunction implements JsSnippet {
 
     /**
      * The names of the runtime arguments declared via
-     * {@link #withArguments(String...)}, or with {@link JsCalledWith} for a
-     * function declared by a {@link JsDefinition} interface, in positional
-     * order.
+     * {@link #withArguments(String...)}, or with
+     * {@link JsFunctionParameterNames} for a function declared by a
+     * {@link JsDefinition} interface, in positional order.
      *
      * @return an unmodifiable list of argument names; empty if none were
      *         declared
      * @deprecated The names are part of the JavaScript of the function, which
      *             is what the client compiles from them. They are the ones
      *             passed to {@link #withArguments(String...)} or declared with
-     *             {@link JsCalledWith}.
+     *             {@link JsFunctionParameterNames}.
      */
     @Deprecated(since = "25.4", forRemoval = true)
     public List<String> getArgumentNames() {
         return argumentNames;
+    }
+
+    /**
+     * Checks whether the given object is a function that runs the same
+     * JavaScript with the same captures: the same function of the bundle, or
+     * the same body, together with the same argument names and captures. A
+     * captured array is compared by its current contents.
+     *
+     * @param obj
+     *            the object to compare with
+     * @return <code>true</code> if the object is an equal function
+     * @since 25.4
+     */
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        return obj instanceof JsFunction other
+                && Objects.equals(body, other.body)
+                && Objects.equals(getFunctionId(), other.getFunctionId())
+                && argumentNames.equals(other.argumentNames)
+                && Arrays.deepEquals(captures.toArray(),
+                        other.captures.toArray());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(body, getFunctionId(), argumentNames,
+                Arrays.deepHashCode(captures.toArray()));
+    }
+
+    private @Nullable String getFunctionId() {
+        return declaredCall == null ? null : declaredCall.getFunctionId();
     }
 }

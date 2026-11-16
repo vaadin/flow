@@ -343,8 +343,24 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
         } else if (second == null) {
             return first;
         } else {
+            // A handler that throws must not prevent the handlers added after
+            // it from running, since one of them may be completing a future
+            // that another thread is waiting for. Throwable is caught because
+            // handlers may also throw errors or checked exceptions sneakily,
+            // and every failure is rethrown or attached as suppressed.
             return value -> {
-                first.accept(value);
+                try {
+                    first.accept(value);
+                } catch (Throwable firstFailure) { // NOSONAR
+                    try {
+                        second.accept(value);
+                    } catch (Throwable secondFailure) { // NOSONAR
+                        if (secondFailure != firstFailure) {
+                            firstFailure.addSuppressed(secondFailure);
+                        }
+                    }
+                    throw firstFailure;
+                }
                 second.accept(value);
             };
         }

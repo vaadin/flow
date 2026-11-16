@@ -27,6 +27,7 @@ import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.WebPushJs;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
 
@@ -133,8 +134,7 @@ public class WebPush {
             receiver.state(Boolean.parseBoolean(json.toString()));
         };
 
-        ui.getPage().executeJs(
-                "return window.Vaadin.Flow.webPush.registrationStatus()")
+        ui.getPage().executeJs(WebPushJs.class).registrationStatus()
                 .then(resultHandler, errorHandler);
     }
 
@@ -150,8 +150,7 @@ public class WebPush {
         final SerializableConsumer<JsonNode> resultHandler = json -> receiver
                 .state(Boolean.parseBoolean(json.toString()));
 
-        ui.getPage().executeJs(
-                "return window.Vaadin.Flow.webPush.notificationDenied()")
+        ui.getPage().executeJs(WebPushJs.class).notificationDenied()
                 .then(resultHandler, errorHandler);
     }
 
@@ -167,8 +166,7 @@ public class WebPush {
         final SerializableConsumer<JsonNode> resultHandler = json -> receiver
                 .state(Boolean.parseBoolean(json.toString()));
 
-        ui.getPage().executeJs(
-                "return window.Vaadin.Flow.webPush.notificationGranted()")
+        ui.getPage().executeJs(WebPushJs.class).notificationGranted()
                 .then(resultHandler, errorHandler);
     }
 
@@ -186,9 +184,7 @@ public class WebPush {
             ObjectNode responseJson = JacksonUtils.readTree(json.toString());
             receiver.subscription(generateSubscription(responseJson));
         };
-        ui.getPage()
-                .executeJs("return window.Vaadin.Flow.webPush.subscribe($0)",
-                        publicKey)
+        ui.getPage().executeJs(WebPushJs.class).subscribe(publicKey)
                 .then(resultHandler, errorHandler);
     }
 
@@ -201,8 +197,7 @@ public class WebPush {
      *            the callback to which the details are provided
      */
     public void unsubscribe(UI ui, WebPushSubscriptionResponse receiver) {
-        ui.getPage()
-                .executeJs("return window.Vaadin.Flow.webPush.unsubscribe()")
+        ui.getPage().executeJs(WebPushJs.class).unsubscribe()
                 .then(handlePossiblyEmptySubscription(receiver), errorHandler);
     }
 
@@ -216,9 +211,7 @@ public class WebPush {
      */
     public void fetchExistingSubscription(UI ui,
             WebPushSubscriptionResponse receiver) {
-        ui.getPage()
-                .executeJs(
-                        "return window.Vaadin.Flow.webPush.getSubscription()")
+        ui.getPage().executeJs(WebPushJs.class).getSubscription()
                 .then(handlePossiblyEmptySubscription(receiver), errorHandler);
     }
 

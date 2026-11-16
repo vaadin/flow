@@ -122,6 +122,7 @@ public class FileIOUtils {
      *            the URL to read
      * @return string from the content
      * @throws IOException
+     *             if reading the content fails
      */
     public static String urlToString(URL url) throws IOException {
         try (InputStream input = url.openStream()) {

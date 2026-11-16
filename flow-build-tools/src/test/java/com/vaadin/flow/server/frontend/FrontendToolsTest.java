@@ -61,6 +61,7 @@ import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 import static com.vaadin.flow.testutil.FrontendStubs.resetFrontendToolsNodeCache;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -374,6 +375,20 @@ class FrontendToolsTest {
         tools.getNpmExecutable();
 
         assertFalse(file.exists());
+    }
+
+    @Test
+    void getNpxExecutable_runsNpxCliWithNodeAndKeepsPnpmLock()
+            throws IOException {
+        File file = new File(baseDir, "pnpm-lock.yaml");
+        file.createNewFile();
+
+        List<String> npxExecutable = tools.getNpxExecutable();
+
+        assertEquals(2, npxExecutable.size());
+        assertEquals(tools.getNodeExecutable(), npxExecutable.get(0));
+        assertThat(npxExecutable.get(1), endsWith("npx-cli.js"));
+        assertTrue(file.exists());
     }
 
     @Test
