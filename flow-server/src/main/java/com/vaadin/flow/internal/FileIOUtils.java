@@ -539,8 +539,7 @@ public class FileIOUtils {
      * resolve imports between generated files.
      * <p>
      * A new file gets the default permissions of the process (as limited by the
-     * umask) and an existing file keeps its permissions, the same as with a
-     * direct write.
+     * umask) and an existing file keeps its POSIX permission bits.
      */
     private static void writeAtomically(Path target, String content)
             throws IOException {
@@ -574,11 +573,15 @@ public class FileIOUtils {
             throws IOException {
         PosixFileAttributeView sourceView = Files.getFileAttributeView(source,
                 PosixFileAttributeView.class);
-        if (sourceView == null || !Files.exists(source)) {
+        if (sourceView == null) {
             return;
         }
-        Files.setPosixFilePermissions(target,
-                sourceView.readAttributes().permissions());
+        try {
+            Files.setPosixFilePermissions(target,
+                    sourceView.readAttributes().permissions());
+        } catch (NoSuchFileException e) {
+            // A new file keeps the default permissions
+        }
     }
 
     private static Logger log() {

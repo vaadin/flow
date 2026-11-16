@@ -192,6 +192,10 @@ class FileIOUtilsTest {
         // A file created the usual way gets the permissions the process umask
         // allows, and a generated file must not be more restrictive than that
         Path reference = Files.createFile(dir.toPath().resolve("reference"));
+        assumeFalse(
+                Files.getPosixFilePermissions(reference)
+                        .equals(PosixFilePermissions.fromString("rw-------")),
+                "umask leaves no permissions for group or others");
         File file = new File(dir, "generated.ts");
 
         assertTrue(FileIOUtils.writeIfChanged(file, "content"));
@@ -207,7 +211,7 @@ class FileIOUtilsTest {
         File file = new File(dir, "generated.ts");
         assertTrue(FileIOUtils.writeIfChanged(file, "first"));
         Set<PosixFilePermission> permissions = PosixFilePermissions
-                .fromString("rw-rw-r--");
+                .fromString("rw----r--");
         Files.setPosixFilePermissions(file.toPath(), permissions);
 
         assertTrue(FileIOUtils.writeIfChanged(file, "second"));
