@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import tools.jackson.databind.node.ArrayNode;
 
@@ -132,8 +131,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      */
     public boolean isSupportedClass(Class<?> type) {
         List<ModelType> modelTypes = ModelDescriptor.get(getModelType())
-                .getPropertyNames().map(this::getModelType)
-                .collect(Collectors.toList());
+                .getPropertyNames().map(this::getModelType).toList();
 
         boolean result = false;
         for (ModelType modelType : modelTypes) {
@@ -174,8 +172,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      */
     public ModelType getModelType(Type type) {
         List<ModelType> modelTypes = ModelDescriptor.get(getModelType())
-                .getPropertyNames().map(this::getModelType)
-                .collect(Collectors.toList());
+                .getPropertyNames().map(this::getModelType).toList();
 
         for (ModelType mtype : modelTypes) {
             if (type.equals(mtype.getJavaType())) {
@@ -296,7 +293,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
                 .getFeature(ElementPropertyMap.class);
         List<String> props = map.getPropertyNames()
                 .filter(name -> !(map.getProperty(name) instanceof StateNode))
-                .collect(Collectors.toList());
+                .toList();
         props.forEach(map::removeProperty);
         return props;
     }
@@ -307,6 +304,8 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      * {@link com.vaadin.flow.component.page.Page#executeJs(Class)}.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface TemplateModelJs extends Serializable {

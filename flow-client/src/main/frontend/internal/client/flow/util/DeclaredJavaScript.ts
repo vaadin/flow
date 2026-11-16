@@ -85,5 +85,5 @@ export function getNameOf(functionId: string): string {
  * The message for a function that the bundle does not have.
  */
 export function describeMissingFunction(functionId: string): string {
-  return `No JavaScript in the bundle for ${getNameOf(functionId)}. The JavaScript definition is annotated with @JsDefinition, but the build did not collect it.`;
+  return `No JavaScript in the bundle for ${getNameOf(functionId)}. The build collects the JavaScript of @JsDefinition interfaces and of @EventData values, but did not collect this one.`;
 }

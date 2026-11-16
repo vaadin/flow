@@ -158,7 +158,7 @@ function decodeArrayWithTypeInfo(tree: StateTree, jsonArray: unknown[]): unknown
  * to the error channel of an invocation that calls the value, or only to the
  * console when, for instance, an event listener calls it.
  */
-function evaluateDeclaredSnippet(functionId: string, captures: unknown[]): unknown {
+export function evaluateDeclaredSnippet(functionId: string, captures: unknown[]): unknown {
   const snippet = findDeclaredSnippet(functionId);
   if (snippet === undefined) {
     const message = describeMissingFunction(functionId);
@@ -216,6 +216,41 @@ function decodeJsFunction(tree: StateTree, fnObject: Record<string, unknown>, or
   // Manifests a server-sent JS function, mirroring the Java NativeFunction.
   const fn = new Function(...paramsAndCode) as JsFunction;
   return applyCaptures(fn, captures);
+}
+
+/**
+ * Returns a copy of the value where each `@v-node` reference to a state node
+ * that is not in the tree is replaced by null.
+ */
+function copyWithoutRemovedNodes(tree: StateTree, value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map((item) => copyWithoutRemovedNodes(tree, item));
+  }
+  if (!isPlainObject(value)) {
+    return value;
+  }
+  const nodeId = value['@v-node'];
+  if (typeof nodeId === 'number' && tree.getNode(nodeId) === null) {
+    return null;
+  }
+  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, copyWithoutRemovedNodes(tree, item)]));
+}
+
+/**
+ * Decodes a copy of a value encoded on the server, like
+ * {@link decodeWithTypeInfo}, with two differences:
+ * - A reference to a state node that is not in the tree decodes to null. It
+ *   does not throw.
+ * - The given value is not changed. Use this for a value that is decoded more
+ *   than once, for example the captures of an event listener, which are
+ *   decoded for every event.
+ *
+ * @param tree - the state tree to use for resolving nodes and elements
+ * @param json - the JSON value to decode
+ * @returns the decoded value
+ */
+export function decodeCopyWithTypeInfo(tree: StateTree, json: unknown): unknown {
+  return decodeWithTypeInfo(tree, copyWithoutRemovedNodes(tree, json));
 }
 
 /**

@@ -172,6 +172,7 @@ public class MenuRegistry {
      * {@link #collectMenuItemsList()}.
      *
      * @return ordered root view infos, each with its nested children populated
+     * @since 25.4
      */
     public static List<AvailableViewInfo> collectMenuItemsTree() {
         // en-US is used by default here to match with Hilla's
@@ -226,6 +227,7 @@ public class MenuRegistry {
      *            locale to use for ordering. null for default locale.
      * @return ordered root view infos, each with its nested children populated
      *         and an empty list of children for a leaf
+     * @since 25.4
      */
     public static List<AvailableViewInfo> collectMenuItemsTree(Locale locale) {
         MenuParentResolver menuParents = new MenuParentResolver(

@@ -173,8 +173,9 @@ Make `toString()` cheap, free of side effects and unable to throw. Read a
 signal with `peek()` in it, never `get()`.
 
 Start `toString()` with `getClass().getSimpleName()` rather than a literal
-class name, and follow the `SimpleName[…]` shape. Keep `super.toString()` when
-the identity hash is what tells instances apart.
+class name, and follow the `SimpleName[…]` shape; `ToStringBuilder` in
+`com.vaadin.flow.internal` builds that shape. Keep `super.toString()` when the
+identity hash is what tells instances apart.
 
 Never put a password, token or other credential in `toString()`.
 
@@ -218,6 +219,13 @@ Never send a server-side class or method name to the browser. Key what the
 client has to look up by a hash of the content it runs, so renaming changes
 nothing the browser holds, and keep readable identifiers for development-only
 debug output.
+
+Look up a registry entry keyed by a server-sent id with `Object.hasOwn()` —
+the shared `hasOwnJsProperty` helper in `WidgetUtil.ts` — never with a plain
+property or `in` check. An id of `constructor` or `__proto__` otherwise
+resolves through the prototype chain instead of missing, so a lookup written
+for only the ids the server declares silently returns an inherited value for
+one it did not.
 
 Send a payload that repeats through the constant pool the client already
 caches, and keep the message shape the same for a new path and the existing one

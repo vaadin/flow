@@ -227,8 +227,7 @@ class ReflectionsClassFinderTest {
     }
 
     private <X extends Class<?>> List<String> toList(Set<X> classes) {
-        return classes.stream().map(Class::getName)
-                .collect(Collectors.toList());
+        return classes.stream().map(Class::getName).toList();
     }
 
     private URL createTestModule(String moduleName, String pkg,
