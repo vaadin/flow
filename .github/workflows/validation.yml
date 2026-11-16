@@ -1113,6 +1113,11 @@ jobs:
       issues: write
       pull-requests: write
     steps:
+      # Both builds below run whole reactors and retry a transfer error. A
+      # retry that the job timeout cuts off would hide that error, so the
+      # retries must end a minute before the timeout.
+      - name: Set retry deadline
+        run: echo "MAVEN_RETRY_DEADLINE=$(( $(date +%s) + 14 * 60 ))" >> "$GITHUB_ENV"
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}

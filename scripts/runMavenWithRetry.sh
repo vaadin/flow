@@ -6,6 +6,12 @@
 #
 # Usage: runMavenWithRetry.sh <log file> <maven arguments...>
 #
+# MAVEN_MAX_ATTEMPTS sets the number of attempts (default 3). When
+# MAVEN_RETRY_DEADLINE is set to a time in seconds since the epoch, a retry
+# is only started when it can end before then, assuming it takes as long as
+# the failed attempt: a job that is cancelled by its timeout halfway through
+# a retry reports less than the transfer error that caused it.
+#
 # Maven is detached so that a JVM it forks and leaves behind (an application
 # server, a Quarkus or Spring Boot application) cannot pin the step open by
 # holding a pipe to tee, and so that the exit status is Maven's own rather
@@ -29,6 +35,7 @@ MAX_ATTEMPTS=${MAVEN_MAX_ATTEMPTS:-3}
 attempt=1
 while true; do
   offset=$(stat -c %s "$LOG")
+  started=$(date +%s)
   mvn "$@" </dev/null >>"$LOG" 2>&1 &
   MVN_PID=$!
   tail -c +$((offset + 1)) -f --pid=$MVN_PID "$LOG" &
@@ -52,12 +59,19 @@ while true; do
       | grep -qE '^\[ERROR\].*(There are test failures|There was a timeout)'; then
     exit $status
   fi
+  delay=$((attempt * 30))
+  now=$(date +%s)
+  if [ -n "${MAVEN_RETRY_DEADLINE:-}" ] \
+      && [ $((now + delay + now - started)) -gt "$MAVEN_RETRY_DEADLINE" ]; then
+    echo "::warning::Maven could not download from a repository," \
+      "not enough time left to retry"
+    exit $status
+  fi
   # A failed attempt can leave behind the application JVMs it started,
   # holding on to the ports the next attempt needs.
   pkill -TERM java || true
   sleep 2
   pkill -KILL java || true
-  delay=$((attempt * 30))
   echo "::warning::Maven could not download from a repository" \
     "(attempt $attempt of $MAX_ATTEMPTS), retrying in ${delay}s"
   sleep $delay
