@@ -647,6 +647,19 @@ candidate's version and vendor are read from its own `release` file
 directory name — which is how `jbr-9` used to outrank `jbr-21`. The JBR closest above
 the requirement wins; failing that, the closest JDK, and the log says what that cost.
 
+**A JVM built for another platform is skipped**, and the log says so. A home directory
+shared with a machine of another OS or architecture — a container bind-mounting the
+host's `~/.vaadin` — holds JVMs that cannot run here, and the closest version is as
+likely to be one of those as not. The `release` file's `OS_NAME` / `OS_ARCH` are
+compared with the daemon's own `os.name` / `os.arch`, normalized first, since the two
+spell the same platform differently (`Darwin` / `Mac OS X`, `x86_64` / `amd64`).
+Another OS always rules a JVM out. Another architecture does not on macOS and Windows,
+where Rosetta 2 and Windows on Arm run it — and a daemon that is itself emulated
+reports the emulated architecture, so there a mismatch says nothing about the
+hardware. A `release` file that names no platform keeps the JVM a candidate.
+`vaadin.dev.javaHome` is never second-guessed: a JVM it names for another platform is
+still used, with a warning that the application will not start.
+
 ## The frontend leg
 
 `Frontend` owns it: where the frontend folder is, and what a change under it
