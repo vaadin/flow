@@ -357,7 +357,8 @@ class NodeResolver implements java.io.Serializable {
                 .forVersion(alternativeDirFile, nodeVersion);
         // Using an installed version needs no lock, so that a read-only
         // installation directory keeps working, unless a build is installing
-        // that version right now and its files may be only partly copied
+        // that version right now and its files may be only partly copied.
+        //
         // Marked as used first, so that a cleanup by another build that has
         // not yet decided to remove this version sees it in use, and one that
         // has holds the lock, which sends this build down the locked path

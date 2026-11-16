@@ -26,10 +26,10 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,15 +59,6 @@ class LockFile implements Serializable {
      */
     private static final Duration UNREADABLE_GRACE_PERIOD = Duration
             .ofSeconds(5);
-
-    /**
-     * The lock files that a thread of this process holds or is taking. A lock
-     * file naming this process while the path is claimed here was left behind
-     * by an earlier process that had the same pid, as happens across container
-     * runs, rather than held by another thread.
-     */
-    private static final Set<String> CLAIMED_PATHS = ConcurrentHashMap
-            .newKeySet();
 
     private final File file;
     private final String holderName;
@@ -148,19 +139,6 @@ class LockFile implements Serializable {
     }
 
     private Attempt attemptToTake() {
-        String claim = claimKey();
-        if (!CLAIMED_PATHS.add(claim)) {
-            // Another thread of this process holds or is taking the lock
-            return new Attempt(AttemptState.HELD);
-        }
-        Attempt attempt = attemptToTakeClaimed();
-        if (attempt.state() != AttemptState.TAKEN) {
-            CLAIMED_PATHS.remove(claim);
-        }
-        return attempt;
-    }
-
-    private Attempt attemptToTakeClaimed() {
         try {
             writeLockFile();
             held = true;
@@ -185,7 +163,9 @@ class LockFile implements Serializable {
             return new Attempt(AttemptState.HELD);
         }
 
-        NodeTasksLockInfo lockInfo = parseLockInfo(content);
+        LockContent lockContent = parseLockContent(content);
+        NodeTasksLockInfo lockInfo = lockContent == null ? null
+                : lockContent.info();
         if (lockInfo == null) {
             if (!isOlderThanGracePeriod(path())) {
                 // The holder has not yet written its content
@@ -193,8 +173,7 @@ class LockFile implements Serializable {
             }
             getLogger().warn("Removing the unreadable lock file ({}) of {}",
                     path().toAbsolutePath(), holderName);
-        } else if (lockInfo.pid() != ProcessHandle.current().pid()
-                && isRunning(lockInfo)) {
+        } else if (isRunning(lockContent)) {
             return new Attempt(AttemptState.HELD, lockInfo);
         }
         // The holder has died without removing the lock file
@@ -212,14 +191,6 @@ class LockFile implements Serializable {
             return;
         }
         held = false;
-        try {
-            deleteLockFile();
-        } finally {
-            CLAIMED_PATHS.remove(claimKey());
-        }
-    }
-
-    private void deleteLockFile() {
         if (!Files.exists(path())) {
             getLogger().warn("Somebody else has removed the lock file ({})",
                     path().toAbsolutePath());
@@ -301,10 +272,21 @@ class LockFile implements Serializable {
         }
     }
 
-    private static boolean isRunning(NodeTasksLockInfo lockInfo) {
+    /**
+     * Checks whether the process that wrote the lock still runs. The same pid
+     * and command line can belong to a later process, as in containers where
+     * every run gets the same pid, so the start time of the process tells them
+     * apart when it is known.
+     */
+    private static boolean isRunning(LockContent lockContent) {
+        NodeTasksLockInfo lockInfo = lockContent.info();
         return ProcessHandle.of(lockInfo.pid())
                 .map(process -> normalizeCommandLine(process.info())
-                        .equals(lockInfo.commandLine()))
+                        .equals(lockInfo.commandLine())
+                        && (lockContent.started() == null
+                                || process.info().startInstant()
+                                        .map(lockContent.started()::equals)
+                                        .orElse(true)))
                 .orElse(false);
     }
 
@@ -318,25 +300,39 @@ class LockFile implements Serializable {
     }
 
     private NodeTasksLockInfo readLockFile() throws IOException {
-        NodeTasksLockInfo lockInfo = parseLockInfo(Files.readAllBytes(path()));
-        if (lockInfo == null) {
+        LockContent lockContent = parseLockContent(Files.readAllBytes(path()));
+        if (lockContent == null) {
             throw new IllegalStateException("Invalid lock file content");
         }
-        return lockInfo;
+        return lockContent.info();
     }
 
-    private static NodeTasksLockInfo parseLockInfo(byte[] content) {
+    /**
+     * What a lock file says about the process holding it.
+     *
+     * @param info
+     *            the pid and command line of the process
+     * @param started
+     *            when the process started, or {@code null} if unknown
+     */
+    private record LockContent(NodeTasksLockInfo info,
+            Instant started) implements Serializable {
+    }
+
+    private static LockContent parseLockContent(byte[] content) {
         // Decoding replaces malformed input, so that any content can be
         // judged instead of failing to read
         List<String> lines = new String(content, StandardCharsets.UTF_8).lines()
                 .toList();
-        if (lines.size() != 2) {
+        if (lines.size() != 2 && lines.size() != 3) {
             return null;
         }
         try {
-            return new NodeTasksLockInfo(Long.parseLong(lines.get(0)),
-                    lines.get(1));
-        } catch (NumberFormatException e) {
+            Instant started = lines.size() == 3 ? Instant.parse(lines.get(2))
+                    : null;
+            return new LockContent(new NodeTasksLockInfo(
+                    Long.parseLong(lines.get(0)), lines.get(1)), started);
+        } catch (NumberFormatException | DateTimeParseException e) {
             return null;
         }
     }
@@ -346,21 +342,31 @@ class LockFile implements Serializable {
      * or threads seeing the lock as free only one gets it.
      */
     private void writeLockFile() throws IOException {
-        ProcessHandle currentProcess = ProcessHandle.current();
-        String commandLine = normalizeCommandLine(currentProcess.info());
-        List<String> lines = List.of(Long.toString(currentProcess.pid()),
-                commandLine);
-        Files.write(path(), lines, StandardCharsets.UTF_8,
-                StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+        Files.write(path(), describe(ProcessHandle.current()),
+                StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW,
+                StandardOpenOption.WRITE);
+    }
+
+    /**
+     * Describes a process the way a lock file it holds names it: its pid,
+     * command line and, when known, start time.
+     *
+     * @param process
+     *            the process holding the lock
+     * @return the lines of the lock file
+     */
+    static List<String> describe(ProcessHandle process) {
+        List<String> lines = new ArrayList<>();
+        lines.add(Long.toString(process.pid()));
+        lines.add(normalizeCommandLine(process.info()));
+        process.info().startInstant()
+                .ifPresent(started -> lines.add(started.toString()));
+        return lines;
     }
 
     private static String normalizeCommandLine(ProcessHandle.Info processInfo) {
         return processInfo.commandLine()
                 .map(line -> line.replaceAll("\\r?\\n", " \\\\n")).orElse("");
-    }
-
-    private String claimKey() {
-        return file.getAbsoluteFile().toPath().normalize().toString();
     }
 
     private Path path() {

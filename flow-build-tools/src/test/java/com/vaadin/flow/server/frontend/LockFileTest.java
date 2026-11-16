@@ -23,6 +23,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 class LockFileTest {
 
@@ -53,6 +55,7 @@ class LockFileTest {
         AtomicInteger holders = new AtomicInteger();
         AtomicInteger maxHolders = new AtomicInteger();
         AtomicInteger acquisitions = new AtomicInteger();
+        List<Throwable> failures = new CopyOnWriteArrayList<>();
         List<Thread> started = new ArrayList<>();
         for (int i = 0; i < threads; i++) {
             Thread thread = new Thread(() -> {
@@ -69,8 +72,8 @@ class LockFileTest {
                     } finally {
                         lock.release();
                     }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+                } catch (Throwable e) {
+                    failures.add(e);
                 }
             });
             thread.start();
@@ -82,6 +85,7 @@ class LockFileTest {
             thread.join(TimeUnit.SECONDS.toMillis(30));
         }
 
+        assertEquals(List.of(), failures);
         assertEquals(threads, acquisitions.get(),
                 "Every thread should get the lock in turn");
         assertEquals(1, maxHolders.get(),
@@ -104,7 +108,7 @@ class LockFileTest {
     }
 
     @Test
-    void tryAcquire_heldByRunningProcess_returnsWithoutTakingIt()
+    void tryAcquire_heldByAnotherThread_returnsWithoutTakingIt()
             throws Exception {
         Path path = folder.resolve("test.lock");
         LockFile holder = new LockFile(path, "test");
@@ -123,6 +127,23 @@ class LockFileTest {
     }
 
     @Test
+    void tryAcquire_heldByAnotherRunningProcess_returnsWithoutTakingIt()
+            throws Exception {
+        ProcessHandle otherProcess = ProcessHandle.current().parent()
+                .orElse(null);
+        assumeTrue(otherProcess != null,
+                "Another running process is needed as the holder");
+        Path path = folder.resolve("test.lock");
+        Files.write(path, LockFile.describe(otherProcess),
+                StandardCharsets.UTF_8);
+        byte[] content = Files.readAllBytes(path);
+
+        assertFalse(assertTimeoutPreemptively(Duration.ofSeconds(30),
+                () -> new LockFile(path, "test").tryAcquire()));
+        assertArrayEquals(content, Files.readAllBytes(path));
+    }
+
+    @Test
     void tryAcquire_lockOfDeadProcess_isTakenOver() throws Exception {
         Path path = folder.resolve("test.lock");
         Files.writeString(path, "1\nnot the command line of the process",
@@ -138,13 +159,15 @@ class LockFileTest {
     void acquire_lockOfEarlierProcessWithSamePid_isTakenOver()
             throws Exception {
         Path path = folder.resolve("test.lock");
-        // A lock file naming this very process, as one left behind by a
-        // killed run whose process got the same pid and command line
-        LockFile earlier = new LockFile(path, "test");
-        earlier.acquire();
-        byte[] content = Files.readAllBytes(path);
-        earlier.release();
-        Files.write(path, content);
+        // A lock file naming this pid and command line, left behind by a
+        // killed run whose process got the same pid, but started earlier
+        List<String> earlier = new ArrayList<>(
+                LockFile.describe(ProcessHandle.current()));
+        assumeTrue(earlier.size() == 3,
+                "The start time of the process is needed to tell runs apart");
+        earlier.set(2, Instant.parse(earlier.get(2))
+                .minus(Duration.ofMinutes(1)).toString());
+        Files.write(path, earlier, StandardCharsets.UTF_8);
 
         LockFile lock = new LockFile(path, "test");
         assertTimeoutPreemptively(Duration.ofSeconds(30), lock::acquire);
