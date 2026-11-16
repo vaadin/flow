@@ -18,6 +18,7 @@ package com.vaadin.flow.devloop.daemon;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -29,9 +30,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * Composes the app JVM command line, resolves the classpath through Maven, and
@@ -166,6 +170,15 @@ final class Launch {
 
     /** Which poms moved the last time the stamp was rewritten, app-relative. */
     private volatile List<String> changedPoms = List.of();
+
+    /**
+     * Held by whatever writes to the loop's {@code target/classes}: an apply's
+     * compile and class removal, and the Maven runs a launch or a resolve
+     * makes. A restart is not serialized with an apply, so without it the two
+     * can write the same class files at once. Fair, so they run in arrival
+     * order.
+     */
+    private final ReentrantLock compileLock = new ReentrantLock(true);
 
     /** The JVM chosen for the application; see {@link #appJvm()}. */
     private volatile Jvm.Jdk appJvm;
@@ -336,7 +349,13 @@ final class Launch {
                 // into
                 // the stamp - otherwise it would never be watched at all.
                 rereadReactor(tee);
-                runMaven(tee);
+                // Its compile writes target/classes, as an apply's does.
+                compileLock.lock();
+                try {
+                    runMaven(tee);
+                } finally {
+                    compileLock.unlock();
+                }
                 writeStamp();
                 resolutions.incrementAndGet();
             }
@@ -388,6 +407,11 @@ final class Launch {
         return current != null && !classpathUnusable && stampIsCurrent()
                 ? Optional.of(current)
                 : Optional.empty();
+    }
+
+    /** See {@link #compileLock}. */
+    ReentrantLock compileLock() {
+        return compileLock;
     }
 
     /**
@@ -770,6 +794,18 @@ final class Launch {
     }
 
     private void runMaven(Log progress) throws IOException {
+        runMaven(progress, true);
+    }
+
+    /**
+     * @param retryOnline
+     *            whether an offline run that fails is tried again online -
+     *            which is what lets a cold local repository resolve, and only
+     *            costs a second build where the resolve already fetched
+     *            everything
+     */
+    private void runMaven(Log progress, boolean retryOnline)
+            throws IOException {
         Path maven = mavenCommand();
         List<String> base = new ArrayList<>(
                 List.of(maven.toString(), "-B", "-ntp"));
@@ -800,6 +836,10 @@ final class Launch {
         Attempt offline = attempt(base, true);
         if (offline.ok()) {
             return;
+        }
+        if (!retryOnline) {
+            throw new IOException(
+                    maven + ": " + failureReason(offline.output()));
         }
         log.line("offline resolution failed; retrying online");
         Attempt online = attempt(base, false);
@@ -1226,6 +1266,7 @@ final class Launch {
                             + "the build does not currently resolve: "
                             + resolutionError);
         }
+        catchUpSources(resolved, "start".equals(launchKind), tee);
         AppRuntime appRuntime = runtime();
         List<String> jvmFlags = composeJvmFlags(tee,
                 appRuntime.extraJvmFlags());
@@ -1243,6 +1284,311 @@ final class Launch {
         // the poms describe? - is the same either way.
         launchedClasspath = resolved.appClasspath();
         return new Composed(invocation, resolved);
+    }
+
+    /**
+     * Builds the loop's modules when {@code target/classes} is behind their
+     * sources, so that a launch runs the code on disk.
+     * <p>
+     * The cache stamp only covers the poms, so sources changed while no daemon
+     * was watching - a {@code git checkout}, a pull, a revert - would otherwise
+     * be launched from the classes of an earlier build. An apply afterwards
+     * catches up with an edited file, as its class is older than it, but not
+     * with a deleted one: the launch snapshot that apply's deletion inventory
+     * is seeded from never saw that source, so its class, and the route or bean
+     * it declares, would stay until {@code mvn clean}.
+     * <p>
+     * The build is Maven's own {@code compile}, which recompiles a module whose
+     * sources were added or removed and deletes the classes its previous
+     * compile wrote. A class an apply wrote is not in that record, so the
+     * classes of a deleted source that are still there after the build are
+     * removed the way an apply removes them.
+     * <p>
+     * A build that fails is reported and the launch goes ahead on the classes
+     * there are, as before; it is not a resolution failure, so it does not
+     * block the applies that will compile the fixed source. It runs offline
+     * only, as the resolve that came before it has fetched what the build needs
+     * and going online cannot fix a compile error, and it is not run again
+     * until a source or a pom moves: a compile error in a file nobody is
+     * working on would otherwise cost a Maven run before every restart. A
+     * {@code start} tries it again regardless, as a build can also fail for a
+     * reason that is gone by then - an interrupted run, a locked local
+     * repository. Nor is it run while the poms do not resolve, as a build of
+     * those fails too.
+     * <p>
+     * Runs under {@link #compileLock()}, so a launch waits for an apply's
+     * compile to finish, and an apply waits for this build.
+     *
+     * @param project
+     *            the resolved build about to be launched
+     * @param retryFailedBuild
+     *            whether to build even when the last build of the same sources
+     *            and poms failed
+     * @param progress
+     *            where to say that a build is needed, and why
+     */
+    void catchUpSources(Project project, boolean retryFailedBuild,
+            Log progress) {
+        // Under the apply's compile lock: a restart is not serialized with an
+        // apply, and two compiles writing one target/classes leave it holding
+        // a mix of both.
+        compileLock.lock();
+        try {
+            catchUpSourcesLocked(project, retryFailedBuild, progress);
+        } finally {
+            compileLock.unlock();
+        }
+    }
+
+    private void catchUpSourcesLocked(Project project, boolean retryFailedBuild,
+            Log progress) {
+        if (resolutionError != null) {
+            progress.line("WARNING: not checking the sources against "
+                    + "target/classes while the build does not resolve");
+            return;
+        }
+        Map<Path, Long> sources = javaSources(project);
+        Map<Path, Long> recorded = readSourceInventory();
+        List<Path> behind = sourcesAheadOfClasses(project, sources, recorded);
+        if (!behind.isEmpty()) {
+            String attempt = inventoryText(sources) + currentStamp();
+            if (!retryFailedBuild
+                    && attempt.equals(readOrEmpty(failedCatchUpFile()))) {
+                progress.line("WARNING: target/classes is behind the sources ("
+                        + summarise(
+                                behind.stream().map(this::relative).toList())
+                        + "), and the last build of them failed; launching "
+                        + "with the classes from the last build until a "
+                        + "source or pom changes, or the next start");
+                return;
+            }
+            progress.line("target/classes is behind the sources ("
+                    + summarise(behind.stream().map(this::relative).toList())
+                    + "); building before the launch");
+            // Whole seconds, as some file systems keep no finer: a class the
+            // build writes within the second it started must still count as
+            // the build's own.
+            long buildStarted = System.currentTimeMillis() / 1000 * 1000;
+            try {
+                runMaven(progress, false);
+            } catch (IOException e) {
+                progress.line("WARNING: building the sources failed, launching "
+                        + "with the classes from the last build: "
+                        + e.getMessage());
+                // The inventory is kept as it was, so the next launch still
+                // knows which sources it has to catch up with once they move.
+                writeQuietly(failedCatchUpFile(), attempt);
+                return;
+            }
+            deleteQuietly(failedCatchUpFile());
+            List<Path> deleted = recorded.keySet().stream()
+                    .filter(source -> isDeleted(source, sources)).toList();
+            try {
+                Compile.removeClassArtifacts(project.modules(), deleted,
+                        buildStarted);
+            } catch (IOException e) {
+                // Recorded as caught up all the same: building again would not
+                // remove them either.
+                progress.line("WARNING: could not remove the classes of "
+                        + "deleted sources (" + e.getMessage()
+                        + "); they stay until a clean build");
+            }
+        }
+        writeLaunchInventory(sources, recorded);
+    }
+
+    /**
+     * The sources whose classes in {@code target/classes} are not the ones a
+     * build of the sources on disk would produce; empty when the two agree.
+     * <p>
+     * A source is behind when its class is missing or older than it, and a
+     * deleted source is behind while its class is still there. Both are read
+     * against the inventory the last launch recorded. A deletion has to be, as
+     * a file that is gone cannot be found by walking the tree; an apply that
+     * removed the class of a deleted source has already caught up with it, so
+     * that one does not count. And a source that has not moved since the last
+     * launch is not built for again, as that launch already ran or skipped the
+     * build for it - which is what keeps a source that never yields a class of
+     * its own name, or one dated in the future, from setting off a build on
+     * every launch. {@code package-info.java} is skipped outright, as javac
+     * writes no class for a package without annotations.
+     */
+    private static List<Path> sourcesAheadOfClasses(Project project,
+            Map<Path, Long> sources, Map<Path, Long> recorded) {
+        Set<Path> behind = new TreeSet<>();
+        sources.forEach((source, modified) -> {
+            if (!modified.equals(recorded.get(source))
+                    && !source.getFileName().toString()
+                            .equals("package-info.java")
+                    && classIsOlder(ownerOf(project, source), source,
+                            modified)) {
+                behind.add(source);
+            }
+        });
+        recorded.keySet().stream().filter(source -> isDeleted(source, sources))
+                .forEach(source -> {
+                    Reactor.Module owner = ownerOf(project, source);
+                    if (owner != null
+                            && Files.isRegularFile(owner.artifactFor(source))) {
+                        behind.add(source);
+                    }
+                });
+        return List.copyOf(behind);
+    }
+
+    /**
+     * Whether a recorded source is gone - asked of the disk too, as a walk that
+     * failed part way, or a file replaced under it, leaves a source out of the
+     * walk that is still there, and its classes must not be removed.
+     */
+    private static boolean isDeleted(Path source, Map<Path, Long> sources) {
+        return !sources.containsKey(source) && Files.notExists(source);
+    }
+
+    private static Reactor.Module ownerOf(Project project, Path source) {
+        return project.modules().stream()
+                .filter(module -> source.startsWith(module.sourceDir()))
+                .findFirst().orElse(null);
+    }
+
+    private static boolean classIsOlder(Reactor.Module module, Path source,
+            long sourceModified) {
+        Path artifact = module.artifactFor(source);
+        return Compile.stampOf(artifact)
+                .map(stamp -> stamp.modified() < sourceModified).orElse(true);
+    }
+
+    /** Every Java source of the loop, with when it was last modified. */
+    private Map<Path, Long> javaSources(Project project) {
+        Map<Path, Long> sources = new LinkedHashMap<>();
+        for (Reactor.Module module : project.modules()) {
+            if (!Files.isDirectory(module.sourceDir())) {
+                continue;
+            }
+            try (Stream<Path> walk = Files.walk(module.sourceDir())) {
+                walk.filter(Files::isRegularFile)
+                        .filter(path -> path.toString().endsWith(".java"))
+                        .forEach(path -> Compile.stampOf(path).ifPresent(
+                                stamp -> sources.put(path, stamp.modified())));
+            } catch (IOException | UncheckedIOException e) {
+                // An unreadable tree is one nothing can be built from either,
+                // so the launch goes on; the reason is still worth keeping.
+                log.line("could not read the sources of " + module.sourceDir()
+                        + ": " + e.getMessage());
+            }
+        }
+        return sources;
+    }
+
+    /**
+     * Every Java source of the loop as of the last launch, one per line with
+     * its modification time - what {@link #sourcesAheadOfClasses} reads against
+     * - and every source an apply has compiled since.
+     * <p>
+     * Under {@code target/} with the classes it describes, so that a clean
+     * wipes both together. A source neither a launch nor an apply saw is never
+     * in it - one whose class came from a build outside the loop, an IDE's, and
+     * that was deleted before the next launch - and a class it left behind
+     * waits for the next full build.
+     */
+    private Path sourceInventoryFile() {
+        return workDir(root).resolve("sources.txt");
+    }
+
+    /**
+     * What the last catch-up build that failed was run against - the sources
+     * and the poms - so that it is not run again until one of them moves.
+     */
+    private Path failedCatchUpFile() {
+        return workDir(root).resolve("sources-failed.txt");
+    }
+
+    private Map<Path, Long> readSourceInventory() {
+        Map<Path, Long> recorded = new LinkedHashMap<>();
+        stampLines(readOrEmpty(sourceInventoryFile()))
+                .forEach((path, modified) -> {
+                    try {
+                        recorded.put(Path.of(path), Long.parseLong(modified));
+                    } catch (NumberFormatException e) {
+                        // A line this version did not write; dropping it costs
+                        // at most one build.
+                    }
+                });
+        return recorded;
+    }
+
+    /**
+     * Records the sources a launch found, keeping any an apply recorded while
+     * the launch was building: a restart is not serialized with an apply, and
+     * the walk the launch took before its build cannot have seen them.
+     */
+    private synchronized void writeLaunchInventory(Map<Path, Long> sources,
+            Map<Path, Long> recordedBefore) {
+        Map<Path, Long> next = new LinkedHashMap<>(sources);
+        readSourceInventory().forEach((source, modified) -> {
+            if (!recordedBefore.containsKey(source) && !next.containsKey(source)
+                    && Files.exists(source)) {
+                next.put(source, modified);
+            }
+        });
+        writeQuietly(sourceInventoryFile(), inventoryText(next));
+    }
+
+    /**
+     * Adds sources an apply has compiled to the inventory of the last launch.
+     * <p>
+     * A source added while the app runs is compiled by an apply and, unless
+     * something else about it needs one, goes live without a restart - so no
+     * launch records it. Were it then deleted while no daemon runs, by a switch
+     * to a branch without it, the next launch would not know to remove its
+     * class, nor would Maven, which did not write it, and its route would stay.
+     * A source already recorded keeps the time recorded for it: the class the
+     * apply wrote is newer than it, so it is not behind either way.
+     *
+     * @param sources
+     *            the sources the apply compiled
+     */
+    synchronized void recordCompiledSources(List<Path> sources) {
+        Map<Path, Long> recorded = readSourceInventory();
+        boolean added = false;
+        for (Path source : sources) {
+            if (!recorded.containsKey(source)) {
+                Optional<Compile.Stamp> stamp = Compile.stampOf(source);
+                if (stamp.isPresent()) {
+                    recorded.put(source, stamp.get().modified());
+                    added = true;
+                }
+            }
+        }
+        if (added) {
+            writeQuietly(sourceInventoryFile(), inventoryText(recorded));
+        }
+    }
+
+    private static String inventoryText(Map<Path, Long> sources) {
+        StringBuilder sb = new StringBuilder();
+        sources.forEach((source, modified) -> sb.append(source).append('\t')
+                .append(modified).append('\n'));
+        return sb.toString();
+    }
+
+    private void writeQuietly(Path file, String text) {
+        try {
+            Files.createDirectories(file.getParent());
+            Files.writeString(file, text);
+        } catch (IOException e) {
+            log.line("could not write " + relative(file) + ": "
+                    + e.getMessage());
+        }
+    }
+
+    private void deleteQuietly(Path file) {
+        try {
+            Files.deleteIfExists(file);
+        } catch (IOException e) {
+            log.line("could not delete " + relative(file) + ": "
+                    + e.getMessage());
+        }
     }
 
     /**

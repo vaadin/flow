@@ -86,6 +86,7 @@ import com.vaadin.flow.js.JsSnippets;
  *
  * @see JsSnippets#of(Class)
  * @see DomEventData
+ * @since 25.4
  */
 @JsFunctionParameterNames({ "event", "element" })
 public final class DomEventFilter implements JsSnippet {

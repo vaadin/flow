@@ -283,6 +283,7 @@ public final class JsFunction implements JsSnippet {
      * @param obj
      *            the object to compare with
      * @return <code>true</code> if the object is an equal function
+     * @since 25.4
      */
     @Override
     public boolean equals(@Nullable Object obj) {
