@@ -114,7 +114,10 @@ export class MessageSender {
     this.#uiLifecycleRegistration?.remove();
     this.#uiLifecycleRegistration = this.#registry.getUILifecycle().addHandler((event) => {
       if (event.getUiLifecycle().isTerminated()) {
-        // Nothing is sent after the application stops.
+        // Nothing is sent after the application stops. A reply that stops it,
+        // like an "Internal error", carries no client id to stop the resend
+        // timer, which would otherwise send the payload again.
+        this.#resetTimer();
         this.discardSentRequests();
         if (this.#openRequest !== null) {
           dispatchRequestEnd(this.#openRequest, 'discarded');
@@ -342,6 +345,10 @@ export class MessageSender {
   #scheduleResend(payload: Payload): void {
     const timeout = this.#registry.getApplicationConfiguration().getMaxMessageSuspendTimeout() + 500;
     this.#resendMessageTimer = setTimeout(() => {
+      if (this.#registry.getUILifecycle().isTerminated()) {
+        this.#resendMessageTimer = null;
+        return;
+      }
       this.#scheduleResend(payload);
       // Avoid re-sending while a request is still in progress; if the response
       // has not been processed, the reconnection-attempt listener resends.

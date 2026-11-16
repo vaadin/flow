@@ -235,6 +235,9 @@ export class MessageHandler {
     } else {
       Console.warn('Ignored received message because application has already been stopped');
       this.#endMessage(json, 'discarded');
+      // The request it replies to still has to end, or the client stays
+      // active for good.
+      this.#endRequestIfResponse(json);
     }
   }
 
