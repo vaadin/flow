@@ -60,6 +60,8 @@ class LockFile implements Serializable {
     private final File file;
     private final String holderName;
 
+    private boolean held;
+
     /**
      * Creates a lock held through the given file.
      *
@@ -102,15 +104,17 @@ class LockFile implements Serializable {
     }
 
     /**
-     * Takes the lock if nobody else holds it, without waiting. A lock left
-     * behind by a process that no longer runs is taken over.
+     * Takes the lock if it is free, without waiting. A lock left behind by a
+     * process that no longer runs is taken over.
      *
-     * @return {@code true} if this now holds the lock, {@code false} if a
-     *         running process holds it or the lock file cannot be written
+     * @return {@code true} if this now holds the lock, {@code false} if the
+     *         lock could not be taken right away: a running process holds it,
+     *         its holder is still writing it, another waiter is taking it over,
+     *         or the lock file cannot be read or written
      */
     boolean tryAcquire() {
-        // Retry only for as long as the previous attempt removed an abandoned
-        // lock or saw the lock released
+        // Retry a few times when an attempt removed an abandoned lock or saw
+        // the lock released, as another waiter may take it in between
         for (int i = 0; i < 3; i++) {
             Attempt attempt = attemptToTake();
             if (attempt.state() != AttemptState.RETRY) {
@@ -134,6 +138,7 @@ class LockFile implements Serializable {
     private Attempt attemptToTake() {
         try {
             writeLockFile();
+            held = true;
             return new Attempt(AttemptState.TAKEN);
         } catch (FileAlreadyExistsException e) {
             // Held by someone else, see below whether it is abandoned
@@ -173,9 +178,14 @@ class LockFile implements Serializable {
     }
 
     /**
-     * Releases the lock, provided that this process holds it.
+     * Releases the lock, provided that it was taken through this instance and
+     * this process still holds it.
      */
     void release() {
+        if (!held) {
+            return;
+        }
+        held = false;
         if (!Files.exists(path())) {
             getLogger().warn("Somebody else has removed the lock file ({})",
                     path().toAbsolutePath());

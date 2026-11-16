@@ -30,8 +30,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LockFileTest {
 
@@ -96,6 +99,37 @@ class LockFileTest {
         assertTimeoutPreemptively(Duration.ofSeconds(30),
                 () -> new LockFile(path, "test").acquire());
 
+        assertEquals(Long.toString(ProcessHandle.current().pid()),
+                Files.readAllLines(path, StandardCharsets.UTF_8).get(0));
+    }
+
+    @Test
+    void tryAcquire_heldByRunningProcess_returnsWithoutTakingIt()
+            throws Exception {
+        Path path = folder.resolve("test.lock");
+        LockFile holder = new LockFile(path, "test");
+        holder.acquire();
+        byte[] content = Files.readAllBytes(path);
+        try {
+            LockFile other = new LockFile(path, "test");
+            assertFalse(assertTimeoutPreemptively(Duration.ofSeconds(30),
+                    other::tryAcquire));
+            // Not holding it, so releasing must leave the holder's lock
+            other.release();
+            assertArrayEquals(content, Files.readAllBytes(path));
+        } finally {
+            holder.release();
+        }
+    }
+
+    @Test
+    void tryAcquire_lockOfDeadProcess_isTakenOver() throws Exception {
+        Path path = folder.resolve("test.lock");
+        Files.writeString(path, "1\nnot the command line of the process",
+                StandardCharsets.UTF_8);
+
+        assertTrue(assertTimeoutPreemptively(Duration.ofSeconds(30),
+                () -> new LockFile(path, "test").tryAcquire()));
         assertEquals(Long.toString(ProcessHandle.current().pid()),
                 Files.readAllLines(path, StandardCharsets.UTF_8).get(0));
     }

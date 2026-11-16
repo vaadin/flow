@@ -27,6 +27,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import static com.vaadin.flow.server.frontend.NodeInstallation.LAST_USED_FILE;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NodeInstallationsTest {
@@ -66,7 +67,8 @@ class NodeInstallationsTest {
         assertTrue(offlineKey.createNewFile());
 
         try {
-            NodeInstallations.removeUnused(vaadinHome, inUse);
+            assertTimeoutPreemptively(Duration.ofSeconds(30),
+                    () -> NodeInstallations.removeUnused(vaadinHome, inUse));
         } finally {
             reinstallLock.release();
         }

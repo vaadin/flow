@@ -353,11 +353,23 @@ class NodeResolver implements java.io.Serializable {
             nodeInstaller.setNodeDownloadRoot(nodeDownloadRoot);
         }
 
+        NodeInstallation installation = NodeInstallation
+                .forVersion(alternativeDirFile, nodeVersion);
+        // Using an installed version needs no lock, so that a read-only
+        // installation directory keeps working, unless a build is installing
+        // that version right now and its files may be only partly copied
+        if (!installation.getInstallLockFile().exists()) {
+            ActiveNodeInstallation active = tryUseInstalled(installation);
+            if (active != null) {
+                getLogger().debug("Node {} is already installed in {}",
+                        nodeVersion, alternativeDir);
+                return active;
+            }
+        }
+
         // Installing is not atomic and all builds on the machine share the
         // directory, so a concurrent install of the same version would
-        // overwrite and delete the files that this one is copying. Checking
-        // for an existing installation happens under the lock too, so that a
-        // partly copied installation is never taken into use.
+        // overwrite and delete the files that this one is copying
         try {
             Files.createDirectories(alternativeDirFile.toPath());
         } catch (IOException e) {
@@ -366,9 +378,7 @@ class NodeResolver implements java.io.Serializable {
                             + alternativeDirFile,
                     e);
         }
-        LockFile lock = new LockFile(
-                NodeInstallation.forVersion(alternativeDirFile, nodeVersion)
-                        .getInstallLockFile().toPath(),
+        LockFile lock = new LockFile(installation.getInstallLockFile().toPath(),
                 "Node installation");
         lock.acquire();
         try {
@@ -380,12 +390,13 @@ class NodeResolver implements java.io.Serializable {
 
     private ActiveNodeInstallation installAlternativeNode(
             NodeInstaller nodeInstaller, File alternativeDirFile) {
-        // Check whether the requested version is already installed
+        // Another build may have installed it while this one was waiting for
+        // the lock
         ActiveNodeInstallation active = tryUseInstalled(
                 NodeInstallation.forVersion(alternativeDirFile, nodeVersion));
         if (active != null) {
-            getLogger().debug("Node {} is already installed in {}", nodeVersion,
-                    alternativeDir);
+            getLogger().debug("Node {} was installed in {} by another build",
+                    nodeVersion, alternativeDir);
             return active;
         }
 
