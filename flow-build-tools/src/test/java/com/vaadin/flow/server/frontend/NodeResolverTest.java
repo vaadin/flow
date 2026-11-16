@@ -31,6 +31,8 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.slf4j.Logger;
@@ -167,19 +169,34 @@ class NodeResolverTest {
                 resolved.get(30, TimeUnit.SECONDS).nodeExecutable());
     }
 
-    @Test
-    void resolve_installationWithoutNpm_isInstalledAgain() throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void resolve_incompleteInstallation_isInstalledAgain(boolean npmCliCopied)
+            throws IOException {
         requireShellStubs();
         NodeInstallation partlyCopied = stubInstallation(VERSION);
-        assertTrue(partlyCopied.getNpmCliScript().delete());
+        File npmCli = partlyCopied.getNpmCliScript();
+        if (npmCliCopied) {
+            // Died after npm-cli.js but before the rest of npm
+            Files.writeString(
+                    new File(partlyCopied.getDirectory(),
+                            NodeInstallation.INSTALLING_FILE).toPath(),
+                    "", StandardCharsets.UTF_8);
+            Files.writeString(npmCli.toPath(), "partly copied",
+                    StandardCharsets.UTF_8);
+        } else {
+            // Died before npm, as an older Flow version without a marker
+            assertTrue(npmCli.delete());
+        }
         prepareDownloadableNode(VERSION);
 
         ActiveNodeInstallation active = resolve(VERSION);
 
-        assertTrue(partlyCopied.getNpmCliScript().isFile(),
-                "Installing again should restore npm");
-        assertEquals(partlyCopied.getNpmCliScript().getAbsolutePath(),
-                active.npmCliScript());
+        assertEquals("", Files.readString(npmCli.toPath()),
+                "Installing again should replace the partly copied npm");
+        assertFalse(partlyCopied.isIncomplete(),
+                "A completed install should no longer be marked incomplete");
+        assertEquals(npmCli.getAbsolutePath(), active.npmCliScript());
     }
 
     @Test

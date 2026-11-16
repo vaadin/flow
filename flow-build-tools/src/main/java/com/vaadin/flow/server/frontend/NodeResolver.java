@@ -403,11 +403,13 @@ class NodeResolver implements java.io.Serializable {
         // No suitable version found, install the requested version
         getLogger().info("Installing Node {} to {}", nodeVersion,
                 alternativeDir);
+        NodeInstallation installation = NodeInstallation
+                .forVersion(alternativeDirFile, nodeVersion);
         try {
+            installation.markInstalling();
             nodeInstaller.setNodeVersion(nodeVersion);
             nodeInstaller.install();
-            NodeInstallation installation = NodeInstallation
-                    .forVersion(alternativeDirFile, nodeVersion);
+            installation.markInstalled();
             installation.markUsed();
             active = createActiveInstallation(installation, nodeVersion);
 
@@ -416,7 +418,7 @@ class NodeResolver implements java.io.Serializable {
             // have been used instead
             NodeInstallations.removeUnused(alternativeDirFile, installation);
             return active;
-        } catch (InstallationException e) {
+        } catch (InstallationException | IOException e) {
             throw new IllegalStateException("Failed to install Node", e);
         }
     }
@@ -435,10 +437,13 @@ class NodeResolver implements java.io.Serializable {
         if (!installation.hasNodeExecutable()) {
             return null;
         }
-        if (!installation.getNpmCliScript().isFile()) {
-            // Left behind by an install that died while copying, as the
-            // binary is copied before npm. Installing again repairs it.
-            getLogger().debug("Node installation {} has no npm, reinstalling",
+        // An install that died while copying can leave the binary with only
+        // part of npm. Installing again repairs it. Installs by older Flow
+        // versions have no marker, so a missing npm is checked separately.
+        if (installation.isIncomplete()
+                || !installation.getNpmCliScript().isFile()) {
+            getLogger().debug(
+                    "Node installation {} is incomplete, installing it again",
                     installation.getDirectory());
             return null;
         }
