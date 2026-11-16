@@ -46,10 +46,10 @@ while true; do
       | grep -qE '^\[ERROR\].*Could not transfer (artifact|metadata)'; then
     exit $status
   fi
-  # Surefire and Failsafe log a test class with failures or errors at ERROR
-  # level; a passing or flaky one is logged at INFO or WARNING.
+  # The goal failure, not the per-class result: a test class that failed and
+  # then passed on a rerun is logged as an error too, but is only a flake.
   if tail -c +$((offset + 1)) "$LOG" \
-      | grep -qE '^\[ERROR\] Tests run:|There are test failures|There was a timeout'; then
+      | grep -qE '^\[ERROR\].*(There are test failures|There was a timeout)'; then
     exit $status
   fi
   # A failed attempt can leave behind the application JVMs it started,
