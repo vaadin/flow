@@ -435,6 +435,13 @@ class NodeResolver implements java.io.Serializable {
         if (!installation.hasNodeExecutable()) {
             return null;
         }
+        if (!installation.getNpmCliScript().isFile()) {
+            // Left behind by an install that died while copying, as the
+            // binary is copied before npm. Installing again repairs it.
+            getLogger().debug("Node installation {} has no npm, reinstalling",
+                    installation.getDirectory());
+            return null;
+        }
         File installDirectory = installation.getDirectory().getParentFile();
         try {
             // Running the binary both validates that the installation

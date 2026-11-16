@@ -168,6 +168,21 @@ class NodeResolverTest {
     }
 
     @Test
+    void resolve_installationWithoutNpm_isInstalledAgain() throws IOException {
+        requireShellStubs();
+        NodeInstallation partlyCopied = stubInstallation(VERSION);
+        assertTrue(partlyCopied.getNpmCliScript().delete());
+        prepareDownloadableNode(VERSION);
+
+        ActiveNodeInstallation active = resolve(VERSION);
+
+        assertTrue(partlyCopied.getNpmCliScript().isFile(),
+                "Installing again should restore npm");
+        assertEquals(partlyCopied.getNpmCliScript().getAbsolutePath(),
+                active.npmCliScript());
+    }
+
+    @Test
     void resolve_whileAnotherBuildInstallsOtherVersion_installsWithoutWaiting()
             throws Exception {
         requireShellStubs();
