@@ -38,10 +38,10 @@
     "strip-css-comments": "5.0.0",
     "transform-ast": "2.4.4",
     "typescript": "5.9.3",
-    "vite": "7.3.7",
+    "vite": "7.3.8",
     "vite-plugin-checker": "0.14.5",
     "workbox-build": "7.4.0",
-    "@babel/types": "7.29.11",
+    "@babel/types": "7.29.14",
     "@preact/signals-react": "3.12.0"
   },
   "vaadin": {
@@ -71,10 +71,10 @@
       "strip-css-comments": "5.0.0",
       "transform-ast": "2.4.4",
       "typescript": "5.9.3",
-      "vite": "7.3.7",
+      "vite": "7.3.8",
       "vite-plugin-checker": "0.14.5",
       "workbox-build": "7.4.0",
-      "@babel/types": "7.29.11",
+      "@babel/types": "7.29.14",
       "@preact/signals-react": "3.12.0"
     },
     "hash": "96e22b8cbd4ebe35b49bc6edd19a331933d5d9d70f9116b993c2c6837fb1ee88"
