@@ -39,12 +39,15 @@ Error: Class initialization of io.vertx.core.json.Json failed.
 Caused by: java.lang.NoClassDefFoundError: com/fasterxml/jackson/core/util/ByteArrayBuilder
 ```
 
-Vert.x needs Jackson 2 core (`com.fasterxml.jackson.core:jackson-core`), but
-`quarkus-undertow` excludes it from Vert.x, and since that release no other
-dependency brings it in. Vaadin itself uses Jackson 3, which does not help
-here. This is a Quarkus bug, tracked in
+The Quarkus Undertow extension checks whether Jackson is on the classpath.
+When it isn't, the extension defers the initialization of the Vert.x JSON
+classes to run time. The check only looks at the artifact name `jackson-core`,
+which Jackson 3, used by Vaadin, shares with Jackson 2. Quarkus therefore
+mistakes Jackson 3 for Jackson 2 and initializes the Vert.x JSON classes at
+build time, which requires Jackson 2. Before 3.33.3.3, another dependency
+happened to bring Jackson 2 in, which hid the problem. This is a Quarkus bug,
+tracked in
 [quarkusio/quarkus#56989](https://github.com/quarkusio/quarkus/issues/56989).
-JVM mode is not affected unless the application uses the Vert.x JSON API.
 
 Until a Quarkus release with the fix is out, either stay on Quarkus 3.33.3.2 or
 earlier, or add Jackson 2 core to the application. The Quarkus BOM manages
