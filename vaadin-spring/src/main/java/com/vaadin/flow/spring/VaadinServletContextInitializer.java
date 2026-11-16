@@ -158,8 +158,10 @@ public class VaadinServletContextInitializer
                     Element.class.getPackage().getName(),
                     Route.class.getPackage().getName(),
                     IndexHtmlRequestHandler.class.getPackage().getName(),
-                    "com.vaadin.shrinkwrap", "com.vaadin.copilot.startup",
-                    "com.vaadin.hilla.startup")
+                    // named as a string, as the dev server is not on the
+                    // class path of a production application
+                    "com.vaadin.base.devserver", "com.vaadin.shrinkwrap",
+                    "com.vaadin.copilot.startup", "com.vaadin.hilla.startup")
             .toList();
 
     /**

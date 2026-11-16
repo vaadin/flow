@@ -56,8 +56,9 @@ public class BasicElementView extends Div {
                     e2 -> greeting.removeFromParent());
 
             mainElement.appendChild(greeting);
-        }).addEventData("element.textContent").addEventData("event.clientX")
-                .addEventData("event.clientY");
+        }).addEventDataPath("element.textContent")
+                .addEventDataPath("event.clientX")
+                .addEventDataPath("event.clientY");
 
         Element helloWorldElement = ElementFactory.createDiv("Hello world");
 

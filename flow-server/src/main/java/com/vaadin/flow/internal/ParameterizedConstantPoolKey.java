@@ -40,6 +40,7 @@ import tools.jackson.databind.node.ObjectNode;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
+ * @since 25.4
  */
 public class ParameterizedConstantPoolKey implements Serializable {
 

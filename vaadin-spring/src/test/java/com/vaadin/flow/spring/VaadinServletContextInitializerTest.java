@@ -49,6 +49,7 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.classreading.MetadataReader;
 
+import com.vaadin.base.devserver.hotswap.Hotswapper;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.Element;
@@ -287,11 +288,12 @@ class VaadinServletContextInitializerTest {
         // packages has no function to run in the browser
         List<Class<?>> definitions = new VaadinServletContextInitializer(
                 new GenericApplicationContext())
-                .findByAnnotationOrSuperType(List.of("com.vaadin.flow"),
+                .findByAnnotationOrSuperType(List.of("com.vaadin"),
                         new DefaultResourceLoader(),
                         List.of(JsDefinition.class), List.of())
                 .filter(type -> !isTestClass(type)).toList();
-        assertThat(definitions).contains(Element.CallFunctionJs.class);
+        assertThat(definitions).contains(Element.CallFunctionJs.class,
+                Hotswapper.RefreshUiJs.class);
         assertThat(definitions).allSatisfy(type -> assertThat(scannedPackages)
                 .as("packages scanned for %s", type.getName())
                 .anyMatch(pkg -> type.getPackageName().equals(pkg)

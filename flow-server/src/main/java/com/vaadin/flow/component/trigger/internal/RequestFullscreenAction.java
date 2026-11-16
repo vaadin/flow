@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
@@ -25,6 +26,9 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 
 /**
  * Asks the browser to enter fullscreen when the bound trigger fires.
@@ -68,6 +72,9 @@ import com.vaadin.flow.function.SerializableRunnable;
  * @since 25.2
  */
 public class RequestFullscreenAction extends PromiseAction<Void> {
+
+    private static final RequestFullscreenJs REQUEST_FULLSCREEN_JS = JsSnippets
+            .of(RequestFullscreenJs.class);
 
     private final @Nullable Element target;
     private final @Nullable Element wrapper;
@@ -166,13 +173,42 @@ public class RequestFullscreenAction extends PromiseAction<Void> {
     @Override
     protected JsFunction toPromiseJs(Trigger trigger) {
         if (target == null) {
-            return JsFunction.of(
-                    "return window.Vaadin.Flow.fullscreen.requestPageFullscreen()");
+            return REQUEST_FULLSCREEN_JS.requestPageFullscreen();
         }
         // wrapper is non-null when target is non-null — resolveWrapper
-        // throws otherwise. $0 = target element, $1 = the UI wrapper element.
-        return JsFunction.of(
-                "return window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1)",
-                target, Objects.requireNonNull(wrapper));
+        // throws otherwise.
+        return REQUEST_FULLSCREEN_JS.requestComponentFullscreen(target,
+                Objects.requireNonNull(wrapper));
+    }
+
+    /**
+     * How fullscreen is requested, as snippets for
+     * {@link JsSnippets#of(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    @JsDefinition
+    public interface RequestFullscreenJs extends Serializable {
+
+        /**
+         * An action that requests fullscreen for the whole page.
+         *
+         * @return the action function, which returns the promise of the request
+         */
+        @JsExpression("return window.Vaadin.Flow.fullscreen.requestPageFullscreen()")
+        JsFunction requestPageFullscreen();
+
+        /**
+         * An action that requests fullscreen for an element, moving it into the
+         * wrapper element of the UI.
+         *
+         * @param target
+         *            the element to show in fullscreen
+         * @param wrapper
+         *            the wrapper element of the UI
+         * @return the action function, which returns the promise of the request
+         */
+        @JsExpression("return window.Vaadin.Flow.fullscreen.requestComponentFullscreen($0, $1)")
+        JsFunction requestComponentFullscreen(Element target, Element wrapper);
     }
 }

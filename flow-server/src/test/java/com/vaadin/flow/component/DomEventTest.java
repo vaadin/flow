@@ -24,6 +24,7 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ConstantPoolKey;
@@ -31,6 +32,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
+import com.vaadin.flow.shared.JsonConstants;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -59,6 +61,19 @@ class DomEventTest {
     @Test
     void filter() {
         assertSettings(FilterEvent.class, "a == b", 0);
+    }
+
+    @DomEvent(value = "event", filter = "event.isTrusted")
+    public static class PathFilterEvent extends ComponentEvent<Component> {
+        public PathFilterEvent(Component source, boolean fromClient) {
+            super(source, fromClient);
+        }
+    }
+
+    @Test
+    void pathFilter() {
+        // Read by the client without compiling it, so not in the bundle
+        assertSettings(PathFilterEvent.class, "event.isTrusted", 0);
     }
 
     @DomEvent(value = "event", debounce = @DebounceSettings(timeout = 200, phases = {
@@ -123,16 +138,28 @@ class DomEventTest {
             }
         }, JacksonUtils.getKeys(settings));
 
+        JsonNode debounceSettings = settings.get(expectedFilter);
+        // The filter that always passes is added by Flow, not by the event
+        if (!ElementListenerMap.ALWAYS_TRUE_FILTER.equals(expectedFilter)
+                && BundledEventData.isBundledFilter(expectedFilter)) {
+            // A filter that is not a property path runs the function of the
+            // bundle, with the debounce settings beside it
+            assertEquals(BundledEventData.getFunctionId(expectedFilter),
+                    debounceSettings.get(JsonConstants.EVENT_SETTINGS_FUNCTION)
+                            .asString());
+            debounceSettings = debounceSettings
+                    .get(JsonConstants.EVENT_SETTINGS_DEBOUNCE);
+        }
+
         if (expectedTimeout == 0 && expectedPhases.length == 0) {
-            assertEquals(JsonNodeType.BOOLEAN,
-                    settings.get(expectedFilter).getNodeType(),
+            assertEquals(JsonNodeType.BOOLEAN, debounceSettings.getNodeType(),
                     "There should be a boolean instead of empty phase list");
-            boolean isFilter = settings.get(expectedFilter).booleanValue();
+            boolean isFilter = debounceSettings.booleanValue();
             assertTrue(isFilter, "Expression should be used as a filter");
             return;
         }
 
-        ArrayNode filterSettings = (ArrayNode) settings.get(expectedFilter);
+        ArrayNode filterSettings = (ArrayNode) debounceSettings;
 
         assertEquals(1, filterSettings.size());
 

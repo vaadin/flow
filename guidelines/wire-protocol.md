@@ -85,7 +85,10 @@ expressions of a Polymer template listener. The third kind is what an
 An `ElementListenerMap` value is an object keyed by the JavaScript
 expressions the client evaluates when the event fires. The value of each
 key says whether that expression is also a filter that decides whether
-the event is sent at all, and takes one of exactly three forms:
+the event is sent at all. For an expression the client compiles or reads
+itself, it takes one of exactly three forms (a function from the bundle
+has an object instead, see
+[Declared event data and filters](#declared-event-data-and-filters)):
 
 - `false` — a plain expression, evaluated and sent as event data.
 - `true` — a filter with no debounce.
@@ -137,7 +140,10 @@ nothing from a string. Such an entry is keyed by `@` followed by a short
 hash of the function and its captured values (`JsCall.createSnippetKey()`).
 No JavaScript expression starts with `@`, so this key never equals the
 key of an expression. Its value is an object, not one of the three
-debounce forms above, which is how the client tells the two apart:
+debounce forms above, which is how the client tells that it runs a
+function from the bundle rather than compiling or reading the key. The
+key alone does not tell it: a bundled `@EventData` value, described
+below, keeps the expression as its key. The object holds:
 
 - `f` — the id of the declared function. The client calls
   `window.Vaadin.Flow.jsSnippets[id]` with the captures, and calls what
@@ -148,7 +154,13 @@ debounce forms above, which is how the client tells the two apart:
   `preventDefault()` or `stopPropagation()` on a listener with a declared
   filter. The entry runs the filter, and the client calls that method of
   the event only when the filter passes. Its key is the key of the filter
-  followed by `.` and the method name.
+  followed by `.` and the method name. A bundled `@DomEvent` filter,
+  described below, uses `s` too, with a different key.
+- `e` — `true` for event data declared as `DomEventData<Element>`, left
+  out otherwise. The function returns a DOM node, and the client sends the
+  id of the closest state node instead (`-1` when there is none), like it
+  does for an expression added with `addEventDataElement(String)`. The
+  server resolves the id to the element with the same lookup.
 
 ```json
 {
@@ -179,6 +191,58 @@ The client merges the two before it runs the entries. The value of a
 declared entry is sent back under its key, and
 `DomEvent.getEventData(DomEventData)` reads it with
 `ElementListenerMap.getEventDataKey(DomEventData)`.
+
+An `@EventData` value of a `@DomEvent` class is known when the
+application is built, so a value that the client would otherwise compile
+from a string is generated into `window.Vaadin.Flow.jsSnippets` as a
+function of the event and the element, without captures. Its entry keeps
+the expression as its key, so the server reads the value as before, but
+the value is an object with only `f` and `d`, and the client runs the
+function instead of compiling the key. A value mapped to a component or an
+element keeps its key with the `]` prefix, its function is the expression
+without the prefix, and its object also has `e: true`, so the client sends
+the id of the closest state node to the DOM node that the function returns.
+The client tells such an entry
+from a declared snippet by its key, which does not start with `@`
+(`JsonConstants.EVENT_SNIPPET_KEY_PREFIX`). When the bundle has no
+function for it, for example because the class changed after the build,
+the client compiles the key, without the `]` prefix of a mapped value, and
+logs a warning once. When compiling is
+blocked too, under a Content Security Policy without `unsafe-eval`, the
+client logs an error and the event is not sent, so the server never gets
+an event without the value. A declared snippet that is missing from the
+bundle has no expression to fall back to, and the client sends `null`
+for it. `BundledEventData` decides for
+both the build and the server which values those are and what their ids
+are: property paths, including mapped ones such as `]event.target`, and
+the keys of a `@PrebuiltEventData` event stay plain expressions.
+
+```json
+{
+  "event.clientX - element.offsetLeft": { "f": "3a1c…77e0", "d": false },
+  "]element.querySelector('.item')": { "f": "6532…c1f6", "d": false, "e": true }
+}
+```
+
+The `filter` of a `@DomEvent` class is sent the same way when it is not a
+property path, and shares the function of an `@EventData` value with the
+same expression. Its object has the debounce settings of a filter in `d`.
+For `preventDefault()` or `stopPropagation()` on a listener with such a
+filter, the key is the conditional expression that a string filter would
+get, such as `(event.button === 0) && event.preventDefault()`, and the
+object has the function of the filter and `s`. The client runs the
+function and calls the method when it returns a truthy value, or compiles
+the key when the bundle has no function for it, which does the same. For
+a filter that is a property path, the conditional expression is sent as a
+plain expression, and the client reads it without compiling it: it reads
+the path and calls the method when the value is truthy.
+
+```json
+{
+  "event.button === 0": { "f": "9d02…5b1e", "d": true },
+  "(event.button === 0) && event.preventDefault()": { "f": "9d02…5b1e", "d": false, "s": "preventDefault" }
+}
+```
 
 ### Constraints this puts on new code
 
@@ -299,14 +363,14 @@ travels as a single-key wrapper object whose key is reserved:
   a callback that sends a `channel` RPC back to the server.
 - `{"@v-fn": {"body": …, "captures": […], "args": […]}}` — a `JsFunction`,
   manifested on the client as a real function with its captures pre-bound.
-  This is how `Element.addJsInitializer` ships a user expression as a
-  parameter of a fixed framework expression.
+  This is how `Element.addJsInitializer` ships a user expression as an
+  argument of the declared framework call that runs initializers.
 - `{"@v-fn": {"id": …, "captures": […]}}` — a `JsFunction` declared as a
   `JsSnippet` by a `@JsDefinition` method. The client looks the id up in
   `window.Vaadin.Flow.jsSnippets` and calls that function with the
   captures; what it returns is the decoded value, so nothing is compiled
   from a string. That is a function whose body is the declared expression
-  and whose parameters are the names of `@JsCalledWith`, or none without
+  and whose parameters are the names of `@JsFunctionParameterNames`, or none without
   it, so no declared JavaScript runs while decoding. The registry is
   separate from `jsDefinitions` because a snippet function is not
   `async`: whatever it is passed to may need its value synchronously. A
