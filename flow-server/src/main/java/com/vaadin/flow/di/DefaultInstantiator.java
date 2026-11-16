@@ -41,7 +41,12 @@ import com.vaadin.flow.server.auth.MenuAccessControl;
 /**
  * Default instantiator that is used if no other instantiator has been
  * registered. This implementation uses vanilla Java mechanisms such as
- * {@link Class#newInstance()} and {@link ServiceLoader}.
+ * reflection and {@link ServiceLoader}.
+ * <p>
+ * Route targets, components and other types created by this instantiator need a
+ * no-arg constructor that is not private. The class and the constructor do not
+ * need to be public, but in a named module the package then has to be open to
+ * Vaadin.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -224,6 +229,6 @@ public class DefaultInstantiator implements Instantiator {
     }
 
     private <T> T create(Class<T> type) {
-        return ReflectTools.createInstance(type);
+        return ReflectTools.createInstanceWithAccessibleConstructor(type);
     }
 }

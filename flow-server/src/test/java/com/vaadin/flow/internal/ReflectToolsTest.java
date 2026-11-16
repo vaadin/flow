@@ -97,6 +97,11 @@ class ReflectToolsTest {
 
     }
 
+    public static class PackagePrivateConstructorClass {
+        PackagePrivateConstructorClass() {
+        }
+    }
+
     public static class VarArgsCtor {
 
         public VarArgsCtor(String... args) {
@@ -183,6 +188,49 @@ class ReflectToolsTest {
         assertError(
                 ReflectTools.CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION,
                 ConstructorThrowsExceptionClass.class);
+    }
+
+    @Test
+    void createInstanceWithAccessibleConstructor_nonPublicClassOrConstructor_created() {
+        assertSame(PackagePrivateConstructorClass.class,
+                ReflectTools
+                        .createInstanceWithAccessibleConstructor(
+                                PackagePrivateConstructorClass.class)
+                        .getClass());
+        assertSame(PrivateStaticInnerClassPublicConstructor.class,
+                ReflectTools
+                        .createInstanceWithAccessibleConstructor(
+                                PrivateStaticInnerClassPublicConstructor.class)
+                        .getClass());
+        assertSame(VarArgsCtor.class, ReflectTools
+                .createInstanceWithAccessibleConstructor(VarArgsCtor.class)
+                .getClass());
+    }
+
+    @Test
+    void createInstanceWithAccessibleConstructor_privateConstructor_rejected() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> ReflectTools.createInstanceWithAccessibleConstructor(
+                        StaticInnerPrivateConstructorClass.class));
+        assertEquals(String.format(
+                ReflectTools.CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR,
+                StaticInnerPrivateConstructorClass.class.getName()),
+                exception.getMessage());
+    }
+
+    @Test
+    void createInstanceWithAccessibleConstructor_constructorThrows_descriptiveError() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> ReflectTools.createInstanceWithAccessibleConstructor(
+                        ConstructorThrowsExceptionClass.class));
+        assertEquals(String.format(
+                ReflectTools.CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION,
+                ConstructorThrowsExceptionClass.class.getName()),
+                exception.getMessage());
+        assertSame(NullPointerException.class,
+                exception.getCause().getCause().getClass());
     }
 
     @Test

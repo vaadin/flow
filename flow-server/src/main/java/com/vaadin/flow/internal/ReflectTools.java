@@ -69,6 +69,7 @@ public class ReflectTools implements Serializable {
     static final String CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR = "Unable to create an instance of '%s'. Make sure the class has a public no-arg constructor.";
     static final String CREATE_INSTANCE_FAILED_LOCAL_CLASS = "Cannot instantiate local class '%s'. Move class declaration outside the method.";
     static final String CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION = "Unable to create an instance of '%s'. The constructor threw an exception.";
+    static final String CREATE_INSTANCE_FAILED_INACCESSIBLE_CONSTRUCTOR = "Unable to create an instance of '%s'. The class or its no-arg constructor is not public, and the package '%s' is not open to Vaadin. Make the class and the constructor public, or open the package in module-info.java.";
 
     private static final Predicate<Method> IS_SYNTHETIC = Method::isSynthetic;
 
@@ -527,6 +528,55 @@ public class ReflectTools implements Serializable {
      */
     public static <T> T createInstance(Class<T> cls) {
         return createProxyInstance(cls, cls);
+    }
+
+    /**
+     * Creates an instance of the given class with its no-arg constructor, also
+     * when the class or the constructor is not public.
+     * <p>
+     * Unlike {@link #createInstance(Class)}, a package-private or protected
+     * no-arg constructor, or a public constructor of a non-public class, is
+     * made accessible and used, the same way dependency injection containers
+     * do. A private no-arg constructor is not used, since it usually means the
+     * class is not meant to be instantiated. Classes without a declared no-arg
+     * constructor are handled like in {@link #createInstance(Class)}, which
+     * means a public varargs constructor is used when there is one.
+     * <p>
+     * Catches all exceptions which might occur and wraps them in a
+     * {@link IllegalArgumentException} with a descriptive error message hinting
+     * of what might be wrong with the class that could not be instantiated.
+     *
+     * @param <T>
+     *            the instance type
+     * @param cls
+     *            the class to instantiate
+     * @return an instance of the class
+     * @throws IllegalArgumentException
+     *             if class instance creation fails, for example when the
+     *             constructor is not public and the package of the class is in
+     *             a named module that does not open it to Vaadin
+     */
+    public static <T> T createInstanceWithAccessibleConstructor(Class<T> cls) {
+        checkClassAccessibility(cls);
+        Constructor<T> constructor;
+        try {
+            constructor = cls.getDeclaredConstructor();
+        } catch (NoSuchMethodException e) {
+            return createInstance(cls);
+        }
+        if (Modifier.isPrivate(constructor.getModifiers())) {
+            return createInstance(cls);
+        }
+        if (!constructor.trySetAccessible()) {
+            throw new IllegalArgumentException(String.format(
+                    CREATE_INSTANCE_FAILED_INACCESSIBLE_CONSTRUCTOR,
+                    cls.getName(), cls.getPackageName()));
+        }
+        try {
+            return constructor.newInstance();
+        } catch (Exception e) {
+            throw convertInstantiationException(e, cls);
+        }
     }
 
     /**
