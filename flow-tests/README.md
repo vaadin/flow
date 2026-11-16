@@ -37,6 +37,8 @@ copying the test. Never add the same test in two places.
    CDI: **vaadin-cdi-tests**.
 2. Needs Spring Security? → **test-spring-security** (its url-mapping /
    context-path / method-security / route-path variants live here as profiles).
+   Needs Spring Security together with the strict Content Security Policy
+   (`csp=strict`, production mode)? → **test-csp-strict-spring-security**.
 3. Needs a specific theme setting? → custom application theme: **test-themes**;
    `@NoTheme`: **test-no-theme**; Tailwind: **test-tailwind**.
 4. Needs a non-root / encoded context path (and not security)? → **test-contextpath**.
@@ -70,6 +72,7 @@ copying the test. Never add the same test in two places.
 | **test-tailwind** | the Tailwind CSS feature flag |
 | **test-pwa** | a PWA (`@PWA`, offline, web push) |
 | **test-csp-strict** | the strict Content Security Policy setting (`csp=strict`, production mode) |
+| **test-csp-strict-spring-security** | `csp=strict` together with Spring Security: which `Content-Security-Policy` a response carries |
 | **test-embedding** | Flow embedded as a web component |
 | **test-plain-spring** | Spring without Boot (Spring MVC) |
 | **test-spring-security** | Spring Security (auth, url-mapping, method / route-path checks) |
@@ -125,6 +128,7 @@ Active when `-DskipTests` is **not** set (the default).
 |--------|-------------|
 | **test-default** | Home for ITs that need only the default configuration (Spring Boot, React, dev hotdeploy, root context, npm), on JUnit 6. Holds the routing suite, the DOM suite (Element API, DOM events and filters, shadow root, visibility, `Page`), the components suite (HTML components, composites, drag and drop, dialogs and shortcuts, popovers, inert and enabled state, loading indicator, upload, download handlers and media) and the dev-mode ITs (dependency loading order, Vite communication, browser logging, dev-mode URL validation, exported JS functions, stream resources, Vite websocket logout handling) — see [test-default/README.md](test-default/README.md). |
 | **test-csp-strict** | Production-mode Spring Boot application with `csp=strict`, on JUnit 6: Vaadin sends the nonce-based `Content-Security-Policy`, the browser enforces it, and one view per scenario checks that ordinary Flow usage works without a policy violation. An IT for a scenario that does not work yet is disabled with the blocking issue — see [test-csp-strict/README.md](test-csp-strict/README.md). |
+| **test-csp-strict-spring-security** | Production-mode Spring Boot application with `csp=strict` and Spring Security, where Spring Security is configured with a `Content-Security-Policy` of its own, on JUnit 6 without a browser. Pins which policy each kind of response carries. A module of its own because the Spring Security modules do not run in production mode with `csp=strict`, and adding Spring Security to **test-csp-strict** would change the conditions of every scenario there — see [test-csp-strict-spring-security/README.md](test-csp-strict-spring-security/README.md). |
 | **test-push-startup** | Tests that a push connection arriving while the Vaadin service is still initializing is held and then served, instead of being dropped. Uses a deliberately slow service init listener, so it needs its own module. |
 | **test-devloop** | End-to-end tests for the `vaadin-dev` CLI and the dev-loop daemon: apply/restart/deletion, frontend and CSS changes, POM edits, multi-module projects and daemon survival. |
 | **test-servlet** | Tests that the Flow servlet registers and deploys correctly, verifying a basic navigation target is accessible and renders content via the standard servlet mechanism. |
