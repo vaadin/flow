@@ -241,6 +241,103 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
         document.body.removeEventListener('click', countParentCall);
       }
     });
+
+    it('runs the function from the bundle for an expression key with snippet settings', () => {
+      // A bundled @EventData value keeps the expression as its key, so it is
+      // the shape of the settings that says not to compile the key
+      const expression = 'event.clientX - element.offsetLeft';
+      snippets()['fn-id'] = () => (event, target) => `${event.type} ${target === element}`;
+      bindWithClickSettings({ [expression]: { f: 'fn-id', d: false } });
+
+      element.click();
+
+      expect(harness.collectedEventData[0]).to.deep.equal({ [expression]: 'click true' });
+    });
+
+    it('maps what the function from the bundle returns for a mapped key', () => {
+      const key = `${MAP_STATE_NODE_EVENT_DATA}element.firstElementChild`;
+      snippets()['fn-id'] = () => (_event, target) => target.firstElementChild;
+      bindWithClickSettings({ [key]: { f: 'fn-id', d: false, e: true } });
+      const { childNode } = addChild('span');
+
+      element.click();
+
+      expect(harness.collectedEventData[0]).to.deep.equal({ [key]: childNode.getId() });
+    });
+
+    it('does not send the event for a bundled expression missing from the bundle', () => {
+      // An expression of its own, as a compiled expression is cached
+      const expression = 'event.type + " blocked"';
+      const errors: string[] = [];
+      const reported: unknown[] = [];
+      const originalError = console.error;
+      const onerror = window.onerror;
+      console.error = (message: unknown) => errors.push(String(message));
+      // The browser reports the error of a listener as uncaught; keep it from
+      // failing the case
+      window.onerror = (...args) => {
+        reported.push(args[4]);
+        return true;
+      };
+      try {
+        bindWithClickSettings({ 'event.type': false, [expression]: { f: 'missing-bundled-blocked', d: false } });
+
+        element.click();
+      } finally {
+        console.error = originalError;
+        window.onerror = onerror;
+      }
+
+      expect(harness.collectedNodes).to.have.length(0);
+      expect(reported).to.have.length(1);
+      expect(reported[0]).to.be.instanceOf(EvalError);
+      expect(errors[0]).to.contain(`@EventData value "${expression}"`);
+      expect(errors[0]).to.contain('the event is not sent');
+    });
+  });
+
+  it('compiles a mapped bundled expression missing from the bundle without its prefix and maps it', () => {
+    // An expression of its own, as a compiled expression is cached
+    const expression = 'element.firstElementChild || null';
+    const key = `${MAP_STATE_NODE_EVENT_DATA}${expression}`;
+    const warnings: string[] = [];
+    const originalWarn = console.warn;
+    console.warn = (message: unknown) => warnings.push(String(message));
+    try {
+      bindWithClickSettings({ [key]: { f: 'missing-bundled-mapped', d: false, e: true } });
+      const { childNode } = addChild('span');
+
+      element.click();
+
+      expect(harness.collectedEventData[0]).to.deep.equal({ [key]: childNode.getId() });
+    } finally {
+      console.warn = originalWarn;
+    }
+    expect(warnings).to.have.length(1);
+    expect(warnings[0]).to.contain(`@EventData value "${expression}"`);
+  });
+
+  it('compiles a bundled expression missing from the bundle and warns once', () => {
+    // An expression of its own, as a compiled expression is cached
+    const expression = 'event.type + " compiled"';
+    const warnings: string[] = [];
+    const originalWarn = console.warn;
+    console.warn = (message: unknown) => warnings.push(String(message));
+    try {
+      bindWithClickSettings({ [expression]: { f: 'missing-bundled-compiled', d: false } });
+
+      element.click();
+      element.click();
+    } finally {
+      console.warn = originalWarn;
+    }
+
+    expect(harness.collectedEventData).to.deep.equal([
+      { [expression]: 'click compiled' },
+      { [expression]: 'click compiled' }
+    ]);
+    expect(warnings).to.have.length(1);
+    expect(warnings[0]).to.contain(`@EventData value "${expression}"`);
   });
 
   it('runs a declared snippet with its captures, the event and the element', () => {
@@ -251,6 +348,17 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
     element.click();
 
     expect(harness.collectedEventData[0]).to.deep.equal({ '@sum': '7 click true' });
+  });
+
+  it('maps a DOM node returned by a declared snippet of an element to the closest state node id', () => {
+    snippets()['fn-id'] = () => (_event, target) => target.firstElementChild!.firstChild;
+    bindWithClickSettings({ '@target': { f: 'fn-id', d: false, e: true } });
+    const { childElement, childNode } = addChild('span');
+    childElement.appendChild(document.createTextNode('text'));
+
+    element.click();
+
+    expect(harness.collectedEventData[0]).to.deep.equal({ '@target': childNode.getId() });
   });
 
   it('runs a declared snippet without captures', () => {

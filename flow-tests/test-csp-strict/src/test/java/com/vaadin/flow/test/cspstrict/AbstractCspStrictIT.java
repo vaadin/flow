@@ -52,16 +52,6 @@ public abstract class AbstractCspStrictIT extends AbstractBrowserIT {
             .parseInt(System.getProperty("serverPort", "8890"));
 
     /**
-     * Reason of the tests disabled because no page renders yet: the constructor
-     * of {@code Page} registers event data for the browser details, which the
-     * strict mode rejects, so creating the {@code UI} fails for every request.
-     * Goes away with the first fix of
-     * https://github.com/vaadin/flow/issues/26152.
-     */
-    public static final String NO_UI_IN_STRICT_MODE = "Blocked by https://github.com/vaadin/flow/issues/26152: "
-            + "Page's constructor registers event data, so no UI can be created in strict mode";
-
-    /**
      * Gets the path of the view under test, starting with a "/".
      *
      * @return the path appended to {@link #getRootURL()}
@@ -88,10 +78,23 @@ public abstract class AbstractCspStrictIT extends AbstractBrowserIT {
      */
     protected HttpResponse<String> fetchBootstrapPage()
             throws IOException, InterruptedException {
+        return fetch(getTestPath());
+    }
+
+    /**
+     * Fetches a page of the application without a browser, to check the
+     * response headers and the HTML as sent.
+     *
+     * @param path
+     *            the path of the page, starting with a "/"
+     * @return the response
+     */
+    protected HttpResponse<String> fetch(String path)
+            throws IOException, InterruptedException {
         try (HttpClient client = HttpClient.newHttpClient()) {
             return client.send(HttpRequest
-                    .newBuilder(URI.create(getRootURL() + getTestPath()))
-                    .build(), HttpResponse.BodyHandlers.ofString());
+                    .newBuilder(URI.create(getRootURL() + path)).build(),
+                    HttpResponse.BodyHandlers.ofString());
         }
     }
 

@@ -44,7 +44,12 @@ public class CspViolationCollector implements VaadinServiceInitListener {
      */
     public static final String VIOLATIONS = "window.Vaadin.Flow.cspViolations";
 
-    private static final String SCRIPT = """
+    /**
+     * The script that records the violations. A page that Vaadin does not
+     * serve, such as the host page of an embedded web component, adds it on its
+     * own, with its own nonce.
+     */
+    public static final String SCRIPT = """
             window.Vaadin = window.Vaadin || {};
             window.Vaadin.Flow = window.Vaadin.Flow || {};
             window.Vaadin.Flow.cspViolations = [];

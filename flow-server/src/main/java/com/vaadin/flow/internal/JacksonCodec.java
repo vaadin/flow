@@ -33,6 +33,8 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinitionProxy;
+import com.vaadin.flow.js.JsSnippet;
 
 /**
  * Utility for encoding objects to and from JSON.
@@ -51,6 +53,9 @@ import com.vaadin.flow.js.JsCall;
  * captured parameters on the client, or for one declared by a
  * {@link com.vaadin.flow.js.JsDefinition JsDefinition} interface as the
  * identifier of the function in the bundle and the captured parameters)
+ * <li>an implementation of an interface that extends {@link JsSnippet}, which
+ * {@link com.vaadin.flow.js.JsSnippets JsSnippets} hands out (encoded like a
+ * declared {@link JsFunction})
  * </ul>
  *
  * <p>
@@ -93,6 +98,9 @@ public class JacksonCodec {
             return encodeReturnChannel((ReturnChannelRegistration) value);
         } else if (value instanceof JsFunction) {
             return encodeJsFunction((JsFunction) value);
+        } else if (value instanceof JsSnippet snippet && JsDefinitionProxy
+                .findDeclaredCall(snippet) instanceof JsCall declaredCall) {
+            return encodeDeclaredSnippet(declaredCall);
         } else if (canEncodeWithoutTypeInfo(value.getClass())) {
             // Native JSON types - no wrapping needed
             return encodeWithoutTypeInfo(value);
@@ -117,29 +125,45 @@ public class JacksonCodec {
 
     @SuppressWarnings("removal")
     private static JsonNode encodeJsFunction(JsFunction value) {
+        JsCall declaredCall = value.getDeclaredCall();
+        if (declaredCall != null) {
+            return encodeDeclaredSnippet(declaredCall);
+        }
         ObjectMapper mapper = JacksonUtils.getMapper();
         ObjectNode obj = mapper.createObjectNode();
         ObjectNode payload = mapper.createObjectNode();
-        JsCall declaredCall = value.getDeclaredCall();
-        if (declaredCall != null) {
-            // The bundle has the JavaScript and the parameter names, so all the
-            // client needs is which function to call with the captures
-            payload.put("id", declaredCall.getFunctionId());
-        } else {
-            payload.put("body", value.getBody());
-        }
+        payload.put("body", value.getBody());
         ArrayNode captures = mapper.createArrayNode();
         for (Object capture : value.getCaptures()) {
             captures.add(encodeWithTypeInfo(capture));
         }
         payload.set("captures", captures);
-        if (declaredCall == null) {
-            ArrayNode args = mapper.createArrayNode();
-            for (String name : value.getArgumentNames()) {
-                args.add(name);
-            }
-            payload.set("args", args);
+        ArrayNode args = mapper.createArrayNode();
+        for (String name : value.getArgumentNames()) {
+            args.add(name);
         }
+        payload.set("args", args);
+        obj.set(FUNCTION_KEY, payload);
+        return obj;
+    }
+
+    /**
+     * Encodes a snippet that a {@link com.vaadin.flow.js.JsDefinition
+     * JsDefinition} interface declares, a {@link JsFunction} or one of a type
+     * that a component or an application declares. The bundle has the
+     * JavaScript and the parameter names, so all the client needs is which
+     * function to call with the captures.
+     */
+    private static JsonNode encodeDeclaredSnippet(JsCall declaredCall) {
+        ObjectMapper mapper = JacksonUtils.getMapper();
+        ObjectNode payload = mapper.createObjectNode();
+        payload.put("id", declaredCall.getFunctionId());
+        ArrayNode captures = mapper.createArrayNode();
+        for (Object capture : declaredCall.flattenArguments()) {
+            captures.add(encodeWithTypeInfo(capture));
+        }
+        payload.set("captures", captures);
+        ObjectNode obj = mapper.createObjectNode();
         obj.set(FUNCTION_KEY, payload);
         return obj;
     }

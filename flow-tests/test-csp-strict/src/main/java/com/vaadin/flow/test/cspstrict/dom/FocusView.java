@@ -18,14 +18,17 @@ package com.vaadin.flow.test.cspstrict.dom;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
+import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.Route;
 
 /**
  * Framework JavaScript that already runs from the bundle: focusing an element
- * and setting the page title.
+ * and setting the page title. The title comes from {@link HasDynamicTitle}
+ * because navigation sets the title after the view is attached, which
+ * overwrites one set from an attach listener.
  */
 @Route("focus")
-public class FocusView extends Div {
+public class FocusView extends Div implements HasDynamicTitle {
 
     static final String TITLE = "Focused under the policy";
 
@@ -39,6 +42,10 @@ public class FocusView extends Div {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         input.focus();
-        attachEvent.getUI().getPage().setTitle(TITLE);
+    }
+
+    @Override
+    public String getPageTitle() {
+        return TITLE;
     }
 }

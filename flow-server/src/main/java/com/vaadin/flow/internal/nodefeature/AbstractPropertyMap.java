@@ -184,6 +184,7 @@ public abstract class AbstractPropertyMap extends NodeMap {
      *            <code>null</code> for a read-only binding
      * @param <T>
      *            the type of the signal value
+     * @return the binding, which can be used to react to updates
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             given property

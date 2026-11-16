@@ -2085,6 +2085,9 @@ public class UI extends Component
     }
 
     /**
+     * Event fired by the client when the user leaves the current view by a
+     * navigation in the browser.
+     *
      * @since 24.4
      */
     @DomEvent(BrowserLeaveNavigationEvent.EVENT_NAME)
@@ -2117,6 +2120,8 @@ public class UI extends Component
     }
 
     /**
+     * Event fired by the client when the user navigates in the browser.
+     *
      * @since 24.4
      */
     @DomEvent(BrowserNavigateEvent.EVENT_NAME)

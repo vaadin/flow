@@ -23,7 +23,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.test.cspstrict.AbstractCspStrictIT;
@@ -83,7 +82,6 @@ public class PolicyIT extends AbstractCspStrictIT {
     }
 
     @BrowserTest
-    @Disabled(AbstractCspStrictIT.NO_UI_IN_STRICT_MODE)
     public void view_rendersUnderThePolicy() {
         open();
 

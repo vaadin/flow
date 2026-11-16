@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.converter;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.function.Function;
 
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
@@ -173,4 +174,113 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
         };
     }
 
+    /**
+     * Wraps the given {@code converter} so that null values never reach it: a
+     * null presentation value converts to a null model value, and a null model
+     * value converts to a null presentation value. Other values are passed to
+     * the wrapped converter.
+     * <p>
+     * Use this for fields whose empty value is null, such as a date picker or a
+     * combo box. Do not use it for a field that does not accept null, such as a
+     * text field: {@code withConverter} turns off the binder's default null
+     * representation, so a null model value would reach the field as null and
+     * the field would throw. Use {@link #nullSafeConverter(Converter, Object)}
+     * with the field's empty value, such as {@code ""}, instead.
+     * <p>
+     * Example use:
+     *
+     * <pre>
+     * {@code
+     * binder.forField(datePicker)
+     *         .withConverter(Converter.nullSafeConverter(Converter.from(
+     *                 date -> date.atStartOfDay(ZoneOffset.UTC).toInstant(),
+     *                 instant -> LocalDate.ofInstant(instant, ZoneOffset.UTC),
+     *                 Exception::getMessage)))
+     *         .bind(Event::getStart, Event::setStart);
+     * }
+     * </pre>
+     *
+     * @param <P>
+     *            the presentation type
+     * @param <M>
+     *            the model type
+     * @param converter
+     *            the converter to delegate to for non-null values, not null
+     * @return a converter that maps null to null in both directions
+     * @see #nullSafeConverter(Converter, Object)
+     */
+    static <P, M> Converter<P, M> nullSafeConverter(Converter<P, M> converter) {
+        return nullSafeConverter(converter, null);
+    }
+
+    /**
+     * Wraps the given {@code converter} so that neither null nor the given
+     * {@code nullRepresentation} ever reach it:
+     * <ul>
+     * <li>A presentation value that is null or equal to
+     * {@code nullRepresentation} converts to a null model value.</li>
+     * <li>A null model value, or a null returned by the wrapped converter,
+     * converts to {@code nullRepresentation}.</li>
+     * </ul>
+     * Other values are passed to the wrapped converter. A model value that the
+     * wrapped converter shows as {@code nullRepresentation}, such as a value
+     * object holding an empty string, therefore reads back as null.
+     * <p>
+     * This is meant for fields whose empty value is not null, such as an empty
+     * string in a text field: an empty field becomes a null model value, and a
+     * null model value empties the field, without the wrapped converter having
+     * to handle either case.
+     * <p>
+     * When binding with mapping functions rather than an existing converter,
+     * {@link BindingBuilder#withNullSafeConverter(SerializableFunction, SerializableFunction, SerializableFunction, Object)}
+     * does the same in one call.
+     * <p>
+     * Example use:
+     *
+     * <pre>
+     * {@code
+     * binder.forField(textField)
+     *         .withConverter(Converter
+     *                 .nullSafeConverter(Converter.from(LocalDate::parse,
+     *                         LocalDate::toString, Exception::getMessage), ""))
+     *         .bind(Person::getBirthDate, Person::setBirthDate);
+     * }
+     * </pre>
+     *
+     * @param <P>
+     *            the presentation type
+     * @param <M>
+     *            the model type
+     * @param converter
+     *            the converter to delegate to for other values, not null
+     * @param nullRepresentation
+     *            the presentation value that stands for a null model value, for
+     *            example {@code ""} for a text field; may be null
+     * @return a converter that maps {@code nullRepresentation} to null and back
+     * @see #nullSafeConverter(Converter)
+     * @see BindingBuilder#withNullSafeConverter(SerializableFunction,
+     *      SerializableFunction, SerializableFunction, Object)
+     * @see BindingBuilder#withNullRepresentation(Object)
+     */
+    static <P, M> Converter<P, M> nullSafeConverter(Converter<P, M> converter,
+            P nullRepresentation) {
+        Objects.requireNonNull(converter, "converter cannot be null");
+        return new Converter<P, M>() {
+            @Override
+            public Result<M> convertToModel(P value, ValueContext context) {
+                if (value == null
+                        || Objects.equals(value, nullRepresentation)) {
+                    return Result.ok(null);
+                }
+                return converter.convertToModel(value, context);
+            }
+
+            @Override
+            public P convertToPresentation(M value, ValueContext context) {
+                P presentation = value == null ? null
+                        : converter.convertToPresentation(value, context);
+                return presentation == null ? nullRepresentation : presentation;
+            }
+        };
+    }
 }

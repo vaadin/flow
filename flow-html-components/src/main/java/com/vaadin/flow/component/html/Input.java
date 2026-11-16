@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasAriaLabel;
@@ -107,6 +109,57 @@ public class Input extends AbstractSinglePropertyField<Input, String>
      */
     public String getType() {
         return get(typeDescriptor);
+    }
+
+    /**
+     * Sets the name of this input. A {@link NativeForm} only submits the value
+     * of an input that has a name, and sends it under that name.
+     *
+     * @param name
+     *            the name, or {@code null} to remove the attribute
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input#name">The
+     *      name attribute (MDN)</a>
+     */
+    public void setName(@Nullable String name) {
+        getElement().setAttribute("name", name);
+    }
+
+    /**
+     * Gets the name of this input.
+     *
+     * @return the name, or {@code null} if not set
+     * @see #setName(String)
+     */
+    public @Nullable String getName() {
+        return getElement().getAttribute("name");
+    }
+
+    /**
+     * Sets the autocomplete hint of this input, which tells the browser and
+     * password managers what kind of value the field expects, such as
+     * {@code "username"}, {@code "current-password"}, {@code "new-password"},
+     * {@code "email"} or {@code "off"}.
+     *
+     * @param autocomplete
+     *            the space-separated autocomplete tokens, or {@code null} to
+     *            remove the attribute
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/autocomplete">The
+     *      autocomplete attribute (MDN)</a>
+     */
+    public void setAutocomplete(@Nullable String autocomplete) {
+        getElement().setAttribute("autocomplete", autocomplete);
+    }
+
+    /**
+     * Gets the autocomplete hint of this input.
+     *
+     * @return the autocomplete tokens, or {@code null} if not set
+     * @see #setAutocomplete(String)
+     */
+    public @Nullable String getAutocomplete() {
+        return getElement().getAttribute("autocomplete");
     }
 
     /**

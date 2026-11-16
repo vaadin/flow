@@ -15,15 +15,12 @@
  */
 package com.vaadin.flow.test.cspstrict.js;
 
-import org.junit.jupiter.api.Disabled;
-
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.test.cspstrict.AbstractCspStrictIT;
 import com.vaadin.testbench.BrowserTest;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Disabled(AbstractCspStrictIT.NO_UI_IN_STRICT_MODE)
 public class StringJsIT extends AbstractCspStrictIT {
 
     @Override

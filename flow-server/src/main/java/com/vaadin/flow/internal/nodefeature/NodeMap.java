@@ -155,6 +155,16 @@ public abstract class NodeMap extends NodeFeature {
     }
 
     /**
+     * A signal bound to a key of the map, together with the current value of
+     * the key.
+     *
+     * @param signal
+     *            the bound signal
+     * @param value
+     *            the current value of the key
+     * @param writeCallback
+     *            the callback to propagate value changes back to the signal, or
+     *            <code>null</code> for a read-only binding
      * @since 25.1
      */
     public record InternalSignalBinding(Signal<?> signal, Serializable value,
@@ -570,6 +580,7 @@ public abstract class NodeMap extends NodeFeature {
      * @param <T>
      *            the type of the signal value
      *
+     * @return the binding, which can be used to react to updates
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             given key

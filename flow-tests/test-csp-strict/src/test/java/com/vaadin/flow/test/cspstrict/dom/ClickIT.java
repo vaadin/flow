@@ -17,8 +17,8 @@ package com.vaadin.flow.test.cspstrict.dom;
 
 import java.util.regex.Pattern;
 
-import org.junit.jupiter.api.Disabled;
 import org.openqa.selenium.By;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
@@ -27,11 +27,12 @@ import com.vaadin.flow.test.cspstrict.AbstractCspStrictIT;
 import com.vaadin.testbench.BrowserTest;
 
 /**
- * Event data expressions are still compiled by the browser, and the server
- * rejects them in the strict mode, so the view does not even render. Enabled
- * when the property paths of event data are sent without JavaScript.
+ * Event data that is a property path of the event is read in the browser
+ * without compiling JavaScript, for a component event and for a DOM event
+ * listener, and the event data of a component event that is any other
+ * expression runs from the bundle, also when the client maps what it returns to
+ * a component.
  */
-@Disabled("Blocked by https://github.com/vaadin/flow/issues/26152")
 public class ClickIT extends AbstractCspStrictIT {
 
     @Override
@@ -58,6 +59,24 @@ public class ClickIT extends AbstractCspStrictIT {
 
         waitUntil(ExpectedConditions.textMatches(By.id("client-x"),
                 Pattern.compile("x=\\d+")));
+        assertNoCspViolations();
+    }
+
+    @BrowserTest
+    public void componentEventWithExpressionEventData_receivesEventData() {
+        open();
+
+        // A real pointer click: the click of TestBench dispatches an event
+        // whose clientX is 0
+        new Actions(getDriver()).click($(DivElement.class).id("offset-area"))
+                .perform();
+
+        waitUntil(ExpectedConditions.textMatches(By.id("offset"),
+                // A value the bundle has no function for can not be compiled
+                // here, so the event would not be sent. The click lands in the
+                // middle of the area, and the component is mapped from the
+                // DOM node
+                Pattern.compile("offset=[1-9]\\d* marker=offset-marker")));
         assertNoCspViolations();
     }
 }
