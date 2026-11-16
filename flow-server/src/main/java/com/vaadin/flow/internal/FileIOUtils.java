@@ -573,15 +573,17 @@ public class FileIOUtils {
             throws IOException {
         PosixFileAttributeView sourceView = Files.getFileAttributeView(source,
                 PosixFileAttributeView.class);
-        if (sourceView == null) {
+        if (sourceView == null || !Files.exists(source)) {
             return;
         }
         try {
             Files.setPosixFilePermissions(target,
                     sourceView.readAttributes().permissions());
         } catch (NoSuchFileException e) {
-            log().debug("'{}' does not exist, keeping default permissions "
-                    + "for the new file", source, e);
+            log().debug(
+                    "'{}' was removed while being rewritten, keeping "
+                            + "default permissions for the new file",
+                    source, e);
         }
     }
 
