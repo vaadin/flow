@@ -56,6 +56,7 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.server.CspViolationException;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -394,7 +395,14 @@ public class ElementListenerMap extends NodeMap {
             requireEventData(eventData);
             if (eventData.stream()
                     .anyMatch(ElementListenerMap::isCompiledByClient)) {
-                CspViolationReporter.reportStringJavaScript();
+                try {
+                    CspViolationReporter.reportStringJavaScript();
+                } catch (CspViolationException e) {
+                    // The listener is already registered, and must not stay
+                    // without the refused data
+                    remove();
+                    throw e;
+                }
             }
 
             appendEventData(eventData);
@@ -485,7 +493,14 @@ public class ElementListenerMap extends NodeMap {
         @Override
         public DomListenerRegistration setFilter(String filter) {
             if (filter != null && !isPropertyPath(filter)) {
-                CspViolationReporter.reportStringJavaScript();
+                try {
+                    CspViolationReporter.reportStringJavaScript();
+                } catch (CspViolationException e) {
+                    // The listener is already registered, and would otherwise
+                    // receive every event that the refused filter should block
+                    remove();
+                    throw e;
+                }
             }
             return updateFilter(
                     filter == null ? null : new ExpressionEntry(filter));

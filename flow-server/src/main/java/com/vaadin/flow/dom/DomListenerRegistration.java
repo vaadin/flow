@@ -75,7 +75,8 @@ public interface DomListenerRegistration extends Registration {
      * @return this registration, for chaining
      * @throws CspViolationException
      *             in the {@link CspMode#STRICT} Content Security Policy mode,
-     *             unless the expression is a property path
+     *             unless the expression is a property path; the listener is
+     *             removed then, so that it does not run without the expression
      * @see #addEventDataElementPath(String) for mapping an element
      * @see #mapEventTargetElement() to map the {@code event.target} to an
      *      element
@@ -183,7 +184,8 @@ public interface DomListenerRegistration extends Registration {
      * @return this registration, for chaining
      * @throws CspViolationException
      *             in the {@link CspMode#STRICT} Content Security Policy mode,
-     *             unless the filter is a property path
+     *             unless the filter is a property path; the listener is removed
+     *             then, so that it does not run without the filter
      */
     DomListenerRegistration setFilter(String filter);
 
