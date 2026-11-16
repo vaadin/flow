@@ -120,6 +120,7 @@ public class Input extends AbstractSinglePropertyField<Input, String>
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input#name">The
      *      name attribute (MDN)</a>
+     * @since 25.4
      */
     public void setName(@Nullable String name) {
         getElement().setAttribute("name", name);
@@ -130,6 +131,7 @@ public class Input extends AbstractSinglePropertyField<Input, String>
      *
      * @return the name, or {@code null} if not set
      * @see #setName(String)
+     * @since 25.4
      */
     public @Nullable String getName() {
         return getElement().getAttribute("name");
@@ -147,6 +149,7 @@ public class Input extends AbstractSinglePropertyField<Input, String>
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/autocomplete">The
      *      autocomplete attribute (MDN)</a>
+     * @since 25.4
      */
     public void setAutocomplete(@Nullable String autocomplete) {
         getElement().setAttribute("autocomplete", autocomplete);
@@ -157,6 +160,7 @@ public class Input extends AbstractSinglePropertyField<Input, String>
      *
      * @return the autocomplete tokens, or {@code null} if not set
      * @see #setAutocomplete(String)
+     * @since 25.4
      */
     public @Nullable String getAutocomplete() {
         return getElement().getAttribute("autocomplete");

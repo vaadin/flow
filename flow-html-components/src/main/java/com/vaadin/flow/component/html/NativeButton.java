@@ -46,6 +46,8 @@ public class NativeButton extends HtmlContainer implements
 
     /**
      * What the button does when it is activated inside a {@link NativeForm}.
+     * 
+     * @since 25.4
      */
     public enum Type {
         /**
@@ -142,6 +144,7 @@ public class NativeButton extends HtmlContainer implements
      *
      * @param type
      *            the type, or {@code null} to remove the attribute
+     * @since 25.4
      */
     public void setType(@Nullable Type type) {
         getElement().setAttribute("type",
@@ -153,6 +156,7 @@ public class NativeButton extends HtmlContainer implements
      *
      * @return the type, or {@code null} if not set or not recognized
      * @see #setType(Type)
+     * @since 25.4
      */
     public @Nullable Type getType() {
         return Type.fromValue(getElement().getAttribute("type"));

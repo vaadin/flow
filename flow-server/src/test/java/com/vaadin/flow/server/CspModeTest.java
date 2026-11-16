@@ -41,6 +41,7 @@ import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyModifier;
+import com.vaadin.flow.component.KeyUpEvent;
 import com.vaadin.flow.component.Shortcuts;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
@@ -256,6 +257,9 @@ class CspModeTest {
             clickable.addSingleClickListener(e -> {
             });
             clickable.addDoubleClickListener(e -> {
+            });
+            // The filter of the key up event is a property path
+            ComponentUtil.addListener(clickable, KeyUpEvent.class, e -> {
             });
             // The build puts the event data that is not a property path into
             // the bundle

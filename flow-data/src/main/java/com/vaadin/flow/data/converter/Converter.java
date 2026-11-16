@@ -208,6 +208,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      *            the converter to delegate to for non-null values, not null
      * @return a converter that maps null to null in both directions
      * @see #nullSafeConverter(Converter, Object)
+     * @since 25.4
      */
     static <P, M> Converter<P, M> nullSafeConverter(Converter<P, M> converter) {
         return nullSafeConverter(converter, null);
@@ -261,6 +262,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      * @see BindingBuilder#withNullSafeConverter(SerializableFunction,
      *      SerializableFunction, SerializableFunction, Object)
      * @see BindingBuilder#withNullRepresentation(Object)
+     * @since 25.4
      */
     static <P, M> Converter<P, M> nullSafeConverter(Converter<P, M> converter,
             P nullRepresentation) {
