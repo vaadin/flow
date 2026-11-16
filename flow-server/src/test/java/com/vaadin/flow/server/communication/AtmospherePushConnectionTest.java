@@ -39,11 +39,16 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.PushMessage;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
+import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -120,6 +125,38 @@ class AtmospherePushConnectionTest {
                 new ByteArrayInputStream(baos.toByteArray())).readObject();
 
         assertEquals(State.DISCONNECTED, connection.getState());
+    }
+
+    @Test
+    void push_sessionDestroyedWhileCreatingMessage_sendsOnlySessionExpired()
+            throws Exception {
+        UI ui = connection.getUI();
+        vaadinSession.runWithLock(() -> {
+            ui.doInit(Mockito.mock(VaadinRequest.class),
+                    vaadinSession.getNextUIid(), "foo");
+            vaadinSession.addUI(ui);
+            ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+            ui.getInternals().setPushConnection(connection);
+            // Queued like when another thread invalidates the HTTP session
+            // while this one holds the session lock
+            vaadinSession.getService().fireSessionDestroy(vaadinSession);
+
+            connection.push(false);
+            return null;
+        });
+
+        assertNull(ui.getSession());
+        assertEquals(State.DISCONNECTED, connection.getState());
+        verify(resource).close();
+        // Only the message closing the UI is sent, before the connection is
+        // closed
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        verify(broadcaster).broadcast(captor.capture(),
+                ArgumentMatchers.eq(resource));
+        ObjectNode message = JacksonUtils
+                .readTree(((PushMessage) captor.getValue()).message);
+        assertTrue(message.get("meta").get(JsonConstants.META_SESSION_EXPIRED)
+                .asBoolean(), message.toString());
     }
 
     @Test
