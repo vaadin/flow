@@ -21,7 +21,7 @@
     "@babel/core": "7.29.13",
     "@babel/plugin-transform-react-jsx-development": "7.29.7",
     "@babel/preset-react": "7.29.7",
-    "@babel/types": "7.29.11",
+    "@babel/types": "7.29.14",
     "@preact/signals-react": "3.12.0",
     "@preact/signals-react-transform": "0.8.3",
     "@rolldown/plugin-babel": "0.3.1",
@@ -37,7 +37,7 @@
     "strip-css-comments": "5.0.0",
     "transform-ast": "2.4.4",
     "typescript": "6.0.3",
-    "vite": "8.3.6",
+    "vite": "8.3.8",
     "vite-plugin-checker": "0.14.5"
   },
   "vaadin": {
@@ -54,7 +54,7 @@
       "@babel/core": "7.29.13",
       "@babel/plugin-transform-react-jsx-development": "7.29.7",
       "@babel/preset-react": "7.29.7",
-      "@babel/types": "7.29.11",
+      "@babel/types": "7.29.14",
       "@preact/signals-react": "3.12.0",
       "@preact/signals-react-transform": "0.8.3",
       "@rolldown/plugin-babel": "0.3.1",
@@ -70,9 +70,9 @@
       "strip-css-comments": "5.0.0",
       "transform-ast": "2.4.4",
       "typescript": "6.0.3",
-      "vite": "8.3.6",
+      "vite": "8.3.8",
       "vite-plugin-checker": "0.14.5"
     },
-    "hash": "6032bc5854849e293b0e76ef687becc724d445d8db23a47076ab99f8c2d5760f"
+    "hash": "3c175e60a8b3f0336aa794c0c4d4fffdeec109022ba145686d1975031faa3d4b"
   }
 }

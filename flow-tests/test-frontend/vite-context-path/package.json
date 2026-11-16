@@ -33,11 +33,11 @@
     "strip-css-comments": "5.0.0",
     "transform-ast": "2.4.4",
     "typescript": "6.0.3",
-    "vite": "8.3.6",
+    "vite": "8.3.8",
     "vite-plugin-checker": "0.14.5",
     "workbox-build": "7.4.0",
     "@babel/plugin-transform-react-jsx-development": "7.29.7",
-    "@babel/types": "7.29.11",
+    "@babel/types": "7.29.14",
     "@preact/signals-react": "3.12.0"
   },
   "vaadin": {
@@ -68,11 +68,11 @@
       "strip-css-comments": "5.0.0",
       "transform-ast": "2.4.4",
       "typescript": "6.0.3",
-      "vite": "8.3.6",
+      "vite": "8.3.8",
       "vite-plugin-checker": "0.14.5",
       "workbox-build": "7.4.0",
       "@babel/plugin-transform-react-jsx-development": "7.29.7",
-      "@babel/types": "7.29.11",
+      "@babel/types": "7.29.14",
       "@preact/signals-react": "3.12.0"
     },
     "hash": "14434d758e430ec6fcd1ac73c7c3bb0a29255b5ba073854e06e961db235fe570"
