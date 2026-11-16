@@ -30,6 +30,8 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -428,9 +430,10 @@ class UidlWriterTest {
         void methodWithMany(String value, Object... rest);
     }
 
-    @Test
-    void createUidl_sessionDestroyedByPendingTask_respondsSessionExpired()
-            throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void createUidl_sessionDestroyedByPendingTask_respondsSessionExpired(
+            boolean async) throws Exception {
         MockVaadinSession session = new MockVaadinSession();
         ObjectNode response = session.runWithLock(() -> {
             UI ui = new MockUI(session);
@@ -440,12 +443,12 @@ class UidlWriterTest {
             // while this one holds the session lock
             session.getService().fireSessionDestroy(session);
 
-            return new UidlWriter().createUidl(ui, true);
+            return new UidlWriter().createUidl(ui, async);
         });
 
         assertTrue(JacksonUtils.jsonEquals(
-                JacksonUtils
-                        .readTree(VaadinService.createSessionExpiredJSON(true)),
+                JacksonUtils.readTree(
+                        VaadinService.createSessionExpiredJSON(async)),
                 response), response.toString());
     }
 
