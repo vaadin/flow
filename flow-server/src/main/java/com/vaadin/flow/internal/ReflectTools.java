@@ -69,7 +69,8 @@ public class ReflectTools implements Serializable {
     static final String CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR = "Unable to create an instance of '%s'. Make sure the class has a public no-arg constructor.";
     static final String CREATE_INSTANCE_FAILED_LOCAL_CLASS = "Cannot instantiate local class '%s'. Move class declaration outside the method.";
     static final String CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION = "Unable to create an instance of '%s'. The constructor threw an exception.";
-    static final String CREATE_INSTANCE_FAILED_INACCESSIBLE_CONSTRUCTOR = "Unable to create an instance of '%s'. The class or its no-arg constructor is not public, and the package '%s' is not open to Vaadin. Make the class and the constructor public, or open the package in module-info.java.";
+    static final String CREATE_INSTANCE_FAILED_NO_NON_PRIVATE_NOARG_CONSTRUCTOR = "Unable to create an instance of '%s'. Make sure the class has a no-arg constructor that is not private.";
+    static final String CREATE_INSTANCE_FAILED_INACCESSIBLE_CONSTRUCTOR = "Unable to create an instance of '%s'. Its module does not open the package '%s' to Vaadin. Make the class and its no-arg constructor public, or open the package in module-info.java.";
 
     private static final Predicate<Method> IS_SYNTHETIC = Method::isSynthetic;
 
@@ -538,9 +539,9 @@ public class ReflectTools implements Serializable {
      * no-arg constructor, or a public constructor of a non-public class, is
      * made accessible and used, the same way dependency injection containers
      * do. A private no-arg constructor is not used, since it usually means the
-     * class is not meant to be instantiated. Classes without a declared no-arg
-     * constructor are handled like in {@link #createInstance(Class)}, which
-     * means a public varargs constructor is used when there is one.
+     * class is not meant to be instantiated. A class without a usable no-arg
+     * constructor is created with its public varargs constructor, like in
+     * {@link #createInstance(Class)}, when it has one.
      * <p>
      * Catches all exceptions which might occur and wraps them in a
      * {@link IllegalArgumentException} with a descriptive error message hinting
@@ -562,10 +563,19 @@ public class ReflectTools implements Serializable {
         try {
             constructor = cls.getDeclaredConstructor();
         } catch (NoSuchMethodException e) {
-            return createInstance(cls);
+            constructor = null;
         }
-        if (Modifier.isPrivate(constructor.getModifiers())) {
-            return createInstance(cls);
+        if (constructor == null
+                || Modifier.isPrivate(constructor.getModifiers())) {
+            boolean hasVarArgsConstructor = Stream.of(cls.getConstructors())
+                    .anyMatch(ctor -> ctor.getParameterCount() == 1
+                            && ctor.isVarArgs());
+            if (hasVarArgsConstructor) {
+                return createInstance(cls);
+            }
+            throw new IllegalArgumentException(String.format(
+                    CREATE_INSTANCE_FAILED_NO_NON_PRIVATE_NOARG_CONSTRUCTOR,
+                    cls.getName()));
         }
         if (!constructor.trySetAccessible()) {
             throw new IllegalArgumentException(String.format(

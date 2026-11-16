@@ -139,8 +139,7 @@ public class DefaultInstantiator implements Instantiator {
             Class<?> providerClass = getClassLoader().loadClass(property);
             if (I18NProvider.class.isAssignableFrom(providerClass)) {
 
-                return ReflectTools.createInstance(
-                        (Class<? extends I18NProvider>) providerClass);
+                return create((Class<? extends I18NProvider>) providerClass);
             }
         } catch (ClassNotFoundException e) {
             throw new InvalidI18NConfigurationException(
@@ -162,7 +161,7 @@ public class DefaultInstantiator implements Instantiator {
             Class<?> providerClass = getClassLoader().loadClass(property);
             if (MenuAccessControl.class.isAssignableFrom(providerClass)) {
 
-                return ReflectTools.createInstance(
+                return create(
                         (Class<? extends MenuAccessControl>) providerClass);
             } else {
                 throw new InvalidMenuAccessControlException(String.format(
@@ -187,7 +186,7 @@ public class DefaultInstantiator implements Instantiator {
         try {
             Class<?> generatorClass = getClassLoader().loadClass(property);
             if (PageTitleGenerator.class.isAssignableFrom(generatorClass)) {
-                return ReflectTools.createInstance(
+                return create(
                         (Class<? extends PageTitleGenerator>) generatorClass);
             }
             throw new IllegalStateException(String.format(

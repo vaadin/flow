@@ -102,6 +102,11 @@ class ReflectToolsTest {
         }
     }
 
+    public static class ProtectedConstructorClass {
+        protected ProtectedConstructorClass() {
+        }
+    }
+
     public static class VarArgsCtor {
 
         public VarArgsCtor(String... args) {
@@ -202,9 +207,30 @@ class ReflectToolsTest {
                         .createInstanceWithAccessibleConstructor(
                                 PrivateStaticInnerClassPublicConstructor.class)
                         .getClass());
+        assertSame(ProtectedConstructorClass.class,
+                ReflectTools.createInstanceWithAccessibleConstructor(
+                        ProtectedConstructorClass.class).getClass());
+    }
+
+    @Test
+    void createInstanceWithAccessibleConstructor_noNoArgConstructor_usesVarArgsConstructor() {
         assertSame(VarArgsCtor.class, ReflectTools
                 .createInstanceWithAccessibleConstructor(VarArgsCtor.class)
                 .getClass());
+    }
+
+    @Test
+    void createInstanceWithAccessibleConstructor_packageNotOpen_descriptiveError()
+            throws ClassNotFoundException {
+        // A JDK class whose package java.base neither exports nor opens
+        Class<?> cls = Class.forName("sun.nio.cs.UTF_8");
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> ReflectTools
+                        .createInstanceWithAccessibleConstructor(cls));
+        assertEquals(String.format(
+                ReflectTools.CREATE_INSTANCE_FAILED_INACCESSIBLE_CONSTRUCTOR,
+                cls.getName(), cls.getPackageName()), exception.getMessage());
     }
 
     @Test
@@ -214,7 +240,7 @@ class ReflectToolsTest {
                 () -> ReflectTools.createInstanceWithAccessibleConstructor(
                         StaticInnerPrivateConstructorClass.class));
         assertEquals(String.format(
-                ReflectTools.CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR,
+                ReflectTools.CREATE_INSTANCE_FAILED_NO_NON_PRIVATE_NOARG_CONSTRUCTOR,
                 StaticInnerPrivateConstructorClass.class.getName()),
                 exception.getMessage());
     }
