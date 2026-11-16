@@ -106,11 +106,22 @@ final class Jvm {
          * unknown part is taken to match: a home whose {@code release} file
          * does not say was a candidate before platforms were compared, and
          * rejecting it now would leave a working JDK unused.
+         * <p>
+         * Another operating system never runs. Another architecture only rules
+         * a JVM out where the OS does not emulate it: macOS runs x86_64
+         * binaries on Apple silicon through Rosetta 2 and Windows on Arm runs
+         * x64 ones, and a daemon that is itself emulated reports the emulated
+         * architecture, so there a mismatch says nothing about the hardware.
          */
         boolean runsOn(Platform host) {
-            return (os == null || host.os == null || os.equals(host.os))
-                    && (arch == null || host.arch == null
-                            || arch.equals(host.arch));
+            if (os != null && host.os != null && !os.equals(host.os)) {
+                return false;
+            }
+            if (arch == null || host.arch == null || arch.equals(host.arch)) {
+                return true;
+            }
+            String system = os != null ? os : host.os;
+            return "macos".equals(system) || "windows".equals(system);
         }
 
         @Override
@@ -204,10 +215,10 @@ final class Jvm {
                         + forced.feature() + " and Flow requires " + FLOOR
                         + "; the application will not start");
             }
-            if (!forced.platform().runsOn(Platform.current())) {
+            Platform host = Platform.current();
+            if (!forced.platform().runsOn(host)) {
                 log.line("WARNING: vaadin.dev.javaHome is built for "
-                        + forced.platform() + " and this machine is "
-                        + Platform.current()
+                        + forced.platform() + " and this machine is " + host
                         + "; the application will not start");
             }
             log.line(

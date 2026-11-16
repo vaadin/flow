@@ -125,19 +125,63 @@ class JvmTest {
 
     @Test
     void aJdkBuiltForAnotherPlatformIsSkippedAndSaidSo() throws IOException {
-        // The closest JBR, but from a macOS host sharing its home directory.
-        Path foreign = jdk("jbrsdk-21.0.8-osx-aarch64", "21.0.8",
-                "JetBrains s.r.o.", "Darwin", "aarch64");
+        // From a macOS host or an x64 machine sharing its home directory.
+        Path otherOs = jdk("jbrsdk-21.0.8-osx-x64", "21.0.8",
+                "JetBrains s.r.o.", "Darwin", "x86_64");
+        Path otherArch = jdk("jbrsdk-21.0.9-linux-aarch64", "21.0.9",
+                "JetBrains s.r.o.", "Linux", "aarch64");
         // Spelled as the release file has it, not as the JVM reports it.
         Path linux = jdk("jbrsdk-25.0.1-linux-x64", "25.0.1",
                 "JetBrains s.r.o.", "Linux", "x86_64");
+        // A release file that does not say is no reason to drop a JDK.
+        Path unknown = jdk("temurin-23", "23.0.2", "Eclipse Adoptium");
 
-        assertEquals(linux, chosen(21).home());
+        List<Jvm.Jdk> candidates = Jvm.candidates(homes(), HOST, logged::add);
+
+        assertEquals(List.of(linux, unknown).stream().sorted().toList(),
+                candidates.stream().map(Jvm.Jdk::home).sorted().toList());
+        for (String skipped : List.of(otherOs + ": built for macos x86_64",
+                otherArch + ": built for linux aarch64")) {
+            assertTrue(logged.stream().anyMatch(line -> line.contains(skipped)),
+                    () -> "expected " + skipped + " in " + logged);
+        }
+    }
+
+    @Test
+    void anArchitectureTheOsEmulatesStillRuns() {
+        // Rosetta 2 on Apple silicon, both ways round, since a daemon that is
+        // itself emulated reports the emulated architecture.
+        assertTrue(Jvm.Platform.of("Darwin", "x86_64")
+                .runsOn(Jvm.Platform.of("Mac OS X", "aarch64")));
+        assertTrue(Jvm.Platform.of("Darwin", "aarch64")
+                .runsOn(Jvm.Platform.of("Mac OS X", "x86_64")));
+        // x64 emulation on Windows on Arm.
+        assertTrue(Jvm.Platform.of("Windows", "x86_64")
+                .runsOn(Jvm.Platform.of("Windows 11", "aarch64")));
+    }
+
+    @Test
+    void anOverriddenHomeForAnotherPlatformIsKeptButWarnedAbout()
+            throws IOException {
+        Path home = jdk("jbr-sparc", "21.0.4", "JetBrains s.r.o.", "SunOS",
+                "sparcv9");
+        String original = System.getProperty("vaadin.dev.javaHome");
+        System.setProperty("vaadin.dev.javaHome", home.toString());
+        try {
+            // The developer asked for it, so it is launched regardless.
+            assertEquals(home, chosen(21).home());
+        } finally {
+            if (original == null) {
+                System.clearProperty("vaadin.dev.javaHome");
+            } else {
+                System.setProperty("vaadin.dev.javaHome", original);
+            }
+        }
         assertTrue(
                 logged.stream()
-                        .anyMatch(line -> line.contains(foreign.toString())
-                                && line.contains("macos aarch64")),
-                () -> "expected the skip to be logged: " + logged);
+                        .anyMatch(line -> line.startsWith("WARNING")
+                                && line.contains("sunos sparcv9")),
+                () -> "expected a platform warning: " + logged);
     }
 
     @Test
