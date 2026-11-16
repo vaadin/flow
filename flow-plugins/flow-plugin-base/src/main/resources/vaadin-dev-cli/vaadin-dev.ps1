@@ -254,18 +254,19 @@ function Get-RecordedDaemonLingering([int] $processId) {
     }
 }
 
-# Waits for a daemon that has answered shutdown to finish exiting. It replies
-# before it stops the application it owns, which can take up to half a minute,
-# and only then removes its handshake. Returning earlier would let the next
-# command find a closed port, a live pid and a matching start time, and call a
-# healthy daemon wedged.
+# Waits for a daemon that has answered shutdown to finish exiting. It has
+# stopped the application it owns by then, but closes its port before its
+# shutdown hook removes the handshake, so a command run straight after could
+# otherwise find a closed port, a live pid and a matching start time. That
+# window is normally milliseconds; the bound only keeps a daemon that hangs on
+# its way out from blocking shutdown for good.
 function Wait-DaemonExit {
     $recorded = Read-Handshake 'pid'
     if (-not $recorded) { return }
     $clock = [Diagnostics.Stopwatch]::StartNew()
     while (Test-Path -LiteralPath $handshake) {
         if ((Get-RecordedDaemonState ([int]$recorded)) -eq 'gone') { return }
-        if ($clock.Elapsed.TotalSeconds -ge 40) {
+        if ($clock.Elapsed.TotalSeconds -ge 10) {
             [Console]::Error.WriteLine("vaadin-dev: the daemon (pid $recorded) " +
                 "is still shutting down")
             return

@@ -264,6 +264,73 @@ class DevLoopCliContractIT {
         }
     }
 
+    @Test
+    void shutdown_returnsOnceTheDaemonHasExited(@TempDir Path app)
+            throws IOException, InterruptedException {
+        // A daemon answers shutdown and closes its port before its shutdown
+        // hook removes the handshake. Returning on the answer would hand the
+        // next command a closed port, a live pid and a matching start time -
+        // a daemon it would call wedged. The stand-in answers, then holds its
+        // handshake for a while that no race can hide.
+        Files.writeString(app.resolve("pom.xml"), "<project/>");
+        Path handshake = app.resolve(".vaadin/daemon.properties");
+        Files.createDirectories(handshake.getParent());
+        Path ready = app.resolve("ready");
+        Path stub = app.resolve("ShuttingDown.java");
+        Files.writeString(stub,
+                """
+                        import java.io.BufferedReader;
+                        import java.io.InputStreamReader;
+                        import java.io.PrintStream;
+                        import java.net.ServerSocket;
+                        import java.net.Socket;
+                        import java.nio.file.Files;
+                        import java.nio.file.Path;
+
+                        public class ShuttingDown {
+                            public static void main(String[] args) throws Exception {
+                                Path handshake = Path.of(args[0]);
+                                try (ServerSocket server = new ServerSocket(0)) {
+                                    ProcessHandle self = ProcessHandle.current();
+                                    Files.writeString(handshake, "port="
+                                            + server.getLocalPort() + "\\ntoken=t\\npid="
+                                            + self.pid() + "\\nstartEpochMillis="
+                                            + self.info().startInstant().orElseThrow()
+                                                    .toEpochMilli() + "\\n");
+                                    Files.createFile(Path.of(args[1]));
+                                    try (Socket client = server.accept()) {
+                                        new BufferedReader(new InputStreamReader(
+                                                client.getInputStream())).readLine();
+                                        PrintStream out = new PrintStream(
+                                                client.getOutputStream(), true);
+                                        out.println("EXIT 0");
+                                    }
+                                }
+                                Thread.sleep(2000);
+                                Files.delete(handshake);
+                            }
+                        }
+                        """);
+        Process daemon = new ProcessBuilder(
+                ProcessHandle.current().info().command().orElseThrow(),
+                stub.toString(), handshake.toString(), ready.toString())
+                .start();
+        try {
+            for (int i = 0; i < 300 && !Files.exists(ready); i++) {
+                Thread.sleep(100);
+            }
+            assertTrue(Files.exists(ready) && daemon.isAlive(),
+                    "the stand-in daemon did not come up");
+
+            VaadinDevCli.of(AbstractDevLoopIT.APP)
+                    .run("--app", app.toString(), "shutdown").assertExitCode(0);
+            assertFalse(Files.exists(handshake),
+                    "shutdown returned before the daemon had exited");
+        } finally {
+            daemon.destroyForcibly().waitFor();
+        }
+    }
+
     private static int unusedPort() throws IOException {
         try (ServerSocket socket = new ServerSocket(0)) {
             return socket.getLocalPort();
