@@ -123,7 +123,9 @@ public class UidlWriter implements Serializable {
      *            false if it is a response to a client message
      * @param resync
      *            True iff the client should be asked to resynchronize
-     * @return JSON object containing the UIDL response
+     * @return JSON object containing the UIDL response, or a session expired
+     *         message if running the pending access tasks of the session
+     *         removed the UI from it, as destroying the session does
      */
     public JsonObject createUidl(UI ui, boolean async, boolean resync) {
         JsonObject response = Json.createObject();
@@ -136,6 +138,13 @@ public class UidlWriter implements Serializable {
         // Purge pending access calls as they might produce additional changes
         // to write out
         service.runPendingAccessTasks(session);
+
+        if (ui.getSession() == null) {
+            // A pending task destroyed the session and removed the UI from it,
+            // e.g. because another thread invalidated the HTTP session while
+            // this request held the session lock
+            return createSessionExpiredUidl(async);
+        }
 
         // Paints components
         getLogger().debug("* Creating response to client");
@@ -198,10 +207,31 @@ public class UidlWriter implements Serializable {
      * @param async
      *            True if this message is sent by the server asynchronously,
      *            false if it is a response to a client message.
-     * @return JSON object containing the UIDL response
+     * @return JSON object containing the UIDL response, or a session expired
+     *         message if running the pending access tasks of the session
+     *         removed the UI from it, as destroying the session does
      */
     public JsonObject createUidl(UI ui, boolean async) {
         return createUidl(ui, async, false);
+    }
+
+    /**
+     * Creates the same message as
+     * {@link VaadinService#createSessionExpiredJSON(boolean)}, but not wrapped
+     * for the client, as the callers of {@link #createUidl(UI, boolean)} wrap
+     * the returned object themselves.
+     */
+    private static JsonObject createSessionExpiredUidl(boolean async) {
+        JsonObject json = Json.createObject();
+        JsonObject meta = Json.createObject();
+        json.put("meta", meta);
+
+        if (async) {
+            meta.put(JsonConstants.META_ASYNC, true);
+        }
+
+        meta.put(JsonConstants.META_SESSION_EXPIRED, true);
+        return json;
     }
 
     private static void populateDependencies(JsonObject response,
