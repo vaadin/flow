@@ -1625,11 +1625,42 @@ const BUILT_IN_EXPRESSIONS = new Map<string, EventExpression>([
 ]);
 
 /**
+ * The expression that the server sends for `preventDefault()` or
+ * `stopPropagation()` on a listener with a filter expression, see
+ * `ElementListenerMap.makeConditional`: the filter in parentheses, then the
+ * call of the method when the filter passes.
+ */
+const CONDITIONAL_SIDE_EFFECT = /^\((.*)\) && event\.(preventDefault|stopPropagation)\(\)$/;
+
+/**
+ * Reads a conditional side effect whose filter is a property path without
+ * compiling it, so that a path filter works with `preventDefault()` under a
+ * Content Security Policy without `unsafe-eval`.
+ *
+ * @param expressionString - the expression the server sent
+ * @returns a function that returns what the compiled expression would, or
+ * undefined if the expression is not such a conditional
+ */
+function createConditionalSideEffectExpression(expressionString: string): EventExpression | undefined {
+  const match = CONDITIONAL_SIDE_EFFECT.exec(expressionString);
+  const filter = match === null ? undefined : createPropertyPathExpression(match[1]);
+  if (match === null || filter === undefined) {
+    return undefined;
+  }
+  const method = match[2] as 'preventDefault' | 'stopPropagation';
+  return (event, element) => {
+    const passes = filter(event, element);
+    return passes ? event[method]() : passes;
+  };
+}
+
+/**
  * Parses an event-data expression into a function `(event, element) => value`,
  * caching the result per expression string; mirrors getOrCreateExpression.
  * The expressions that Flow itself sends are not compiled, see
  * BUILT_IN_EXPRESSIONS, and neither are property paths, see
- * createPropertyPathExpression.
+ * createPropertyPathExpression, nor a side effect conditional on a property
+ * path, see createConditionalSideEffectExpression.
  */
 function getOrCreateExpression(expressionString: string): EventExpression {
   const builtIn = BUILT_IN_EXPRESSIONS.get(expressionString);
@@ -1645,6 +1676,7 @@ function getOrCreateExpression(expressionString: string): EventExpression {
     // Mirrors NativeFunction.create; the server controls these expressions.
     expression =
       createPropertyPathExpression(expressionString) ??
+      createConditionalSideEffectExpression(expressionString) ??
       (new Function('event', 'element', `return (${expressionString})`) as EventExpression);
     expressionCache.set(expressionString, expression);
   }

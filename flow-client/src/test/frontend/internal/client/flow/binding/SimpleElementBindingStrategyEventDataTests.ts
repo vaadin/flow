@@ -340,6 +340,30 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
     expect(warnings[0]).to.contain(`@EventData value or @DomEvent filter "${expression}"`);
   });
 
+  it('calls preventDefault only when a property path filter passes, without compiling', () => {
+    const filter = 'element.dataset.armed';
+    const originalFunction = globalThis.Function;
+    // As under a Content Security Policy without unsafe-eval
+    globalThis.Function = function blocked(): never {
+      throw new EvalError('blocked by the test');
+    } as unknown as FunctionConstructor;
+    try {
+      bindWithClickExpressions({ [filter]: true, [`(${filter}) && event.preventDefault()`]: false });
+
+      const notMatching = new MouseEvent('click', { bubbles: true, cancelable: true });
+      element.dispatchEvent(notMatching);
+      (element as HTMLElement).dataset.armed = 'yes';
+      const matching = new MouseEvent('click', { bubbles: true, cancelable: true });
+      element.dispatchEvent(matching);
+
+      expect(notMatching.defaultPrevented).to.be.false;
+      expect(matching.defaultPrevented).to.be.true;
+      expect(harness.collectedNodes).to.have.length(1);
+    } finally {
+      globalThis.Function = originalFunction;
+    }
+  });
+
   it('runs a declared snippet with its captures, the event and the element', () => {
     snippets()['fn-id'] = (a, b) => (event, target) =>
       `${(a as number) + (b as number)} ${event.type} ${target === element}`;

@@ -232,7 +232,10 @@ filter, the key is the conditional expression that a string filter would
 get, such as `(event.button === 0) && event.preventDefault()`, and the
 object has the function of the filter and `s`. The client runs the
 function and calls the method when it returns a truthy value, or compiles
-the key when the bundle has no function for it, which does the same.
+the key when the bundle has no function for it, which does the same. For
+a filter that is a property path, the conditional expression is sent as a
+plain expression, and the client reads it without compiling it: it reads
+the path and calls the method when the value is truthy.
 
 ```json
 {

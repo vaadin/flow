@@ -806,7 +806,9 @@ public class ElementListenerMap extends NodeMap {
      * <ul>
      * <li>For a filter expression, for example <code>event.key ===
      * 'Enter'</code>, the entry is the expression <code>(event.key ===
-     * 'Enter') &amp;&amp; event.preventDefault()</code>.</li>
+     * 'Enter') &amp;&amp; event.preventDefault()</code>. When the filter is a
+     * property path, the client reads that expression without compiling
+     * it.</li>
      * <li>For a declared filter, or a filter that the build has put into the
      * bundle, the entry runs the filter and has the method as its side effect.
      * Nothing is made from strings, so no JavaScript is compiled in the
