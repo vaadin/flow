@@ -40,6 +40,7 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
@@ -523,6 +524,26 @@ public class ElementListenersTest
         fromClient.put(key, sibling.getNode().getId());
         assertEquals(Optional.empty(), new DomEvent(parent, "click", fromClient)
                 .getEventDataElement(target));
+    }
+
+    @Test
+    void bundledEventData_sentAsTheFunctionOfTheBundleUnderTheExpression() {
+        String expression = "event.clientX - element.offsetLeft";
+        // Also added as a string by another listener, which must not make the
+        // client compile it
+        ns.add("foo", noOp).addEventData(expression);
+        ElementListenerMap.addBundledEventData(ns.add("foo", noOp),
+                List.of(expression));
+
+        JsonNode settings = eventSettings(ns, "foo").get(expression);
+
+        assertEquals(BundledEventData.getFunctionId(expression),
+                settings.get(JsonConstants.EVENT_SETTINGS_FUNCTION).asString());
+        assertEquals("false",
+                settings.get(JsonConstants.EVENT_SETTINGS_DEBOUNCE).toString());
+        assertFalse(settings.has(JsonConstants.EVENT_SETTINGS_CAPTURES));
+        // The server reads the value under the expression, as before
+        assertEquals(Set.of(expression), ns.getExpressions("foo"));
     }
 
     @Test
