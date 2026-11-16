@@ -231,7 +231,11 @@ final class TransactionEngine {
     private final Launch launch;
     private final AppProcess app;
     private final AtomicInteger ids = new AtomicInteger();
-    private final ReentrantLock compileLock = new ReentrantLock(true);
+    /**
+     * Shared with the launch, whose Maven runs write the same
+     * {@code target/classes}; see {@link Launch#compileLock()}.
+     */
+    private final ReentrantLock compileLock;
     /**
      * Serializes the whole body of {@link #apply}, not just the javac call.
      * <p>
@@ -264,6 +268,8 @@ final class TransactionEngine {
     TransactionEngine(Launch launch, AppProcess app) {
         this.launch = launch;
         this.app = app;
+        this.compileLock = launch != null ? launch.compileLock()
+                : new ReentrantLock(true);
     }
 
     /**
@@ -566,8 +572,13 @@ final class TransactionEngine {
                     // back from, so leaving it there deletes nothing: the route
                     // goes on answering and the bean goes on being found until
                     // the next full Maven build.
-                    tx.classesRemoved = compile
-                            .removeClassArtifacts(changes.deleted()).size();
+                    compileLock.lock();
+                    try {
+                        tx.classesRemoved = compile
+                                .removeClassArtifacts(changes.deleted()).size();
+                    } finally {
+                        compileLock.unlock();
+                    }
                 } catch (java.io.IOException e) {
                     return finish(tx, Outcome.FAILED,
                             "class removal: " + e.getMessage(), "none",
@@ -682,6 +693,10 @@ final class TransactionEngine {
                 }
                 tx.classes = result.writtenClasses();
                 compiled = result;
+                // A source added now may go live without a restart, and the
+                // next launch has to know of it to clean up its class should
+                // it be gone by then.
+                launch.recordCompiledSources(changes.modified());
                 if (!result.removedClasses().isEmpty()) {
                     // The deletion leg's reasoning, for a class the compile
                     // took away from a source that is still there - a nested
