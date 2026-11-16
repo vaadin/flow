@@ -580,7 +580,8 @@ public class FileIOUtils {
             Files.setPosixFilePermissions(target,
                     sourceView.readAttributes().permissions());
         } catch (NoSuchFileException e) {
-            // A new file keeps the default permissions
+            log().debug("'{}' does not exist, keeping default permissions "
+                    + "for the new file", source, e);
         }
     }
 
