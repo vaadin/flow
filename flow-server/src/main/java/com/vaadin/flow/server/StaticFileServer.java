@@ -254,9 +254,12 @@ public class StaticFileServer implements StaticFileHandler {
 
         String filenameWithPath = getRequestFilename(request);
         boolean directory = filenameWithPath.endsWith("/");
-        if (directory && (devModeHandler == null
-                || !filenameWithPath.startsWith("/" + VAADIN_MAPPING)
-                || filenameWithPath.equals("/" + VAADIN_MAPPING))) {
+        String vaadinFolder = "/" + VAADIN_MAPPING;
+        boolean belowVaadinFolder = filenameWithPath.startsWith(vaadinFolder)
+                && !filenameWithPath.equals(vaadinFolder);
+        boolean devServerMayServeDirectory = devModeHandler != null
+                && belowVaadinFolder;
+        if (directory && !devServerMayServeDirectory) {
             // Directories are not static resources although
             // servletContext.getResource will return a URL for them, at
             // least with Jetty. Only the dev server may serve a page for a
