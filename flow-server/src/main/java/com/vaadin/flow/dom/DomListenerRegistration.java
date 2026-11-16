@@ -112,6 +112,7 @@ public interface DomListenerRegistration extends Registration {
      * @throws IllegalArgumentException
      *             if the path is not a property path
      * @see #addEventDataElementPath(String) for mapping an element
+     * @since 25.4
      */
     default DomListenerRegistration addEventDataPath(String path) {
         return addEventDataEntry(requirePropertyPath(path));
@@ -145,6 +146,7 @@ public interface DomListenerRegistration extends Registration {
      *            the event data to send, not <code>null</code>
      * @return this registration, for chaining
      * @see DomEventData
+     * @since 25.4
      */
     default DomListenerRegistration addEventData(DomEventData<?> eventData) {
         /*
@@ -209,6 +211,7 @@ public interface DomListenerRegistration extends Registration {
      *            the filter, or <code>null</code> to clear the filter
      * @return this registration, for chaining
      * @see DomEventFilter
+     * @since 25.4
      */
     default DomListenerRegistration setFilterExpression(DomEventFilter filter) {
         /*
@@ -544,6 +547,7 @@ public interface DomListenerRegistration extends Registration {
      *             if the path is not a property path
      * @see #mapEventTargetElement() to map the {@code event.target} to an
      *      element
+     * @since 25.4
      */
     default DomListenerRegistration addEventDataElementPath(String path) {
         return addEventDataElementEntry(requirePropertyPath(path));
