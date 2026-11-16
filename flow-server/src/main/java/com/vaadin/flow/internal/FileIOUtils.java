@@ -31,10 +31,13 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.PosixFileAttributeView;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.BiPredicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -534,14 +537,22 @@ public class FileIOUtils {
      * or momentarily missing file while the content is being updated. Observing
      * such an intermediate state would otherwise make the dev server fail to
      * resolve imports between generated files.
+     * <p>
+     * A new file gets the default permissions of the process (as limited by the
+     * umask) and an existing file keeps its permissions, the same as with a
+     * direct write.
      */
     private static void writeAtomically(Path target, String content)
             throws IOException {
-        Path directory = target.getParent();
-        Path tempFile = Files.createTempFile(directory,
-                target.getFileName().toString(), ".tmp");
+        // Files.createTempFile is not used because it restricts the file to
+        // the owner, which would make generated files unreadable for a server
+        // running as another user than the build
+        Path tempFile = target.resolveSibling(
+                target.getFileName() + "." + UUID.randomUUID() + ".tmp");
         try {
-            Files.writeString(tempFile, content);
+            Files.writeString(tempFile, content, StandardOpenOption.CREATE_NEW,
+                    StandardOpenOption.WRITE);
+            copyPosixPermissions(target, tempFile);
             try {
                 Files.move(tempFile, target, StandardCopyOption.ATOMIC_MOVE,
                         StandardCopyOption.REPLACE_EXISTING);
@@ -557,6 +568,17 @@ public class FileIOUtils {
         } finally {
             Files.deleteIfExists(tempFile);
         }
+    }
+
+    private static void copyPosixPermissions(Path source, Path target)
+            throws IOException {
+        PosixFileAttributeView sourceView = Files.getFileAttributeView(source,
+                PosixFileAttributeView.class);
+        if (sourceView == null || !Files.exists(source)) {
+            return;
+        }
+        Files.setPosixFilePermissions(target,
+                sourceView.readAttributes().permissions());
     }
 
     private static Logger log() {
