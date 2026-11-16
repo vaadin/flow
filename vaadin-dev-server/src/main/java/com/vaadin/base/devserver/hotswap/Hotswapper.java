@@ -819,6 +819,8 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
      * so that they can keep the scroll positions across it.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface RefreshUiJs extends Serializable {

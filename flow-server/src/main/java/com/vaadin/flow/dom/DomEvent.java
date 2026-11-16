@@ -274,6 +274,7 @@ public class DomEvent extends EventObject {
      *         listener
      * @throws IllegalArgumentException
      *             if the value cannot be read as the declared type
+     * @since 25.4
      */
     @SuppressWarnings("unchecked")
     public <T> T getEventData(DomEventData<T> eventData) {
@@ -397,6 +398,7 @@ public class DomEvent extends EventObject {
      * @return the element that corresponds to the returned DOM node, or an
      *         empty optional if there is none
      * @see #getEventData(DomEventData)
+     * @since 25.4
      */
     public Optional<Element> getEventDataElement(
             DomEventData<Element> eventData) {

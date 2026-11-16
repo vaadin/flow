@@ -34,6 +34,8 @@ import com.vaadin.flow.server.VaadinSession;
  * future waiting for the value would never complete.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.4
  */
 public final class TypedJavaScriptResultUtil {
 
