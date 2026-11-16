@@ -133,4 +133,24 @@ class LockFileTest {
         assertEquals(Long.toString(ProcessHandle.current().pid()),
                 Files.readAllLines(path, StandardCharsets.UTF_8).get(0));
     }
+
+    @Test
+    void acquire_lockOfEarlierProcessWithSamePid_isTakenOver()
+            throws Exception {
+        Path path = folder.resolve("test.lock");
+        // A lock file naming this very process, as one left behind by a
+        // killed run whose process got the same pid and command line
+        LockFile earlier = new LockFile(path, "test");
+        earlier.acquire();
+        byte[] content = Files.readAllBytes(path);
+        earlier.release();
+        Files.write(path, content);
+
+        LockFile lock = new LockFile(path, "test");
+        assertTimeoutPreemptively(Duration.ofSeconds(30), lock::acquire);
+        lock.release();
+
+        assertFalse(Files.exists(path),
+                "The lock taken over should be released normally");
+    }
 }

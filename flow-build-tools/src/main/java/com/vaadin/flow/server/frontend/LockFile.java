@@ -28,6 +28,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +42,8 @@ import com.vaadin.flow.server.frontend.NodeTasks.NodeTasksLockInfo;
  * frontend build steps sharing a folder run one at a time across threads and
  * build processes.
  * <p>
- * A lock left behind by a process that no longer runs is taken over.
+ * A lock left behind by a process that no longer runs, or by an earlier process
+ * that had the same pid, is taken over.
  */
 class LockFile implements Serializable {
 
@@ -56,6 +59,15 @@ class LockFile implements Serializable {
      */
     private static final Duration UNREADABLE_GRACE_PERIOD = Duration
             .ofSeconds(5);
+
+    /**
+     * The lock files that a thread of this process holds or is taking. A lock
+     * file naming this process while the path is claimed here was left behind
+     * by an earlier process that had the same pid, as happens across container
+     * runs, rather than held by another thread.
+     */
+    private static final Set<String> CLAIMED_PATHS = ConcurrentHashMap
+            .newKeySet();
 
     private final File file;
     private final String holderName;
@@ -136,6 +148,19 @@ class LockFile implements Serializable {
     }
 
     private Attempt attemptToTake() {
+        String claim = claimKey();
+        if (!CLAIMED_PATHS.add(claim)) {
+            // Another thread of this process holds or is taking the lock
+            return new Attempt(AttemptState.HELD);
+        }
+        Attempt attempt = attemptToTakeClaimed();
+        if (attempt.state() != AttemptState.TAKEN) {
+            CLAIMED_PATHS.remove(claim);
+        }
+        return attempt;
+    }
+
+    private Attempt attemptToTakeClaimed() {
         try {
             writeLockFile();
             held = true;
@@ -168,7 +193,8 @@ class LockFile implements Serializable {
             }
             getLogger().warn("Removing the unreadable lock file ({}) of {}",
                     path().toAbsolutePath(), holderName);
-        } else if (isRunning(lockInfo)) {
+        } else if (lockInfo.pid() != ProcessHandle.current().pid()
+                && isRunning(lockInfo)) {
             return new Attempt(AttemptState.HELD, lockInfo);
         }
         // The holder has died without removing the lock file
@@ -186,6 +212,14 @@ class LockFile implements Serializable {
             return;
         }
         held = false;
+        try {
+            deleteLockFile();
+        } finally {
+            CLAIMED_PATHS.remove(claimKey());
+        }
+    }
+
+    private void deleteLockFile() {
         if (!Files.exists(path())) {
             getLogger().warn("Somebody else has removed the lock file ({})",
                     path().toAbsolutePath());
@@ -323,6 +357,10 @@ class LockFile implements Serializable {
     private static String normalizeCommandLine(ProcessHandle.Info processInfo) {
         return processInfo.commandLine()
                 .map(line -> line.replaceAll("\\r?\\n", " \\\\n")).orElse("");
+    }
+
+    private String claimKey() {
+        return file.getAbsoluteFile().toPath().normalize().toString();
     }
 
     private Path path() {
