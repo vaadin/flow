@@ -419,6 +419,7 @@ class VaadinQuarkusNativeProcessorTest {
         indexer.indexClass(TemplatesJs.class);
         indexer.indexClass(BaseTemplatesJs.class);
         indexer.indexClass(ItemTemplate.class);
+        indexer.indexClass(BaseTemplate.class);
         indexer.indexClass(UnusedTemplate.class);
         Index jsIndex = indexer.complete();
         List<NativeImageProxyDefinitionBuildItem> proxies = new ArrayList<>();
@@ -437,11 +438,15 @@ class VaadinQuarkusNativeProcessorTest {
                 proxies.stream().flatMap(item -> item.getClasses().stream())
                         .collect(Collectors.toSet()),
                 "Should register the returned snippet type as a proxy");
-        assertTrue(
-                reflective.stream()
-                        .flatMap(item -> item.getClassNames().stream())
-                        .anyMatch(ItemTemplate.class.getName()::equals),
+        // The check that a snippet type declares no methods sees the
+        // inherited ones only if the interfaces it extends are registered too
+        Set<String> reflectiveNames = reflective.stream()
+                .flatMap(item -> item.getClassNames().stream())
+                .collect(Collectors.toSet());
+        assertTrue(reflectiveNames.contains(ItemTemplate.class.getName()),
                 "Should register the snippet type for reflection");
+        assertTrue(reflectiveNames.contains(BaseTemplate.class.getName()),
+                "Should register the interfaces the snippet type extends for reflection");
     }
 
     @Test
@@ -520,7 +525,10 @@ class VaadinQuarkusNativeProcessorTest {
         JavaScriptResult<ObjectNode> readNode();
     }
 
-    public interface ItemTemplate extends JsSnippet {
+    public interface BaseTemplate extends JsSnippet {
+    }
+
+    public interface ItemTemplate extends BaseTemplate {
     }
 
     public interface UnusedTemplate extends JsSnippet {

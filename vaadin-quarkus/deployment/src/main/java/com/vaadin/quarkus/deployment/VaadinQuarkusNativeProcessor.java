@@ -421,9 +421,9 @@ public class VaadinQuarkusNativeProcessor {
      *
      * A method that returns an interface extending JsSnippet gets a JDK proxy
      * of that snippet type, so the snippet types the definitions return are
-     * registered the same way. Reflection on a snippet type is how the check
-     * that it declares no methods and its {@code @JsFunctionParameterNames}
-     * names are read.
+     * registered the same way. Reflection on a snippet type and the interfaces
+     * it extends is how the check that it declares no methods, inherited ones
+     * included, and its {@code @JsFunctionParameterNames} names are read.
      */
     @BuildStep(onlyIf = IsNativeBuild.class)
     void registerJsDefinitionProxies(CombinedIndexBuildItem combinedIndex,
@@ -444,7 +444,8 @@ public class VaadinQuarkusNativeProcessor {
                 snippetTypes.stream())
                 .map(NativeImageProxyDefinitionBuildItem::new)
                 .forEach(proxyDefinition::produce);
-        interfaces.addAll(snippetTypes);
+        snippetTypes.forEach(snippetType -> collectInterfaces(
+                DotName.createSimple(snippetType), index, interfaces));
         reflectiveClass.produce(ReflectiveClassBuildItem
                 .builder(interfaces.toArray(String[]::new)).methods().build());
     }

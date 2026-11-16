@@ -50,4 +50,16 @@ public class JsDefinitionIT extends ChromeBrowserTest {
                 .id(JsDefinitionView.SNIPPET_RESULT_ID);
         waitUntil(driver -> "Hello, native image".equals(result.getText()));
     }
+
+    @Test
+    public void checkSnippetTypeWithInheritedMethod_rejected() {
+        open();
+
+        $(NativeButtonElement.class)
+                .id(JsDefinitionView.CHECK_INHERITED_METHOD_ID).click();
+
+        SpanElement result = $(SpanElement.class)
+                .id(JsDefinitionView.INHERITED_METHOD_RESULT_ID);
+        waitUntil(driver -> result.getText().contains("declares label"));
+    }
 }

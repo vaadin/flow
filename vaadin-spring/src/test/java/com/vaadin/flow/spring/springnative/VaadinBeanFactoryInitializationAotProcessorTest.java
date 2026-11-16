@@ -791,6 +791,16 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 .onType(TestItemTemplate.class))
                 .as("Returned snippet type should be registered for reflection")
                 .accepts(hints);
+        // The check that a snippet type declares no methods sees the inherited
+        // ones only if the interfaces it extends are registered too
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(TestBaseTemplate.class))
+                .as("Interfaces the snippet type extends should be registered for reflection")
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.proxies()
+                .forInterfaces(TestBaseTemplate.class))
+                .as("Only the returned snippet type should get a JDK proxy")
+                .rejects(hints);
     }
 
     @Test
@@ -1220,7 +1230,10 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
         JavaScriptResult<ObjectNode> readNode();
     }
 
-    public interface TestItemTemplate extends JsSnippet {
+    public interface TestBaseTemplate extends JsSnippet {
+    }
+
+    public interface TestItemTemplate extends TestBaseTemplate {
     }
 
     public interface TestBaseSnippetJs {

@@ -21,9 +21,9 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
-import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.Route;
@@ -42,6 +42,8 @@ public class JsDefinitionView extends Div {
     public static final String RESULT_ID = "result";
     public static final String RUN_SNIPPET_ID = "run-snippet";
     public static final String SNIPPET_RESULT_ID = "snippet-result";
+    public static final String CHECK_INHERITED_METHOD_ID = "check-inherited-method";
+    public static final String INHERITED_METHOD_RESULT_ID = "inherited-method-result";
 
     @JsDefinition
     public interface JoinJs extends Serializable {
@@ -51,11 +53,38 @@ public class JsDefinitionView extends Div {
     }
 
     /**
+     * A snippet type of the application that other snippet types extend.
+     */
+    public interface Message extends JsSnippet {
+    }
+
+    /**
      * A snippet type of the application, not a built-in one such as
-     * {@code JsFunction}.
+     * {@code JsFunction}. It extends another snippet type, so the check that it
+     * declares no methods also reads the interfaces it extends.
      */
     @JsFunctionParameterNames("name")
-    public interface Greeting extends JsSnippet {
+    public interface Greeting extends Message {
+    }
+
+    /**
+     * Declares a method, which a snippet type can not do.
+     */
+    public interface Labeled extends JsSnippet {
+        String label();
+    }
+
+    /**
+     * Declares no method itself, but inherits one.
+     */
+    public interface LabeledGreeting extends Labeled {
+    }
+
+    @JsDefinition
+    public interface LabeledGreetingJs extends Serializable {
+
+        @JsExpression("return $0;")
+        LabeledGreeting createGreeting(String greeting);
     }
 
     @JsDefinition
@@ -89,5 +118,19 @@ public class JsDefinitionView extends Div {
                                 .of(GreetingJs.class).createGreeting("Hello")));
         runSnippet.setId(RUN_SNIPPET_ID);
         add(runSnippet, snippetResult);
+
+        Span inheritedMethodResult = new Span();
+        inheritedMethodResult.setId(INHERITED_METHOD_RESULT_ID);
+        NativeButton checkInheritedMethod = new NativeButton(
+                "Check a snippet type with an inherited method", event -> {
+                    try {
+                        JsSnippets.of(LabeledGreetingJs.class);
+                        inheritedMethodResult.setText("accepted");
+                    } catch (IllegalArgumentException e) {
+                        inheritedMethodResult.setText(e.getMessage());
+                    }
+                });
+        checkInheritedMethod.setId(CHECK_INHERITED_METHOD_ID);
+        add(checkInheritedMethod, inheritedMethodResult);
     }
 }

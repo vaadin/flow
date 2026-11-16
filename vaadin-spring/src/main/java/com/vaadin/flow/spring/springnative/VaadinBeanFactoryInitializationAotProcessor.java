@@ -369,8 +369,9 @@ public class VaadinBeanFactoryInitializationAotProcessor
      * for a proxy that is known at build time, and reflection on the interface
      * and the interfaces it extends, which is how the annotations it is
      * validated against and the generic return types of its methods are read.
-     * The snippet types its methods return get a proxy too, and reflection,
-     * which is how the check that a snippet type declares no methods and its
+     * The snippet types its methods return get a proxy too, and reflection on
+     * the snippet type and the interfaces it extends, which is how the check
+     * that a snippet type declares no methods, inherited ones included, and its
      * {@code @JsFunctionParameterNames} names are read. The types that its
      * typed results are converted to are registered for Jackson.
      */
@@ -382,8 +383,7 @@ public class VaadinBeanFactoryInitializationAotProcessor
             Class<?> returnType = method.getReturnType();
             if (JsDefinitionProxy.isApplicationSnippetType(returnType)) {
                 hints.proxies().registerJdkProxy(returnType);
-                hints.reflection().registerType(returnType,
-                        MemberCategory.INVOKE_PUBLIC_METHODS);
+                registerInterfaceHierarchy(hints, returnType);
             }
         }
         Set<Class<?>> resultTypes = getJsResultTypes(definitionType);
