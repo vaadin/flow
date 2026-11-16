@@ -547,6 +547,44 @@ public class ElementListenersTest
     }
 
     @Test
+    void bundledFilterWithPreventDefault_functionOfTheBundleWithSideEffect() {
+        String filter = "event.button === 0";
+        String conditional = "(" + filter + ") && event.preventDefault()";
+        AtomicInteger notified = new AtomicInteger();
+        DomListenerRegistration registration = ns.add("click",
+                event -> notified.incrementAndGet());
+        ElementListenerMap.setBundledFilter(registration, filter);
+        registration.preventDefault();
+
+        ObjectNode settings = eventSettings(ns, "click");
+
+        String functionId = BundledEventData.getFunctionId(filter);
+        assertEquals(Set.of(filter, conditional),
+                Set.copyOf(JacksonUtils.getKeys(settings)));
+        assertEquals(functionId, settings.get(filter)
+                .get(JsonConstants.EVENT_SETTINGS_FUNCTION).asString());
+        assertEquals("true", settings.get(filter)
+                .get(JsonConstants.EVENT_SETTINGS_DEBOUNCE).toString());
+        assertFalse(settings.get(filter)
+                .has(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT));
+        // The key is what the client compiles when the bundle has no function
+        assertEquals(functionId, settings.get(conditional)
+                .get(JsonConstants.EVENT_SETTINGS_FUNCTION).asString());
+        assertEquals("preventDefault", settings.get(conditional)
+                .get(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT).asString());
+        assertEquals(filter, registration.getFilter());
+
+        // The value of the filter is sent under the filter, as before
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put(filter, false);
+        ns.fireEvent(new DomEvent(new Element("element"), "click", eventData));
+        assertEquals(0, notified.get());
+        eventData.put(filter, true);
+        ns.fireEvent(new DomEvent(new Element("element"), "click", eventData));
+        assertEquals(1, notified.get());
+    }
+
+    @Test
     void declaredSnippetWithoutCaptures_noCapturesSent() {
         ns.add("foo", noOp).addEventData(JS.points());
 
