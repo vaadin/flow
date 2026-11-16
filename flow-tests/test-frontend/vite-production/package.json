@@ -21,7 +21,7 @@
   },
   "devDependencies": {
     "@babel/preset-react": "7.29.7",
-    "@babel/types": "7.29.11",
+    "@babel/types": "7.29.14",
     "@preact/signals-react": "3.12.0",
     "@preact/signals-react-transform": "0.8.3",
     "@rollup/plugin-replace": "6.0.3",
@@ -36,7 +36,7 @@
     "strip-css-comments": "5.0.0",
     "transform-ast": "2.4.4",
     "typescript": "5.9.3",
-    "vite": "7.3.7",
+    "vite": "7.3.8",
     "vite-plugin-checker": "0.14.5"
   },
   "vaadin": {
@@ -53,7 +53,7 @@
     },
     "devDependencies": {
       "@babel/preset-react": "7.29.7",
-      "@babel/types": "7.29.11",
+      "@babel/types": "7.29.14",
       "@preact/signals-react": "3.12.0",
       "@preact/signals-react-transform": "0.8.3",
       "@rollup/plugin-replace": "6.0.3",
@@ -68,10 +68,10 @@
       "strip-css-comments": "5.0.0",
       "transform-ast": "2.4.4",
       "typescript": "5.9.3",
-      "vite": "7.3.7",
+      "vite": "7.3.8",
       "vite-plugin-checker": "0.14.5"
     },
-    "hash": "109f60e58244410a1371d978e074d77cd05b3857e4c488159c369f4e511b18f8",
+    "hash": "ac636f29fd689f08ccc0121380f08e72384d8147a51ff55eb345fdad41dd431d",
     "overrides": {
       "@polymer/polymer": "$@polymer/polymer",
       "@vaadin/common-frontend": "$@vaadin/common-frontend",
