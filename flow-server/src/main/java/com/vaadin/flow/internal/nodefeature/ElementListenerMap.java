@@ -363,7 +363,11 @@ public class ElementListenerMap extends NodeMap {
         @Override
         public void remove() {
             if (unregisterHandlers != null) {
-                unregisterHandlers.forEach(SerializableRunnable::run);
+                // A refused filter or event data removes the registration, so
+                // the application may remove it again
+                List<SerializableRunnable> handlers = unregisterHandlers;
+                unregisterHandlers = null;
+                handlers.forEach(SerializableRunnable::run);
             }
 
             listenerMap.removeListener(type, this);

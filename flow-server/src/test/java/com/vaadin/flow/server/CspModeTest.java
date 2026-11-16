@@ -16,6 +16,7 @@
 package com.vaadin.flow.server;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -57,6 +58,7 @@ import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
@@ -225,34 +227,50 @@ class CspModeTest {
     }
 
     static Stream<Arguments> refusedListenerCalls() {
-        return Stream.of(Arguments.of("setFilter",
-                (BiConsumer<UI, Runnable>) (ui, onClick) -> ui.getElement()
-                        .addEventListener("click", e -> onClick.run())
-                        .setFilter("event.button === 0")),
-                Arguments.of("addEventData",
-                        (BiConsumer<UI, Runnable>) (ui, onClick) -> ui
-                                .getElement()
+        return Stream.of(
+                refusedListenerCall("setFilter",
+                        (component, onClick) -> component.getElement()
+                                .addEventListener("click", e -> onClick.run())
+                                .setFilter("event.button === 0")),
+                refusedListenerCall("addEventData",
+                        (component, onClick) -> component.getElement()
                                 .addEventListener("click", e -> onClick.run())
                                 .addEventData("event.x * 2")),
-                Arguments.of("@DomEvent filter", (BiConsumer<UI, Runnable>) (ui,
-                        onClick) -> ComponentUtil.addListener(ui,
-                                LeftClickEvent.class, e -> onClick.run())));
+                refusedListenerCall("@DomEvent filter",
+                        (component, onClick) -> ComponentUtil.addListener(
+                                component, LeftClickEvent.class,
+                                e -> onClick.run())));
+    }
+
+    private static Arguments refusedListenerCall(String name,
+            BiConsumer<Component, Runnable> addListener) {
+        return Arguments.of(name, addListener);
     }
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("refusedListenerCalls")
     void strict_refusedListenerCall_listenerDoesNotRun(String call,
-            BiConsumer<UI, Runnable> addListener) {
+            BiConsumer<Component, Runnable> addListener) {
         setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        Clickable button = new Clickable();
         AtomicInteger clicks = new AtomicInteger();
 
         assertThrows(CspViolationException.class,
-                () -> addListener.accept(ui, clicks::incrementAndGet));
-        ui.getElement().getNode().getFeature(ElementListenerMap.class)
-                .fireEvent(new com.vaadin.flow.dom.DomEvent(ui.getElement(),
-                        "click", JacksonUtils.createObjectNode()));
+                () -> addListener.accept(button, clicks::incrementAndGet));
+        ElementListenerMap listeners = button.getElement().getNode()
+                .getFeature(ElementListenerMap.class);
+        listeners.fireEvent(new com.vaadin.flow.dom.DomEvent(
+                button.getElement(), "click", JacksonUtils.createObjectNode()));
 
         assertEquals(0, clicks.get());
+        // Nor does the browser send the event
+        List<String> sentEvents = new ArrayList<>();
+        listeners.collectChanges(change -> {
+            if (change instanceof MapPutChange put) {
+                sentEvents.add(put.getKey());
+            }
+        });
+        assertEquals(List.of(), sentEvents);
     }
 
     @Test

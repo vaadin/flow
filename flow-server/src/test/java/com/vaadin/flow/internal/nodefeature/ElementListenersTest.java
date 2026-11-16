@@ -114,6 +114,18 @@ public class ElementListenersTest
     }
 
     @Test
+    void removeTwice_unregisterHandlerRunsOnce() {
+        AtomicInteger unregisterCount = new AtomicInteger();
+        DomListenerRegistration handle = ns.add("foo", noOp)
+                .onUnregister(unregisterCount::incrementAndGet);
+
+        handle.remove();
+        handle.remove();
+
+        assertEquals(1, unregisterCount.get());
+    }
+
+    @Test
     void eventNameInClientData() {
         assertFalse(ns.contains("foo"));
 
