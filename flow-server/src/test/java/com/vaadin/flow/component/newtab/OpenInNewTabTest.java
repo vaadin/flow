@@ -26,6 +26,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.trigger.internal.OpenInNewTabAction;
+import com.vaadin.flow.component.trigger.internal.TriggerTestUtil;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinSession;
@@ -34,6 +36,7 @@ import com.vaadin.flow.server.streams.FileDownloadHandler;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
 
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -71,8 +74,8 @@ class OpenInNewTabTest {
         assertTrue(handler.isInline(),
                 "A built-in handler should serve its content inline");
         JsFunction action = actionOf(singleInstallFn());
-        assertTrue(action.getBody().contains("window.open(u, \"_blank\""),
-                "Expected a window.open call, got: " + action.getBody());
+        assertEquals("openInNewTab",
+                snippetOf(OpenInNewTabAction.OpenInNewTabJs.class, action));
         Object uri = urlCapture(action);
         assertTrue(
                 uri instanceof String s
@@ -85,8 +88,8 @@ class OpenInNewTabTest {
         OpenInNewTab.onClick(button, "/files/terms.html");
 
         JsFunction action = actionOf(singleInstallFn());
-        assertTrue(action.getBody().contains("window.open(u, \"_blank\""),
-                "Expected a window.open call, got: " + action.getBody());
+        assertEquals("openInNewTab",
+                snippetOf(OpenInNewTabAction.OpenInNewTabJs.class, action));
         assertEquals("/files/terms.html", urlCapture(action));
     }
 
@@ -112,10 +115,7 @@ class OpenInNewTabTest {
         List<PendingJavaScriptInvocation> pending = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         assertEquals(1, pending.size(), "Expected exactly one pending JS");
-        Object o = pending.get(0).getInvocation().getParameters().get(2);
-        assertTrue(o instanceof JsFunction,
-                "Expected install param $2 to be a JsFunction");
-        return (JsFunction) o;
+        return TriggerTestUtil.installFn(pending.get(0).getInvocation());
     }
 
     private static JsFunction actionOf(JsFunction installFn) {
