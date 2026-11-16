@@ -21,9 +21,10 @@ const OTHER_FAILURE = '[ERROR] Failed to execute goal on project foo: Compilatio
  * the given status on each attempt, repeating the last attempt when there
  * are more attempts than entries. sleep and pkill are stubbed so that a
  * retry neither waits nor stops other Java processes. env is added to the
- * script's environment.
+ * script's environment. When clock is given, date is stubbed so that the
+ * first attempt starts at that time and fails 100 seconds later.
  */
-function run(attempts, env = {}) {
+function run(attempts, env = {}, clock) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mvn-retry-'));
   try {
     fs.writeFileSync(path.join(dir, 'attempts.json'), JSON.stringify(attempts));
@@ -39,6 +40,13 @@ exec node -e '
   process.exitCode = status;
 ' "${dir}/attempts.json" "$count"`
     );
+    if (clock) {
+      // The first call returns the clock, every later one 100s past it.
+      bin(
+        'date',
+        `if [ -e "${dir}/started" ]; then echo $((${clock} + 100)); else touch "${dir}/started"; echo ${clock}; fi`
+      );
+    }
     bin('sleep', 'true');
     bin('pkill', 'true');
     const result = spawnSync(SCRIPT, [path.join(dir, 'mvn.out')], {
@@ -97,11 +105,13 @@ test('judges each attempt by its own output', () => {
 });
 
 test('does not retry when the retry cannot end before the deadline', () => {
-  const now = Math.floor(Date.now() / 1000);
+  const T = 1000000;
   const attempts = [
     { log: TRANSFER_ERROR, status: 1 },
     { log: 'BUILD SUCCESS', status: 0 }
   ];
-  assert.deepStrictEqual(run(attempts, { MAVEN_RETRY_DEADLINE: `${now + 20}` }), { status: 1, runs: 1 });
-  assert.deepStrictEqual(run(attempts, { MAVEN_RETRY_DEADLINE: `${now + 600}` }), { status: 0, runs: 2 });
+  // The retry starts after 30s and is assumed to take the 100s the failed
+  // attempt took, so it ends at T + 230.
+  assert.deepStrictEqual(run(attempts, { MAVEN_RETRY_DEADLINE: `${T + 229}` }, T), { status: 1, runs: 1 });
+  assert.deepStrictEqual(run(attempts, { MAVEN_RETRY_DEADLINE: `${T + 230}` }, T), { status: 0, runs: 2 });
 });

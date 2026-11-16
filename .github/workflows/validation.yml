@@ -364,6 +364,8 @@ jobs:
           # Spring Boot fork that spring-boot:stop failed to kill) can't pin
           # the step open by holding the pipe to tee, and retries a build that
           # failed to download from a repository.
+          # A retry must end before the step's 22-minute timeout cancels it.
+          export MAVEN_RETRY_DEADLINE=$(( $(date +%s) + 21 * 60 ))
           scripts/runMavenWithRetry.sh mvn-it-tests-${{matrix.current}}.out $args verify
       - name: Kill leftover Java processes
         if: ${{ always() }}
@@ -525,6 +527,8 @@ jobs:
           # JVMs that can outlive Maven and pin the step open by holding a pipe
           # to tee, and piping would also make the step exit with tee's status
           # instead of Maven's, so a failing container would report success.
+          # A retry must end before the step's 35-minute timeout cancels it.
+          export MAVEN_RETRY_DEADLINE=$(( $(date +%s) + 34 * 60 ))
           scripts/runMavenWithRetry.sh mvn-cdi-tests-${{ matrix.profile }}.out $args enforcer:enforce verify
       - name: Kill leftover Java processes
         if: ${{ always() && steps.decide.outputs.run == 'true' }}
@@ -685,6 +689,8 @@ jobs:
           # tests fork Quarkus JVMs that can outlive Maven and pin the step
           # open by holding a pipe to tee, and piping would also make the step
           # exit with tee's status instead of Maven's.
+          # A retry must end before the step's 35-minute timeout cancels it.
+          export MAVEN_RETRY_DEADLINE=$(( $(date +%s) + 34 * 60 ))
           scripts/runMavenWithRetry.sh mvn-quarkus-tests-${{ matrix.name }}.out $args verify
       - name: Kill leftover Java processes
         if: ${{ always() && steps.decide.outputs.run == 'true' }}
@@ -1114,8 +1120,10 @@ jobs:
       pull-requests: write
     steps:
       # Both builds below run whole reactors and retry a transfer error. A
-      # retry that the job timeout cuts off would hide that error, so the
-      # retries must end a minute before the timeout.
+      # retry that the job timeout cuts off would hide that error, so a retry
+      # must end a minute before the timeout. This only guards the retry
+      # itself: a late retry of the base build can still leave too little
+      # time for the apicmp build.
       - name: Set retry deadline
         run: echo "MAVEN_RETRY_DEADLINE=$(( $(date +%s) + 14 * 60 ))" >> "$GITHUB_ENV"
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
