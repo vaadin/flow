@@ -66,14 +66,15 @@ public class VaadinUIScope extends AbstractScope {
 
         @Override
         public void onComponentEvent(DetachEvent event) {
-            assert session.hasLock();
-            UI ui = event.getUI();
-            if (ui.isClosing()) {
-                BeanStore beanStore = uiStores.remove(ui.getUIId());
-                if (beanStore != null) {
-                    beanStore.destroy();
+            SessionLockSupport.runLocked(session, () -> {
+                UI ui = event.getUI();
+                if (ui.isClosing()) {
+                    BeanStore beanStore = uiStores.remove(ui.getUIId());
+                    if (beanStore != null) {
+                        beanStore.destroy();
+                    }
                 }
-            }
+            });
         }
 
         BeanStore getBeanStore(UI ui) {

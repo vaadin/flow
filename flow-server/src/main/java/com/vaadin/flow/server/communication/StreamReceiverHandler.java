@@ -194,11 +194,12 @@ public class StreamReceiverHandler implements Serializable {
                     "IO Exception during file upload, fired as StreamingErrorEvent",
                     exception);
         } catch (Exception exception) {
-            session.lock();
+            Runnable releaseLock = VaadinSession.lockForUI(session,
+                    UI.getCurrent());
             try {
                 session.getErrorHandler().error(new ErrorEvent(exception));
             } finally {
-                session.unlock();
+                releaseLock.run();
             }
         }
         sendUploadResponse(response, success);
@@ -338,7 +339,8 @@ public class StreamReceiverHandler implements Serializable {
             InputStream inputStream, StreamReceiver streamReceiver,
             String filename, String mimeType, long contentLength,
             StateNode node) throws UploadException {
-        session.lock();
+        Runnable releaseLock = VaadinSession.lockForUI(session,
+                UI.getCurrent());
         try {
             if (node == null) {
                 throw new UploadException(
@@ -349,7 +351,7 @@ public class StreamReceiverHandler implements Serializable {
                         + node.getId() + " because the component was disabled");
             }
         } finally {
-            session.unlock();
+            releaseLock.run();
         }
         try (InputStream handledStream = inputStream) {
             // Store ui reference so we can do cleanup even if node is
@@ -366,11 +368,12 @@ public class StreamReceiverHandler implements Serializable {
             // close
             getLogger().debug("Exception closing inputStream", ioe);
         } catch (UploadException e) {
-            session.lock();
+            Runnable releaseErrorLock = VaadinSession.lockForUI(session,
+                    UI.getCurrent());
             try {
                 session.getErrorHandler().error(new ErrorEvent(e));
             } finally {
-                session.unlock();
+                releaseErrorLock.run();
             }
         }
         return false;
@@ -433,11 +436,12 @@ public class StreamReceiverHandler implements Serializable {
 
     private void cleanStreamVariable(VaadinSession session,
             StreamReceiver streamReceiver) {
-        session.lock();
+        Runnable releaseLock = VaadinSession.lockForUI(session,
+                UI.getCurrent());
         try {
             session.getResourceRegistry().unregisterResource(streamReceiver);
         } finally {
-            session.unlock();
+            releaseLock.run();
         }
     }
 
@@ -458,13 +462,14 @@ public class StreamReceiverHandler implements Serializable {
         boolean success = false;
         try {
             boolean listenProgress;
-            session.lock();
+            Runnable releaseLock = VaadinSession.lockForUI(session,
+                    UI.getCurrent());
             try {
                 streamVariable.streamingStarted(startedEvent);
                 out = streamVariable.getOutputStream();
                 listenProgress = streamVariable.listenProgress();
             } finally {
-                session.unlock();
+                releaseLock.run();
             }
 
             // Gets the output target stream
@@ -503,11 +508,12 @@ public class StreamReceiverHandler implements Serializable {
             out.close();
             StreamVariable.StreamingEndEvent event = new StreamingEndEventImpl(
                     filename, type, totalBytes);
-            session.lock();
+            Runnable releaseEndLock = VaadinSession.lockForUI(session,
+                    UI.getCurrent());
             try {
                 streamVariable.streamingFinished(event);
             } finally {
-                session.unlock();
+                releaseEndLock.run();
             }
             success = true;
         } catch (UploadInterruptedException | IOException e) {
@@ -534,12 +540,13 @@ public class StreamReceiverHandler implements Serializable {
             String type, long contentLength, StreamVariable streamVariable,
             OutputStream out, long totalBytes, final Exception exception) {
         tryToCloseStream(out);
-        session.lock();
+        Runnable releaseLock = VaadinSession.lockForUI(session,
+                UI.getCurrent());
         try {
             streamVariable.streamingFailed(new StreamingErrorEventImpl(filename,
                     type, contentLength, totalBytes, exception));
         } finally {
-            session.unlock();
+            releaseLock.run();
         }
     }
 
@@ -552,11 +559,12 @@ public class StreamReceiverHandler implements Serializable {
         // events are sent in intervals, or at the end of the file.
         if (lastStreamingEvent + getProgressEventInterval() <= now
                 || bytesReadToBuffer <= 0) {
-            session.lock();
+            Runnable releaseLock = VaadinSession.lockForUI(session,
+                    UI.getCurrent());
             try {
                 streamVariable.onProgress(progressEvent);
             } finally {
-                session.unlock();
+                releaseLock.run();
             }
             return now;
         }

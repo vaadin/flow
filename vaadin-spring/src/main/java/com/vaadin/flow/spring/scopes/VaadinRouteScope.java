@@ -100,7 +100,11 @@ public class VaadinRouteScope extends AbstractScope {
         }
 
         private void relocateStore(UI ui, String key) {
-            assert session.hasLock();
+            SessionLockSupport.runLocked(session,
+                    () -> doRelocateStore(ui, key));
+        }
+
+        private void doRelocateStore(UI ui, String key) {
             RouteBeanStore beanStore = routeStores.remove(key);
             if (beanStore == null) {
                 LoggerFactory.getLogger(RouteStoreWrapper.class).trace(
@@ -304,14 +308,15 @@ public class VaadinRouteScope extends AbstractScope {
 
         @Override
         public void onComponentEvent(DetachEvent event) {
-            assert getVaadinSession().hasLock();
-            uiDetachRegistration.remove();
-            if (resetUI(event.getUI())) {
-                uiDetachRegistration = currentUI.addDetachListener(this);
-            } else {
-                destroy();
-                detachUiCallback.accept(currentUI);
-            }
+            SessionLockSupport.runLocked(getVaadinSession(), () -> {
+                uiDetachRegistration.remove();
+                if (resetUI(event.getUI())) {
+                    uiDetachRegistration = currentUI.addDetachListener(this);
+                } else {
+                    destroy();
+                    detachUiCallback.accept(currentUI);
+                }
+            });
         }
 
         @Override

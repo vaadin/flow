@@ -57,6 +57,7 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -444,6 +445,28 @@ class VaadinSessionTest {
         assertEquals(deserializedSession, deserializedPc.session,
                 "Current session should be available in SerializationTestLabel.readObject");
         deserializedSession.unlock();
+    }
+
+    @Test
+    void addUI_uiIsStoredInSessionUIService() {
+        SessionUIService uiService = mockService.getSessionUIService();
+        assertEquals(1, uiService.getUIs(session).size());
+        assertSame(ui, uiService.getUIById(session, ui.getUIId()));
+        assertSame(ui, session.getUIById(ui.getUIId()));
+    }
+
+    @Test
+    void fireSessionDestroy_sessionIsRemovedFromSessionUIService() {
+        SessionUIService uiService = mockService.getSessionUIService();
+        assertTrue(uiService.getSessions().contains(session));
+
+        // Release the lock from setup so that access() runs right away
+        session.unlock();
+        mockService.fireSessionDestroy(session);
+
+        assertEquals(VaadinSessionState.CLOSED, session.getState());
+        assertTrue(uiService.getUIs(session).isEmpty());
+        assertFalse(uiService.getSessions().contains(session));
     }
 
     @Test

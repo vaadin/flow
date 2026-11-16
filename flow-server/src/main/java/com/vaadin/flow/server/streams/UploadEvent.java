@@ -204,6 +204,10 @@ public class UploadEvent {
     }
 
     private UI getUiFromSession(Component value) {
+        if (session.isUILockingEnabled()) {
+            return session.findUIWithoutLock(Integer
+                    .parseInt((String) ComponentUtil.getData(value, "uiid")));
+        }
         try {
             session.lock();
             return session.getUIById(Integer

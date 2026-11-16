@@ -61,6 +61,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UIDetachedException;
+import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.InstantiatorFactory;
@@ -170,6 +171,12 @@ public abstract class VaadinService implements Serializable {
      */
     private final VaadinServiceEventBus eventBus = new VaadinServiceEventBus(
             this);
+
+    /*
+     * Lazily (re)created, so that it is also available after the service has
+     * been deserialized. UIs are serialized as part of their session.
+     */
+    private transient volatile SessionUIService sessionUIService;
 
     private SystemMessagesProvider systemMessagesProvider = DefaultSystemMessagesProvider
             .get();
@@ -577,11 +584,20 @@ public abstract class VaadinService implements Serializable {
 
         Transaction.setTransactionFallback(() -> {
             VaadinSession session = VaadinSession.getCurrent();
-            if (session == null || session.getLockInstance() == null
-                    || !session.hasLock()) {
+            if (session == null || session.getLockInstance() == null) {
                 return null;
             }
-            return session.getOrCreateSessionScopedTransaction();
+            if (session.hasLock()) {
+                return session.getOrCreateSessionScopedTransaction();
+            }
+            if (session.isUILockingEnabled()) {
+                UI ui = UI.getCurrent();
+                if (ui != null && ui.getInternals().getSession() == session
+                        && ui.getInternals().hasUILock()) {
+                    return ui.getInternals().getOrCreateUIScopedTransaction();
+                }
+            }
+            return null;
         });
 
         addServiceDestroyListener(event -> {
@@ -991,6 +1007,26 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
+     * Gets the service that stores the UIs of all sessions belonging to this
+     * service.
+     *
+     * @return the session UI service, not {@code null}
+     */
+    public SessionUIService getSessionUIService() {
+        SessionUIService result = sessionUIService;
+        if (result == null) {
+            synchronized (this) {
+                result = sessionUIService;
+                if (result == null) {
+                    result = new SessionUIService();
+                    sessionUIService = result;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Adds a listener that gets notified when a new UI has been initialized.
      *
      * @param listener
@@ -1152,7 +1188,7 @@ public abstract class VaadinService implements Serializable {
             for (final UI ui : uis) {
                 try {
                     ui.getInternals().terminateActiveTransfers();
-                    ui.accessSynchronously(() -> {
+                    accessUIWithoutWaiting(session, ui, true, () -> {
                         /*
                          * close() called here for consistency so that it is
                          * always called before a UI is removed. UI.isClosing()
@@ -1182,6 +1218,7 @@ public abstract class VaadinService implements Serializable {
             eventBus.fireEvent(event, sessionErrorHandler(session));
 
             session.setState(VaadinSessionState.CLOSED);
+            getSessionUIService().removeSession(session);
         });
     }
 
@@ -1466,6 +1503,8 @@ public abstract class VaadinService implements Serializable {
                         : SessionLockCheckStrategy.THROW;
         assert sessionLockCheckStrategy != null;
         session.applyLockStrategy(sessionLockCheckStrategy);
+        session.applyUILocking(
+                getDeploymentConfiguration().isUILockingEnabled());
 
         // Initial locale comes from the request
         if (getInstantiator().getI18NProvider() != null) {
@@ -1716,6 +1755,39 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
+     * Finds the UI that belongs to the request in the given session and sets it
+     * as the current UI.
+     * <p>
+     * With {@link VaadinSession#isUILockingEnabled() UI locking}, no lock is
+     * required and the UI is looked up directly in the given session.
+     * Otherwise, this delegates to {@link #findUI(VaadinRequest)}, which
+     * requires the session lock.
+     *
+     * @param session
+     *            the session the request belongs to, may be {@code null}
+     * @param request
+     *            the request to find a UI for
+     * @return the UI, or {@code null} if not found
+     */
+    public UI findUI(VaadinSession session, VaadinRequest request) {
+        if (session == null || !session.isUILockingEnabled()) {
+            return findUI(request);
+        }
+        String uiIdString = request
+                .getParameter(ApplicationConstants.UI_ID_PARAMETER);
+        UI ui = null;
+        if (uiIdString != null) {
+            try {
+                ui = session.findUIWithoutLock(Integer.parseInt(uiIdString));
+            } catch (NumberFormatException e) {
+                getLogger().debug("Invalid UI id {}", uiIdString);
+            }
+        }
+        UI.setCurrent(ui);
+        return ui;
+    }
+
+    /**
      * Discards the current session and creates a new session with the same
      * contents. The purpose of this is to introduce a new session key in order
      * to avoid session fixation attacks.
@@ -1879,11 +1951,52 @@ public abstract class VaadinService implements Serializable {
                             ui.getUIId());
                     continue;
                 }
-                ui.accessSynchronously(() -> {
+                accessUIWithoutWaiting(session, ui, false, () -> {
                     getLogger().debug("Removing closed UI {}", ui.getUIId());
                     session.removeUI(ui);
                 });
             }
+        }
+    }
+
+    /**
+     * Runs a task that accesses the given UI from a thread that may hold the
+     * session lock. With UI locking, the UI lock is never waited for, since
+     * threads holding a UI lock may wait for the session lock: if the UI is
+     * locked by another thread, the task is either enqueued with
+     * {@link UI#access(Command)} or skipped.
+     *
+     * @param session
+     *            the session of the UI
+     * @param ui
+     *            the UI to access
+     * @param deferIfBusy
+     *            {@code true} to enqueue the task if the UI is locked by
+     *            another thread, {@code false} to skip it
+     * @param task
+     *            the task to run
+     */
+    private void accessUIWithoutWaiting(VaadinSession session, UI ui,
+            boolean deferIfBusy, Command task) {
+        if (!session.isUILockingEnabled()) {
+            ui.accessSynchronously(task);
+            return;
+        }
+        UIInternals internals = ui.getInternals();
+        if (!internals.tryLockUI()) {
+            if (deferIfBusy) {
+                ui.access(task);
+            } else {
+                getLogger().debug(
+                        "Skipping cleanup of UI {} which is locked by another thread",
+                        ui.getUIId());
+            }
+            return;
+        }
+        try {
+            ui.accessSynchronously(task);
+        } finally {
+            internals.unlockUI();
         }
     }
 
@@ -1895,7 +2008,7 @@ public abstract class VaadinService implements Serializable {
         final String sessionId = session.getSession().getId();
         for (final UI ui : session.getUIs()) {
             if (!isUIActive(ui) && !ui.isClosing()) {
-                ui.accessSynchronously(() -> {
+                accessUIWithoutWaiting(session, ui, false, () -> {
                     getLogger().debug("Closing inactive UI #{} in session {}",
                             ui.getUIId(), sessionId);
                     ui.close();
@@ -1973,6 +2086,11 @@ public abstract class VaadinService implements Serializable {
              * for now. A possible kill decision will be made at a later time
              * when the session access has ended.
              */
+            return true;
+        }
+        ReentrantLock uiLock = ui.getInternals().getUILock();
+        if (uiLock.isLocked() || uiLock.hasQueuedThreads()) {
+            // The UI is being accessed, see above
             return true;
         }
 
@@ -2722,6 +2840,13 @@ public abstract class VaadinService implements Serializable {
      *            the vaadin session to purge the queue for
      */
     public void runPendingAccessTasks(VaadinSession session) {
+        if (session.isUILockingEnabled() && !session.hasLock()) {
+            /*
+             * Only holding a UI lock: session tasks must not run without the
+             * session lock. They run when the session lock is released.
+             */
+            return;
+        }
         session.checkHasLock();
 
         if (session.getPendingAccessQueue().isEmpty()) {

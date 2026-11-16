@@ -17,6 +17,8 @@ package com.vaadin.flow.server;
 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpSessionBindingEvent;
 
 import java.util.ArrayList;
@@ -36,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -73,6 +76,7 @@ import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
@@ -1194,5 +1198,69 @@ class VaadinServiceTest {
 
     private static MockVaadinServletService createService() {
         return new MockVaadinServletService();
+    }
+
+    @Test
+    void createSession_uiLockingEnabled_sessionUsesUILocking()
+            throws Exception {
+        MockDeploymentConfiguration config = new MockDeploymentConfiguration();
+        config.setApplicationOrSystemProperty(
+                InitParameters.SERVLET_PARAMETER_UI_LOCKING, "true");
+
+        VaadinSession session = createSessionForNewRequest(
+                new MockVaadinServletService(config));
+
+        assertTrue(session.isUILockingEnabled());
+    }
+
+    @Test
+    void createSession_uiLockingNotConfigured_sessionUsesSessionLock()
+            throws Exception {
+        VaadinSession session = createSessionForNewRequest(
+                new MockVaadinServletService(
+                        new MockDeploymentConfiguration()));
+
+        assertFalse(session.isUILockingEnabled());
+    }
+
+    /**
+     * Creates a session the way the first request of a user does, through
+     * {@link VaadinService#findVaadinSession(VaadinRequest)}.
+     */
+    private static VaadinSession createSessionForNewRequest(
+            VaadinServletService service) throws Exception {
+        ReentrantLock lock = new ReentrantLock();
+        WrappedSession wrappedSession = new WrappedHttpSession(
+                mock(HttpSession.class)) {
+            @Override
+            public Object getAttribute(String name) {
+                if ((service.getServiceName() + ".lock").equals(name)) {
+                    return lock;
+                }
+                return super.getAttribute(name);
+            }
+        };
+        VaadinRequest request = new VaadinServletRequest(
+                mock(HttpServletRequest.class), service) {
+            @Override
+            public String getParameter(String name) {
+                if (ApplicationConstants.REQUEST_TYPE_PARAMETER.equals(name)) {
+                    return null;
+                }
+                return "1";
+            }
+
+            @Override
+            public WrappedSession getWrappedSession(
+                    boolean allowSessionCreation) {
+                return wrappedSession;
+            }
+        };
+        lock.lock();
+        try {
+            return service.findVaadinSession(request);
+        } finally {
+            lock.unlock();
+        }
     }
 }

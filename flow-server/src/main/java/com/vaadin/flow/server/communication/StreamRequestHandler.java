@@ -30,6 +30,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.internal.streams.ActiveTransfer;
 import com.vaadin.flow.server.AbstractStreamResource;
@@ -147,7 +148,9 @@ public class StreamRequestHandler implements RequestHandler {
         ActiveTransfer transfer = new ActiveTransfer(pathInfo, owner);
         Registration transferRegistration = null;
 
-        session.lock();
+        // With UI locking, the owner's UI is locked instead of the session
+        Runnable releaseLock = VaadinSession.lockForUI(session,
+                getOwnerUI(node));
         try {
             if (blockInert(elementRequest, node)
                     || blockDisabled(elementRequest, node) || !node.isAttached()
@@ -212,7 +215,7 @@ public class StreamRequestHandler implements RequestHandler {
                         .registerActiveTransfer(transfer);
             }
         } finally {
-            session.unlock();
+            releaseLock.run();
         }
         try {
             elementRequest.getElementRequestHandler().handleRequest(
@@ -224,6 +227,12 @@ public class StreamRequestHandler implements RequestHandler {
                 transferRegistration.remove();
             }
         }
+    }
+
+    private static UI getOwnerUI(StateNode node) {
+        return node != null && node.getOwner() instanceof StateTree tree
+                ? tree.getUI()
+                : null;
     }
 
     private static boolean blockDisabled(

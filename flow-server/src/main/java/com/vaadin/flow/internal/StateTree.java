@@ -495,7 +495,7 @@ public class StateTree implements NodeOwner {
     private void checkHasLock() {
         VaadinSession session = uiInternals.getSession();
         if (session != null) {
-            session.checkHasLock();
+            session.checkHasUIAccess(uiInternals.getUI());
         }
     }
 

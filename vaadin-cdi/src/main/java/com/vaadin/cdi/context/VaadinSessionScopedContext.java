@@ -141,14 +141,16 @@ public class VaadinSessionScopedContext extends AbstractContext {
 
         /**
          * Checks whether the context is active, i.e. there is a current session
-         * and it is locked by the current thread.
+         * and it is locked by the current thread, or with UI locking the lock
+         * of one of its UIs is held, see {@link VaadinSession#hasAccess()}.
          *
          * @return {@code true} if the context is active, {@code false}
          *         otherwise
          */
         protected boolean isActive() {
             VaadinSession session = VaadinSession.getCurrent();
-            return session != null && session.hasLock();
+            return session != null
+                    && (session.hasLock() || session.hasAccess());
         }
 
         /**
@@ -167,11 +169,35 @@ public class VaadinSessionScopedContext extends AbstractContext {
                 Contextual<?> contextual, boolean createIfNotExist) {
             VaadinSession session = VaadinSession.getCurrentOrThrow();
             ContextualStorage storage = findContextualStorage(session);
-            if (storage == null && createIfNotExist) {
+            if (storage != null || !createIfNotExist) {
+                return storage;
+            }
+            if (!session.isUILockingEnabled()) {
                 storage = new ContextualStorage(beanManager, false, true);
                 session.setAttribute(ATTRIBUTE_NAME, storage);
+                return storage;
             }
-            return storage;
+            /*
+             * With UI locking, UIs of the session access the storage
+             * concurrently, and it must be created only once. Waiting for the
+             * session lock from a UI thread is allowed.
+             */
+            boolean lock = !session.hasLock();
+            if (lock) {
+                session.getLockInstance().lock();
+            }
+            try {
+                storage = findContextualStorage(session);
+                if (storage == null) {
+                    storage = new ContextualStorage(beanManager, true, true);
+                    session.setAttribute(ATTRIBUTE_NAME, storage);
+                }
+                return storage;
+            } finally {
+                if (lock) {
+                    session.getLockInstance().unlock();
+                }
+            }
         }
 
         private static ContextualStorage findContextualStorage(

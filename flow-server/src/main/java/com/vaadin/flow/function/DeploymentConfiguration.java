@@ -434,6 +434,28 @@ public interface DeploymentConfiguration
     }
 
     /**
+     * Checks whether UI state is protected by a lock per UI instead of the
+     * session lock.
+     * <p>
+     * When enabled, request handling and {@code UI.access} for a UI only lock
+     * that UI and never block on the session lock, so UIs of the same session
+     * are updated in parallel. Session state such as attributes stays
+     * accessible while holding a UI lock but is no longer protected against
+     * concurrent access from other UIs of the same session.
+     * <p>
+     * The setting is configured with
+     * {@link InitParameters#SERVLET_PARAMETER_UI_LOCKING}. By default, it
+     * returns {@code false}.
+     *
+     * @return {@code true} if UI locking is enabled, {@code false} if the
+     *         session lock is used
+     */
+    default boolean isUILockingEnabled() {
+        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_UI_LOCKING,
+                false);
+    }
+
+    /**
      * Checks whether the theme styles plain HTML elements, such as a
      * <code>&lt;table&gt;</code>, across the whole application.
      *

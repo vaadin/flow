@@ -135,7 +135,11 @@ public class UidlWriter implements Serializable {
 
         // Purge pending access calls as they might produce additional changes
         // to write out
-        service.runPendingAccessTasks(session);
+        if (session.isUILockingEnabled()) {
+            uiInternals.runPendingAccessTasks();
+        } else {
+            service.runPendingAccessTasks(session);
+        }
 
         if (ui.getSession() == null) {
             // A pending task destroyed the session and removed the UI from it,
