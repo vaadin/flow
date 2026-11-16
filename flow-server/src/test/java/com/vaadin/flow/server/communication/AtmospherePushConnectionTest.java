@@ -105,6 +105,8 @@ public class AtmospherePushConnectionTest {
             throws Exception {
         UI ui = connection.getUI();
         vaadinSession.runWithLock(() -> {
+            vaadinSession.setConfiguration(
+                    vaadinSession.getService().getDeploymentConfiguration());
             ui.doInit(Mockito.mock(VaadinRequest.class),
                     vaadinSession.getNextUIid(), "foo");
             vaadinSession.addUI(ui);

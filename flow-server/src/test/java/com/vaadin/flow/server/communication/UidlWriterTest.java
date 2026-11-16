@@ -208,6 +208,8 @@ public class UidlWriterTest {
             boolean async) throws Exception {
         MockVaadinSession session = new MockVaadinSession();
         ObjectNode response = session.runWithLock(() -> {
+            session.setConfiguration(
+                    session.getService().getDeploymentConfiguration());
             UI ui = new MockUI(session);
             ui.doInit(mock(VaadinRequest.class), session.getNextUIid(), "foo");
             session.addUI(ui);
