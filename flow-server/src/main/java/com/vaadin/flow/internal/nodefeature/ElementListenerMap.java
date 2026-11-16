@@ -807,8 +807,12 @@ public class ElementListenerMap extends NodeMap {
      * <li>For a filter expression, for example <code>event.key ===
      * 'Enter'</code>, the entry is the expression <code>(event.key ===
      * 'Enter') &amp;&amp; event.preventDefault()</code>. When the filter is a
-     * property path, the client reads that expression without compiling
-     * it.</li>
+     * property path, the client reads that expression without compiling it. The
+     * client recognizes the expression by its exact form, with
+     * <code>CONDITIONAL_SIDE_EFFECT</code> in
+     * <code>SimpleElementBindingStrategy.ts</code>, so the two must be changed
+     * together. Otherwise the client compiles the expression again, which a
+     * Content Security Policy without <code>unsafe-eval</code> blocks.</li>
      * <li>For a declared filter, or a filter that the build has put into the
      * bundle, the entry runs the filter and has the method as its side effect.
      * Nothing is made from strings, so no JavaScript is compiled in the
