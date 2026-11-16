@@ -215,6 +215,15 @@ public class AtmospherePushConnection
                 try {
                     JsonNode response = new UidlWriter().createUidl(getUI(),
                             async);
+                    if (!isConnected()) {
+                        // Creating the message ran pending tasks that
+                        // destroyed the session. Closing the UI already pushed
+                        // the session expired message, then detaching it
+                        // closed this connection.
+                        getLogger().debug(
+                                "Push connection closed while creating the message, not sending it");
+                        return;
+                    }
                     sendMessage("for(;;);[" + response + "]");
                 } catch (Exception e) {
                     throw new RuntimeException("Push failed", e);
