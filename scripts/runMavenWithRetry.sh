@@ -15,7 +15,9 @@
 # validation.yml), but when Central keeps refusing a runner for longer than
 # those retries last, the build stops before any test has run. Only a build
 # that such a transfer error stopped is retried here: a build that failed for
-# any other reason, such as a failing test, is reported as it is.
+# any other reason is reported as it is. With -fae the reactor goes on after
+# the module that hit the transfer error, so a build that also has failing
+# tests is reported as it is too, rather than rerun with those failures.
 
 set -u
 
@@ -42,6 +44,12 @@ while true; do
   # or when a download succeeded on one of the resolver's own retries.
   if ! tail -c +$((offset + 1)) "$LOG" \
       | grep -qE '^\[ERROR\].*Could not transfer (artifact|metadata)'; then
+    exit $status
+  fi
+  # Surefire and Failsafe log a test class with failures or errors at ERROR
+  # level; a passing or flaky one is logged at INFO or WARNING.
+  if tail -c +$((offset + 1)) "$LOG" \
+      | grep -qE '^\[ERROR\] Tests run:|There are test failures|There was a timeout'; then
     exit $status
   fi
   # A failed attempt can leave behind the application JVMs it started,
