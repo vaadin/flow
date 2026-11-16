@@ -900,12 +900,15 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     }
 
     @Test
-    fun testPluginEffectiveConfiguration_nodeFolderFromSystemProperty() {
+    fun testPluginEffectiveConfiguration_nodeFolderSystemPropertyOverridesBuildScript() {
         testProject.buildFile.writeText(
             """
             plugins {
                 id 'java'
                 id 'com.vaadin.flow'
+            }
+            vaadin {
+                nodeFolder = '/from/build/script'
             }
             afterEvaluate {
                 println("!!!effective.nodeFolder=" + vaadin.effective.nodeFolder.getOrNull() + "!!!")
