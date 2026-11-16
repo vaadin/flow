@@ -116,7 +116,9 @@ public class UidlWriter implements Serializable {
      *            false if it is a response to a client message
      * @param resync
      *            True iff the client should be asked to resynchronize
-     * @return JSON object containing the UIDL response
+     * @return JSON object containing the UIDL response, or a session expired
+     *         message if running the pending access tasks of the session
+     *         removed the UI from it, as destroying the session does
      * @since 2.1
      */
     public ObjectNode createUidl(UI ui, boolean async, boolean resync) {
@@ -130,6 +132,14 @@ public class UidlWriter implements Serializable {
         // Purge pending access calls as they might produce additional changes
         // to write out
         service.runPendingAccessTasks(session);
+
+        if (ui.getSession() == null) {
+            // A pending task destroyed the session and removed the UI from it,
+            // e.g. because another thread invalidated the HTTP session while
+            // this request held the session lock
+            return JacksonUtils
+                    .readTree(VaadinService.createSessionExpiredJSON(async));
+        }
 
         // Paints components
         getLogger().debug("* Creating response to client");
@@ -205,7 +215,9 @@ public class UidlWriter implements Serializable {
      * @param async
      *            True if this message is sent by the server asynchronously,
      *            false if it is a response to a client message.
-     * @return JSON object containing the UIDL response
+     * @return JSON object containing the UIDL response, or a session expired
+     *         message if running the pending access tasks of the session
+     *         removed the UI from it, as destroying the session does
      */
     public ObjectNode createUidl(UI ui, boolean async) {
         return createUidl(ui, async, false);
