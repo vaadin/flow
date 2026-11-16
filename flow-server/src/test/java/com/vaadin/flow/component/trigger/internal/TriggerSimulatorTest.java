@@ -146,6 +146,20 @@ class TriggerSimulatorTest {
                                 return inputJs.returnEvent();
                             }
                         }),
+                Arguments.of("TriggerJs.callChannel",
+                        (Function<TagComponent, Action>) other -> new CallbackAction(
+                                () -> {
+                                })),
+                Arguments.of("not a promise",
+                        (Function<TagComponent, Action>) other -> new PromiseAction<String>(
+                                String.class, value -> {
+                                }, error -> {
+                                }) {
+                            @Override
+                            protected JsFunction toPromiseJs(Trigger trigger) {
+                                return inputJs.returnValue("Hello");
+                            }
+                        }),
                 Arguments.of("compiled from a string",
                         (Function<TagComponent, Action>) other -> new Action() {
                             @Override
