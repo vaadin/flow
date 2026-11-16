@@ -204,9 +204,9 @@ public final class JsDefinitionProxy {
      * @return what the definition declares, not <code>null</code>
      * @throws IllegalArgumentException
      *             if the type is not an interface, is not annotated with
-     *             {@link JsDefinition}, is annotated with {@link JsCalledWith},
-     *             or has a method that does not fit what the definition
-     *             declares
+     *             {@link JsDefinition}, is annotated with
+     *             {@link JsFunctionParameterNames}, or has a method that does
+     *             not fit what the definition declares
      */
     public static Kind checkDefinition(Class<?> definitionType) {
         if (!definitionType.isInterface()) {
@@ -218,10 +218,11 @@ public final class JsDefinitionProxy {
                     + " is not annotated with @JsDefinition, so the build does not"
                     + " collect its JavaScript into the bundle");
         }
-        if (definitionType.isAnnotationPresent(JsCalledWith.class)) {
+        if (definitionType
+                .isAnnotationPresent(JsFunctionParameterNames.class)) {
             // Only the methods and the snippet types they return are read
             throw new IllegalArgumentException(definitionType.getName()
-                    + " is annotated with @JsCalledWith, which applies to a"
+                    + " is annotated with @JsFunctionParameterNames, which applies to a"
                     + " method that returns a JsSnippet or to a snippet type,"
                     + " not to a JavaScript definition. Annotate each method"
                     + " instead");
@@ -288,11 +289,12 @@ public final class JsDefinitionProxy {
                             + " when it is called");
                 }
                 // Throws for names the build can not generate a function with
-                JsCall.getCalledWithNames(method);
-            } else if (method.isAnnotationPresent(JsCalledWith.class)) {
+                JsCall.getFunctionParameterNames(method);
+            } else if (method
+                    .isAnnotationPresent(JsFunctionParameterNames.class)) {
                 throw new IllegalArgumentException(definitionType.getName()
                         + " has " + method.getName()
-                        + " annotated with @JsCalledWith, which only applies to"
+                        + " annotated with @JsFunctionParameterNames, which only applies to"
                         + " a method that returns a JsSnippet");
             }
         }

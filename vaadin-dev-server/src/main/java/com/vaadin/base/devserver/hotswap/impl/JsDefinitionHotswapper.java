@@ -30,10 +30,10 @@ import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.ReflectionCache;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Mode;
@@ -66,12 +66,12 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * takes have to match for an interface to pass silently.
  * <p>
  * A snippet type of the application, an interface that extends
- * {@link JsSnippet}, can declare with {@link JsCalledWith} what the functions
- * of the definition methods returning it are called with. Redefining such a
- * type changes the JavaScript of those definitions, so they are written again
- * or reported as if they had been redefined themselves. They are found among
- * the definitions the generated file names, which is every one a browser can
- * run.
+ * {@link JsSnippet}, can declare with {@link JsFunctionParameterNames} what the
+ * functions of the definition methods returning it are called with. Redefining
+ * such a type changes the JavaScript of those definitions, so they are written
+ * again or reported as if they had been redefined themselves. They are found
+ * among the definitions the generated file names, which is every one a browser
+ * can run.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  * 

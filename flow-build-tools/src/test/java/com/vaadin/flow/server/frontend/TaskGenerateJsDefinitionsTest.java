@@ -41,9 +41,9 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
@@ -93,14 +93,14 @@ class TaskGenerateJsDefinitionsTest {
     @JsDefinition
     public interface LoggerJs extends Serializable {
         @JsExpression(LOG_EXPRESSION)
-        @JsCalledWith("value")
+        @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
 
         @JsExpression(TICK_EXPRESSION)
         JsFunction createTicker(String label);
     }
 
-    @JsCalledWith({ "html", "item" })
+    @JsFunctionParameterNames({ "html", "item" })
     public interface TemplateSnippet extends JsSnippet {
     }
 
@@ -119,7 +119,7 @@ class TaskGenerateJsDefinitionsTest {
     @JsDefinition
     public interface InvalidNameJs extends Serializable {
         @JsExpression(LOG_EXPRESSION)
-        @JsCalledWith("class")
+        @JsFunctionParameterNames("class")
         JsFunction createLogger(String prefix);
     }
 

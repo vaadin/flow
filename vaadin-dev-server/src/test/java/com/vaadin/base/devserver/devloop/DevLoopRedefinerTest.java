@@ -44,9 +44,9 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.theme.Theme;
 
@@ -186,14 +186,14 @@ class DevLoopRedefinerTest {
     @JsDefinition
     interface LoggerJs extends Serializable {
         @JsExpression("console.log($0, value)")
-        @JsCalledWith("value")
+        @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
     interface RenamedParameterLoggerJs extends Serializable {
         @JsExpression("console.log($0, value)")
-        @JsCalledWith("message")
+        @JsFunctionParameterNames("message")
         JsFunction createLogger(String prefix);
     }
 
@@ -206,7 +206,7 @@ class DevLoopRedefinerTest {
     @JsDefinition
     interface InvalidNameLoggerJs extends Serializable {
         @JsExpression("console.log($0, value)")
-        @JsCalledWith("class")
+        @JsFunctionParameterNames("class")
         JsFunction createLogger(String prefix);
     }
 
@@ -266,11 +266,11 @@ class DevLoopRedefinerTest {
                 DevLoopRedefiner.frontendDependencies(UnwrappedLoggerJs.class));
     }
 
-    @JsCalledWith({ "html", "item" })
+    @JsFunctionParameterNames({ "html", "item" })
     interface TemplateSnippet extends JsSnippet {
     }
 
-    @JsCalledWith({ "html", "model" })
+    @JsFunctionParameterNames({ "html", "model" })
     interface RenamedParameterTemplateSnippet extends JsSnippet {
     }
 

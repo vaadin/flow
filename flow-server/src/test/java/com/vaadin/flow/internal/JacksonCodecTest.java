@@ -42,9 +42,9 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
 
@@ -222,7 +222,7 @@ class JacksonCodecTest {
     @JsDefinition
     interface LoggerJs extends Serializable {
         @JsExpression("console.log($0, value);")
-        @JsCalledWith("value")
+        @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
     }
 
@@ -244,7 +244,7 @@ class JacksonCodecTest {
         assertJsonEquals(expected, json);
     }
 
-    @JsCalledWith({ "html", "item" })
+    @JsFunctionParameterNames({ "html", "item" })
     interface TemplateSnippet extends JsSnippet {
     }
 

@@ -168,14 +168,14 @@ class JsDefinitionProxyTest {
     @JsDefinition
     interface LoggerJs extends Serializable {
         @JsExpression("console.log($0, value);")
-        @JsCalledWith("value")
+        @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
 
         @JsExpression("return (value) => console.log($0, value);")
         JsSnippet createSnippet(String prefix);
     }
 
-    @JsCalledWith({ "html", "item" })
+    @JsFunctionParameterNames({ "html", "item" })
     interface TemplateSnippet extends JsSnippet {
         // Allowed, as it is not something the snippet has to implement
         static String describe() {
@@ -241,9 +241,9 @@ class JsDefinitionProxyTest {
     }
 
     @JsDefinition
-    interface CalledWithInvalidNameJs extends Serializable {
+    interface FunctionParameterNamesInvalidNameJs extends Serializable {
         @JsExpression("console.log(value);")
-        @JsCalledWith("not-a-name")
+        @JsFunctionParameterNames("not-a-name")
         JsFunction createLogger();
     }
 
@@ -252,8 +252,8 @@ class JsDefinitionProxyTest {
     }
 
     @JsDefinition
-    @JsCalledWith("value")
-    interface CalledWithOnDefinitionJs extends Serializable {
+    @JsFunctionParameterNames("value")
+    interface FunctionParameterNamesOnDefinitionJs extends Serializable {
         @JsExpression("console.log(value);")
         JsFunction createLogger();
     }
@@ -261,7 +261,7 @@ class JsDefinitionProxyTest {
     @JsDefinition
     interface MixedJs extends Serializable {
         @JsExpression("console.log($0, value);")
-        @JsCalledWith("value")
+        @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
 
         @JsExpression("console.log($0);")
@@ -269,9 +269,9 @@ class JsDefinitionProxyTest {
     }
 
     @JsDefinition
-    interface CalledWithWhenRunJs extends Serializable {
+    interface FunctionParameterNamesWhenRunJs extends Serializable {
         @JsExpression("console.log(value);")
-        @JsCalledWith("value")
+        @JsFunctionParameterNames("value")
         void log();
     }
 
@@ -699,22 +699,23 @@ class JsDefinitionProxyTest {
     }
 
     @Test
-    void createSnippets_calledWithANameAFunctionCanNotDeclare_throws() {
+    void createSnippets_parameterNameAFunctionCanNotDeclare_throws() {
         // When the implementation is handed out, rather than when the snippet
         // is evaluated and the browser reports a syntax error
         assertThrows(IllegalArgumentException.class, () -> JsDefinitionProxy
-                .createSnippets(CalledWithInvalidNameJs.class));
+                .createSnippets(FunctionParameterNamesInvalidNameJs.class));
     }
 
     @Test
-    void checkDefinition_calledWithOnTheDefinition_throws() {
+    void checkDefinition_functionParameterNamesOnTheDefinition_throws() {
         // The names would otherwise be ignored, and the expression would fail
         // in the browser on the first call
         IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class, () -> JsDefinitionProxy
-                        .checkDefinition(CalledWithOnDefinitionJs.class));
+                IllegalArgumentException.class,
+                () -> JsDefinitionProxy.checkDefinition(
+                        FunctionParameterNamesOnDefinitionJs.class));
 
-        assertTrue(exception.getMessage().contains("@JsCalledWith"),
+        assertTrue(exception.getMessage().contains("@JsFunctionParameterNames"),
                 exception.getMessage());
     }
 
@@ -745,14 +746,14 @@ class JsDefinitionProxyTest {
     }
 
     @Test
-    void create_calledWithOnAMethodRunningJavaScript_throws() {
+    void create_functionParameterNamesOnAMethodRunningJavaScript_throws() {
         // A call runs the expression rather than a function around it, so the
         // names would never be declared
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> proxy(CalledWithWhenRunJs.class));
+                () -> proxy(FunctionParameterNamesWhenRunJs.class));
 
-        assertTrue(exception.getMessage().contains("@JsCalledWith"),
+        assertTrue(exception.getMessage().contains("@JsFunctionParameterNames"),
                 exception.getMessage());
     }
 
