@@ -86,6 +86,10 @@ final class Jvm {
      */
     record Platform(String os, String arch) {
 
+        private static final String MACOS = "macos";
+
+        private static final String WINDOWS = "windows";
+
         /** The platform the daemon itself runs on. */
         static Platform current() {
             return of(System.getProperty("os.name"),
@@ -121,7 +125,7 @@ final class Jvm {
                 return true;
             }
             String system = os != null ? os : host.os;
-            return "macos".equals(system) || "windows".equals(system);
+            return MACOS.equals(system) || WINDOWS.equals(system);
         }
 
         @Override
@@ -135,11 +139,11 @@ final class Jvm {
                 return null;
             }
             String lower = name.trim().toLowerCase(Locale.ROOT);
-            if (lower.startsWith("windows")) {
-                return "windows";
+            if (lower.startsWith(WINDOWS)) {
+                return WINDOWS;
             }
             if (lower.startsWith("mac") || lower.equals("darwin")) {
-                return "macos";
+                return MACOS;
             }
             return lower;
         }
@@ -323,29 +327,38 @@ final class Jvm {
         List<Path> seen = new ArrayList<>();
         for (Path home : homes) {
             Path real = Reactor.real(home);
-            if (seen.contains(real)) {
-                continue;
+            if (!seen.contains(real)) {
+                seen.add(real);
+                Jdk jdk = describe(real);
+                if (canRun(jdk, host, log)) {
+                    found.add(jdk);
+                }
             }
-            seen.add(real);
-            Jdk jdk = describe(real);
-            // Below the floor is not a candidate at all: it cannot load a class
-            // file Flow compiled, so ranking it would only ever produce an
-            // UnsupportedClassVersionError with a JVM the daemon chose itself.
-            if (jdk.feature() < FLOOR || !Files.isRegularFile(jdk.binary())) {
-                continue;
-            }
-            // A home directory shared with a machine of another platform - a
-            // container bind-mounting the host's - holds JVMs that cannot
-            // even be executed here, and the closest version is as likely to
-            // be one of those as not.
-            if (!jdk.platform().runsOn(host)) {
-                log.line("skipped " + jdk.describe() + ": built for "
-                        + jdk.platform() + ", this machine is " + host);
-                continue;
-            }
-            found.add(jdk);
         }
         return found;
+    }
+
+    /**
+     * Whether a discovered JVM can run the application on {@code host}, logging
+     * it when it is skipped for being built for another platform.
+     */
+    private static boolean canRun(Jdk jdk, Platform host, Launch.Log log) {
+        // Below the floor is not a candidate at all: it cannot load a class
+        // file Flow compiled, so ranking it would only ever produce an
+        // UnsupportedClassVersionError with a JVM the daemon chose itself.
+        if (jdk.feature() < FLOOR || !Files.isRegularFile(jdk.binary())) {
+            return false;
+        }
+        // A home directory shared with a machine of another platform - a
+        // container bind-mounting the host's - holds JVMs that cannot even be
+        // executed here, and the closest version is as likely to be one of
+        // those as not.
+        if (!jdk.platform().runsOn(host)) {
+            log.line("skipped " + jdk.describe() + ": built for "
+                    + jdk.platform() + ", this machine is " + host);
+            return false;
+        }
+        return true;
     }
 
     /**
