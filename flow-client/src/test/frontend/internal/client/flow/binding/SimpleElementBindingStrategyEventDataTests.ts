@@ -224,6 +224,37 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
       expect(harness.collectedNodes).to.have.length(1);
     });
 
+    ['preventDefault', 'stopPropagation'].forEach((method) => {
+      it(`calls ${method} only when a property path filter passes, without compiling it`, () => {
+        const filter = 'element.dataset.armed';
+        let parentCalls = 0;
+        const countParentCall = (): void => {
+          parentCalls += 1;
+        };
+        document.body.addEventListener('click', countParentCall);
+        try {
+          bindWithClickExpressions({ [filter]: true, [`(${filter}) && event.${method}()`]: false });
+
+          const notMatching = new MouseEvent('click', { bubbles: true, cancelable: true });
+          element.dispatchEvent(notMatching);
+          (element as HTMLElement).dataset.armed = 'yes';
+          const matching = new MouseEvent('click', { bubbles: true, cancelable: true });
+          element.dispatchEvent(matching);
+
+          if (method === 'preventDefault') {
+            expect(notMatching.defaultPrevented).to.be.false;
+            expect(matching.defaultPrevented).to.be.true;
+          } else {
+            // Only the event that did not match reaches the parent
+            expect(parentCalls).to.equal(1);
+          }
+          expect(harness.collectedNodes).to.have.length(1);
+        } finally {
+          document.body.removeEventListener('click', countParentCall);
+        }
+      });
+    });
+
     it('calls stopPropagation without compiling it', () => {
       let parentCalls = 0;
       const countParentCall = (): void => {
@@ -340,28 +371,18 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
     expect(warnings[0]).to.contain(`@EventData value or @DomEvent filter "${expression}"`);
   });
 
-  it('calls preventDefault only when a property path filter passes, without compiling', () => {
-    const filter = 'element.dataset.armed';
-    const originalFunction = globalThis.Function;
-    // As under a Content Security Policy without unsafe-eval
-    globalThis.Function = function blocked(): never {
-      throw new EvalError('blocked by the test');
-    } as unknown as FunctionConstructor;
-    try {
-      bindWithClickExpressions({ [filter]: true, [`(${filter}) && event.preventDefault()`]: false });
+  it('compiles a side effect conditional on a filter that is not a property path', () => {
+    const filter = 'element.dataset.armed === "yes"';
+    bindWithClickExpressions({ [filter]: true, [`(${filter}) && event.preventDefault()`]: false });
 
-      const notMatching = new MouseEvent('click', { bubbles: true, cancelable: true });
-      element.dispatchEvent(notMatching);
-      (element as HTMLElement).dataset.armed = 'yes';
-      const matching = new MouseEvent('click', { bubbles: true, cancelable: true });
-      element.dispatchEvent(matching);
+    const notMatching = new MouseEvent('click', { bubbles: true, cancelable: true });
+    element.dispatchEvent(notMatching);
+    (element as HTMLElement).dataset.armed = 'yes';
+    const matching = new MouseEvent('click', { bubbles: true, cancelable: true });
+    element.dispatchEvent(matching);
 
-      expect(notMatching.defaultPrevented).to.be.false;
-      expect(matching.defaultPrevented).to.be.true;
-      expect(harness.collectedNodes).to.have.length(1);
-    } finally {
-      globalThis.Function = originalFunction;
-    }
+    expect(notMatching.defaultPrevented).to.be.false;
+    expect(matching.defaultPrevented).to.be.true;
   });
 
   it('runs a declared snippet with its captures, the event and the element', () => {
