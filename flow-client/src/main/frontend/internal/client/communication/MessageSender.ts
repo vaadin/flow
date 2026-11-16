@@ -345,10 +345,6 @@ export class MessageSender {
   #scheduleResend(payload: Payload): void {
     const timeout = this.#registry.getApplicationConfiguration().getMaxMessageSuspendTimeout() + 500;
     this.#resendMessageTimer = setTimeout(() => {
-      if (this.#registry.getUILifecycle().isTerminated()) {
-        this.#resendMessageTimer = null;
-        return;
-      }
       this.#scheduleResend(payload);
       // Avoid re-sending while a request is still in progress; if the response
       // has not been processed, the reconnection-attempt listener resends.
