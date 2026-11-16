@@ -221,6 +221,7 @@ public class SpringAccessPathChecker
      * @param requestTransformer
      *            transforms the request built for the path before matching the
      *            filter chains, not {@literal null}
+     * @since 25.4
      */
     public SpringAccessPathChecker(WebInvocationPrivilegeEvaluator evaluator,
             String urlMapping,
@@ -248,6 +249,7 @@ public class SpringAccessPathChecker
      *
      * @param servletContext
      *            the servlet context
+     * @since 25.4
      */
     @Override
     public void setServletContext(ServletContext servletContext) {

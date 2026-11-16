@@ -192,6 +192,7 @@ public class ElementListenerMap extends NodeMap {
      *            data of an {@link com.vaadin.flow.dom.Element};
      *            <code>false</code> otherwise
      * @see #getSnippetEntries(String)
+     * @since 25.4
      */
     public record SnippetEntry(String key, JsCall call,
             @Nullable String sideEffect, boolean filter,
@@ -617,6 +618,7 @@ public class ElementListenerMap extends NodeMap {
      * @return <code>true</code> if the client compiles the event data with
      *         <code>new Function</code>, which a content security policy
      *         without <code>unsafe-eval</code> does not allow
+     * @since 25.4
      */
     public static boolean isCompiledByClient(String eventData) {
         String expression = eventData
@@ -960,6 +962,7 @@ public class ElementListenerMap extends NodeMap {
      *            the name of the event, not <code>null</code>
      * @return an unmodifiable set of the declared snippets, not
      *         <code>null</code>
+     * @since 25.4
      */
     public Set<SnippetEntry> getSnippetEntries(String eventName) {
         Objects.requireNonNull(eventName, "Event name cannot be null");
@@ -980,6 +983,7 @@ public class ElementListenerMap extends NodeMap {
      *            the expression to check, not <code>null</code>
      * @return <code>true</code> if the expression is a property path,
      *         <code>false</code> otherwise
+     * @since 25.4
      */
     public static boolean isPropertyPath(String expression) {
         return PROPERTY_PATH.matcher(expression).matches();
@@ -1005,6 +1009,7 @@ public class ElementListenerMap extends NodeMap {
      * @throws com.vaadin.flow.server.CspViolationException
      *             in the {@link com.vaadin.flow.server.CspMode#STRICT} Content
      *             Security Policy mode, if any value is compiled by the browser
+     * @since 25.4
      */
     @SuppressWarnings("deprecation")
     public static void addEventData(DomListenerRegistration registration,
@@ -1031,6 +1036,7 @@ public class ElementListenerMap extends NodeMap {
      * @param eventData
      *            the keys of the event data, not <code>null</code> and not
      *            containing <code>null</code>
+     * @since 25.4
      */
     public static void addEventDataWithoutCspReport(
             DomListenerRegistration registration, List<String> eventData) {
@@ -1055,6 +1061,7 @@ public class ElementListenerMap extends NodeMap {
      * @param eventData
      *            the event data values, not <code>null</code> and not
      *            containing <code>null</code>
+     * @since 25.4
      */
     public static void addBundledEventData(DomListenerRegistration registration,
             List<String> eventData) {
@@ -1072,6 +1079,7 @@ public class ElementListenerMap extends NodeMap {
      * @param eventData
      *            the event data, not <code>null</code>
      * @return the key of the value, not <code>null</code>
+     * @since 25.4
      */
     public static String getEventDataKey(DomEventData<?> eventData) {
         Objects.requireNonNull(eventData, "Event data cannot be null");

@@ -70,6 +70,7 @@ import com.vaadin.flow.server.VaadinSession;
  *
  * @param <T>
  *            the type of the value of a successful execution
+ * @since 25.4
  */
 public interface JavaScriptResult<T> extends Serializable {
 

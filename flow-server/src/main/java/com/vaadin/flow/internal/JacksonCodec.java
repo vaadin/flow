@@ -323,6 +323,7 @@ public class JacksonCodec {
      *             that the value is not, such as an object node for an array
      * @throws NullPointerException
      *             if the JSON value or the type is {@code null}
+     * @since 25.4
      */
     @SuppressWarnings("unchecked")
     public static <T> T decodeAs(JsonNode json, JavaType type) {
