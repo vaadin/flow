@@ -54,7 +54,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -64,10 +63,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.WarURLStreamHandlerFactory;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.TestUtil;
@@ -89,6 +93,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -572,7 +577,7 @@ class StaticFileServerTest implements Serializable {
                         return new Result(null);
                     };
                     return callable;
-                }).collect(Collectors.toList());
+                }).toList();
 
         ExecutorService executor = Executors.newFixedThreadPool(THREADS);
         List<Future<Result>> futures = executor.invokeAll(folderNotResource);
@@ -624,7 +629,7 @@ class StaticFileServerTest implements Serializable {
                         return new Result(null);
                     };
                     return callable;
-                }).collect(Collectors.toList());
+                }).toList();
 
         executor = Executors.newFixedThreadPool(THREADS);
         futures = executor.invokeAll(fileIsResource);
@@ -679,6 +684,59 @@ class StaticFileServerTest implements Serializable {
                 }));
 
         assertFalse(fileServer.serveStaticResource(request, response));
+    }
+
+    @Test
+    void serveStaticResource_directoryUnderVaadinInDevMode_servedByDevServer()
+            throws Exception {
+        DevModeHandler devModeHandler = setupDevModeHandler();
+        setupRequestURI("", "", "/VAADIN/__checker/");
+        when(devModeHandler.serveDevModeRequest(request, response))
+                .thenReturn(true);
+
+        assertTrue(fileServer.serveStaticResource(request, response));
+        verify(devModeHandler).serveDevModeRequest(request, response);
+    }
+
+    @Test
+    void serveStaticResource_directoryUnderVaadinNotOnDevServer_notServed()
+            throws Exception {
+        DevModeHandler devModeHandler = setupDevModeHandler();
+        setupRequestURI("", "", "/VAADIN/folder/");
+        when(servletService.getStaticResource("/VAADIN/folder/")).thenReturn(
+                createFileURLWithDataAndLength("/VAADIN/folder", "content"));
+
+        assertFalse(fileServer.serveStaticResource(request, response));
+        verify(devModeHandler).serveDevModeRequest(request, response);
+        verify(response, never()).setContentLengthLong(anyLong());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "/VAADIN/", "/folder/" })
+    void serveStaticResource_otherDirectoryInDevMode_notSentToDevServer(
+            String pathInfo) throws Exception {
+        DevModeHandler devModeHandler = setupDevModeHandler();
+        setupRequestURI("", "", pathInfo);
+
+        assertFalse(fileServer.serveStaticResource(request, response));
+        verify(devModeHandler, never()).serveDevModeRequest(request, response);
+    }
+
+    private DevModeHandler setupDevModeHandler() {
+        DevModeHandler devModeHandler = mock(DevModeHandler.class);
+        DevModeHandlerManager devModeHandlerManager = mock(
+                DevModeHandlerManager.class);
+        when(devModeHandlerManager.getDevModeHandler())
+                .thenReturn(devModeHandler);
+        Lookup lookup = mock(Lookup.class);
+        when(lookup.lookup(DevModeHandlerManager.class))
+                .thenReturn(devModeHandlerManager);
+        VaadinContext context = mock(VaadinContext.class);
+        when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        when(servletService.getContext()).thenReturn(context);
+        fileServer = new OverrideableStaticFileServer(servletService,
+                configuration);
+        return devModeHandler;
     }
 
     @Test

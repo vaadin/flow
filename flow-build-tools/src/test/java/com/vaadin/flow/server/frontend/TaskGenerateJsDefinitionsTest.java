@@ -18,21 +18,36 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.internal.BundledEventData;
+import com.vaadin.flow.component.internal.PrebuiltEventData;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.dom.DomEventFilter;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
+import com.vaadin.flow.shared.JsonConstants;
 
 import static com.vaadin.flow.internal.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
@@ -52,6 +67,18 @@ class TaskGenerateJsDefinitionsTest {
 
     private static final String SHOUT_EXPRESSION = "window.alert([$0, ...$1].join(' '))";
 
+    private static final String LOG_EXPRESSION = "console.log($0, value);";
+
+    private static final String TICK_EXPRESSION = "console.log($0, Date.now());";
+
+    private static final String KEY_EXPRESSION = "return event.key === $0;";
+
+    private static final String TEMPLATE_EXPRESSION = "return html`${$0}: ${item.name}`;";
+
+    private static final String SNIPPETS_REGISTRY = "window.Vaadin.Flow.jsSnippets = window.Vaadin.Flow.jsSnippets || {};";
+
+    private static final String CONTEXT_REGISTRY = "window.Vaadin.Flow.jsDefinitionsWithExecutionContext = window.Vaadin.Flow.jsDefinitionsWithExecutionContext || {};";
+
     private static final String NAMES_REGISTRY = "window.Vaadin.Flow.jsDefinitionNames = window.Vaadin.Flow.jsDefinitionNames || {};";
 
     @JsDefinition
@@ -61,6 +88,39 @@ class TaskGenerateJsDefinitionsTest {
 
         @JsExpression("window.alert('Hello')")
         void showGreeting();
+    }
+
+    @JsDefinition
+    public interface LoggerJs extends Serializable {
+        @JsExpression(LOG_EXPRESSION)
+        @JsFunctionParameterNames("value")
+        JsFunction createLogger(String prefix);
+
+        @JsExpression(TICK_EXPRESSION)
+        JsFunction createTicker(String label);
+    }
+
+    @JsFunctionParameterNames({ "html", "item" })
+    public interface TemplateSnippet extends JsSnippet {
+    }
+
+    @JsDefinition
+    public interface TemplateJs extends Serializable {
+        @JsExpression(TEMPLATE_EXPRESSION)
+        TemplateSnippet label(String prefix);
+    }
+
+    @JsDefinition
+    public interface EventJs extends Serializable {
+        @JsExpression(KEY_EXPRESSION)
+        DomEventFilter isKey(String key);
+    }
+
+    @JsDefinition
+    public interface InvalidNameJs extends Serializable {
+        @JsExpression(LOG_EXPRESSION)
+        @JsFunctionParameterNames("class")
+        JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
@@ -78,6 +138,71 @@ class TaskGenerateJsDefinitionsTest {
     public interface ShouterJs extends Serializable {
         @JsExpression(SHOUT_EXPRESSION)
         void shout(String greeting, Object... names);
+    }
+
+    @JsDefinition
+    public interface StopperJs extends Serializable {
+        @JsExpression(GREETING_EXPRESSION)
+        @JsWithExecutionContext
+        void stop(String greeting);
+
+        @JsExpression("$executionContext.stopApplication()")
+        @JsWithExecutionContext
+        void stop();
+    }
+
+    private static final String OFFSET_EXPRESSION = "event.clientX - element.getBoundingClientRect().left";
+
+    @DomEvent(value = "offset", filter = "event.isTrusted")
+    public static class OffsetEvent extends ComponentEvent<Component> {
+        public OffsetEvent(Component source, boolean fromClient,
+                @EventData(OFFSET_EXPRESSION) double offset,
+                @EventData("event.clientX") double clientX,
+                @EventData("event.composedPath()[0]") Element target) {
+            super(source, fromClient);
+        }
+    }
+
+    private static final String COMMENTED_EXPRESSION = "event.clientY // y\n + 1";
+
+    private static final String FILTER = "event.button === 2";
+
+    @DomEvent(value = "other-offset", filter = FILTER)
+    public static class OtherOffsetEvent extends ComponentEvent<Component> {
+        public OtherOffsetEvent(Component source, boolean fromClient,
+                @EventData(OFFSET_EXPRESSION) double offset,
+                @EventData(COMMENTED_EXPRESSION) double commented) {
+            super(source, fromClient);
+        }
+    }
+
+    /**
+     * Listened to as a DOM event through the annotation of its superclass.
+     */
+    public static class InheritingOffsetEvent extends OffsetEvent {
+        public InheritingOffsetEvent(Component source, boolean fromClient,
+                @EventData(INHERITING_EXPRESSION) double offset) { // NOSONAR
+            super(source, fromClient, 0, 0, null);
+        }
+    }
+
+    private static final String INHERITING_EXPRESSION = "event.pageX - 1";
+
+    @DomEvent("no-dom-event-constructor")
+    public static class NoDomEventConstructorEvent
+            extends ComponentEvent<Component> {
+        public NoDomEventConstructorEvent(Component source) {
+            super(source, false);
+        }
+    }
+
+    @DomEvent("prebuilt")
+    @PrebuiltEventData
+    public static class PrebuiltEvent extends ComponentEvent<Component> {
+        public PrebuiltEvent(Component source, boolean fromClient,
+                @EventData("values[0]") String value) {
+            super(source, fromClient);
+        }
     }
 
     @TempDir
@@ -136,6 +261,249 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @Test
+    void executionContextMethod_registersAFunctionTakingTheContextFirst()
+            throws NoSuchMethodException {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(StopperJs.class), false);
+
+        assertTrue(content.contains(CONTEXT_REGISTRY),
+                "the registry the function is assigned into has to be there, or the module throws: "
+                        + content);
+        assertTrue(content.contains(
+                "window.Vaadin.Flow.jsDefinitionsWithExecutionContext[\""
+                        + JsCall.functionId(
+                                StopperJs.class.getMethod("stop", String.class))
+                        + "\"] = async function ($executionContext, $0) {"),
+                "the context should lead the arguments of the call: "
+                        + content);
+        assertTrue(content.contains(
+                "window.Vaadin.Flow.jsDefinitionsWithExecutionContext[\""
+                        + JsCall.functionId(StopperJs.class.getMethod("stop"))
+                        + "\"] = async function ($executionContext) {"),
+                "a method without arguments should take only the context: "
+                        + content);
+        assertFalse(content.contains("jsDefinitions[\""),
+                "the client tells a function that gets the context by the registry it is in: "
+                        + content);
+    }
+
+    @Test
+    void snippetMethod_registersASynchronousFunctionOfTheCaptures()
+            throws NoSuchMethodException {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(LoggerJs.class), false);
+        String separator = System.lineSeparator();
+
+        assertTrue(content.contains(SNIPPETS_REGISTRY),
+                "the registry a snippet is assigned into has to be there, or the module throws: "
+                        + content);
+        assertTrue(
+                content.contains(String.join(separator,
+                        "window.Vaadin.Flow.jsSnippets[\""
+                                + JsCall.functionId(LoggerJs.class.getMethod(
+                                        "createLogger", String.class))
+                                + "\"] = function ($0) {",
+                        "  return function (value) {", LOG_EXPRESSION, "  };",
+                        "};")),
+                "the expression should be the body of a function of the declared parameters, returned by one of the captures: "
+                        + content);
+        String tickerId = JsCall.functionId(
+                LoggerJs.class.getMethod("createTicker", String.class));
+        assertTrue(
+                content.contains(String.join(separator,
+                        "window.Vaadin.Flow.jsSnippets[\"" + tickerId
+                                + "\"] = function ($0) {",
+                        "  return function () {", TICK_EXPRESSION, "  };",
+                        "};")),
+                "without declared parameters the expression should be the body of a function without parameters: "
+                        + content);
+        assertFalse(content.contains("jsDefinitions[\""),
+                "a snippet is not run by a call: " + content);
+    }
+
+    @Test
+    void domEventSnippet_isCalledWithTheNamesItsTypeDeclares()
+            throws NoSuchMethodException {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(EventJs.class), false);
+
+        assertTrue(
+                content.contains(String.join(System.lineSeparator(),
+                        "window.Vaadin.Flow.jsSnippets[\""
+                                + JsCall.functionId(EventJs.class
+                                        .getMethod("isKey", String.class))
+                                + "\"] = function ($0) {",
+                        "  return function (event, element) {", KEY_EXPRESSION,
+                        "  };", "};")),
+                "a DOM event filter should be a function of the event and the element: "
+                        + content);
+    }
+
+    @Test
+    void snippetTypeOfTheApplication_isCalledWithTheNamesItsTypeDeclares()
+            throws NoSuchMethodException {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(TemplateJs.class), false);
+
+        assertTrue(
+                content.contains(String.join(System.lineSeparator(),
+                        "window.Vaadin.Flow.jsSnippets[\""
+                                + JsCall.functionId(TemplateJs.class
+                                        .getMethod("label", String.class))
+                                + "\"] = function ($0) {",
+                        "  return function (html, item) {", TEMPLATE_EXPRESSION,
+                        "  };", "};")),
+                "a snippet type that is not Flow's own should be generated like one of Flow's: "
+                        + content);
+    }
+
+    @Test
+    void domEventClass_registersASnippetPerEventDataTheClientWouldCompile() {
+        String functionId = BundledEventData.getFunctionId(OFFSET_EXPRESSION);
+        Options withEvents = new Options(mock(Lookup.class),
+                // An event that can not be listened to is left out without
+                // failing the build
+                new DefaultClassFinder(Set.of(OffsetEvent.class,
+                        OtherOffsetEvent.class, PrebuiltEvent.class,
+                        NoDomEventConstructorEvent.class)),
+                null).withFrontendDirectory(frontendFolder)
+                .withProductionMode(false);
+        String content = new TaskGenerateJsDefinitions(withEvents)
+                .getFileContent();
+        String function = String.join(System.lineSeparator(),
+                "window.Vaadin.Flow.jsSnippets[\"" + functionId
+                        + "\"] = function () {",
+                "  return function (event, element) {", "    return (",
+                OFFSET_EXPRESSION, "    );", "  };", "};");
+
+        assertTrue(content.contains(function),
+                "the value should be a function of the event and the element, under the identifier the server sends: "
+                        + content);
+        assertEquals(content.indexOf(function), content.lastIndexOf(function),
+                "a value that two events declare should be registered once: "
+                        + content);
+        assertTrue(
+                content.contains("window.Vaadin.Flow.jsDefinitionNames[\""
+                        + functionId + "\"] = \"" + OffsetEvent.class.getName()
+                        + " @EventData(\\\"" + OFFSET_EXPRESSION + "\\\")\";"),
+                "a development bundle should name what declared the value: "
+                        + content);
+        String commentedId = BundledEventData
+                .getFunctionId(COMMENTED_EXPRESSION);
+        assertTrue(
+                content.contains(
+                        String.join(System.lineSeparator(), "    return (",
+                                "event.clientY // y", " + 1", "    );")),
+                "a value ending with a comment should not comment out what closes it: "
+                        + content);
+        assertTrue(content.contains("window.Vaadin.Flow.jsDefinitionNames[\""
+                + commentedId + "\"] = \"" + OtherOffsetEvent.class.getName()
+                + " @EventData(\\\"event.clientY // y\\n + 1\\\")\";"),
+                "the name of a value on several lines should stay on one line: "
+                        + content);
+        assertFalse(content.contains("event.clientX" + System.lineSeparator()),
+                "the client reads a property path without compiling it: "
+                        + content);
+        String filterId = BundledEventData.getFunctionId(FILTER);
+        assertTrue(
+                content.contains(String.join(System.lineSeparator(),
+                        "window.Vaadin.Flow.jsSnippets[\"" + filterId
+                                + "\"] = function () {",
+                        "  return function (event, element) {", "    return (",
+                        FILTER, "    );")),
+                "a filter should be a function like event data: " + content);
+        assertTrue(content.contains("window.Vaadin.Flow.jsDefinitionNames[\""
+                + filterId + "\"] = \"" + OtherOffsetEvent.class.getName()
+                + " @DomEvent(filter = \\\"" + FILTER + "\\\")\";"),
+                "a development bundle should name what declared the filter: "
+                        + content);
+        assertFalse(content.contains("event.isTrusted"),
+                "the client reads a filter that is a property path without compiling it: "
+                        + content);
+        // The client maps what the function of a value of an element returns
+        // to a state node, so the function is the expression without the
+        // prefix, shared with the same expression used as a plain value
+        String mappedId = BundledEventData
+                .getFunctionId(JsonConstants.MAP_STATE_NODE_EVENT_DATA
+                        + "event.composedPath()[0]");
+        assertEquals(BundledEventData.getFunctionId("event.composedPath()[0]"),
+                mappedId);
+        assertTrue(
+                content.contains(String.join(System.lineSeparator(),
+                        "window.Vaadin.Flow.jsSnippets[\"" + mappedId
+                                + "\"] = function () {",
+                        "  return function (event, element) {", "    return (",
+                        "event.composedPath()[0]", "    );")),
+                "a value of an element should be a function of its expression: "
+                        + content);
+        assertFalse(
+                content.contains(JsonConstants.MAP_STATE_NODE_EVENT_DATA
+                        + "event.composedPath()"),
+                "the prefix of a value of an element is not JavaScript: "
+                        + content);
+        assertFalse(content.contains("values[0]"),
+                "the event data of a prebuilt event are keys, not JavaScript: "
+                        + content);
+    }
+
+    @Test
+    void domEventSubclass_inheritingTheAnnotation_registersItsEventData() {
+        // Like the class finder of a build, which reports only the classes an
+        // annotation is written on
+        DefaultClassFinder declaredOnly = new DefaultClassFinder(
+                Set.of(OffsetEvent.class, InheritingOffsetEvent.class)) {
+            @Override
+            public Set<Class<?>> getAnnotatedClasses(
+                    Class<? extends Annotation> annotation) {
+                return super.getAnnotatedClasses(annotation).stream().filter(
+                        type -> type.getDeclaredAnnotation(annotation) != null)
+                        .collect(Collectors.toSet());
+            }
+        };
+        String content = new TaskGenerateJsDefinitions(
+                new Options(mock(Lookup.class), declaredOnly, null)
+                        .withFrontendDirectory(frontendFolder)
+                        .withProductionMode(true))
+                .getFileContent();
+
+        assertTrue(content.contains("window.Vaadin.Flow.jsSnippets[\""
+                + BundledEventData.getFunctionId(INHERITING_EXPRESSION)
+                + "\"]"), content);
+    }
+
+    @Test
+    void domEventClass_productionMode_namesNothingOfTheJava() {
+        Options production = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(OffsetEvent.class)), null)
+                .withFrontendDirectory(frontendFolder).withProductionMode(true);
+        String content = new TaskGenerateJsDefinitions(production)
+                .getFileContent();
+
+        assertTrue(content.contains("window.Vaadin.Flow.jsSnippets[\""
+                + BundledEventData.getFunctionId(OFFSET_EXPRESSION) + "\"]"),
+                "the value should still be in the bundle: " + content);
+        assertFalse(content.contains(OffsetEvent.class.getName()),
+                "a production bundle should not tell a browser what declared the value: "
+                        + content);
+    }
+
+    @Test
+    void definitionThatCanNotWork_isLeftOutWithoutFailingTheBuild()
+            throws NoSuchMethodException {
+        // A bad name would be a syntax error that breaks every function in
+        // the module, and the definition may be in an add-on that the
+        // application can not fix, so it is left out and fails when used
+        String content = TaskGenerateJsDefinitions.renderFileContent(
+                List.of(InvalidNameJs.class, LoggerJs.class), false);
+
+        assertFalse(content.contains("function (class)"), content);
+        assertTrue(
+                content.contains(JsCall.functionId(LoggerJs.class
+                        .getMethod("createLogger", String.class))),
+                "the other definitions should still be generated: " + content);
+    }
+
+    @Test
     void generatedFile_developmentMode_namesWhatDeclaredTheJavaScript()
             throws ExecutionFailedException {
         // Which is what a message about a call says instead of a hash, and is
@@ -185,6 +553,38 @@ class TaskGenerateJsDefinitionsTest {
                 written.contains(
                         JsCall.functionId(GREETING_EXPRESSION, 1, false)),
                 "and what the file held should still be in it: " + written);
+    }
+
+    @Test
+    void updateJsDefinitions_intoAFileWithoutTheirRegistries_addsThem()
+            throws IOException {
+        // A file that a build wrote before snippets and functions that get
+        // the execution context were generated at all
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+        generated.getParentFile().mkdirs();
+        Files.writeString(generated.toPath(), TaskGenerateJsDefinitions
+                .renderFileContent(List.of(GreeterJs.class), true)
+                .replace(SNIPPETS_REGISTRY + System.lineSeparator(), "")
+                .replace(CONTEXT_REGISTRY + System.lineSeparator(), ""));
+
+        TaskGenerateJsDefinitions.updateJsDefinitions(options,
+                List.of(LoggerJs.class, StopperJs.class));
+
+        String written = Files.readString(generated.toPath());
+        assertTrue(written.contains(SNIPPETS_REGISTRY),
+                "the registry should be added to a file that has none: "
+                        + written);
+        assertTrue(
+                written.indexOf(SNIPPETS_REGISTRY) < written
+                        .indexOf("window.Vaadin.Flow.jsSnippets[\""),
+                "and it should come before the snippets it holds: " + written);
+        assertTrue(written.indexOf(CONTEXT_REGISTRY) >= 0
+                && written.indexOf(CONTEXT_REGISTRY) < written.indexOf(
+                        "window.Vaadin.Flow.jsDefinitionsWithExecutionContext[\""),
+                "the registry of functions that get the context should be added before them: "
+                        + written);
     }
 
     @Test

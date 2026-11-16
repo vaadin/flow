@@ -18,7 +18,6 @@ package com.vaadin.flow.data.provider;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -100,7 +99,7 @@ public abstract class DataProviderTestBase<D extends DataProvider<StrBean, Seria
         List<StrBean> list = dataProvider
                 .fetch(createQuery(QuerySortOrder.asc("value")
                         .thenAsc("randomNumber").thenAsc("id").build(), comp))
-                .collect(Collectors.toList());
+                .toList();
 
         // First value in data is { Xyz, 10, 100 } which should be last in list
         assertNotEquals(data.get(0), list.get(0),
@@ -124,7 +123,7 @@ public abstract class DataProviderTestBase<D extends DataProvider<StrBean, Seria
         List<StrBean> list = dataProvider
                 .fetch(createQuery(QuerySortOrder.asc("randomNumber").build(),
                         Comparator.comparing(StrBean::getRandomNumber)))
-                .collect(Collectors.toList());
+                .toList();
 
         assertEquals(data.size(), list.size(),
                 "Sorted data and original data sizes don't match");
@@ -152,8 +151,7 @@ public abstract class DataProviderTestBase<D extends DataProvider<StrBean, Seria
         setSortOrder(QuerySortOrder.asc("value").build(),
                 Comparator.comparing(StrBean::getValue));
 
-        List<StrBean> list = dataProvider.fetch(new Query<>())
-                .collect(Collectors.toList());
+        List<StrBean> list = dataProvider.fetch(new Query<>()).toList();
 
         assertEquals(data.size(), list.size(),
                 "Sorted data and original data sizes don't match");

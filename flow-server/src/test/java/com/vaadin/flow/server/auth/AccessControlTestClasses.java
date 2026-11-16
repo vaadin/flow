@@ -28,6 +28,7 @@ import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RoutePrefix;
@@ -502,6 +503,14 @@ public class AccessControlTestClasses {
 
     @Tag(Tag.DIV)
     public static class NoPermitParent extends Component
+            implements RouterLayout {
+    }
+
+    @Tag(Tag.DIV)
+    @Layout
+    @PermitAll
+    @ParentLayout(NoPermitParent.class)
+    public static class PermitAllLayoutInNoPermitParent extends Component
             implements RouterLayout {
     }
 

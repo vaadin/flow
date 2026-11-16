@@ -52,6 +52,9 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
   #scheduledReconnect: ReturnType<typeof setTimeout> | null = null;
 
+  // How many times a receive-only websocket was closed since it was last open.
+  #websocketClosesSinceOpen = 0;
+
   /**
    * Creates a new instance connected to the given registry.
    *
@@ -82,6 +85,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
   // --- ConnectionStateHandler: xhr ---
 
   xhrException(xhrConnectionError: XhrConnectionError): void {
+    this.#registry.getMessageSender().failAttempt(xhrConnectionError.getPayload(), { reason: 'network' });
     this.#machine.handleRecoverableError(ConnectionMessageType.XHR, xhrConnectionError.getPayload());
   }
 
@@ -214,6 +218,14 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
   }
 
   xhrInvalidContent(xhrConnectionError: XhrConnectionError): void {
+    // The request is not retried.
+    const messageSender = this.#registry.getMessageSender();
+    const payload = xhrConnectionError.getPayload();
+    messageSender.failAttempt(payload, {
+      reason: 'invalid-response',
+      status: xhrConnectionError.getXhr().status
+    });
+    messageSender.settleRequest(payload, 'discarded');
     this.#registry.getRequestResponseTracker().endRequest();
     const responseText = xhrConnectionError.getXhr().responseText;
     if (!this.#redirectIfRefreshToken(responseText)) {
@@ -229,6 +241,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
       // We can't be sure that what was pushed was actually a response but at
       // this point it should not really matter, as something is seriously
       // broken.
+      this.#registry.getMessageSender().failPushAttempt({ reason: 'invalid-response' });
       this.#registry.getRequestResponseTracker().endRequest();
     }
     if (!this.#redirectIfRefreshToken(message)) {
@@ -239,8 +252,16 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
   xhrInvalidStatusCode(xhrConnectionError: XhrConnectionError): void {
     const statusCode = xhrConnectionError.getXhr().status;
     Console.warn(`Server returned ${statusCode} for xhr`);
+    const messageSender = this.#registry.getMessageSender();
+    const payload = xhrConnectionError.getPayload();
+    // A request that got no response at all completes with status 0.
+    messageSender.failAttempt(
+      payload,
+      statusCode === 0 ? { reason: 'network' } : { reason: 'http', status: statusCode }
+    );
     if (statusCode === SC_UNAUTHORIZED) {
       // Authentication/authorization failed, no need to re-try
+      messageSender.settleRequest(payload, 'rejected');
       this.#registry.getRequestResponseTracker().endRequest();
       this.handleUnauthorized(xhrConnectionError);
     } else {
@@ -300,6 +321,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
   // --- ConnectionStateHandler: push ---
 
   pushOk(pushConnection: PushConnection): void {
+    this.#websocketClosesSinceOpen = 0;
     if (this.#machine.isReconnecting()) {
       this.#machine.resolveTemporaryError(ConnectionMessageType.PUSH);
       if (this.#registry.getRequestResponseTracker().hasActiveRequest()) {
@@ -320,6 +342,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
   }
 
   pushNotConnected(payload: Record<string, unknown>): void {
+    this.#registry.getMessageSender().failAttempt(payload, { reason: 'network' });
     this.#machine.handleRecoverableError(ConnectionMessageType.PUSH, payload);
   }
 
@@ -327,8 +350,28 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
     Console.debug('Reopening push connection');
     if (pushConnection.isBidirectional()) {
       // Lost connection for a connection which will tell us when the connection
-      // is available again
+      // is available again. A message pushed before has to be sent again.
+      this.#registry.getMessageSender().failPushAttempt({ reason: 'network' });
       this.#machine.handleRecoverableError(ConnectionMessageType.PUSH, null);
+    } else if (pushConnection.getTransportType() === 'websocket') {
+      // A websocket that only receives, with messages to the server sent over
+      // XHR. The server also closes it on purpose, e.g. when logging out
+      // invalidates the session and the page is about to navigate away, so
+      // the connection is checked only if reopening the websocket fails as
+      // well. Atmosphere reports each close once, before it tries to reopen
+      // the websocket, and a successful reopen reaches pushOk. The check is a
+      // heartbeat, as messages to the server do not depend on the websocket:
+      // a failing heartbeat reconnects and a successful one resolves it. One
+      // heartbeat is enough, further failed reopens add nothing to it. None is
+      // sent while heartbeats are paused, as they are while offline.
+      this.#websocketClosesSinceOpen++;
+      if (
+        this.#websocketClosesSinceOpen === 2 &&
+        !this.#machine.isReconnecting() &&
+        this.#registry.getHeartbeat().getInterval() > 0
+      ) {
+        this.#registry.getHeartbeat().send();
+      }
     } else {
       // Lost connection for a connection we do not necessarily know when it is
       // available again (long polling behind proxy). Do nothing and show the

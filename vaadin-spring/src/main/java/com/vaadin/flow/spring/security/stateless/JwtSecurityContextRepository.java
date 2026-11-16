@@ -21,7 +21,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -138,8 +137,7 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
         final List<String> roles = authentication.getAuthorities().stream()
                 .map(Objects::toString)
                 .filter(a -> a.startsWith(ROLE_AUTHORITY_PREFIX))
-                .map(a -> a.substring(ROLE_AUTHORITY_PREFIX.length()))
-                .collect(Collectors.toList());
+                .map(a -> a.substring(ROLE_AUTHORITY_PREFIX.length())).toList();
 
         SignedJWT signedJWT;
         JWSHeader jwsHeader = new JWSHeader(jwsAlgorithm);

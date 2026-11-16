@@ -50,14 +50,28 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * runtime, such as a {@code @JavaScript} with {@link #type()} set to
  * {@link Type#MODULE}, which are loaded per page and never bundled.
  * <p>
- * External JavaScript dependencies (e.g. "http://example.com/some.js") are
- * added in the same way as {@link Page#addJavaScript(String)} and the result is
- * just adding a classic {@code script} element to the page. Other paths used in
- * the {@link JavaScript#value()} method are considered as relative to
- * {@code frontend} directory and they are bundled and added to the page as a
- * JavaScript module (a {@code script} element with {@code type="module"}). In
- * this case a {@link JavaScript} annotation behaves exactly as a
- * {@link JsModule} annotation.
+ * Values with a runtime prefix ({@code http://}, {@code https://}, {@code //},
+ * {@code context://}, {@code base://} or a leading {@code /}) are never bundled
+ * and are loaded at runtime instead, in the same way as
+ * {@link Page#addJavaScript(String)}. The same applies to a URL with any other
+ * scheme (a value containing {@code ://}). Whether the resulting {@code script}
+ * element is a classic script or a module is decided by {@link #type()}. On an
+ * {@link com.vaadin.flow.component.page.AppShellConfigurator}, such values are
+ * added to the initial page as {@code script} elements; {@link LoadMode#INLINE}
+ * is not supported there. Values on an interface are loaded at runtime for the
+ * components that implement it. On any other class that is not a component,
+ * such as a {@code VaadinServiceInitListener}, such values are not loaded at
+ * all. Files loaded at runtime are served by the servlet container from the
+ * same locations as {@link StyleSheet} files.
+ * <p>
+ * Other paths used in the {@link JavaScript#value()} method are considered as
+ * relative to {@code frontend} directory and they are bundled and added to the
+ * page as a JavaScript module (a {@code script} element with
+ * {@code type="module"}). In this case a {@link JavaScript} annotation behaves
+ * exactly as a {@link JsModule} annotation. This bundled interpretation is
+ * deprecated: use {@link JsModule} with the same value to keep bundling the
+ * file, or serve the file as a static resource and reference it with a runtime
+ * prefix (or {@link Type#MODULE}) to load it at runtime.
  * <p>
  * Setting {@link #type()} to {@link Type#MODULE} opts out of that bundling: the
  * file is then always loaded at runtime as a {@code script} element with
@@ -76,9 +90,10 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * </pre>
  *
  * because the function is private there (unless it's explicitly exposed). The
- * JavaScript where the function is defined should be either external or it
- * should be added using {@link Page#addJavaScript(String)}: in this case all
- * declared functions become available in the global scope.
+ * JavaScript where the function is defined should be loaded at runtime with the
+ * default {@link Type#SCRIPT} (for example {@code context://foo.js} or an
+ * external URL) or added using {@link Page#addJavaScript(String)}: in this case
+ * all declared functions become available in the global scope.
  *
  *
  * @author Vaadin Ltd
@@ -124,22 +139,33 @@ public @interface JavaScript {
      * JavaScript file URL to load before using the annotated {@link Component}
      * in the browser.
      * <p>
-     * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location.
-     * <p>
-     * This URL identifies a file which will be bundled, so the file should be
-     * available to be able to bundle it.
-     * <p>
-     * You can prefix the URL with {@code context://} to make it relative to the
-     * context path or use an absolute URL to refer to files outside the
-     * frontend directory. Such URLs are not bundled but included into the page
-     * as standalone scripts in the same way as it's done by
-     * {@link Page#addJavaScript(String)}.
+     * URL resolution rules, in order:
+     * <ul>
+     * <li>{@code http://...}, {@code https://...}, {@code //...} — used
+     * unchanged.</li>
+     * <li>{@code context://foo.js} — resolved against the servlet context root
+     * (independent of the Vaadin servlet mapping).</li>
+     * <li>{@code base://foo.js} — resolved against the page's {@code <base>}
+     * URI, i.e. the Vaadin servlet mapping path.</li>
+     * <li>{@code /foo.js} — used unchanged as an absolute server path. A value
+     * with a leading {@code /} that contains a path traversal ({@code ..}) is
+     * rejected with a warning and not loaded.</li>
+     * <li>A URL with any other scheme (a value containing {@code ://}) — used
+     * unchanged.</li>
+     * <li>Any other value (bare relative, {@code "./foo.js"},
+     * {@code "../foo.js"}) is currently treated as a bundle source for
+     * backwards compatibility — see the class Javadoc on bundled values.
+     * Migrate to {@code @JavaScript("context://foo.js")} for runtime loading or
+     * to {@link JsModule} for bundling.</li>
+     * </ul>
      * <p>
      * When {@link #type()} is {@link Type#MODULE}, the value is loaded at
      * runtime regardless of whether it has a URL prefix; bare relative paths
      * are normalized to {@code context://<value>} and served as static
-     * resources by the servlet container.
+     * resources by the servlet container. A value that is not an external URL
+     * (no scheme and no leading {@code //}) and contains a path traversal
+     * ({@code ..}), such as {@code ../foo.js}, is rejected with a warning and
+     * not loaded.
      *
      * @return a JavaScript file URL
      */

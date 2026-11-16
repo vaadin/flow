@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -67,8 +66,7 @@ class DefaultConverterFactoryTest {
         Map<Class<? extends Converter<?, ?>>, List<Class<?>>> converters = new ConverterClassFinder()
                 .knownConverters();
         converters.replaceAll((converterType, genericTypes) -> genericTypes
-                .stream().map(this::toPrimitiveTypeIfExist)
-                .collect(Collectors.toList()));
+                .stream().map(this::toPrimitiveTypeIfExist).toList());
         assertFalse(converters.isEmpty(),
                 "Expecting standard converters to exist, but none found");
         converters.forEach(

@@ -39,6 +39,8 @@ Always read `CONVENTIONS.md` in full when **authoring** or **reviewing** code, a
 
 Design and implementation guidelines live in `guidelines/`. Read the chapters mapped in `guidelines/overview.md` selectively for the topics your work touches.
 
+`CONVENTIONS.md` decides and `guidelines/` explains: a rule is written once, in `CONVENTIONS.md`, and a chapter carries its reasoning and links to it. When you add or change guidance, follow the Conventions and Guidelines section of `CONVENTIONS.md`.
+
 The commit message format, the PR description format and the expectations for opening a pull request are in the `commit-and-pr` skill (`.claude/skills/commit-and-pr/SKILL.md`), linked from the Commit & PR Hygiene section of `CONVENTIONS.md`.
 
 ## Development Commands

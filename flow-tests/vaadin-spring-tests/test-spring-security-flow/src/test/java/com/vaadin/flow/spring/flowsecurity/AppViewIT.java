@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -506,7 +505,7 @@ public class AppViewIT extends AbstractIT {
                 available = false;
             }
             return new MenuItem(href, text, available);
-        }).collect(Collectors.toList());
+        }).toList();
     }
 
     /*

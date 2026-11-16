@@ -20,7 +20,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
@@ -400,7 +399,7 @@ public class AppViewIT extends AbstractIT {
                 available = false;
             }
             return new MenuItem(href, text, available);
-        }).collect(Collectors.toList());
+        }).toList();
     }
 
 }
