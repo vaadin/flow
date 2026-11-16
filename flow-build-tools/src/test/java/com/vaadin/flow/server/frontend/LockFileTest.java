@@ -88,7 +88,8 @@ class LockFileTest {
     @Test
     void acquire_unreadableLockFile_isTakenOverWhenOld() throws Exception {
         Path path = folder.resolve("test.lock");
-        Files.writeString(path, "unreadable", StandardCharsets.UTF_8);
+        // Not even valid UTF-8
+        Files.write(path, new byte[] { (byte) 0xC3, 0x28 });
         Files.setLastModifiedTime(path,
                 FileTime.from(Instant.now().minus(Duration.ofMinutes(1))));
 

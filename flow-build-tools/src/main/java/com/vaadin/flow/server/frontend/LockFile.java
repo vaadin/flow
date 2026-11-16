@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -81,54 +82,94 @@ class LockFile implements Serializable {
     void acquire() {
         boolean loggedWaiting = false;
         while (true) {
-            try {
-                writeLockFile();
+            Attempt attempt = attemptToTake();
+            switch (attempt.state()) {
+            case TAKEN, FAILED:
                 return;
-            } catch (FileAlreadyExistsException e) {
-                // Held by someone else, see below whether to wait
-            } catch (IOException e) {
-                getLogger().error("Error writing lock file ({})",
-                        path().toAbsolutePath(), e);
-                return;
-            }
-
-            List<String> content;
-            try {
-                content = Files.readAllLines(path(), StandardCharsets.UTF_8);
-            } catch (NoSuchFileException e) {
-                // Released in the meantime
-                continue;
-            } catch (IOException e) {
-                getLogger().debug("Could not read lock file ({})",
-                        path().toAbsolutePath(), e);
-                sleep();
-                continue;
-            }
-
-            NodeTasksLockInfo lockInfo = parseLockInfo(content);
-            if (lockInfo == null) {
-                if (isOlderThanGracePeriod(path())) {
-                    getLogger().warn(
-                            "Removing the unreadable lock file ({}) of {}",
-                            path().toAbsolutePath(), holderName);
-                    removeAbandonedLock(content);
-                } else {
-                    // The holder has not yet written its content
-                    sleep();
-                }
-            } else if (isRunning(lockInfo)) {
-                if (!loggedWaiting) {
+            case RETRY:
+                break;
+            case HELD:
+                if (!loggedWaiting && attempt.holder() != null) {
                     getLogger().info(
                             "Waiting for a previous instance of {} (pid: {}) to finish...",
-                            holderName, lockInfo.pid());
+                            holderName, attempt.holder().pid());
                     loggedWaiting = true;
                 }
                 sleep();
-            } else {
-                // The process has died without removing the lock file
-                removeAbandonedLock(content);
+                break;
             }
         }
+    }
+
+    /**
+     * Takes the lock if nobody else holds it, without waiting. A lock left
+     * behind by a process that no longer runs is taken over.
+     *
+     * @return {@code true} if this now holds the lock, {@code false} if a
+     *         running process holds it or the lock file cannot be written
+     */
+    boolean tryAcquire() {
+        // Retry only for as long as the previous attempt removed an abandoned
+        // lock or saw the lock released
+        for (int i = 0; i < 3; i++) {
+            Attempt attempt = attemptToTake();
+            if (attempt.state() != AttemptState.RETRY) {
+                return attempt.state() == AttemptState.TAKEN;
+            }
+        }
+        return false;
+    }
+
+    private enum AttemptState {
+        TAKEN, HELD, RETRY, FAILED
+    }
+
+    private record Attempt(AttemptState state,
+            NodeTasksLockInfo holder) implements Serializable {
+        Attempt(AttemptState state) {
+            this(state, null);
+        }
+    }
+
+    private Attempt attemptToTake() {
+        try {
+            writeLockFile();
+            return new Attempt(AttemptState.TAKEN);
+        } catch (FileAlreadyExistsException e) {
+            // Held by someone else, see below whether it is abandoned
+        } catch (IOException e) {
+            getLogger().error("Error writing lock file ({})",
+                    path().toAbsolutePath(), e);
+            return new Attempt(AttemptState.FAILED);
+        }
+
+        byte[] content;
+        try {
+            content = Files.readAllBytes(path());
+        } catch (NoSuchFileException e) {
+            // Released in the meantime
+            return new Attempt(AttemptState.RETRY);
+        } catch (IOException e) {
+            getLogger().debug("Could not read lock file ({})",
+                    path().toAbsolutePath(), e);
+            return new Attempt(AttemptState.HELD);
+        }
+
+        NodeTasksLockInfo lockInfo = parseLockInfo(content);
+        if (lockInfo == null) {
+            if (!isOlderThanGracePeriod(path())) {
+                // The holder has not yet written its content
+                return new Attempt(AttemptState.HELD);
+            }
+            getLogger().warn("Removing the unreadable lock file ({}) of {}",
+                    path().toAbsolutePath(), holderName);
+        } else if (isRunning(lockInfo)) {
+            return new Attempt(AttemptState.HELD, lockInfo);
+        }
+        // The holder has died without removing the lock file
+        return new Attempt(removeAbandonedLock(content, lockInfo == null)
+                ? AttemptState.RETRY
+                : AttemptState.HELD);
     }
 
     /**
@@ -175,8 +216,12 @@ class LockFile implements Serializable {
      * remove it. Removing happens one waiter at a time, under a takeover file,
      * and only after checking the content again, so that the lock just taken by
      * someone else is never removed.
+     *
+     * @return {@code true} if the lock file is gone, {@code false} if another
+     *         waiter is removing it right now
      */
-    private void removeAbandonedLock(List<String> abandonedContent) {
+    private boolean removeAbandonedLock(byte[] abandonedContent,
+            boolean unreadable) {
         Path takeover = path()
                 .resolveSibling(path().getFileName() + TAKEOVER_SUFFIX);
         try {
@@ -185,26 +230,28 @@ class LockFile implements Serializable {
             // Left behind by a waiter that died while removing a lock
             if (isOlderThanGracePeriod(takeover)) {
                 FileIOUtils.deleteQuietly(takeover);
-            } else {
-                sleep();
             }
-            return;
+            return false;
         } catch (IOException e) {
             getLogger().error("Error removing the abandoned lock file ({})",
                     path().toAbsolutePath(), e);
-            sleep();
-            return;
+            return false;
         }
         try {
-            if (abandonedContent.equals(
-                    Files.readAllLines(path(), StandardCharsets.UTF_8))) {
+            // A lock just taken by someone else is unreadable for a moment,
+            // so unreadable content alone does not tell it apart
+            if (Arrays.equals(abandonedContent, Files.readAllBytes(path()))
+                    && (!unreadable || isOlderThanGracePeriod(path()))) {
                 Files.delete(path());
             }
+            return true;
         } catch (NoSuchFileException e) {
             // Released in the meantime
+            return true;
         } catch (IOException e) {
             getLogger().error("Error removing the abandoned lock file ({})",
                     path().toAbsolutePath(), e);
+            return false;
         } finally {
             FileIOUtils.deleteQuietly(takeover);
         }
@@ -227,15 +274,18 @@ class LockFile implements Serializable {
     }
 
     private NodeTasksLockInfo readLockFile() throws IOException {
-        NodeTasksLockInfo lockInfo = parseLockInfo(
-                Files.readAllLines(path(), StandardCharsets.UTF_8));
+        NodeTasksLockInfo lockInfo = parseLockInfo(Files.readAllBytes(path()));
         if (lockInfo == null) {
             throw new IllegalStateException("Invalid lock file content");
         }
         return lockInfo;
     }
 
-    private static NodeTasksLockInfo parseLockInfo(List<String> lines) {
+    private static NodeTasksLockInfo parseLockInfo(byte[] content) {
+        // Decoding replaces malformed input, so that any content can be
+        // judged instead of failing to read
+        List<String> lines = new String(content, StandardCharsets.UTF_8).lines()
+                .toList();
         if (lines.size() != 2) {
             return null;
         }

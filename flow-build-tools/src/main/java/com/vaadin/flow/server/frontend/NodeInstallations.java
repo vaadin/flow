@@ -162,10 +162,7 @@ final class NodeInstallations {
                         "Node.js installation {} has no {} marker, starting its retention period now",
                         installation, NodeInstallation.LAST_USED_FILE);
                 installation.markUsed();
-            } else if (lastUsed.get().isBefore(threshold)
-                    && !installation.getInstallLockFile().exists()) {
-                // A locked installation is being installed again by another
-                // build, as installs of different versions run concurrently
+            } else if (lastUsed.get().isBefore(threshold)) {
                 unused.add(installation);
             }
         }
@@ -180,7 +177,35 @@ final class NodeInstallations {
             unused.remove(unused.size() - 1);
         }
 
-        unused.forEach(NodeInstallation::remove);
+        unused.forEach(installation -> removeUnlessInstalling(installation,
+                threshold));
+    }
+
+    /**
+     * Removes the installation unless another build is installing that version
+     * again right now, as installs of different versions run concurrently.
+     * Holding the install lock of the version while removing keeps a build from
+     * starting to install it in the middle of the removal.
+     */
+    private static void removeUnlessInstalling(NodeInstallation installation,
+            Instant threshold) {
+        LockFile lock = new LockFile(installation.getInstallLockFile().toPath(),
+                "Node installation cleanup");
+        if (!lock.tryAcquire()) {
+            getLogger().debug(
+                    "Not removing Node.js installation {} as it is being installed",
+                    installation);
+            return;
+        }
+        try {
+            // Taken into use again before the lock was taken
+            if (installation.getLastUsed().map(threshold::isAfter)
+                    .orElse(false)) {
+                installation.remove();
+            }
+        } finally {
+            lock.release();
+        }
     }
 
     /**

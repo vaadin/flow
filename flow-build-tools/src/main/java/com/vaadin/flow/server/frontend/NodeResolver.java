@@ -353,18 +353,11 @@ class NodeResolver implements java.io.Serializable {
             nodeInstaller.setNodeDownloadRoot(nodeDownloadRoot);
         }
 
-        // Check whether the requested version is already installed
-        ActiveNodeInstallation active = tryUseInstalled(
-                NodeInstallation.forVersion(alternativeDirFile, nodeVersion));
-        if (active != null) {
-            getLogger().debug("Node {} is already installed in {}", nodeVersion,
-                    alternativeDir);
-            return active;
-        }
-
         // Installing is not atomic and all builds on the machine share the
         // directory, so a concurrent install of the same version would
-        // overwrite and delete the files that this one is copying
+        // overwrite and delete the files that this one is copying. Checking
+        // for an existing installation happens under the lock too, so that a
+        // partly copied installation is never taken into use.
         try {
             Files.createDirectories(alternativeDirFile.toPath());
         } catch (IOException e) {
@@ -387,13 +380,12 @@ class NodeResolver implements java.io.Serializable {
 
     private ActiveNodeInstallation installAlternativeNode(
             NodeInstaller nodeInstaller, File alternativeDirFile) {
-        // Another build may have installed it while this one was waiting for
-        // the lock
+        // Check whether the requested version is already installed
         ActiveNodeInstallation active = tryUseInstalled(
                 NodeInstallation.forVersion(alternativeDirFile, nodeVersion));
         if (active != null) {
-            getLogger().debug("Node {} was installed in {} by another build",
-                    nodeVersion, alternativeDir);
+            getLogger().debug("Node {} is already installed in {}", nodeVersion,
+                    alternativeDir);
             return active;
         }
 

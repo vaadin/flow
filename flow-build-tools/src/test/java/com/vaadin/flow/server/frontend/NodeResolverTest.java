@@ -151,14 +151,16 @@ class NodeResolverTest {
         requireShellStubs();
         LockFile otherBuild = lockInstallOf(VERSION);
         otherBuild.acquire();
+        // The other build is in the middle of copying, so the binary is
+        // already there. Nothing is downloadable, so installing again would
+        // fail.
+        NodeInstallation installation = stubInstallation(VERSION);
         CompletableFuture<ActiveNodeInstallation> resolved = CompletableFuture
                 .supplyAsync(() -> resolve(VERSION));
 
         Thread.sleep(200);
         assertFalse(resolved.isDone(),
-                "Resolving should wait while another build is installing");
-        // Nothing is downloadable, so installing again would fail
-        NodeInstallation installation = stubInstallation(VERSION);
+                "Resolving should wait while another build is installing, even when the binary is already there");
         otherBuild.release();
 
         assertEquals(installation.getNodeExecutable().getAbsolutePath(),
