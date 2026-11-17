@@ -58,11 +58,11 @@ import com.vaadin.flow.shared.Registration;
  * only when the browser requests the content, so the file name, content type
  * and other response headers can be decided at that point. If the handler
  * throws or returns an error response, the browser reports a failed download
- * instead of saving an empty file. Use the transfer callbacks of the handler
- * (for example
+ * instead of saving an empty file, or shows the error in the new tab. Use the
+ * transfer callbacks of the handler (for example
  * {@link TransferProgressAwareHandler#whenComplete(com.vaadin.flow.function.SerializableConsumer)
  * whenComplete}) to react to success or failure on the server. The browser does
- * not report whether the user actually saved the file.
+ * not report whether the user actually saved or looked at the content.
  *
  * @see DownloadTarget
  * @since 25.4
