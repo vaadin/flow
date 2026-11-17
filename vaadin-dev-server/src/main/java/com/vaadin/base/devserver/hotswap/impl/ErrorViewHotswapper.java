@@ -27,6 +27,7 @@ import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.RouteUtil;
 
 /**
@@ -79,9 +80,12 @@ public class ErrorViewHotswapper implements VaadinHotswapper {
 
     private static Set<Class<?>> getRouteTargets(UI ui) {
         Set<Class<?>> routeTargets = new HashSet<>();
-        ui.getInternals().getRouter().getRegistry().getRegisteredRoutes()
-                .forEach(
-                        route -> routeTargets.add(route.getNavigationTarget()));
+        Router router = ui.getInternals().getRouter();
+        if (router == null) {
+            return routeTargets;
+        }
+        router.getRegistry().getRegisteredRoutes().forEach(
+                route -> routeTargets.add(route.getNavigationTarget()));
         return routeTargets;
     }
 
