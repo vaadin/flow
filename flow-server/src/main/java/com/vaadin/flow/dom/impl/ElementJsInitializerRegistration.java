@@ -24,6 +24,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.SuppressForbidden;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
@@ -75,6 +76,7 @@ public final class ElementJsInitializerRegistration implements Registration {
      * @param parameters
      *            the user-supplied parameters, captured by the JsFunction
      */
+    @SuppressForbidden
     public ElementJsInitializerRegistration(StateNode node, String expression,
             Object[] parameters) {
         // JsFunction.of validates each capture, so unsupported parameter
