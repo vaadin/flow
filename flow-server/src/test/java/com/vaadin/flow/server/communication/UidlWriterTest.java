@@ -45,12 +45,17 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.BootstrapHandlerTest;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockVaadinContext.RoutePathProviderImpl;
+import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.tests.util.MockUI;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -186,6 +191,46 @@ public class UidlWriterTest {
                         Json.create(3), Json.create("console.log($0, $1)")));
 
         assertTrue(JsonUtils.jsonEquals(expectedJson, json));
+    }
+
+    @Test
+    public void createUidl_sessionDestroyedByPendingTask_respondsSessionExpired()
+            throws Exception {
+        createUidl_sessionDestroyedByPendingTask_respondsSessionExpired(false);
+        createUidl_sessionDestroyedByPendingTask_respondsSessionExpired(true);
+    }
+
+    private void createUidl_sessionDestroyedByPendingTask_respondsSessionExpired(
+            boolean async) throws Exception {
+        MockVaadinSession session = new MockVaadinSession();
+        JsonObject response = session.runWithLock(() -> {
+            session.setConfiguration(
+                    session.getService().getDeploymentConfiguration());
+            // The mock service has no Lookup, which creating a UI needs to
+            // resolve the application configuration
+            session.getService().getContext().setAttribute(
+                    ApplicationConfiguration.class,
+                    mock(ApplicationConfiguration.class));
+            UI ui = new MockUI(session);
+            ui.doInit(mock(VaadinRequest.class), session.getNextUIid(), "foo");
+            session.addUI(ui);
+            // Queued like when another thread invalidates the HTTP session
+            // while this one holds the session lock
+            session.getService().fireSessionDestroy(session);
+
+            return new UidlWriter().createUidl(ui, async);
+        });
+
+        // createSessionExpiredJSON wraps the message for the client, while
+        // the callers of createUidl wrap its result themselves
+        String expected = VaadinService.createSessionExpiredJSON(async);
+        String prefix = "for(;;);[";
+        assertTrue(expected,
+                expected.startsWith(prefix) && expected.endsWith("]"));
+        assertTrue(response.toJson(),
+                JsonUtils.jsonEquals(Json.parse(expected
+                        .substring(prefix.length(), expected.length() - 1)),
+                        response));
     }
 
     @Test
