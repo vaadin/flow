@@ -77,9 +77,9 @@ public final class Download implements Serializable {
      * Saves the content of a handler as a file when the given component is
      * clicked. Same as
      * {@link #onClick(Component, DownloadHandler, DownloadTarget)
-     * onClick(component, handler, DownloadTarget.FILE)}. The versions that take
-     * a handler are for content produced on the server; the versions that take
-     * a URL are for content the browser can already address.
+     * onClick(component, handler, DownloadTarget.SAVE_AS_FILE)}. The versions
+     * that take a handler are for content produced on the server; the versions
+     * that take a URL are for content the browser can already address.
      *
      * @param component
      *            the component whose clicks start the download, not
@@ -92,7 +92,7 @@ public final class Download implements Serializable {
      */
     public static Registration onClick(Component component,
             DownloadHandler handler) {
-        return onClick(component, handler, DownloadTarget.FILE);
+        return onClick(component, handler, DownloadTarget.SAVE_AS_FILE);
     }
 
     /**
@@ -144,7 +144,7 @@ public final class Download implements Serializable {
         Objects.requireNonNull(handler, "handler must not be null");
         Objects.requireNonNull(target, "target must not be null");
         return bind(component, switch (target) {
-        case FILE -> new DownloadAction(handler);
+        case SAVE_AS_FILE -> new DownloadAction(handler);
         case NEW_TAB -> {
             if (handler instanceof AbstractDownloadHandler<?> builtIn) {
                 // the built-in handlers serve an attachment by default,
@@ -159,10 +159,10 @@ public final class Download implements Serializable {
     /**
      * Saves the content of a URL as a file when the given component is clicked.
      * Same as {@link #onClick(Component, String, DownloadTarget)
-     * onClick(component, url, DownloadTarget.FILE)}. The versions that take a
-     * URL are for content the browser can already address, such as a static
-     * file or a REST endpoint; the versions that take a handler are for content
-     * produced on the server.
+     * onClick(component, url, DownloadTarget.SAVE_AS_FILE)}. The versions that
+     * take a URL are for content the browser can already address, such as a
+     * static file or a REST endpoint; the versions that take a handler are for
+     * content produced on the server.
      *
      * @param component
      *            the component whose clicks start the download, not
@@ -172,7 +172,7 @@ public final class Download implements Serializable {
      * @return a registration for removing the download from the component
      */
     public static Registration onClick(Component component, String url) {
-        return onClick(component, url, DownloadTarget.FILE);
+        return onClick(component, url, DownloadTarget.SAVE_AS_FILE);
     }
 
     /**
@@ -197,7 +197,7 @@ public final class Download implements Serializable {
             DownloadTarget target) {
         Objects.requireNonNull(target, "target must not be null");
         return bind(component, switch (target) {
-        case FILE -> new DownloadAction(url);
+        case SAVE_AS_FILE -> new DownloadAction(url);
         case NEW_TAB -> new OpenInNewTabAction(url);
         });
     }

@@ -23,7 +23,7 @@ public enum DownloadTarget {
     /**
      * Saves the content as a file, as the browser does for any download.
      */
-    FILE,
+    SAVE_AS_FILE,
 
     /**
      * Opens the content in a new browser tab. The browser shows the content
