@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -469,6 +470,23 @@ class TaskGenerateJsDefinitionsTest {
         assertTrue(content.contains("window.Vaadin.Flow.jsSnippets[\""
                 + BundledEventData.getFunctionId(INHERITING_EXPRESSION)
                 + "\"]"), content);
+    }
+
+    @Test
+    void collectFunctionIds_everyRegistryButNames() {
+        String content = TaskGenerateJsDefinitions.renderFileContent(
+                List.of(GreeterJs.class, StopperJs.class, TemplateJs.class),
+                List.of(OffsetEvent.class), true);
+
+        Set<String> expected = Stream
+                .of(GreeterJs.class, StopperJs.class, TemplateJs.class)
+                .flatMap(definition -> Stream.of(definition.getMethods()))
+                .map(JsCall::functionId).collect(Collectors.toSet());
+        BundledEventData.getBundledEventData(OffsetEvent.class).stream()
+                .map(BundledEventData::getFunctionId).forEach(expected::add);
+
+        assertEquals(expected,
+                TaskGenerateJsDefinitions.collectFunctionIds(content));
     }
 
     @Test

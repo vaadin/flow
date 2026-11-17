@@ -3066,13 +3066,13 @@ class BundleValidationTest {
                         : null);
     }
 
-    @LoadDependenciesOnStartup
     @JsDefinition
     interface BundledJs {
         @JsExpression("this.focus()")
         void focus();
     }
 
+    @LoadDependenciesOnStartup
     static class AllEagerAppConf implements AppShellConfigurator {
 
     }
