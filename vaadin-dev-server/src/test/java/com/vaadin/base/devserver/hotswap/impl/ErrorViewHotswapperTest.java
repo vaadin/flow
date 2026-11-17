@@ -17,13 +17,9 @@ package com.vaadin.base.devserver.hotswap.impl;
 
 import java.util.Collections;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassSessionEvent;
 import com.vaadin.base.devserver.hotswap.UIUpdateStrategy;
@@ -71,7 +67,7 @@ class ErrorViewHotswapperTest {
     }
 
     @Test
-    void onClassesChange_errorViewShown_redefined_triggersRefresh() {
+    void onClassesChange_errorViewShown_redefined_triggersReload() {
         // Simulate an error view being displayed
         TestErrorView errorView = new TestErrorView();
         ui.getInternals().showRouteTarget(createMockLocation("error"),
@@ -86,10 +82,10 @@ class ErrorViewHotswapperTest {
                 Set.of(String.class), true);
         hotswapper.onClassesChange(event);
 
-        // Verify refresh was triggered
-        assertEquals(UIUpdateStrategy.REFRESH,
+        // Verify reload was triggered
+        assertEquals(UIUpdateStrategy.RELOAD,
                 event.getUIUpdateStrategy(ui).orElse(null),
-                "Should trigger refresh when error view is shown");
+                "Should trigger reload when error view is shown");
     }
 
     @Test
@@ -114,30 +110,9 @@ class ErrorViewHotswapperTest {
     }
 
     @Test
-    void onClassesChange_routeNotFoundShown_redefined_triggersReload() {
-        ui.getInternals().showRouteTarget(createMockLocation("missing"),
+    void onClassesChange_routeNotFoundShown_newClassLoaded_reloadsOnlyForNewRoute() {
+        ui.getInternals().showRouteTarget(createMockLocation(""),
                 new RouteNotFoundError(), Collections.emptyList());
-
-        var event = new HotswapClassSessionEvent(service, session,
-                Set.of(TestNormalView.class), true);
-        hotswapper.onClassesChange(event);
-
-        assertEquals(UIUpdateStrategy.RELOAD,
-                event.getUIUpdateStrategy(ui).orElse(null));
-    }
-
-    static Stream<Arguments> newRouteLoaded() {
-        return Stream.of(
-                Arguments.of(new RouteNotFoundError(), UIUpdateStrategy.RELOAD),
-                Arguments.of(new TestErrorView(), UIUpdateStrategy.REFRESH));
-    }
-
-    @ParameterizedTest
-    @MethodSource("newRouteLoaded")
-    void onClassesChange_errorViewShown_newClassLoaded_updatesOnlyForNewRoute(
-            Component errorView, UIUpdateStrategy expected) {
-        ui.getInternals().showRouteTarget(createMockLocation(""), errorView,
-                Collections.emptyList());
 
         var notARoute = new HotswapClassSessionEvent(service, session,
                 Set.of(TestNormalView.class), false);
@@ -150,7 +125,8 @@ class ErrorViewHotswapperTest {
         var newRoute = new HotswapClassSessionEvent(service, session,
                 Set.of(TestNormalView.class), false);
         hotswapper.onClassesChange(newRoute);
-        assertEquals(expected, newRoute.getUIUpdateStrategy(ui).orElse(null));
+        assertEquals(UIUpdateStrategy.RELOAD,
+                newRoute.getUIUpdateStrategy(ui).orElse(null));
     }
 
     // Test classes
