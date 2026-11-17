@@ -18,9 +18,10 @@ package com.vaadin.flow.uitest.ui;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
+import com.vaadin.flow.component.download.Download;
+import com.vaadin.flow.component.download.DownloadTarget;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.component.newtab.OpenInNewTab;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
 import com.vaadin.flow.component.trigger.internal.OpenInNewTabAction;
 import com.vaadin.flow.component.trigger.internal.PropertyInput;
@@ -33,10 +34,10 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
  * Buttons exercising {@link OpenInNewTabAction}: a static URL with default
  * features, a static URL with a custom features string (which replaces the
  * defaults verbatim), an {@link Input}-backed {@link PropertyInput} resolved at
- * fire time, and a {@link DownloadHandler} wired through {@link OpenInNewTab}.
- * The IT replaces {@code window.open} with a recording shim so the assertions
- * don't depend on the browser actually opening a popup — and so the popup
- * blocker doesn't interfere.
+ * fire time, and a {@link DownloadHandler} wired through {@link Download}. The
+ * IT replaces {@code window.open} with a recording shim so the assertions don't
+ * depend on the browser actually opening a popup — and so the popup blocker
+ * doesn't interfere.
  */
 @Route(value = "com.vaadin.flow.uitest.ui.TriggerOpenInNewTabView", layout = ViewTestLayout.class)
 public class TriggerOpenInNewTabView extends AbstractDivView {
@@ -83,9 +84,10 @@ public class TriggerOpenInNewTabView extends AbstractDivView {
         new ClickTrigger(jsInputButton).triggers(new OpenInNewTabAction(
                 new PropertyInput<>(urlField, "value", String.class)));
         byte[] content = HANDLER_CONTENT.getBytes(StandardCharsets.UTF_8);
-        OpenInNewTab.onClick(handlerButton,
+        Download.onClick(handlerButton,
                 DownloadHandler.fromInputStream(event -> new DownloadResponse(
                         new ByteArrayInputStream(content), "notes.txt",
-                        "text/plain", content.length)));
+                        "text/plain", content.length)),
+                DownloadTarget.NEW_TAB);
     }
 }

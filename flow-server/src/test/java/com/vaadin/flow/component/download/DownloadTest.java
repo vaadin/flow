@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.download;
 
+import java.io.File;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -25,16 +26,20 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.trigger.internal.DownloadAction;
+import com.vaadin.flow.component.trigger.internal.OpenInNewTabAction;
 import com.vaadin.flow.component.trigger.internal.TriggerInputJs;
 import com.vaadin.flow.component.trigger.internal.TriggerTestUtil;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.FileDownloadHandler;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -71,6 +76,34 @@ class DownloadTest {
         assertEquals("download",
                 snippetOf(DownloadAction.DownloadJs.class, action));
         resourceUri(action);
+    }
+
+    @Test
+    void startHandlerInNewTab_clickOpensRegisteredResourceInline() {
+        FileDownloadHandler handler = DownloadHandler
+                .forFile(new File("invoice.pdf"));
+        assertFalse(handler.isInline());
+
+        Download.onClick(button, handler, DownloadTarget.NEW_TAB);
+
+        assertTrue(handler.isInline(),
+                "A built-in handler should serve its content inline");
+        JsFunction action = actionOf(singleInstallFn());
+        assertEquals("openInNewTab",
+                snippetOf(OpenInNewTabAction.OpenInNewTabJs.class, action));
+        resourceUri(action);
+    }
+
+    @Test
+    void startUrlInNewTab_clickOpensGivenUrl() {
+        Download.onClick(button, "/files/terms.html", DownloadTarget.NEW_TAB);
+
+        JsFunction action = actionOf(singleInstallFn());
+        assertEquals("openInNewTab",
+                snippetOf(OpenInNewTabAction.OpenInNewTabJs.class, action));
+        assertEquals("/files/terms.html",
+                ((JsFunction) action.getCaptures().get(0)).getCaptures()
+                        .get(0));
     }
 
     @Test
