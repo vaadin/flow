@@ -17,9 +17,13 @@ package com.vaadin.base.devserver.hotswap.impl;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassSessionEvent;
 import com.vaadin.base.devserver.hotswap.UIUpdateStrategy;
@@ -122,24 +126,31 @@ class ErrorViewHotswapperTest {
                 event.getUIUpdateStrategy(ui).orElse(null));
     }
 
-    @Test
-    void onClassesChange_routeNotFoundShown_newClassLoaded_reloadsOnlyForNewRoute() {
-        ui.getInternals().showRouteTarget(createMockLocation(""),
-                new RouteNotFoundError(), Collections.emptyList());
+    static Stream<Arguments> newRouteLoaded() {
+        return Stream.of(
+                Arguments.of(new RouteNotFoundError(), UIUpdateStrategy.RELOAD),
+                Arguments.of(new TestErrorView(), UIUpdateStrategy.REFRESH));
+    }
+
+    @ParameterizedTest
+    @MethodSource("newRouteLoaded")
+    void onClassesChange_errorViewShown_newClassLoaded_updatesOnlyForNewRoute(
+            Component errorView, UIUpdateStrategy expected) {
+        ui.getInternals().showRouteTarget(createMockLocation(""), errorView,
+                Collections.emptyList());
 
         var notARoute = new HotswapClassSessionEvent(service, session,
                 Set.of(TestNormalView.class), false);
         hotswapper.onClassesChange(notARoute);
         assertFalse(notARoute.getUIUpdateStrategy(ui).isPresent(),
-                "A newly loaded class that is not a route should not reload");
+                "A newly loaded class that is not a route should not update the UI");
 
         ui.getInternals().getRouter().getRegistry().setRoute("",
                 TestNormalView.class, Collections.emptyList());
         var newRoute = new HotswapClassSessionEvent(service, session,
                 Set.of(TestNormalView.class), false);
         hotswapper.onClassesChange(newRoute);
-        assertEquals(UIUpdateStrategy.RELOAD,
-                newRoute.getUIUpdateStrategy(ui).orElse(null));
+        assertEquals(expected, newRoute.getUIUpdateStrategy(ui).orElse(null));
     }
 
     // Test classes
