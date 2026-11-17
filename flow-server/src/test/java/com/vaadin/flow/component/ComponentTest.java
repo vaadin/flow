@@ -1340,8 +1340,15 @@ public class ComponentTest {
 
     }
 
+    // Not a component, so nothing it declares is loaded at runtime
+    @StyleSheet("non-component.css")
+    @JavaScript("context://non-component.js")
+    public interface NonComponentWithDependencies {
+    }
+
     @Tag("span")
     @Uses(ComponentWithDependencies.class)
+    @Uses(NonComponentWithDependencies.class)
     @JavaScript("uses.js")
     public static class UsesComponentWithDependencies extends Component {
 
