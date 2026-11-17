@@ -71,7 +71,7 @@ class JvmTest {
         jdk("corretto-8", "1.8.0_442", "Amazon.com Inc.");
         Path usable = jdk("temurin-21", "21.0.10", "Eclipse Adoptium");
 
-        List<Jvm.Jdk> candidates = Jvm.candidates(homes());
+        List<Jvm.Jdk> candidates = candidates();
 
         // A JBR that cannot load a class Flow compiled is worse than no JBR.
         assertEquals(List.of(usable),
@@ -122,7 +122,7 @@ class JvmTest {
         Path home = jdk("jbrsdk-21.0.11.jdk/Contents/Home", "21.0.11",
                 "JetBrains s.r.o.");
 
-        List<Jvm.Jdk> candidates = Jvm.candidates(homes());
+        List<Jvm.Jdk> candidates = candidates();
 
         // homes() lists the bundle root, which has neither the launcher nor the
         // release file - so the JBR a JetBrains IDE downloaded is only a
@@ -130,6 +130,53 @@ class JvmTest {
         assertEquals(List.of(home),
                 candidates.stream().map(Jvm.Jdk::home).toList());
         assertTrue(candidates.get(0).jbr());
+    }
+
+    @Test
+    void aJdkBuiltForAnotherPlatformIsSkippedAndLogged() throws IOException {
+        Path linux = jdk("jbr-25-linux", "25.0.2", "JetBrains s.r.o.", "Linux",
+                "x86_64");
+        Path mac = jdk("jbrsdk-21.0.8-osx-aarch64", "21.0.8",
+                "JetBrains s.r.o.", "Darwin", "aarch64");
+        jdk("jbr-21-linux-aarch64", "21.0.8", "JetBrains s.r.o.", "Linux",
+                "aarch64");
+
+        // How Java names the platform a release file calls Linux x86_64.
+        List<Jvm.Jdk> candidates = Jvm.candidates(homes(),
+                Jvm.Platform.of("Linux", "amd64"), logged::add);
+
+        // Closest to 21, the macOS JBR would have won and then failed to
+        // execute in a Linux container sharing the host's ~/.vaadin.
+        assertEquals(List.of(linux),
+                candidates.stream().map(Jvm.Jdk::home).toList());
+        assertTrue(
+                logged.stream()
+                        .anyMatch(line -> line.contains(mac.toString())
+                                && line.contains("macos aarch64")),
+                () -> "the skipped macOS JBR should be logged: " + logged);
+    }
+
+    @Test
+    void platformNamesAreNormalizedBeforeComparing() {
+        // Each pair is how a release file and Java name the same platform.
+        assertTrue(Jvm.Platform.of("Mac OS X", "aarch64")
+                .runs(Jvm.Platform.of("Darwin", "arm64")));
+        assertTrue(Jvm.Platform.of("Windows 11", "amd64")
+                .runs(Jvm.Platform.of("Windows", "x86_64")));
+        assertTrue(Jvm.Platform.of("Linux", "x86")
+                .runs(Jvm.Platform.of("Linux", "i686")));
+        assertFalse(Jvm.Platform.of("Mac OS X", "x86_64")
+                .runs(Jvm.Platform.of("Darwin", "aarch64")));
+        assertFalse(Jvm.Platform.of("Linux", "aarch64")
+                .runs(Jvm.Platform.of("Darwin", "aarch64")));
+        // The trap a plain string compare falls into: the daemon's own JDK
+        // has to match the platform it is running on.
+        assertTrue(Jvm.Platform.current().runs(Jvm.current().platform()),
+                () -> Jvm.current().platform() + " vs "
+                        + Jvm.Platform.current());
+        // A release file that does not say is not held against the JDK.
+        assertTrue(Jvm.Platform.of("Linux", "amd64")
+                .runs(Jvm.Platform.of("", "")));
     }
 
     @Test
@@ -188,7 +235,12 @@ class JvmTest {
     private Jvm.Jdk chosen(int required) throws IOException {
         Optional<Jvm.Requirement> requirement = required == 0 ? Optional.empty()
                 : Optional.of(new Jvm.Requirement(required, "a test"));
-        return Jvm.select(requirement, Jvm.candidates(homes()), logged::add);
+        return Jvm.select(requirement, candidates(), logged::add);
+    }
+
+    /** Discovery over the temporary JDKs alone, on this machine's platform. */
+    private List<Jvm.Jdk> candidates() throws IOException {
+        return Jvm.candidates(homes(), Jvm.Platform.current(), logged::add);
     }
 
     private List<Path> homes() throws IOException {
@@ -207,12 +259,25 @@ class JvmTest {
      */
     private Path jdk(String name, String version, String implementor)
             throws IOException {
+        return jdk(name, version, implementor, null, null);
+    }
+
+    /**
+     * As {@link #jdk(String, String, String)}, built for a given platform as a
+     * release file spells it.
+     */
+    private Path jdk(String name, String version, String implementor, String os,
+            String arch) throws IOException {
         Path home = jdks.resolve(name);
         Files.createDirectories(home.resolve("bin"));
         Files.writeString(home.resolve("bin").resolve("java"), "");
         Files.writeString(home.resolve("bin").resolve("java.exe"), "");
-        Files.writeString(home.resolve("release"), "JAVA_VERSION=\"" + version
-                + "\"\nIMPLEMENTOR=\"" + implementor + "\"\n");
+        String release = "JAVA_VERSION=\"" + version + "\"\nIMPLEMENTOR=\""
+                + implementor + "\"\n";
+        if (os != null) {
+            release += "OS_NAME=\"" + os + "\"\nOS_ARCH=\"" + arch + "\"\n";
+        }
+        Files.writeString(home.resolve("release"), release);
         return Reactor.real(home);
     }
 }

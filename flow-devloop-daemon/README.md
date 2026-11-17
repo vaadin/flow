@@ -647,6 +647,12 @@ candidate's version and vendor are read from its own `release` file
 directory name — which is how `jbr-9` used to outrank `jbr-21`. The JBR closest above
 the requirement wins; failing that, the closest JDK, and the log says what that cost.
 
+A candidate whose `release` file names another OS or architecture (`OS_NAME`,
+`OS_ARCH`) than the daemon's own JVM is skipped, and the log says so. A home directory
+shared between a macOS host and a Linux container holds JDKs for both, and one built
+for the other side cannot run here. The names are normalized before comparing
+(`Darwin` is `Mac OS X`, `x86_64` is `amd64`); a `release` file without them is kept.
+
 ## The frontend leg
 
 `Frontend` owns it: where the frontend folder is, and what a change under it
