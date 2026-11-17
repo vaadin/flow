@@ -29,12 +29,14 @@ import {
 import type { ResourceLoadEvent, ResourceLoadListener } from './ResourceRegistry';
 import { Console } from './Console';
 import { getScheduler } from './TrackingScheduler';
+import { decodeWithTypeInfo } from './flow/util/ClientJsonCodec';
 
 // com.vaadin.flow.shared.ui.Dependency
 const KEY_URL = 'url';
 const KEY_TYPE = 'type';
 const KEY_CONTENTS = 'contents';
 const KEY_ID = 'id';
+const KEY_LAYER = 'layer';
 
 // com.vaadin.flow.shared.ui.Dependency.Type / LoadMode. LoadMode and Dependency
 // are exported because MessageHandler builds the map this class consumes, just as
@@ -120,10 +122,16 @@ export class DependencyLoader {
     for (const dependency of dependencies) {
       const type = dependency[KEY_TYPE] as DependencyType;
       const dependencyId = KEY_ID in dependency ? (dependency[KEY_ID] as string) : null;
-      const resourceLoader = this.#getResourceLoader(type, loadMode, dependencyId);
+      const layer = (dependency[KEY_LAYER] as string | null | undefined) ?? null;
+      const resourceLoader = this.#getResourceLoader(type, loadMode, dependencyId, layer);
 
       if (type === 'DYNAMIC_IMPORT') {
-        this.#loadDependencyEagerly(dependency[KEY_URL] as string, resourceLoader);
+        const dynamicImport = dependency[KEY_URL];
+        if (typeof dynamicImport === 'string') {
+          this.#loadDependencyEagerly(dynamicImport, resourceLoader);
+        } else {
+          this.#loadDependencyEagerly(JSON.stringify(dynamicImport), this.#getFunctionImportLoader(dynamicImport));
+        }
       } else {
         switch (loadMode) {
           case 'EAGER':
@@ -143,13 +151,31 @@ export class DependencyLoader {
     return lazyDependencies;
   }
 
+  // A dynamic import sent as a function value (@v-fn) rather than as an
+  // expression, which is decoded instead of compiled from a string. Decoding
+  // is part of loading, so a value that cannot be decoded fails this import
+  // through its listener instead of the whole message.
+  #getFunctionImportLoader(dynamicImport: unknown): Loader {
+    const tree = this.#registry.getStateTree();
+    const resourceLoader = this.#registry.getResourceLoader();
+    return (description, listener) =>
+      resourceLoader.loadDynamicImport(description, listener, () =>
+        (decodeWithTypeInfo(tree, dynamicImport) as () => unknown)()
+      );
+  }
+
   #getDependencyUrl(dependency: Dependency): string {
     // Java passes the resolver result straight on; resolveVaadinUri only returns
     // null for a null uri, and a dependency always carries its url.
     return this.#registry.getURIResolver().resolveVaadinUri(dependency[KEY_URL] as string)!;
   }
 
-  #getResourceLoader(resourceType: DependencyType, loadMode: LoadMode, dependencyId: string | null): Loader {
+  #getResourceLoader(
+    resourceType: DependencyType,
+    loadMode: LoadMode,
+    dependencyId: string | null,
+    layer: string | null
+  ): Loader {
     const resourceLoader = this.#registry.getResourceLoader();
     const inline = loadMode === 'INLINE';
 
@@ -158,7 +184,7 @@ export class DependencyLoader {
         if (inline) {
           return (data, listener) => resourceLoader.inlineStyleSheet(data, listener, dependencyId);
         }
-        return (url, listener) => resourceLoader.loadStylesheet(url, listener, dependencyId);
+        return (url, listener) => resourceLoader.loadStylesheet(url, listener, dependencyId, layer);
       case 'JAVASCRIPT':
         if (inline) {
           return (data, listener) => resourceLoader.inlineScript(data, listener);

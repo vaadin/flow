@@ -20,7 +20,6 @@ import javax.tools.ToolProvider;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.Proxy;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -146,6 +145,26 @@ public class DevCliInstallerTest {
     }
 
     @Test
+    public void report_namesWhatWasWrittenAndCountsWhatWasLeftAlone()
+            throws IOException {
+        Path root = temporaryFolder.getRoot().toPath();
+        DevCliInstaller.report(DevCliInstaller.install(root), root, info::add);
+
+        // Paths relative to the install directory, as the developer would
+        // type them when committing.
+        Assert.assertTrue(info.contains("Installed .vaadin/vaadin-dev"));
+        Assert.assertTrue("a fresh install should say what to commit",
+                info.stream().anyMatch(line -> line.startsWith("Commit ")));
+
+        info.clear();
+        DevCliInstaller.report(DevCliInstaller.install(root), root, info::add);
+
+        Assert.assertEquals(
+                List.of(INSTALLED.size() + " file(s) already up to date"),
+                info);
+    }
+
+    @Test
     public void install_replacesAnEditedFile() throws IOException {
         Path root = temporaryFolder.getRoot().toPath();
         DevCliInstaller.install(root);
@@ -209,7 +228,7 @@ public class DevCliInstallerTest {
                 """);
 
         Optional<Path> provisioned = DevCliInstaller
-                .provisionHotswapAgent(daemon, adapter());
+                .provisionHotswapAgent(daemon, info::add, warnings::add);
 
         // The version reported is the one pinned by the jar that was handed
         // over, not one this plugin knows: the CLI runs the daemon the project
@@ -232,7 +251,7 @@ public class DevCliInstallerTest {
         Path daemon = daemonJar(null);
 
         Optional<Path> provisioned = DevCliInstaller
-                .provisionHotswapAgent(daemon, adapter());
+                .provisionHotswapAgent(daemon, info::add, warnings::add);
 
         Assert.assertEquals(Optional.empty(), provisioned);
         Assert.assertEquals(1, warnings.size());
@@ -269,23 +288,5 @@ public class DevCliInstallerTest {
         Assert.assertEquals("the stub daemon should compile", 0, compiler.run(
                 null, null, null, "-d", classes.toString(), java.toString()));
         return classes;
-    }
-
-    /**
-     * A recording adapter. A proxy rather than a mock because only two of the
-     * interface methods are reached, and both only to collect a line.
-     */
-    private PluginAdapterBase adapter() {
-        return (PluginAdapterBase) Proxy.newProxyInstance(
-                PluginAdapterBase.class.getClassLoader(),
-                new Class<?>[] { PluginAdapterBase.class },
-                (proxy, method, args) -> {
-                    if ("logInfo".equals(method.getName())) {
-                        info.add(String.valueOf(args[0]));
-                    } else if ("logWarn".equals(method.getName())) {
-                        warnings.add(String.valueOf(args[0]));
-                    }
-                    return null;
-                });
     }
 }

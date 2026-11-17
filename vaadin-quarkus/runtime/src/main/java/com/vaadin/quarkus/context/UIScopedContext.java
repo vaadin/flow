@@ -67,26 +67,41 @@ public class UIScopedContext extends AbstractContext {
         return Arc.container().beanManager();
     }
 
+    /**
+     * Manages the contextual storages of UI scoped beans, one for each UI.
+     */
     @VaadinSessionScoped
     @Unremovable
     public static class ContextualStorageManager
             extends AbstractContextualStorageManager<Integer> {
 
+        /**
+         * Creates a storage manager that relies on the session lock instead of
+         * locking on its own.
+         */
         public ContextualStorageManager() {
             // Session lock checked in VaadinSessionScopedContext while
             // getting the session attribute of this beans context.
             super(false);
         }
 
+        /**
+         * Gets the contextual storage of the current UI.
+         *
+         * @param createIfNotExist
+         *            whether to create the storage if it does not exist yet
+         * @return the storage, or {@code null} if it does not exist and
+         *         {@code createIfNotExist} is {@code false}
+         */
         public ContextualStorage getContextualStorage(
                 boolean createIfNotExist) {
-            final Integer uiId = UI.getCurrent().getUIId();
+            final Integer uiId = UI.getCurrentOrThrow().getUIId();
             return super.getContextualStorage(uiId, createIfNotExist);
         }
 
         @Override
         protected ContextualStorage newContextualStorage(Integer uiId) {
-            UI.getCurrent().addDetachListener(this::destroy);
+            UI.getCurrentOrThrow().addDetachListener(this::destroy);
             return super.newContextualStorage(uiId);
         }
 
@@ -94,16 +109,6 @@ public class UIScopedContext extends AbstractContext {
             final int uiId = event.getUI().getUIId();
             super.destroy(uiId);
         }
-    }
-
-    @Override
-    public void destroy() {
-        super.destroy();
-    }
-
-    @Override
-    public ContextState getState() {
-        return super.getState();
     }
 
 }

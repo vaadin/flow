@@ -20,11 +20,12 @@ import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 class HierarchicalDataCommunicatorIndexPathResolutionTest
         extends AbstractHierarchicalDataCommunicatorTest {
@@ -147,11 +148,11 @@ class HierarchicalDataCommunicatorIndexPathResolutionTest
         assertArrayUpdateRange(2, 1);
         assertArrayUpdateItems("name", Map.of(2, "Item 2"));
 
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         dataCommunicator.resolveIndexPath(0);
         fakeClientCommunication();
-        Mockito.verifyNoInteractions(arrayUpdater, arrayUpdate);
+        verifyNoInteractions(arrayUpdater, arrayUpdate);
 
         dataCommunicator.resolveIndexPath(0, 0);
         fakeClientCommunication();

@@ -15,15 +15,25 @@
  */
 package com.vaadin.flow.internal;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import java.util.List;
+import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class BootstrapHandlerHelperTest {
 
@@ -81,14 +91,39 @@ class BootstrapHandlerHelperTest {
         assertEquals("./..", BootstrapHandlerHelper.getServiceUrl(request));
     }
 
+    @ParameterizedTest
+    @CsvSource(nullValues = "none", value = {
+            "/push/*, /app/*, /push/VAADIN/push",
+            "none, /app/*, /app/VAADIN/push", "none, none, none" })
+    void getPushEndpointPath_pushServletMappingOrServletMapping(
+            String pushServletMapping, String servletMapping, String expected) {
+        ServletContext context = mock(ServletContext.class);
+        if (servletMapping != null) {
+            ServletRegistration registration = mock(ServletRegistration.class);
+            when(registration.getMappings())
+                    .thenReturn(List.of(servletMapping));
+            when(context.getServletRegistrations())
+                    .thenAnswer(invocation -> Map.of("app", registration));
+        }
+        ServletConfig config = mock(ServletConfig.class);
+        when(config.getServletName()).thenReturn("app");
+        when(config.getServletContext()).thenReturn(context);
+        when(config.getInitParameter(
+                InitParameters.SERVLET_PARAMETER_PUSH_SERVLET_MAPPING))
+                .thenReturn(pushServletMapping);
+
+        assertEquals(expected,
+                BootstrapHandlerHelper.getPushEndpointPath(config));
+    }
+
     private VaadinServletRequest createRequest(String pathInfo,
             String servletPath, String requestURI, String contextPath) {
-        HttpServletRequest httpRequest = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(httpRequest.getPathInfo()).thenReturn(pathInfo);
-        Mockito.when(httpRequest.getServletPath()).thenReturn(servletPath);
-        Mockito.when(httpRequest.getRequestURI()).thenReturn(requestURI);
-        Mockito.when(httpRequest.getContextPath()).thenReturn(contextPath);
-        VaadinServletService service = Mockito.mock(VaadinServletService.class);
+        HttpServletRequest httpRequest = mock(HttpServletRequest.class);
+        when(httpRequest.getPathInfo()).thenReturn(pathInfo);
+        when(httpRequest.getServletPath()).thenReturn(servletPath);
+        when(httpRequest.getRequestURI()).thenReturn(requestURI);
+        when(httpRequest.getContextPath()).thenReturn(contextPath);
+        VaadinServletService service = mock(VaadinServletService.class);
         return new VaadinServletRequest(httpRequest, service);
     }
 }

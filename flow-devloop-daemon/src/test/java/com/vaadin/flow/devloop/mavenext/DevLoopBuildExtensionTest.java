@@ -89,6 +89,9 @@ class DevLoopBuildExtensionTest {
         Plugin plugin = jetty("ee11", "12.1.13");
         plugin.setConfiguration(configuration("scan", "2"));
         PluginExecution execution = new PluginExecution();
+        execution.setId("start-jetty");
+        execution.setPhase("pre-integration-test");
+        execution.addGoal("start");
         execution.setConfiguration(configuration("deployMode", "FORK"));
         plugin.addExecution(execution);
 
@@ -96,6 +99,66 @@ class DevLoopBuildExtensionTest {
 
         assertEquals("2", model.getProperty("plugin.0.scan"));
         assertEquals("FORK", model.getProperty("plugin.0.deployMode"));
+        // The execution itself too, which is how the daemon names it when it
+        // runs one goal of the plugin.
+        assertEquals("start-jetty", model.getProperty("execution.0.0"));
+        assertEquals("pre-integration-test",
+                model.getProperty("execution.0.0.phase"));
+        assertEquals("start", model.getProperty("execution.0.0.goals"));
+    }
+
+    /**
+     * A module that switches the default compile execution off and binds one of
+     * its own keeps that one's configuration under the shared id - which is
+     * what lets one command line compile modules that disagree on the id. Asked
+     * twice, it still adds only one. The module's classes go to a directory of
+     * their own, whether or not the pom names the output directory. The model
+     * is the resolve's to record, so a compile run leaves it alone.
+     */
+    @Test
+    void theCompileExecutionInUseIsAlsoKnownByTheSharedId() {
+        Plugin compiler = plugin("org.apache.maven.plugins",
+                "maven-compiler-plugin", "3.13.0");
+        PluginExecution switchedOff = new PluginExecution();
+        switchedOff.setId("default-compile");
+        switchedOff.setPhase("none");
+        switchedOff.addGoal("compile");
+        switchedOff.setConfiguration(configuration("release", "21"));
+        compiler.addExecution(switchedOff);
+        PluginExecution own = new PluginExecution();
+        own.setId("java-compile");
+        own.setPhase("compile");
+        own.addGoal("compile");
+        Xpp3Dom ownConfiguration = configuration("release", "17");
+        Xpp3Dom explicitOutput = new Xpp3Dom("outputDirectory");
+        // As Maven leaves ${project.build.outputDirectory} once interpolated.
+        explicitOutput.setValue(module.resolve("target/classes").toString());
+        ownConfiguration.addChild(explicitOutput);
+        own.setConfiguration(ownConfiguration);
+        compiler.addExecution(own);
+        MavenProject project = project(compiler);
+
+        Properties compileRun = new Properties();
+        compileRun.setProperty(DevLoopBuildExtension.COMPILE_PROPERTY, "true");
+        afterProjectsRead(compileRun, new Properties(), project);
+        afterProjectsRead(compileRun, new Properties(), project);
+
+        PluginExecution alias = compiler.getExecutionsAsMap()
+                .get(DevLoopBuildExtension.COMPILE_EXECUTION);
+        assertEquals(List.of("compile"), alias.getGoals());
+        assertEquals("none", alias.getPhase());
+        assertEquals("17", ((Xpp3Dom) alias.getConfiguration())
+                .getChild("release").getValue());
+        assertEquals(3, compiler.getExecutions().size());
+        // Compiled beside, not into, what the running application loads -
+        // also where the pom names the output directory itself.
+        String output = module.resolve(DevLoopBuildExtension.COMPILE_OUTPUT)
+                .toString();
+        assertEquals(output, project.getBuild().getOutputDirectory());
+        assertEquals(output, ((Xpp3Dom) alias.getConfiguration())
+                .getChild("outputDirectory").getValue());
+        assertFalse(
+                Files.exists(module.resolve(DevLoopBuildExtension.MODEL_FILE)));
     }
 
     /** The profiles Maven ran with, which is the answer poms cannot give. */

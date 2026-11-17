@@ -16,13 +16,15 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.StateNode;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class VisibilityDataTest {
 
@@ -43,15 +45,15 @@ class VisibilityDataTest {
 
     @Test
     void allowsChanges_delegateToIsVisible() {
-        ElementData data = Mockito.mock(ElementData.class);
+        ElementData data = mock(ElementData.class);
 
-        Mockito.doCallRealMethod().when(data).allowsChanges();
+        doCallRealMethod().when(data).allowsChanges();
 
-        Mockito.when(data.isVisible()).thenReturn(true);
+        when(data.isVisible()).thenReturn(true);
 
         assertTrue(data.allowsChanges());
 
-        Mockito.when(data.isVisible()).thenReturn(false);
+        when(data.isVisible()).thenReturn(false);
 
         assertFalse(data.allowsChanges());
     }

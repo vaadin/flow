@@ -185,13 +185,20 @@ export class ResourceLoader {
    * loaded doesn't cause the stylesheet to be loaded again, but the listener
    * will still be notified when appropriate.
    *
+   * A stylesheet with a cascade `layer` is loaded through an `@import` rule
+   * in a `<style>` element, since a `<link>` element cannot put a stylesheet
+   * into a layer.
+   *
    * @param stylesheetUrl - the url of the stylesheet to load
    * @param resourceLoadListener - the listener that will get notified when the stylesheet is loaded
+   * @param dependencyId - the dependency ID to remove the stylesheet by, or `null`
+   * @param layer - the cascade layer to load the stylesheet into, or `null` to not use a layer
    */
   loadStylesheet(
     stylesheetUrl: string,
     resourceLoadListener: ResourceLoadListener | null,
-    dependencyId: string | null = null
+    dependencyId: string | null = null,
+    layer: string | null = null
   ): void {
     const url = getAbsoluteUrl(stylesheetUrl);
     if (dependencyId !== null) {
@@ -203,6 +210,10 @@ export class ResourceLoader {
       return;
     }
     if (this.#resources.addListener(url, resourceLoadListener)) {
+      if (layer !== null) {
+        this.#importStylesheetIntoLayer(url, layer, dependencyId, event);
+        return;
+      }
       const linkElement = document.createElement('link');
       linkElement.rel = 'stylesheet';
       linkElement.type = 'text/css';
@@ -242,6 +253,26 @@ export class ResourceLoader {
       }
       this.#addInHeadBeforeComment(linkElement, 'Stylesheet end');
     }
+  }
+
+  // Loads a stylesheet into a cascade layer with an @import rule in a style
+  // element. The load and error events of the element report on the import.
+  #importStylesheetIntoLayer(url: string, layer: string, dependencyId: string | null, event: ResourceLoadEvent): void {
+    const styleElement = document.createElement('style');
+    styleElement.textContent = `@import url("${url.replace(/["\\]/g, '\\$&')}") layer(${layer});`;
+    if (dependencyId !== null) {
+      styleElement.setAttribute('data-id', dependencyId);
+    }
+    // Lets the dev tools find the element by URL and keep the layer when they
+    // replace it with hotswapped content.
+    styleElement.setAttribute('data-href', url);
+    styleElement.setAttribute('data-layer', layer);
+    addOnloadHandler(
+      styleElement,
+      () => this.#resources.fireLoad(event),
+      () => this.#resources.fireError(event)
+    );
+    this.#addInHeadBeforeComment(styleElement, 'Stylesheet end');
   }
 
   // Polls a Safari/iOS stylesheet's rule count to detect load/error.
@@ -319,15 +350,23 @@ export class ResourceLoader {
    * Loads a dynamic import via the provided JS `expression` and reports
    * the result via the `resourceLoadListener`.
    *
+   * A function that the server sends as a value rather than as an expression
+   * is passed as `load`, so nothing is compiled from a string; the expression
+   * then only names the import in the event and in error messages.
+   *
    * @param expression - the JS expression which returns a Promise
    * @param resourceLoadListener - a listener to report the Promise result exection
+   * @param load - the function which returns the Promise, compiled from the expression if not given
    */
-  loadDynamicImport(expression: string, resourceLoadListener: ResourceLoadListener): void {
+  loadDynamicImport(
+    expression: string,
+    resourceLoadListener: ResourceLoadListener,
+    load: () => unknown = new Function(expression) as () => unknown
+  ): void {
     const event = this.#makeEvent(expression);
-    const fn = new Function(expression) as () => unknown;
     runPromiseExpression(
       expression,
-      () => fn(),
+      () => load(),
       () => resourceLoadListener.onLoad(event),
       () => resourceLoadListener.onError(event)
     );

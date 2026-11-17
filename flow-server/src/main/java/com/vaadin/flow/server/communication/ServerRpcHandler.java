@@ -18,7 +18,9 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -225,6 +227,18 @@ public class ServerRpcHandler implements Serializable {
         public InvalidUIDLSecurityKeyException() {
             super();
         }
+
+        /**
+         * Creates an exception with a message that describes why the security
+         * key is invalid.
+         *
+         * @param message
+         *            the description of the invalid key
+         * @since 25.4
+         */
+        public InvalidUIDLSecurityKeyException(String message) {
+            super(message);
+        }
     }
 
     /**
@@ -324,6 +338,8 @@ public class ServerRpcHandler implements Serializable {
      * @throws InvalidUIDLSecurityKeyException
      *             If the received security key does not match the one stored in
      *             the session.
+     * @throws MessageIdSyncException
+     *             If the client sends a message ID the server does not expect.
      */
     public void handleRpc(UI ui, Reader reader, VaadinRequest request)
             throws IOException, InvalidUIDLSecurityKeyException,
@@ -344,11 +360,14 @@ public class ServerRpcHandler implements Serializable {
      * @throws InvalidUIDLSecurityKeyException
      *             If the received security key does not match the one stored in
      *             the session.
+     * @throws MessageIdSyncException
+     *             If the client sends a message ID the server does not expect.
      * @since 24.5.6
      */
     public void handleRpc(UI ui, String message, VaadinRequest request)
             throws InvalidUIDLSecurityKeyException, MessageIdSyncException {
-        ui.getSession().setLastRequestTimestamp(System.currentTimeMillis());
+        ui.getSessionOrThrow()
+                .setLastRequestTimestamp(System.currentTimeMillis());
 
         if (message == null || message.isEmpty()) {
             // The client sometimes sends empty messages, this is probably a bug
@@ -361,10 +380,38 @@ public class ServerRpcHandler implements Serializable {
         // Security: double cookie submission pattern unless disabled by
         // property
         if (!VaadinService.isCsrfTokenValid(ui, rpcRequest.getCsrfToken())) {
-            throw new InvalidUIDLSecurityKeyException();
+            throw new InvalidUIDLSecurityKeyException(
+                    describeInvalidCsrfToken(ui, rpcRequest.getCsrfToken()));
         }
 
         handleRpc(ui, message, request, rpcRequest);
+    }
+
+    /**
+     * Describes why the security key of a request does not match the UI the
+     * request is addressed to, so that the log tells a client that never
+     * received a key apart from a client that holds the key of another UI. The
+     * key itself is not included.
+     */
+    private static String describeInvalidCsrfToken(UI ui, String token) {
+        int uiId = ui.getUIId();
+        if (ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE.equals(token)) {
+            return "the client sent no key for UI " + uiId
+                    + ", so it has not received the key of that UI";
+        }
+        byte[] tokenBytes = token.getBytes(StandardCharsets.UTF_8);
+        for (UI other : ui.getSessionOrThrow().getUIs()) {
+            String otherToken = other.getCsrfToken();
+            if (other != ui && otherToken != null && MessageDigest.isEqual(
+                    otherToken.getBytes(StandardCharsets.UTF_8), tokenBytes)) {
+                return "the key sent to UI " + uiId + " belongs to UI "
+                        + other.getUIId() + " of the same session";
+            }
+        }
+        return "the key sent to UI " + uiId
+                + " belongs to no UI of the session; the client may hold a UI"
+                + " of an earlier session, or the request did not originate"
+                + " from this application";
     }
 
     protected void handleRpc(UI ui, String message, VaadinRequest request,
@@ -473,7 +520,7 @@ public class ServerRpcHandler implements Serializable {
     }
 
     private static void fireEvent(UI ui, EventObject event) {
-        ui.getSession().getService().getEventBus().fireEvent(event);
+        ui.getSessionOrThrow().getService().getEventBus().fireEvent(event);
     }
 
     protected void handleUnloadBeaconRequest(UI ui, RpcRequest rpcRequest) {
@@ -709,7 +756,7 @@ public class ServerRpcHandler implements Serializable {
         private InvocationEvents(UI ui, String type, JsonNode invocationJson) {
             this.ui = ui;
             this.type = type;
-            eventBus = ui.getSession().getService().getEventBus();
+            eventBus = ui.getSessionOrThrow().getService().getEventBus();
             observed = eventBus.hasListener(RpcInvocationStartedEvent.class)
                     || eventBus.hasListener(RpcInvocationFailedEvent.class)
                     || eventBus.hasListener(RpcInvocationEndedEvent.class);
@@ -802,7 +849,7 @@ public class ServerRpcHandler implements Serializable {
         } else {
             event = new ErrorEvent(throwable);
         }
-        ui.getSession().getErrorHandler().error(event);
+        ui.getSessionOrThrow().getErrorHandler().error(event);
     }
 
     protected String getMessage(Reader reader) throws IOException {

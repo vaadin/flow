@@ -34,14 +34,19 @@ import org.slf4j.LoggerFactory;
  */
 public class DefaultI18NProvider implements I18NProvider {
 
-    final List<Locale> providedLocales;
-    private final ClassLoader classLoader;
-
     public static final String BUNDLE_FOLDER = "vaadin-i18n";
     public static final String BUNDLE_FILENAME = "translations";
     // Get bundles named `translations` from `vaadin-i18n` folder.
     public static final String BUNDLE_PREFIX = BUNDLE_FOLDER + "."
             + BUNDLE_FILENAME;
+
+    // A locale without a bundle of its own falls back to the base bundle
+    // instead of the bundle for the JVM default locale.
+    private static final ResourceBundle.Control BUNDLE_CONTROL = ResourceBundle.Control
+            .getNoFallbackControl(ResourceBundle.Control.FORMAT_PROPERTIES);
+
+    final List<Locale> providedLocales;
+    private final ClassLoader classLoader;
 
     /**
      * Construct {@link DefaultI18NProvider} for a list of locales that we have
@@ -111,7 +116,8 @@ public class DefaultI18NProvider implements I18NProvider {
 
     ResourceBundle getBundle(Locale locale) {
         try {
-            return ResourceBundle.getBundle(BUNDLE_PREFIX, locale, classLoader);
+            return ResourceBundle.getBundle(BUNDLE_PREFIX, locale, classLoader,
+                    BUNDLE_CONTROL);
         } catch (final MissingResourceException e) {
             getLogger().warn("Missing resource bundle for " + BUNDLE_PREFIX
                     + " and locale " + locale.getDisplayName(), e);

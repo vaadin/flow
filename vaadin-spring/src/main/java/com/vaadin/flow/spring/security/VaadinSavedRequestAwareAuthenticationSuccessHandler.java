@@ -23,6 +23,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.log.LogMessage;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.DefaultRedirectStrategy;
@@ -41,15 +42,16 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
 
 /**
  * A version of {@link SavedRequestAwareAuthenticationSuccessHandler} that
- * writes a different return value for a Fusion TypeScript client.
+ * writes a different return value for a Hilla TypeScript client.
  * <p>
  * This class acts as a {@link SavedRequestAwareAuthenticationSuccessHandler}
  * unless the request from the client contains a "source: typescript" header.
  * <p>
- * If the header is present, it sends a return value that is an "ok" instead of
- * a "redirect" response. This is so that the TypeScript caller is able to read
- * the returned values. Additionally it sends the saved URL separately so the
- * client can decide where to redirect if no URL was saved.
+ * If the header is present, it sends an "ok" response with a
+ * {@code Result: success} header instead of a "redirect" response. This is so
+ * that the TypeScript caller is able to read the returned values. Additionally
+ * it sends the saved URL separately so the client can decide where to redirect
+ * if no URL was saved.
  * 
  * @since 17.0
  */
@@ -63,7 +65,7 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
      */
     private static final String SOURCE_HEADER = "source";
 
-    /** This header contains 'ok' if login was successful. */
+    /** This header contains 'success' if login was successful. */
     private static final String RESULT_HEADER = "Result";
 
     /**
@@ -118,12 +120,55 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
     }
 
     /**
+     * Resolves the URL to redirect to after a successful authentication, for
+     * example to send users to a landing page that depends on their roles.
+     * <p>
+     * The resolved URL takes precedence over both the originally requested URL
+     * and the default target URL. It is delivered the same way as those, so it
+     * works for form and OAuth2 login as well as for login from a Hilla client.
+     *
+     * @see #setSuccessUrlResolver(SuccessUrlResolver)
+     * @since 25.4
+     */
+    @FunctionalInterface
+    public interface SuccessUrlResolver {
+
+        /**
+         * Resolves the URL to redirect to after a successful authentication.
+         *
+         * @param request
+         *            the request which caused the successful authentication
+         * @param authentication
+         *            the authentication created during the authentication
+         *            process
+         * @param savedUrl
+         *            the absolute URL the user tried to access before being
+         *            asked to log in, or {@code null} if there is none. When
+         *            the request was intercepted by Spring Security, this is
+         *            the saved request URL, which may carry Spring Security's
+         *            {@code continue} query parameter (for example
+         *            {@code http://localhost:8080/admin?continue}); when the
+         *            navigation was intercepted by Vaadin, it is the plain
+         *            absolute URL. Parse it, for example with
+         *            {@link java.net.URI#getPath()}, rather than comparing it
+         *            to a path directly
+         * @return the URL to redirect to, or {@code null} to redirect to the
+         *         saved URL or the default target URL as if no resolver was set
+         */
+        @Nullable
+        String resolveSuccessUrl(HttpServletRequest request,
+                Authentication authentication, @Nullable String savedUrl);
+    }
+
+    /**
      * This needs to be stored only because the field in the super class is not
      * accessible.
      */
     private RequestCache requestCache = new HttpSessionRequestCache();
 
     private CsrfTokenRepository csrfTokenRepository;
+
+    private SuccessUrlResolver successUrlResolver;
 
     /**
      * Creates a new instance.
@@ -204,6 +249,24 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
         SavedRequest savedRequest = this.requestCache.getRequest(request,
                 response);
         String fullySavedRequestUrl = getStoredServerNavigation(request);
+
+        if (this.successUrlResolver != null) {
+            String savedUrl = savedRequest != null
+                    ? savedRequest.getRedirectUrl()
+                    : fullySavedRequestUrl;
+            String resolvedUrl = this.successUrlResolver
+                    .resolveSuccessUrl(request, authentication, savedUrl);
+            if (StringUtils.hasText(resolvedUrl)) {
+                // The saved request is not replayed when redirecting
+                // elsewhere, so it must not be picked up by a later login
+                this.requestCache.removeRequest(request, response);
+                this.clearAuthenticationAttributes(request);
+                response.setHeader(SAVED_URL_HEADER, resolvedUrl);
+                this.getRedirectStrategy().sendRedirect(request, response,
+                        resolvedUrl);
+                return;
+            }
+        }
 
         if (savedRequest != null) {
             String targetUrlParameter = this.getTargetUrlParameter();
@@ -289,6 +352,25 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
     public void setRequestCache(RequestCache requestCache) {
         super.setRequestCache(requestCache);
         this.requestCache = requestCache;
+    }
+
+    /**
+     * Sets the resolver for the URL to redirect to after a successful
+     * authentication.
+     * <p>
+     * When the resolver returns a URL, it is used instead of the originally
+     * requested URL and the default target URL, even if
+     * {@link #setAlwaysUseDefaultTargetUrl(boolean)} is enabled. When it
+     * returns {@code null}, the redirect target is determined as if no resolver
+     * was set.
+     *
+     * @param successUrlResolver
+     *            the resolver to use, or {@code null} to remove a previously
+     *            set resolver
+     * @since 25.4
+     */
+    public void setSuccessUrlResolver(SuccessUrlResolver successUrlResolver) {
+        this.successUrlResolver = successUrlResolver;
     }
 
     /**

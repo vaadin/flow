@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -55,6 +54,12 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class DataCommunicatorTest {
     /**
@@ -142,8 +147,7 @@ public class DataCommunicatorTest {
             }
         };
 
-        Mockito.when(arrayUpdater.startUpdate(Mockito.anyInt()))
-                .thenReturn(update);
+        when(arrayUpdater.startUpdate(anyInt())).thenReturn(update);
 
         dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
                 data -> {
@@ -479,7 +483,7 @@ public class DataCommunicatorTest {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProviderThatChangesSize(
                 50, 10);
-        dataProvider = Mockito.spy(dataProvider);
+        dataProvider = spy(dataProvider);
         dataCommunicator.setDataProvider(dataProvider, null);
 
         // The first request will return size 50, but the actual fetch will
@@ -491,8 +495,8 @@ public class DataCommunicatorTest {
         assertEquals(40, lastSet.getEnd());
         // Assert takes into acount the inital size query for setting
         // dataprovider.
-        Mockito.verify(dataProvider, Mockito.times(2)).size(Mockito.any());
-        Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
+        verify(dataProvider, times(2)).size(any());
+        verify(dataProvider, times(1)).fetch(any());
     }
 
     @ParameterizedTest
@@ -537,7 +541,7 @@ public class DataCommunicatorTest {
             boolean dataProviderWithParallelStream) {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider();
-        dataProvider = Mockito.spy(dataProvider);
+        dataProvider = spy(dataProvider);
 
         dataCommunicator.setDataProvider(dataProvider, null);
         dataCommunicator.setViewportRange(0, 50);
@@ -558,15 +562,15 @@ public class DataCommunicatorTest {
                 "SizeCallback not called");
         assertEquals(100, dataCommunicator.getItemCount(), "Size not used");
 
-        Mockito.verify(dataProvider, Mockito.times(1)).size(Mockito.any());
-        Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
+        verify(dataProvider, times(1)).size(any());
+        verify(dataProvider, times(1)).fetch(any());
 
         dataCommunicator.setViewportRange(50, 50);
 
         fakeClientCommunication();
 
-        Mockito.verify(dataProvider, Mockito.times(1)).size(Mockito.any());
-        Mockito.verify(dataProvider, Mockito.times(2)).fetch(Mockito.any());
+        verify(dataProvider, times(1)).size(any());
+        verify(dataProvider, times(2)).fetch(any());
 
         assertFalse(sizeCallbackCall.get(),
                 "SizeCallback called when should not have");
@@ -588,7 +592,7 @@ public class DataCommunicatorTest {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 5000);
-        dataProvider = Mockito.spy(dataProvider);
+        dataProvider = spy(dataProvider);
         dataCommunicator.setDataProvider(dataProvider, null);
 
         final int itemCountEstimate = 200;
@@ -604,8 +608,8 @@ public class DataCommunicatorTest {
         assertEquals(itemCountEstimate + itemCountEstimateIncrease,
                 dataCommunicator.getItemCount(),
                 "initial estimate+increase not used");
-        Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
-        Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
+        verify(dataProvider, times(0)).size(any());
+        verify(dataProvider, times(1)).fetch(any());
 
         AtomicBoolean sizeCallbackCall = new AtomicBoolean(false);
         final int exactSize = 1234;
@@ -630,7 +634,7 @@ public class DataCommunicatorTest {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 250);
-        dataProvider = Mockito.spy(dataProvider);
+        dataProvider = spy(dataProvider);
         dataCommunicator.setDataProvider(dataProvider, null);
 
         final int initialCountEstimate = 100;
@@ -642,8 +646,8 @@ public class DataCommunicatorTest {
 
         assertEquals(initialCountEstimate, dataCommunicator.getItemCount(),
                 "initial size estimate not used");
-        Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
-        Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
+        verify(dataProvider, times(0)).size(any());
+        verify(dataProvider, times(1)).fetch(any());
 
         dataCommunicator.setViewportRange(50, 50);
 
@@ -652,8 +656,8 @@ public class DataCommunicatorTest {
         assertEquals(initialCountEstimate + getPageSizeIncrease(),
                 dataCommunicator.getItemCount(),
                 "initial size estimate was not discarded");
-        Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
-        Mockito.verify(dataProvider, Mockito.times(2)).fetch(Mockito.any());
+        verify(dataProvider, times(0)).size(any());
+        verify(dataProvider, times(2)).fetch(any());
     }
 
     @ParameterizedTest
@@ -688,7 +692,7 @@ public class DataCommunicatorTest {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 250);
-        dataProvider = Mockito.spy(dataProvider);
+        dataProvider = spy(dataProvider);
         dataCommunicator.setDataProvider(dataProvider, null);
         int requestedRangeEnd = 50;
         dataCommunicator.setViewportRange(0, requestedRangeEnd);
@@ -709,7 +713,7 @@ public class DataCommunicatorTest {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 5000);
-        dataProvider = Mockito.spy(dataProvider);
+        dataProvider = spy(dataProvider);
         dataCommunicator.setDataProvider(dataProvider, null);
         int rangeLength = 100;
         dataCommunicator.setViewportRange(400, rangeLength);
@@ -734,7 +738,7 @@ public class DataCommunicatorTest {
         final int exactSize = 200;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 exactSize);
-        dataProvider = Mockito.spy(dataProvider);
+        dataProvider = spy(dataProvider);
 
         dataCommunicator.setDataProvider(dataProvider, null);
         final int itemCountEstimate = 1000;
@@ -753,14 +757,14 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         assertEquals(exactSize, dataCommunicator.getItemCount());
-        Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
+        verify(dataProvider, times(0)).size(any());
         // 1. initial call 0-50, 2. then: 900-950, 800-850, ... ,
         // 200-250, 100-150, 150-200.
         // Ranges 950-1000, 850-900, ... , 250-300 are not requested
         // from backend because it's clear they would be empty (because
         // 900-950, ... 200-250 are empty).
         // So, it would be 11 calls in total:
-        Mockito.verify(dataProvider, Mockito.times(11)).fetch(Mockito.any());
+        verify(dataProvider, times(11)).fetch(any());
     }
 
     @ParameterizedTest
@@ -771,7 +775,7 @@ public class DataCommunicatorTest {
         final int exactSize = 0;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 exactSize);
-        dataProvider = Mockito.spy(dataProvider);
+        dataProvider = spy(dataProvider);
 
         dataCommunicator.setDataProvider(dataProvider, null);
         final int itemCountEstimate = 1000;
@@ -780,8 +784,8 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         assertEquals(exactSize, dataCommunicator.getItemCount());
-        Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
-        Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
+        verify(dataProvider, times(0)).size(any());
+        verify(dataProvider, times(1)).fetch(any());
     }
 
     @ParameterizedTest
@@ -1334,7 +1338,7 @@ public class DataCommunicatorTest {
         // infinite loop inside 'requestFlush()'
         fakeClientCommunication();
 
-        StateNode stateNode = Mockito.spy(element.getNode());
+        StateNode stateNode = spy(element.getNode());
         DataCommunicator<Item> dataCommunicator = new DataCommunicator<>(
                 dataGenerator, arrayUpdater, data -> {
                 }, stateNode);
@@ -1354,7 +1358,7 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         // Verify that requestFlush has been invoked
-        Mockito.verify(stateNode).runWhenAttached(Mockito.any());
+        verify(stateNode).runWhenAttached(any());
 
         // Verify the estimated count is now 100 + 4 * pageSize = 300
         assertEquals(300, dataCommunicator.getItemCount());
@@ -1379,7 +1383,7 @@ public class DataCommunicatorTest {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 100);
-        dataProvider = Mockito.spy(dataProvider);
+        dataProvider = spy(dataProvider);
 
         dataCommunicator.setPageSize(10);
         dataCommunicator.setDataProvider(dataProvider, null);
@@ -1389,14 +1393,13 @@ public class DataCommunicatorTest {
         ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
                 .forClass(Query.class);
 
-        Mockito.verify(dataProvider, Mockito.times(3))
-                .fetch(queryCaptor.capture());
+        verify(dataProvider, times(3)).fetch(queryCaptor.capture());
 
-        List<Item> items = stream.collect(Collectors.toList());
+        List<Item> items = stream.toList();
         assertEquals(30, items.size());
 
-        assertEquals(IntStream.range(0, 30).mapToObj(Item::new)
-                .collect(Collectors.toList()), items);
+        assertEquals(IntStream.range(0, 30).mapToObj(Item::new).toList(),
+                items);
 
         List<Query> allQueries = queryCaptor.getAllValues();
         assertEquals(3, allQueries.size());
@@ -1422,8 +1425,7 @@ public class DataCommunicatorTest {
         Mockito.reset(dataProvider);
         // Use a limit value so that it's multiple by page size
         dataCommunicator.fetchFromProvider(0, 30);
-        Mockito.verify(dataProvider, Mockito.times(3))
-                .fetch(Mockito.any(Query.class));
+        verify(dataProvider, times(3)).fetch(any(Query.class));
     }
 
     @ParameterizedTest
@@ -1433,7 +1435,7 @@ public class DataCommunicatorTest {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 100);
-        dataProvider = Mockito.spy(dataProvider);
+        dataProvider = spy(dataProvider);
 
         dataCommunicator.setDataProvider(dataProvider, null);
         Stream<Item> stream = dataCommunicator.fetchFromProvider(0, 50);
@@ -1441,13 +1443,13 @@ public class DataCommunicatorTest {
         ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
                 .forClass(Query.class);
 
-        Mockito.verify(dataProvider).fetch(queryCaptor.capture());
+        verify(dataProvider).fetch(queryCaptor.capture());
 
-        List<Item> items = stream.collect(Collectors.toList());
+        List<Item> items = stream.toList();
         assertEquals(50, items.size());
 
-        assertEquals(IntStream.range(0, 50).mapToObj(Item::new)
-                .collect(Collectors.toList()), items);
+        assertEquals(IntStream.range(0, 50).mapToObj(Item::new).toList(),
+                items);
 
         Query query = queryCaptor.getValue();
         assertEquals(0, query.getOffset());
@@ -1463,7 +1465,7 @@ public class DataCommunicatorTest {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 100);
-        dataProvider = Mockito.spy(dataProvider);
+        dataProvider = spy(dataProvider);
 
         dataCommunicator.setDataProvider(dataProvider, null);
         Stream<Item> stream = dataCommunicator.fetchFromProvider(10, 42);
@@ -1471,13 +1473,13 @@ public class DataCommunicatorTest {
         ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
                 .forClass(Query.class);
 
-        Mockito.verify(dataProvider).fetch(queryCaptor.capture());
+        verify(dataProvider).fetch(queryCaptor.capture());
 
-        List<Item> items = stream.collect(Collectors.toList());
+        List<Item> items = stream.toList();
         assertEquals(42, items.size());
 
-        assertEquals(IntStream.range(10, 52).mapToObj(Item::new)
-                .collect(Collectors.toList()), items);
+        assertEquals(IntStream.range(10, 52).mapToObj(Item::new).toList(),
+                items);
 
         Query query = queryCaptor.getValue();
         assertEquals(10, query.getOffset());
@@ -1493,7 +1495,7 @@ public class DataCommunicatorTest {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 200);
-        dataProvider = Mockito.spy(dataProvider);
+        dataProvider = spy(dataProvider);
 
         dataCommunicator.setPagingEnabled(false);
         dataCommunicator.setDataProvider(dataProvider, null);
@@ -1503,13 +1505,13 @@ public class DataCommunicatorTest {
         ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
                 .forClass(Query.class);
 
-        Mockito.verify(dataProvider).fetch(queryCaptor.capture());
+        verify(dataProvider).fetch(queryCaptor.capture());
 
-        List<Item> items = stream.collect(Collectors.toList());
+        List<Item> items = stream.toList();
         assertEquals(123, items.size());
 
-        assertEquals(IntStream.range(0, 123).mapToObj(Item::new)
-                .collect(Collectors.toList()), items);
+        assertEquals(IntStream.range(0, 123).mapToObj(Item::new).toList(),
+                items);
 
         List<Query> allQueries = queryCaptor.getAllValues();
         assertEquals(1, allQueries.size());
@@ -1528,7 +1530,7 @@ public class DataCommunicatorTest {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 42);
-        dataProvider = Mockito.spy(dataProvider);
+        dataProvider = spy(dataProvider);
 
         dataCommunicator.setDataProvider(dataProvider, null);
         dataCommunicator.setPageSize(2_000_000_000);
@@ -1536,8 +1538,7 @@ public class DataCommunicatorTest {
         // overflow, and not throw thus
         dataCommunicator.fetchFromProvider(0, Integer.MAX_VALUE);
 
-        Mockito.verify(dataProvider, Mockito.times(1))
-                .fetch(Mockito.any(Query.class));
+        verify(dataProvider, times(1)).fetch(any(Query.class));
     }
 
     @ParameterizedTest
@@ -1547,14 +1548,13 @@ public class DataCommunicatorTest {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 42);
-        dataProvider = Mockito.spy(dataProvider);
+        dataProvider = spy(dataProvider);
 
         dataCommunicator.setDataProvider(dataProvider, null);
         dataCommunicator.fetchFromProvider(0, 100);
 
         // 42 < pageSize (50), so the second page shouldn't be requested
-        Mockito.verify(dataProvider, Mockito.times(1))
-                .fetch(Mockito.any(Query.class));
+        verify(dataProvider, times(1)).fetch(any(Query.class));
     }
 
     @ParameterizedTest
@@ -1669,18 +1669,16 @@ public class DataCommunicatorTest {
                 dataGenerator, arrayUpdater, data -> {
                 }, element.getNode(), false);
 
-        DataProvider<Item, ?> dataProvider = Mockito
-                .spy(DataProvider.ofItems(new Item(0)));
+        DataProvider<Item, ?> dataProvider = spy(
+                DataProvider.ofItems(new Item(0)));
 
         dataCommunicator.setDataProvider(dataProvider, null);
         dataCommunicator.setViewportRange(0, 0);
 
         fakeClientCommunication();
 
-        Mockito.verify(dataProvider, Mockito.times(0))
-                .fetch(Mockito.any(Query.class));
-        Mockito.verify(dataProvider, Mockito.times(0))
-                .size(Mockito.any(Query.class));
+        verify(dataProvider, times(0)).fetch(any(Query.class));
+        verify(dataProvider, times(0)).size(any(Query.class));
 
         // Switch back to normal mode
         dataCommunicator.setFetchEnabled(true);
@@ -1688,8 +1686,8 @@ public class DataCommunicatorTest {
 
         fakeClientCommunication();
 
-        Mockito.verify(dataProvider).fetch(Mockito.any(Query.class));
-        Mockito.verify(dataProvider).size(Mockito.any(Query.class));
+        verify(dataProvider).fetch(any(Query.class));
+        verify(dataProvider).size(any(Query.class));
     }
 
     @ParameterizedTest
@@ -1910,8 +1908,7 @@ public class DataCommunicatorTest {
     void setViewportRange_defaultPageSize_tooMuchItemsRequested_maxItemsAllowedRequested(
             boolean dataProviderWithParallelStream) {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
-        DataProvider<Item, Object> dataProvider = Mockito
-                .spy(createDataProvider(1000));
+        DataProvider<Item, Object> dataProvider = spy(createDataProvider(1000));
         dataCommunicator.setDataProvider(dataProvider, null);
         // Paging is disabled for easier check of requested amount of items
         dataCommunicator.setPagingEnabled(false);
@@ -1921,8 +1918,7 @@ public class DataCommunicatorTest {
 
         ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
                 .forClass(Query.class);
-        Mockito.verify(dataProvider, Mockito.times(1))
-                .fetch(queryCaptor.capture());
+        verify(dataProvider, times(1)).fetch(queryCaptor.capture());
 
         assertEquals(500, queryCaptor.getValue().getLimit(),
                 "Expected the requested items count to be limited"
@@ -1934,8 +1930,7 @@ public class DataCommunicatorTest {
     void setSmallPageSize_fetchMaximumItemsLowerLimit(
             boolean dataProviderWithParallelStream) {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
-        DataProvider<Item, Object> dataProvider = Mockito
-                .spy(createDataProvider(1000));
+        DataProvider<Item, Object> dataProvider = spy(createDataProvider(1000));
         dataCommunicator.setDataProvider(dataProvider, null);
         dataCommunicator.setPageSize(2);
         dataCommunicator.setViewportRange(0, 1000);
@@ -1944,8 +1939,7 @@ public class DataCommunicatorTest {
         ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
                 .forClass(Query.class);
         // to fetch 500 items 250 requests to dataProvider are required
-        Mockito.verify(dataProvider, Mockito.times(250))
-                .fetch(queryCaptor.capture());
+        verify(dataProvider, times(250)).fetch(queryCaptor.capture());
     }
 
     @ParameterizedTest
@@ -1956,8 +1950,7 @@ public class DataCommunicatorTest {
         int newPageSize = 300;
         dataCommunicator.setPageSize(newPageSize);
 
-        DataProvider<Item, Object> dataProvider = Mockito
-                .spy(createDataProvider(1000));
+        DataProvider<Item, Object> dataProvider = spy(createDataProvider(1000));
         dataCommunicator.setDataProvider(dataProvider, null);
         // Paging is disabled for easier check of requested amount of items
         dataCommunicator.setPagingEnabled(false);
@@ -1967,8 +1960,7 @@ public class DataCommunicatorTest {
         ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
                 .forClass(Query.class);
 
-        Mockito.verify(dataProvider, Mockito.times(1))
-                .fetch(queryCaptor.capture());
+        verify(dataProvider, times(1)).fetch(queryCaptor.capture());
 
         assertEquals(600, queryCaptor.getValue().getLimit(),
                 "Expected two pages with page size = 300 to be "

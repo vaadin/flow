@@ -19,13 +19,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
@@ -41,6 +39,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
@@ -97,14 +96,14 @@ class EventUtilTest {
 
     @BeforeEach
     void setUp() {
-        VaadinSession session = Mockito.mock(VaadinSession.class);
+        VaadinSession session = mock(VaadinSession.class);
         ui = new UI() {
             @Override
             public VaadinSession getSession() {
                 return session;
             }
         };
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         when(session.getService()).thenReturn(service);
         DefaultInstantiator instantiator = new DefaultInstantiator(service);
         when(service.getInstantiator()).thenReturn(instantiator);
@@ -289,7 +288,7 @@ class EventUtilTest {
         List<BeforeEnterObserver> listenerComponents = EventUtil
                 .getImplementingComponents(elements.stream(),
                         BeforeEnterObserver.class)
-                .collect(Collectors.toList());
+                .toList();
 
         assertEquals(1, listenerComponents.size(),
                 "Wrong amount of listener instances found");
@@ -315,7 +314,7 @@ class EventUtilTest {
         List<BeforeEnterObserver> listenerComponents = EventUtil
                 .getImplementingComponents(elements.stream(),
                         BeforeEnterObserver.class)
-                .collect(Collectors.toList());
+                .toList();
 
         assertEquals(1, listenerComponents.size(),
                 "Wrong amount of listener instances found");
@@ -405,7 +404,7 @@ class EventUtilTest {
         List<BeforeEnterObserver> components = EventUtil
                 .getImplementingComponents(Stream.of(wrapper.getElement()),
                         BeforeEnterObserver.class)
-                .distinct().collect(Collectors.toList());
+                .distinct().toList();
         assertEquals(1, components.size());
         assertEquals(EnterObserver.class, components.get(0).getClass());
 

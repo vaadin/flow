@@ -56,6 +56,19 @@ is how CI gets it into the local repository: the IT jobs build no test module at
 all, so anything they resolve has to have been installed by the workspace build,
 which runs with `-DskipTests`.
 
+This aggregator and every fixture carry an empty `.mvn/` directory, which makes
+each a project root of its own, as an application is. Maven 4 otherwise takes
+the nearest `.mvn/` above them - Flow's own - as the root, loads all of Flow
+into the session, and has `-pl … -am` build Flow's modules too: on every compile
+and restart the daemon runs, and in CI's shared-module build.
+
+The catch is formatting: `${maven.multiModuleProjectDirectory}` now resolves to
+the directory holding the nearest `.mvn/`, so `mvn spotless:apply` started from
+inside this aggregator or a fixture (or with `-f` pointing at one) looks for
+`eclipse/VaadinJavaConventions.xml` and the license header there and fails on
+the missing file. Run spotless from the repository root instead, e.g.
+`mvn spotless:apply -pl flow-tests/test-devloop/test-devloop-spring/devloop-app`.
+
 ## Running
 
 From the repository root, after one `mvn install -DskipTests`:
@@ -64,6 +77,22 @@ From the repository root, after one `mvn install -DskipTests`:
 # every fixture
 mvn -o -pl flow-tests/test-devloop/test-devloop-spring/devloop-app,flow-tests/test-devloop/test-devloop-jetty/devloop-app,flow-tests/test-devloop/test-devloop-cargo/devloop-app,flow-tests/test-devloop/test-devloop-tomee/devloop-app,flow-tests/test-devloop/test-devloop-jbosseap/devloop-app,flow-tests/test-devloop/test-devloop-liberty/devloop-app,flow-tests/test-devloop/test-devloop-payara/devloop-app,flow-tests/test-devloop/test-devloop-payara-micro/devloop-app verify
 ```
+
+Each fixture runs its ITs twice. The default failsafe execution runs every IT
+with the daemon compiling applies by javac, its default; a second execution,
+`maven-compile`, runs the ITs that exercise the compile leg (`DevLoopApplyIT`,
+`DevLoopMultiModuleIT`, `DevLoopDeletionIT`) with `-Dvaadin.dev.compiler=maven`.
+Each IT checks through `status` that the daemon really runs the compiler the
+execution asked for. To run the whole suite with Maven compiling, and nothing
+with javac:
+
+```bash
+mvn -o -pl flow-tests/test-devloop/test-devloop-jetty/devloop-app -Pdevloop-maven-compile verify
+# a subset: add "-Ddevloop.maven-compile.its=**/DevLoopApplyIT.java, **/DevLoopCssIT.java"
+```
+
+`-Dit.test=` narrows both executions, so the named ITs run once with each
+compiler.
 
 Each fixture's README has the rest: what it pins and why, how to drive the loop
 by hand, and the patch-and-revert rule the ITs follow so that a failed run never

@@ -31,7 +31,7 @@ import io.quarkus.arc.Arc;
  * @since 1.0
  */
 @Typed()
-public abstract class ContextUtils {
+public final class ContextUtils {
     private ContextUtils() {
         // prevent instantiation
     }

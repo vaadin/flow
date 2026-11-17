@@ -17,7 +17,6 @@ package com.vaadin.flow.data.provider.hierarchy;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataKeyMapper;
@@ -26,6 +25,7 @@ import com.vaadin.flow.function.ValueProvider;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.clearInvocations;
 
 class HierarchicalDataCommunicatorKeyGenerationTest
         extends AbstractHierarchicalDataCommunicatorTest {
@@ -61,7 +61,7 @@ class HierarchicalDataCommunicatorKeyGenerationTest
                 keyMapper.key(new Item("Item 0-1")),
                 keyMapper.key(new Item("Item 1")));
 
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         dataCommunicator.setViewportRange(98, 4);
         fakeClientCommunication();
@@ -70,7 +70,7 @@ class HierarchicalDataCommunicatorKeyGenerationTest
                 keyMapper.key(new Item("Item 98")),
                 keyMapper.key(new Item("Item 99")));
 
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         dataCommunicator.setViewportRange(0, 6);
         fakeClientCommunication();
@@ -94,7 +94,7 @@ class HierarchicalDataCommunicatorKeyGenerationTest
         dataCommunicator.setViewportRange(0, 6);
         fakeClientCommunication();
 
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         dataCommunicator.reset();
         fakeClientCommunication();
@@ -120,7 +120,7 @@ class HierarchicalDataCommunicatorKeyGenerationTest
         assertTrue(keyMapper.has(new Item("Item 1")));
         assertFalse(keyMapper.has(new Item("Item 2")));
 
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         dataCommunicator.setViewportRange(2, 4);
         fakeClientCommunication(); // not confirmed yet
@@ -135,7 +135,7 @@ class HierarchicalDataCommunicatorKeyGenerationTest
         assertTrue(keyMapper.has(new Item("Item 2")));
         assertTrue(keyMapper.has(new Item("Item 3")));
 
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         dataCommunicator.setViewportRange(0, 4);
         fakeClientCommunication(); // not confirmed yet

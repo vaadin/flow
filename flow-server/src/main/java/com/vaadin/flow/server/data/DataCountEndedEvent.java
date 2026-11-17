@@ -86,6 +86,7 @@ public class DataCountEndedEvent extends AbstractDataCountEvent {
      * @param duration
      *            the time from just before the started event was fired until
      *            the query returned or threw, not {@code null}
+     * @since 25.4
      */
     public DataCountEndedEvent(UI ui, Component component, boolean filtered,
             int count, Duration duration) {
@@ -114,6 +115,7 @@ public class DataCountEndedEvent extends AbstractDataCountEvent {
      * events took, but not the time spent on this event.
      *
      * @return the duration, never negative
+     * @since 25.4
      */
     public Duration getDuration() {
         return duration;

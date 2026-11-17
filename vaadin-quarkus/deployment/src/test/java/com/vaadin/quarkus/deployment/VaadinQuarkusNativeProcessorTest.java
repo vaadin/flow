@@ -16,35 +16,50 @@
 package com.vaadin.quarkus.deployment;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageProxyDefinitionBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourcePatternsBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import io.quarkus.paths.PathTree;
+import io.quarkus.undertow.deployment.ServletDeploymentManagerBuildItem;
+import io.undertow.servlet.api.DeploymentManager;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.InOrder;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -52,11 +67,15 @@ import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.quarkus.VaadinServletStartupRecorder;
+import com.vaadin.quarkus.graal.AtmosphereRecorder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
 
 class VaadinQuarkusNativeProcessorTest {
 
@@ -250,22 +269,6 @@ class VaadinQuarkusNativeProcessorTest {
     }
 
     @Test
-    void testVaadinNativeSupport_registersRuntimeLoadedClientHelpers() {
-        List<NativeImageResourcePatternsBuildItem> resources = new ArrayList<>();
-
-        processor.vaadinNativeSupport(new CombinedIndexBuildItem(index, index),
-                item -> {
-                }, resources::add, item -> {
-                }, item -> {
-                });
-
-        assertTrue(isIncluded(resources, "META-INF/frontend/FlowShortcut.js"),
-                "Shortcut client helper should be included in the image");
-        assertTrue(isIncluded(resources, "META-INF/frontend/FlowWebPush.js"),
-                "Web push client helper should be included in the image");
-    }
-
-    @Test
     void testVaadinNativeSupport_registersRuntimeLoadedProperties() {
         List<NativeImageResourcePatternsBuildItem> resources = new ArrayList<>();
 
@@ -388,6 +391,86 @@ class VaadinQuarkusNativeProcessorTest {
     }
 
     @Test
+    void testRegisterJsDefinitionProxies_registersInheritedInterfaces()
+            throws IOException {
+        Indexer indexer = new Indexer();
+        indexer.indexClass(SimpleDtoJs.class);
+        indexer.indexClass(ValueJs.class);
+        Index jsIndex = indexer.complete();
+        List<ReflectiveClassBuildItem> reflective = new ArrayList<>();
+
+        processor.registerJsDefinitionProxies(
+                new CombinedIndexBuildItem(jsIndex, jsIndex), item -> {
+                }, reflective::add);
+
+        assertEquals(
+                Set.of(SimpleDtoJs.class.getName(), ValueJs.class.getName()),
+                reflective.stream()
+                        .flatMap(item -> item.getClassNames().stream())
+                        .collect(Collectors.toSet()),
+                "Should register the inherited interface, whose generic return"
+                        + " type is resolved by reflection");
+    }
+
+    @Test
+    void testRegisterJsDefinitionProxies_registersReturnedSnippetTypes()
+            throws IOException {
+        Indexer indexer = new Indexer();
+        indexer.indexClass(TemplatesJs.class);
+        indexer.indexClass(BaseTemplatesJs.class);
+        indexer.indexClass(ItemTemplate.class);
+        indexer.indexClass(BaseTemplate.class);
+        indexer.indexClass(UnusedTemplate.class);
+        Index jsIndex = indexer.complete();
+        List<NativeImageProxyDefinitionBuildItem> proxies = new ArrayList<>();
+        List<ReflectiveClassBuildItem> reflective = new ArrayList<>();
+
+        processor.registerJsDefinitionProxies(
+                new CombinedIndexBuildItem(jsIndex, jsIndex), proxies::add,
+                reflective::add);
+
+        // The snippet type is returned by an inherited method. JsFunction is
+        // a class that Flow creates itself, and a snippet type no definition
+        // returns is never implemented.
+        assertEquals(
+                Set.of(TemplatesJs.class.getName(),
+                        ItemTemplate.class.getName()),
+                proxies.stream().flatMap(item -> item.getClasses().stream())
+                        .collect(Collectors.toSet()),
+                "Should register the returned snippet type as a proxy");
+        // The check that a snippet type declares no methods sees the
+        // inherited ones only if the interfaces it extends are registered too
+        Set<String> reflectiveNames = reflective.stream()
+                .flatMap(item -> item.getClassNames().stream())
+                .collect(Collectors.toSet());
+        assertTrue(reflectiveNames.contains(ItemTemplate.class.getName()),
+                "Should register the snippet type for reflection");
+        assertTrue(reflectiveNames.contains(BaseTemplate.class.getName()),
+                "Should register the interfaces the snippet type extends for reflection");
+    }
+
+    @Test
+    void testDetectJsResultTypes_collectsConvertedTypes() throws IOException {
+        Indexer indexer = new Indexer();
+        indexer.indexClass(SimpleDtoJs.class);
+        indexer.indexClass(ValueJs.class);
+        indexer.indexClass(SimpleDto.class);
+        indexer.indexClass(OtherDto.class);
+        indexer.indexClass(JsonNode.class);
+        indexer.indexClass(ObjectNode.class);
+        Index jsIndex = indexer.complete();
+
+        Set<ClassInfo> result = processor.detectJsResultTypes(jsIndex);
+
+        assertTrue(result.stream().anyMatch(containsClass(SimpleDto.class)),
+                "Should detect SimpleDto bound to an inherited type variable");
+        assertTrue(result.stream().anyMatch(containsClass(OtherDto.class)),
+                "Should detect OtherDto from a JavaScriptResult type argument");
+        assertFalse(result.stream().anyMatch(containsClass(ObjectNode.class)),
+                "Should NOT detect Jackson's own node types");
+    }
+
+    @Test
     void testRegisterJsDefinitionProxies_noDefinitions_registersNothing()
             throws IOException {
         Indexer indexer = new Indexer();
@@ -406,13 +489,18 @@ class VaadinQuarkusNativeProcessorTest {
                         + "reflection registration either");
     }
 
+    // Matches against the globs instead of the produced item: the item has no
+    // getter that exists in every supported Quarkus version, since newer
+    // versions replaced getIncludePatterns() with getIncludeGlobs()
     private static boolean isIncluded(
             List<NativeImageResourcePatternsBuildItem> resources,
             String resource) {
-        return resources.stream()
-                .flatMap(item -> item.getIncludePatterns().stream())
-                .anyMatch(pattern -> Pattern.compile(pattern).matcher(resource)
-                        .matches());
+        assertEquals(1, resources.size(),
+                "The resource globs should be registered as one item");
+        return VaadinQuarkusNativeProcessor.NATIVE_RESOURCE_GLOBS.stream()
+                .anyMatch(glob -> FileSystems.getDefault()
+                        .getPathMatcher("glob:" + glob)
+                        .matches(Path.of(resource)));
     }
 
     // Only an interface can be implemented by the JDK proxy the definitions
@@ -424,6 +512,35 @@ class VaadinQuarkusNativeProcessorTest {
 
     @JsDefinition
     public static class Greeter {
+    }
+
+    public interface ValueJs<T> {
+        JavaScriptResult<T> readValue();
+    }
+
+    @JsDefinition
+    public interface SimpleDtoJs extends ValueJs<SimpleDto> {
+        JavaScriptResult<List<OtherDto>> readOthers();
+
+        JavaScriptResult<ObjectNode> readNode();
+    }
+
+    public interface BaseTemplate extends JsSnippet {
+    }
+
+    public interface ItemTemplate extends BaseTemplate {
+    }
+
+    public interface UnusedTemplate extends JsSnippet {
+    }
+
+    public interface BaseTemplatesJs {
+        ItemTemplate status(String label);
+    }
+
+    @JsDefinition
+    public interface TemplatesJs extends BaseTemplatesJs {
+        JsFunction format(String pattern);
     }
 
     public static class CustomException extends RuntimeException {
@@ -518,10 +635,12 @@ class VaadinQuarkusNativeProcessorTest {
 
         @ClientCallable
         public void processData(ComplexDto data) {
+            // only the signature is read, from the index
         }
 
         @ClientCallable
         public void processDataWithPrimitive(int value) {
+            // only the signature is read, from the index
         }
 
         @ClientCallable
@@ -531,6 +650,7 @@ class VaadinQuarkusNativeProcessorTest {
 
         @ClientCallable
         public void handleVoid() {
+            // only the signature is read, from the index
         }
 
         @ClientCallable
@@ -635,5 +755,62 @@ class VaadinQuarkusNativeProcessorTest {
         public List<NestedDto> getExtendedData() {
             return null;
         }
+    }
+
+    @Test
+    void findVaadinServiceInterfaces_onlyVaadinInterfacesOfAllArchives(
+            @TempDir Path tempDir) throws IOException {
+        Path application = tempDir.resolve("application");
+        writeServiceFile(application, "com.vaadin.flow.server.SomeService");
+        writeServiceFile(application, "org.example.OtherService");
+        writeServiceFile(application, "nested/com.vaadin.NestedService");
+        Path addon = tempDir.resolve("addon.jar");
+        try (JarOutputStream jar = new JarOutputStream(
+                Files.newOutputStream(addon))) {
+            jar.putNextEntry(new JarEntry(
+                    "META-INF/services/com.vaadin.addon.AddonService"));
+            jar.write("com.example.Provider\n".getBytes());
+        }
+        // A dependency can also be a single file that is not an archive
+        Path plainFile = Files.writeString(tempDir.resolve("notes.txt"), "");
+
+        assertEquals(
+                Set.of("com.vaadin.addon.AddonService",
+                        "com.vaadin.flow.server.SomeService"),
+                VaadinQuarkusNativeProcessor.findVaadinServiceInterfaces(
+                        Stream.of(PathTree.ofDirectoryOrArchive(application),
+                                PathTree.ofDirectoryOrArchive(addon),
+                                PathTree.ofDirectoryOrFile(plainFile))));
+    }
+
+    @Test
+    void initAtmosphereAndVaadinServlets_atmosphereInitializedBeforeServletsInLoadOnStartupOrder() {
+        AtmosphereRecorder atmosphereRecorder = mock(AtmosphereRecorder.class);
+        VaadinServletStartupRecorder servletRecorder = mock(
+                VaadinServletStartupRecorder.class);
+        DeploymentManager deploymentManager = mock(DeploymentManager.class);
+
+        processor.initAtmosphereAndVaadinServlets(atmosphereRecorder,
+                servletRecorder,
+                new ServletDeploymentManagerBuildItem(deploymentManager),
+                List.of(new VaadinServletBuildItem("second", 2),
+                        new VaadinServletBuildItem("first", 1)));
+
+        // A servlet only creates its own Atmosphere instance when none is
+        // stored for it yet, so Atmosphere has to be initialized first for
+        // the servlet to use the instance the push endpoint looks up
+        List<String> servletNames = List.of("first", "second");
+        InOrder inOrder = inOrder(atmosphereRecorder, servletRecorder);
+        inOrder.verify(atmosphereRecorder).initAtmosphere(deploymentManager,
+                servletNames);
+        inOrder.verify(servletRecorder).initServlets(deploymentManager,
+                servletNames);
+    }
+
+    private static void writeServiceFile(Path root, String name)
+            throws IOException {
+        Path file = root.resolve("META-INF/services").resolve(name);
+        Files.createDirectories(file.getParent());
+        Files.writeString(file, "com.example.Provider\n");
     }
 }

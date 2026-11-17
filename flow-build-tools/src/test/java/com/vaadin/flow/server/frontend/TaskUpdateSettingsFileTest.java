@@ -25,7 +25,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
@@ -37,6 +36,7 @@ import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.TaskUpdateSettingsFile.DEV_SETTINGS_FILE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.spy;
 
 class TaskUpdateSettingsFileTest {
 
@@ -55,7 +55,7 @@ class TaskUpdateSettingsFileTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        ClassFinder finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
+        ClassFinder finder = spy(new ClassFinder.DefaultClassFinder(
                 this.getClass().getClassLoader()));
         buildDirectory = new File(temporaryFolder, "target");
         options = new MockOptions(finder, temporaryFolder)

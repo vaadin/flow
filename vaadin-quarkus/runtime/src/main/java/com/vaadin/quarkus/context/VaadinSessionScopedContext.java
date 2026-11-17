@@ -75,8 +75,8 @@ public class VaadinSessionScopedContext extends AbstractContext {
         return VaadinSession.getCurrent() != null;
     }
 
-    private static class SessionContextualStorage extends ContextualStorage
-            implements SessionDestroyListener {
+    private static final class SessionContextualStorage
+            extends ContextualStorage implements SessionDestroyListener {
 
         private final Registration registration;
 

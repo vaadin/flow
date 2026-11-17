@@ -27,13 +27,15 @@ import java.util.Set;
 
 import io.quarkus.test.QuarkusUnitTest;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.vaadin.flow.i18n.DefaultI18NProvider;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.quarkus.annotation.VaadinServiceEnabled;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 public class VaadinServiceEnabledBeanUnremovableTest {
 
@@ -56,14 +58,14 @@ public class VaadinServiceEnabledBeanUnremovableTest {
     void vaadinServiceEnabledBean_markedUnremovableByExtension() {
         Set<Bean<?>> candidates = beanManager.getBeans(I18NProvider.class,
                 VaadinServiceEnabled.Literal.INSTANCE);
-        Assertions.assertEquals(1, candidates.size());
+        assertEquals(1, candidates.size());
 
         Bean<?> bean = candidates.iterator().next();
         CreationalContext<?> context = beanManager
                 .createCreationalContext(bean);
         I18NProvider injected = (I18NProvider) beanManager.getReference(bean,
                 I18NProvider.class, context);
-        Assertions.assertInstanceOf(CustomI18NProvider.class, injected);
+        assertInstanceOf(CustomI18NProvider.class, injected);
     }
 
     private static class TestConfig {

@@ -242,7 +242,7 @@ public class AsynchronousSignalTreeTest extends SignalsUnitTest {
         signal.set(100.0);
 
         Element element = new Element("input");
-        UI.getCurrent().getElement().appendChild(element);
+        UI.getCurrentOrThrow().getElement().appendChild(element);
         element.bindAttribute("max", signal.map(Object::toString));
         assertEquals("100.0", element.getAttribute("max"));
 

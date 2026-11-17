@@ -22,8 +22,6 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -34,6 +32,10 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class DisableComponentTrackerTest {
     private Object previousDisabled;
@@ -55,10 +57,10 @@ class DisableComponentTrackerTest {
     @Test
     void trackCreate_disabledInProductionMode() {
         withVaadinEnvironment(appCfg -> {
-            Mockito.when(appCfg.isProductionMode()).thenReturn(true);
-            Mockito.when(appCfg.getBooleanProperty(ArgumentMatchers.eq(
+            when(appCfg.isProductionMode()).thenReturn(true);
+            when(appCfg.getBooleanProperty(eq(
                     InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER),
-                    ArgumentMatchers.anyBoolean())).then(i -> i.getArgument(1));
+                    anyBoolean())).then(i -> i.getArgument(1));
 
             ComponentTrackerTest.Component1 c1 = new ComponentTrackerTest.Component1();
             assertNull(ComponentTracker.findCreate(c1));
@@ -68,10 +70,10 @@ class DisableComponentTrackerTest {
     @Test
     void trackAttach_disabledInProductionMode() {
         withVaadinEnvironment(appCfg -> {
-            Mockito.when(appCfg.isProductionMode()).thenReturn(true);
-            Mockito.when(appCfg.getBooleanProperty(ArgumentMatchers.eq(
+            when(appCfg.isProductionMode()).thenReturn(true);
+            when(appCfg.getBooleanProperty(eq(
                     InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER),
-                    ArgumentMatchers.anyBoolean())).then(i -> i.getArgument(1));
+                    anyBoolean())).then(i -> i.getArgument(1));
 
             ComponentTrackerTest.Component1 c1 = new ComponentTrackerTest.Component1();
             ComponentTrackerTest.Layout layout = new ComponentTrackerTest.Layout(
@@ -83,10 +85,10 @@ class DisableComponentTrackerTest {
     @Test
     void trackCreate_disabledByConfiguration() {
         withVaadinEnvironment(appCfg -> {
-            Mockito.when(appCfg.isProductionMode()).thenReturn(false);
-            Mockito.when(appCfg.getBooleanProperty(ArgumentMatchers.eq(
+            when(appCfg.isProductionMode()).thenReturn(false);
+            when(appCfg.getBooleanProperty(eq(
                     InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER),
-                    ArgumentMatchers.anyBoolean())).thenReturn(false);
+                    anyBoolean())).thenReturn(false);
 
             ComponentTrackerTest.Component1 c1 = new ComponentTrackerTest.Component1();
             assertNull(ComponentTracker.findCreate(c1));
@@ -96,10 +98,10 @@ class DisableComponentTrackerTest {
     @Test
     void trackAttach_disabledByConfiguration() {
         withVaadinEnvironment(appCfg -> {
-            Mockito.when(appCfg.isProductionMode()).thenReturn(false);
-            Mockito.when(appCfg.getBooleanProperty(ArgumentMatchers.eq(
+            when(appCfg.isProductionMode()).thenReturn(false);
+            when(appCfg.getBooleanProperty(eq(
                     InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER),
-                    ArgumentMatchers.anyBoolean())).thenReturn(false);
+                    anyBoolean())).thenReturn(false);
 
             ComponentTrackerTest.Component1 c1 = new ComponentTrackerTest.Component1();
             ComponentTrackerTest.Layout layout = new ComponentTrackerTest.Layout(
@@ -110,10 +112,10 @@ class DisableComponentTrackerTest {
 
     private void withVaadinEnvironment(
             Consumer<ApplicationConfiguration> action) {
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
-        ApplicationConfiguration applicationConfiguration = Mockito
-                .mock(ApplicationConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
+        ApplicationConfiguration applicationConfiguration = mock(
+                ApplicationConfiguration.class);
         Map<Class<?>, CurrentInstance> instances = CurrentInstance
                 .getInstances();
         CurrentInstance.clearAll();

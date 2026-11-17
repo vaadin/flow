@@ -30,7 +30,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
@@ -41,6 +40,8 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_ASSETS_PATH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class TaskCopyNpmAssetsFilesTest {
 
@@ -85,11 +86,10 @@ class TaskCopyNpmAssetsFilesTest {
         File resourceOutputDirectory = new File(temporaryFolder, "resource");
         resourceOutputDirectory.mkdirs();
 
-        classFinder = Mockito.mock(ClassFinder.class);
-        scanner = Mockito.mock(FrontendDependenciesScanner.class);
+        classFinder = mock(ClassFinder.class);
+        scanner = mock(FrontendDependenciesScanner.class);
 
-        options = new Options(Mockito.mock(Lookup.class), classFinder,
-                temporaryFolder);
+        options = new Options(mock(Lookup.class), classFinder, temporaryFolder);
         options.withBuildResultFolders(webappResourcesDirectory,
                 resourceOutputDirectory)
                 .withFrontendDependenciesScanner(scanner);
@@ -97,7 +97,7 @@ class TaskCopyNpmAssetsFilesTest {
 
     @Test
     void assertFolderIsCopied() throws IOException {
-        Mockito.when(scanner.getAssets())
+        when(scanner.getAssets())
                 .thenReturn(Map.of("test-button", List.of("images/**:button")));
 
         TaskCopyNpmAssetsFiles taskCopyNpmAssetsFiles = new TaskCopyNpmAssetsFiles(
@@ -115,7 +115,7 @@ class TaskCopyNpmAssetsFilesTest {
 
     @Test
     void copiedFolderStructureIsKept() throws IOException {
-        Mockito.when(scanner.getAssets())
+        when(scanner.getAssets())
                 .thenReturn(Map.of("test-button", List.of("**:button")));
 
         TaskCopyNpmAssetsFiles taskCopyNpmAssetsFiles = new TaskCopyNpmAssetsFiles(
@@ -140,7 +140,7 @@ class TaskCopyNpmAssetsFilesTest {
 
     @Test
     void singleAssertFromFolderIsCopied() throws IOException {
-        Mockito.when(scanner.getAssets()).thenReturn(
+        when(scanner.getAssets()).thenReturn(
                 Map.of("test-button", List.of("images/*.jpg:copy")));
 
         TaskCopyNpmAssetsFiles taskCopyNpmAssetsFiles = new TaskCopyNpmAssetsFiles(
@@ -156,7 +156,7 @@ class TaskCopyNpmAssetsFilesTest {
 
     @Test
     void allAssetsAreCopied() throws IOException {
-        Mockito.when(scanner.getAssets()).thenReturn(Map.of("test-button",
+        when(scanner.getAssets()).thenReturn(Map.of("test-button",
                 Arrays.asList("images/**:button", "templates/**:button")));
 
         TaskCopyNpmAssetsFiles taskCopyNpmAssetsFiles = new TaskCopyNpmAssetsFiles(
@@ -176,7 +176,7 @@ class TaskCopyNpmAssetsFilesTest {
 
     @Test
     void devBundleCopiesAssetsToCorrectFolder() throws IOException {
-        Mockito.when(scanner.getAssets()).thenReturn(
+        when(scanner.getAssets()).thenReturn(
                 Map.of("test-button", List.of("templates/**:button")));
         options.withBundleBuild(true).withProductionMode(false)
                 .withBuildDirectory("target");
@@ -198,7 +198,7 @@ class TaskCopyNpmAssetsFilesTest {
 
     @Test
     void noAssetsCopiedWhenCopyFlagFalse() throws IOException {
-        Mockito.when(scanner.getAssets()).thenReturn(Map.of("test-button",
+        when(scanner.getAssets()).thenReturn(Map.of("test-button",
                 Arrays.asList("images/**:button", "templates/**:button")));
         options.setCopyAssets(false);
 

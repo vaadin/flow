@@ -15,10 +15,10 @@
  */
 package com.vaadin.quarkus.deployment.vaadinplugin;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import io.quarkus.bootstrap.workspace.ArtifactSources;
 import io.quarkus.bootstrap.workspace.DefaultArtifactSources;
@@ -63,10 +63,10 @@ class WorkspaceInfo {
      * @param workDir
      *            the directory where the workspace information will be written
      *            to
-     * @throws Exception
+     * @throws IOException
      *             if an error occurs while writing the workspace information
      */
-    static void save(WorkspaceModule module, Path workDir) throws Exception {
+    static void save(WorkspaceModule module, Path workDir) throws IOException {
         Path projectInfoFile = resolveProjectInfoFile(workDir);
         var info = collectWorkspaceInfo(module);
         // The default options, which are CREATE and TRUNCATE_EXISTING. Asking
@@ -133,9 +133,9 @@ class WorkspaceInfo {
         List<SourceDirInfo> resourceDirs = List.of();
         if (module.hasMainSources()) {
             sourceDirs = module.getMainSources().getSourceDirs().stream()
-                    .map(SourceDirInfo::new).collect(Collectors.toList());
+                    .map(SourceDirInfo::new).toList();
             resourceDirs = module.getMainSources().getResourceDirs().stream()
-                    .map(SourceDirInfo::new).collect(Collectors.toList());
+                    .map(SourceDirInfo::new).toList();
         }
         WorkspaceModuleId moduleId = module.getId();
         return new ProjectInfo(moduleId.getGroupId(), moduleId.getArtifactId(),

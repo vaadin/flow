@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
@@ -373,14 +372,20 @@ public class StateTree implements NodeOwner {
         assert context != null : "The 'context' parameter can not be null";
         assert execution != null : "The 'execution' parameter can not be null";
 
-        if (context.isAttached()) {
-            pendingExecutionNodes.add(context);
-        }
-
         BeforeClientResponseEntry entry = new BeforeClientResponseEntry(
                 nextBeforeClientResponseIndex, context, execution);
         nextBeforeClientResponseIndex++;
-        return context.addBeforeClientResponseEntry(entry);
+        ExecutionRegistration registration = context
+                .addBeforeClientResponseEntry(entry);
+
+        if (context.isRegistered()) {
+            pendingExecutionNodes.add(context);
+        } else if (context.isAttached()) {
+            // The node is being detached: it is already unregistered, which
+            // discarded its other executions, so this one is discarded too
+            discard(entry);
+        }
+        return registration;
     }
 
     /**
@@ -401,17 +406,27 @@ public class StateTree implements NodeOwner {
                     discard(entry);
                     return;
                 }
+                StateNode node = entry.getStateNode();
+                if (!node.isAttached()) {
+                    // Detached by an earlier execution in this round, after
+                    // the entry was flushed off the node. Postpone it until
+                    // the node is attached again, as for a node detached
+                    // before the round.
+                    node.addBeforeClientResponseEntry(entry);
+                    discard(entry);
+                    return;
+                }
                 try {
                     ExecutionContext context = new ExecutionContext(getUI(),
-                            entry.getStateNode().isClientSideInitialized());
+                            node.isClientSideInitialized());
                     entry.getExecution().accept(context);
                 } catch (Exception e) {
                     if (getErrorHandlerClass()
                             .equals(DefaultErrorHandler.class)) {
                         throw e;
                     }
-                    getUI().getSession().getErrorHandler()
-                            .error(new ErrorEvent(e, entry.getStateNode()));
+                    getUI().getSessionOrThrow().getErrorHandler()
+                            .error(new ErrorEvent(e, node));
                 }
             });
         }
@@ -455,8 +470,7 @@ public class StateTree implements NodeOwner {
         List<StateTree.BeforeClientResponseEntry> flushed = pendingExecutionNodes
                 .stream().map(StateNode::dumpBeforeClientResponseEntries)
                 .flatMap(List::stream)
-                .sorted(BeforeClientResponseEntry.COMPARING_INDEX)
-                .collect(Collectors.toList());
+                .sorted(BeforeClientResponseEntry.COMPARING_INDEX).toList();
 
         // Reset bookeeping for the next round
         pendingExecutionNodes = new HashSet<>();

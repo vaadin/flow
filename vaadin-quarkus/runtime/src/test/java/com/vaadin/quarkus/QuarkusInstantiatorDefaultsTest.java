@@ -24,7 +24,6 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.QuarkusTestProfile;
 import io.quarkus.test.junit.TestProfile;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -34,6 +33,10 @@ import com.vaadin.flow.server.auth.DefaultMenuAccessControl;
 import com.vaadin.flow.server.auth.MenuAccessControl;
 import com.vaadin.quarkus.annotation.VaadinServiceEnabled;
 import com.vaadin.quarkus.context.ServiceUnderTestContext;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
 @TestProfile(QuarkusInstantiatorDefaultsTest.NoBeansTestProfile.class)
@@ -67,9 +70,8 @@ class QuarkusInstantiatorDefaultsTest {
     public void getMenuAccessControl_beanNotProvided_instanceReturned() {
         MenuAccessControl menuAccessControl = instantiator
                 .getMenuAccessControl();
-        Assertions.assertNotNull(menuAccessControl);
-        Assertions.assertTrue(
-                menuAccessControl instanceof DefaultMenuAccessControl);
+        assertNotNull(menuAccessControl);
+        assertTrue(menuAccessControl instanceof DefaultMenuAccessControl);
     }
 
     @Test
@@ -79,8 +81,8 @@ class QuarkusInstantiatorDefaultsTest {
         NotABean first = instantiator.getOrCreate(NotABean.class);
         NotABean second = instantiator.getOrCreate(NotABean.class);
 
-        Assertions.assertNotNull(first);
-        Assertions.assertNotSame(first, second,
+        assertNotNull(first);
+        assertNotSame(first, second,
                 "nothing scopes a non-bean, so each call builds a new one");
     }
 

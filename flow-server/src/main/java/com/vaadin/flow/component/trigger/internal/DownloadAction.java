@@ -16,16 +16,15 @@
 package com.vaadin.flow.component.trigger.internal;
 
 import java.io.Serializable;
-import java.net.URI;
-import java.util.IdentityHashMap;
-import java.util.Map;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
-import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
@@ -85,6 +84,9 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  */
 public class DownloadAction extends Action {
 
+    private static final DownloadJs DOWNLOAD_JS = JsSnippets
+            .of(DownloadJs.class);
+
     private final Action.Input<String> urlInput;
     private final Action.@Nullable Input<String> filenameInput;
 
@@ -125,7 +127,7 @@ public class DownloadAction extends Action {
      *            {@code null}
      */
     public DownloadAction(DownloadHandler handler) {
-        this.urlInput = new HandlerBinding(
+        this.urlInput = new DownloadHandlerInput(
                 Objects.requireNonNull(handler, "handler must not be null"));
         this.filenameInput = null;
     }
@@ -164,17 +166,14 @@ public class DownloadAction extends Action {
 
     @Override
     protected JsFunction toJs(Trigger trigger) {
-        // Two body shapes — with or without a filename argument — keep the
-        // emitted JS minimal. Both URL and filename are JsFunctions invoked
-        // with event so any handler-scoped inputs read live state.
-        if (filenameInput == null) {
-            return JsFunction.of("window.Vaadin.Flow.download.start($0(event))",
-                    urlInput.toJs(trigger)).withArguments("event");
-        }
-        return JsFunction
-                .of("window.Vaadin.Flow.download.start($0(event), $1(event))",
-                        urlInput.toJs(trigger), filenameInput.toJs(trigger))
-                .withArguments("event");
+        // Both URL and filename are inputs invoked with event so any
+        // handler-scoped inputs read live state, and a missing filename is
+        // passed as null. The event itself is passed last so the client can
+        // click the anchor next to the trigger element, keeping a surrounding
+        // overlay open, while url-only overrides of the client helper keep
+        // working.
+        return DOWNLOAD_JS.download(urlInput.toJs(trigger),
+                filenameInput == null ? null : filenameInput.toJs(trigger));
     }
 
     private static LiteralInput<String> literal(String value, String name) {
@@ -183,58 +182,26 @@ public class DownloadAction extends Action {
     }
 
     /**
-     * Manages the {@link DownloadHandler}-backed flavour: one
-     * {@link StreamResourceRegistry.ElementStreamResource} per trigger, scoped
-     * to the trigger's host. Each trigger owns its resource, so removing one
-     * trigger leaves the others sharing this action working, even on the same
-     * host. Lifecycle (register on attach, unregister on detach, re-register on
-     * re-attach, unregister when the trigger is removed) is delegated to
-     * {@link Element#setAttribute(String, AbstractStreamResource)} — the same
-     * machinery {@code Image.setSrc(DownloadHandler)} and
-     * {@code Anchor.setHref(DownloadHandler)} use. The attribute name is
-     * derived from the resource's UUID id, so it is unique per binding and
-     * harmless on any host element. The URI baked into the JS is the same one
-     * the framework re-publishes on the attribute, kept stable by the
-     * resource's id.
+     * How a download is started, as a snippet for {@link JsSnippets#of(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
      */
-    private static final class HandlerBinding extends Action.Input<String>
-            implements Serializable {
+    @JsDefinition
+    public interface DownloadJs extends Serializable {
 
-        private static final String ATTR_PREFIX = "data-flow-download-";
-
-        private final DownloadHandler handler;
-        private final Map<Trigger, URI> uriByTrigger = new IdentityHashMap<>();
-
-        HandlerBinding(DownloadHandler handler) {
-            this.handler = handler;
-        }
-
-        @Override
-        public JsFunction toJs(Trigger trigger) {
-            // Register-and-resolve in one step: the URI is stable per
-            // (handler, trigger) pair, so multiple toJs() calls for the same
-            // trigger reuse the same resource.
-            URI uri = uriByTrigger.get(trigger);
-            if (uri == null) {
-                uri = register(trigger);
-                uriByTrigger.put(trigger, uri);
-            }
-            return JsFunction.of("return $0", uri.toASCIIString());
-        }
-
-        private URI register(Trigger trigger) {
-            Element host = trigger.getHost();
-            StreamResourceRegistry.ElementStreamResource resource = new StreamResourceRegistry.ElementStreamResource(
-                    handler, host);
-            String attribute = ATTR_PREFIX + resource.getId();
-            host.setAttribute(attribute, resource);
-            // Removing the attribute also unregisters the resource, so the
-            // URL stops serving the file once the trigger is removed.
-            trigger.addCleanup(() -> {
-                host.removeAttribute(attribute);
-                uriByTrigger.remove(trigger);
-            });
-            return StreamResourceRegistry.getURI(resource);
-        }
+        /**
+         * An action that downloads from the URL of an input, next to the
+         * element the event of the trigger happened on.
+         *
+         * @param url
+         *            the input producing the URL
+         * @param filename
+         *            the input producing the suggested filename, or
+         *            <code>null</code> for none
+         * @return the action function
+         */
+        @JsExpression("window.Vaadin.Flow.download.start($0(event), $1 ? $1(event) : undefined, event)")
+        @JsFunctionParameterNames("event")
+        JsFunction download(JsFunction url, @Nullable JsFunction filename);
     }
 }

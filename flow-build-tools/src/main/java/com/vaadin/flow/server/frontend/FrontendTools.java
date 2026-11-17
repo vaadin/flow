@@ -70,18 +70,21 @@ public class FrontendTools {
     /**
      * This is the version that is installed if there is no node installed or
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}.
+     * <p>
+     * The downloaded archive is verified against checksums shipped with Flow,
+     * so run {@code scripts/updateNodeChecksums.sh} after changing this.
      * 
      * @since 4.0
      */
-    public static final String DEFAULT_NODE_VERSION = "v26.10.0";
+    public static final String DEFAULT_NODE_VERSION = "v26.13.1";
     /**
      * This is the version shipped with the default Node version.
      * 
      * @since 9.0
      */
-    public static final String DEFAULT_NPM_VERSION = "11.19.1";
+    public static final String DEFAULT_NPM_VERSION = "11.20.0";
 
-    public static final String DEFAULT_PNPM_VERSION = "11.26.0";
+    public static final String DEFAULT_PNPM_VERSION = "11.28.9";
 
     private static final String MSG_PREFIX = "%n%n======================================================================================================";
     private static final String MSG_SUFFIX = "%n======================================================================================================%n";
@@ -438,6 +441,20 @@ public class FrontendTools {
      */
     public List<String> getNpmExecutable() {
         return getNpmExecutable(true);
+    }
+
+    /**
+     * Locate <code>npx</code> executable.
+     * <p>
+     * Unlike {@link #getNpmExecutable()}, this leaves the project files
+     * untouched, so it can also be used in projects that use pnpm.
+     *
+     * @return the list of all commands in sequence that need to be executed to
+     *         have npx running
+     * @since 25.4
+     */
+    public List<String> getNpxExecutable() {
+        return getNpmCliToolExecutable(BuildTool.NPX);
     }
 
     /**

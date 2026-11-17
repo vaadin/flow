@@ -22,7 +22,6 @@ import org.jboss.weld.junit5.EnableWeld;
 import org.jboss.weld.junit5.WeldInitiator;
 import org.jboss.weld.junit5.WeldSetup;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -35,6 +34,10 @@ import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.DefaultMenuAccessControl;
 import com.vaadin.flow.server.auth.MenuAccessControl;
+
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @EnableWeld
 public class CdiInstantiatorDefaultsTest {
@@ -73,9 +76,8 @@ public class CdiInstantiatorDefaultsTest {
     public void getMenuAccessControl_beanNotProvided_instanceReturned() {
         MenuAccessControl menuAccessControl = instantiator
                 .getMenuAccessControl();
-        Assertions.assertNotNull(menuAccessControl);
-        Assertions.assertInstanceOf(DefaultMenuAccessControl.class,
-                menuAccessControl);
+        assertNotNull(menuAccessControl);
+        assertInstanceOf(DefaultMenuAccessControl.class, menuAccessControl);
     }
 
     @Test
@@ -84,6 +86,6 @@ public class CdiInstantiatorDefaultsTest {
         // so the delegate's default (null) is returned.
         PageTitleGenerator pageTitleGenerator = instantiator
                 .getPageTitleGenerator();
-        Assertions.assertNull(pageTitleGenerator);
+        assertNull(pageTitleGenerator);
     }
 }

@@ -20,7 +20,6 @@ import java.io.File;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
@@ -31,6 +30,7 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static com.vaadin.flow.internal.FrontendUtils.FRONTEND;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class TaskGenerateFeatureFlagsTest {
 
@@ -43,15 +43,15 @@ class TaskGenerateFeatureFlagsTest {
     @BeforeEach
     void setUp() throws Exception {
         VaadinContext context = new MockVaadinContext();
-        ApplicationConfiguration configuration = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration configuration = mock(
+                ApplicationConfiguration.class);
         context.setAttribute(ApplicationConfiguration.class, configuration);
 
         File frontendFolder = new File(temporaryFolder, FRONTEND);
 
         frontendFolder.mkdirs();
         featureFlags = FeatureFlags.get(context);
-        Options options = new Options(Mockito.mock(Lookup.class), null)
+        Options options = new Options(mock(Lookup.class), null)
                 .withFrontendDirectory(frontendFolder)
                 .withFeatureFlags(featureFlags);
         taskGenerateFeatureFlags = new TaskGenerateFeatureFlags(options);

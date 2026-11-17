@@ -23,7 +23,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.AdditionalAnswers;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Lookup;
@@ -37,6 +36,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @Isolated
 class DefaultInstantiatorMenuAccessControlTest {
@@ -49,8 +52,8 @@ class DefaultInstantiatorMenuAccessControlTest {
         clearMenuAccessControlField();
         contextClassLoader = Thread.currentThread().getContextClassLoader();
 
-        classLoader = Mockito.mock(ClassLoader.class);
-        Mockito.when(classLoader.loadClass(Mockito.any()))
+        classLoader = mock(ClassLoader.class);
+        when(classLoader.loadClass(any()))
                 .thenAnswer(AdditionalAnswers.delegatesTo(contextClassLoader));
         Thread.currentThread().setContextClassLoader(classLoader);
     }
@@ -63,7 +66,7 @@ class DefaultInstantiatorMenuAccessControlTest {
     @Test
     void defaultInstantiator_getMenuAccessControl_defaultMenuAccessControl()
             throws ClassNotFoundException {
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         mockLookup(service);
         DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
                 service);
@@ -80,7 +83,7 @@ class DefaultInstantiatorMenuAccessControlTest {
             throws ClassNotFoundException {
         String customMenuAccessControlClassName = "com.vaadin.flow.server.auth.CustomMenuAccessControl";
 
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         mockLookup(service);
         DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
                 service) {
@@ -96,12 +99,12 @@ class DefaultInstantiatorMenuAccessControlTest {
         assertSame(menuAccessControl.getPopulateClientSideMenu(),
                 MenuAccessControl.PopulateClientMenu.ALWAYS);
 
-        Mockito.verify(classLoader).loadClass(customMenuAccessControlClassName);
+        verify(classLoader).loadClass(customMenuAccessControlClassName);
     }
 
     @Test
     void defaultInstantiator_getMenuAccessControlWithInvalidType_throwException() {
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         mockLookup(service);
         DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
                 service) {
@@ -130,11 +133,11 @@ class DefaultInstantiatorMenuAccessControlTest {
     }
 
     private Lookup mockLookup(VaadinService service) {
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        Mockito.when(service.getContext()).thenReturn(context);
+        VaadinContext context = mock(VaadinContext.class);
+        when(service.getContext()).thenReturn(context);
 
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        Lookup lookup = mock(Lookup.class);
+        when(context.getAttribute(Lookup.class)).thenReturn(lookup);
         return lookup;
     }
 }

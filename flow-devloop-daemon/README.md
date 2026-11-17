@@ -1,39 +1,18 @@
 # flow-devloop-daemon
 
-A long-running daemon that owns one Vaadin application's edit-to-running-app
-loop: background compilation, hot swap or restart, browser refresh, error
-reporting. It answers, authoritatively, *"what is the state of my last
-change?"* — an agent batches edits, runs one `apply`, and reads a verdict from
-the exit code instead of rebuilding, relaunching and guessing from screenshots.
+How the dev-loop daemon is implemented, for someone who has to change the code
+here. What the loop is for, and the decisions every change has to keep, are in
+the Dev Loop section of [`CONVENTIONS.md`](../CONVENTIONS.md) and in
+[`guidelines/dev-loop.md`](../guidelines/dev-loop.md); the user-facing contract
+is the `vaadin-devloop` skill under
+`flow-plugins/flow-plugin-base/src/main/resources/vaadin-dev-cli/`.
 
 Everything in this module is for internal use only. May be renamed or removed
 in a future release.
 
-The user-facing documentation is the `vaadin-devloop` skill installed by
-`mvn vaadin:install-dev-cli` (its resources live in
-`flow-plugins/flow-plugin-base/src/main/resources/vaadin-dev-cli/`). This file is
-for someone who has to change the code here.
+## The jar
 
-## The one rule
-
-**Zero dependencies.** Not SLF4J, not Jackson, nothing. That is why this is its
-own module rather than a package inside `vaadin-dev-server`: a module boundary
-can be enforced, and a `maven-enforcer-plugin` `RestrictImports` execution in
-`pom.xml` does enforce it.
-
-Two consequences follow, and both are deliberate:
-
-- The daemon starts in tens of milliseconds, which is what makes
-  `vaadin-dev status` cost milliseconds rather than a JVM boot.
-- It can never drag the application's classpath into the daemon JVM. The daemon
-  reads the app's class files (`MainClass`), compiles its sources (`Compile`) and
-  redefines its classes through the in-app connector — but never loads one.
-
-So `Json` hand-rolls 40 lines of JSON escaping, `Reactor` reads poms with the
-JDK's own XML parser, and `MainClass` walks a class file's constant pool instead
-of calling `Class.forName`. None of those is an oversight.
-
-The jar is also the javaagent: the manifest carries `Premain-Class` /
+The jar doubles as the javaagent: the manifest carries `Premain-Class` /
 `Agent-Class` for `com.vaadin.flow.devloop.agent.DevLoopAgent` alongside its own
 `Main-Class`, so the app JVM is launched with `-javaagent:<this jar>` and there is
 one artifact to resolve rather than two to keep in step. Only `DevLoopAgent`
@@ -50,41 +29,11 @@ nothing else.
 
 ### CLI ↔ daemon
 
-`<app>/.vaadin/daemon.properties` (`Handshake`) records the daemon's pid, process
-start time, port and auth token. It is **outside `target/`** on purpose: `mvn
-clean` must not orphan a running daemon and leave the next command spawning a
-second one to fight for port 8080. The recorded start time is what stops a
-recycled pid from passing for a live daemon.
-
-Beside it, `.vaadin/daemon.lock` is held as an OS file lock for as long as the
-daemon runs. Reading the record, binding a port and writing the record back is
-three steps, and two simultaneous first invocations would otherwise each get
-through them and each start an application on the same port. The lock makes it
-one step, and the kernel releases it if the daemon dies, so there is nothing to
-reap.
-
-`install-dev-cli` puts the `vaadin-dev` scripts in that same directory, so
-`.vaadin/` holds both committed tooling and per-run state. The token in the
-handshake authorizes commands to the daemon, so the goal also installs
-`.vaadin/.gitignore` naming `daemon.properties` — the one file there that must
-not be shared.
-
-The CLI spawns the daemon into a **session of its own** — `setsid`, or perl's
-`POSIX::setsid` where no `setsid` binary ships — and not merely with SIGHUP
-ignored. A `nohup`'d child stays in the process group of the shell that spawned
-it, and the runners this CLI is driven from (agent sandboxes, CI steps, `timeout
---kill-after`) end a command by killing that group: the daemon, and the app it
-owns as its child, would die with the very command that started them. The next
-command would then find a handshake naming a dead pid, spawn a second daemon and
-report the app as stopped — the loop failing to hold across two commands, which
-is the one thing the daemon exists to do. A handshake left behind by a dead pid
-is evidence of exactly that, because a daemon that shuts down deletes its own
-record, so the CLI reports it rather than quietly reaping it.
-
-A request is one line, `<token> <verb> <args...>`. The reply is zero or more
-`> text` progress lines followed by exactly one `EXIT <code>`, which becomes the
-CLI's exit status. Progress-then-code is the shape `apply` needs, so every verb
-uses it.
+The handshake is `Handshake`, and `install-dev-cli` puts the `vaadin-dev`
+scripts beside it in `.vaadin/`. Where no `setsid` binary ships, the CLI falls
+back to perl's `POSIX::setsid`. The handshake, the lock, the daemon's own
+session and the request format are in
+[`guidelines/dev-loop.md`](../guidelines/dev-loop.md).
 
 Verbs: `ping`, `status [--json]`, `start`, `stop`, `restart`, `shutdown`,
 `apply [--json] [--no-restart]`, `redefine <a.b.C,...>` (diagnostic — pushes
@@ -93,10 +42,8 @@ the connector's own connection rather than a command.
 
 ### daemon ↔ in-app connector
 
-The connector (`com.vaadin.base.devserver.devloop` in `vaadin-dev-server`) opens
-one socket and holds it for the app's lifetime, so its close *is* the signal that
-the app is gone — no polling, no port probing. The daemon sends commands down the
-same connection and reads one reply line:
+The daemon sends commands down the connector's one socket and reads one reply
+line:
 
 ```
 REDEFINE a.b.C,a.b.D   ->  OK redefined=2 notLoaded=0 dupes=0 completed=true frontendImports=MyView …
@@ -125,16 +72,36 @@ Under `<app>/target/devloop/`: `daemon.log` (the daemon's stdout — which is wh
 `System.out` here is correct and SLF4J would not be), `app.log` (the app's stdout
 and stderr, the only place a "Port 8080 was already in use" exists), `cp.txt`
 (the resolved classpath), `cp.stamp` (a fingerprint of every pom in the reactor),
+`sources.txt` (every Java source of the loop as of the last launch, and every
+source an apply compiled since, with its modification time),
+`sources-failed.txt` (what the last catch-up build that failed ran against;
+deleting it makes the next restart try that build again),
 `jvm-args.txt` (the app JVM's argument file — a reactor classpath is well past
 Windows' 32 kB command-line limit). Each in-loop module gets its own
 `<module>/target/devloop/cp.txt` and `model.properties`.
 
+**Every launch first checks that `target/classes` matches the sources.** The
+pom stamp says nothing about sources changed while no daemon was running — a
+`git checkout`, a pull, a revert. So before each launch the daemon looks for a
+source that moved since `sources.txt` was written and whose class is missing or
+older than it, and for a source listed there that is gone while its class is
+still there. If it finds one, it runs the same Maven `compile` the resolve
+does, whose incremental build recompiles the module and deletes the classes its
+previous compile wrote. Classes an apply wrote are not in Maven's record, so
+whatever classes of a deleted source the build left are then removed the way an
+apply removes them. A failed build is reported and the launch goes ahead on the
+classes there are. The build runs offline only, is skipped while the poms do not
+resolve, and after a failure is not run again before a source or a pom changes
+or the next `start`.
+Only a source neither a launch nor an apply saw — one whose class came from a
+build outside the loop, such as an IDE's — can leave a class behind until a
+full build.
+
 **`model.properties` is how the daemon knows what starts the application**,
 written by `DevLoopBuildExtension` as each resolve reads the projects and read
-back by `EffectiveModel`. Whether a profile is active, and what a module
-inherits from a parent outside the checkout, are Maven's to decide and cannot
-be worked out from the poms — so they are not guessed at: the extension writes
-down the effective `<build><plugins>`, the packaging and the active profiles,
+back by `EffectiveModel` (see
+[Ask the build, do not guess](../guidelines/dev-loop.md#ask-the-build-do-not-guess)).
+The extension writes down the effective `<build><plugins>`, the packaging and the active profiles,
 and that is the only source `Reactor.plugin` reads. A `<pluginManagement>`
 version is absent from it by construction, and so is a plugin from a profile
 that did not run. It is believed only while it is newer than the poms it was
@@ -162,29 +129,8 @@ disagree about the version. The daemon still provisions on demand through the
 same code and into the same cache, so a project that never ran the goal is
 unaffected and one that did never downloads twice.
 `-Dvaadin.devcli.skipHotswapAgent=true` installs the CLI without it; dropping
-the release asset into `~/.vaadin/devloop/` by hand works too, since what is
+the pinned jar into `~/.vaadin/devloop/` by hand works too, since what is
 there is checksum-verified either way.
-
-## Outcomes and exit codes
-
-`TransactionEngine.Outcome` is the whole vocabulary, and the exit code is derived
-from it rather than parsed out of text:
-
-| Outcome | Exit | Means |
-|---|---|---|
-| `STABLE` | 0 | the change is live and the app is consistent |
-| `COMPILED` | 0 | compiled, but nothing is running to apply it to |
-| `NO_CHANGES` | 0 | nothing changed on disk since the last apply |
-| `FAILED` | 1 | could not complete; the reason names the phase |
-| `SUPERSEDED` | 4 | cancelled by a newer apply |
-
-The CLI adds `64` (usage), `70` (internal / daemon unreachable) and `77`
-(unauthorized) of its own.
-
-Two rules make the question answerable at all: **at most one transaction in
-flight**, and **supersede rather than queue** — a new `apply` cancels the
-in-flight one and proceeds with the accumulated change-set, because only the
-latest bytes on disk matter. The superseded caller still gets a terminal answer.
 
 ## Knobs
 
@@ -200,22 +146,17 @@ way to hand it one:
 VAADIN_DEV_DAEMON_OPTS="-Dspring.profiles.active=dev" .vaadin/vaadin-dev start
 ```
 
-The `shutdown` is not optional. `VAADIN_DEV_DAEMON_OPTS` is read by the CLI only
-when it *spawns* a daemon; every later command reuses the daemon that is already
-running and ignores the variable, so setting it in front of `restart` changes
-nothing. That applies to every property in this table, not only these.
+The `shutdown` is not optional: every property in this table is read only when
+a daemon is spawned (see
+[Settings are fixed when the daemon is spawned](../guidelines/dev-loop.md#settings-are-fixed-when-the-daemon-is-spawned)).
 
 Three are held back because the loop sets them itself, and a forwarded copy
 would override rather than repeat them (a later `-D` wins):
 `spring.devtools.restart.enabled`, `vaadin.launch-browser` and
-`vaadin.devloop.classes`. Devtools is the one that matters — two things
-restarting the application on their own schedules is what the transaction model
-exists to prevent.
+`vaadin.devloop.classes`. `vaadin.dev.jvmArgs` is held back too: the app gets its
+flags, not the property.
 
-Anything set this way lives as long as the daemon and appears in no file, so it
-is for steering one local run. What the project always needs belongs in its own
-properties files, where the rest of the team can see it (see
-`Launch.forwardedToApp`).
+The forwarding is `Launch.forwardedToApp`.
 
 | Property | Default | Effect |
 |---|---|---|
@@ -224,14 +165,56 @@ properties files, where the rest of the team can see it (see
 | `vaadin.dev.reactorRoot` | discovered | when the reactor root is not an ancestor of the application |
 | `vaadin.dev.modules` | auto | the edit loop by hand; `.` for the application alone |
 | `vaadin.dev.frontend` | discovered | the frontend folder, when it is neither what the build recorded nor a conventional location (see `Frontend`) |
-| `vaadin.dev.maven` | wrapper, then `PATH` | which Maven resolves the classpath |
+| `vaadin.dev.compiler` | `javac` | what compiles an apply: `javac` in-process, or `maven` (see [Compiling with Maven](#compiling-with-maven)) |
+| `vaadin.dev.maven` | wrapper, then `PATH` | which Maven resolves the classpath, and compiles with `vaadin.dev.compiler=maven` |
 | `vaadin.dev.mavenArgs` | none | extra arguments for the resolve, e.g. `-P!some-profile` |
+| `vaadin.dev.jvmArgs` | none | extra flags for the app JVM, split on whitespace and `\|`; `start --jvm-args` is the easier route (see below) |
 | `vaadin.dev.javaHome` | the best JBR for the project (see `Jvm`) | which JVM runs the app |
 | `vaadin.dev.hotswapAgentJar` | downloaded | an already-present HotswapAgent jar |
 | `vaadin.dev.agentJar` | this jar | the javaagent, for a daemon run from an exploded build |
 | `vaadin.dev.idleSeconds` | 1800 | shut down after this long idle with no app running |
 | `vaadin.dev.startSettleMillis` | 15000 | how long a registered app has to report a listening server |
 | `vaadin.dev.errorSettleMillis` | 400 | how long an apply follows the app log after a redefine |
+
+### JVM flags for the application
+
+`--add-exports`, `-Xmx`, `-XX:…` and the like are not system properties, so the
+forwarding above cannot carry them. `start` and `restart` take them with
+`--jvm-args`, quoted as the shell quotes anything, and need no `shutdown` first:
+
+```
+.vaadin/vaadin-dev start --jvm-args "-Xmx2g --add-exports java.base/jdk.internal.misc=ALL-UNNAMED"
+```
+
+The flags are added to the app JVM after the loop's own, so where the JVM takes
+the last of a repeated flag the developer's wins. Nothing stops one from
+overriding a flag the loop needs, such as one of its `--add-opens` or
+`-javaagent`s. They work for every runtime, since each already delivers the
+loop's own flags. The daemon keeps them for every later launch — a plain
+`restart`, and the restart an apply escalates to — until the next `--jvm-args`
+replaces them (`--jvm-args ""` clears them) or the daemon shuts down. A `start`
+whose app is already running changes nothing and says so. The value is split on
+any whitespace, newlines included, and the CLI sends each flag as a word of its
+own, because the daemon splits a request line on whitespace; a flag arrives as
+given, `|` included (see `Daemon.parseJvmArgsOption`).
+
+`vaadin.dev.jvmArgs` is the same thing as a daemon property, for a setup that
+can only set the environment. Its flags go before those of `--jvm-args`. The
+CLI splits `VAADIN_DEV_DAEMON_OPTS` on whitespace, quotes or not, so join
+several flags with `|` and use the `=` form of the ones that take a value. A
+flag that needs a literal `|` has to go through `--jvm-args` instead:
+
+```
+.vaadin/vaadin-dev shutdown
+VAADIN_DEV_DAEMON_OPTS='-Dvaadin.dev.jvmArgs=-Xmx2g|--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED' .vaadin/vaadin-dev start
+```
+
+The JVM's own `JDK_JAVA_OPTIONS` reaches the app too, since the daemon passes
+its environment on, but it also reaches the daemon and every Maven run the CLI
+starts: an `-Xmx` caps those as well, and a bad flag fails at the first one,
+reported only as "could not resolve flow-devloop-daemon". `JAVA_TOOL_OPTIONS`
+does the same and accepts only the `=` form of `--add-exports` and
+`--add-opens`.
 
 ## How the application is started
 
@@ -250,7 +233,7 @@ the difference.
 ### A container that runs in the build's JVM
 
 ```
-MAVEN_OPTS=<agents, opens, -XX:+AllowEnhancedClassRedefinition, -DdisabledPlugins>
+MAVEN_OPTS=<agents, opens, -XX:+AllowEnhancedClassRedefinition, -Dhotswapagent.disablePlugin>
 JAVA_HOME=<the JDK Jvm chose>
   mvnw -B -ntp -nsu [-f <root>/pom.xml -pl :<app> -am] -Dmaven.test.skip=true
        [compile] <plugin>:<version>:run -Djetty.deployMode=EMBED -Djetty.scan=0
@@ -479,9 +462,10 @@ which the loop's settings always do.
 **And Maven splits that same value on commas**, the parameter being declared
 `List<String>` — a bare comma split in Plexus's converter, with no escaping
 available. Combined with the rule above, a comma does not divide a flag, it
-deletes most of it: `-DdisabledPlugins=Vaadin,Spring,SpringBoot,Jetty` would
-arrive as `-DdisabledPlugins=Vaadin`. So `ServerPlugin.commaSplitFlags` marks
-that channel, and `MavenGoalRuntime` moves every comma-bearing flag into a JVM
+deletes most of it:
+`-Dhotswapagent.disablePlugin=Vaadin,Spring,SpringBoot,Jetty,JacksonPlugin`
+would arrive as `-Dhotswapagent.disablePlugin=Vaadin`. So
+`ServerPlugin.commaSplitFlags` marks that channel, and `MavenGoalRuntime` moves every comma-bearing flag into a JVM
 argument file under `target/devloop/payara-args.txt`, passing `@<file>` in its
 place — the JVM expands that itself, and an argument file quotes a comma without
 trouble. The flags that need no file stay inline, where the launch line shows
@@ -782,6 +766,82 @@ VAADIN_DEV_DAEMON_OPTS="-Dvaadin.frontend.hotdeploy=true" .vaadin/vaadin-dev sta
 #   expect: exit 0, Stable - the report left in the log must not fail this one
 ```
 
+## Compiling with Maven
+
+By default an apply compiles its change-set with javac inside the daemon, which
+is fast and approximate (see [In the in-loop compile](#in-the-in-loop-compile)).
+`-Dvaadin.dev.compiler=maven` makes every apply compile through the project's
+own build instead:
+
+```
+.vaadin/vaadin-dev shutdown
+VAADIN_DEV_DAEMON_OPTS="-Dvaadin.dev.compiler=maven" .vaadin/vaadin-dev start
+```
+
+Each apply then runs `compiler:compile` - offline, quiet, from the reactor root
+with `-pl :<app> -am`. Each module compiles with the configuration of its own
+compile execution, whatever its id: the daemon loads its build extension, which
+gives every module's execution one shared id for the run. Only the compile goal
+runs, not the `compile` phase:
+copying resources stays the daemon's own leg, and `prepare-frontend` and
+whatever else the project binds before `compile` are not run per apply.
+Everything around the compile - change detection, deletions, the redefine and
+when it escalates - is the same as with javac. `status` names the compiler,
+and so does `daemon.log` when the compile leg is built.
+
+What it fixes:
+
+- **Annotation processors run**: Lombok, MapStruct and the rest generate what
+  they would in a normal build.
+- **The compiler plugin's configuration is honoured**: `<compilerArgs>`,
+  `--enable-preview`, `-Werror`, and whatever a parent outside the checkout
+  sets.
+- **Callers nobody edited are recompiled** whenever maven-compiler-plugin
+  decides to, which it does for a whole module when one of its sources or
+  upstream modules changed - so a changed signature or `static final`
+  constant reaches its callers.
+
+What it costs:
+
+- **A Maven start per apply**, seconds rather than the tens of milliseconds
+  javac in-process takes. `-Dvaadin.dev.maven=<path to mvnd>` points the daemon
+  at the Maven Daemon, which keeps a warm JVM between applies.
+- **Maven's verdict is final.** `-Werror` and any other failure the build
+  would report now fails the apply; an error Maven prints with no source
+  location is reported as a single diagnostic carrying Maven's own reason.
+- **Plugins bound to `generate-sources` do not run per apply.** What they
+  generated at the last resolve is compiled as it stands; a change to their
+  input needs `mvn generate-sources`, or a pom touch to make the daemon
+  re-resolve.
+
+Maven recompiling a module rewrites every class file in it, so the redefine
+is not handed the whole module: the daemon compares each class file the run
+touched with the bytes the running application holds, and only classes that
+are new or whose bytes changed are redefined. The comparison moves forward
+only when a redefine has been accepted, so an apply that compiled but never
+reached the application (`--no-restart`, or superseded by a newer apply)
+offers the same classes again next time. What is copied into `target/classes`
+is decided apart from that, against what `target/classes` holds: a file the
+run built with different bytes there, so that an edit reverted before it ever
+went live does not stay on disk for a restart to load.
+
+Maven compiles into a directory of each module's own,
+`target/devloop/maven-classes`, which the build extension points the module's
+output at for the run; `target/classes`, which the application loads from, is
+written only by the daemon, and only with what changed. maven-compiler-plugin
+deletes a module's class files before it rebuilds the module and writes none
+back when the compile fails, which in `target/classes` would pull every class
+the application has not loaded yet from under it. Without the extension jar
+Maven compiles into `target/classes` itself, and the log says what that risks.
+
+A class Maven stops building - a nested class taken out of a source that
+stays - is removed from `target/classes` as well, so a removed route or bean
+is not found again after a restart. Only class files Maven built before, or
+ones a Java source that is still there compiles to, are removed; what another
+compiler writes there is left alone. When the application holds the removed
+class, the apply escalates to a restart, the same as a deleted source: a JVM
+cannot un-define a class it has loaded.
+
 ## Deletions
 
 A walk sees only what is there, so a deletion is found against the fingerprint
@@ -802,22 +862,34 @@ inventory.
 
 ## HotswapAgent plugins
 
-`Vaadin`, `Spring`, `SpringBoot` and `Jetty` are disabled
+`Vaadin`, `Spring`, `SpringBoot`, `Jetty` and `JacksonPlugin` are disabled
 (`Launch.DISABLED_HOTSWAP_PLUGINS`), and nothing else: the Vaadin one fires a
 competing full page reload, the Spring ones were measured to lose the Spring
-Data repository bean under repeated redefinitions, and Jetty's hooks name
+Data repository bean under repeated redefinitions, Jetty's hooks name
 `org.eclipse.jetty.webapp` and `org.mortbay` classes, which match nothing under
-Jetty 12.
+Jetty 12, and the Jackson one deadlocks a container's boot: it patches the
+container's own copy of Jackson while the JVM holds that container loader's
+lock, and on Payara Micro that lock-order inversion with Hazelcast's bootstrap
+left the odd start hanging until the start timeout. That one is a stopgap: the
+cause is HotswapAgent resolving a plugin's types through the thread context
+class loader (`ClassPool.appendSystemPath()`), fixed in
+[HotswapAgent#681](https://github.com/HotswapProjects/HotswapAgent/pull/681)
+and released in 2.0.4, the pinned version; the entry should go once the Payara
+Micro boot is measured again without it. The names are the `@Plugin` names, which is
+why Jackson's is `JacksonPlugin`; a wrong one is accepted silently.
 
-**Disabling has to reach the right class loader**, because HotswapAgent reads
-`hotswap-agent.properties` off the class's *own* loader — so
-`-DdisabledPlugins` never reached a webapp loader inside a build plugin's
-realm. `MavenGoalRuntime` therefore also writes the list into the app's
-`target/classes`, and with it an `extraClasspath` naming the HotswapAgent jar,
-without which that loader cannot see the agent itself; honouring the setting
-also needs `java.base/java.net` and `java.base/jdk.internal.loader` opened. The
-key is `disabledPlugins`, plural and unprefixed; a wrong one is accepted
-silently.
+**Disabling has to reach every class loader**, because HotswapAgent builds a
+configuration per loader. The JVM flag is `-Dhotswapagent.disablePlugin`, read
+in `premain` into a set every configuration consults. `-DdisabledPlugins`, the
+key `hotswap-agent.properties` uses, only reaches the system class loader:
+every other loader re-reads the file bundled in HotswapAgent's jar, whose empty
+`disabledPlugins=` shadows the system property.
+
+For an embedded server `MavenGoalRuntime` writes a `hotswap-agent.properties`
+into the app's `target/classes` carrying an `extraClasspath` that names the
+HotswapAgent jar, without which a webapp loader inside a build plugin's realm
+cannot see the agent itself; honouring that also needs `java.base/java.net`
+and `java.base/jdk.internal.loader` opened.
 
 ## Under a build-plugin runtime
 
@@ -925,6 +997,11 @@ None of them is a bug in this module.
 
 ### In the in-loop compile
 
+These describe the default javac backend. None of them applies when compiling
+with Maven (see [Compiling with Maven](#compiling-with-maven)): the build's own
+compiler plugin then writes `target/classes`, with the build's own
+configuration.
+
 - **An edit that changes what a class promises its callers is not supported.**
   Only the change-set goes to javac, so callers nobody edited keep the bytecode
   they were compiled with: rename or re-sign a method, move a supertype, or
@@ -971,14 +1048,14 @@ None of them is a bug in this module.
 `AppProcess`, `Launch.membership`, `Compile`'s per-module grouping (with a real
 javac), `Frontend` in both frontend modes, `Jvm`, `HotswapAgentJar`,
 `MainClass`, and the verdicts `TransactionEngine` reaches without an app. The
-loop itself is tested in `flow-tests/test-devloop`: `test-devloop-spring` for
-an entry point and `test-devloop-jetty` for a WAR under its own build plugin,
-over the shared ITs in `test-devloop-support`.
+loop itself is tested in `flow-tests/test-devloop`, one fixture per runtime
+over the shared ITs in `test-devloop-support` (see
+[Verifying a change](../guidelines/dev-loop.md#verifying-a-change)).
 
-**WildFly, TomEE, both Payaras and Liberty have no fixture**, only the table's
-own unit tests. What those cannot answer is the one question that matters for a
-forked container — did the agents reach the server's JVM — so that is verified
-by hand against a WAR whose pom runs the plugin in question:
+For a forked container the one question that matters is whether the agents
+reached the server's JVM. When a project's own setup is not one the fixtures
+cover, or a fixture fails without saying why, check that by hand against a WAR
+whose pom runs the plugin in question:
 
 ```bash
 .vaadin/vaadin-dev start
@@ -1001,9 +1078,7 @@ particular symptom of `-XX:+AllowEnhancedClassRedefinition` having been dropped,
 which is the failure Payara's one-value trick and Liberty's one property per
 flag both exist to prevent.
 
-**Run that by hand against a reactor, not a single module.** Two of the things a
-forked container has to get right are invisible to a project with no sibling: a
-goal named on a command line runs on every module in the reactor, which is what
-the skip and the forced `<skip>false</skip>` are for — and, for TomEE, the bound
-execution — and a sibling left at `compile` reaches the WAR as an empty
-directory, which is what `package` across the reactor is for.
+**Run that by hand against a reactor, not a single module**, for the reasons in
+[Verifying a change](../guidelines/dev-loop.md#verifying-a-change): the skip and
+the forced `<skip>false</skip>` (and, for TomEE, the bound execution) and
+`package` across the reactor are invisible to a project with no sibling.

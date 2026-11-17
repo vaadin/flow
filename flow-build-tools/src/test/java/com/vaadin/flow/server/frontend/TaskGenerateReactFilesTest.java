@@ -25,7 +25,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -40,6 +39,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class TaskGenerateReactFilesTest {
 
@@ -52,11 +53,11 @@ class TaskGenerateReactFilesTest {
 
     @BeforeEach
     void setup() throws IOException {
-        classFinder = Mockito.mock(ClassFinder.class);
+        classFinder = mock(ClassFinder.class);
 
-        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+        when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(TestRoute.class));
-        Mockito.when(classFinder.getClassLoader())
+        when(classFinder.getClassLoader())
                 .thenReturn(getClass().getClassLoader());
 
         options = new MockOptions(classFinder, temporaryFolder)
@@ -108,7 +109,7 @@ class TaskGenerateReactFilesTest {
     @Test
     void layoutsJson_containsExpectedPaths()
             throws ExecutionFailedException, IOException {
-        Mockito.when(options.getClassFinder().getAnnotatedClasses(Layout.class))
+        when(options.getClassFinder().getAnnotatedClasses(Layout.class))
                 .thenReturn(Collections.singleton(TestLayout.class));
 
         TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
@@ -304,7 +305,7 @@ class TaskGenerateReactFilesTest {
 
         FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
 
-        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+        when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.emptySet());
 
         TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);

@@ -25,6 +25,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -87,6 +88,18 @@ final class VaadinDevCli {
     static final boolean WINDOWS = System.getProperty("os.name", "")
             .toLowerCase(Locale.ROOT).startsWith("windows");
 
+    /**
+     * The test JVM's property naming the compiler the daemon compiles applies
+     * with, {@code javac} or {@code maven}: how the build runs the same suite
+     * once per compiler.
+     */
+    static final String COMPILER = "devloop.it.compiler";
+
+    /** The compiler this run hands the daemon; see {@link #COMPILER}. */
+    static String compiler() {
+        return System.getProperty(COMPILER, "javac");
+    }
+
     /** What one CLI invocation produced. */
     record Outcome(int exitCode, String output) {
 
@@ -132,6 +145,20 @@ final class VaadinDevCli {
         this.launcher = launcher;
     }
 
+    /** The launcher this CLI runs commands through. */
+    Launcher launcher() {
+        return launcher;
+    }
+
+    /**
+     * Whether this launcher can read a process's start time, which is how it
+     * tells a live daemon from an unrelated process that reused its pid. Git
+     * Bash's ps cannot report one.
+     */
+    boolean readsStartTime() {
+        return launcher == Launcher.CMD || !WINDOWS;
+    }
+
     /**
      * The CLI for an application, using whichever launcher runs on this
      * platform.
@@ -161,6 +188,21 @@ final class VaadinDevCli {
      * @return the exit code and the whole output
      */
     Outcome run(String... arguments) {
+        return run(Map.of(), arguments);
+    }
+
+    /**
+     * Runs one command with extra environment variables and waits for its
+     * verdict.
+     *
+     * @param environment
+     *            variables to set for this command alone, on top of the ones
+     *            every command gets
+     * @param arguments
+     *            the verb and its options
+     * @return the exit code and the whole output
+     */
+    Outcome run(Map<String, String> environment, String... arguments) {
         List<String> command = launcher.command(app, List.of(arguments))
                 .orElseThrow(() -> new IllegalStateException(
                         launcher + " cannot run here"));
@@ -180,9 +222,11 @@ final class VaadinDevCli {
                         // reactor once the daemon drives Maven from here - so
                         // the
                         // profile has to stay out of the resolve.
-                        + " -Dvaadin.dev.mavenArgs=-P!install-git-hooks");
+                        + " -Dvaadin.dev.mavenArgs=-P!install-git-hooks"
+                        + " -Dvaadin.dev.compiler=" + compiler());
         // No spinner: the output is read by assertions, not by a person.
         builder.environment().put("VAADIN_DEV_PROGRESS", "never");
+        builder.environment().putAll(environment);
         String verb = "vaadin-dev " + String.join(" ", arguments);
         try {
             Process process = builder.start();

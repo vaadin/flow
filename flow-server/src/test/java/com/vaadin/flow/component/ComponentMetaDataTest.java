@@ -17,7 +17,6 @@ package com.vaadin.flow.component;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
@@ -134,12 +133,11 @@ class ComponentMetaDataTest {
         assertEquals(2, props.size());
 
         List<SynchronizedPropertyInfo> bazProps = props.stream()
-                .filter(prop -> prop.getProperty().equals("baz"))
-                .collect(Collectors.toList());
+                .filter(prop -> prop.getProperty().equals("baz")).toList();
         assertEquals(1, bazProps.size());
         SynchronizedPropertyInfo info = bazProps.get(0);
 
-        List<String> events = info.getEventNames().collect(Collectors.toList());
+        List<String> events = info.getEventNames().toList();
         assertEquals(1, events.size());
         assertEquals("bar", events.get(0));
 
@@ -159,7 +157,7 @@ class ComponentMetaDataTest {
         SynchronizedPropertyInfo info = props.iterator().next();
         assertEquals("foo", info.getProperty());
 
-        List<String> events = info.getEventNames().collect(Collectors.toList());
+        List<String> events = info.getEventNames().toList();
         assertEquals(1, events.size());
         assertEquals("baz", events.get(0));
     }
@@ -181,7 +179,7 @@ class ComponentMetaDataTest {
 
         assertEquals(mode, info.getUpdateMode());
 
-        List<String> events = info.getEventNames().collect(Collectors.toList());
+        List<String> events = info.getEventNames().toList();
         assertEquals(1, events.size());
         assertEquals("bar", events.get(0));
     }

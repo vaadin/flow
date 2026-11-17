@@ -42,10 +42,20 @@ import com.vaadin.flow.server.VaadinServletService;
  */
 
 public class CdiVaadinServlet extends VaadinServlet {
+    /**
+     * The bean manager injected by the CDI container.
+     */
     @Inject
     private BeanManager beanManager;
 
     private static final ThreadLocal<String> servletName = new ThreadLocal<>();
+
+    /**
+     * Creates a new CDI Vaadin servlet.
+     */
+    public CdiVaadinServlet() {
+        // Nothing to initialize
+    }
 
     @Override
     public void init(ServletConfig servletConfig) throws ServletException {

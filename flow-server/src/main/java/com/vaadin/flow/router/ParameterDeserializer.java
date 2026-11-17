@@ -26,10 +26,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.UrlUtil;
 
 /**
@@ -47,6 +47,18 @@ public final class ParameterDeserializer {
     public static final Set<Class<?>> supportedTypes = Collections
             .unmodifiableSet(new HashSet<>(Arrays.asList(Long.class,
                     Integer.class, String.class, Boolean.class)));
+
+    /**
+     * Annotation types of the parameter of the
+     * {@link HasUrlParameter#setParameter(BeforeEvent, Object)} implementations
+     * of a navigation target, cached since resolving them requires reflection
+     * that is too slow to repeat for every link or navigation. Cleared before
+     * hotswappers run, since route templates of modified classes are computed
+     * from it when their routes are registered again.
+     */
+    private static final ReflectionCache<Object, Set<Class<? extends Annotation>>> parameterAnnotationsCache = ReflectionCache
+            .clearedBeforeHotswap(
+                    ParameterDeserializer::collectParameterAnnotations);
 
     private ParameterDeserializer() {
     }
@@ -189,7 +201,7 @@ public final class ParameterDeserializer {
                     "Parameter type of the given navigationTarget '%s' could not be resolved.",
                     navigationTarget.getName()));
         }
-        return GenericTypeReflector.erase(type);
+        return ReflectTools.erase(type);
     }
 
     /**
@@ -206,33 +218,41 @@ public final class ParameterDeserializer {
         if (!HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
             return false;
         }
+        return parameterAnnotationsCache.get(navigationTarget)
+                .contains(parameterAnnotation);
+    }
+
+    private static Set<Class<? extends Annotation>> collectParameterAnnotations(
+            Class<?> navigationTarget) {
         String methodName = "setParameter";
         assert methodName.equals(ReflectTools
                 .getFunctionalMethod(HasUrlParameter.class).getName());
 
         // Raw method has no parameter annotations if compiled by Eclipse
         Type parameterType = findParameterType(navigationTarget);
-        Class<?> parameterClass = GenericTypeReflector.erase(parameterType);
+        Class<?> parameterClass = ReflectTools.erase(parameterType);
 
         return Stream.of(navigationTarget.getMethods())
                 .filter(method -> methodName.equals(method.getName()))
                 .filter(method -> hasValidParameterTypes(method,
                         parameterClass))
-                .anyMatch(method -> method.getParameters()[1]
-                        .isAnnotationPresent(parameterAnnotation));
+                .flatMap(method -> Stream
+                        .of(method.getParameters()[1].getAnnotations()))
+                .map(Annotation::annotationType)
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     private static Type findParameterType(Class<?> navigationTarget) {
-        Type parameterType = GenericTypeReflector.getTypeParameter(
-                navigationTarget, HasUrlParameter.class.getTypeParameters()[0]);
+        Type parameterType = ReflectTools.getTypeParameter(navigationTarget,
+                HasUrlParameter.class.getTypeParameters()[0]);
         if (parameterType == null) {
-            parameterType = GenericTypeReflector.getTypeParameter(
+            parameterType = ReflectTools.getTypeParameter(
                     navigationTarget.getGenericSuperclass(),
                     HasUrlParameter.class.getTypeParameters()[0]);
         }
         if (parameterType == null) {
             for (Type iface : navigationTarget.getGenericInterfaces()) {
-                parameterType = GenericTypeReflector.getTypeParameter(iface,
+                parameterType = ReflectTools.getTypeParameter(iface,
                         HasUrlParameter.class.getTypeParameters()[0]);
                 if (parameterType != null) {
                     break;

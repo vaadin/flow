@@ -190,6 +190,8 @@ public final class PasteFileHandler implements Serializable {
          * Returns an {@link UploadHandler} that orchestrates the configured
          * batch steps. The returned handler is independent of this builder;
          * further mutations to the builder do not affect it.
+         *
+         * @return the upload handler
          */
         public UploadHandler build() {
             // The batch state is stored on the owning component (Clipboard

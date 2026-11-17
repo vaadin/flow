@@ -160,6 +160,7 @@ public class ElementData extends NodeMap {
      *            the element owning the property, not <code>null</code>
      * @param signal
      *            the signal to bind, not <code>null</code>
+     * @return the binding, which can be used to react to updates
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             <code>visible</code> property

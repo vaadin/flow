@@ -165,7 +165,8 @@ public class KeyMapper<V> implements DataKeyMapper<V> {
 
     /**
      * Gets all mapped objects.
-     * 
+     *
+     * @return an unmodifiable collection of the mapped objects
      * @since 25.0.5
      */
     public Collection<V> objects() {

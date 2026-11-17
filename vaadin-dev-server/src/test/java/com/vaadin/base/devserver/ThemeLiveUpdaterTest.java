@@ -24,7 +24,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
@@ -37,6 +36,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * The theme push is shared between this watcher and the {@code vaadin-dev}
@@ -72,8 +76,7 @@ class ThemeLiveUpdaterTest {
 
         // The whole point of combining: the browser gets one stylesheet with
         // the imports already inlined, under the URL it knows the theme by.
-        Mockito.verify(liveReload).update(
-                eq("VAADIN/themes/my-theme/styles.css"),
+        verify(liveReload).update(eq("VAADIN/themes/my-theme/styles.css"),
                 argThat(content -> content != null
                         && content.contains(".imported{color:green;}")
                         && content.contains(".main{color:red;}")));
@@ -83,11 +86,10 @@ class ThemeLiveUpdaterTest {
     void push_withoutABrowser_saysSoRatherThanThrowing() {
         File themeFolder = new File(temporaryFolder, "gone");
         VaadinContext context = new MockVaadinContext();
-        liveReloadAccessorStatic = Mockito
-                .mockStatic(BrowserLiveReloadAccessor.class);
+        liveReloadAccessorStatic = mockStatic(BrowserLiveReloadAccessor.class);
         liveReloadAccessorStatic
                 .when(() -> BrowserLiveReloadAccessor
-                        .getLiveReloadFromContext(Mockito.eq(context)))
+                        .getLiveReloadFromContext(eq(context)))
                 .thenReturn(Optional.empty());
 
         assertFalse(ThemeLiveUpdater.push(themeFolder, context));
@@ -112,9 +114,8 @@ class ThemeLiveUpdaterTest {
             Thread.sleep(500);
         }
 
-        Mockito.verify(liveReload, Mockito.never()).update(anyString(),
-                anyString());
-        Mockito.verify(liveReload, Mockito.never()).reload();
+        verify(liveReload, never()).update(anyString(), anyString());
+        verify(liveReload, never()).reload();
     }
 
     @Test
@@ -141,29 +142,26 @@ class ThemeLiveUpdaterTest {
     }
 
     private VaadinContext context(File themeFolder) {
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(config.getProjectFolder()).thenReturn(temporaryFolder);
+        ApplicationConfiguration config = mock(ApplicationConfiguration.class);
+        when(config.getProjectFolder()).thenReturn(temporaryFolder);
         // ThemeUtils resolves the theme folder from the configuration rather
         // than from the folder it is handed, so the two have to agree - as they
         // do in a real application, where both come from the frontend folder.
-        Mockito.when(config.getFrontendFolder())
+        when(config.getFrontendFolder())
                 .thenReturn(new File(temporaryFolder, "src/main/frontend"));
         VaadinContext context = new MockVaadinContext();
-        appConfigStatic = Mockito.mockStatic(ApplicationConfiguration.class);
-        appConfigStatic
-                .when(() -> ApplicationConfiguration.get(Mockito.eq(context)))
+        appConfigStatic = mockStatic(ApplicationConfiguration.class);
+        appConfigStatic.when(() -> ApplicationConfiguration.get(eq(context)))
                 .thenReturn(config);
         return context;
     }
 
     private BrowserLiveReload liveReload(VaadinContext context) {
-        BrowserLiveReload liveReload = Mockito.mock(BrowserLiveReload.class);
-        liveReloadAccessorStatic = Mockito
-                .mockStatic(BrowserLiveReloadAccessor.class);
+        BrowserLiveReload liveReload = mock(BrowserLiveReload.class);
+        liveReloadAccessorStatic = mockStatic(BrowserLiveReloadAccessor.class);
         liveReloadAccessorStatic
                 .when(() -> BrowserLiveReloadAccessor
-                        .getLiveReloadFromContext(Mockito.eq(context)))
+                        .getLiveReloadFromContext(eq(context)))
                 .thenReturn(Optional.of(liveReload));
         return liveReload;
     }

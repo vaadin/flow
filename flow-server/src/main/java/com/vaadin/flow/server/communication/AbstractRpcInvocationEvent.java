@@ -159,6 +159,7 @@ public abstract class AbstractRpcInvocationEvent extends EventObject {
      * @return the component, or an empty optional if the invocation does not
      *         target a node, the node is no longer in the UI, or the node is
      *         not the element of a component
+     * @since 25.4
      */
     public Optional<Component> getComponent() {
         StateNode node = getUI().getInternals().getStateTree()

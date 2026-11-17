@@ -197,7 +197,7 @@ public interface DragSource<T extends Component> extends HasElement {
                     });
             Registration endListenerRegistration = addDragEndListener(
                     event -> getDragSourceComponent().getUI()
-                            .orElse(UI.getCurrent()).getInternals()
+                            .orElseGet(UI::getCurrentOrThrow).getInternals()
                             .setActiveDragSourceComponent(null));
             ComponentUtil.setData(getDragSourceComponent(),
                     DndUtil.START_LISTENER_REGISTRATION_KEY,

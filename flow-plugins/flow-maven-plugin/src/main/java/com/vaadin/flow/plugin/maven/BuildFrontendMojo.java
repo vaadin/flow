@@ -210,7 +210,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
         FrontendDependenciesScanner frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                 .createScanner(!optimizeBundle, getClassFinder(),
                         generateEmbeddableWebComponents, featureFlags,
-                        reactEnabled);
+                        reactEnabled, true);
 
         try {
             BuildFrontendUtil.runNodeUpdater(this, frontendDependencies);

@@ -10,7 +10,6 @@ package com.vaadin.flow.component;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -18,6 +17,10 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 abstract class AbstractTemplateTest {
 
@@ -27,26 +30,25 @@ abstract class AbstractTemplateTest {
 
     @BeforeEach
     void init() throws Exception {
-        service = Mockito.mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        service = mock(VaadinService.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
 
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
 
-        VaadinSession session = Mockito.mock(VaadinSession.class);
+        VaadinSession session = mock(VaadinSession.class);
 
         ui = new UI();
         ui.getInternals().setSession(session);
 
-        Mockito.when(session.getService()).thenReturn(service);
+        when(session.getService()).thenReturn(service);
 
-        Instantiator instantiator = Mockito.mock(Instantiator.class);
-        Mockito.when(instantiator.createComponent(Mockito.any()))
+        Instantiator instantiator = mock(Instantiator.class);
+        when(instantiator.createComponent(any()))
                 .thenAnswer(invocation -> ReflectTools
                         .createInstance(invocation.getArgument(0)));
 
-        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
+        when(service.getInstantiator()).thenReturn(instantiator);
 
         CurrentInstance.setCurrent(ui);
         VaadinService.setCurrent(service);

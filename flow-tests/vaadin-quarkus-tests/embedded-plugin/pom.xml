@@ -34,6 +34,10 @@
     </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
+      <artifactId>flow-lit-template</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
       <artifactId>flow-dnd</artifactId>
     </dependency>
     <dependency>

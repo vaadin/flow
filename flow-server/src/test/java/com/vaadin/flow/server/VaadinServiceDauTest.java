@@ -25,7 +25,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.dau.DAUCustomizer;
@@ -39,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mockStatic;
 
 public class VaadinServiceDauTest {
 
@@ -53,7 +53,7 @@ public class VaadinServiceDauTest {
     public void setUp() throws Exception {
         subscriptionKey = System.getProperty("vaadin.subscriptionKey");
         System.setProperty("vaadin.subscriptionKey", "sub-1234");
-        dauIntegrationMock = Mockito.mockStatic(DauIntegration.class);
+        dauIntegrationMock = mockStatic(DauIntegration.class);
     }
 
     @AfterEach

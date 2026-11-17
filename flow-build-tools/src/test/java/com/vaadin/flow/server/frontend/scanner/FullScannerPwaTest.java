@@ -21,13 +21,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.mockito.Mockito;
-
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PwaConfiguration;
 
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+
 public class FullScannerPwaTest extends AbstractScannerPwaTest {
-    private ClassFinder finder = Mockito.mock(ClassFinder.class);
+    private ClassFinder finder = mock(ClassFinder.class);
 
     protected PwaConfiguration getPwaConfiguration(Class<?>... classes)
             throws Exception {
@@ -36,9 +37,9 @@ public class FullScannerPwaTest extends AbstractScannerPwaTest {
         // annotationType
         Class clazz = Object.class;
 
-        Mockito.doReturn(clazz).when(finder).loadClass(PWA.class.getName());
+        doReturn(clazz).when(finder).loadClass(PWA.class.getName());
 
-        Mockito.doReturn(getPwaAnnotatedClasses(classes)).when(finder)
+        doReturn(getPwaAnnotatedClasses(classes)).when(finder)
                 .getAnnotatedClasses(clazz);
 
         FullDependenciesScanner fullDependenciesScanner = new FullDependenciesScanner(

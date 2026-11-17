@@ -15,10 +15,16 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
  * Opens a URL in a new browser tab or window via {@code window.open(url,
@@ -31,9 +37,10 @@ import com.vaadin.flow.dom.JsFunction;
  * <p>
  * Two axes of configuration:
  * <ul>
- * <li><b>URL</b> — either a known {@link String} or an {@link Action.Input} of
- * {@code String} resolved on the client at fire time (e.g. the current value of
- * an input field, or a {@code blob:} URL the client just minted).</li>
+ * <li><b>URL</b> — a known {@link String}, a {@link DownloadHandler} for
+ * server-generated content, or an {@link Action.Input} of {@code String}
+ * resolved on the client at fire time (e.g. the current value of an input
+ * field, or a {@code blob:} URL the client just minted).</li>
  * <li><b>Features</b> — the third argument to {@code window.open}, controlling
  * popup characteristics such as opener access (the standard {@code "noopener"}
  * / {@code "noreferrer"} tokens) and window sizing
@@ -86,6 +93,9 @@ import com.vaadin.flow.dom.JsFunction;
  */
 public class OpenInNewTabAction extends Action {
 
+    private static final OpenInNewTabJs OPEN_IN_NEW_TAB_JS = JsSnippets
+            .of(OpenInNewTabJs.class);
+
     /**
      * Default features applied when the caller does not supply their own:
      * severs {@code window.opener} on the new page and strips the
@@ -101,18 +111,6 @@ public class OpenInNewTabAction extends Action {
      */
     private static final Pattern JAVASCRIPT_SCHEME = Pattern
             .compile("^[\\x00-\\x20]*javascript:", Pattern.CASE_INSENSITIVE);
-
-    /**
-     * Client-side guard, mirroring {@link #JAVASCRIPT_SCHEME}, that evaluates
-     * to {@code true} when the resolved URL {@code u} carries a
-     * {@code javascript:} scheme. {@code [\x00-\x20]*} skips the leading C0
-     * controls and ASCII space the URL parser strips before the scheme, and
-     * {@code /i} catches any casing. {@code String(u)} coerces non-string
-     * inputs so {@code .test} never throws. Used to short-circuit
-     * {@code window.open} so an attacker-controlled {@link Input} value can't
-     * execute script in the opener's origin.
-     */
-    private static final String JAVASCRIPT_SCHEME_JS_GUARD = "/^[\\x00-\\x20]*javascript:/i.test(String(u))";
 
     private final Action.Input<String> urlInput;
     private final Action.Input<String> featuresInput;
@@ -150,6 +148,25 @@ public class OpenInNewTabAction extends Action {
      */
     public OpenInNewTabAction(String url, String features) {
         this(urlLiteral(url), literal(features, "features"));
+    }
+
+    /**
+     * Opens the content of a {@link DownloadHandler} in a new tab with the
+     * default features ({@value #DEFAULT_FEATURES}). The handler is registered
+     * as a stream resource scoped to the trigger host element, with the same
+     * lifecycle as in {@link DownloadAction#DownloadAction(DownloadHandler)}.
+     * The browser shows the content only if the handler serves it inline;
+     * content served as an attachment is downloaded instead.
+     *
+     * @param handler
+     *            produces the response when the URL is fetched, not
+     *            {@code null}
+     * @since 25.4
+     */
+    public OpenInNewTabAction(DownloadHandler handler) {
+        this(new DownloadHandlerInput(
+                Objects.requireNonNull(handler, "handler must not be null")),
+                new LiteralInput<>(DEFAULT_FEATURES));
     }
 
     /**
@@ -192,14 +209,10 @@ public class OpenInNewTabAction extends Action {
         // for those this check is redundant — but keeping it unconditional
         // keeps the rendered JS identical regardless of how the URL was
         // supplied, and protects LiteralInput<>("javascript:…") too. The
-        // JAVASCRIPT_SCHEME_JS_GUARD short-circuits window.open when the
-        // resolved URL is a javascript: URL; see its Javadoc for the regex.
-        // $0 = URL input's JsFunction; $1 = features input's JsFunction —
-        // both invoked with the firing event so handler-scoped inputs work.
-        return JsFunction.of("((u) => " + JAVASCRIPT_SCHEME_JS_GUARD
-                + " || window.open(u, \"_blank\", $1(event)))" + "($0(event))",
-                urlInput.toJs(trigger), featuresInput.toJs(trigger))
-                .withArguments("event");
+        // guard in OpenInNewTabJs#openInNewTab short-circuits window.open when
+        // the resolved URL is a javascript: URL.
+        return OPEN_IN_NEW_TAB_JS.openInNewTab(urlInput.toJs(trigger),
+                featuresInput.toJs(trigger));
     }
 
     private static LiteralInput<String> urlLiteral(String url) {
@@ -214,5 +227,35 @@ public class OpenInNewTabAction extends Action {
     private static LiteralInput<String> literal(String value, String name) {
         return new LiteralInput<>(
                 Objects.requireNonNull(value, name + " must not be null"));
+    }
+
+    /**
+     * How a URL is opened in a new tab, as a snippet for
+     * {@link JsSnippets#of(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    @JsDefinition
+    public interface OpenInNewTabJs extends Serializable {
+
+        /**
+         * An action that opens the URL of an input in a new browser tab, unless
+         * it is a <code>javascript:</code> URL, so that a URL produced on the
+         * client can not run script in the origin of the page. The pattern
+         * skips the leading C0 controls and spaces that the URL parser strips
+         * before the scheme and ignores case, and <code>String(u)</code> keeps
+         * the test from throwing for a value that is not a string.
+         *
+         * @param url
+         *            the input producing the URL
+         * @param features
+         *            the input producing the features of
+         *            <code>window.open</code>
+         * @return the action function
+         */
+        @JsExpression("((u) => /^[\\x00-\\x20]*javascript:/i.test(String(u))"
+                + " || window.open(u, \"_blank\", $1(event)))($0(event))")
+        @JsFunctionParameterNames("event")
+        JsFunction openInNewTab(JsFunction url, JsFunction features);
     }
 }

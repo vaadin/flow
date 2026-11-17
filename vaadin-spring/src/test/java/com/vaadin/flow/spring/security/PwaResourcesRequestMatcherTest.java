@@ -18,7 +18,6 @@ package com.vaadin.flow.spring.security;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -34,6 +33,8 @@ import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -105,7 +106,7 @@ class PwaResourcesRequestMatcherTest {
                         "/" + CustomOffline.OFFLINE_PATH));
         request.setPathInfo("/" + CustomOffline.OFFLINE_PATH);
         request.setServletPath(urlMapping.replaceFirst("/\\*?$", ""));
-        Assertions.assertFalse(createMatcher(urlMapping).matches(request),
+        assertFalse(createMatcher(urlMapping).matches(request),
                 "Expecting only GET requests to be matched");
     }
 
@@ -137,14 +138,14 @@ class PwaResourcesRequestMatcherTest {
 
     private void assertAbsolutePathRequestMatching(String requestPath,
             String urlMapping) {
-        Assertions.assertTrue(
+        assertTrue(
                 createMatcher(urlMapping)
                         .matches(createRequest(requestPath, urlMapping, true)),
                 "Expecting '" + requestPath + "' to be matched, but was not");
     }
 
     private void assertRequestMatching(String requestPath, String urlMapping) {
-        Assertions.assertTrue(
+        assertTrue(
                 createMatcher(urlMapping)
                         .matches(createRequest(requestPath, urlMapping, false)),
                 "Expecting '" + requestPath + "' to be matched, but was not");
@@ -152,7 +153,7 @@ class PwaResourcesRequestMatcherTest {
 
     private void assertRequestNotMatching(String requestPath,
             String urlMapping) {
-        Assertions.assertFalse(
+        assertFalse(
                 createMatcher(urlMapping)
                         .matches(createRequest(requestPath, urlMapping, false)),
                 "Expecting '" + requestPath + "' not to be matched, but was");

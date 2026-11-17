@@ -41,6 +41,17 @@ export default {
   // diagnostic, and set VAADIN_TEST_QUIET_OUTPUT=false to see it all again.
   // This mirrors what QuietTestOutputListener does for the Java tests.
   filterBrowserLogs: (log, session) => session?.passed !== true || process.env.VAADIN_TEST_QUIET_OUTPUT === 'false',
+  // A navigation to this path fires a trusted beforeunload but leaves the page
+  // in place, as the response has no content.
+  middleware: [
+    (context, next) => {
+      if (context.path === '/no-content') {
+        context.status = 204;
+        return undefined;
+      }
+      return next();
+    }
+  ],
   plugins: [
     {
       // Flow.ts loads the client through the bare `vaadin-flow-client`
@@ -54,6 +65,11 @@ export default {
     },
     esbuildPlugin({
       ts: true,
+      // esbuild does not read the target from tsconfig and defaults to
+      // esnext, which leaves the standard decorators and accessor fields of
+      // the ConnectionIndicator Lit element untransformed, and the browser
+      // can not parse those. Match the tsconfig target so they are lowered.
+      target: 'es2023',
       tsconfig: fileURLToPath(new URL('./tsconfig.json', import.meta.url))
     })
   ],

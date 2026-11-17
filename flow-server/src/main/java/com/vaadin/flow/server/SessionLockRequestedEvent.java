@@ -45,6 +45,7 @@ public class SessionLockRequestedEvent extends AbstractSessionLockEvent {
      * @param session
      *            the Vaadin session the lock belongs to, or {@code null} if it
      *            is not known
+     * @since 25.4
      */
     public SessionLockRequestedEvent(VaadinService service,
             VaadinSession session) {

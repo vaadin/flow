@@ -18,6 +18,7 @@ package com.vaadin.flow.devloop.daemon;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -29,9 +30,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * Composes the app JVM command line, resolves the classpath through Maven, and
@@ -53,15 +57,11 @@ final class Launch {
 
     /**
      * HotswapAgent plugins the loop will not have running; see
-     * {@link #jvmFlags} for what each of them would do.
-     * <p>
-     * Named here because the value has to reach HotswapAgent two different
-     * ways: as a system property, which is what works when the application owns
-     * the JVM, and as a {@code hotswap-agent.properties} on the application's
-     * own classpath, which is what works when it does not. See
-     * {@code MavenGoalRuntime#writeHotswapAgentProperties}.
+     * {@link #jvmFlags} for what each of them would do. Each entry is the
+     * {@code name} of the plugin's {@code @Plugin} annotation, which is not
+     * always the short one: Jackson's is {@code JacksonPlugin}.
      */
-    static final String DISABLED_HOTSWAP_PLUGINS = "Vaadin,Spring,SpringBoot,Jetty";
+    static final String DISABLED_HOTSWAP_PLUGINS = "Vaadin,Spring,SpringBoot,Jetty,JacksonPlugin";
 
     /** Maven's epilogue, which says nothing about why a build failed. */
     static final Pattern BOILERPLATE = Pattern
@@ -78,6 +78,16 @@ final class Launch {
      */
     static final Pattern HELP_TAIL = Pattern
             .compile("\\s*+->\\s*+\\[Help \\d++\\]$");
+
+    /**
+     * The daemon property carrying the developer's own flags for the app JVM;
+     * see {@link #readConfiguredJvmFlags()}.
+     */
+    static final String JVM_ARGS_PROPERTY = "vaadin.dev.jvmArgs";
+
+    /** What separates the flags in {@value #JVM_ARGS_PROPERTY}. */
+    private static final Pattern JVM_ARGS_SEPARATOR = Pattern
+            .compile("[\\s|]+");
 
     private static final List<String> ADD_OPENS = List.of("java.base/java.lang",
             "java.base/java.lang.reflect", "java.base/java.io",
@@ -108,6 +118,10 @@ final class Launch {
      * breaking.
      */
     private volatile Project project;
+
+    /** See {@link #requestJvmFlags}. */
+    private final AtomicReference<List<String>> requestedJvmFlags = new AtomicReference<>(
+            List.of());
 
     /**
      * Why the last resolution failed, when it failed and there was no earlier
@@ -156,6 +170,15 @@ final class Launch {
 
     /** Which poms moved the last time the stamp was rewritten, app-relative. */
     private volatile List<String> changedPoms = List.of();
+
+    /**
+     * Held by whatever writes to the loop's {@code target/classes}: an apply's
+     * compile and class removal, and the Maven runs a launch or a resolve
+     * makes. A restart is not serialized with an apply, so without it the two
+     * can write the same class files at once. Fair, so they run in arrival
+     * order.
+     */
+    private final ReentrantLock compileLock = new ReentrantLock(true);
 
     /** The JVM chosen for the application; see {@link #appJvm()}. */
     private volatile Jvm.Jdk appJvm;
@@ -326,7 +349,13 @@ final class Launch {
                 // into
                 // the stamp - otherwise it would never be watched at all.
                 rereadReactor(tee);
-                runMaven(tee);
+                // Its compile writes target/classes, as an apply's does.
+                compileLock.lock();
+                try {
+                    runMaven(tee);
+                } finally {
+                    compileLock.unlock();
+                }
                 writeStamp();
                 resolutions.incrementAndGet();
             }
@@ -378,6 +407,11 @@ final class Launch {
         return current != null && !classpathUnusable && stampIsCurrent()
                 ? Optional.of(current)
                 : Optional.empty();
+    }
+
+    /** See {@link #compileLock}. */
+    ReentrantLock compileLock() {
+        return compileLock;
     }
 
     /**
@@ -539,14 +573,15 @@ final class Launch {
      * Which modules are in the edit loop.
      * <p>
      * Read off the resolved classpath rather than reconstructed from poms: the
-     * only <em>directory</em> entries Maven emits are reactor modules' output
-     * directories, so this is exactly the set of modules the application
-     * depends on - transitively, after profiles and dependency management, and
-     * correct even for a module that overrides {@code <outputDirectory>}. It
-     * also means the loop cannot contain a module the application does not
-     * actually use.
+     * <em>directory</em> entries Maven emits are module output directories, so
+     * this is the set of modules the application depends on - transitively,
+     * after profiles and dependency management, and correct even for a module
+     * that overrides {@code <outputDirectory>}. It also means the loop cannot
+     * contain a module the application does not actually use. Not every such
+     * directory belongs to this reactor, though; {@link #moduleDirOf} decides
+     * which do.
      */
-    private List<Reactor.Module> selectModules(List<String> entries) {
+    List<Reactor.Module> selectModules(List<String> entries) {
         List<Reactor.Module> modules = new ArrayList<>();
         modules.add(reactor.app());
         Optional<List<Path>> forced = forcedModuleDirs();
@@ -629,14 +664,46 @@ final class Launch {
 
     /**
      * The nearest ancestor that is a Maven module, never above the reactor
-     * root.
+     * root, and only when that module is part of this reactor: under its root,
+     * or one of its candidates.
+     * <p>
+     * Containment alone is not enough in either direction. A reactor may
+     * aggregate a sibling of its root, which only the candidates know about.
+     * And a directory on the classpath may belong to a module the reactor does
+     * not aggregate at all: Maven 4 resolves a module of an enclosing build -
+     * one aggregating this reactor from above - to that module's
+     * {@code target/classes} rather than to its installed jar, and taking such
+     * a module into the loop would treat whatever writes to its sources as an
+     * edit of the application. Under the root, the candidates are not required,
+     * so a module the structural pom walk failed to enumerate stays in the
+     * loop. Nor are they for a reactor of one: discovery falls back to that
+     * whenever it cannot see the aggregation - an unreadable aggregator, a root
+     * that is not an ancestor - and its candidates then hold the application
+     * alone, so requiring them would quietly drop every sibling module the
+     * build did put on the classpath.
+     * <p>
+     * A rejected module still loads from its directory, but edits to it are not
+     * reloaded, so that is logged rather than left to be discovered.
+     * <p>
+     * Resolved first, because the candidates and the root are: a classpath
+     * entry spelled through a symlink would otherwise match neither.
      */
     private Path moduleDirOf(Path classesDir) {
         Path root = reactor.root();
-        for (Path dir = classesDir.getParent(); dir != null; dir = dir
-                .getParent()) {
+        Path real = Reactor.real(classesDir);
+        boolean underRoot = real.startsWith(root);
+        for (Path dir = real.getParent(); dir != null; dir = dir.getParent()) {
             if (Files.isRegularFile(dir.resolve("pom.xml"))) {
-                return dir;
+                Path owner = dir;
+                if (underRoot || !reactor.isMultiModule()
+                        || reactor.candidates().stream().anyMatch(
+                                candidate -> candidate.dir().equals(owner))) {
+                    return owner;
+                }
+                log.line("module " + owner
+                        + " is on the classpath but not part of reactor " + root
+                        + "; edits to it will not be reloaded");
+                return null;
             }
             if (dir.equals(root)) {
                 return null;
@@ -727,6 +794,18 @@ final class Launch {
     }
 
     private void runMaven(Log progress) throws IOException {
+        runMaven(progress, true);
+    }
+
+    /**
+     * @param retryOnline
+     *            whether an offline run that fails is tried again online -
+     *            which is what lets a cold local repository resolve, and only
+     *            costs a second build where the resolve already fetched
+     *            everything
+     */
+    private void runMaven(Log progress, boolean retryOnline)
+            throws IOException {
         Path maven = mavenCommand();
         List<String> base = new ArrayList<>(
                 List.of(maven.toString(), "-B", "-ntp"));
@@ -757,6 +836,10 @@ final class Launch {
         Attempt offline = attempt(base, true);
         if (offline.ok()) {
             return;
+        }
+        if (!retryOnline) {
+            throw new IOException(
+                    maven + ": " + failureReason(offline.output()));
         }
         log.line("offline resolution failed; retrying online");
         Attempt online = attempt(base, false);
@@ -798,7 +881,7 @@ final class Launch {
      *
      * @return the argument, or nothing when there is no jar
      */
-    private List<String> buildExtension() {
+    List<String> buildExtension() {
         return agentJar().filter(Files::isRegularFile)
                 .map(jar -> List.of("-Dmaven.ext.class.path=" + jar))
                 .orElseGet(List::of);
@@ -812,7 +895,8 @@ final class Launch {
         return List.of(configured.trim().split("\\s+"));
     }
 
-    private record Attempt(boolean ok, String output) {
+    /** How one Maven run ended, and everything it printed. */
+    record Attempt(boolean ok, String output) {
     }
 
     private Attempt attempt(List<String> base, boolean offline)
@@ -821,7 +905,26 @@ final class Launch {
         // After the wrapper, before the goals: Maven accepts options anywhere,
         // and inserting here keeps the goals last where a reader expects them.
         command.addAll(1, offline ? List.of("-o") : List.of("-nsu"));
-        Path directory = reactor.root();
+        return runMavenCommand(command, reactor.root());
+    }
+
+    /**
+     * Runs one Maven command from the reactor root and waits for it.
+     * <p>
+     * Shared by the resolve and by the compile leg's Maven backend (see
+     * {@link MavenCompile}), which need the same process set-up for the same
+     * reasons.
+     *
+     * @param command
+     *            the command line, Maven itself first
+     * @param directory
+     *            the reactor root
+     * @return how the run ended, with its merged output
+     * @throws IOException
+     *             if Maven could not be started, or the wait was interrupted
+     */
+    static Attempt runMavenCommand(List<String> command, Path directory)
+            throws IOException {
         ProcessBuilder builder = new ProcessBuilder(command)
                 .directory(directory.toFile()).redirectErrorStream(true);
         // The distribution's launcher derives maven.multiModuleProjectDirectory
@@ -839,7 +942,7 @@ final class Launch {
             return new Attempt(process.waitFor() == 0, output);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IOException("classpath resolution interrupted", e);
+            throw new IOException("Maven run interrupted", e);
         }
     }
 
@@ -1043,7 +1146,7 @@ final class Launch {
      * the line after it is the one that names the artifact it could not
      * resolve.
      */
-    private static String failureReason(String output) {
+    static String failureReason(String output) {
         List<String> errors = output.lines().map(String::strip)
                 .filter(line -> line.startsWith("[ERROR]"))
                 .map(line -> line.substring("[ERROR]".length()).strip())
@@ -1123,7 +1226,7 @@ final class Launch {
      * off on the Maven command line, where each one is its own argument and so
      * a value containing a space survives.
      * <p>
-     * {@code disabledPlugins} is the exception that proves the rule:
+     * {@code hotswapagent.disablePlugin} is the exception that proves the rule:
      * HotswapAgent reads it in {@code premain}, before Maven has set a single
      * command-line property, so it has to be a real JVM flag wherever it runs.
      *
@@ -1136,12 +1239,13 @@ final class Launch {
      *            or {@code apply}. The three produce a process that is
      *            otherwise identical, so the app can only tell them apart if
      *            the daemon says which it is.
-     * @return the invocation, ready for a {@link ProcessBuilder}
+     * @return the invocation, ready for a {@link ProcessBuilder}, and the
+     *         resolved build it runs
      * @throws IOException
      *             if the launch cannot be composed
      */
-    AppRuntime.Invocation invocation(int daemonPort, String token,
-            String launchKind, Log progress) throws IOException {
+    Composed invocation(int daemonPort, String token, String launchKind,
+            Log progress) throws IOException {
         // Teed, for the same reason project(Log) is: every warning below is
         // one only the developer can act on - a pom setting the daemon cannot
         // override, a path it cannot unbreak, a missing agent jar - and a
@@ -1162,9 +1266,10 @@ final class Launch {
                             + "the build does not currently resolve: "
                             + resolutionError);
         }
+        catchUpSources(resolved, "start".equals(launchKind), tee);
         AppRuntime appRuntime = runtime();
-        List<String> jvmFlags = new ArrayList<>(jvmFlags(tee));
-        jvmFlags.addAll(appRuntime.extraJvmFlags());
+        List<String> jvmFlags = composeJvmFlags(tee,
+                appRuntime.extraJvmFlags());
         // Only a runtime that hands these to a string something else splits
         // can be defeated by a space in one of them, and only it knows which
         // string that is; see MavenGoalRuntime.unsplittable.
@@ -1178,13 +1283,354 @@ final class Launch {
         // because the question it answers - is the running app still the app
         // the poms describe? - is the same either way.
         launchedClasspath = resolved.appClasspath();
-        return invocation;
+        return new Composed(invocation, resolved);
+    }
+
+    /**
+     * Builds the loop's modules when {@code target/classes} is behind their
+     * sources, so that a launch runs the code on disk.
+     * <p>
+     * The cache stamp only covers the poms, so sources changed while no daemon
+     * was watching - a {@code git checkout}, a pull, a revert - would otherwise
+     * be launched from the classes of an earlier build. An apply afterwards
+     * catches up with an edited file, as its class is older than it, but not
+     * with a deleted one: the launch snapshot that apply's deletion inventory
+     * is seeded from never saw that source, so its class, and the route or bean
+     * it declares, would stay until {@code mvn clean}.
+     * <p>
+     * The build is Maven's own {@code compile}, which recompiles a module whose
+     * sources were added or removed and deletes the classes its previous
+     * compile wrote. A class an apply wrote is not in that record, so the
+     * classes of a deleted source that are still there after the build are
+     * removed the way an apply removes them.
+     * <p>
+     * A build that fails is reported and the launch goes ahead on the classes
+     * there are, as before; it is not a resolution failure, so it does not
+     * block the applies that will compile the fixed source. It runs offline
+     * only, as the resolve that came before it has fetched what the build needs
+     * and going online cannot fix a compile error, and it is not run again
+     * until a source or a pom moves: a compile error in a file nobody is
+     * working on would otherwise cost a Maven run before every restart. A
+     * {@code start} tries it again regardless, as a build can also fail for a
+     * reason that is gone by then - an interrupted run, a locked local
+     * repository. Nor is it run while the poms do not resolve, as a build of
+     * those fails too.
+     * <p>
+     * Runs under {@link #compileLock()}, so a launch waits for an apply's
+     * compile to finish, and an apply waits for this build.
+     *
+     * @param project
+     *            the resolved build about to be launched
+     * @param retryFailedBuild
+     *            whether to build even when the last build of the same sources
+     *            and poms failed
+     * @param progress
+     *            where to say that a build is needed, and why
+     */
+    void catchUpSources(Project project, boolean retryFailedBuild,
+            Log progress) {
+        // Under the apply's compile lock: a restart is not serialized with an
+        // apply, and two compiles writing one target/classes leave it holding
+        // a mix of both.
+        compileLock.lock();
+        try {
+            catchUpSourcesLocked(project, retryFailedBuild, progress);
+        } finally {
+            compileLock.unlock();
+        }
+    }
+
+    private void catchUpSourcesLocked(Project project, boolean retryFailedBuild,
+            Log progress) {
+        if (resolutionError != null) {
+            progress.line("WARNING: not checking the sources against "
+                    + "target/classes while the build does not resolve");
+            return;
+        }
+        Map<Path, Long> sources = javaSources(project);
+        Map<Path, Long> recorded = readSourceInventory();
+        List<Path> behind = sourcesAheadOfClasses(project, sources, recorded);
+        if (!behind.isEmpty()) {
+            String attempt = inventoryText(sources) + currentStamp();
+            if (!retryFailedBuild
+                    && attempt.equals(readOrEmpty(failedCatchUpFile()))) {
+                progress.line("WARNING: target/classes is behind the sources ("
+                        + summarise(
+                                behind.stream().map(this::relative).toList())
+                        + "), and the last build of them failed; launching "
+                        + "with the classes from the last build until a "
+                        + "source or pom changes, or the next start");
+                return;
+            }
+            progress.line("target/classes is behind the sources ("
+                    + summarise(behind.stream().map(this::relative).toList())
+                    + "); building before the launch");
+            // Whole seconds, as some file systems keep no finer: a class the
+            // build writes within the second it started must still count as
+            // the build's own.
+            long buildStarted = System.currentTimeMillis() / 1000 * 1000;
+            try {
+                runMaven(progress, false);
+            } catch (IOException e) {
+                progress.line("WARNING: building the sources failed, launching "
+                        + "with the classes from the last build: "
+                        + e.getMessage());
+                // The inventory is kept as it was, so the next launch still
+                // knows which sources it has to catch up with once they move.
+                writeQuietly(failedCatchUpFile(), attempt);
+                return;
+            }
+            deleteQuietly(failedCatchUpFile());
+            List<Path> deleted = recorded.keySet().stream()
+                    .filter(source -> isDeleted(source, sources)).toList();
+            try {
+                Compile.removeClassArtifacts(project.modules(), deleted,
+                        buildStarted);
+            } catch (IOException e) {
+                // Recorded as caught up all the same: building again would not
+                // remove them either.
+                progress.line("WARNING: could not remove the classes of "
+                        + "deleted sources (" + e.getMessage()
+                        + "); they stay until a clean build");
+            }
+        }
+        writeLaunchInventory(sources, recorded);
+    }
+
+    /**
+     * The sources whose classes in {@code target/classes} are not the ones a
+     * build of the sources on disk would produce; empty when the two agree.
+     * <p>
+     * A source is behind when its class is missing or older than it, and a
+     * deleted source is behind while its class is still there. Both are read
+     * against the inventory the last launch recorded. A deletion has to be, as
+     * a file that is gone cannot be found by walking the tree; an apply that
+     * removed the class of a deleted source has already caught up with it, so
+     * that one does not count. And a source that has not moved since the last
+     * launch is not built for again, as that launch already ran or skipped the
+     * build for it - which is what keeps a source that never yields a class of
+     * its own name, or one dated in the future, from setting off a build on
+     * every launch. {@code package-info.java} is skipped outright, as javac
+     * writes no class for a package without annotations.
+     */
+    private static List<Path> sourcesAheadOfClasses(Project project,
+            Map<Path, Long> sources, Map<Path, Long> recorded) {
+        Set<Path> behind = new TreeSet<>();
+        sources.forEach((source, modified) -> {
+            if (!modified.equals(recorded.get(source))
+                    && !source.getFileName().toString()
+                            .equals("package-info.java")
+                    && classIsOlder(ownerOf(project, source), source,
+                            modified)) {
+                behind.add(source);
+            }
+        });
+        recorded.keySet().stream().filter(source -> isDeleted(source, sources))
+                .forEach(source -> {
+                    Reactor.Module owner = ownerOf(project, source);
+                    if (owner != null
+                            && Files.isRegularFile(owner.artifactFor(source))) {
+                        behind.add(source);
+                    }
+                });
+        return List.copyOf(behind);
+    }
+
+    /**
+     * Whether a recorded source is gone - asked of the disk too, as a walk that
+     * failed part way, or a file replaced under it, leaves a source out of the
+     * walk that is still there, and its classes must not be removed.
+     */
+    private static boolean isDeleted(Path source, Map<Path, Long> sources) {
+        return !sources.containsKey(source) && Files.notExists(source);
+    }
+
+    private static Reactor.Module ownerOf(Project project, Path source) {
+        return project.modules().stream()
+                .filter(module -> source.startsWith(module.sourceDir()))
+                .findFirst().orElse(null);
+    }
+
+    private static boolean classIsOlder(Reactor.Module module, Path source,
+            long sourceModified) {
+        Path artifact = module.artifactFor(source);
+        return Compile.stampOf(artifact)
+                .map(stamp -> stamp.modified() < sourceModified).orElse(true);
+    }
+
+    /** Every Java source of the loop, with when it was last modified. */
+    private Map<Path, Long> javaSources(Project project) {
+        Map<Path, Long> sources = new LinkedHashMap<>();
+        for (Reactor.Module module : project.modules()) {
+            if (!Files.isDirectory(module.sourceDir())) {
+                continue;
+            }
+            try (Stream<Path> walk = Files.walk(module.sourceDir())) {
+                walk.filter(Files::isRegularFile)
+                        .filter(path -> path.toString().endsWith(".java"))
+                        .forEach(path -> Compile.stampOf(path).ifPresent(
+                                stamp -> sources.put(path, stamp.modified())));
+            } catch (IOException | UncheckedIOException e) {
+                // An unreadable tree is one nothing can be built from either,
+                // so the launch goes on; the reason is still worth keeping.
+                log.line("could not read the sources of " + module.sourceDir()
+                        + ": " + e.getMessage());
+            }
+        }
+        return sources;
+    }
+
+    /**
+     * Every Java source of the loop as of the last launch, one per line with
+     * its modification time - what {@link #sourcesAheadOfClasses} reads against
+     * - and every source an apply has compiled since.
+     * <p>
+     * Under {@code target/} with the classes it describes, so that a clean
+     * wipes both together. A source neither a launch nor an apply saw is never
+     * in it - one whose class came from a build outside the loop, an IDE's, and
+     * that was deleted before the next launch - and a class it left behind
+     * waits for the next full build.
+     */
+    private Path sourceInventoryFile() {
+        return workDir(root).resolve("sources.txt");
+    }
+
+    /**
+     * What the last catch-up build that failed was run against - the sources
+     * and the poms - so that it is not run again until one of them moves.
+     */
+    private Path failedCatchUpFile() {
+        return workDir(root).resolve("sources-failed.txt");
+    }
+
+    private Map<Path, Long> readSourceInventory() {
+        Map<Path, Long> recorded = new LinkedHashMap<>();
+        stampLines(readOrEmpty(sourceInventoryFile()))
+                .forEach((path, modified) -> {
+                    try {
+                        recorded.put(Path.of(path), Long.parseLong(modified));
+                    } catch (NumberFormatException e) {
+                        // A line this version did not write; dropping it costs
+                        // at most one build.
+                    }
+                });
+        return recorded;
+    }
+
+    /**
+     * Records the sources a launch found, keeping any an apply recorded while
+     * the launch was building: a restart is not serialized with an apply, and
+     * the walk the launch took before its build cannot have seen them.
+     */
+    private synchronized void writeLaunchInventory(Map<Path, Long> sources,
+            Map<Path, Long> recordedBefore) {
+        Map<Path, Long> next = new LinkedHashMap<>(sources);
+        readSourceInventory().forEach((source, modified) -> {
+            if (!recordedBefore.containsKey(source) && !next.containsKey(source)
+                    && Files.exists(source)) {
+                next.put(source, modified);
+            }
+        });
+        writeQuietly(sourceInventoryFile(), inventoryText(next));
+    }
+
+    /**
+     * Adds sources an apply has compiled to the inventory of the last launch.
+     * <p>
+     * A source added while the app runs is compiled by an apply and, unless
+     * something else about it needs one, goes live without a restart - so no
+     * launch records it. Were it then deleted while no daemon runs, by a switch
+     * to a branch without it, the next launch would not know to remove its
+     * class, nor would Maven, which did not write it, and its route would stay.
+     * A source already recorded keeps the time recorded for it: the class the
+     * apply wrote is newer than it, so it is not behind either way.
+     *
+     * @param sources
+     *            the sources the apply compiled
+     */
+    synchronized void recordCompiledSources(List<Path> sources) {
+        Map<Path, Long> recorded = readSourceInventory();
+        boolean added = false;
+        for (Path source : sources) {
+            if (!recorded.containsKey(source)) {
+                Optional<Compile.Stamp> stamp = Compile.stampOf(source);
+                if (stamp.isPresent()) {
+                    recorded.put(source, stamp.get().modified());
+                    added = true;
+                }
+            }
+        }
+        if (added) {
+            writeQuietly(sourceInventoryFile(), inventoryText(recorded));
+        }
+    }
+
+    private static String inventoryText(Map<Path, Long> sources) {
+        StringBuilder sb = new StringBuilder();
+        sources.forEach((source, modified) -> sb.append(source).append('\t')
+                .append(modified).append('\n'));
+        return sb.toString();
+    }
+
+    private void writeQuietly(Path file, String text) {
+        try {
+            Files.createDirectories(file.getParent());
+            Files.writeString(file, text);
+        } catch (IOException e) {
+            log.line("could not write " + relative(file) + ": "
+                    + e.getMessage());
+        }
+    }
+
+    private void deleteQuietly(Path file) {
+        try {
+            Files.deleteIfExists(file);
+        } catch (IOException e) {
+            log.line("could not delete " + relative(file) + ": "
+                    + e.getMessage());
+        }
+    }
+
+    /**
+     * A composed launch: what to spawn, and the resolved build it runs - the
+     * module set whose files {@link Compile.Snapshot} stamps as it is spawned.
+     *
+     * @param invocation
+     *            the invocation, ready for a {@link ProcessBuilder}
+     * @param project
+     *            the resolved build the invocation runs
+     */
+    record Composed(AppRuntime.Invocation invocation, Project project) {
+    }
+
+    /**
+     * Every flag the app JVM starts with, in the order it gets them: the loop's
+     * own, then the runtime's, then the developer's from
+     * {@link #readConfiguredJvmFlags()} and from {@code --jvm-args}. The
+     * developer's are last so that where the JVM takes the last value of a
+     * repeated flag theirs wins - and of theirs, the command line's.
+     *
+     * @param tee
+     *            where a warning about the loop's own flags goes
+     * @param runtimeFlags
+     *            what the runtime adds, see {@link AppRuntime#extraJvmFlags()}
+     * @return the flags
+     * @throws IOException
+     *             if the loop's own flags cannot be composed
+     */
+    List<String> composeJvmFlags(Log tee, List<String> runtimeFlags)
+            throws IOException {
+        List<String> flags = new ArrayList<>(jvmFlags(tee));
+        flags.addAll(runtimeFlags);
+        flags.addAll(readConfiguredJvmFlags());
+        flags.addAll(requestedJvmFlags.get());
+        return flags;
     }
 
     /**
      * The flags that only a starting JVM can be given.
      */
-    private List<String> jvmFlags(Log tee) throws IOException {
+    List<String> jvmFlags(Log tee) throws IOException {
         Jvm.Jdk java = appJvm();
         Path haJar = ensureHotswapAgent();
         Optional<Path> connectorAgent = agentJar();
@@ -1205,8 +1651,9 @@ final class Launch {
         if (java.jbr()) {
             flags.add("-XX:+AllowEnhancedClassRedefinition");
         }
-        // Vaadin: the plugin declares itself for Vaadin 23-24, though 2.0.3
-        // does look for the 25 Hotswapper as well - so the reason it stays off
+        // Vaadin: the plugin declares itself for Vaadin 23-24, though the
+        // pinned release does look for the 25 Hotswapper as well - so the
+        // reason it stays off
         // is not that it would fail. It is that it would work: a second driver
         // of onHotswap and BrowserLiveReload, on its own file-watch schedule
         // and outside this transaction, so an apply could no longer say what it
@@ -1230,17 +1677,96 @@ final class Launch {
         // of its own, which is a second driver of what the transaction model
         // owns - so if HotswapAgent ever grows ee10 hooks, the loop should not
         // acquire a competitor by surprise.
-        // The key is "disabledPlugins", plural and unprefixed: HotswapAgent
-        // loads hotswap-agent.properties and then merges System.getProperties()
-        // over it with the same key names. A wrong name is accepted silently
-        // and disables nothing, which is how the Vaadin plugin kept firing its
-        // own full page reload on top of Flow's soft refresh.
-        flags.add("-DdisabledPlugins=" + DISABLED_HOTSWAP_PLUGINS);
+        // JacksonPlugin: deadlocks a container's boot. It patches Jackson's
+        // caches as they are defined - including the container's own copy of
+        // Jackson, in the container's own loader - and compiles the patch while
+        // the JVM holds that loader's lock, resolving types through the thread
+        // context class loader first: HotswapAgent's PluginClassFileTransformer
+        // builds the pool with ClassPool.appendSystemPath(), which on Java 9+
+        // is the context loader. Measured on Payara Micro: Jackson defined in
+        // its boot loader while the patch waited on the API class loader - the
+        // context loader during boot - and Hazelcast's bootstrap holding the
+        // API loader while it waited on the boot loader. The odd start never
+        // got past "Registered ...HazelcastBackingStoreFactoryProxy", with no
+        // error and no exit, until the start timeout. A stopgap: the cause is
+        // HotswapAgent's, not the plugin's. The fix -
+        // https://github.com/HotswapProjects/HotswapAgent/pull/681 - ships in
+        // 2.0.4, which HotswapAgentJar now pins, so this entry should go once
+        // the Payara Micro boot is measured again without it. Until then, what
+        // the plugin buys - clearing Jackson's caches after a redefine - is not
+        // worth a start that may never end.
+        // The key is "hotswapagent.disablePlugin", read in premain into a set
+        // every class loader's configuration consults. "disabledPlugins", the
+        // key hotswap-agent.properties uses, reaches the system class loader
+        // only: every other loader re-reads the properties file bundled in
+        // HotswapAgent's own jar, whose empty "disabledPlugins=" shadows the
+        // system property, so a container's own loaders kept every plugin.
+        // A wrong name is accepted silently and disables nothing, which is how
+        // the Vaadin plugin kept firing its own full page reload on top of
+        // Flow's soft refresh.
+        flags.add("-Dhotswapagent.disablePlugin=" + DISABLED_HOTSWAP_PLUGINS);
         ADD_OPENS.forEach(target -> {
             flags.add("--add-opens");
             flags.add(target + "=ALL-UNNAMED");
         });
         return flags;
+    }
+
+    /**
+     * The developer's own flags for the app JVM, from
+     * {@value #JVM_ARGS_PROPERTY}: {@code --add-exports}, {@code -Xmx},
+     * {@code -XX:...} and the like, which the {@code -D} forwarding of
+     * {@link #forwardedToApp} cannot carry. They reach the app JVM alone,
+     * unlike {@code JDK_JAVA_OPTIONS}, which also reaches the daemon and every
+     * Maven run.
+     * <p>
+     * Split on whitespace and on {@code |}. Whitespace matches
+     * {@code vaadin.dev.mavenArgs}; the {@code |} is there because the CLI
+     * splits {@code VAADIN_DEV_DAEMON_OPTS} on whitespace itself, without
+     * honouring quotes, so a value that comes that way can hold several flags
+     * only as {@code -Xmx2g|--add-exports=java.base/x=ALL-UNNAMED}. A comma
+     * would not do, being part of {@code --add-exports} targets. Either way an
+     * argument cannot contain a space, and no flag this is for does. A flag
+     * that needs a literal {@code |} has to come through {@code --jvm-args},
+     * which carries each flag as given.
+     * <p>
+     * Nothing stops these from overriding a flag the loop needs; they are
+     * applied as given.
+     *
+     * @return the flags, empty when the property is not set
+     */
+    static List<String> readConfiguredJvmFlags() {
+        String configured = System.getProperty(JVM_ARGS_PROPERTY);
+        if (configured == null || configured.isBlank()) {
+            return List.of();
+        }
+        return JVM_ARGS_SEPARATOR.splitAsStream(configured)
+                .filter(flag -> !flag.isEmpty()).toList();
+    }
+
+    /**
+     * Sets the flags a {@code start} or {@code restart} asked for with
+     * {@code --jvm-args}. They are added after
+     * {@link #readConfiguredJvmFlags()} and kept for every later launch - a
+     * plain {@code restart}, and an apply that escalates to one - until another
+     * {@code --jvm-args} replaces them or the daemon shuts down. An app that
+     * lost its {@code --add-exports} on the first escalated apply would fail in
+     * a way that has nothing to do with the change being applied.
+     *
+     * @param flags
+     *            the flags, empty to clear them
+     */
+    void requestJvmFlags(List<String> flags) {
+        requestedJvmFlags.set(List.copyOf(flags));
+    }
+
+    /**
+     * The flags last set by {@link #requestJvmFlags}.
+     *
+     * @return the flags, empty when none were asked for
+     */
+    List<String> requestedJvmFlags() {
+        return requestedJvmFlags.get();
     }
 
     /**
@@ -1301,13 +1827,18 @@ final class Launch {
      * devtools restart is the one that matters: two things restarting the
      * application on their own schedules is what the transaction model exists
      * to prevent.
+     * <p>
+     * {@value #JVM_ARGS_PROPERTY} is held back as well: the app gets those
+     * flags themselves, and a copy of the raw value would only carry its
+     * {@code |} separators into {@code MAVEN_OPTS}, where {@code mvn.cmd} reads
+     * them as pipes.
      *
      * @param name
      *            a system property name
      * @return {@code true} if the app JVM is given it too
      */
     static boolean forwardedToApp(String name) {
-        if (LOOP_OWNED.contains(name)) {
+        if (LOOP_OWNED.contains(name) || JVM_ARGS_PROPERTY.equals(name)) {
             return false;
         }
         return name.startsWith("vaadin.") || name.startsWith("spring.");

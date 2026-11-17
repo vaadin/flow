@@ -44,9 +44,13 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
@@ -284,6 +288,11 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             return;
         }
 
+        // Caches needed up to date by hotswappers must be cleared before they
+        // run; all other reflection caches are cleared by
+        // ReflectionCacheHotswapper after them
+        classes.forEach(ReflectionCache::clearBeforeHotswap);
+
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 redefined);
         for (VaadinHotswapper hotSwapper : hotSwappers) {
@@ -465,9 +474,12 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                 .distinct().toList();
 
         if (redefined) {
-            // A full chain refresh should be triggered if there are modal
-            // components, since they could be attached to UI or parent layouts
-            if (ui.hasModalComponent()) {
+            // A full chain refresh should be triggered if there are components
+            // with modality, since they could be attached to UI or parent
+            // layouts. Both strictly and visually modal components are taken
+            // into account, as for example dialogs are visually modal by
+            // default.
+            if (ui.getInternals().hasModalityComponent()) {
                 refreshStrategy = UIRefreshStrategy.PUSH_REFRESH_CHAIN;
             } else if (!targetChainChangedItems.isEmpty()) {
                 refreshStrategy = targetChainChangedItems.stream()
@@ -587,11 +599,11 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             LOGGER.debug(
                     "Triggering re-navigation to current route for UIs affected by classes changes.");
             for (UIRefreshStrategy action : uisToRefresh.keySet()) {
-                String triggerEventJS = String.format(
-                        "window.dispatchEvent(new CustomEvent(\"vaadin-refresh-ui\", { detail: { fullRefresh: %s }}));",
-                        action == UIRefreshStrategy.PUSH_REFRESH_CHAIN);
-                uisToRefresh.get(action).forEach(ui -> ui
-                        .access(() -> ui.getPage().executeJs(triggerEventJS)));
+                boolean fullRefresh = action == UIRefreshStrategy.PUSH_REFRESH_CHAIN;
+                uisToRefresh.get(action)
+                        .forEach(ui -> ui.access(
+                                () -> ui.getPage().executeJs(RefreshUiJs.class)
+                                        .refresh(fullRefresh)));
             }
         }
     }
@@ -628,7 +640,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     @Override
     public void uiInit(UIInitEvent event) {
         UI ui = event.getUI();
-        sessions.add(ui.getSession());
+        sessions.add(ui.getSessionOrThrow());
     }
 
     /**
@@ -797,6 +809,31 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             return forceReload.get()
                     || Boolean.getBoolean(FORCE_RELOAD_PROPERTY);
         }
+    }
+
+    /**
+     * What a hotswap asks of the browser of a UI with push, as a JavaScript
+     * definition for {@link Page#executeJs(Class)}.
+     * <p>
+     * The refresh itself is done by the dev tools, which listen for the event
+     * so that they can keep the scroll positions across it.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface RefreshUiJs extends Serializable {
+
+        /**
+         * Asks the dev tools to refresh the UI.
+         *
+         * @param fullRefresh
+         *            <code>true</code> to refresh the whole route chain,
+         *            <code>false</code> to refresh only the route
+         */
+        @JsExpression("window.dispatchEvent(new CustomEvent('vaadin-refresh-ui', { detail: { fullRefresh: $0 } }))")
+        void refresh(boolean fullRefresh);
     }
 
 }

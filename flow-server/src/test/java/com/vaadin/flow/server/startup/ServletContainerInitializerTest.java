@@ -28,17 +28,21 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.testutil.ClassFinder;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Checks that any class which implements {@link ServletContainerInitializer}
@@ -61,12 +65,11 @@ class ServletContainerInitializerTest extends ClassFinder {
             }
 
         };
-        ServletContext context = Mockito.mock(ServletContext.class);
+        ServletContext context = mock(ServletContext.class);
         initializer.onStartup(Collections.emptySet(), context);
 
-        Mockito.verify(context).setAttribute(
-                Mockito.eq(DeferredServletContextInitializers.class.getName()),
-                Mockito.any());
+        verify(context).setAttribute(
+                eq(DeferredServletContextInitializers.class.getName()), any());
 
         assertFalse(processIsExecuted.get());
     }
@@ -84,17 +87,16 @@ class ServletContainerInitializerTest extends ClassFinder {
             }
 
         };
-        ServletContext context = Mockito.mock(ServletContext.class);
-        Mockito.when(context.getAttribute(Lookup.class.getName()))
-                .thenReturn(Mockito.mock(Lookup.class));
+        ServletContext context = mock(ServletContext.class);
+        when(context.getAttribute(Lookup.class.getName()))
+                .thenReturn(mock(Lookup.class));
 
-        Mockito.when(context.getClassLoader())
+        when(context.getClassLoader())
                 .thenReturn(initializer.getClass().getClassLoader());
         initializer.onStartup(Collections.emptySet(), context);
 
-        Mockito.verify(context, Mockito.times(0)).setAttribute(
-                Mockito.eq(DeferredServletContextInitializers.class.getName()),
-                Mockito.any());
+        verify(context, times(0)).setAttribute(
+                eq(DeferredServletContextInitializers.class.getName()), any());
 
         assertTrue(processIsExecuted.get());
     }
@@ -105,7 +107,7 @@ class ServletContainerInitializerTest extends ClassFinder {
         List<String> rawClasspathEntries = getRawClasspathEntries();
 
         List<Pattern> excludes = getExcludedPatterns().map(Pattern::compile)
-                .collect(Collectors.toList());
+                .toList();
 
         List<String> classes = new ArrayList<>();
         for (String location : rawClasspathEntries) {

@@ -28,7 +28,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
@@ -58,6 +57,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -1353,8 +1353,8 @@ class ElementEffectTest {
             return component;
         });
 
-        Mockito.clearInvocations(expectedMockedElements.toArray());
-        Mockito.clearInvocations(parentComponent.getElement());
+        clearInvocations(expectedMockedElements.toArray());
+        clearInvocations(parentComponent.getElement());
         var op = Signal.runInTransaction(() -> {
             taskList.insertFirst("first");
             taskList.insertLast("last");

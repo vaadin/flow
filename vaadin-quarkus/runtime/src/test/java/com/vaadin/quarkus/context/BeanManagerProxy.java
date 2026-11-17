@@ -23,22 +23,20 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.mockito.Mockito;
-
 import com.vaadin.flow.server.VaadinSession;
+
+import static org.mockito.Mockito.mock;
 
 class BeanManagerProxy implements InvocationHandler {
 
     private BeanManager delegate;
 
-    private final Bean<?> fakeBean = Mockito.mock(Bean.class);
+    private final Bean<?> fakeBean = mock(Bean.class);
 
-    private final CreationalContext<?> fakeContext = Mockito
-            .mock(CreationalContext.class);
+    private final CreationalContext<?> fakeContext = mock(
+            CreationalContext.class);
 
     private final Class<?> mockingBeanType;
 
@@ -52,8 +50,7 @@ class BeanManagerProxy implements InvocationHandler {
             throws Throwable {
         if (method.getName().equals("getBeans")
                 && args[0].equals(mockingBeanType)) {
-            Set<Bean<?>> set = Collections.singleton(fakeBean);
-            return set;
+            return Collections.singleton(fakeBean);
         }
         if (method.getName().equals("resolve")
                 && args[0].equals(Collections.singleton(fakeBean))) {
@@ -84,7 +81,7 @@ class BeanManagerProxy implements InvocationHandler {
         Method[] methods = delegate.getClass().getDeclaredMethods();
         List<Method> filtered = Stream.of(methods).filter(
                 origMethod -> origMethod.getName().equals(method.getName()))
-                .collect(Collectors.toList());
+                .toList();
 
         Method found = null;
         if (filtered.size() == 1) {

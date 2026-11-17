@@ -163,7 +163,7 @@ public class VaadinRouteScope extends AbstractScope {
 
         @Override
         public void afterNavigation(AfterNavigationEvent event) {
-            BeanStore store = getBeanStoreIfExists(ui.getSession());
+            BeanStore store = getBeanStoreIfExists(ui.getSessionOrThrow());
             if (store == null) {
                 assert getBeanNamesByNavigationComponents().isEmpty();
             } else {
@@ -185,7 +185,7 @@ public class VaadinRouteScope extends AbstractScope {
             currentNavigationTarget = event.getNavigationTarget();
             currentLayouts = event.getLayouts();
 
-            BeanStore store = getBeanStoreIfExists(ui.getSession());
+            BeanStore store = getBeanStoreIfExists(ui.getSessionOrThrow());
             if (store == null) {
                 assert getBeanNamesByNavigationComponents().isEmpty();
             } else {
@@ -247,7 +247,8 @@ public class VaadinRouteScope extends AbstractScope {
         }
 
         private BeanNamesWrapper getBeanNamesWrapper() {
-            RouteBeanStore beanStore = getBeanStoreIfExists(ui.getSession());
+            RouteBeanStore beanStore = getBeanStoreIfExists(
+                    ui.getSessionOrThrow());
             return beanStore == null ? null : beanStore.getBeanNamesWrapper();
         }
 

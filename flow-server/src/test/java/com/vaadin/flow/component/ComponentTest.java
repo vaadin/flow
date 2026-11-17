@@ -35,7 +35,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.ScrollOptions.Alignment;
 import com.vaadin.flow.component.ScrollOptions.Behavior;
@@ -77,6 +76,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ComponentTest {
 
@@ -342,7 +343,7 @@ public class ComponentTest {
     public void getComponentLocale_noCurrentUI_returnsDefaultLocale() {
         UI.setCurrent(null);
         Instantiator instantiator = mocks.getService().getInstantiator();
-        Mockito.when(instantiator.getI18NProvider()).thenReturn(null);
+        when(instantiator.getI18NProvider()).thenReturn(null);
         Component test = new TestButton();
         final Locale locale = test.getLocale();
         assertEquals(Locale.getDefault(), locale,
@@ -368,19 +369,18 @@ public class ComponentTest {
                 List.of(Locale.US, Locale.CANADA_FRENCH, Locale.FRANCE));
         providedLocales.remove(Locale.getDefault());
 
-        Mockito.when(instantiator.getI18NProvider())
-                .thenReturn(new I18NProvider() {
-                    @Override
-                    public List<Locale> getProvidedLocales() {
-                        return providedLocales;
-                    }
+        when(instantiator.getI18NProvider()).thenReturn(new I18NProvider() {
+            @Override
+            public List<Locale> getProvidedLocales() {
+                return providedLocales;
+            }
 
-                    @Override
-                    public String getTranslation(String key, Locale locale,
-                            Object... params) {
-                        return null;
-                    }
-                });
+            @Override
+            public String getTranslation(String key, Locale locale,
+                    Object... params) {
+                return null;
+            }
+        });
         Component test = new TestButton();
         final Locale locale = test.getLocale();
         assertEquals(providedLocales.get(0), locale,
@@ -391,19 +391,18 @@ public class ComponentTest {
     public void getComponentLocale_noCurrentUI_returnsDefaultLocale_ifNoProvidedLocale() {
         UI.setCurrent(null);
         Instantiator instantiator = mocks.getService().getInstantiator();
-        Mockito.when(instantiator.getI18NProvider())
-                .thenReturn(new I18NProvider() {
-                    @Override
-                    public List<Locale> getProvidedLocales() {
-                        return List.of();
-                    }
+        when(instantiator.getI18NProvider()).thenReturn(new I18NProvider() {
+            @Override
+            public List<Locale> getProvidedLocales() {
+                return List.of();
+            }
 
-                    @Override
-                    public String getTranslation(String key, Locale locale,
-                            Object... params) {
-                        return null;
-                    }
-                });
+            @Override
+            public String getTranslation(String key, Locale locale,
+                    Object... params) {
+                return null;
+            }
+        });
         Component test = new TestButton();
         final Locale locale = test.getLocale();
         assertEquals(Locale.getDefault(), locale,
@@ -627,6 +626,19 @@ public class ComponentTest {
         UI ui = new UI();
         ui.add(parent);
         assertEquals(ui, child.getUI().get());
+    }
+
+    @Test
+    public void getUIOrThrow_attached_returnsUI_detached_throws() {
+        TestComponent child = new TestComponent();
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class, child::getUIOrThrow);
+        assertThat(exception.getMessage(), containsString(
+                TestComponent.class.getName() + " is not attached to a UI"));
+
+        UI ui = new UI();
+        ui.add(child);
+        assertSame(ui, child.getUIOrThrow());
     }
 
     private void assertEmpty(Optional<?> optional) {
@@ -1010,7 +1022,7 @@ public class ComponentTest {
         assertTrue(grandChild.isAttached());
 
         // Mock closing of UI after request handled
-        ui.getInternals().setSession(Mockito.mock(VaadinSession.class));
+        ui.getInternals().setSession(mock(VaadinSession.class));
         ui.close();
         ui.getInternals().setSession(null);
 
@@ -1413,13 +1425,6 @@ public class ComponentTest {
 
     }
 
-    public static <T> Map<String, T> filterLazyLoading(
-            Map<String, T> dependenciesMap) {
-        dependenciesMap.entrySet().removeIf(
-                entry -> entry.getKey().contains("Flow.loadOnDemand"));
-        return dependenciesMap;
-    }
-
     @Test
     public void noJsDependenciesAreAdded() {
         UIInternals internals = new MockUI().getInternals();
@@ -1538,8 +1543,12 @@ public class ComponentTest {
 
     private Map<String, Dependency> getDependenciesMap(
             Collection<Dependency> dependencies) {
-        return filterLazyLoading(dependencies.stream().collect(
-                Collectors.toMap(Dependency::getUrl, Function.identity())));
+        // Leave out the chunks the components are loaded with
+        return dependencies.stream()
+                .filter(dependency -> dependency
+                        .getType() != Dependency.Type.DYNAMIC_IMPORT)
+                .collect(Collectors.toMap(Dependency::getUrl,
+                        Function.identity()));
     }
 
     @Test // 3818

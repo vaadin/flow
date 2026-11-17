@@ -52,6 +52,7 @@ public class SessionLockReleasedEvent extends AbstractSessionLockEvent {
      *            is not known
      * @param holdTime
      *            how long the thread held the lock, not {@code null}
+     * @since 25.4
      */
     public SessionLockReleasedEvent(VaadinService service,
             VaadinSession session, Duration holdTime) {
@@ -66,6 +67,7 @@ public class SessionLockReleasedEvent extends AbstractSessionLockEvent {
      * while they run.
      *
      * @return the hold time, not {@code null}
+     * @since 25.4
      */
     public Duration getHoldTime() {
         return holdTime;

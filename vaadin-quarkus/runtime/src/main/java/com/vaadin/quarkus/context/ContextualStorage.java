@@ -55,6 +55,8 @@ public class ContextualStorage implements Serializable {
     }
 
     /**
+     * Gets the map that holds the contextual instances.
+     *
      * @return the underlying storage map.
      */
     public Map<Object, ContextualInstanceInfo<?>> getStorage() {
@@ -62,6 +64,8 @@ public class ContextualStorage implements Serializable {
     }
 
     /**
+     * Gets whether the storage is thread-safe.
+     *
      * @return whether the ContextualStorage might get accessed concurrently by
      *         different threads.
      */
@@ -70,6 +74,9 @@ public class ContextualStorage implements Serializable {
     }
 
     /**
+     * Creates a contextual instance of the given bean and stores it. In a
+     * concurrent storage, the instance another thread already created for the
+     * bean is returned instead.
      *
      * @param bean
      *            the contextual type

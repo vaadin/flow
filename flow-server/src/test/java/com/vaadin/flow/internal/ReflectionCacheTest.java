@@ -141,6 +141,27 @@ class ReflectionCacheTest {
     }
 
     @Test
+    void clearBeforeHotswap_onlyOptedInCachesCleared() {
+        ReflectionCache<Number, Object> regular = new ReflectionCache<>(
+                type -> type);
+        ReflectionCache<Number, Object> optedIn = ReflectionCache
+                .clearedBeforeHotswap(type -> type);
+
+        regular.get(Integer.class);
+        optedIn.get(Integer.class);
+        optedIn.get(Double.class);
+
+        ReflectionCache.clearBeforeHotswap(Integer.class);
+
+        assertTrue(regular.contains(Integer.class));
+        assertFalse(optedIn.contains(Integer.class));
+        assertTrue(optedIn.contains(Double.class));
+
+        ReflectionCache.clearAll(Double.class);
+        assertFalse(optedIn.contains(Double.class));
+    }
+
+    @Test
     void cacheIsGarbageCollected() throws InterruptedException {
         ReflectionCache<Object, Object> cache1 = new ReflectionCache<>(
                 type -> type);

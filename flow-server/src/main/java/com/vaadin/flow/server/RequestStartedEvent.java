@@ -34,6 +34,8 @@ import java.util.Optional;
  * request on the same thread, so a listener may keep timing state in a
  * {@link ThreadLocal}. Requests are handled concurrently, so listeners must
  * expect several requests to be in flight on several threads at once.
+ * 
+ * @since 25.4
  */
 public class RequestStartedEvent extends EventObject {
 

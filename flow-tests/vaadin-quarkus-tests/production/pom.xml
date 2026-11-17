@@ -34,6 +34,10 @@
     </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
+      <artifactId>flow-lit-template</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
       <artifactId>flow-dnd</artifactId>
     </dependency>
     <dependency>
@@ -106,6 +110,12 @@
         <groupId>com.vaadin</groupId>
         <artifactId>flow-maven-plugin</artifactId>
         <version>${project.version}</version>
+        <configuration>
+          <!-- The frontend files of the views are in common-test-code, and
+               the build only reads the ones of the project itself from
+               here. Development mode finds them on the classpath. -->
+          <frontendResourcesDirectory>${project.basedir}/../common-test-code/src/main/resources/META-INF/frontend</frontendResourcesDirectory>
+        </configuration>
         <executions>
           <execution>
             <goals>

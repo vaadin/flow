@@ -23,14 +23,14 @@ import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
-
-import com.googlecode.gentyref.GenericTypeReflector;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.ReflectTools;
@@ -119,6 +119,20 @@ public abstract class AbstractServerHandlers<T>
      *            Class to collect methods for
      */
     protected void collectHandlerMethods(Class<?> classWithAnnotations) {
+        findHandlers(classWithAnnotations).forEach(this::add);
+    }
+
+    /**
+     * Finds the methods annotated with the handler annotation for given class,
+     * without adding them to this list.
+     *
+     * @param classWithAnnotations
+     *            Class to find methods for
+     * @return the RPC control mode for disabled element of each handler, by
+     *         handler name, not {@code null}
+     */
+    Map<String, DisabledUpdateMode> findHandlers(
+            Class<?> classWithAnnotations) {
         List<Method> methods = new ArrayList<>();
         collectHandlerMethods(classWithAnnotations, methods);
         Map<String, Method> map = new HashMap<>();
@@ -135,8 +149,10 @@ public abstract class AbstractServerHandlers<T>
             }
             map.put(method.getName(), method);
         }
-        map.values().forEach(
-                method -> add(method.getName(), getUpdateMode(method)));
+        Map<String, DisabledUpdateMode> handlers = new LinkedHashMap<>();
+        map.values().forEach(method -> handlers.put(method.getName(),
+                getUpdateMode(method)));
+        return Collections.unmodifiableMap(handlers);
     }
 
     /**
@@ -226,7 +242,7 @@ public abstract class AbstractServerHandlers<T>
      */
     protected abstract DisabledUpdateMode getUpdateMode(Method method);
 
-    private void add(String handler, DisabledUpdateMode mode) {
+    void add(String handler, DisabledUpdateMode mode) {
         add(handler);
         if (!DisabledUpdateMode.ONLY_WHEN_ENABLED.equals(mode)) {
             if (disabledRpcModes == null) {
@@ -238,11 +254,11 @@ public abstract class AbstractServerHandlers<T>
 
     @SuppressWarnings("unchecked")
     private final Class<T> getType() {
-        Type type = GenericTypeReflector.getTypeParameter(
+        Type type = ReflectTools.getTypeParameter(
                 getClass().getGenericSuperclass(),
                 getClass().getSuperclass().getTypeParameters()[0]);
         if (type instanceof Class || type instanceof ParameterizedType) {
-            return (Class<T>) GenericTypeReflector.erase(type);
+            return (Class<T>) ReflectTools.erase(type);
         }
         throw new IllegalStateException(getExceptionMessage(type));
     }

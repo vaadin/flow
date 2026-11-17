@@ -15,31 +15,41 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.ExecutionContext;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.change.MapPutChange;
+import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -54,6 +64,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -66,13 +78,11 @@ class ShortcutRegistrationTest {
     @BeforeEach
     void initTests() {
         ui = mock(UI.class);
-        // initShortcutClient loads the client helper via ui.getPage()
-        when(ui.getPage())
-                .thenReturn(mock(com.vaadin.flow.component.page.Page.class));
         lifecycleOwner = mock(Component.class);
         Arrays.setAll(listenOn, i -> mock(Component.class));
 
         when(lifecycleOwner.getUI()).thenReturn(Optional.of(ui));
+        when(lifecycleOwner.getUIOrThrow()).thenCallRealMethod();
         when(lifecycleOwner.addAttachListener(any()))
                 .thenReturn(mock(Registration.class));
         when(lifecycleOwner.addDetachListener(any()))
@@ -226,7 +236,7 @@ class ShortcutRegistrationTest {
                 }, Key.KEY_A);
 
         for (Component component : listenOn) {
-            when(component.addDetachListener(Mockito.any()))
+            when(component.addDetachListener(any()))
                     .thenReturn(mock(Registration.class));
         }
         clientResponse();
@@ -403,24 +413,26 @@ class ShortcutRegistrationTest {
     }
 
     @Test
+    @SuppressWarnings("removal")
     void listenOnComponentHasElementLocatorJs_jsExecutionScheduled() {
         final ElementLocatorTestFixture fixture = new ElementLocatorTestFixture();
         final Key key = Key.KEY_A;
-        fixture.createNewShortcut(key);
+        fixture.createNewShortcut(key).withCtrl();
 
-        final String expression = delegateExpression(fixture.writeResponse());
-        assertTrue(expression.contains(fixture.elementLocatorJs),
-                "element locator string " + fixture.elementLocatorJs
-                        + " missing from JS execution string " + expression);
-        assertTrue(expression.contains("registerKeydownDelegate"),
-                "JS execution string should relay via registerKeydownDelegate "
-                        + expression);
-        assertTrue(expression.contains(key.getKeys().get(0)),
-                "JS execution string missing the key" + key);
+        final JsCall call = delegateCall(fixture.writeResponse());
+        assertEquals("registerKeydownDelegate", call.methodName());
+        // The string locator is compiled by the browser, with the listen-on
+        // element as this
+        final JsFunction locator = (JsFunction) call.arguments().get(0);
+        assertEquals("return (" + fixture.elementLocatorJs + ");",
+                locator.getBody());
+        assertEquals("Control", call.arguments().get(1));
+        assertEquals("Shift Alt AltGraph Meta", call.arguments().get(2));
         // resetFocus=false, allowDefault=false by default
-        assertTrue(expression.contains(", false, false)"),
-                "default should not reset focus nor allow browser default "
-                        + expression);
+        assertEquals(List.of(true, false, false),
+                call.arguments().subList(3, 6));
+        assertArrayEquals(key.getKeys().toArray(),
+                (Object[]) call.arguments().get(6));
 
         fixture.registration.remove();
 
@@ -433,16 +445,48 @@ class ShortcutRegistrationTest {
     }
 
     @Test
+    void listenOnComponentHasDeclaredElementLocator_locatorPassedToDelegate() {
+        final JsFunction locator = JsSnippets.of(LocatorJs.class)
+                .locateOverlay();
+        final ElementLocatorTestFixture fixture = new ElementLocatorTestFixture(
+                locator);
+        fixture.createNewShortcut(Key.KEY_A);
+
+        final JsCall call = delegateCall(fixture.writeResponse());
+        assertEquals(locator, call.arguments().get(0));
+    }
+
+    @Test
+    void listenOnComponentHasDeclaredElementLocator_delegateRegisteredOncePerSettings() {
+        final ElementLocatorTestFixture fixture = new ElementLocatorTestFixture(
+                JsSnippets.of(LocatorJs.class).locateOverlay());
+        fixture.createNewShortcut(Key.KEY_A);
+        fixture.createNewShortcut(Key.KEY_A);
+        assertEquals(1, delegateCalls(fixture.writeResponse()).size());
+
+        // Setting an equal locator again does not relay keydowns twice
+        Shortcuts.setShortcutListenOnElementLocator(
+                JsSnippets.of(LocatorJs.class).locateOverlay(),
+                fixture.components[0]);
+        fixture.createNewShortcut(Key.KEY_A);
+        assertEquals(0, delegateCalls(fixture.writeResponse()).size());
+
+        fixture.createNewShortcut(Key.KEY_B);
+        final List<JsCall> calls = delegateCalls(fixture.writeResponse());
+        assertEquals(1, calls.size());
+        assertArrayEquals(Key.KEY_B.getKeys().toArray(),
+                (Object[]) calls.get(0).arguments().get(6));
+    }
+
+    @Test
     void listenOnComponentHasElementLocatorJs_allowBrowserDefault_JsExecutionDoesNotPreventDefault() {
         final ElementLocatorTestFixture fixture = new ElementLocatorTestFixture();
         final Key key = Key.KEY_A;
         fixture.createNewShortcut(key).allowBrowserDefault();
 
-        final String expression = delegateExpression(fixture.writeResponse());
-        // allowDefault (last arg) must be true when browser default is allowed.
-        assertTrue(expression.contains(", false, true)"),
-                "JS execution string should allow browser default "
-                        + expression);
+        final JsCall call = delegateCall(fixture.writeResponse());
+        assertEquals(true, call.arguments().get(5),
+                "delegate should allow browser default");
     }
 
     @Test
@@ -451,22 +495,9 @@ class ShortcutRegistrationTest {
         final Key key = Key.KEY_A;
         fixture.createNewShortcut(key).resetFocusOnActiveElement();
 
-        final String expression = delegateExpression(fixture.writeResponse());
-        // resetFocus (3rd arg) must be true when focus reset is requested.
-        assertTrue(expression.contains(", true, false)"),
-                "JS execution string should reset focus on active element "
-                        + expression);
-    }
-
-    @Test
-    void listenOnComponentHasElementLocatorJs_nestedModalGuardPresentByDefault() {
-        final ElementLocatorTestFixture fixture = new ElementLocatorTestFixture();
-        fixture.createNewShortcut(Key.KEY_A);
-
-        final String expression = delegateExpression(fixture.writeResponse());
-        assertTrue(expression.contains("eventWithinBoundary(event, delegate)"),
-                "JS execution string should guard against events from nested "
-                        + "modals by default " + expression);
+        final JsCall call = delegateCall(fixture.writeResponse());
+        assertEquals(true, call.arguments().get(4),
+                "delegate should reset focus on active element");
     }
 
     @Test
@@ -474,10 +505,10 @@ class ShortcutRegistrationTest {
         final ElementLocatorTestFixture fixture = new ElementLocatorTestFixture();
         fixture.createNewShortcut(Key.KEY_A).allowEventsFromNestedModals();
 
-        final String expression = delegateExpression(fixture.writeResponse());
-        assertFalse(expression.contains("eventWithinBoundary"),
-                "JS execution string should not guard against nested modal "
-                        + "events when explicitly allowed " + expression);
+        final JsCall call = delegateCall(fixture.writeResponse());
+        assertEquals(false, call.arguments().get(3),
+                "delegate should not guard against nested modal events when "
+                        + "explicitly allowed");
     }
 
     @Test
@@ -544,10 +575,13 @@ class ShortcutRegistrationTest {
         final String token = owner.getElement()
                 .getAttribute(ShortcutRegistration.SHORTCUT_OWNER_ATTRIBUTE);
         assertNotNull(token, "component owner should be marked");
-        assertTrue(
-                shortcutFilter(realUi).contains("eventInOwnerScope(event, '["
-                        + ShortcutRegistration.SHORTCUT_OWNER_ATTRIBUTE + "~=\""
-                        + token + "\"]')"),
+        final ArrayNode captures = shortcutFilterCaptures(realUi);
+        assertTrue(captures.get(2).booleanValue(),
+                "filter should check the owner scope");
+        assertEquals(
+                "[" + ShortcutRegistration.SHORTCUT_OWNER_ATTRIBUTE + "~=\""
+                        + token + "\"]",
+                captures.get(3).asString(),
                 "filter should locate the owner element by its marker token");
     }
 
@@ -564,39 +598,62 @@ class ShortcutRegistrationTest {
                 realUi.getElement().getAttribute(
                         ShortcutRegistration.SHORTCUT_OWNER_ATTRIBUTE),
                 "the UI element can never be inside a popover, so it needs no marker");
-        final String filter = shortcutFilter(realUi);
-        assertTrue(filter.contains("eventInTopLevelScope(event)"),
+        final ArrayNode captures = shortcutFilterCaptures(realUi);
+        assertTrue(captures.get(2).booleanValue(),
+                "filter should check the owner scope");
+        assertTrue(captures.get(3).isNull(),
                 "UI-owned shortcut should use the token-free origin guard "
-                        + filter);
-        assertFalse(
-                filter.contains(ShortcutRegistration.SHORTCUT_OWNER_ATTRIBUTE),
-                "UI-owned shortcut should not embed an owner token " + filter);
+                        + captures);
+    }
+
+    @Test
+    void listenerFilter_capturesKeysModifiersAndSideEffects() {
+        UI realUi = spyUiWithSession();
+        realUi.addShortcutListener(() -> {
+        }, Key.of("Digit1", "1"), KeyModifier.ALT, KeyModifier.CONTROL)
+                .allowEventPropagation().resetFocusOnActiveElement();
+
+        realUi.getInternals().getStateTree()
+                .runExecutionsBeforeClientResponse();
+
+        final ArrayNode captures = shortcutFilterCaptures(realUi);
+        // Modifiers that are not part of the shortcut have to be released,
+        // except AltGraph when Alt is part of it (#15906)
+        assertEquals("Control Alt", captures.get(0).asString());
+        assertEquals("Shift Meta", captures.get(1).asString());
+        // preventDefault, stopPropagation, resetFocus
+        assertEquals(List.of(true, false, true),
+                List.of(captures.get(4).booleanValue(),
+                        captures.get(5).booleanValue(),
+                        captures.get(6).booleanValue()));
+        // Every key of the primary key, matched as key code or key value
+        assertEquals(List.of("Digit1", "1"), List.of(captures.get(7).asString(),
+                captures.get(8).asString()));
+        assertEquals(9, captures.size());
     }
 
     @Test
     void ownerScopeGuard_uiLifecycleOwner_repeatedRegistrationsShareFilter() {
-        // #25624: a filter text that differs per registration is retained
-        // forever by the client expression cache and both constant pools, so
-        // re-registering the same shortcut must not produce a new expression.
+        // #25624: filter settings that differ per registration are retained
+        // forever by both constant pools, so re-registering the same shortcut
+        // must not produce new settings.
         UI realUi = spyUiWithSession();
         final StateTree tree = realUi.getInternals().getStateTree();
 
         ShortcutRegistration first = realUi.addShortcutListener(() -> {
         }, Key.KEY_A);
         tree.runExecutionsBeforeClientResponse();
-        // The whole expression map is what keys the constant pool entry.
-        final Set<String> firstExpressions = new HashSet<>(
-                keydownExpressions(realUi));
+        // The whole settings object is what keys the constant pool entry.
+        final ObjectNode firstSettings = keydownSettings(realUi);
 
         first.remove();
         realUi.addShortcutListener(() -> {
         }, Key.KEY_A);
         tree.runExecutionsBeforeClientResponse();
 
-        assertEquals(firstExpressions,
-                new HashSet<>(keydownExpressions(realUi)),
+        assertEquals(firstSettings, keydownSettings(realUi),
                 "re-registering the same UI shortcut should reuse the very "
-                        + "same expressions");
+                        + "same settings");
     }
 
     @Test
@@ -677,7 +734,7 @@ class ShortcutRegistrationTest {
                 Key.KEY_A);
 
         mockLifecycle(true);
-        Mockito.when(lifecycleOwner.getParent())
+        when(lifecycleOwner.getParent())
                 .thenReturn(Optional.of(new FakeComponent()));
 
         clientResponse();
@@ -692,25 +749,27 @@ class ShortcutRegistrationTest {
     void uiRegistration_uiHasModalComponent_eventIsSentFromModalComponentInsteadOfUi() {
         AtomicReference<ShortcutEvent> eventRef = new AtomicReference<>();
 
-        Component modal = Mockito.mock(Component.class);
+        Component modal = mock(Component.class);
         when(modal.getUI()).thenReturn(Optional.of(ui));
+        when(modal.getUIOrThrow()).thenCallRealMethod();
         when(modal.getEventBus()).thenReturn(new ComponentEventBus(modal));
         when(modal.getElement()).thenReturn(new Element("tag"));
         when(modal.isVisible()).thenReturn(true);
 
-        UIInternals uiInternals = Mockito.mock(UIInternals.class);
-        Mockito.when(uiInternals.hasModalComponent()).thenReturn(true);
-        Mockito.when(uiInternals.getActiveModalComponent()).thenReturn(modal);
-        Mockito.when(ui.getInternals()).thenReturn(uiInternals);
+        UIInternals uiInternals = mock(UIInternals.class);
+        when(uiInternals.hasModalComponent()).thenReturn(true);
+        when(uiInternals.getActiveModalComponent()).thenReturn(modal);
+        when(ui.getInternals()).thenReturn(uiInternals);
 
         listenOn = new Component[] { ui };
         when(ui.getUI()).thenReturn(Optional.of(ui));
+        when(ui.getUIOrThrow()).thenCallRealMethod();
 
         new ShortcutRegistration(lifecycleOwner, () -> listenOn, eventRef::set,
                 Key.KEY_A);
 
         mockLifecycle(true);
-        Mockito.when(lifecycleOwner.getParent()).thenReturn(Optional.of(modal));
+        when(lifecycleOwner.getParent()).thenReturn(Optional.of(modal));
 
         clientResponse(listenOn);
 
@@ -734,8 +793,7 @@ class ShortcutRegistrationTest {
         FakeComponent component = new FakeComponent();
         component.setVisible(false);
         component.getElement().appendChild(ownerElement);
-        Mockito.when(lifecycleOwner.getParent())
-                .thenReturn(Optional.of(component));
+        when(lifecycleOwner.getParent()).thenReturn(Optional.of(component));
 
         clientResponse();
 
@@ -774,7 +832,7 @@ class ShortcutRegistrationTest {
     @Test
     void constructedRegistration_lifeCycleOwnerIsDetached_detachListenerIsDeregisteredFromListenOnComponents() {
         AtomicReference<ComponentEventListener> detachListener = new AtomicReference<>();
-        Mockito.doAnswer(invocaation -> {
+        doAnswer(invocaation -> {
             detachListener.set(
                     invocaation.getArgument(0, ComponentEventListener.class));
             return mock(Registration.class);
@@ -783,17 +841,16 @@ class ShortcutRegistrationTest {
         new ShortcutRegistration(lifecycleOwner, () -> listenOn, event -> {
         }, Key.KEY_A);
 
-        Registration registration = Mockito.mock(Registration.class);
+        Registration registration = mock(Registration.class);
         for (Component component : listenOn) {
-            Mockito.when(component.addDetachListener(Mockito.any()))
-                    .thenReturn(registration);
+            when(component.addDetachListener(any())).thenReturn(registration);
         }
 
         clientResponse();
 
         detachListener.get().onComponentEvent(new DetachEvent(lifecycleOwner));
 
-        Mockito.verify(registration, Mockito.times(3)).remove();
+        verify(registration, times(3)).remove();
     }
 
     @Test
@@ -801,9 +858,9 @@ class ShortcutRegistrationTest {
         UI ui = spyUiWithSession();
         Component owner = new FakeComponent();
 
-        Registration registration = Mockito.mock(Registration.class);
+        Registration registration = mock(Registration.class);
         AtomicInteger count = new AtomicInteger();
-        Mockito.doAnswer(invocation -> {
+        doAnswer(invocation -> {
             count.incrementAndGet();
             return registration;
         }).when(ui).addDetachListener(any());
@@ -897,10 +954,10 @@ class ShortcutRegistrationTest {
     }
 
     private Element mockLifecycle(boolean visible) {
-        Mockito.when(lifecycleOwner.isVisible()).thenReturn(visible);
+        when(lifecycleOwner.isVisible()).thenReturn(visible);
         Element element = ElementFactory.createAnchor();
         element.setVisible(visible);
-        Mockito.when(lifecycleOwner.getElement()).thenReturn(element);
+        when(lifecycleOwner.getElement()).thenReturn(element);
         return element;
     }
 
@@ -913,9 +970,14 @@ class ShortcutRegistrationTest {
         private final UI ui;
 
         ElementLocatorTestFixture() {
-            VaadinSession session = Mockito.mock(VaadinSession.class);
-            Mockito.when(session.hasLock()).thenReturn(true);
-            ui = Mockito.spy(UI.class);
+            this(null);
+        }
+
+        @SuppressWarnings("removal")
+        ElementLocatorTestFixture(JsFunction declaredLocator) {
+            VaadinSession session = mock(VaadinSession.class);
+            when(session.hasLock()).thenReturn(true);
+            ui = spy(UI.class);
             ui.getInternals().setSession(session);
 
             owner = new FakeComponent();
@@ -926,8 +988,11 @@ class ShortcutRegistrationTest {
             ui.add(initialComponentToListenOn);
 
             elementLocatorJs = "foobar";
-            registration = Shortcuts.setShortcutListenOnElement(
-                    elementLocatorJs, initialComponentToListenOn);
+            registration = declaredLocator == null
+                    ? Shortcuts.setShortcutListenOnElement(elementLocatorJs,
+                            initialComponentToListenOn)
+                    : Shortcuts.setShortcutListenOnElementLocator(
+                            declaredLocator, initialComponentToListenOn);
         }
 
         List<PendingJavaScriptInvocation> writeResponse() {
@@ -981,34 +1046,67 @@ class ShortcutRegistrationTest {
     }
 
     private static UI spyUiWithSession() {
-        UI spyUi = Mockito.spy(UI.class);
-        // A locked session lets initShortcutClient's executeJs run.
+        UI spyUi = spy(UI.class);
+        // A locked session lets the delegate's executeJs run.
         VaadinSession session = mock(VaadinSession.class);
         when(session.hasLock()).thenReturn(true);
         spyUi.getInternals().setSession(session);
         return spyUi;
     }
 
-    private static String delegateExpression(
+    private static JsCall delegateCall(
             List<PendingJavaScriptInvocation> invocations) {
-        // Match the delegate CALL, not the FlowShortcut.js definition load.
-        return invocations.stream().map(i -> i.getInvocation().getExpression())
-                .filter(e -> e.contains("registerKeydownDelegate(this,"))
-                .findFirst().orElseThrow(() -> new AssertionError(
+        return delegateCalls(invocations).stream().findFirst()
+                .orElseThrow(() -> new AssertionError(
                         "No registerKeydownDelegate call scheduled"));
     }
 
-    private static Set<String> keydownExpressions(Component component) {
-        return component.getElement().getNode()
-                .getFeature(ElementListenerMap.class).getExpressions("keydown");
+    private static List<JsCall> delegateCalls(
+            List<PendingJavaScriptInvocation> invocations) {
+        return invocations.stream().map(i -> i.getInvocation().getJsCall())
+                .filter(call -> call != null && call
+                        .definitionType() == ShortcutRegistration.ShortcutJs.class)
+                .toList();
     }
 
     /**
-     * The single keydown listener filter carrying the shortcut origin guard.
+     * The keydown listener settings the client gets for the component.
      */
-    private static String shortcutFilter(Component component) {
-        return keydownExpressions(component).stream()
-                .filter(e -> e.contains("window.Vaadin.Flow.shortcut."))
+    private static ObjectNode keydownSettings(Component component) {
+        List<NodeChange> changes = new ArrayList<>();
+        component.getElement().getNode().getFeature(ElementListenerMap.class)
+                .collectChanges(changes::add);
+        ConstantPoolKey key = changes.stream()
+                .filter(MapPutChange.class::isInstance)
+                .map(MapPutChange.class::cast)
+                .filter(change -> "keydown".equals(change.getKey()))
+                .map(change -> (ConstantPoolKey) change.getValue())
+                .reduce((first, second) -> second)
+                .orElseThrow(() -> new AssertionError(
+                        "No keydown listener registered"));
+        ObjectNode constantPoolUpdate = JacksonUtils.createObjectNode();
+        key.export(constantPoolUpdate);
+        return (ObjectNode) constantPoolUpdate.get(key.getId());
+    }
+
+    /**
+     * The captures of the single keydown listener filter of a shortcut:
+     * required modifiers, forbidden modifiers, check owner scope, owner
+     * selector, prevent default, stop propagation, reset focus and the keys.
+     */
+    private static ArrayNode shortcutFilterCaptures(Component component) {
+        final String functionId = JsCall.functionId(Arrays
+                .stream(ShortcutRegistration.ShortcutFilterJs.class
+                        .getMethods())
+                .filter(method -> method.getName().equals("matchKeydown"))
+                .findFirst().orElseThrow());
+        final ObjectNode settings = keydownSettings(component);
+        return JacksonUtils.getKeys(settings).stream().map(settings::get)
+                .filter(entry -> functionId.equals(
+                        entry.path(JsonConstants.EVENT_SETTINGS_FUNCTION)
+                                .asString(null)))
+                .map(entry -> (ArrayNode) entry
+                        .get(JsonConstants.EVENT_SETTINGS_CAPTURES))
                 .reduce((a, b) -> {
                     throw new AssertionError(
                             "More than one shortcut filter: " + a + " / " + b);
@@ -1017,18 +1115,18 @@ class ShortcutRegistrationTest {
     }
 
     private boolean hasKeyAInKeyDownExpression(Component component) {
-        ElementListenerMap map = component.getElement().getNode()
-                .getFeature(ElementListenerMap.class);
+        // Once the shortcut listener is registered the filter should match
+        // KeyA, and only it
+        ArrayNode captures = shortcutFilterCaptures(component);
+        return captures.size() == 8 && captures.get(7).asString()
+                .equals(Key.KEY_A.getKeys().get(0));
+    }
 
-        // Once the shortcut listener is registered the expression should
-        // contain KeyA
-        boolean hasKeyA = false;
-        for (String expression : map.getExpressions("keydown")) {
-            if (expression.contains(Key.KEY_A.getKeys().get(0))) {
-                hasKeyA = true;
-            }
-        }
-        return hasKeyA;
+    @JsDefinition
+    public interface LocatorJs extends Serializable {
+
+        @JsExpression("return this.overlay;")
+        JsFunction locateOverlay();
     }
 
     @Tag("imaginary-tag")

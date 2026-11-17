@@ -353,9 +353,9 @@ class QuarkusPluginAdapterTest {
         configureDirectoryDefaults();
         when(config.frontendDirectory()).thenReturn(new File("frontend"));
 
+        QuarkusPluginAdapter adapter = createAdapter();
         ConfigurationException exception = assertThrows(
-                ConfigurationException.class,
-                () -> createAdapter().frontendDirectory());
+                ConfigurationException.class, adapter::frontendDirectory);
         assertTrue(
                 exception.getMessage()
                         .contains("vaadin.build.frontendDirectory"),

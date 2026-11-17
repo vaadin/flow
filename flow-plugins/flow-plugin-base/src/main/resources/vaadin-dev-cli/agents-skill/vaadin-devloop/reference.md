@@ -66,6 +66,11 @@ the app turns up.
 (`file`/`line`/`column`/`message`/`hint`), `logErrors[]`, `timings`, `nextAction`, and a field
 per leg: `actionsTaken` for the redefine, `resourcePush` for the push.
 
+`status --json` gives `app`, `modules`, `daemon` and `transaction`. With no daemon running,
+`status` spawns none: `app.state` is `stopped`, and `daemon`, `modules` and `transaction` are
+`null`, as are `app.owner`, `app.mode` and `app.frontend`. Check `daemon` for `null` before
+reading into it.
+
 ## Which edits need a page reload
 
 | Edit | Browser |
@@ -158,12 +163,19 @@ What is different is worth knowing:
   about a stylesheet the page never got. Check `status` — the app may have died mid-apply.
 - App failed to start (a taken port, a bad config) → `start` exits `1` and names the reason
   from the app's own log, with the tail printed under it; `status` repeats the reason. The
-  whole log is the target application's `target/devloop/app.log`. Daemon wedged → `shutdown`,
-  then any command respawns it.
-- Every command reports a fresh daemon (`up=0s`) and the app as `stopped`, and `vaadin-dev`
-  says the recorded daemon "left its handshake behind" — something outside the loop is killing
-  the processes each command created, so the daemon and the application it owns die with the
-  command that started them and the loop never holds across two commands. On POSIX the daemon
+  whole log is the target application's `target/devloop/app.log`. Daemon wedged → every
+  command, `status` included, exits `70` and says the recorded daemon "is running but not
+  answering"; `shutdown` does not stop it, so kill the pid it names, then `start` spawns a fresh
+  one. Where the pid's start time cannot be read (a `ps` without `-o`, as in Git Bash or
+  busybox), a pid that does not answer may be one an unrelated process reused, so its record is
+  removed instead, with a note naming the pid. `status` and `ping` then report no daemon, while
+  `apply`, `start` and `shutdown` exit `70` with `daemon did not come up` if it really is a
+  wedged daemon: kill the pid from the note, then retry.
+- Every command reports a fresh daemon (`up=0s`), or `status` reports no daemon running, with
+  the app `stopped`, and `vaadin-dev` says the recorded daemon "left its handshake behind" —
+  something outside the loop is killing the processes each command created, so the daemon and
+  the application it owns die with the command that started them and the loop never holds
+  across two commands. On POSIX the daemon
   is spawned into a session of its own for exactly this reason, and that is defeated only where
   neither `setsid` nor `perl` exists; on Windows a runner whose job object closes over the
   command takes the daemon with it whichever launcher ran. Where it happens, `start` the app
@@ -200,7 +212,8 @@ VAADIN_DEV_DAEMON_OPTS   JVM options for the daemon, e.g. -Dvaadin.frontend.hotd
                          -Dvaadin.dev.modules=<dirs>, -Dvaadin.dev.maven=<path>,
                          -Dvaadin.dev.mavenArgs=<args>, -Dvaadin.dev.mainClass=<class>,
                          -Dvaadin.dev.runtime=<main|jetty-ee10|jetty-ee11|wildfly|tomee|payara|payara-micro|liberty|cargo>,
-                         -Dvaadin.dev.daemonJar=<path>.
+                         -Dvaadin.dev.daemonJar=<path>,
+                         -Dvaadin.dev.jvmArgs=<flags> (see below).
                          Read ONLY when a daemon is spawned: a daemon that is already
                          running ignores it, so `shutdown` first when changing a value.
                          Every vaadin.* and spring.* property is passed on to the
@@ -226,6 +239,31 @@ A property set here lives as long as the daemon and appears in no file, so it is
 steering one local run. If a profile is what the project normally runs under,
 `spring.profiles.active` in `application.properties` is the better answer and needs none
 of this.
+
+Plain environment variables work the same way: the application inherits the environment of
+the shell whose command spawned the daemon, so `PORT=8092 .vaadin/vaadin-dev start` is only
+seen by a daemon that `start` spawns. Against a running daemon, `shutdown` first, or pass the
+setting as a property instead: `start --jvm-args "-Dserver.port=8092"`.
+
+JVM flags (`--add-exports`, `-Xmx`, `-XX:...`) are not properties; pass them to `start` or
+`restart` with `--jvm-args`. No `shutdown` is needed, and they reach the application JVM
+alone, after the loop's own flags:
+
+```
+.vaadin/vaadin-dev restart --jvm-args "-Xmx2g --add-exports java.base/jdk.internal.misc=ALL-UNNAMED"
+```
+
+The daemon keeps them for every later restart, including one an `apply` escalates to, until
+the next `--jvm-args` (`--jvm-args ""` clears them). The launch output shows what the app
+got: the `flags:` line, or for an embedded server (`jetty-ee10`, `jetty-ee11`) the
+`MAVEN_OPTS=` line under it. Where only the environment can be set, `-Dvaadin.dev.jvmArgs=<flags>` in
+`VAADIN_DEV_DAEMON_OPTS` does the same, but that variable is split on spaces, quotes or not,
+so join several with `|` and use the `=` form:
+`-Dvaadin.dev.jvmArgs=-Xmx2g|--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED`.
+
+`JDK_JAVA_OPTIONS` also works, but it reaches the daemon and every Maven run too, and a bad
+value surfaces only as "could not resolve flow-devloop-daemon". `JAVA_TOOL_OPTIONS` takes
+only the `=` form of `--add-exports`.
 
 `.vaadin/vaadin-dev --help` lists the rest, including the `redefine <a.b.C,...>` diagnostic.
 

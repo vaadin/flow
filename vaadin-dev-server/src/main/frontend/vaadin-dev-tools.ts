@@ -76,11 +76,10 @@ type DevToolsConf = {
 const hmrClient: any = import.meta.hot ? import.meta.hot.hmrClient : undefined;
 
 import {
-  captureScrollPositions,
   refreshWithScrollPreservation,
   registerRefreshUIHandler,
-  restoreScrollPositions,
-  ScrollSnapshot
+  restoreScrollPositionsAfterReload,
+  saveScrollPositionsForReload
 } from './hotswap-scroll';
 
 @customElement('vaadin-dev-tools')
@@ -644,8 +643,7 @@ export class VaadinDevTools extends LitElement {
       if (strategy === 'refresh' || strategy === 'full-refresh') {
         refreshWithScrollPreservation(strategy === 'full-refresh');
       } else {
-        const scrollSnapshot = captureScrollPositions();
-        window.sessionStorage.setItem('vaadin-hotswap-scroll', JSON.stringify(scrollSnapshot));
+        saveScrollPositionsForReload();
         const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
         const nextReload = lastReload ? parseInt(lastReload, 10) + 1 : 1;
         window.sessionStorage.setItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE, nextReload.toString());
@@ -666,10 +664,17 @@ export class VaadinDevTools extends LitElement {
         if (!styleTag) {
           styleTag = document.createElement('style');
           styleTag.setAttribute('data-file-path', path);
+          const layer = this.removeOldLinks(pathWithNoProtocol);
+          if (layer) {
+            styleTag.setAttribute('data-layer', layer);
+          }
           document.head.appendChild(styleTag);
-          this.removeOldLinks(pathWithNoProtocol);
         }
-        styleTag.textContent = content;
+        // A stylesheet loaded into a cascade layer stays in it when its
+        // content is replaced. The pushed content has its imports inlined, so
+        // it can be wrapped into a layer block.
+        const layer = styleTag.getAttribute('data-layer');
+        styleTag.textContent = layer ? `@layer ${layer} {\n${content}\n}` : content;
         document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
       } else if (content === '' || content === null) {
         // remove inlined stylesheets or initial links with the given path
@@ -725,19 +730,29 @@ export class VaadinDevTools extends LitElement {
     }
   }
 
-  removeOldLinks(path: string) {
-    // removes initially added links that are outdated after hot-reload and replaced by inlined styles
-    const links = Array.from(document.head.querySelectorAll('link[rel="stylesheet"]')) as HTMLLinkElement[];
-    links.forEach((link) => {
-      let filePath = link.getAttribute('data-file-path') || link.getAttribute('href');
+  /**
+   * Removes initially added stylesheet elements that are outdated after
+   * hot-reload and replaced by inlined styles. Besides links, this covers the
+   * style elements that load a stylesheet into a cascade layer.
+   *
+   * @returns the cascade layer of a removed element, or null if none had one
+   */
+  removeOldLinks(path: string): string | null {
+    let layer: string | null = null;
+    const elements = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style[data-layer]'));
+    elements.forEach((element) => {
+      let filePath =
+        element.getAttribute('data-file-path') || element.getAttribute('href') || element.getAttribute('data-href');
       if (filePath) {
         // Strip query string and fragment for comparison
         const cleanPath = filePath.split(/[?#]/)[0];
         if (cleanPath === path || cleanPath.endsWith('/' + path)) {
-          link.remove();
+          layer = element.getAttribute('data-layer') ?? layer;
+          element.remove();
         }
       }
     });
+    return layer;
   }
 
   tabHandleMessage(tabElement: HTMLElement, message: ServerMessage): boolean {
@@ -809,11 +824,7 @@ export class VaadinDevTools extends LitElement {
       window.sessionStorage.removeItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE);
     }
 
-    const savedScroll = window.sessionStorage.getItem('vaadin-hotswap-scroll');
-    if (savedScroll !== null) {
-      window.sessionStorage.removeItem('vaadin-hotswap-scroll');
-      restoreScrollPositions(JSON.parse(savedScroll) as ScrollSnapshot);
-    }
+    restoreScrollPositionsAfterReload(lastReload !== null);
 
     registerRefreshUIHandler();
 

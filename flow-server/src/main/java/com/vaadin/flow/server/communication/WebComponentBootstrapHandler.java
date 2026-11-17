@@ -645,7 +645,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         json.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID,
                 context.getUI().getCsrfToken());
         json.put(ApplicationConstants.UIDL_PUSH_ID,
-                context.getUI().getSession().getPushId());
+                context.getUI().getSessionOrThrow().getPushId());
         String responseString = json.toString();
 
         try {
