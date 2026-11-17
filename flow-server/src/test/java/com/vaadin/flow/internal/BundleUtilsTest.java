@@ -23,6 +23,8 @@ import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.MockedStatic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,9 +33,6 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsDefinition;
-import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.VaadinService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,6 +45,7 @@ import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -169,24 +169,55 @@ class BundleUtilsTest {
         assertEquals(second, third, "Should return consistent results");
     }
 
-    @JsDefinition
     interface CarriedJs {
-        @JsExpression("this.focus()")
-        void focus();
     }
 
-    @JsDefinition
     interface MissingJs {
-        @JsExpression("this.blur()")
-        void blur();
+    }
+
+    interface DevelopmentJs {
+    }
+
+    interface UnlistedJs {
     }
 
     @Test
-    void checkJsFunctionsBundled_productionMode_logsErrorOnlyForMissingFunction() {
+    void checkJsFunctionsBundled_productionMode_logsErrorOnceForMissingFunction() {
+        Logger logger = mockCheck(true, true);
+
+        BundleUtils.checkJsFunctionsBundled(CarriedJs.class,
+                () -> List.of("f00d"));
+        verify(logger, never()).error(anyString(), any(Object[].class));
+
+        BundleUtils.checkJsFunctionsBundled(MissingJs.class,
+                () -> List.of("f00d", "dead"));
+        BundleUtils.checkJsFunctionsBundled(MissingJs.class,
+                () -> List.of("f00d", "dead"));
+        verify(logger, times(1)).error(anyString(),
+                eq(MissingJs.class.getName()), eq("MissingJs"),
+                eq("MissingJs"));
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "false, true", "true, false" })
+    void checkJsFunctionsBundled_developmentModeOrUnlistedFunctions_logsNothing(
+            boolean productionMode, boolean statsListFunctions) {
+        Logger logger = mockCheck(productionMode, statsListFunctions);
+
+        BundleUtils.checkJsFunctionsBundled(
+                productionMode ? UnlistedJs.class : DevelopmentJs.class,
+                () -> List.of("dead"));
+
+        verify(logger, never()).error(anyString(), any(Object[].class));
+    }
+
+    private Logger mockCheck(boolean productionMode,
+            boolean statsListFunctions) {
         ObjectNode statsJson = JacksonUtils.createObjectNode();
-        statsJson.putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
-                .add(JsCall.functionId("this.focus()", 0, false))
-                .add("another function");
+        if (statsListFunctions) {
+            statsJson.putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
+                    .add("f00d").add("beef");
+        }
         MockedStatic<BundleUtils> bundleUtils = mockStatic(BundleUtils.class,
                 CALLS_REAL_METHODS);
         bundleUtils.when(BundleUtils::loadStatsJson).thenReturn(statsJson);
@@ -199,19 +230,11 @@ class BundleUtilsTest {
         closeOnTearDown.add(loggerFactory);
         DeploymentConfiguration configuration = mock(
                 DeploymentConfiguration.class);
-        when(configuration.isProductionMode()).thenReturn(true);
+        when(configuration.isProductionMode()).thenReturn(productionMode);
         VaadinService service = mock(VaadinService.class);
         when(service.getDeploymentConfiguration()).thenReturn(configuration);
         VaadinService.setCurrent(service);
         closeOnTearDown.add(CurrentInstance::clearAll);
-
-        BundleUtils.checkJsFunctionsBundled(CarriedJs.class,
-                () -> List.of(JsCall.functionId("this.focus()", 0, false)));
-        verify(logger, never()).error(anyString(), any(Object[].class));
-
-        BundleUtils.checkJsFunctionsBundled(MissingJs.class,
-                () -> List.of(JsCall.functionId("this.blur()", 0, false)));
-        verify(logger).error(anyString(), eq(MissingJs.class.getName()),
-                eq("MissingJs"), eq("MissingJs"));
+        return logger;
     }
 }
