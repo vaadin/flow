@@ -416,10 +416,12 @@ describe('MessageSender (class)', () => {
       expect(events).to.deep.equal(['3 sent 1', '3 sent 2', '3 end discarded', '4 sent 1']);
     });
 
-    it('discards the open requests when the UI lifecycle that replaced the first one stops', () => {
+    it('discards the open requests and announces the stop when the UI lifecycle that replaced the first one stops', () => {
       const context = makeRegistry();
       const sender = new MessageSender(context.registry);
       const { events } = recordRequests(context.clientEvents);
+      let terminations = 0;
+      context.clientEvents.addEventListener('vaadin-ui-terminated', () => terminations++);
       sender.send({ rpc: [] });
 
       // E.g. an exported web component resynchronizing its session.
@@ -427,9 +429,11 @@ describe('MessageSender (class)', () => {
       context.registry.reset();
       replaced.setState(UIState.TERMINATED);
       expect(events).to.deep.equal(['0 sent 1']);
+      expect(terminations).to.equal(0);
 
       context.terminate();
       expect(events).to.deep.equal(['0 sent 1', '0 end discarded']);
+      expect(terminations).to.equal(1);
     });
 
     it('keeps sending when a listener throws', () => {
