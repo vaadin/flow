@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.LockSupport;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,6 @@ import com.vaadin.flow.signals.function.EffectAction;
 import com.vaadin.flow.signals.local.ListSignal;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.AbstractSharedSignal;
-import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -59,52 +59,43 @@ class ComputedSignalTest extends SignalTestBase {
     void cached_updateNotificationVsLastListenerDisposal_noDeadlock()
             throws Exception {
         // Regression test for #25166: a lock-order inversion between the
-        // CachedSignal monitor and a dependency's SignalTree lock.
+        // CachedSignal leaf lock and a dependency's SignalTree lock.
         //
-        // Committing thread: SharedValueSignal.set commits under the tree lock
-        // and, while still holding it, re-runs an effect that reads a cached
-        // signal. Registering that usage enters the CachedSignal monitor, so
-        // the committing thread wants the monitor while holding the tree lock.
+        // Lock holder: a thread holding the dependency's tree lock registers a
+        // new listener on the cached signal, which enters the CachedSignal
+        // leaf lock. This tree lock -> leaf lock order is allowed.
         //
         // Disposer thread: disposing the last other listener of the cached
         // signal runs the un-count callback, which (before the fix) removed the
         // dependency registration -- acquiring the tree lock -- while holding
-        // the CachedSignal monitor. Opposite acquire orders form a deadlock.
-        var list = new SharedListSignal<>(String.class);
-        var child = list.insertLast("initial").signal();
+        // the leaf lock. Opposite acquire orders form a deadlock.
+        //
+        // Observers are no longer notified while a tree lock is held, so a
+        // commit cannot put the committing thread in the lock holder's place.
+        // The test holds the tree lock explicitly instead, so that it keeps
+        // guarding the CachedSignal side of the lock order.
+        class TreeLockSignal extends SharedValueSignal<String> {
+            TreeLockSignal() {
+                super("initial");
+            }
 
-        // Like a typical derived list: depends on the list STRUCTURE only
-        // (peek does not track), so a child update does not invalidate it.
-        Signal<List<String>> cached = Signal.cached(Signal.computed(() -> list
-                .get().stream().map(SharedValueSignal::peek).toList()));
+            ReentrantLock treeLock() {
+                return tree().getLock();
+            }
+        }
+        var dependency = new TreeLockSignal();
+        Signal<String> cached = Signal.cached(dependency.map(v -> v + "!"));
 
-        // Listener B subscribes to the cached signal only. Disposing it while
-        // effect A is mid-revalidation makes it the last active listener, so
-        // the un-count path takes monitor -> tree lock.
+        // Listener B is the only listener of the cached signal, so disposing
+        // it takes the un-count path: leaf lock -> (before the fix) tree lock.
         Effect listenerB = new Effect(cached::get, Runnable::run);
 
-        var insideNotification = new CountDownLatch(1);
-        var effectARuns = new AtomicInteger();
-
-        // Effect A depends on the child value directly (so an update re-runs it
-        // inline on the committing thread, under the tree lock) and on the
-        // cached signal (so the re-run wants the CachedSignal monitor).
-        new Effect(() -> {
-            if (effectARuns.incrementAndGet() == 2) {
-                // Now running on the committing thread while it holds the tree
-                // lock. Give the disposer time to enter the CachedSignal
-                // monitor before re-reading the cached signal.
-                insideNotification.countDown();
-                sleepQuietly(300);
-            }
-            child.get();
-            cached.get();
-        }, Runnable::run);
+        var treeLockHeld = new CountDownLatch(1);
 
         AtomicReference<Throwable> disposerFailure = new AtomicReference<>();
         var disposer = new Thread(() -> {
             try {
-                assertTrue(insideNotification.await(10, TimeUnit.SECONDS));
+                assertTrue(treeLockHeld.await(10, TimeUnit.SECONDS));
                 listenerB.dispose();
             } catch (Throwable t) {
                 disposerFailure.set(t);
@@ -112,32 +103,39 @@ class ComputedSignalTest extends SignalTestBase {
         }, "effect-disposer");
         disposer.setDaemon(true);
 
-        AtomicReference<Throwable> committerFailure = new AtomicReference<>();
-        // The commit runs on its own thread: with the bug the committing thread
-        // deadlocks inside set() too, so the test thread must stay free to
-        // observe the hang instead of blocking on the commit itself.
-        var committer = new Thread(() -> {
+        AtomicReference<Throwable> lockHolderFailure = new AtomicReference<>();
+        // The lock holder runs on its own thread: with the bug it deadlocks
+        // too, so the test thread must stay free to observe the hang.
+        var lockHolder = new Thread(() -> {
+            ReentrantLock treeLock = dependency.treeLock();
+            treeLock.lock();
             try {
-                child.set("changed");
+                // Give the disposer time to enter the CachedSignal leaf lock
+                // before registering a new listener on the cached signal.
+                treeLockHeld.countDown();
+                sleepQuietly(300);
+                new Effect(cached::get, Runnable::run).dispose();
             } catch (Throwable t) {
-                committerFailure.set(t);
+                lockHolderFailure.set(t);
+            } finally {
+                treeLock.unlock();
             }
-        }, "effect-committer");
-        committer.setDaemon(true);
+        }, "tree-lock-holder");
+        lockHolder.setDaemon(true);
 
         disposer.start();
-        committer.start();
+        lockHolder.start();
 
-        committer.join(10_000);
+        lockHolder.join(10_000);
         disposer.join(10_000);
 
-        if (committer.isAlive() || disposer.isAlive()) {
+        if (lockHolder.isAlive() || disposer.isAlive()) {
             ThreadMXBean tmx = ManagementFactory.getThreadMXBean();
             long[] deadlocked = tmx.findDeadlockedThreads();
             StringBuilder sb = new StringBuilder(
                     "Lock-order inversion between the SignalTree lock and the "
-                            + "CachedSignal monitor (see #25166). committer alive="
-                            + committer.isAlive() + ", disposer alive="
+                            + "CachedSignal leaf lock (see #25166). lock holder alive="
+                            + lockHolder.isAlive() + ", disposer alive="
                             + disposer.isAlive());
             if (deadlocked != null) {
                 sb.append(", deadlocked thread IDs=")
@@ -151,9 +149,9 @@ class ComputedSignalTest extends SignalTestBase {
             }
             fail(sb.toString());
         }
-        if (committerFailure.get() != null) {
-            throw new AssertionError("Committer thread failed",
-                    committerFailure.get());
+        if (lockHolderFailure.get() != null) {
+            throw new AssertionError("Lock holder thread failed",
+                    lockHolderFailure.get());
         }
         if (disposerFailure.get() != null) {
             throw new AssertionError("Disposer thread failed",
