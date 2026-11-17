@@ -22,8 +22,13 @@ public enum DownloadTarget {
 
     /**
      * Saves the content as a file, as the browser does for any download.
+     * Content from a handler or another URL of the same origin is saved even if
+     * it is served inline, for example by a handler on which
+     * {@link com.vaadin.flow.server.streams.AbstractDownloadHandler#inline()
+     * inline()} was called. For a URL of another origin, the server of that URL
+     * decides: content it serves inline may be shown instead of saved.
      */
-    SAVE_AS_FILE,
+    SAVE,
 
     /**
      * Opens the content in a new browser tab. The browser shows the content
