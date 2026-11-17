@@ -64,12 +64,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.WarURLStreamHandlerFactory;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.TestUtil;
@@ -680,6 +685,62 @@ class StaticFileServerTest implements Serializable {
                 }));
 
         assertFalse(fileServer.serveStaticResource(request, response));
+    }
+
+    @Test
+    void serveStaticResource_directoryUnderVaadinInDevMode_servedByDevServer()
+            throws Exception {
+        DevModeHandler devModeHandler = setupDevModeHandler();
+        setupRequestURI("", "", "/VAADIN/__checker/");
+        Mockito.when(devModeHandler.serveDevModeRequest(request, response))
+                .thenReturn(true);
+
+        assertTrue(fileServer.serveStaticResource(request, response));
+        Mockito.verify(devModeHandler).serveDevModeRequest(request, response);
+    }
+
+    @Test
+    void serveStaticResource_directoryUnderVaadinNotOnDevServer_notServed()
+            throws Exception {
+        DevModeHandler devModeHandler = setupDevModeHandler();
+        setupRequestURI("", "", "/VAADIN/folder/");
+        Mockito.when(servletService.getStaticResource("/VAADIN/folder/"))
+                .thenReturn(createFileURLWithDataAndLength("/VAADIN/folder",
+                        "content"));
+
+        assertFalse(fileServer.serveStaticResource(request, response));
+        Mockito.verify(devModeHandler).serveDevModeRequest(request, response);
+        Mockito.verify(response, Mockito.never())
+                .setContentLengthLong(ArgumentMatchers.anyLong());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "/VAADIN/", "/folder/" })
+    void serveStaticResource_otherDirectoryInDevMode_notSentToDevServer(
+            String pathInfo) throws Exception {
+        DevModeHandler devModeHandler = setupDevModeHandler();
+        setupRequestURI("", "", pathInfo);
+
+        assertFalse(fileServer.serveStaticResource(request, response));
+        Mockito.verify(devModeHandler, Mockito.never())
+                .serveDevModeRequest(request, response);
+    }
+
+    private DevModeHandler setupDevModeHandler() {
+        DevModeHandler devModeHandler = Mockito.mock(DevModeHandler.class);
+        DevModeHandlerManager devModeHandlerManager = Mockito
+                .mock(DevModeHandlerManager.class);
+        Mockito.when(devModeHandlerManager.getDevModeHandler())
+                .thenReturn(devModeHandler);
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(lookup.lookup(DevModeHandlerManager.class))
+                .thenReturn(devModeHandlerManager);
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        Mockito.when(servletService.getContext()).thenReturn(context);
+        fileServer = new OverrideableStaticFileServer(servletService,
+                configuration);
+        return devModeHandler;
     }
 
     @Test
