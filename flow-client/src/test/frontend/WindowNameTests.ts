@@ -103,5 +103,6 @@ describe('WindowName', () => {
     await ready;
 
     expect(answers).to.deep.equal([{ type: 'in-use', name: 'returning-tab' }]);
+    expect(window.name).to.equal('returning-tab');
   });
 });
