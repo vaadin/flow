@@ -30,6 +30,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
@@ -106,6 +107,39 @@ class ErrorViewHotswapperTest {
         // Verify refresh was not triggered
         assertFalse(event.getUIUpdateStrategy(ui).isPresent(),
                 "Should not trigger refresh for normal view");
+    }
+
+    @Test
+    void onClassesChange_routeNotFoundShown_redefined_triggersReload() {
+        ui.getInternals().showRouteTarget(createMockLocation("missing"),
+                new RouteNotFoundError(), Collections.emptyList());
+
+        var event = new HotswapClassSessionEvent(service, session,
+                Set.of(TestNormalView.class), true);
+        hotswapper.onClassesChange(event);
+
+        assertEquals(UIUpdateStrategy.RELOAD,
+                event.getUIUpdateStrategy(ui).orElse(null));
+    }
+
+    @Test
+    void onClassesChange_routeNotFoundShown_newClassLoaded_reloadsOnlyForNewRoute() {
+        ui.getInternals().showRouteTarget(createMockLocation(""),
+                new RouteNotFoundError(), Collections.emptyList());
+
+        var notARoute = new HotswapClassSessionEvent(service, session,
+                Set.of(TestNormalView.class), false);
+        hotswapper.onClassesChange(notARoute);
+        assertFalse(notARoute.getUIUpdateStrategy(ui).isPresent(),
+                "A newly loaded class that is not a route should not reload");
+
+        ui.getInternals().getRouter().getRegistry().setRoute("",
+                TestNormalView.class, Collections.emptyList());
+        var newRoute = new HotswapClassSessionEvent(service, session,
+                Set.of(TestNormalView.class), false);
+        hotswapper.onClassesChange(newRoute);
+        assertEquals(UIUpdateStrategy.RELOAD,
+                newRoute.getUIUpdateStrategy(ui).orElse(null));
     }
 
     // Test classes
