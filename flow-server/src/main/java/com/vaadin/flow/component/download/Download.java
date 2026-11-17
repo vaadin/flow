@@ -77,9 +77,9 @@ public final class Download implements Serializable {
      * Saves the content of a handler as a file when the given component is
      * clicked. Same as
      * {@link #onClick(Component, DownloadHandler, DownloadTarget)
-     * onClick(component, handler, DownloadTarget.SAVE)}. The versions that take
-     * a handler are for content produced on the server; the versions that take
-     * a URL are for content the browser can already address.
+     * onClick(component, handler, DownloadTarget.SAVE_AS_FILE)}. The versions
+     * that take a handler are for content produced on the server; the versions
+     * that take a URL are for content the browser can already address.
      *
      * @param component
      *            the component whose clicks start the download, not
@@ -92,7 +92,7 @@ public final class Download implements Serializable {
      */
     public static Registration onClick(Component component,
             DownloadHandler handler) {
-        return onClick(component, handler, DownloadTarget.SAVE);
+        return onClick(component, handler, DownloadTarget.SAVE_AS_FILE);
     }
 
     /**
@@ -110,8 +110,10 @@ public final class Download implements Serializable {
      * With {@link DownloadTarget#NEW_TAB}, the browser shows the content only
      * when it is served inline. The built-in handlers, such as
      * {@link DownloadHandler#forFile(java.io.File)}, are switched to serve the
-     * content inline. This changes the given handler instance, so it also
-     * serves inline wherever else it is used. A custom handler should call
+     * content inline. This changes the given handler instance for good, so it
+     * also serves inline wherever else it is used; do not reuse it where the
+     * content should be downloaded, such as in an {@code Anchor}. A custom
+     * handler should call
      * {@link com.vaadin.flow.server.streams.DownloadEvent#inline(String)
      * DownloadEvent.inline} itself, since content served as an attachment is
      * saved instead of shown.
@@ -144,7 +146,7 @@ public final class Download implements Serializable {
         Objects.requireNonNull(handler, "handler must not be null");
         Objects.requireNonNull(target, "target must not be null");
         return bind(component, switch (target) {
-        case SAVE -> new DownloadAction(handler);
+        case SAVE_AS_FILE -> new DownloadAction(handler);
         case NEW_TAB -> {
             if (handler instanceof AbstractDownloadHandler<?> builtIn) {
                 // the built-in handlers serve an attachment by default,
@@ -159,10 +161,10 @@ public final class Download implements Serializable {
     /**
      * Saves the content of a URL as a file when the given component is clicked.
      * Same as {@link #onClick(Component, String, DownloadTarget)
-     * onClick(component, url, DownloadTarget.SAVE)}. The versions that take a
-     * URL are for content the browser can already address, such as a static
-     * file or a REST endpoint; the versions that take a handler are for content
-     * produced on the server.
+     * onClick(component, url, DownloadTarget.SAVE_AS_FILE)}. The versions that
+     * take a URL are for content the browser can already address, such as a
+     * static file or a REST endpoint; the versions that take a handler are for
+     * content produced on the server.
      *
      * @param component
      *            the component whose clicks start the download, not
@@ -172,7 +174,7 @@ public final class Download implements Serializable {
      * @return a registration for removing the download from the component
      */
     public static Registration onClick(Component component, String url) {
-        return onClick(component, url, DownloadTarget.SAVE);
+        return onClick(component, url, DownloadTarget.SAVE_AS_FILE);
     }
 
     /**
@@ -197,7 +199,7 @@ public final class Download implements Serializable {
             DownloadTarget target) {
         Objects.requireNonNull(target, "target must not be null");
         return bind(component, switch (target) {
-        case SAVE -> new DownloadAction(url);
+        case SAVE_AS_FILE -> new DownloadAction(url);
         case NEW_TAB -> new OpenInNewTabAction(url);
         });
     }

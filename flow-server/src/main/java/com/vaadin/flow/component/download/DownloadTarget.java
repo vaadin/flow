@@ -28,12 +28,22 @@ public enum DownloadTarget {
      * inline()} was called. For a URL of another origin, the server of that URL
      * decides: content it serves inline may be shown instead of saved.
      */
-    SAVE,
+    SAVE_AS_FILE,
 
     /**
      * Opens the content in a new browser tab. The browser shows the content
      * when it can, for example a PDF, an image or plain text, and saves it as a
      * file otherwise.
+     * <p>
+     * A built-in handler, such as one from
+     * {@link com.vaadin.flow.server.streams.DownloadHandler#forFile(java.io.File)
+     * DownloadHandler.forFile}, is switched to serve its content inline, and
+     * this can not be undone. Do not reuse that handler instance where the
+     * content should be downloaded instead, for example in an {@code Anchor}:
+     * there the browser would show the content instead of saving it. Create a
+     * separate handler for each use instead. Another {@link Download} with
+     * {@link #SAVE_AS_FILE} can share the handler, since it saves the content
+     * regardless.
      * <p>
      * The new tab is opened without access to the opening page
      * ({@code noopener}) and without a {@code Referer} header
