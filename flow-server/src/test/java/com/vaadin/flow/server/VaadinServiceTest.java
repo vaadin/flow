@@ -984,6 +984,36 @@ class VaadinServiceTest {
     }
 
     @Test
+    void cleanupSession_heartbeatDisabled_browserTabIsKept() {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setHeartbeatInterval(0);
+        MockVaadinServletService service = new MockVaadinServletService(
+                configuration);
+        WrappedSession wrappedSession = mock(WrappedSession.class);
+        MockVaadinSession session = new MockVaadinSession(service) {
+            @Override
+            public WrappedSession getSession() {
+                return wrappedSession;
+            }
+        };
+        AtomicInteger destroyed = new AtomicInteger();
+        session.lock();
+        try {
+            UI closedUI = addUI(session, 1);
+            BrowserTab.get(closedUI)
+                    .addDestroyListener(tab -> destroyed.incrementAndGet());
+            closedUI.close();
+
+            service.cleanupSession(session);
+            service.cleanupSession(session);
+
+            assertEquals(0, destroyed.get());
+        } finally {
+            session.unlock();
+        }
+    }
+
+    @Test
     void removeFromHttpSession_setExplicitSessionCloseAttribute()
             throws ServiceException {
         WrappedSession httpSession = mock(WrappedSession.class);

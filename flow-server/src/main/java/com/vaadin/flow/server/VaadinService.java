@@ -1848,9 +1848,15 @@ public abstract class VaadinService implements Serializable {
         if (isSessionActive(session)) {
             closeInactiveUIs(session);
             // Before the closed UIs are removed, so that their last heartbeat
-            // still counts for the browser tab they were loaded in
-            BrowserTab.destroyInactiveTabs(session,
-                    1000L * getHeartbeatTimeout());
+            // still counts for the browser tab they were loaded in. Without
+            // heartbeats, browser tabs are kept until the session is destroyed.
+            int heartbeatInterval = getDeploymentConfiguration()
+                    .getHeartbeatInterval();
+            if (heartbeatInterval > 0) {
+                BrowserTab.destroyInactiveTabs(session,
+                        1000L * getHeartbeatTimeout(),
+                        1000L * heartbeatInterval);
+            }
             removeClosedUIs(session);
         } else {
             if (session.getState() == VaadinSessionState.OPEN) {
