@@ -18,23 +18,28 @@ package com.vaadin.base.devserver.hotswap.impl;
 import jakarta.annotation.Priority;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassSessionEvent;
 import com.vaadin.base.devserver.hotswap.UIUpdateStrategy;
 import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.router.AbstractRouteNotFoundError;
 
 /**
- * Reloads the page when hotswap occurs while an error view is displayed. This
- * ensures that fixing a broken class, or adding a missing route, during
- * development retries the navigation to the original location.
+ * Re-attempts the navigation when hotswap occurs while an error view is
+ * displayed. This ensures that fixing a broken class, or adding a missing
+ * route, during development retries the navigation to the original location.
  * <p>
- * A page reload is used rather than an in-place refresh because the error page
- * does not always own its DOM: in development mode, the page shown for a
- * project without routes hands the document over to Copilot, which replaces the
- * page body, so an in-place refresh would render the new view into detached
- * DOM.
+ * The UI is normally refreshed in place. The page is reloaded only when the
+ * first routes of the project appear while the route-not-found page is shown:
+ * in development mode, the page shown for a project without routes hands the
+ * document over to Copilot, which replaces the page body, so an in-place
+ * refresh would render the new view into detached DOM. A reload is not used
+ * more widely because it is sent to every open browser tab, not only to the
+ * affected one.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -55,21 +60,42 @@ public class ErrorViewHotswapper implements VaadinHotswapper {
         boolean redefined = event.isRedefined();
         Set<Class<?>> changedClasses = event.getChangedClasses();
         for (UI ui : event.getVaadinSession().getUIs()) {
+            if (ui.isClosing() || !ui.getInternals().isShowingErrorView()) {
+                continue;
+            }
+            Set<Class<?>> routeTargets = getRouteTargets(ui);
             // A class loaded for the first time cannot affect the error view
             // unless it is a new route, which the global registry update has
             // already registered by now
-            if (!ui.isClosing() && ui.getInternals().isShowingErrorView()
-                    && (redefined || isRegisteredRoute(ui, changedClasses))) {
-                event.triggerUpdate(ui, UIUpdateStrategy.RELOAD);
+            if (redefined || changedClasses.stream()
+                    .anyMatch(routeTargets::contains)) {
+                event.triggerUpdate(ui,
+                        isShowingNoRoutesPage(ui, routeTargets, changedClasses)
+                                ? UIUpdateStrategy.RELOAD
+                                : UIUpdateStrategy.REFRESH);
             }
         }
     }
 
-    private static boolean isRegisteredRoute(UI ui, Set<Class<?>> classes) {
+    private static Set<Class<?>> getRouteTargets(UI ui) {
         Set<Class<?>> routeTargets = new HashSet<>();
         ui.getInternals().getRouter().getRegistry().getRegisteredRoutes()
                 .forEach(
                         route -> routeTargets.add(route.getNavigationTarget()));
-        return classes.stream().anyMatch(routeTargets::contains);
+        return routeTargets;
+    }
+
+    /**
+     * Checks whether the UI shows the route-not-found page of a project that
+     * had no routes before the given classes changed, i.e. the page that
+     * Copilot takes over.
+     */
+    private static boolean isShowingNoRoutesPage(UI ui,
+            Set<Class<?>> routeTargets, Set<Class<?>> changedClasses) {
+        List<HasElement> chain = ui.getActiveRouterTargetsChain();
+        return !chain.isEmpty()
+                && chain.get(0) instanceof AbstractRouteNotFoundError
+                && !routeTargets.isEmpty()
+                && changedClasses.containsAll(routeTargets);
     }
 }
