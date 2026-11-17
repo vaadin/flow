@@ -107,6 +107,14 @@ class ErrorViewHotswapperTest {
         // Verify refresh was not triggered
         assertFalse(event.getUIUpdateStrategy(ui).isPresent(),
                 "Should not trigger refresh for normal view");
+
+        ui.getInternals().getRouter().getRegistry().setRoute("new",
+                TestErrorView.class, Collections.emptyList());
+        var newRoute = new HotswapClassSessionEvent(service, session,
+                Set.of(TestErrorView.class), false);
+        hotswapper.onClassesChange(newRoute);
+        assertFalse(newRoute.getUIUpdateStrategy(ui).isPresent(),
+                "Should not reload a normal view when a route is added");
     }
 
     @Test
