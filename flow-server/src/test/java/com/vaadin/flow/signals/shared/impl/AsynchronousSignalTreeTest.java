@@ -227,6 +227,32 @@ public class AsynchronousSignalTreeTest extends SignalsUnitTest {
     }
 
     @Test
+    void submit_confirmsThenThrows_batchNotSubmittedAgain() {
+        List<List<SignalCommand>> submitted = new ArrayList<>();
+        AsynchronousSignalTree tree = new AsynchronousSignalTree() {
+            @Override
+            protected void submit(List<SignalCommand> commands) {
+                submitted.add(commands);
+                if (submitted.size() == 1) {
+                    confirm(commands);
+                    throw new IllegalStateException();
+                }
+            }
+        };
+        SignalCommand first = TestUtil.writeRootValueCommand("first");
+        SignalCommand second = TestUtil.writeRootValueCommand("second");
+
+        assertThrows(IllegalStateException.class,
+                () -> tree.commitSingleCommand(first));
+        assertEquals(new StringNode("first"),
+                TestUtil.readConfirmedRootValue(tree));
+
+        tree.commitSingleCommand(second);
+
+        assertEquals(List.of(List.of(first), List.of(second)), submitted);
+    }
+
+    @Test
     void confirm_externalCommandWhileWaiting_queuedCommandsNotSubmitted() {
         AsyncTestTree tree = new AsyncTestTree();
         SignalCommand first = TestUtil.writeRootValueCommand("first");
