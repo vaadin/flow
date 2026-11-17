@@ -49,6 +49,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectTools;
@@ -149,6 +150,8 @@ public final class JsDefinitionProxy {
                     + " declares snippets, which are not run on an element."
                     + " Get its implementation from JsSnippets.of");
         }
+        BundleUtils.checkJsFunctionsBundled(definitionType,
+                () -> collectFunctionIds(definitionType));
         return (T) Proxy.newProxyInstance(definitionType.getClassLoader(),
                 new Class<?>[] { definitionType },
                 new JsDefinitionHandler(runner, definitionType));
@@ -183,6 +186,8 @@ public final class JsDefinitionProxy {
             throw new IllegalArgumentException(
                     definitionType.getName() + reason);
         }
+        BundleUtils.checkJsFunctionsBundled(definitionType,
+                () -> collectFunctionIds(definitionType));
         return (T) Proxy.newProxyInstance(definitionType.getClassLoader(),
                 new Class<?>[] { definitionType },
                 new JsSnippetHandler(definitionType));
@@ -235,6 +240,12 @@ public final class JsDefinitionProxy {
                                 .isAssignableFrom(method.getReturnType()));
         checkMethods(definitionType, snippets);
         return snippets ? Kind.SNIPPETS : Kind.CALLS;
+    }
+
+    private static List<String> collectFunctionIds(Class<?> definitionType) {
+        return Stream.of(definitionType.getMethods()).filter(
+                method -> method.isAnnotationPresent(JsExpression.class))
+                .map(JsCall::functionId).toList();
     }
 
     private static List<String> collectDeclaredNames(Class<?> definitionType) {

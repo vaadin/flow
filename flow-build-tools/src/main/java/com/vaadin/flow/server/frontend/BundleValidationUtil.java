@@ -42,6 +42,7 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
+import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.DevBundleUtils;
 import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
@@ -70,8 +71,6 @@ import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 public final class BundleValidationUtil {
 
     private static final String FRONTEND_HASHES_STATS_KEY = "frontendHashes";
-
-    private static final String JS_DEFINITION_FUNCTION_IDS_STATS_KEY = "jsDefinitionFunctionIds";
 
     private static final String PWA_OFFLINE_PATH_STATS_KEY = "pwaOfflinePath";
 
@@ -1082,7 +1081,7 @@ public final class BundleValidationUtil {
                 .getFileContent();
 
         JsonNode bundledIds = statsJson
-                .get(JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
+                .get(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
         if (bundledIds != null && bundledIds.isArray()) {
             // A bundle that registers a function under every identifier the
             // application needs carries its JavaScript, as the identifier is a

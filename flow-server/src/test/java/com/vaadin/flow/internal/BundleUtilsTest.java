@@ -24,14 +24,30 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.server.VaadinService;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class BundleUtilsTest {
 
@@ -151,5 +167,51 @@ class BundleUtilsTest {
         // All should return same result
         assertEquals(first, second, "Should return consistent results");
         assertEquals(second, third, "Should return consistent results");
+    }
+
+    @JsDefinition
+    interface CarriedJs {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
+    @JsDefinition
+    interface MissingJs {
+        @JsExpression("this.blur()")
+        void blur();
+    }
+
+    @Test
+    void checkJsFunctionsBundled_productionMode_logsErrorOnlyForMissingFunction() {
+        ObjectNode statsJson = JacksonUtils.createObjectNode();
+        statsJson.putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
+                .add(JsCall.functionId("this.focus()", 0, false))
+                .add("another function");
+        MockedStatic<BundleUtils> bundleUtils = mockStatic(BundleUtils.class,
+                CALLS_REAL_METHODS);
+        bundleUtils.when(BundleUtils::loadStatsJson).thenReturn(statsJson);
+        closeOnTearDown.add(bundleUtils);
+        Logger logger = mock(Logger.class);
+        MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class);
+        loggerFactory.when(() -> LoggerFactory.getLogger(BundleUtils.class))
+                .thenReturn(logger);
+        closeOnTearDown.add(loggerFactory);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
+        when(configuration.isProductionMode()).thenReturn(true);
+        VaadinService service = mock(VaadinService.class);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
+        VaadinService.setCurrent(service);
+        closeOnTearDown.add(CurrentInstance::clearAll);
+
+        BundleUtils.checkJsFunctionsBundled(CarriedJs.class,
+                () -> List.of(JsCall.functionId("this.focus()", 0, false)));
+        verify(logger, never()).error(anyString(), any(Object[].class));
+
+        BundleUtils.checkJsFunctionsBundled(MissingJs.class,
+                () -> List.of(JsCall.functionId("this.blur()", 0, false)));
+        verify(logger).error(anyString(), eq(MissingJs.class.getName()),
+                eq("MissingJs"), eq("MissingJs"));
     }
 }
