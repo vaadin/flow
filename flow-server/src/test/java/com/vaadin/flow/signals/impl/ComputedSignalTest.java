@@ -173,7 +173,9 @@ class ComputedSignalTest extends SignalTestBase {
         // and the effect then reads the shared signal's tree.
         var shared = new SharedValueSignal<>(0);
         Signal<Integer> cached = Signal.cached(shared.map(value -> value + 1));
-        Effect effect = new Effect(cached::get, Runnable::run);
+        AtomicReference<Integer> effectValue = new AtomicReference<>();
+        Effect effect = new Effect(() -> effectValue.set(cached.get()),
+                Runnable::run);
 
         AtomicReference<Throwable> failure = new AtomicReference<>();
         var writer = startLoop("cached-writer",
@@ -192,7 +194,6 @@ class ComputedSignalTest extends SignalTestBase {
         if (deadlocked == null) {
             writer.join(10_000);
             reader.join(10_000);
-            effect.dispose();
         }
 
         assertNull(deadlocked,
@@ -200,7 +201,11 @@ class ComputedSignalTest extends SignalTestBase {
         if (failure.get() != null) {
             throw new AssertionError("Worker thread failed", failure.get());
         }
-        assertEquals(shared.peek() + 1, cached.peek());
+
+        // The effect keeps being notified after the concurrent updates
+        shared.set(-1);
+        assertEquals(0, effectValue.get());
+        effect.dispose();
     }
 
     private static Thread startLoop(String name, Runnable step,
