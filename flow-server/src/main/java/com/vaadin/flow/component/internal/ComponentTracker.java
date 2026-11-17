@@ -28,10 +28,10 @@ import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.StackTraceUtil;
 import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.InitParameters;
@@ -62,11 +62,6 @@ public class ComponentTracker {
     private static final AtomicLong attachOrdinal = new AtomicLong(0);
 
     private static Boolean disabled = null;
-    private static String[] prefixesToSkip = new String[] {
-            "com.vaadin.flow.component.", "com.vaadin.flow.di.",
-            "com.vaadin.flow.dom.", "com.vaadin.flow.internal.",
-            "com.vaadin.flow.spring.", "com.vaadin.cdi.", "java.", "jdk.",
-            "org.springframework.beans.", "org.jboss.weld.", };
 
     private ComponentTracker() {
 
@@ -362,14 +357,10 @@ public class ComponentTracker {
     }
 
     private static Location[] findRelevantLocations(Location[] locations) {
-        return Stream.of(locations).filter(location -> {
-            for (String prefixToSkip : prefixesToSkip) {
-                if (location.className().startsWith(prefixToSkip)) {
-                    return false;
-                }
-            }
-            return true;
-        }).toArray(Location[]::new);
+        return Stream.of(locations)
+                .filter(location -> StackTraceUtil
+                        .isApplicationClass(location.className()))
+                .toArray(Location[]::new);
     }
 
     private static Location findRelevantLocation(
@@ -378,14 +369,9 @@ public class ComponentTracker {
         List<Location> candidates = Arrays.stream(locations)
                 .filter(location -> excludeClass == null
                         || !location.className().equals(excludeClass.getName()))
-                .filter(location -> {
-                    for (String prefixToSkip : prefixesToSkip) {
-                        if (location.className().startsWith(prefixToSkip)) {
-                            return false;
-                        }
-                    }
-                    return true;
-                }).collect(Collectors.toList());
+                .filter(location -> StackTraceUtil
+                        .isApplicationClass(location.className()))
+                .toList();
         if (preferredClass != null) {
             Optional<Location> preferredCandidate = candidates.stream()
                     .filter(location -> location.className()

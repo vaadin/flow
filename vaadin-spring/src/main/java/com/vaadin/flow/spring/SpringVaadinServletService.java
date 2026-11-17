@@ -83,8 +83,7 @@ public class SpringVaadinServletService extends VaadinServletService {
             throws ServiceException {
         Optional<Instantiator> spiInstantiator = super.loadInstantiators();
         List<Instantiator> springInstantiators = context
-                .getBeansOfType(Instantiator.class).values().stream()
-                .collect(Collectors.toList());
+                .getBeansOfType(Instantiator.class).values().stream().toList();
         if (spiInstantiator.isPresent() && !springInstantiators.isEmpty()) {
             throw new ServiceException(
                     "Cannot init VaadinService because there are multiple eligible "

@@ -19,6 +19,7 @@ import jakarta.servlet.ServletContext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,6 @@ import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -107,7 +107,7 @@ class PwaRegistryTest {
                 PwaWithCustomIconPath.class.getAnnotation(PWA.class));
         splashIconsForAppleDevices = registry.getIcons().stream().filter(
                 icon -> "apple-touch-startup-image".equals(icon.getRel()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Test
@@ -294,8 +294,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 2732 && icon.getHeight() == 2048);
         List<String> mediaQueriesForIPadPro129 = splashIconsForAppleDevices
                 .stream().filter(iPadPro129)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPadPro129.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPadPro129.stream()
@@ -307,8 +306,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 2388 && icon.getHeight() == 1668);
         List<String> mediaQueriesForIPadPro11And105 = splashIconsForAppleDevices
                 .stream().filter(iPadPro11And105)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPadPro11And105.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPadPro11And105.stream()
@@ -320,8 +318,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 2224 && icon.getHeight() == 1668);
         List<String> mediaQueriesForIPadAir105 = splashIconsForAppleDevices
                 .stream().filter(iPadAir105)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPadAir105.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPadAir105.stream()
@@ -333,8 +330,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 2160 && icon.getHeight() == 1620);
         List<String> mediaQueriesForIPad102 = splashIconsForAppleDevices
                 .stream().filter(iPad102)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPad102.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPad102.stream()
@@ -346,8 +342,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 2048 && icon.getHeight() == 1536);
         List<String> mediaQueriesForIPad97And79 = splashIconsForAppleDevices
                 .stream().filter(iPad97And79)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPad97And79.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPad97And79.stream()
@@ -362,8 +357,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 2778 && icon.getHeight() == 1284);
         List<String> mediaQueriesForIPhone13ProMaxAnd12ProMax = splashIconsForAppleDevices
                 .stream().filter(iPhone13ProMaxAnd12ProMax)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPhone13ProMaxAnd12ProMax.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPhone13ProMaxAnd12ProMax.stream()
@@ -375,8 +369,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 2532 && icon.getHeight() == 1170);
         List<String> mediaQueriesForIPhone13ProAnd12ProAnd13And12 = splashIconsForAppleDevices
                 .stream().filter(iPhone13ProAnd12ProAnd13And12)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPhone13ProAnd12ProAnd13And12.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPhone13ProAnd12ProAnd13And12.stream()
@@ -388,8 +381,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 2436 && icon.getHeight() == 1125);
         List<String> mediaQueriesForIPhone13MiniAnd12MiniAnd11ProAndXSAndX = splashIconsForAppleDevices
                 .stream().filter(iPhone13MiniAnd12MiniAnd11ProAndXSAndX)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPhone13MiniAnd12MiniAnd11ProAndXSAndX
                 .stream().filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPhone13MiniAnd12MiniAnd11ProAndXSAndX
@@ -401,8 +393,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 2688 && icon.getHeight() == 1242);
         List<String> mediaQueriesForIPhone11ProMaxAndXSMax = splashIconsForAppleDevices
                 .stream().filter(iPhone11ProMaxAndXSMax)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPhone11ProMaxAndXSMax.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPhone11ProMaxAndXSMax.stream()
@@ -414,8 +405,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 1792 && icon.getHeight() == 828);
         List<String> mediaQueriesForIPhone11AndXR = splashIconsForAppleDevices
                 .stream().filter(iPhone11AndXR)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPhone11AndXR.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPhone11AndXR.stream()
@@ -427,8 +417,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 2208 && icon.getHeight() == 1242);
         List<String> mediaQueriesForIPhone8PlusAnd7PlusAnd6sPlusAnd6Plus = splashIconsForAppleDevices
                 .stream().filter(iPhone8PlusAnd7PlusAnd6sPlusAnd6Plus)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPhone8PlusAnd7PlusAnd6sPlusAnd6Plus
                 .stream().filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPhone8PlusAnd7PlusAnd6sPlusAnd6Plus
@@ -440,8 +429,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 1334 && icon.getHeight() == 750);
         List<String> mediaQueriesForIPhone8And7And6sAnd6AndSE47 = splashIconsForAppleDevices
                 .stream().filter(iPhone8And7And6sAnd6AndSE47)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPhone8And7And6sAnd6AndSE47.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPhone8And7And6sAnd6AndSE47.stream()
@@ -453,8 +441,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 1136 && icon.getHeight() == 640);
         List<String> mediaQueriesForIPhone5AndSE47AndIPod5AndLater = splashIconsForAppleDevices
                 .stream().filter(iPhone5AndSE47AndIPod5AndLater)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPhone5AndSE47AndIPod5AndLater.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPhone5AndSE47AndIPod5AndLater.stream()
@@ -476,6 +463,27 @@ class PwaRegistryTest {
         String sw = runtimeServiceWorkerJs(
                 PwaRegistryTest.class.getAnnotation(PWA.class));
         assertTrue(sw.contains("{ url: '.', revision:"));
+    }
+
+    @Test
+    void pwaWithoutCustomOfflinePath_offlineHtmlShowsAppNameAndLargestIcon()
+            throws IOException {
+        PwaRegistry registry = preparePwaRegistry(
+                PwaRegistryTest.class.getAnnotation(PWA.class));
+        PwaIcon largestCachedIcon = registry.getIcons().stream()
+                .filter(PwaIcon::shouldBeCached)
+                .max(Comparator.comparingInt(PwaIcon::getWidth)).get();
+        // The 512x512 manifest icon is the largest one the default @PWA caches
+        assertEquals(512, largestCachedIcon.getWidth());
+
+        String html = registry.getOfflineHtml();
+
+        assertTrue(html.contains("<div class=\"app-name\">foo</div>"), html);
+        assertTrue(
+                html.contains(
+                        "<img src=\"" + largestCachedIcon.getHref() + "\""),
+                html);
+        assertFalse(html.contains("%%%"), html);
     }
 
     @Test

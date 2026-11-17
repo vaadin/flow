@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
@@ -101,7 +100,7 @@ public class ListModelType<T> implements ComplexModelType<T> {
     @Override
     public <C> ComplexModelType<C> cast(Class<C> proxyType) {
         if (getItemType() instanceof ListModelType<?>
-                && GenericTypeReflector.erase(proxyType).equals(List.class)) {
+                && proxyType.equals(List.class)) {
             return (ComplexModelType<C>) this;
         }
         throw new IllegalArgumentException(

@@ -1,0 +1,379 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.server.frontend;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.server.frontend.NodeTasks.NodeTasksLockInfo;
+
+/**
+ * A lock held through a file that names the process holding it, so that
+ * frontend build steps sharing a folder run one at a time across threads and
+ * build processes.
+ * <p>
+ * A lock left behind by a process that no longer runs, or by an earlier process
+ * that had the same pid, is taken over.
+ */
+class LockFile implements Serializable {
+
+    private static final String TAKEOVER_SUFFIX = ".takeover";
+
+    private static final Duration POLL_INTERVAL = Duration.ofMillis(500);
+
+    /**
+     * How long an unreadable lock file is given to get its content written
+     * before it is considered abandoned, as creating the file and writing its
+     * content are separate steps for the process taking the lock. Also how long
+     * a takeover file may exist before it is considered abandoned.
+     */
+    private static final Duration UNREADABLE_GRACE_PERIOD = Duration
+            .ofSeconds(5);
+
+    private final File file;
+    private final String holderName;
+
+    private boolean held;
+
+    /**
+     * Creates a lock held through the given file.
+     *
+     * @param path
+     *            the lock file, in a folder that exists
+     * @param holderName
+     *            what holds the lock, used in log messages
+     */
+    LockFile(Path path, String holderName) {
+        this.file = path.toFile();
+        this.holderName = holderName;
+    }
+
+    /**
+     * Takes the lock, waiting for as long as a running process holds it.
+     * <p>
+     * When the lock file cannot be written at all, this logs the problem and
+     * returns without holding the lock rather than failing the build.
+     */
+    void acquire() {
+        boolean loggedWaiting = false;
+        while (true) {
+            Attempt attempt = attemptToTake();
+            switch (attempt.state()) {
+            case TAKEN, FAILED:
+                return;
+            case RETRY:
+                break;
+            case HELD:
+                if (!loggedWaiting && attempt.holder() != null) {
+                    getLogger().info(
+                            "Waiting for a previous instance of {} (pid: {}) to finish...",
+                            holderName, attempt.holder().pid());
+                    loggedWaiting = true;
+                }
+                sleep();
+                break;
+            }
+        }
+    }
+
+    /**
+     * Takes the lock if it is free, without waiting. A lock left behind by a
+     * process that no longer runs is taken over.
+     *
+     * @return {@code true} if this now holds the lock, {@code false} if the
+     *         lock could not be taken right away: a running process holds it,
+     *         its holder is still writing it, another waiter is taking it over,
+     *         or the lock file cannot be read or written
+     */
+    boolean tryAcquire() {
+        // Retry a few times when an attempt removed an abandoned lock or saw
+        // the lock released, as another waiter may take it in between
+        for (int i = 0; i < 3; i++) {
+            Attempt attempt = attemptToTake();
+            if (attempt.state() != AttemptState.RETRY) {
+                return attempt.state() == AttemptState.TAKEN;
+            }
+        }
+        return false;
+    }
+
+    private enum AttemptState {
+        TAKEN, HELD, RETRY, FAILED
+    }
+
+    private record Attempt(AttemptState state,
+            NodeTasksLockInfo holder) implements Serializable {
+        Attempt(AttemptState state) {
+            this(state, null);
+        }
+    }
+
+    private Attempt attemptToTake() {
+        try {
+            writeLockFile();
+            held = true;
+            return new Attempt(AttemptState.TAKEN);
+        } catch (FileAlreadyExistsException e) {
+            // Held by someone else, see below whether it is abandoned
+        } catch (IOException e) {
+            getLogger().error("Error writing lock file ({})",
+                    path().toAbsolutePath(), e);
+            return new Attempt(AttemptState.FAILED);
+        }
+
+        byte[] content;
+        try {
+            content = Files.readAllBytes(path());
+        } catch (NoSuchFileException e) {
+            // Released in the meantime
+            return new Attempt(AttemptState.RETRY);
+        } catch (IOException e) {
+            getLogger().debug("Could not read lock file ({})",
+                    path().toAbsolutePath(), e);
+            return new Attempt(AttemptState.HELD);
+        }
+
+        LockContent lockContent = parseLockContent(content);
+        NodeTasksLockInfo lockInfo = lockContent == null ? null
+                : lockContent.info();
+        if (lockInfo == null) {
+            if (!isOlderThanGracePeriod(path())) {
+                // The holder has not yet written its content
+                return new Attempt(AttemptState.HELD);
+            }
+            getLogger().warn("Removing the unreadable lock file ({}) of {}",
+                    path().toAbsolutePath(), holderName);
+        } else if (isRunning(lockContent)) {
+            return new Attempt(AttemptState.HELD, lockInfo);
+        }
+        // The holder has died without removing the lock file
+        return new Attempt(removeAbandonedLock(content, lockInfo == null)
+                ? AttemptState.RETRY
+                : AttemptState.HELD);
+    }
+
+    /**
+     * Releases the lock, provided that it was taken through this instance and
+     * this process still holds it.
+     */
+    void release() {
+        if (!held) {
+            return;
+        }
+        held = false;
+        if (!Files.exists(path())) {
+            getLogger().warn("Somebody else has removed the lock file ({})",
+                    path().toAbsolutePath());
+            return;
+        }
+
+        try {
+            long pid = readLockFile().pid();
+            if (pid != ProcessHandle.current().pid()) {
+                getLogger().warn(
+                        "Another process ({}) has overwritten the lock file ({})",
+                        pid, path().toAbsolutePath());
+                return;
+            }
+            FileIOUtils.deleteQuietly(path());
+        } catch (Exception e) {
+            getLogger().error("Error releasing lock file ({})",
+                    path().toAbsolutePath());
+        }
+    }
+
+    private void sleep() {
+        try {
+            Thread.sleep(POLL_INTERVAL.toMillis());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Interrupted while waiting for another "
+                    + holderName + " to finish", e);
+        }
+    }
+
+    /**
+     * Removes the lock file, provided that it still has the content of the
+     * abandoned lock.
+     * <p>
+     * Several waiters can find the same abandoned lock, and one of them may
+     * already have removed it and taken the lock by the time another gets to
+     * remove it. Removing happens one waiter at a time, under a takeover file,
+     * and only after checking the content again, so that the lock just taken by
+     * someone else is never removed.
+     *
+     * @return {@code true} if the lock file is gone, {@code false} if another
+     *         waiter is removing it right now
+     */
+    private boolean removeAbandonedLock(byte[] abandonedContent,
+            boolean unreadable) {
+        Path takeover = path()
+                .resolveSibling(path().getFileName() + TAKEOVER_SUFFIX);
+        try {
+            Files.createFile(takeover);
+        } catch (FileAlreadyExistsException e) {
+            // Left behind by a waiter that died while removing a lock
+            if (isOlderThanGracePeriod(takeover)) {
+                FileIOUtils.deleteQuietly(takeover);
+            }
+            return false;
+        } catch (IOException e) {
+            getLogger().error("Error removing the abandoned lock file ({})",
+                    path().toAbsolutePath(), e);
+            return false;
+        }
+        try {
+            // A lock just taken by someone else is unreadable for a moment,
+            // so unreadable content alone does not tell it apart
+            if (Arrays.equals(abandonedContent, Files.readAllBytes(path()))
+                    && (!unreadable || isOlderThanGracePeriod(path()))) {
+                Files.delete(path());
+            }
+            return true;
+        } catch (NoSuchFileException e) {
+            // Released in the meantime
+            return true;
+        } catch (IOException e) {
+            getLogger().error("Error removing the abandoned lock file ({})",
+                    path().toAbsolutePath(), e);
+            return false;
+        } finally {
+            FileIOUtils.deleteQuietly(takeover);
+        }
+    }
+
+    /**
+     * Checks whether the process that wrote the lock still runs. The same pid
+     * and command line can belong to a later process, as in containers where
+     * every run gets the same pid, so the start time of the process tells them
+     * apart when it is known.
+     */
+    private static boolean isRunning(LockContent lockContent) {
+        NodeTasksLockInfo lockInfo = lockContent.info();
+        return ProcessHandle.of(lockInfo.pid())
+                .map(process -> normalizeCommandLine(process.info())
+                        .equals(lockInfo.commandLine())
+                        && (lockContent.started() == null
+                                || process.info().startInstant()
+                                        .map(lockContent.started()::equals)
+                                        .orElse(true)))
+                .orElse(false);
+    }
+
+    private static boolean isOlderThanGracePeriod(Path candidate) {
+        try {
+            return Files.getLastModifiedTime(candidate).toInstant()
+                    .isBefore(Instant.now().minus(UNREADABLE_GRACE_PERIOD));
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    private NodeTasksLockInfo readLockFile() throws IOException {
+        LockContent lockContent = parseLockContent(Files.readAllBytes(path()));
+        if (lockContent == null) {
+            throw new IllegalStateException("Invalid lock file content");
+        }
+        return lockContent.info();
+    }
+
+    /**
+     * What a lock file says about the process holding it.
+     *
+     * @param info
+     *            the pid and command line of the process
+     * @param started
+     *            when the process started, or {@code null} if unknown
+     */
+    private record LockContent(NodeTasksLockInfo info,
+            Instant started) implements Serializable {
+    }
+
+    private static LockContent parseLockContent(byte[] content) {
+        // Decoding replaces malformed input, so that any content can be
+        // judged instead of failing to read
+        List<String> lines = new String(content, StandardCharsets.UTF_8).lines()
+                .toList();
+        if (lines.size() != 2 && lines.size() != 3) {
+            return null;
+        }
+        try {
+            Instant started = lines.size() == 3 ? Instant.parse(lines.get(2))
+                    : null;
+            return new LockContent(new NodeTasksLockInfo(
+                    Long.parseLong(lines.get(0)), lines.get(1)), started);
+        } catch (NumberFormatException | DateTimeParseException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Creates the lock file, failing if it exists, so that of several processes
+     * or threads seeing the lock as free only one gets it.
+     */
+    private void writeLockFile() throws IOException {
+        Files.write(path(), describe(ProcessHandle.current()),
+                StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW,
+                StandardOpenOption.WRITE);
+    }
+
+    /**
+     * Describes a process the way a lock file it holds names it: its pid,
+     * command line and, when known, start time.
+     *
+     * @param process
+     *            the process holding the lock
+     * @return the lines of the lock file
+     */
+    static List<String> describe(ProcessHandle process) {
+        List<String> lines = new ArrayList<>();
+        lines.add(Long.toString(process.pid()));
+        lines.add(normalizeCommandLine(process.info()));
+        process.info().startInstant()
+                .ifPresent(started -> lines.add(started.toString()));
+        return lines;
+    }
+
+    private static String normalizeCommandLine(ProcessHandle.Info processInfo) {
+        return processInfo.commandLine()
+                .map(line -> line.replaceAll("\\r?\\n", " \\\\n")).orElse("");
+    }
+
+    private Path path() {
+        return file.toPath();
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(LockFile.class);
+    }
+}

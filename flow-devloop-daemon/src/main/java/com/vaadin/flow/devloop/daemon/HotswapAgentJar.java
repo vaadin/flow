@@ -59,19 +59,20 @@ public final class HotswapAgentJar {
      * Pinned, never "latest": a changing agent would make applies
      * irreproducible.
      * <p>
-     * The checksum is of the {@code hotswap-agent-<version>.jar} release asset
-     * at {@link #URL}, not of the same version on Maven Central - the two are
-     * built separately and there is no promise they are the same bytes. Bumping
-     * the version means downloading that asset and recomputing this.
+     * The checksum is of the {@code hotswap-agent-<version>.jar} artifact on
+     * Maven Central at {@link #URL}, not of a GitHub release asset of the same
+     * version - the two are built separately and there is no promise they are
+     * the same bytes. Bumping the version means downloading that artifact and
+     * recomputing this.
      */
-    public static final String VERSION = "2.0.3";
+    public static final String VERSION = "2.0.4";
     /**
-     * SHA-256 of the release asset at {@link #URL}, verified after download.
+     * SHA-256 of the artifact at {@link #URL}, verified after download.
      */
-    public static final String SHA256 = "4ef49724b7d8523536d2e2a7310f827f4db9f4fed3489224e05d7bf87f0594f9";
+    public static final String SHA256 = "7ed7646da48ee408732a1c3625712a40d1e8381a9a75545caacbd06cbb5bdc95";
 
     /** Where the pinned {@link #VERSION} of the agent is downloaded from. */
-    public static final String URL = "https://github.com/HotswapProjects/HotswapAgent/releases/download/RELEASE-"
+    public static final String URL = "https://repo1.maven.org/maven2/org/hotswapagent/hotswap-agent/"
             + VERSION + "/hotswap-agent-" + VERSION + ".jar";
 
     /**

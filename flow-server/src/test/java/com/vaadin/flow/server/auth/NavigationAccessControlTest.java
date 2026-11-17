@@ -51,6 +51,7 @@ import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.AnonymousAllowedView;
@@ -114,7 +115,20 @@ class NavigationAccessControlTest {
                 "Expected Principal to be provided to checkers, but was null");
         assertTrue(navigationContext.hasRole("user"),
                 "Wrong role checker provided to checkers");
+        assertEquals(NavigationContext.Phase.NAVIGATION,
+                navigationContext.getPhase());
+    }
 
+    @Test
+    void createNavigationContext_evaluationPhase() {
+        VaadinService service = mock(VaadinService.class);
+        when(service.getRouter()).thenReturn(mock(Router.class));
+
+        NavigationContext context = accessControl.createNavigationContext(
+                AnonymousAllowedView.class, "anon", service, null);
+
+        assertEquals(NavigationContext.Phase.EVALUATION, context.getPhase());
+        assertFalse(context.isNavigating());
     }
 
     @Test

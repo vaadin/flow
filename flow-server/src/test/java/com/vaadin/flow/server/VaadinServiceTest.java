@@ -36,7 +36,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import kotlin.KotlinVersion;
 import org.junit.jupiter.api.AfterEach;
@@ -56,6 +59,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.DefaultI18NProvider;
 import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.i18n.TranslationFileRequestHandler;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.menu.MenuRegistry;
@@ -208,6 +212,53 @@ class VaadinServiceTest {
     }
 
     @Test
+    void applySessionLockCheckStrategy_productionMode_usesConfiguredStrategy() {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setProductionMode(true);
+        configuration.setLockCheckStrategy(SessionLockCheckStrategy.LOG);
+        MockVaadinServletService service = new MockVaadinServletService(
+                configuration);
+        ReentrantLock lock = new ReentrantLock();
+        VaadinSessionTest.VaadinSessionWithMockLogger session = new VaadinSessionTest.VaadinSessionWithMockLogger(
+                service) {
+            @Override
+            public Lock getLockInstance() {
+                return lock;
+            }
+        };
+
+        service.applySessionLockCheckStrategy(session);
+
+        session.checkHasLock();
+        assertThat(session.mockLogger.getLogs(), containsString(
+                "Cannot access state in VaadinSession or UI without locking the session."));
+    }
+
+    @Test
+    void findVaadinSession_newSessionInDevelopmentMode_unlockedAccessThrows()
+            throws SessionExpiredException {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setLockCheckStrategy(SessionLockCheckStrategy.LOG);
+        MockVaadinServletService service = new MockVaadinServletService(
+                configuration);
+        Map<String, Object> attributes = new HashMap<>();
+        WrappedSession wrappedSession = mock(WrappedSession.class);
+        when(wrappedSession.getAttribute(anyString()))
+                .thenAnswer(i -> attributes.get(i.getArgument(0)));
+        doAnswer(i -> attributes.put(i.getArgument(0), i.getArgument(1)))
+                .when(wrappedSession).setAttribute(anyString(), any());
+        VaadinRequest request = mock(VaadinRequest.class);
+        when(request.getWrappedSession()).thenReturn(wrappedSession);
+        when(request.getWrappedSession(true)).thenReturn(wrappedSession);
+        when(request.getWrappedSession(false)).thenReturn(wrappedSession);
+
+        VaadinSession session = service.findVaadinSession(request);
+
+        assertFalse(session.hasLock());
+        assertThrows(IllegalStateException.class, session::checkHasLock);
+    }
+
+    @Test
     void requestEnd_serviceFailure_threadLocalsCleared() {
         MockVaadinServletService service = new MockVaadinServletService() {
             @Override
@@ -239,6 +290,33 @@ class VaadinServiceTest {
         } finally {
             CurrentInstance.clearAll();
         }
+    }
+
+    @Test
+    void init_sessionlessHandlerAddedByInitListener_runsBeforeBuiltInOnes() {
+        SessionlessRequestHandler builtIn1 = mock(
+                SessionlessRequestHandler.class);
+        SessionlessRequestHandler builtIn2 = mock(
+                SessionlessRequestHandler.class);
+        SessionlessRequestHandler added = mock(SessionlessRequestHandler.class);
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            protected List<SessionlessRequestHandler> createSessionlessRequestHandlers() {
+                // An immutable list must not break adding handlers
+                return List.of(builtIn1, builtIn2);
+            }
+        };
+
+        service.init(new MockInstantiator(event -> {
+            assertThrows(NullPointerException.class,
+                    () -> event.addSessionlessRequestHandler(null));
+            event.addSessionlessRequestHandler(added);
+        }));
+
+        assertEquals(List.of(added, builtIn2, builtIn1),
+                StreamSupport.stream(
+                        service.getSessionlessRequestHandlers().spliterator(),
+                        false).toList());
     }
 
     @Test
@@ -863,13 +941,17 @@ class VaadinServiceTest {
         when(instantiator.getI18NProvider()).thenReturn(i18NProvider);
         when(service.getInstantiator()).thenReturn(instantiator);
         doCallRealMethod().when(service).createRequestHandlers();
+        doCallRealMethod().when(service).createSessionlessRequestHandlers();
 
         List<RequestHandler> handlers = service.createRequestHandlers();
         Set<?> set = handlers.stream().map(Object::getClass)
                 .collect(Collectors.toSet());
         assertTrue(set.contains(PwaHandler.class));
-        assertTrue(set.contains(WebComponentProvider.class));
         assertTrue(set.contains(WebComponentBootstrapHandler.class));
+        Set<?> sessionless = service.createSessionlessRequestHandlers().stream()
+                .map(Object::getClass).collect(Collectors.toSet());
+        assertEquals(Set.of(WebComponentProvider.class,
+                TranslationFileRequestHandler.class), sessionless);
     }
 
     @Test
