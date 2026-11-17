@@ -473,7 +473,7 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @Test
-    void collectFunctionIds_everyRegistryButNames() {
+    void collectFunctionIds_everyFunctionRegistry() {
         String content = TaskGenerateJsDefinitions.renderFileContent(
                 List.of(GreeterJs.class, StopperJs.class, TemplateJs.class),
                 List.of(OffsetEvent.class), true);
