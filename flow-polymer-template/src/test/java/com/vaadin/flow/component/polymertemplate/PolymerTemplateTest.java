@@ -33,8 +33,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.Uses;
-import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateParserFactory;
 import com.vaadin.flow.component.template.Id;
@@ -46,6 +44,7 @@ import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.templatemodel.AllowClientUpdates;
@@ -70,9 +69,6 @@ class PolymerTemplateTest extends HasCurrentService {
     private static final String TAG = "FFS";
 
     private DeploymentConfiguration configuration;
-
-    private List<Object> executionOrder = new ArrayList<>();
-    private List<Object[]> executionParams = new ArrayList<>();
 
     // Field to prevent current instance from being garbage collected
     private UI ui;
@@ -471,30 +467,12 @@ class PolymerTemplateTest extends HasCurrentService {
     @SuppressWarnings("serial")
     @BeforeEach
     void setUp() throws SecurityException, IllegalArgumentException {
-        executionOrder.clear();
-        executionParams.clear();
 
         VaadinSession session = mock(VaadinSession.class);
         ui = new UI() {
-            private Page page = new Page(this) {
-
-                @Override
-                public PendingJavaScriptResult executeJs(String expression,
-                        Object... parameters) {
-                    executionOrder.add(expression);
-                    executionParams.add(parameters);
-                    return null;
-                }
-            };
-
             @Override
             public VaadinSession getSession() {
                 return session;
-            }
-
-            @Override
-            public Page getPage() {
-                return page;
             }
         };
         VaadinService service = mock(VaadinService.class);
@@ -957,6 +935,8 @@ class PolymerTemplateTest extends HasCurrentService {
     @Test
     void initModel_requestPopulateModel_onlyUnsetPropertiesAreSent() {
         UI ui = UI.getCurrent();
+        // Declared JavaScript is queued on the UI, which needs a session
+        ui.getInternals().setSession(ui.getSession());
         InitModelTemplate template = new InitModelTemplate();
 
         template.getModel().setMessage("foo");
@@ -965,12 +945,13 @@ class PolymerTemplateTest extends HasCurrentService {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertEquals(2, executionOrder.size());
-        assertEquals("this.populateModelProperties($0, $1)",
-                executionOrder.get(1));
+        List<JsCall> calls = collectCalls(ui);
+        assertEquals(2, calls.size());
+        assertEquals("populateModelProperties", calls.get(1).methodName());
 
-        Object[] params = executionParams.get(1);
-        ArrayNode properties = (ArrayNode) params[1];
+        List<Object> arguments = calls.get(1).arguments();
+        assertEquals(template.getElement(), arguments.get(0));
+        ArrayNode properties = (ArrayNode) arguments.get(1);
         assertEquals(1, properties.size());
         assertEquals("title", properties.get(0).asString());
     }
@@ -978,18 +959,22 @@ class PolymerTemplateTest extends HasCurrentService {
     @Test
     void initModel_sendUpdatableProperties() {
         UI ui = UI.getCurrent();
+        // Declared JavaScript is queued on the UI, which needs a session
+        ui.getInternals().setSession(ui.getSession());
         InitModelTemplate template = new InitModelTemplate();
 
         ui.add(template);
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertEquals(2, executionOrder.size());
-        assertEquals("this.registerUpdatableModelProperties($0, $1)",
-                executionOrder.get(0));
+        List<JsCall> calls = collectCalls(ui);
+        assertEquals(2, calls.size());
+        assertEquals("registerUpdatableModelProperties",
+                calls.get(0).methodName());
 
-        Object[] params = executionParams.get(0);
-        ArrayNode properties = (ArrayNode) params[1];
+        List<Object> arguments = calls.get(0).arguments();
+        assertEquals(template.getElement(), arguments.get(0));
+        ArrayNode properties = (ArrayNode) arguments.get(1);
         assertEquals(2, properties.size());
 
         Set<String> props = new HashSet<>();
@@ -998,6 +983,12 @@ class PolymerTemplateTest extends HasCurrentService {
         // all model properties except 'list' which has no getter
         assertTrue(props.contains("message"));
         assertTrue(props.contains("title"));
+    }
+
+    private static List<JsCall> collectCalls(UI ui) {
+        return ui.getInternals().dumpPendingJavaScriptInvocations().stream()
+                .map(invocation -> invocation.getInvocation().getJsCall())
+                .toList();
     }
 
     @Test

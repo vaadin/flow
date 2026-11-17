@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.test.components;
 
+import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.flow.component.Key;
@@ -24,14 +25,18 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.Route;
 
 /**
  * Reproduces issue #24974 using the same shortcut wiring as the real
  * {@code Dialog} component: the shortcut listens on a server-side component
  * ({@code parentDialog}) while a browser-only overlay element relays keydown
- * events to it via {@link Shortcuts#setShortcutListenOnElement} (the
- * {@code ELEMENT_LOCATOR_JS} delegate).
+ * events to it via {@link Shortcuts#setShortcutListenOnElementLocator} (the
+ * {@code ELEMENT_LOCATOR_JS} delegate), here with a declared locator function.
  * <p>
  * In Vaadin 25 the nested overlay is a native popover and a real DOM descendant
  * of the parent overlay (in Vaadin 24 overlays were teleported to be siblings).
@@ -58,6 +63,17 @@ public class NestedPopoverShortcutView extends Div {
     public static final String SYNC = "sync-done";
 
     public static final Key SHORTCUT_KEY = Key.KEY_S;
+
+    /**
+     * Locates the browser-only overlay element the shortcut listens on.
+     */
+    @JsDefinition
+    public interface OverlayLocatorJs extends Serializable {
+
+        @JsExpression("return document.getElementById($0);")
+        JsFunction locateById(String id);
+    }
+
     public static final KeyModifier SHORTCUT_MODIFIER = KeyModifier.ALT;
 
     private final Div eventLog;
@@ -90,8 +106,8 @@ public class NestedPopoverShortcutView extends Div {
 
         // Relay keydown events from the parent overlay element to parentDialog,
         // matching how Dialog wires shortcuts to its overlay.
-        Shortcuts.setShortcutListenOnElement(
-                "document.getElementById('" + PARENT_OVERLAY_ID + "')",
+        Shortcuts.setShortcutListenOnElementLocator(JsSnippets
+                .of(OverlayLocatorJs.class).locateById(PARENT_OVERLAY_ID),
                 parentDialog);
         Shortcuts.addShortcutListener(parentDialog, () -> log(PARENT_SHORTCUT),
                 SHORTCUT_KEY, SHORTCUT_MODIFIER).listenOn(parentDialog);

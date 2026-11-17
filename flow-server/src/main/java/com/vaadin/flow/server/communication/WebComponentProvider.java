@@ -80,6 +80,8 @@ public class WebComponentProvider implements SessionlessRequestHandler {
      * Override
      * {@link #handleWebComponentRequest(VaadinRequest, VaadinResponse)} to
      * customize how the script is served.
+     * 
+     * @since 25.4
      */
     @Override
     public boolean handleRequest(VaadinRequest request, VaadinResponse response)

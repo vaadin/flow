@@ -26,7 +26,7 @@ export const CONNECTED = 'connected';
 
 /**
  * Application is connected and Flow is loading application state from the
- * server, or Fusion is waiting for an endpoint call to return.
+ * server, or Hilla is waiting for an endpoint call to return.
  */
 export const LOADING = 'loading';
 

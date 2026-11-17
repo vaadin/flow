@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.auth.NavigationContext.Phase;
+
 /**
  * Default implementation of {@link AccessCheckDecisionResolver} that allow
  * access only if input results are all ALLOW, or a combination of ALLOW and
@@ -66,6 +68,7 @@ public class DefaultAccessCheckDecisionResolver
             NavigationContext context) {
         Class<?> navigationTarget = context.getNavigationTarget();
         String path = context.getLocation().getPath();
+        String logPrefix = context.getLogPrefix();
         Map<AccessCheckDecision, List<AccessCheckResult>> resultsByDecision = results
                 .stream()
                 .collect(Collectors.groupingBy(AccessCheckResult::decision));
@@ -85,16 +88,16 @@ public class DefaultAccessCheckDecisionResolver
                     .next();
             int votes = resultsByDecision.get(decision).size();
             if (decision == AccessCheckDecision.ALLOW) {
-                LOGGER.debug("Access to view '{}' with path '{}' allowed by "
+                LOGGER.debug("{}Access to view '{}' with path '{}' allowed by "
                         + "{} out of {} navigation checkers  ({} neutral).",
-                        navigationTarget.getName(), path, votes, results.size(),
-                        neutralVotes);
+                        logPrefix, navigationTarget.getName(), path, votes,
+                        results.size(), neutralVotes);
                 return context.allow();
             } else {
-                LOGGER.debug("Access to view '{}' with path '{}' denied by "
+                LOGGER.debug("{}Access to view '{}' with path '{}' denied by "
                         + "{} out of {} navigation checkers  ({} neutral).",
-                        navigationTarget.getName(), path, votes, results.size(),
-                        neutralVotes);
+                        logPrefix, navigationTarget.getName(), path, votes,
+                        results.size(), neutralVotes);
             }
         } else if (resultsByDecision.isEmpty()) {
             // All checkers are neutral
@@ -109,9 +112,9 @@ public class DefaultAccessCheckDecisionResolver
             }
             denyReasons = "Access denied because navigation checkers did not take any decision.";
             LOGGER.debug(
-                    "Access to view '{}' with path '{}' denied because "
+                    "{}Access to view '{}' with path '{}' denied because "
                             + "{} out of {} navigation checkers are neutral.",
-                    navigationTarget.getName(), path, results.size(),
+                    logPrefix, navigationTarget.getName(), path, results.size(),
                     results.size());
         } else {
             // Mixed consensus
@@ -122,9 +125,19 @@ public class DefaultAccessCheckDecisionResolver
                 summary += ", " + AccessCheckDecision.NEUTRAL + " = "
                         + neutralVotes;
             }
-            LOGGER.warn("Access to view '{}' with path '{}' blocked because "
-                    + "there is no unanimous consensus from the navigation checkers. {}.",
-                    navigationTarget.getName(), path, summary);
+            if (context.getPhase() == Phase.PUBLIC_ROUTE_CHECK) {
+                // Only finding out if the route is public, the user is not
+                // blocked by this result
+                LOGGER.debug(
+                        "Public route check: view '{}' with path '{}' is not public because "
+                                + "there is no unanimous consensus from the navigation checkers. {}.",
+                        navigationTarget.getName(), path, summary);
+            } else {
+                LOGGER.warn(
+                        "Access to view '{}' with path '{}' blocked because "
+                                + "there is no unanimous consensus from the navigation checkers. {}.",
+                        navigationTarget.getName(), path, summary);
+            }
             return context.reject(String.format(
                     "Mixed consensus from navigation checkers for view '%s'"
                             + " with path '%s'. %s. Deny reasons: [%s]",

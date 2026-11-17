@@ -60,7 +60,6 @@ import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteParameters;
@@ -91,6 +90,9 @@ public abstract class AbstractNavigationStateRenderer
     private Postpone postponed = null;
 
     private LocationChangeEvent locationChangeEvent = null;
+
+    // Whether this renderer handles a forward or reroute of a page reload
+    private boolean redirectedFromReload;
 
     /**
      * Creates a new renderer for the given navigation state.
@@ -210,11 +212,18 @@ public abstract class AbstractNavigationStateRenderer
             return HttpStatusCode.OK.getCode();
         }
 
-        // Set navigationTrigger to RELOAD if this is a refresh of a preserve
-        // view.
-        if (preserveOnRefreshTarget && !chain.isEmpty()) {
+        // Set navigationTrigger to REFRESH if this is a reload of a preserved
+        // view, also when the reload reaches it through a forward or reroute.
+        // Other navigations that reuse the preserved chain, e.g. a link or
+        // history navigation that only changes the query parameters, keep
+        // their trigger so that history is handled the same way as without
+        // preserve on refresh.
+        if (preserveOnRefreshTarget && !chain.isEmpty() && isReload(event)) {
             event = new NavigationEvent(event.getSource(), event.getLocation(),
-                    event.getUI(), NavigationTrigger.REFRESH);
+                    event.getUI(), NavigationTrigger.REFRESH,
+                    event.getState().orElse(null), event.isForwardTo(),
+                    event.isForceInstantiation(),
+                    event.isRecreateLayoutChain());
         }
 
         // If the navigation is postponed, using BeforeLeaveEvent#postpone,
@@ -478,39 +487,24 @@ public abstract class AbstractNavigationStateRenderer
      */
     protected List<Class<? extends RouterLayout>> getTargetParentLayouts(
             RouteTarget routeTarget, RouteRegistry registry, String path) {
-        if (routeTarget.getParentLayouts().isEmpty()
-                && RouteUtil.isAutolayoutEnabled(routeTarget.getTarget(), path)
-                && registry.hasLayout(path)) {
-            return RouteUtil
-                    .collectRouteParentLayouts(registry.getLayout(path));
-        }
-        return routeTarget.getParentLayouts();
+        return RouteUtil.getTargetParentLayouts(routeTarget, registry, path);
     }
 
     private void pushHistoryStateIfNeeded(NavigationEvent event, UI ui) {
         boolean reactEnabled = ui.getInternals().getSession().getService()
                 .getDeploymentConfiguration().isReactEnabled();
         Location currentLocation = ui.getInternals().getActiveViewLocation();
-        NavigationTrigger eventTrigger = event.getTrigger();
-        if (event instanceof ErrorNavigationEvent errorEvent) {
-            if (isRouterLinkNotFoundNavigationError(errorEvent)) {
-                // #8544
-                event.getState().ifPresent(s -> ui.getPage().executeJs(
-                        "this.scrollPositionHandlerAfterServerNavigation($0);",
-                        s));
-            }
-        } else if (NavigationTrigger.REFRESH != eventTrigger
-                && !event.isForwardTo()
+        if (event instanceof ErrorNavigationEvent) {
+            // The history is left as it is for an error view
+            return;
+        }
+        boolean locationChanged = !event.isForwardTo()
                 && (currentLocation == null || !event.getLocation()
-                        .getPathWithQueryParameters().equals(currentLocation
-                                .getPathWithQueryParameters()))) {
-            if (shouldPushHistoryState(event)) {
-                pushHistoryState(event);
-            }
-        } else if (reactEnabled) {
-            if (shouldPushHistoryState(event)) {
-                pushHistoryState(event);
-            }
+                        .getPathWithQueryParameters()
+                        .equals(currentLocation.getPathWithQueryParameters()));
+        if ((locationChanged || reactEnabled)
+                && shouldPushHistoryState(event)) {
+            pushHistoryState(event);
         }
     }
 
@@ -521,16 +515,7 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     protected boolean shouldPushHistoryState(NavigationEvent event) {
-        return NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger())
-                || NavigationTrigger.REFRESH.equals(event.getTrigger());
-    }
-
-    private boolean isRouterLinkNotFoundNavigationError(
-            ErrorNavigationEvent event) {
-        return NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())
-                && event.getErrorParameter() != null
-                && event.getErrorParameter()
-                        .getCaughtException() instanceof NotFoundException;
+        return event.getTrigger() == NavigationTrigger.UI_NAVIGATE;
     }
 
     /**
@@ -953,6 +938,9 @@ public abstract class AbstractNavigationStateRenderer
         if (handler instanceof NavigationStateRenderer renderer) {
             renderer.setOngoingLocationChangeEvent(locationChangeEvent);
         }
+        if (handler instanceof AbstractNavigationStateRenderer renderer) {
+            renderer.redirectedFromReload = isReload(event);
+        }
 
         NavigationEvent newNavigationEvent = getNavigationEvent(event,
                 beforeNavigation);
@@ -968,11 +956,26 @@ public abstract class AbstractNavigationStateRenderer
         if (handler instanceof NavigationStateRenderer renderer) {
             renderer.setOngoingLocationChangeEvent(locationChangeEvent);
         }
+        if (handler instanceof AbstractNavigationStateRenderer renderer) {
+            renderer.redirectedFromReload = isReload(event);
+        }
 
         NavigationEvent newNavigationEvent = getNavigationEvent(event,
                 beforeNavigation);
 
         return handler.handle(newNavigationEvent);
+    }
+
+    /**
+     * Checks whether the event is for a page reload. A forward or reroute
+     * replaces the original trigger with
+     * {@link NavigationTrigger#PROGRAMMATIC}, so for such an event the trigger
+     * of the redirected navigation is used.
+     */
+    private boolean isReload(NavigationEvent event) {
+        return event.getTrigger() == NavigationTrigger.PAGE_LOAD
+                || event.getTrigger() == NavigationTrigger.REFRESH
+                || (event.isForwardTo() && redirectedFromReload);
     }
 
     private NavigationEvent getNavigationEvent(NavigationEvent event,

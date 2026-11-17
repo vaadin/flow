@@ -28,7 +28,6 @@ import jakarta.servlet.ServletException;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -274,8 +273,7 @@ public class CdiInstantiatorTest extends AbstractWeldTest {
         // @Before does instantiator.init()
         // There will be other entries too to filter out
         List<UsageStatistics.UsageEntry> entries = UsageStatistics.getEntries()
-                .filter(entry -> entry.getName().contains("Cdi"))
-                .collect(Collectors.toList());
+                .filter(entry -> entry.getName().contains("Cdi")).toList();
         assertEquals(1, entries.size());
 
         UsageStatistics.UsageEntry entry = entries.get(0);
