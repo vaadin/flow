@@ -54,6 +54,8 @@ public @interface Tag {
     String ASIDE = "aside";
     /**
      * Tag for an <code>&lt;audio&gt;</code>.
+     * 
+     * @since 25.4
      */
     String AUDIO = "audio";
     /**
@@ -220,6 +222,8 @@ public @interface Tag {
     String SELECT = "select";
     /**
      * Tag for a <code>&lt;source&gt;</code>.
+     * 
+     * @since 25.4
      */
     String SOURCE = "source";
     /**
@@ -288,6 +292,8 @@ public @interface Tag {
     String UL = "ul";
     /**
      * Tag for a <code>&lt;video&gt;</code>.
+     * 
+     * @since 25.4
      */
     String VIDEO = "video";
 

@@ -1,10 +1,12 @@
 import { expect } from '@open-wc/testing';
+import sinon from 'sinon';
 import { testRegistry } from '../testRegistry';
 import {
   AtmospherePushConnection,
   FragmentedMessage
 } from '../../../../../main/frontend/internal/client/communication/AtmospherePushConnection';
 import { URIResolver } from '../../../../../main/frontend/internal/client/URIResolver';
+import { VaadinServerMessage } from '../../../../../main/frontend/internal/client/communication/VaadinServerMessage';
 
 const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -18,13 +20,18 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
     pushError: 0,
     pushClosed: 0,
     pushInvalidContent: [] as string[],
+    announced: [] as VaadinServerMessage[],
     pushNotConnected: 0,
     handled: [] as unknown[],
     pushed: [] as string[],
     disconnected: [] as string[]
   };
   const capture: AtmosphereConfigCapture = { config: null };
-  const fakeSocket = { push: (message: string) => log.pushed.push(message) };
+  const fakeSocket = {
+    push: (message: string) => log.pushed.push(message),
+    // The live atmosphere.js request, exposed by the socket.
+    request: { curWebsocketErrorRetries: 0 }
+  };
   // Install a fake Atmosphere library.
   (window as unknown as { vaadinPush?: unknown }).vaadinPush = {
     atmosphere: {
@@ -66,11 +73,16 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
     MessageHandler: {
       getPushId: () => null,
       getLastSeenServerSyncId: () => 5,
-      handleMessage: (json: unknown) => log.handled.push(json)
+      announceMessage: () => {
+        const message = new VaadinServerMessage();
+        log.announced.push(message);
+        return message;
+      },
+      handleMessage: (json: unknown, message: VaadinServerMessage) => log.handled.push({ json, message })
     },
     ResourceLoader: { loadScript: () => {} }
   });
-  return { registry, log, capture };
+  return { registry, log, capture, fakeSocket };
 }
 
 function response(transport: string, body = ''): { transport: string; responseBody: string } {
@@ -198,10 +210,13 @@ describe('AtmospherePushConnection', () => {
       capture.config!.onOpen(response('websocket'));
 
       capture.config!.onMessage(response('websocket', '{"syncId":0}'));
-      expect(log.handled).to.deep.equal([{ syncId: 0 }]);
+      // Handed on with the message announced for it.
+      expect(log.handled).to.deep.equal([{ json: { syncId: 0 }, message: log.announced[0] }]);
 
       capture.config!.onMessage(response('websocket', 'not json'));
       expect(log.pushInvalidContent).to.deep.equal(['not json']);
+      // Each message is announced; the one that does not parse ends as discarded.
+      expect(log.announced.map((message) => message.outcome)).to.deep.equal([undefined, 'discarded']);
     });
 
     it('reports errors and closes, and disconnects an open connection', async () => {
@@ -225,6 +240,38 @@ describe('AtmospherePushConnection', () => {
       expect(log.disconnected.length).to.equal(1);
       expect(connection.isActive()).to.be.false; // DISCONNECTED
     });
+    it('resets the websocket error retries only when a stable connection is lost', async () => {
+      // atmosphere.js falls back to long-polling for good once the retries
+      // reach maxWebsocketErrorRetries. Errors from earlier outages must not
+      // count against a later one, but a connection that keeps failing right
+      // after opening must still fall back.
+      const { registry, capture, fakeSocket } = setupPush();
+      new AtmospherePushConnection(registry);
+      await tick();
+      const clock = sinon.useFakeTimers({ now: Date.now(), toFake: ['Date'] });
+      try {
+        capture.config!.onOpen(response('websocket'));
+        fakeSocket.request.curWebsocketErrorRetries = 7;
+        clock.tick(1000);
+        capture.config!.onClose(response('websocket'));
+        expect(fakeSocket.request.curWebsocketErrorRetries).to.equal(7);
+
+        capture.config!.onReopen(response('websocket'));
+        clock.tick(5 * 60 * 1000);
+        capture.config!.onClose(response('websocket'));
+        expect(fakeSocket.request.curWebsocketErrorRetries).to.equal(0);
+
+        // A short-lived reconnect after the stable one must not count as stable
+        capture.config!.onReopen(response('websocket'));
+        fakeSocket.request.curWebsocketErrorRetries = 3;
+        clock.tick(1000);
+        capture.config!.onClose(response('websocket'));
+        expect(fakeSocket.request.curWebsocketErrorRetries).to.equal(3);
+      } finally {
+        clock.restore();
+      }
+    });
+
     it('unsubscribes from the same url it subscribed to', async () => {
       // Ported from testDisconnect_disconnectUrlIsSameAsInConnect.
       const { registry, log, capture } = setupPush('context://foo', 'bar/');

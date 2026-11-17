@@ -21,8 +21,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -33,6 +31,9 @@ import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -393,9 +394,8 @@ class ElementPropertyMapTest {
         map.addPropertyChangeListener("foo", eventCapture::set);
 
         Runnable runnable = map.deferredUpdateFromClient("foo", "value");
-        MatcherAssert.assertThat(runnable.getClass().getName(),
-                CoreMatchers.not(CoreMatchers.equalTo(
-                        ElementPropertyMap.class.getName() + "$PutResult")));
+        assertThat(runnable.getClass().getName(), not(
+                equalTo(ElementPropertyMap.class.getName() + "$PutResult")));
         runnable.run();
         assertNull(eventCapture.get());
     }
@@ -456,17 +456,16 @@ class ElementPropertyMapTest {
     private Runnable assertDeferredUpdate_putResult(ElementPropertyMap map,
             String property) throws PropertyChangeDeniedException {
         Runnable runnable = map.deferredUpdateFromClient(property, "a");
-        MatcherAssert.assertThat(runnable.getClass().getName(), CoreMatchers
-                .equalTo(ElementPropertyMap.class.getName() + "$PutResult"));
+        assertThat(runnable.getClass().getName(),
+                equalTo(ElementPropertyMap.class.getName() + "$PutResult"));
         return runnable;
     }
 
     private void assertDeferredUpdate_noOp(ElementPropertyMap map,
             String property) throws PropertyChangeDeniedException {
         Runnable runnable = map.deferredUpdateFromClient(property, "a");
-        MatcherAssert.assertThat(runnable.getClass().getName(),
-                CoreMatchers.not(CoreMatchers.equalTo(
-                        ElementPropertyMap.class.getName() + "$PutResult")));
+        assertThat(runnable.getClass().getName(), not(
+                equalTo(ElementPropertyMap.class.getName() + "$PutResult")));
     }
 
     private static ElementPropertyMap createSimplePropertyMap() {

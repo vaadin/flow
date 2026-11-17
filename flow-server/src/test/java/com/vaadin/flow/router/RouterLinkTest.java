@@ -24,7 +24,6 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -43,6 +42,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Isolated
 class RouterLinkTest extends HasCurrentService {
@@ -68,11 +69,9 @@ class RouterLinkTest extends HasCurrentService {
     void setUp() throws NoSuchFieldException, IllegalAccessException,
             InvalidRouteConfigurationException {
         VaadinService service = VaadinService.getCurrent();
-        DeploymentConfiguration config = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(config.getFrontendFolder())
-                .thenReturn(new File("/frontend"));
-        Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
+        DeploymentConfiguration config = mock(DeploymentConfiguration.class);
+        when(config.getFrontendFolder()).thenReturn(new File("/frontend"));
+        when(service.getDeploymentConfiguration()).thenReturn(config);
 
         registry = new TestRouteRegistry();
         RouteConfiguration routeConfiguration = RouteConfiguration
@@ -88,7 +87,7 @@ class RouterLinkTest extends HasCurrentService {
 
         ui = new RoutingTestBase.RouterTestUI(router);
 
-        Mockito.when(service.getRouter()).thenReturn(router);
+        when(service.getRouter()).thenReturn(router);
     }
 
     @Test
@@ -279,7 +278,7 @@ class RouterLinkTest extends HasCurrentService {
     @Test
     void noImplicitRouter() {
         VaadinService service = VaadinService.getCurrent();
-        Mockito.when(service.getRouter()).thenReturn(null);
+        when(service.getRouter()).thenReturn(null);
         assertThrows(IllegalStateException.class,
                 () -> new RouterLink("Show something", TestView.class));
     }
@@ -337,7 +336,7 @@ class RouterLinkTest extends HasCurrentService {
 
     @Override
     protected VaadinService createService() {
-        return Mockito.mock(VaadinService.class);
+        return mock(VaadinService.class);
     }
 
     @Test

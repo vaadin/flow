@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
@@ -32,6 +31,9 @@ import com.vaadin.flow.server.WrappedHttpSession;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class VaadinAwareSecurityContextHolderStrategyTest {
 
@@ -54,29 +56,29 @@ class VaadinAwareSecurityContextHolderStrategyTest {
 
     @Test
     void currentSessionOverrides() {
-        VaadinSession vaadinSession = Mockito.mock(VaadinSession.class);
-        HttpSession httpSession = Mockito.mock(HttpSession.class);
-        Mockito.when(vaadinSession.getSession())
+        VaadinSession vaadinSession = mock(VaadinSession.class);
+        HttpSession httpSession = mock(HttpSession.class);
+        when(vaadinSession.getSession())
                 .thenReturn(new WrappedHttpSession(httpSession));
-        SecurityContext securityContext = Mockito.mock(SecurityContext.class);
-        Mockito.when(httpSession.getAttribute(
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(httpSession.getAttribute(
                 HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY))
                 .thenReturn(securityContext);
         VaadinSession.setCurrent(vaadinSession);
 
         vaadinAwareSecurityContextHolderStrategy
-                .setContext(Mockito.mock(SecurityContext.class));
+                .setContext(mock(SecurityContext.class));
         assertEquals(securityContext,
                 vaadinAwareSecurityContextHolderStrategy.getContext());
     }
 
     @Test
     void detachedSessionWorks() {
-        VaadinSession vaadinSession = Mockito.mock(VaadinSession.class);
-        Mockito.when(vaadinSession.getSession()).thenReturn(null);
+        VaadinSession vaadinSession = mock(VaadinSession.class);
+        when(vaadinSession.getSession()).thenReturn(null);
         VaadinSession.setCurrent(vaadinSession);
 
-        SecurityContext explicit = Mockito.mock(SecurityContext.class);
+        SecurityContext explicit = mock(SecurityContext.class);
         vaadinAwareSecurityContextHolderStrategy.setContext(explicit);
         assertEquals(explicit,
                 vaadinAwareSecurityContextHolderStrategy.getContext());
@@ -84,7 +86,7 @@ class VaadinAwareSecurityContextHolderStrategyTest {
 
     @Test
     void explicitUsedWhenNoSessionAvailable() {
-        SecurityContext explicit = Mockito.mock(SecurityContext.class);
+        SecurityContext explicit = mock(SecurityContext.class);
         vaadinAwareSecurityContextHolderStrategy.setContext(explicit);
         assertEquals(explicit,
                 vaadinAwareSecurityContextHolderStrategy.getContext());
@@ -94,7 +96,7 @@ class VaadinAwareSecurityContextHolderStrategyTest {
     void separateInstances_shareThreadSecurityContext() {
         VaadinAwareSecurityContextHolderStrategy other = new VaadinAwareSecurityContextHolderStrategy();
 
-        SecurityContext explicit = Mockito.mock(SecurityContext.class);
+        SecurityContext explicit = mock(SecurityContext.class);
         vaadinAwareSecurityContextHolderStrategy.setContext(explicit);
         assertEquals(explicit, other.getContext(),
                 "Instance should see the context set on another instance");
@@ -108,10 +110,10 @@ class VaadinAwareSecurityContextHolderStrategyTest {
     @Test
     void separateThreads_doNotShareThreadSecurityContext()
             throws InterruptedException {
-        SecurityContext main = Mockito.mock(SecurityContext.class);
+        SecurityContext main = mock(SecurityContext.class);
         vaadinAwareSecurityContextHolderStrategy.setContext(main);
 
-        SecurityContext onOtherThread = Mockito.mock(SecurityContext.class);
+        SecurityContext onOtherThread = mock(SecurityContext.class);
         AtomicReference<SecurityContext> seenOnOtherThread = new AtomicReference<>();
         Thread thread = new Thread(() -> {
             seenOnOtherThread
@@ -130,16 +132,15 @@ class VaadinAwareSecurityContextHolderStrategyTest {
 
     @Test
     void getContext_invalidateSession_getsThreadSecurityContext() {
-        SecurityContext explicit = Mockito.mock(SecurityContext.class);
+        SecurityContext explicit = mock(SecurityContext.class);
         vaadinAwareSecurityContextHolderStrategy.setContext(explicit);
 
-        VaadinSession vaadinSession = Mockito.mock(VaadinSession.class);
-        HttpSession httpSession = Mockito.mock(HttpSession.class);
-        Mockito.when(vaadinSession.getSession())
+        VaadinSession vaadinSession = mock(VaadinSession.class);
+        HttpSession httpSession = mock(HttpSession.class);
+        when(vaadinSession.getSession())
                 .thenReturn(new WrappedHttpSession(httpSession));
-        Mockito.doThrow(IllegalStateException.class).when(httpSession)
-                .getAttribute(
-                        HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+        doThrow(IllegalStateException.class).when(httpSession).getAttribute(
+                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
         VaadinSession.setCurrent(vaadinSession);
 
         assertEquals(explicit,

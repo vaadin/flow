@@ -26,7 +26,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 
@@ -34,8 +33,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.Uses;
-import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateParserFactory;
 import com.vaadin.flow.component.template.Id;
@@ -47,6 +44,7 @@ import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.templatemodel.AllowClientUpdates;
@@ -60,6 +58,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 @Isolated
@@ -67,9 +69,6 @@ class PolymerTemplateTest extends HasCurrentService {
     private static final String TAG = "FFS";
 
     private DeploymentConfiguration configuration;
-
-    private List<Object> executionOrder = new ArrayList<>();
-    private List<Object[]> executionParams = new ArrayList<>();
 
     // Field to prevent current instance from being garbage collected
     private UI ui;
@@ -468,33 +467,15 @@ class PolymerTemplateTest extends HasCurrentService {
     @SuppressWarnings("serial")
     @BeforeEach
     void setUp() throws SecurityException, IllegalArgumentException {
-        executionOrder.clear();
-        executionParams.clear();
 
-        VaadinSession session = Mockito.mock(VaadinSession.class);
+        VaadinSession session = mock(VaadinSession.class);
         ui = new UI() {
-            private Page page = new Page(this) {
-
-                @Override
-                public PendingJavaScriptResult executeJs(String expression,
-                        Object... parameters) {
-                    executionOrder.add(expression);
-                    executionParams.add(parameters);
-                    return null;
-                }
-            };
-
             @Override
             public VaadinSession getSession() {
                 return session;
             }
-
-            @Override
-            public Page getPage() {
-                return page;
-            }
         };
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         when(session.getService()).thenReturn(service);
         DefaultInstantiator instantiator = new DefaultInstantiator(service);
         when(service.getInstantiator()).thenReturn(instantiator);
@@ -508,21 +489,20 @@ class PolymerTemplateTest extends HasCurrentService {
 
     @Override
     public VaadinService createService() {
-        configuration = Mockito.mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        configuration = mock(DeploymentConfiguration.class);
+        when(configuration.isProductionMode()).thenReturn(false);
 
-        VaadinService service = Mockito.mock(VaadinService.class);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        VaadinService service = mock(VaadinService.class);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
 
-        Instantiator instantiator = Mockito.mock(Instantiator.class);
-        TemplateParser.TemplateParserFactory factory = Mockito
-                .mock(TemplateParser.TemplateParserFactory.class);
-        Mockito.when(instantiator.getOrCreate(TemplateParserFactory.class))
+        Instantiator instantiator = mock(Instantiator.class);
+        TemplateParser.TemplateParserFactory factory = mock(
+                TemplateParser.TemplateParserFactory.class);
+        when(instantiator.getOrCreate(TemplateParserFactory.class))
                 .thenReturn(factory);
-        Mockito.when(factory.createParser())
+        when(factory.createParser())
                 .thenReturn(NpmTemplateParser.getInstance());
-        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
+        when(service.getInstantiator()).thenReturn(instantiator);
         return service;
     }
 
@@ -594,7 +574,7 @@ class PolymerTemplateTest extends HasCurrentService {
 
     @Test
     void parseCachedTemplate_hasIdChild_childIsRegisteredInFeature() {
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        when(configuration.isProductionMode()).thenReturn(true);
 
         // run in the production mode (with caching enabled) for the first time
         IdChildTemplate template = new IdChildTemplate();
@@ -613,7 +593,7 @@ class PolymerTemplateTest extends HasCurrentService {
 
     @Test
     void parseCachedTemplate_twoTemplatesWithInjetions_injectionsAreRegisteredInFeature() {
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        when(configuration.isProductionMode()).thenReturn(true);
 
         AtomicInteger parserCallCount = new AtomicInteger();
 
@@ -709,7 +689,7 @@ class PolymerTemplateTest extends HasCurrentService {
 
     @Test
     void parseCachedTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild() {
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        when(configuration.isProductionMode()).thenReturn(true);
 
         // run in the production mode (with caching enabled) for the first time
         TemplateInTemplate template = new TemplateInTemplate();
@@ -737,7 +717,7 @@ class PolymerTemplateTest extends HasCurrentService {
 
     @Test
     void parseCachedTemplate_hasTextNodesInTemmplate_correctRequestIsSent() {
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        when(configuration.isProductionMode()).thenReturn(true);
 
         // run in the production mode (with caching enabled) for the first time
         TextNodesInHtmlTemplate template = new TextNodesInHtmlTemplate();
@@ -768,7 +748,7 @@ class PolymerTemplateTest extends HasCurrentService {
 
     @Test
     void parseCachedTemplte_hasChildTemplateOutsideDomRepeat_elementIsCreated() {
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        when(configuration.isProductionMode()).thenReturn(true);
 
         // run in the production mode (with caching enabled) for the first time
         TemplateWithDomRepeat template = new TemplateWithDomRepeat();
@@ -955,6 +935,8 @@ class PolymerTemplateTest extends HasCurrentService {
     @Test
     void initModel_requestPopulateModel_onlyUnsetPropertiesAreSent() {
         UI ui = UI.getCurrent();
+        // Declared JavaScript is queued on the UI, which needs a session
+        ui.getInternals().setSession(ui.getSession());
         InitModelTemplate template = new InitModelTemplate();
 
         template.getModel().setMessage("foo");
@@ -963,12 +945,13 @@ class PolymerTemplateTest extends HasCurrentService {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertEquals(2, executionOrder.size());
-        assertEquals("this.populateModelProperties($0, $1)",
-                executionOrder.get(1));
+        List<JsCall> calls = collectCalls(ui);
+        assertEquals(2, calls.size());
+        assertEquals("populateModelProperties", calls.get(1).methodName());
 
-        Object[] params = executionParams.get(1);
-        ArrayNode properties = (ArrayNode) params[1];
+        List<Object> arguments = calls.get(1).arguments();
+        assertEquals(template.getElement(), arguments.get(0));
+        ArrayNode properties = (ArrayNode) arguments.get(1);
         assertEquals(1, properties.size());
         assertEquals("title", properties.get(0).asString());
     }
@@ -976,18 +959,22 @@ class PolymerTemplateTest extends HasCurrentService {
     @Test
     void initModel_sendUpdatableProperties() {
         UI ui = UI.getCurrent();
+        // Declared JavaScript is queued on the UI, which needs a session
+        ui.getInternals().setSession(ui.getSession());
         InitModelTemplate template = new InitModelTemplate();
 
         ui.add(template);
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertEquals(2, executionOrder.size());
-        assertEquals("this.registerUpdatableModelProperties($0, $1)",
-                executionOrder.get(0));
+        List<JsCall> calls = collectCalls(ui);
+        assertEquals(2, calls.size());
+        assertEquals("registerUpdatableModelProperties",
+                calls.get(0).methodName());
 
-        Object[] params = executionParams.get(0);
-        ArrayNode properties = (ArrayNode) params[1];
+        List<Object> arguments = calls.get(0).arguments();
+        assertEquals(template.getElement(), arguments.get(0));
+        ArrayNode properties = (ArrayNode) arguments.get(1);
         assertEquals(2, properties.size());
 
         Set<String> props = new HashSet<>();
@@ -996,6 +983,12 @@ class PolymerTemplateTest extends HasCurrentService {
         // all model properties except 'list' which has no getter
         assertTrue(props.contains("message"));
         assertTrue(props.contains("title"));
+    }
+
+    private static List<JsCall> collectCalls(UI ui) {
+        return ui.getInternals().dumpPendingJavaScriptInvocations().stream()
+                .map(invocation -> invocation.getInvocation().getJsCall())
+                .toList();
     }
 
     @Test
@@ -1008,19 +1001,19 @@ class PolymerTemplateTest extends HasCurrentService {
                 .get(null);
         boolean licenseCheckedInitValue = licenseCheckedHolder.get();
 
-        try (MockedStatic<LicenseChecker> checker = Mockito
-                .mockStatic(LicenseChecker.class)) {
+        try (MockedStatic<LicenseChecker> checker = mockStatic(
+                LicenseChecker.class)) {
             AtomicInteger counter = new AtomicInteger(0);
-            checker.when(() -> LicenseChecker.checkLicense(Mockito.anyString(),
-                    Mockito.anyString(), Mockito.eq(BuildType.DEVELOPMENT)))
+            checker.when(() -> LicenseChecker.checkLicense(anyString(),
+                    anyString(), eq(BuildType.DEVELOPMENT)))
                     .then(ignore -> counter.incrementAndGet());
 
-            DeploymentConfiguration configuration = Mockito
-                    .mock(DeploymentConfiguration.class);
-            Mockito.when(configuration.isProductionMode()).thenReturn(false);
+            DeploymentConfiguration configuration = mock(
+                    DeploymentConfiguration.class);
+            when(configuration.isProductionMode()).thenReturn(false);
 
-            VaadinService service = Mockito.mock(VaadinService.class);
-            Mockito.when(service.getDeploymentConfiguration())
+            VaadinService service = mock(VaadinService.class);
+            when(service.getDeploymentConfiguration())
                     .thenReturn(configuration);
 
             licenseCheckedHolder.set(false);
@@ -1035,19 +1028,19 @@ class PolymerTemplateTest extends HasCurrentService {
 
     @Test
     void licenseCheck_prodMode_licenseNotChecked() {
-        try (MockedStatic<LicenseChecker> checker = Mockito
-                .mockStatic(LicenseChecker.class)) {
+        try (MockedStatic<LicenseChecker> checker = mockStatic(
+                LicenseChecker.class)) {
             AtomicInteger counter = new AtomicInteger(0);
-            checker.when(() -> LicenseChecker.checkLicense(Mockito.anyString(),
-                    Mockito.anyString(), Mockito.eq(BuildType.DEVELOPMENT)))
+            checker.when(() -> LicenseChecker.checkLicense(anyString(),
+                    anyString(), eq(BuildType.DEVELOPMENT)))
                     .then(ignore -> counter.incrementAndGet());
 
-            DeploymentConfiguration configuration = Mockito
-                    .mock(DeploymentConfiguration.class);
-            Mockito.when(configuration.isProductionMode()).thenReturn(true);
+            DeploymentConfiguration configuration = mock(
+                    DeploymentConfiguration.class);
+            when(configuration.isProductionMode()).thenReturn(true);
 
-            VaadinService service = Mockito.mock(VaadinService.class);
-            Mockito.when(service.getDeploymentConfiguration())
+            VaadinService service = mock(VaadinService.class);
+            when(service.getDeploymentConfiguration())
                     .thenReturn(configuration);
 
             new TestPolymerTemplate(service);

@@ -30,13 +30,13 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentTest;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
@@ -66,12 +66,16 @@ import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockVaadinContext.RoutePathProviderImpl;
+import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.tests.util.MockUI;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -215,7 +219,7 @@ class UidlWriterTest {
                 .of(invocation1, invocation2)
                 .map(invocation -> new PendingJavaScriptInvocation(
                         element.getNode(), invocation))
-                .collect(Collectors.toList());
+                .toList();
 
         ConstantPool constantPool = new ConstantPool();
         ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(
@@ -426,6 +430,28 @@ class UidlWriterTest {
         void methodWithMany(String value, Object... rest);
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void createUidl_sessionDestroyedByPendingTask_respondsSessionExpired(
+            boolean async) throws Exception {
+        MockVaadinSession session = new MockVaadinSession();
+        ObjectNode response = session.runWithLock(() -> {
+            UI ui = new MockUI(session);
+            ui.doInit(mock(VaadinRequest.class), session.getNextUIid(), "foo");
+            session.addUI(ui);
+            // Queued like when another thread invalidates the HTTP session
+            // while this one holds the session lock
+            session.getService().fireSessionDestroy(session);
+
+            return new UidlWriter().createUidl(ui, async);
+        });
+
+        assertTrue(JacksonUtils.jsonEquals(
+                JacksonUtils.readTree(
+                        VaadinService.createSessionExpiredJSON(async)),
+                response), response.toString());
+    }
+
     @Test
     void componentDependencies_npmMode() throws Exception {
         UI ui = initializeUIForDependenciesTest(new TestUI());
@@ -450,13 +476,7 @@ class UidlWriterTest {
 
         // no dependencies should be resent in next response
         ObjectNode response = uidlWriter.createUidl(ui, false);
-        Set<String> chunks = getDependenciesMap(response).keySet().stream()
-                .filter(key -> key
-                        .startsWith("return window.Vaadin.Flow.loadOnDemand('"))
-                .map(key -> key
-                        .replace("return window.Vaadin.Flow.loadOnDemand('", "")
-                        .replace("');", ""))
-                .collect(Collectors.toSet());
+        Set<String> chunks = getChunkIds(response);
 
         Set<String> expectedChunks = Stream
                 .of(TestUI.class, BaseClass.class, ChildComponent.class,
@@ -477,13 +497,7 @@ class UidlWriterTest {
         ui.add(new UsingComponent());
 
         ObjectNode response = uidlWriter.createUidl(ui, false);
-        Set<String> chunks = getDependenciesMap(response).keySet().stream()
-                .filter(key -> key
-                        .startsWith("return window.Vaadin.Flow.loadOnDemand('"))
-                .map(key -> key
-                        .replace("return window.Vaadin.Flow.loadOnDemand('", "")
-                        .replace("');", ""))
-                .collect(Collectors.toSet());
+        Set<String> chunks = getChunkIds(response);
 
         Set<String> expectedChunks = Stream
                 .of(TestUI.class, BaseClass.class, UsingComponent.class,
@@ -504,19 +518,34 @@ class UidlWriterTest {
 
         // no dependencies should be resent in next response
         ObjectNode response = uidlWriter.createUidl(ui, false);
-        Set<String> chunks = getDependenciesMap(response).keySet().stream()
-                .filter(key -> key
-                        .startsWith("return window.Vaadin.Flow.loadOnDemand('"))
-                .map(key -> key
-                        .replace("return window.Vaadin.Flow.loadOnDemand('", "")
-                        .replace("');", ""))
-                .collect(Collectors.toSet());
+        Set<String> chunks = getChunkIds(response);
 
         Set<String> expectedChunks = Stream
                 .of(TestUI.class, BaseClass.class, ChildComponent.class)
                 .map(BundleUtils::getChunkId).collect(Collectors.toSet());
 
         assertEquals(expectedChunks, chunks);
+    }
+
+    @Test
+    void dynamicImports_expressionSentAsString_functionSentAsValue()
+            throws Exception {
+        UI ui = initializeUIForDependenciesTest(new TestUI());
+        UidlWriter uidlWriter = new UidlWriter();
+        addInitialComponentDependencies(ui, uidlWriter);
+        JsFunction function = JsFunction.of("return import($0)", "x.js");
+
+        ui.getPage().addDynamicImport("return import('y.js')");
+        ui.getPage().addDynamicImport(function);
+        ObjectNode response = uidlWriter.createUidl(ui, false);
+
+        List<JsonNode> urls = JacksonUtils
+                .<ObjectNode> stream(
+                        (ArrayNode) response.get(LoadMode.LAZY.name()))
+                .map(dependency -> dependency.get(Dependency.KEY_URL)).toList();
+        assertEquals(List.of(
+                JacksonUtils.getMapper().valueToTree("return import('y.js')"),
+                JacksonCodec.encodeWithTypeInfo(function)), urls);
     }
 
     @Test
@@ -531,8 +560,7 @@ class UidlWriterTest {
                 new ChildComponent());
 
         ObjectNode response = uidlWriter.createUidl(ui, false);
-        Map<String, ObjectNode> dependenciesMap = ComponentTest
-                .filterLazyLoading(getDependenciesMap(response));
+        Map<String, ObjectNode> dependenciesMap = getDependenciesMap(response);
 
         assertEquals(4, dependenciesMap.size());
         assertDependency("context://childinterface1-" + CSS_STYLE_NAME,
@@ -565,9 +593,7 @@ class UidlWriterTest {
                             result.addAll(list2);
                             return result;
                         }));
-        dependenciesMap.get(LoadMode.LAZY)
-                .removeIf(obj -> obj.get(Dependency.KEY_URL).textValue()
-                        .contains("Flow.loadOnDemand"));
+        dependenciesMap.get(LoadMode.LAZY).removeIf(UidlWriterTest::isChunk);
         assertThat(
                 "Dependencies with all types of load mode should be present in this response",
                 dependenciesMap.size(), is(LoadMode.values().length));
@@ -579,7 +605,7 @@ class UidlWriterTest {
         assertThat("Eager dependencies should not have inline contents",
                 eagerDependencies.stream()
                         .filter(json -> json.has(Dependency.KEY_CONTENTS))
-                        .collect(Collectors.toList()),
+                        .toList(),
                 hasSize(0));
 
         ObjectNode eagerDependency = eagerDependencies.get(0);
@@ -613,6 +639,7 @@ class UidlWriterTest {
         ObjectNode lazyCss = JacksonUtils
                 .<ObjectNode> stream(
                         (ArrayNode) response.get(LoadMode.LAZY.name()))
+                .filter(dependency -> !isChunk(dependency))
                 .filter(dependency -> "context://lazy.css"
                         .equals(dependency.get(Dependency.KEY_URL).textValue()))
                 .findFirst().orElseThrow();
@@ -685,8 +712,7 @@ class UidlWriterTest {
 
         // LAZY stylesheet should have hash
         List<ObjectNode> lazyDeps = dependenciesMap.get(LoadMode.LAZY);
-        lazyDeps.removeIf(obj -> obj.get(Dependency.KEY_URL).textValue()
-                .contains("Flow.loadOnDemand"));
+        lazyDeps.removeIf(UidlWriterTest::isChunk);
         ObjectNode lazyCss = lazyDeps.stream()
                 .filter(d -> Dependency.Type.STYLESHEET.name()
                         .equals(d.get(Dependency.KEY_TYPE).textValue()))
@@ -759,8 +785,7 @@ class UidlWriterTest {
                 hasSize(1));
         assertThat("Eager dependencies should not have urls",
                 inlineDependencies.stream()
-                        .filter(json -> json.has(Dependency.KEY_URL))
-                        .collect(Collectors.toList()),
+                        .filter(json -> json.has(Dependency.KEY_URL)).toList(),
                 hasSize(0));
 
         ObjectNode inlineDependency = inlineDependencies.get(0);
@@ -777,7 +802,7 @@ class UidlWriterTest {
         VaadinServletContext context = (VaadinServletContext) mocks.getService()
                 .getContext();
         Lookup lookup = context.getAttribute(Lookup.class);
-        Mockito.when(lookup.lookup(RoutePathProvider.class))
+        when(lookup.lookup(RoutePathProvider.class))
                 .thenReturn(new RoutePathProviderImpl());
 
         VaadinSession session = mocks.getSession();
@@ -820,8 +845,7 @@ class UidlWriterTest {
         ui.add(new ActualComponent());
 
         ObjectNode response = uidlWriter.createUidl(ui, false);
-        Map<String, ObjectNode> dependenciesMap = ComponentTest
-                .filterLazyLoading(getDependenciesMap(response));
+        Map<String, ObjectNode> dependenciesMap = getDependenciesMap(response);
 
         assertEquals(4, dependenciesMap.size());
 
@@ -841,12 +865,35 @@ class UidlWriterTest {
     }
 
     private Map<String, ObjectNode> getDependenciesMap(ObjectNode response) {
-        return Stream.of(LoadMode.values())
-                .map(mode -> (ArrayNode) response.get(mode.name()))
-                .flatMap(JacksonUtils::<ObjectNode> stream)
+        return getDependencies(response)
+                .filter(dependency -> !isChunk(dependency))
                 .collect(Collectors.toMap(jsonObject -> jsonObject
                         .get(Dependency.KEY_URL).textValue(),
                         Function.identity()));
+    }
+
+    private Set<String> getChunkIds(ObjectNode response)
+            throws NoSuchMethodException {
+        String loadChunkId = JsCall.functionId(
+                UIInternals.ChunkJs.class.getMethod("loadChunk", String.class));
+        return getDependencies(response).filter(UidlWriterTest::isChunk)
+                .map(dependency -> {
+                    JsonNode function = dependency.get(Dependency.KEY_URL)
+                            .get("@v-fn");
+                    assertEquals(loadChunkId, function.get("id").asString());
+                    return function.get("captures").get(0).asString();
+                }).collect(Collectors.toSet());
+    }
+
+    private static Stream<ObjectNode> getDependencies(ObjectNode response) {
+        return Stream.of(LoadMode.values())
+                .map(mode -> (ArrayNode) response.get(mode.name()))
+                .flatMap(JacksonUtils::<ObjectNode> stream);
+    }
+
+    private static boolean isChunk(ObjectNode dependency) {
+        return Dependency.Type.DYNAMIC_IMPORT.name()
+                .equals(dependency.get(Dependency.KEY_TYPE).textValue());
     }
 
     private void assertDependency(String url, String type,

@@ -26,6 +26,7 @@
 
 import type { StateNode } from '../StateNode';
 import type { StateTree } from '../StateTree';
+import { describeMissingFunction, findDeclaredSnippet } from './DeclaredJavaScript';
 
 type JsFunction = (...args: unknown[]) => unknown;
 
@@ -145,16 +146,50 @@ function decodeArrayWithTypeInfo(tree: StateTree, jsonArray: unknown[]): unknown
   return jsonArray.map((value) => decodeWithTypeInfo(tree, value));
 }
 
-function decodeJsFunction(tree: StateTree, fnObject: Record<string, unknown>, originalJson: string): unknown {
-  const body = fnObject.body;
-  if (typeof body !== 'string') {
-    throw new Error(`@v-fn 'body' must be a string in ${originalJson}`);
+/**
+ * Evaluates a snippet declared by a JavaScript definition: the bundle has a
+ * function for it, which takes the captures and returns the value, so nothing
+ * is compiled from a string. Each decode evaluates it again, so every
+ * invocation that is passed the snippet gets a value of its own.
+ *
+ * A function missing from the bundle is reported when the value is called
+ * rather than when it is decoded, instead of failing the decoding of everything
+ * else the invocation is sent with. The error goes wherever the call is made:
+ * to the error channel of an invocation that calls the value, or only to the
+ * console when, for instance, an event listener calls it.
+ */
+export function evaluateDeclaredSnippet(functionId: string, captures: unknown[]): unknown {
+  const snippet = findDeclaredSnippet(functionId);
+  if (snippet === undefined) {
+    const message = describeMissingFunction(functionId);
+    return () => {
+      throw new Error(message);
+    };
   }
+  return snippet(...captures);
+}
+
+function decodeJsFunction(tree: StateTree, fnObject: Record<string, unknown>, originalJson: string): unknown {
   const capturesValue = fnObject.captures;
   if (!Array.isArray(capturesValue)) {
     throw new Error(`@v-fn 'captures' must be an array in ${originalJson}`);
   }
   const captures = capturesValue.map((capture) => decodeWithTypeInfo(tree, capture));
+
+  // A function declared by a JavaScript definition is named by the identifier
+  // of its function in the bundle instead of carrying a body
+  const id = fnObject.id;
+  if (id !== undefined) {
+    if (typeof id !== 'string') {
+      throw new Error(`@v-fn 'id' must be a string in ${originalJson}`);
+    }
+    return evaluateDeclaredSnippet(id, captures);
+  }
+
+  const body = fnObject.body;
+  if (typeof body !== 'string') {
+    throw new Error(`@v-fn 'body' must be a string in ${originalJson}`);
+  }
 
   // Optional 'args' field: names of runtime parameters the manifested function
   // should accept at call time, after the bound captures.
@@ -184,10 +219,46 @@ function decodeJsFunction(tree: StateTree, fnObject: Record<string, unknown>, or
 }
 
 /**
+ * Returns a copy of the value where each `@v-node` reference to a state node
+ * that is not in the tree is replaced by null.
+ */
+function copyWithoutRemovedNodes(tree: StateTree, value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map((item) => copyWithoutRemovedNodes(tree, item));
+  }
+  if (!isPlainObject(value)) {
+    return value;
+  }
+  const nodeId = value['@v-node'];
+  if (typeof nodeId === 'number' && tree.getNode(nodeId) === null) {
+    return null;
+  }
+  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, copyWithoutRemovedNodes(tree, item)]));
+}
+
+/**
+ * Decodes a copy of a value encoded on the server, like
+ * {@link decodeWithTypeInfo}, with two differences:
+ * - A reference to a state node that is not in the tree decodes to null. It
+ *   does not throw.
+ * - The given value is not changed. Use this for a value that is decoded more
+ *   than once, for example the captures of an event listener, which are
+ *   decoded for every event.
+ *
+ * @param tree - the state tree to use for resolving nodes and elements
+ * @param json - the JSON value to decode
+ * @returns the decoded value
+ */
+export function decodeCopyWithTypeInfo(tree: StateTree, json: unknown): unknown {
+  return decodeWithTypeInfo(tree, copyWithoutRemovedNodes(tree, json));
+}
+
+/**
  * Decodes a value encoded on the server using
  * `JacksonCodec.encodeWithTypeInfo`: element references (`@v-node` → the DOM
  * node), return channels (`@v-return` → a callback that messages the server),
- * manifested functions (`@v-fn`), and nested objects/arrays (decoded
+ * manifested functions (`@v-fn`, compiled from a body or evaluated from the
+ * bundle), and nested objects/arrays (decoded
  * recursively); other values pass through unchanged. Mirrors
  * ClientJsonCodec.decodeWithTypeInfo.
  *

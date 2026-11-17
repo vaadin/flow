@@ -22,12 +22,13 @@ import java.io.InputStream;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.function.ContentTypeResolver;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class StreamResourceTest {
 
@@ -80,8 +81,8 @@ class StreamResourceTest {
 
     private void assertContentType(StreamResource resource,
             ContentTypeResolver resolver) {
-        ServletContext context = Mockito.mock(ServletContext.class);
-        Mockito.when(context.getMimeType("foo")).thenReturn("bar");
+        ServletContext context = mock(ServletContext.class);
+        when(context.getMimeType("foo")).thenReturn("bar");
         String mimeType = resolver.apply(resource, context);
 
         assertEquals("bar", mimeType);

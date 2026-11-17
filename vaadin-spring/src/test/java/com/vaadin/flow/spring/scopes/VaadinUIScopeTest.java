@@ -18,7 +18,6 @@ package com.vaadin.flow.spring.scopes;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
 
@@ -31,7 +30,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -68,7 +69,7 @@ class VaadinUIScopeTest extends AbstractUIScopedTest {
         mockSession();
 
         assertThrows(IllegalStateException.class, () -> {
-            scope.get("foo", Mockito.mock(ObjectFactory.class));
+            scope.get("foo", mock(ObjectFactory.class));
         });
     }
 
@@ -78,8 +79,7 @@ class VaadinUIScopeTest extends AbstractUIScopedTest {
         mockSession();
 
         assertThrows(IllegalStateException.class, () -> {
-            scope.registerDestructionCallback("foo",
-                    Mockito.mock(Runnable.class));
+            scope.registerDestructionCallback("foo", mock(Runnable.class));
         });
     }
 
@@ -101,11 +101,10 @@ class VaadinUIScopeTest extends AbstractUIScopedTest {
         VaadinSession session = VaadinSession.getCurrent();
         VaadinService service = session.getService();
 
-        doCallRealMethod().when(session)
-                .addSessionDestroyListener(Mockito.any());
+        doCallRealMethod().when(session).addSessionDestroyListener(any());
         doCallRealMethod().when(session).getLockInstance();
         doCallRealMethod().when(session).getPendingAccessQueue();
-        doCallRealMethod().when(session).access(Mockito.any());
+        doCallRealMethod().when(session).access(any());
 
         VaadinUIScope scope = new VaadinUIScope();
 
@@ -114,7 +113,7 @@ class VaadinUIScopeTest extends AbstractUIScopedTest {
 
         Object object = new Object();
 
-        ObjectFactory factory = Mockito.mock(ObjectFactory.class);
+        ObjectFactory factory = mock(ObjectFactory.class);
         when(factory.getObject()).thenReturn(object);
         scope.get("foo", factory);
 
@@ -152,7 +151,7 @@ class VaadinUIScopeTest extends AbstractUIScopedTest {
 
         Object object = new Object();
 
-        ObjectFactory factory = Mockito.mock(ObjectFactory.class);
+        ObjectFactory factory = mock(ObjectFactory.class);
         when(factory.getObject()).thenReturn(object);
         scope.get("foo", factory);
 
@@ -182,7 +181,7 @@ class VaadinUIScopeTest extends AbstractUIScopedTest {
 
         Object object = new Object();
 
-        ObjectFactory factory = Mockito.mock(ObjectFactory.class);
+        ObjectFactory factory = mock(ObjectFactory.class);
         when(factory.getObject()).thenReturn(object);
         scope.get("foo", factory);
 

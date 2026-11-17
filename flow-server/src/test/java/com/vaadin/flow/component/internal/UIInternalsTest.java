@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Component;
@@ -64,6 +63,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class UIInternalsTest {
 
@@ -139,21 +144,21 @@ class UIInternalsTest {
     void init() {
         MockitoAnnotations.initMocks(this);
 
-        Mockito.when(ui.getUI()).thenReturn(Optional.of(ui));
-        Mockito.when(ui.getUIOrThrow()).thenCallRealMethod();
+        when(ui.getUI()).thenReturn(Optional.of(ui));
+        when(ui.getUIOrThrow()).thenCallRealMethod();
         Element body = new Element("body");
-        Mockito.when(ui.getElement()).thenReturn(body);
+        when(ui.getElement()).thenReturn(body);
 
         vaadinService = new MockVaadinServletService();
         internals = new UIInternals(ui);
         AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
                 vaadinService);
         internals.setSession(session);
-        Mockito.when(ui.getSession()).thenReturn(session);
-        Mockito.when(ui.getSessionOrThrow()).thenCallRealMethod();
-        Mockito.when(ui.getInternals()).thenReturn(internals);
+        when(ui.getSession()).thenReturn(session);
+        when(ui.getSessionOrThrow()).thenCallRealMethod();
+        when(ui.getInternals()).thenReturn(internals);
         Page page = new Page(ui);
-        Mockito.when(ui.getPage()).thenReturn(page);
+        when(ui.getPage()).thenReturn(page);
     }
 
     @Test
@@ -208,10 +213,10 @@ class UIInternalsTest {
     void showRouteTarget_clientSideBootstrap() {
         PushConfiguration pushConfig = setUpInitialPush();
 
-        internals.showRouteTarget(Mockito.mock(Location.class),
-                new RouteTarget(), Collections.emptyList());
+        internals.showRouteTarget(mock(Location.class), new RouteTarget(),
+                Collections.emptyList());
 
-        Mockito.verify(pushConfig, Mockito.never()).setPushMode(Mockito.any());
+        verify(pushConfig, never()).setPushMode(any());
     }
 
     @Test
@@ -224,7 +229,7 @@ class UIInternalsTest {
         List<RouterLayout> oldLayouts = Arrays.asList(subLayout, mainLayout);
         List<RouterLayout> newLayouts = Collections.singletonList(mainLayout);
 
-        Location location = Mockito.mock(Location.class);
+        Location location = mock(Location.class);
         setUpInitialPush();
 
         internals.showRouteTarget(location, firstView, oldLayouts);
@@ -285,7 +290,7 @@ class UIInternalsTest {
         List<RouterLayout> newLayouts = Collections
                 .singletonList(anotherLayout);
 
-        Location location = Mockito.mock(Location.class);
+        Location location = mock(Location.class);
         setUpInitialPush();
 
         // Initial navigation
@@ -580,8 +585,8 @@ class UIInternalsTest {
 
     @Test
     void isDirty_noPendingJsInvocation_returnsFalse() {
-        StateNode node1 = Mockito.spy(new StateNode(ElementData.class));
-        StateNode node2 = Mockito.spy(new StateNode(ElementData.class));
+        StateNode node1 = spy(new StateNode(ElementData.class));
+        StateNode node2 = spy(new StateNode(ElementData.class));
         node2.getFeature(ElementData.class).setVisible(false);
         ElementChildrenList childrenList = internals.getStateTree()
                 .getRootNode().getFeature(ElementChildrenList.class);
@@ -599,8 +604,8 @@ class UIInternalsTest {
 
     @Test
     void isDirty_pendingJsInvocationReadyToSend_returnsTrue() {
-        StateNode node1 = Mockito.spy(new StateNode(ElementData.class));
-        StateNode node2 = Mockito.spy(new StateNode(ElementData.class));
+        StateNode node1 = spy(new StateNode(ElementData.class));
+        StateNode node2 = spy(new StateNode(ElementData.class));
         node2.getFeature(ElementData.class).setVisible(false);
         ElementChildrenList childrenList = internals.getStateTree()
                 .getRootNode().getFeature(ElementChildrenList.class);
@@ -622,8 +627,8 @@ class UIInternalsTest {
 
     @Test
     void isDirty_pendingJsInvocationNotReadyToSend_returnsFalse() {
-        StateNode node1 = Mockito.spy(new StateNode(ElementData.class));
-        StateNode node2 = Mockito.spy(new StateNode(ElementData.class));
+        StateNode node1 = spy(new StateNode(ElementData.class));
+        StateNode node2 = spy(new StateNode(ElementData.class));
         node2.getFeature(ElementData.class).setVisible(false);
         ElementChildrenList childrenList = internals.getStateTree()
                 .getRootNode().getFeature(ElementChildrenList.class);
@@ -729,36 +734,35 @@ class UIInternalsTest {
     }
 
     private PushConfiguration setUpInitialPush() {
-        DeploymentConfiguration config = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration config = mock(DeploymentConfiguration.class);
         vaadinService.setConfiguration(config);
 
-        PushConfiguration pushConfig = Mockito.mock(PushConfiguration.class);
-        Mockito.when(ui.getPushConfiguration()).thenReturn(pushConfig);
+        PushConfiguration pushConfig = mock(PushConfiguration.class);
+        when(ui.getPushConfiguration()).thenReturn(pushConfig);
 
-        Mockito.when(config.getPushMode()).thenReturn(PushMode.DISABLED);
+        when(config.getPushMode()).thenReturn(PushMode.DISABLED);
         return pushConfig;
     }
 
     @Test
     void getDeploymentConfiguration() {
-        AlwaysLockedVaadinSession session = Mockito
-                .mock(AlwaysLockedVaadinSession.class);
-        MockVaadinServletService mockVaadinServletService = Mockito
-                .mock(MockVaadinServletService.class);
+        AlwaysLockedVaadinSession session = mock(
+                AlwaysLockedVaadinSession.class);
+        MockVaadinServletService mockVaadinServletService = mock(
+                MockVaadinServletService.class);
 
         internals = new UIInternals(ui);
         internals.setSession(session);
 
-        Mockito.when(session.getService()).thenReturn(mockVaadinServletService);
+        when(session.getService()).thenReturn(mockVaadinServletService);
         DeploymentConfiguration config = new MockDeploymentConfiguration();
-        Mockito.when(mockVaadinServletService.getDeploymentConfiguration())
+        when(mockVaadinServletService.getDeploymentConfiguration())
                 .thenReturn(config);
 
         DeploymentConfiguration result = internals.getDeploymentConfiguration();
 
-        Mockito.verify(session).getService();
-        Mockito.verify(mockVaadinServletService).getDeploymentConfiguration();
+        verify(session).getService();
+        verify(mockVaadinServletService).getDeploymentConfiguration();
         assertEquals(config, result);
     }
 

@@ -22,13 +22,13 @@ import java.nio.file.Files;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class TaskGenerateTailwindJsTest {
 
@@ -45,7 +45,7 @@ class TaskGenerateTailwindJsTest {
                 .toFile();
         frontendGeneratedFolder = new File(npmFolder, "src/frontend-generated");
         frontendGeneratedFolder.mkdirs();
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+        Options options = new Options(mock(Lookup.class), npmFolder)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder);
         taskGenerateTailwindJs = new TaskGenerateTailwindJs(options);
     }

@@ -22,14 +22,12 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 
@@ -44,6 +42,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class TaskInstallFrontendBuildPluginsTest {
 
@@ -59,7 +58,7 @@ class TaskInstallFrontendBuildPluginsTest {
     void init() throws IOException {
         rootFolder = Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
                 .toFile();
-        Options options = new Options(Mockito.mock(Lookup.class), rootFolder)
+        Options options = new Options(mock(Lookup.class), rootFolder)
                 .withBuildDirectory(TARGET);
         task = new TaskInstallFrontendBuildPlugins(options);
     }
@@ -156,7 +155,7 @@ class TaskInstallFrontendBuildPluginsTest {
         final List<String> pluginFiles = Arrays
                 .stream(pluginFolder.listFiles((dir, name) -> FilenameUtils
                         .getExtension(name).equals("js")))
-                .map(file -> file.getName()).collect(Collectors.toList());
+                .map(file -> file.getName()).toList();
         for (String fileName : pluginFiles) {
             assertTrue(fileNames.contains(fileName), String.format(
                     "Plugin '%s' doesn't define script file '%s' in package.json files",

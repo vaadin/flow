@@ -27,14 +27,11 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
@@ -48,6 +45,8 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.Layout;
@@ -88,9 +87,15 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class HotswapperTest {
@@ -107,20 +112,20 @@ class HotswapperTest {
         service = new MockVaadinServletService();
         lookup = service.getLookup();
 
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.isProductionMode()).then(
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
+        when(appConfig.isProductionMode()).then(
                 i -> service.getDeploymentConfiguration().isProductionMode());
-        Mockito.when(lookup.lookup(ApplicationConfigurationFactory.class))
+        when(lookup.lookup(ApplicationConfigurationFactory.class))
                 .thenReturn(context -> appConfig);
 
-        liveReload = Mockito.mock(BrowserLiveReload.class);
-        Mockito.when(lookup.lookup(BrowserLiveReloadAccessor.class))
+        liveReload = mock(BrowserLiveReload.class);
+        when(lookup.lookup(BrowserLiveReloadAccessor.class))
                 .thenReturn(context -> liveReload);
 
-        flowHotswapper = Mockito.mock(VaadinHotswapper.class);
-        hillaHotswapper = Mockito.mock(VaadinHotswapper.class);
-        Mockito.when(lookup.lookupAll(VaadinHotswapper.class))
+        flowHotswapper = mock(VaadinHotswapper.class);
+        hillaHotswapper = mock(VaadinHotswapper.class);
+        when(lookup.lookupAll(VaadinHotswapper.class))
                 .thenReturn(List.of(flowHotswapper, hillaHotswapper));
 
         hotswapper = new Hotswapper(service);
@@ -128,25 +133,25 @@ class HotswapperTest {
 
     @Test
     void onHotswap_nullArguments_hotswappersNotInvoked() {
-        Mockito.reset(flowHotswapper, hillaHotswapper);
+        reset(flowHotswapper, hillaHotswapper);
         hotswapper.onHotswap(null, true);
-        Mockito.verifyNoInteractions(flowHotswapper, hillaHotswapper);
+        verifyNoInteractions(flowHotswapper, hillaHotswapper);
     }
 
     @Test
     void onHotswap_emptyArguments_hotswappersNotInvoked() {
-        Mockito.reset(flowHotswapper, hillaHotswapper);
+        reset(flowHotswapper, hillaHotswapper);
         hotswapper.onHotswap(new String[0], true);
-        Mockito.verifyNoInteractions(flowHotswapper, hillaHotswapper);
+        verifyNoInteractions(flowHotswapper, hillaHotswapper);
     }
 
     @Test
     void onHotswap_serviceDestroyed_hotswappersNotInvoked() {
-        Mockito.reset(flowHotswapper, hillaHotswapper);
+        reset(flowHotswapper, hillaHotswapper);
         hotswapper.serviceDestroy(new ServiceDestroyEvent(service));
         hotswapper.onHotswap(new String[] { Integer.class.getName(),
                 String.class.getName() }, true);
-        Mockito.verifyNoInteractions(flowHotswapper, hillaHotswapper);
+        verifyNoInteractions(flowHotswapper, hillaHotswapper);
     }
 
     private HotswapClassEvent hotswapClassEvent(VaadinService vaadinService,
@@ -182,27 +187,27 @@ class HotswapperTest {
                 Set.of(Integer.class, String.class, java.io.File.class));
         hotswapper.onHotswap(toClassNameArray(classes), true);
 
-        Mockito.verify(flowHotswapper)
+        verify(flowHotswapper)
                 .onClassesChange(hotswapClassEvent(service, classes, true));
-        Mockito.verify(flowHotswapper, never())
+        verify(flowHotswapper, never())
                 .onClassesChange(any(HotswapClassSessionEvent.class));
-        Mockito.verify(hillaHotswapper)
+        verify(hillaHotswapper)
                 .onClassesChange(hotswapClassEvent(service, classes, true));
-        Mockito.verify(hillaHotswapper, never())
+        verify(hillaHotswapper, never())
                 .onClassesChange(any(HotswapClassSessionEvent.class));
 
-        Mockito.reset(flowHotswapper, hillaHotswapper);
+        reset(flowHotswapper, hillaHotswapper);
 
         classes = new HashSet<>(Set.of(BigDecimal.class, Long.class));
         hotswapper.onHotswap(toClassNameArray(classes), false);
 
-        Mockito.verify(flowHotswapper)
+        verify(flowHotswapper)
                 .onClassesChange(hotswapClassEvent(service, classes, false));
-        Mockito.verify(flowHotswapper, never())
+        verify(flowHotswapper, never())
                 .onClassesChange(any(HotswapClassSessionEvent.class));
-        Mockito.verify(hillaHotswapper)
+        verify(hillaHotswapper)
                 .onClassesChange(hotswapClassEvent(service, classes, false));
-        Mockito.verify(hillaHotswapper, never())
+        verify(hillaHotswapper, never())
                 .onClassesChange(any(HotswapClassSessionEvent.class));
 
         HotswapCompleteEvent hotswapCompleteEvent = new HotswapCompleteEvent(
@@ -221,61 +226,61 @@ class HotswapperTest {
         hotswapper.sessionInit(new SessionInitEvent(service, sessionA, null));
 
         hotswapper.onHotswap(toClassNameArray(classes), true);
-        Mockito.verify(flowHotswapper)
+        verify(flowHotswapper)
                 .onClassesChange(hotswapClassEvent(service, classes, true));
-        Mockito.verify(flowHotswapper).onClassesChange(
+        verify(flowHotswapper).onClassesChange(
                 hotswapClassSessionEvent(service, sessionA, classes, true));
-        Mockito.verify(hillaHotswapper)
+        verify(hillaHotswapper)
                 .onClassesChange(hotswapClassEvent(service, classes, true));
-        Mockito.verify(hillaHotswapper).onClassesChange(
+        verify(hillaHotswapper).onClassesChange(
                 hotswapClassSessionEvent(service, sessionA, classes, true));
 
-        Mockito.reset(flowHotswapper, hillaHotswapper);
+        reset(flowHotswapper, hillaHotswapper);
         VaadinSession sessionB = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, sessionB, null));
         hotswapper.onHotswap(toClassNameArray(classes), true);
 
-        Mockito.verify(flowHotswapper)
+        verify(flowHotswapper)
                 .onClassesChange(hotswapClassEvent(service, classes, true));
-        Mockito.verify(flowHotswapper).onClassesChange(
+        verify(flowHotswapper).onClassesChange(
                 hotswapClassSessionEvent(service, sessionA, classes, true));
-        Mockito.verify(flowHotswapper).onClassesChange(
+        verify(flowHotswapper).onClassesChange(
                 hotswapClassSessionEvent(service, sessionB, classes, true));
-        Mockito.verify(hillaHotswapper)
+        verify(hillaHotswapper)
                 .onClassesChange(hotswapClassEvent(service, classes, true));
-        Mockito.verify(hillaHotswapper).onClassesChange(
+        verify(hillaHotswapper).onClassesChange(
                 hotswapClassSessionEvent(service, sessionA, classes, true));
-        Mockito.verify(hillaHotswapper).onClassesChange(
+        verify(hillaHotswapper).onClassesChange(
                 hotswapClassSessionEvent(service, sessionB, classes, true));
 
-        Mockito.reset(flowHotswapper, hillaHotswapper);
+        reset(flowHotswapper, hillaHotswapper);
         hotswapper.sessionDestroy(new SessionDestroyEvent(service, sessionA));
         hotswapper.onHotswap(toClassNameArray(classes), true);
 
-        Mockito.verify(flowHotswapper)
+        verify(flowHotswapper)
                 .onClassesChange(hotswapClassEvent(service, classes, true));
-        Mockito.verify(flowHotswapper, never()).onClassesChange(
+        verify(flowHotswapper, never()).onClassesChange(
                 hotswapClassSessionEvent(service, sessionA, classes, true));
-        Mockito.verify(flowHotswapper).onClassesChange(
+        verify(flowHotswapper).onClassesChange(
                 hotswapClassSessionEvent(service, sessionB, classes, true));
-        Mockito.verify(hillaHotswapper)
+        verify(hillaHotswapper)
                 .onClassesChange(hotswapClassEvent(service, classes, true));
-        Mockito.verify(hillaHotswapper, never()).onClassesChange(
+        verify(hillaHotswapper, never()).onClassesChange(
                 hotswapClassSessionEvent(service, sessionA, classes, true));
-        Mockito.verify(hillaHotswapper).onClassesChange(
+        verify(hillaHotswapper).onClassesChange(
                 hotswapClassSessionEvent(service, sessionB, classes, true));
 
-        Mockito.reset(flowHotswapper, hillaHotswapper);
+        reset(flowHotswapper, hillaHotswapper);
         hotswapper.sessionDestroy(new SessionDestroyEvent(service, sessionB));
         hotswapper.onHotswap(toClassNameArray(classes), true);
 
-        Mockito.verify(flowHotswapper)
+        verify(flowHotswapper)
                 .onClassesChange(hotswapClassEvent(service, classes, true));
-        Mockito.verify(flowHotswapper, never())
+        verify(flowHotswapper, never())
                 .onClassesChange(any(HotswapClassSessionEvent.class));
-        Mockito.verify(hillaHotswapper)
+        verify(hillaHotswapper)
                 .onClassesChange(hotswapClassEvent(service, classes, true));
-        Mockito.verify(hillaHotswapper, never())
+        verify(hillaHotswapper, never())
                 .onClassesChange(any(HotswapClassSessionEvent.class));
 
         HotswapCompleteEvent hotswapCompleteEvent = new HotswapCompleteEvent(
@@ -295,7 +300,7 @@ class HotswapperTest {
         optedIn.get(Integer.class);
 
         List<Boolean> cachedDuringHotswap = new ArrayList<>();
-        Mockito.doAnswer(i -> {
+        doAnswer(i -> {
             cachedDuringHotswap.add(regular.contains(String.class));
             cachedDuringHotswap.add(optedIn.contains(String.class));
             cachedDuringHotswap.add(optedIn.contains(Integer.class));
@@ -323,53 +328,53 @@ class HotswapperTest {
         hotswapper.onHotswap(new String[] { String.class.getName() }, true);
 
         Set<Class<?>> classes = Set.of(String.class);
-        Mockito.verify(flowHotswapper).onClassesChange(
+        verify(flowHotswapper).onClassesChange(
                 hotswapClassSessionEvent(service, sessionA, classes, true));
-        Mockito.verify(flowHotswapper).onClassesChange(
+        verify(flowHotswapper).onClassesChange(
                 hotswapClassSessionEvent(service, sessionB, classes, true));
-        Mockito.verify(hillaHotswapper)
+        verify(hillaHotswapper)
                 .onClassesChange(hotswapClassEvent(service, classes, true));
-        Mockito.verify(hillaHotswapper).onClassesChange(
+        verify(hillaHotswapper).onClassesChange(
                 hotswapClassSessionEvent(service, sessionB, classes, true));
     }
 
     @Test
     void onHotswap_forcedReload_liveReloadTriggered() {
-        Mockito.doAnswer(i -> {
+        doAnswer(i -> {
             i.getArgument(0, HotswapClassEvent.class)
                     .triggerUpdate(UIUpdateStrategy.RELOAD);
             return null;
         }).when(flowHotswapper).onClassesChange(any(HotswapClassEvent.class));
         hotswapper.onHotswap(new String[] { String.class.getName() }, true);
-        Mockito.verify(liveReload).reload();
+        verify(liveReload).reload();
     }
 
     @Test
     void onHotswap_backwardCompatibility_forcedReload_liveReloadTriggered() {
-        Mockito.doCallRealMethod().when(flowHotswapper)
+        doCallRealMethod().when(flowHotswapper)
                 .onClassesChange(any(HotswapClassEvent.class));
-        Mockito.doCallRealMethod().when(flowHotswapper)
+        doCallRealMethod().when(flowHotswapper)
                 .onClassesChange(any(HotswapClassSessionEvent.class));
-        Mockito.when(flowHotswapper.onClassLoadEvent(any(VaadinService.class),
-                anySet(), anyBoolean())).thenReturn(true);
+        when(flowHotswapper.onClassLoadEvent(any(VaadinService.class), anySet(),
+                anyBoolean())).thenReturn(true);
         hotswapper.onHotswap(new String[] { String.class.getName() }, true);
-        Mockito.verify(liveReload).reload();
+        verify(liveReload).reload();
     }
 
     @Test
     void onHotswap_backwardCompatibilitySession_forcedReload_liveReloadTriggered()
             throws ServiceException {
-        Mockito.doCallRealMethod().when(flowHotswapper)
+        doCallRealMethod().when(flowHotswapper)
                 .onClassesChange(any(HotswapClassEvent.class));
-        Mockito.doCallRealMethod().when(flowHotswapper)
+        doCallRealMethod().when(flowHotswapper)
                 .onClassesChange(any(HotswapClassSessionEvent.class));
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
 
-        Mockito.when(flowHotswapper.onClassLoadEvent(any(VaadinSession.class),
-                anySet(), anyBoolean())).thenReturn(true);
+        when(flowHotswapper.onClassLoadEvent(any(VaadinSession.class), anySet(),
+                anyBoolean())).thenReturn(true);
         hotswapper.onHotswap(new String[] { String.class.getName() }, true);
-        Mockito.verify(liveReload).reload();
+        verify(liveReload).reload();
     }
 
     @Test
@@ -379,7 +384,7 @@ class HotswapperTest {
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
         RefreshTestingUI ui = initUIAndNavigateTo(session, MyRoute.class);
 
-        Mockito.doAnswer(i -> {
+        doAnswer(i -> {
             i.getArgument(0, HotswapClassEvent.class)
                     .triggerUpdate(UIUpdateStrategy.RELOAD);
             return null;
@@ -387,8 +392,8 @@ class HotswapperTest {
 
         hotswapper.onHotswap(new String[] { String.class.getName() }, true);
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -398,7 +403,7 @@ class HotswapperTest {
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
         RefreshTestingUI ui = initUIAndNavigateTo(session, MyRoute.class);
 
-        Mockito.doAnswer(i -> {
+        doAnswer(i -> {
             i.getArgument(0, HotswapClassEvent.class)
                     .triggerUpdate(UIUpdateStrategy.REFRESH);
             return null;
@@ -406,8 +411,8 @@ class HotswapperTest {
 
         hotswapper.onHotswap(new String[] { String.class.getName() }, true);
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).refresh(true);
-        Mockito.verify(liveReload, never()).reload();
+        verify(liveReload).refresh(true);
+        verify(liveReload, never()).reload();
     }
 
     @Test
@@ -417,7 +422,7 @@ class HotswapperTest {
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
         RefreshTestingUI ui = initUIAndNavigateTo(session, MyRoute.class);
 
-        Mockito.doAnswer(i -> {
+        doAnswer(i -> {
             i.getArgument(0, HotswapClassSessionEvent.class).triggerUpdate(ui,
                     UIUpdateStrategy.RELOAD);
             return null;
@@ -426,8 +431,8 @@ class HotswapperTest {
 
         hotswapper.onHotswap(new String[] { String.class.getName() }, true);
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -437,7 +442,7 @@ class HotswapperTest {
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
         RefreshTestingUI ui = initUIAndNavigateTo(session, MyRoute.class);
 
-        Mockito.doAnswer(i -> {
+        doAnswer(i -> {
             i.getArgument(0, HotswapClassSessionEvent.class).triggerUpdate(ui,
                     UIUpdateStrategy.REFRESH);
             return null;
@@ -446,8 +451,8 @@ class HotswapperTest {
 
         hotswapper.onHotswap(new String[] { String.class.getName() }, true);
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).refresh(true);
-        Mockito.verify(liveReload, never()).reload();
+        verify(liveReload).refresh(true);
+        verify(liveReload, never()).reload();
     }
 
     @Test
@@ -460,7 +465,7 @@ class HotswapperTest {
         hotswapper.onHotswap(new String[] { MyRoute.class.getName() }, true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).refresh(anyBoolean());
+        verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -475,7 +480,7 @@ class HotswapperTest {
                 true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).refresh(true);
+        verify(liveReload).refresh(true);
     }
 
     @Test
@@ -490,8 +495,8 @@ class HotswapperTest {
                 true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
-        Mockito.verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
     }
 
     @Test
@@ -505,7 +510,7 @@ class HotswapperTest {
         hotswapper.onHotswap(new String[] { MyLayout.class.getName() }, true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).refresh(anyBoolean());
+        verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -525,7 +530,7 @@ class HotswapperTest {
         hotswapper.onHotswap(new String[] { AutoLayout.class.getName() }, true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).refresh(anyBoolean());
+        verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -546,7 +551,7 @@ class HotswapperTest {
                 false);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).refresh(anyBoolean());
+        verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -569,7 +574,7 @@ class HotswapperTest {
         hotswapper.onHotswap(new String[] { AutoLayout.class.getName() }, true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).refresh(anyBoolean());
+        verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -593,7 +598,7 @@ class HotswapperTest {
                 false);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).refresh(anyBoolean());
+        verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -619,7 +624,7 @@ class HotswapperTest {
         hotswapper.onHotswap(new String[] { NewLayout.class.getName() }, true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).refresh(anyBoolean());
+        verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -634,7 +639,7 @@ class HotswapperTest {
                 true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).refresh(anyBoolean());
+        verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -649,8 +654,8 @@ class HotswapperTest {
                 false);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -665,7 +670,7 @@ class HotswapperTest {
                 true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).refresh(anyBoolean());
+        verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -680,8 +685,8 @@ class HotswapperTest {
                 false);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -696,7 +701,7 @@ class HotswapperTest {
                 MyLayout.class.getName() }, true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).refresh(anyBoolean());
+        verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -711,8 +716,8 @@ class HotswapperTest {
                 MyLayout.class.getName() }, false);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -727,7 +732,7 @@ class HotswapperTest {
                 true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).refresh(anyBoolean());
+        verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -742,8 +747,8 @@ class HotswapperTest {
                 false);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
 
     }
 
@@ -758,8 +763,8 @@ class HotswapperTest {
         hotswapper.onHotswap(new String[] { String.class.getName() }, true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -767,7 +772,7 @@ class HotswapperTest {
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
-        Mockito.doAnswer(i -> {
+        doAnswer(i -> {
             i.getArgument(0, HotswapClassEvent.class)
                     .triggerUpdate(UIUpdateStrategy.REFRESH);
             return null;
@@ -781,8 +786,8 @@ class HotswapperTest {
         hotswapper.onHotswap(new String[] { String.class.getName() }, true);
 
         ui.assertChainRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -794,7 +799,7 @@ class HotswapperTest {
         ui.enablePush();
 
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
-        Mockito.doAnswer(i -> {
+        doAnswer(i -> {
             i.getArgument(0, HotswapClassSessionEvent.class).triggerUpdate(ui,
                     UIUpdateStrategy.REFRESH);
             return null;
@@ -804,8 +809,8 @@ class HotswapperTest {
         hotswapper.onHotswap(new String[] { String.class.getName() }, true);
 
         ui.assertChainRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -820,8 +825,8 @@ class HotswapperTest {
         hotswapper.onHotswap(new String[] { MyRoute.class.getName() }, true);
 
         ui.assertRouteRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -838,8 +843,8 @@ class HotswapperTest {
                 true);
 
         ui.assertChainRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -874,8 +879,8 @@ class HotswapperTest {
         hotswapper.onHotswap(new String[] { MyLayout.class.getName() }, true);
 
         ui.assertChainRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -896,8 +901,8 @@ class HotswapperTest {
         hotswapper.onHotswap(new String[] { AutoLayout.class.getName() }, true);
 
         ui.assertChainRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -919,8 +924,8 @@ class HotswapperTest {
                 false);
 
         ui.assertChainRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -944,8 +949,8 @@ class HotswapperTest {
         hotswapper.onHotswap(new String[] { AutoLayout.class.getName() }, true);
 
         ui.assertChainRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -970,8 +975,8 @@ class HotswapperTest {
                 false);
 
         ui.assertChainRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -998,8 +1003,8 @@ class HotswapperTest {
         hotswapper.onHotswap(new String[] { NewLayout.class.getName() }, true);
 
         ui.assertChainRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -1015,8 +1020,8 @@ class HotswapperTest {
                 true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
-        Mockito.verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
     }
 
     @Test
@@ -1033,8 +1038,8 @@ class HotswapperTest {
                 true);
 
         ui.assertRouteRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -1051,8 +1056,8 @@ class HotswapperTest {
                 false);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -1069,8 +1074,8 @@ class HotswapperTest {
                 true);
 
         ui.assertChainRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -1087,8 +1092,8 @@ class HotswapperTest {
                 false);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -1105,8 +1110,8 @@ class HotswapperTest {
                 MyLayout.class.getName() }, true);
 
         ui.assertChainRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -1123,8 +1128,8 @@ class HotswapperTest {
                 true);
 
         ui.assertChainRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -1141,8 +1146,8 @@ class HotswapperTest {
                 false);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -1158,8 +1163,8 @@ class HotswapperTest {
         hotswapper.onHotswap(new String[] { String.class.getName() }, true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -1181,7 +1186,7 @@ class HotswapperTest {
 
         pushUI.assertNotRefreshed();
         notPushUI.assertNotRefreshed();
-        Mockito.verify(liveReload).refresh(anyBoolean());
+        verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -1196,8 +1201,8 @@ class HotswapperTest {
         hotswapper.onHotswap(new String[] { MyRoute.class.getName() }, true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
-        Mockito.verify(liveReload).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload).reload();
     }
 
     @Test
@@ -1212,8 +1217,8 @@ class HotswapperTest {
         hotswapper.onHotswap(new String[] { MyRoute.class.getName() }, false);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
-        Mockito.verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
     }
 
     @Test
@@ -1238,8 +1243,8 @@ class HotswapperTest {
         }
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
-        Mockito.verify(liveReload).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload).reload();
     }
 
     @Test
@@ -1255,8 +1260,8 @@ class HotswapperTest {
         hotswapper.onHotswap(new String[] { MyRoute.class.getName() }, true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
-        Mockito.verify(liveReload).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload).reload();
     }
 
     @Test
@@ -1272,8 +1277,8 @@ class HotswapperTest {
         hotswapper.onHotswap(new String[] { MyRoute.class.getName() }, false);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
-        Mockito.verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
     }
 
     @Test
@@ -1299,8 +1304,8 @@ class HotswapperTest {
         }
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
-        Mockito.verify(liveReload).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload).reload();
     }
 
     @Test
@@ -1316,40 +1321,36 @@ class HotswapperTest {
             return null;
         };
 
-        Mockito.doAnswer(i -> clientUpdater.apply(i.getArgument(0), "FLOW"))
+        doAnswer(i -> clientUpdater.apply(i.getArgument(0), "FLOW"))
                 .when(flowHotswapper)
                 .onClassesChange(any(HotswapClassEvent.class));
-        Mockito.doAnswer(
-                i -> clientUpdater.apply(i.getArgument(0), "FLOW-SESSION"))
+        doAnswer(i -> clientUpdater.apply(i.getArgument(0), "FLOW-SESSION"))
                 .when(flowHotswapper)
                 .onClassesChange(any(HotswapClassSessionEvent.class));
-        Mockito.doAnswer(i -> clientUpdater.apply(i.getArgument(0), "HILLA"))
+        doAnswer(i -> clientUpdater.apply(i.getArgument(0), "HILLA"))
                 .when(hillaHotswapper)
                 .onClassesChange(any(HotswapClassEvent.class));
-        Mockito.doAnswer(
-                i -> clientUpdater.apply(i.getArgument(0), "HILLA-SESSION"))
+        doAnswer(i -> clientUpdater.apply(i.getArgument(0), "HILLA-SESSION"))
                 .when(hillaHotswapper)
                 .onClassesChange(any(HotswapClassSessionEvent.class));
 
         hotswapper.onHotswap(new String[] { MyRoute.class.getName() }, true);
 
-        Mockito.verify(liveReload).update("FLOW", "FLOW-CONTENT");
-        Mockito.verify(liveReload).sendHmrEvent(eq("FLOW-EVENT"),
+        verify(liveReload).update("FLOW", "FLOW-CONTENT");
+        verify(liveReload).sendHmrEvent(eq("FLOW-EVENT"),
                 argThat(data -> data.hasNonNull("foo")
                         && "FLOW".equals(data.get("foo").stringValue())));
-        Mockito.verify(liveReload).update("HILLA", "HILLA-CONTENT");
-        Mockito.verify(liveReload).sendHmrEvent(eq("HILLA-EVENT"),
+        verify(liveReload).update("HILLA", "HILLA-CONTENT");
+        verify(liveReload).sendHmrEvent(eq("HILLA-EVENT"),
                 argThat(data -> data.hasNonNull("foo")
                         && "HILLA".equals(data.get("foo").stringValue())));
 
-        Mockito.verify(liveReload).update("FLOW-SESSION",
-                "FLOW-SESSION-CONTENT");
-        Mockito.verify(liveReload).sendHmrEvent(eq("FLOW-SESSION-EVENT"),
+        verify(liveReload).update("FLOW-SESSION", "FLOW-SESSION-CONTENT");
+        verify(liveReload).sendHmrEvent(eq("FLOW-SESSION-EVENT"),
                 argThat(data -> data.hasNonNull("foo") && "FLOW-SESSION"
                         .equals(data.get("foo").stringValue())));
-        Mockito.verify(liveReload).update("HILLA-SESSION",
-                "HILLA-SESSION-CONTENT");
-        Mockito.verify(liveReload).sendHmrEvent(eq("HILLA-SESSION-EVENT"),
+        verify(liveReload).update("HILLA-SESSION", "HILLA-SESSION-CONTENT");
+        verify(liveReload).sendHmrEvent(eq("HILLA-SESSION-EVENT"),
                 argThat(data -> data.hasNonNull("foo") && "HILLA-SESSION"
                         .equals(data.get("foo").stringValue())));
     }
@@ -1393,12 +1394,11 @@ class HotswapperTest {
 
             @Override
             protected void instrumentMockLookup(Lookup lookup) {
-                ApplicationConfiguration appConfig = Mockito
-                        .mock(ApplicationConfiguration.class);
-                Mockito.when(appConfig.isProductionMode()).then(
+                ApplicationConfiguration appConfig = mock(
+                        ApplicationConfiguration.class);
+                when(appConfig.isProductionMode()).then(
                         i -> getDeploymentConfiguration().isProductionMode());
-                Mockito.when(
-                        lookup.lookup(ApplicationConfigurationFactory.class))
+                when(lookup.lookup(ApplicationConfigurationFactory.class))
                         .thenReturn(context -> appConfig);
             }
         };
@@ -1465,28 +1465,27 @@ class HotswapperTest {
 
     @Test
     void instanceCreation_hotswappersInitialized() {
-        Mockito.reset(flowHotswapper, hillaHotswapper);
+        reset(flowHotswapper, hillaHotswapper);
         new Hotswapper(service);
-        Mockito.verify(flowHotswapper).onInit(service);
-        Mockito.verify(hillaHotswapper).onInit(service);
+        verify(flowHotswapper).onInit(service);
+        verify(hillaHotswapper).onInit(service);
     }
 
     @Test
     void instanceCreation_throwingHotswapper_instantiationDoesNotFail() {
-        Mockito.reset(flowHotswapper, hillaHotswapper);
-        Mockito.doThrow(new RuntimeException("BOOM")).when(flowHotswapper)
+        reset(flowHotswapper, hillaHotswapper);
+        doThrow(new RuntimeException("BOOM")).when(flowHotswapper)
                 .onInit(any());
         new Hotswapper(service);
-        Mockito.verify(flowHotswapper).onInit(service);
-        Mockito.verify(hillaHotswapper).onInit(service);
+        verify(flowHotswapper).onInit(service);
+        verify(hillaHotswapper).onInit(service);
     }
 
     @Test
     void constructor_ensureOrderAnnotationIsRespected() {
         List<VaadinHotswapper> hotswappers = List.of(new Last(), new First(),
                 new DefaultPriority());
-        Mockito.when(lookup.lookupAll(VaadinHotswapper.class))
-                .thenReturn(hotswappers);
+        when(lookup.lookupAll(VaadinHotswapper.class)).thenReturn(hotswappers);
         ExecutionListener executionListener = new ExecutionListener();
         service.getContext().setAttribute(executionListener);
 
@@ -1536,8 +1535,7 @@ class HotswapperTest {
             HotswapCompleteEvent event) {
         var eventArgumentCaptor = ArgumentCaptor
                 .forClass(HotswapCompleteEvent.class);
-        Mockito.verify(hotswapper)
-                .onHotswapComplete(eventArgumentCaptor.capture());
+        verify(hotswapper).onHotswapComplete(eventArgumentCaptor.capture());
         HotswapCompleteEvent capturedEvent = eventArgumentCaptor.getValue();
         assertEquals(event.getService(), capturedEvent.getService());
         assertEquals(event.getClasses(), capturedEvent.getClasses());
@@ -1661,7 +1659,7 @@ class HotswapperTest {
         registry.setRoute(path, route, List.of(parentChain));
         return withSessionLock(session, () -> {
             RefreshTestingUI ui = new RefreshTestingUI(session);
-            ui.doInit(Mockito.mock(VaadinRequest.class), session.getNextUIid(),
+            ui.doInit(mock(VaadinRequest.class), session.getNextUIid(),
                     UUID.randomUUID().toString());
             session.addUI(ui);
             ui.navigate(route);
@@ -1671,30 +1669,20 @@ class HotswapperTest {
 
     static class RefreshTestingUI extends MockUI {
 
-        private static final String REFRESH_EVENT_NAME = "vaadin-refresh-ui";
-
-        private static final Pattern FIRE_UI_REFRESH_EVENT = Pattern
-                .compile(".*new CustomEvent\\(\"" + REFRESH_EVENT_NAME
-                        + "\",\\s*\\{\\s*detail:\\s*\\{\\s*fullRefresh:\\s*(true|false)\\s*}\\s*}\\).*");
-        private Boolean refreshRouteChainRequested;
+        private JsCall refreshCall;
 
         private final Page pageSpy;
 
         public RefreshTestingUI(VaadinSession session) {
             super(session);
-            pageSpy = Mockito.spy(super.getPage());
-            // Intercept javascript executions to check if the custom ui refresh
-            // event dispatch has been registered.
-            Mockito.doAnswer(i -> {
-                String expression = i.getArgument(0);
-                Matcher matcher = FIRE_UI_REFRESH_EVENT.matcher(expression);
-                if (matcher.matches()) {
-                    refreshRouteChainRequested = Boolean
-                            .parseBoolean(matcher.group(1));
-                }
-                return null;
-            }).when(pageSpy).executeJs(Mockito.anyString(),
-                    Mockito.any(Object[].class));
+            pageSpy = spy(super.getPage());
+            // Records the refresh request that the real definition queues for
+            // the browser, to check what the dev tools would receive.
+            doAnswer(i -> JsDefinitionProxy.create(Hotswapper.RefreshUiJs.class,
+                    call -> {
+                        refreshCall = call;
+                        return getInternals().addJavaScriptInvocation(call);
+                    })).when(pageSpy).executeJs(Hotswapper.RefreshUiJs.class);
         }
 
         @Override
@@ -1703,22 +1691,30 @@ class HotswapperTest {
         }
 
         void assertNotRefreshed() {
-            assertNull(refreshRouteChainRequested,
+            assertNull(refreshCall,
                     "Expecting refreshCurrentRoute not to be called, but was invoked");
         }
 
         void assertRouteRefreshed() {
-            assertNotNull(refreshRouteChainRequested,
-                    "Expecting refreshCurrentRoute to be called but was not");
-            assertFalse(refreshRouteChainRequested,
+            assertFalse(readFullRefreshOfSentEvent(),
                     "Expecting refreshCurrentRoute to refresh only route, but layout refresh was requested");
         }
 
         void assertChainRefreshed() {
-            assertNotNull(refreshRouteChainRequested,
-                    "Expecting refreshCurrentRoute to be called but was not");
-            assertTrue(refreshRouteChainRequested,
+            assertTrue(readFullRefreshOfSentEvent(),
                     "Expecting refreshCurrentRoute to refresh all chain, but only route refresh was requested");
+        }
+
+        // The dev tools refresh the UI on this event, see hotswap-scroll.ts
+        private boolean readFullRefreshOfSentEvent() {
+            assertNotNull(refreshCall,
+                    "Expecting refreshCurrentRoute to be called but was not");
+            String expression = refreshCall.getExpression();
+            assertTrue(expression.contains(
+                    "window.dispatchEvent(new CustomEvent('vaadin-refresh-ui', { detail: { fullRefresh: $0 } }))"),
+                    "Unexpected refresh event: " + expression);
+            assertEquals(1, refreshCall.arguments().size());
+            return (Boolean) refreshCall.arguments().get(0);
         }
 
         void enablePush() {
@@ -1732,7 +1728,7 @@ class HotswapperTest {
     }
 
     static VaadinSession createMockVaadinSession(VaadinService service) {
-        WrappedSession wrappedSession = Mockito.mock(WrappedSession.class);
+        WrappedSession wrappedSession = mock(WrappedSession.class);
         when(wrappedSession.getId()).thenReturn(UUID.randomUUID().toString());
 
         return new MockVaadinSession(service) {

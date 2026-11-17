@@ -16,12 +16,12 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
 
@@ -33,6 +33,7 @@ import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
@@ -273,9 +274,9 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
     @SuppressWarnings("unchecked")
     private static <T> Class<T> findElementPropertyTypeFromTypeParameter(
             Class<?> hasValueClass) {
-        return (Class<T>) GenericTypeReflector
-                .erase(GenericTypeReflector.getTypeParameter(hasValueClass,
-                        HasValue.class.getTypeParameters()[1]));
+        Type type = ReflectTools.getTypeParameter(hasValueClass,
+                HasValue.class.getTypeParameters()[1]);
+        return type == null ? null : (Class<T>) ReflectTools.erase(type);
     }
 
     /**

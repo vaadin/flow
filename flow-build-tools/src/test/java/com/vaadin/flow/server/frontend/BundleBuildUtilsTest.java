@@ -25,7 +25,6 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
@@ -36,6 +35,11 @@ import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class BundleBuildUtilsTest {
 
@@ -50,17 +54,16 @@ class BundleBuildUtilsTest {
     }
 
     private static FrontendTools mockTools(Set<String> customRegistries) {
-        FrontendTools tools = Mockito.mock(FrontendTools.class);
-        Mockito.when(tools.getCustomNpmRegistries(Mockito.any()))
-                .thenReturn(customRegistries);
+        FrontendTools tools = mock(FrontendTools.class);
+        when(tools.getCustomNpmRegistries(any())).thenReturn(customRegistries);
         return tools;
     }
 
     @Test
     void packageLockExists_nothingIsCopied() throws IOException {
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResource(Mockito.anyString())).thenReturn(null);
-        Options options = new Options(Mockito.mock(Lookup.class), finder,
+        ClassFinder finder = mock(ClassFinder.class);
+        when(finder.getResource(anyString())).thenReturn(null);
+        Options options = new Options(mock(Lookup.class), finder,
                 temporaryFolder).withBuildDirectory("target");
 
         File packageLockFile = new File(temporaryFolder,
@@ -98,7 +101,7 @@ class BundleBuildUtilsTest {
         final String jarPackageLockContent = "{ \"jarData\"}";
         FileUtils.write(jarPackageLock, jarPackageLockContent);
 
-        Mockito.when(options.getClassFinder()
+        when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
 
@@ -138,13 +141,13 @@ class BundleBuildUtilsTest {
         final String jarHybridPackageLockContent = "{ \"hybridJarData\"}";
         FileUtils.write(jarHybridPackageLock, jarHybridPackageLockContent);
 
-        Mockito.doThrow(new ClassNotFoundException("No Hilla"))
+        doThrow(new ClassNotFoundException("No Hilla"))
                 .when(options.getClassFinder())
                 .loadClass("com.vaadin.hilla.EndpointController");
-        Mockito.when(options.getClassFinder()
+        when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
-        Mockito.when(options.getClassFinder().getResource(
+        when(options.getClassFinder().getResource(
                 DEV_BUNDLE_JAR_PATH + "hybrid-" + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarHybridPackageLock.toURI().toURL());
 
@@ -178,13 +181,13 @@ class BundleBuildUtilsTest {
         final String jarHybridPackageLockContent = "{ \"hybridJarData\"}";
         FileUtils.write(jarHybridPackageLock, jarHybridPackageLockContent);
 
-        Mockito.when(options.getClassFinder()
+        when(options.getClassFinder()
                 .loadClass("com.vaadin.hilla.EndpointController"))
                 .thenReturn(Object.class);
-        Mockito.when(options.getClassFinder()
+        when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
-        Mockito.when(options.getClassFinder().getResource(
+        when(options.getClassFinder().getResource(
                 DEV_BUNDLE_JAR_PATH + "hybrid-" + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarHybridPackageLock.toURI().toURL());
 
@@ -213,13 +216,13 @@ class BundleBuildUtilsTest {
         final String jarPackageLockContent = "{ \"jarData\"}";
         FileUtils.write(jarPackageLock, jarPackageLockContent);
 
-        Mockito.when(options.getClassFinder()
+        when(options.getClassFinder()
                 .loadClass("com.vaadin.hilla.EndpointController"))
                 .thenReturn(Object.class);
-        Mockito.when(options.getClassFinder()
+        when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
-        Mockito.when(options.getClassFinder().getResource(
+        when(options.getClassFinder().getResource(
                 DEV_BUNDLE_JAR_PATH + "hybrid-" + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(null);
 
@@ -243,7 +246,7 @@ class BundleBuildUtilsTest {
         final String jarPackageLockContent = "{ \"jarData\"}";
         FileUtils.write(jarPackageLock, jarPackageLockContent);
 
-        Mockito.when(options.getClassFinder()
+        when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_YAML))
                 .thenReturn(jarPackageLock.toURI().toURL());
 
@@ -301,7 +304,7 @@ class BundleBuildUtilsTest {
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
         FileUtils.write(jarPackageLock, LOCK_WITH_NPMJS_URLS,
                 StandardCharsets.UTF_8);
-        Mockito.when(options.getClassFinder()
+        when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
 
@@ -353,7 +356,7 @@ class BundleBuildUtilsTest {
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
         FileUtils.write(jarPackageLock, LOCK_WITH_CUSTOM_REGISTRY_URLS,
                 StandardCharsets.UTF_8);
-        Mockito.when(options.getClassFinder()
+        when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
 
@@ -410,7 +413,7 @@ class BundleBuildUtilsTest {
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
         FileUtils.write(jarPackageLock, LOCK_WITH_MULTIPLE_REGISTRY_URLS,
                 StandardCharsets.UTF_8);
-        Mockito.when(options.getClassFinder()
+        when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
 
@@ -444,7 +447,7 @@ class BundleBuildUtilsTest {
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
         FileUtils.write(jarPackageLock, LOCK_WITH_NPMJS_URLS,
                 StandardCharsets.UTF_8);
-        Mockito.when(options.getClassFinder()
+        when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
 
@@ -466,7 +469,7 @@ class BundleBuildUtilsTest {
         final String notJson = "{ not valid json";
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
         FileUtils.write(jarPackageLock, notJson, StandardCharsets.UTF_8);
-        Mockito.when(options.getClassFinder()
+        when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
 
@@ -482,9 +485,9 @@ class BundleBuildUtilsTest {
 
     @Test
     void pnpm_packageLockExists_nothingIsCopied() throws IOException {
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResource(Mockito.anyString())).thenReturn(null);
-        Options options = new Options(Mockito.mock(Lookup.class), finder,
+        ClassFinder finder = mock(ClassFinder.class);
+        when(finder.getResource(anyString())).thenReturn(null);
+        Options options = new Options(mock(Lookup.class), finder,
                 temporaryFolder).withBuildDirectory("target")
                 .withEnablePnpm(true);
 

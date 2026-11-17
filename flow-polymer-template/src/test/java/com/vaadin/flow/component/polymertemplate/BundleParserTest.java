@@ -14,7 +14,6 @@ import java.util.stream.Stream;
 import org.jsoup.nodes.Element;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -22,6 +21,10 @@ import com.vaadin.flow.server.MockVaadinServletService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class BundleParserTest {
 
@@ -30,20 +33,18 @@ class BundleParserTest {
 
     @BeforeEach
     void init() {
-        configuration = Mockito.mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
+        configuration = mock(DeploymentConfiguration.class);
+        when(configuration.getStringProperty(anyString(), anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
 
         Properties properties = new Properties();
-        Mockito.when(configuration.getInitParameters()).thenReturn(properties);
+        when(configuration.getInitParameters()).thenReturn(properties);
 
-        Instantiator instantiator = Mockito.mock(Instantiator.class);
-        Mockito.when(instantiator.getServiceInitListeners())
+        Instantiator instantiator = mock(Instantiator.class);
+        when(instantiator.getServiceInitListeners()).thenReturn(Stream.empty());
+        when(instantiator.getDependencyFilters(any()))
                 .thenReturn(Stream.empty());
-        Mockito.when(instantiator.getDependencyFilters(Mockito.any()))
-                .thenReturn(Stream.empty());
-        Mockito.when(instantiator.getIndexHtmlRequestListeners(Mockito.any()))
+        when(instantiator.getIndexHtmlRequestListeners(any()))
                 .thenReturn(Stream.empty());
         service = new MockVaadinServletService(configuration);
         service.init(instantiator);

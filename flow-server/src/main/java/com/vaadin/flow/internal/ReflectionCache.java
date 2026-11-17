@@ -110,6 +110,7 @@ public class ReflectionCache<C, T> {
      * @param <T>
      *            the cached value type
      * @return a new reflection cache, not <code>null</code>
+     * @since 25.4
      */
     public static <C, T> ReflectionCache<C, T> clearedBeforeHotswap(
             SerializableFunction<Class<C>, T> valueProvider) {
@@ -234,6 +235,9 @@ public class ReflectionCache<C, T> {
      * Clears mappings for give type from all reflection caches and related
      * resources.
      * 
+     * @param type
+     *            the type to clear the mappings for, or {@code null} to clear
+     *            all mappings
      * @since 25.0
      */
     public static void clearAll(Class<?> type) {
@@ -249,6 +253,7 @@ public class ReflectionCache<C, T> {
      *
      * @param type
      *            the type to remove; {@literal null} means all mappings.
+     * @since 25.4
      */
     public static void clearBeforeHotswap(Class<?> type) {
         clearBeforeHotswapActions.forEach(action -> action.accept(type));

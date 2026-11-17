@@ -32,8 +32,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Tag;
@@ -53,6 +51,9 @@ import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.shared.Registration;
 
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -879,8 +880,7 @@ public class StateNodeTest {
                 .count());
         List<String> changedMapKeys = changes.stream()
                 .filter(c -> c instanceof MapPutChange)
-                .map(c -> ((MapPutChange) c).getKey())
-                .collect(Collectors.toList());
+                .map(c -> ((MapPutChange) c).getKey()).toList();
         assertTrue(changedMapKeys.contains("visible"));
         assertTrue(changedMapKeys.contains("tag"));
 
@@ -892,8 +892,7 @@ public class StateNodeTest {
         assertEquals(2, changes.stream().filter(c -> c instanceof MapPutChange)
                 .count());
         changedMapKeys = changes.stream().filter(c -> c instanceof MapPutChange)
-                .map(c -> ((MapPutChange) c).getKey())
-                .collect(Collectors.toList());
+                .map(c -> ((MapPutChange) c).getKey()).toList();
         assertTrue(changedMapKeys.contains("visible"));
         assertTrue(changedMapKeys.contains("foo"));
     }
@@ -926,8 +925,7 @@ public class StateNodeTest {
                 .count());
         List<String> changedMapKeys = changes.stream()
                 .filter(c -> c instanceof MapPutChange)
-                .map(c -> ((MapPutChange) c).getKey())
-                .collect(Collectors.toList());
+                .map(c -> ((MapPutChange) c).getKey()).toList();
         assertTrue(changedMapKeys.contains("tag"));
 
         // Check that previously changed property is returned when visibility
@@ -938,8 +936,7 @@ public class StateNodeTest {
         assertEquals(1, changes.stream().filter(c -> c instanceof MapPutChange)
                 .count());
         changedMapKeys = changes.stream().filter(c -> c instanceof MapPutChange)
-                .map(c -> ((MapPutChange) c).getKey())
-                .collect(Collectors.toList());
+                .map(c -> ((MapPutChange) c).getKey()).toList();
         assertTrue(changedMapKeys.contains("foo"));
     }
 
@@ -1701,20 +1698,18 @@ public class StateNodeTest {
 
         if (visibilityChanged) {
             assertEquals(1, tree.dirtyNodes.size());
-            MatcherAssert.assertThat(tree.dirtyNodes,
-                    CoreMatchers.hasItem(stateNode));
+            assertThat(tree.dirtyNodes, hasItem(stateNode));
         } else {
             // the target node should be marked as dirty because it's visible
             // but its parent is inactive
             assertEquals(2, tree.dirtyNodes.size());
-            stateNode.visitNodeTree(node -> MatcherAssert
-                    .assertThat(tree.dirtyNodes, CoreMatchers.hasItem(node)));
+            stateNode.visitNodeTree(
+                    node -> assertThat(tree.dirtyNodes, hasItem(node)));
         }
 
         assertEquals(visibilityChanged ? 3 : 2, changes.size());
         // node is attached event
-        MatcherAssert.assertThat(changes.get(0),
-                CoreMatchers.instanceOf(NodeAttachChange.class));
+        assertThat(changes.get(0), instanceOf(NodeAttachChange.class));
         // tag update (ElementData is reported feature) and possible active
         // state update
         Optional<MapPutChange> tagFound = changes.stream()
@@ -1726,8 +1721,7 @@ public class StateNodeTest {
 
         MapPutChange change = (MapPutChange) changes.get(1);
         if (visibilityChanged) {
-            MatcherAssert.assertThat(changes.get(2),
-                    CoreMatchers.instanceOf(MapPutChange.class));
+            assertThat(changes.get(2), instanceOf(MapPutChange.class));
             change = tagChange.equals(change) ? (MapPutChange) changes.get(2)
                     : change;
         }
@@ -1751,8 +1745,7 @@ public class StateNodeTest {
         assertEquals(visibilityChanged ? 3 : 2, changes.size());
         // node is attached event
         // property updates and possible visibility update
-        MatcherAssert.assertThat(changes.get(1),
-                CoreMatchers.instanceOf(MapPutChange.class));
+        assertThat(changes.get(1), instanceOf(MapPutChange.class));
 
         Optional<MapPutChange> visibilityChange = changes.stream()
                 .filter(MapPutChange.class::isInstance)
@@ -1799,11 +1792,9 @@ public class StateNodeTest {
 
         assertEquals(2, changes.size());
         // node is attached event
-        MatcherAssert.assertThat(changes.get(0),
-                CoreMatchers.instanceOf(NodeAttachChange.class));
+        assertThat(changes.get(0), instanceOf(NodeAttachChange.class));
         // the property update event
-        MatcherAssert.assertThat(changes.get(1),
-                CoreMatchers.instanceOf(MapPutChange.class));
+        assertThat(changes.get(1), instanceOf(MapPutChange.class));
 
         changes.clear();
 
@@ -1832,18 +1823,16 @@ public class StateNodeTest {
         MapPutChange change;
         if (visibilityChanged) {
             assertEquals(1, tree.dirtyNodes.size());
-            MatcherAssert.assertThat(tree.dirtyNodes,
-                    CoreMatchers.hasItem(stateNode));
-            MatcherAssert.assertThat(changes.get(0),
-                    CoreMatchers.instanceOf(MapPutChange.class));
+            assertThat(tree.dirtyNodes, hasItem(stateNode));
+            assertThat(changes.get(0), instanceOf(MapPutChange.class));
             change = (MapPutChange) changes.get(0);
             assertEquals(ElementData.class, change.getFeature());
         } else {
             // the target node should be marked as dirty because it's visible
             // but its parent is inactive
             assertEquals(2, tree.dirtyNodes.size());
-            stateNode.visitNodeTree(node -> MatcherAssert
-                    .assertThat(tree.dirtyNodes, CoreMatchers.hasItem(node)));
+            stateNode.visitNodeTree(
+                    node -> assertThat(tree.dirtyNodes, hasItem(node)));
         }
 
         changes.clear();
@@ -1856,8 +1845,7 @@ public class StateNodeTest {
         // Two possible changes: probable visibility value change and property
         // update change
         assertEquals(visibilityChanged ? 2 : 1, changes.size());
-        MatcherAssert.assertThat(changes.get(0),
-                CoreMatchers.instanceOf(MapPutChange.class));
+        assertThat(changes.get(0), instanceOf(MapPutChange.class));
         change = (MapPutChange) changes.get(0);
 
         MapPutChange propertyChange;
@@ -1900,10 +1888,9 @@ public class StateNodeTest {
 
         List<MapPutChange> attributeChanges = changes.stream()
                 .filter(MapPutChange.class::isInstance)
-                .map(MapPutChange.class::cast)
-                .filter(change -> change
+                .map(MapPutChange.class::cast).filter(change -> change
                         .getFeature() == ElementAttributeMap.class)
-                .collect(Collectors.toList());
+                .toList();
 
         // Only "slot" should be sent, not "data-secret"
         assertEquals(1, attributeChanges.size(),

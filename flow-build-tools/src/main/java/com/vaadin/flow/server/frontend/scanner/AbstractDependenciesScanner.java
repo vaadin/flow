@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -67,6 +68,30 @@ abstract class AbstractDependenciesScanner
             return finder.loadClass(LUMO);
         } catch (ClassNotFoundException ignore) { // NOSONAR
             return null;
+        }
+    }
+
+    /**
+     * Tells whether runtime {@code @JsModule} and {@code @JavaScript} values
+     * declared on the given class are added to the page at runtime. That is
+     * only done for components and the app shell, which also inherit
+     * annotations from the interfaces they implement. For any other class,
+     * runtime URL {@code @JsModule} values are left to the bundle as before,
+     * while runtime {@code @JavaScript} values are not loaded at all.
+     *
+     * @param clazz
+     *            the class declaring the annotation, loaded through the finder
+     * @return {@code true} if runtime values of the class are loaded at runtime
+     */
+    protected boolean loadsRuntimeDependencies(Class<?> clazz) {
+        try {
+            return clazz.isInterface()
+                    || finder.loadClass(Component.class.getName())
+                            .isAssignableFrom(clazz)
+                    || finder.loadClass(AppShellConfigurator.class.getName())
+                            .isAssignableFrom(clazz);
+        } catch (ClassNotFoundException ignore) { // NOSONAR
+            return true;
         }
     }
 

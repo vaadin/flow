@@ -706,6 +706,7 @@ public abstract class Component
      *
      * @param visibleSignal
      *            the signal to bind, not <code>null</code>
+     * @return the binding, which can be used to react to updates
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setVisible(boolean)

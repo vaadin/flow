@@ -221,6 +221,7 @@ public class CompressUtil {
      * @param text
      *            the string to compress, not {@code null}
      * @return the compressed UTF-8 bytes of the string
+     * @since 25.4
      */
     public static byte[] deflateString(String text) {
         byte[] input = text.getBytes(StandardCharsets.UTF_8);
@@ -247,6 +248,7 @@ public class CompressUtil {
      * @param data
      *            the compressed bytes, not {@code null}
      * @return the original string
+     * @since 25.4
      */
     public static String inflateString(byte[] data) {
         Inflater inflater = new Inflater(true);

@@ -31,6 +31,7 @@ import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.PrebuiltEventData;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
@@ -77,6 +78,7 @@ public class WebComponentUI extends UI {
      * @since 2.1
      */
     @DomEvent(value = "connect-web-component", allowInert = true)
+    @PrebuiltEventData
     public static class WebComponentConnectEvent extends ComponentEvent<UI> {
 
         private String tag;

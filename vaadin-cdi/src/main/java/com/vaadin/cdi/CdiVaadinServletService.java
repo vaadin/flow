@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -198,6 +198,7 @@ public class CdiVaadinServletService extends VaadinServletService {
          *
          * @param beanManager
          *            the bean manager used for looking up CDI beans
+         * @since 15.0.1
          */
         public CdiVaadinServiceDelegate(BeanManager beanManager) {
             this.beanManager = beanManager;
@@ -214,6 +215,7 @@ public class CdiVaadinServletService extends VaadinServletService {
          * @throws ServiceException
          *             if multiple eligible {@link SystemMessagesProvider} beans
          *             are found
+         * @since 15.0.1
          */
         public void init(VaadinService vaadinService) throws ServiceException {
             lookup(SystemMessagesProvider.class)

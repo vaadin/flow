@@ -20,6 +20,8 @@ import com.vaadin.testbench.elementsbase.Element;
 
 /**
  * A TestBench element representing an <code>&lt;video&gt;</code> element.
+ * 
+ * @since 25.4
  */
 @Element("video")
 public class VideoElement extends TestBenchElement {

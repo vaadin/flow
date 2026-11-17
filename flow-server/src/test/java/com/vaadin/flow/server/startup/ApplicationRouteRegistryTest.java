@@ -32,8 +32,12 @@ import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.ErrorParameter;
+import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.server.RouteRegistry;
@@ -41,8 +45,10 @@ import com.vaadin.flow.server.VaadinServletContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 
 /**
  * Tests for {@link ApplicationRouteRegistry} instance .
@@ -54,7 +60,7 @@ class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
     @BeforeEach
     void init() {
         registry = ApplicationRouteRegistry.getInstance(
-                new VaadinServletContext(Mockito.mock(ServletContext.class)));
+                new VaadinServletContext(mock(ServletContext.class)));
     }
 
     @Test
@@ -375,6 +381,32 @@ class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
         assertEquals(ErrorView.class,
                 errorNavigationTarget.get().getNavigationTarget(),
                 "Wrong errorNavigationTarget was registered");
+    }
+
+    @Test
+    void setErrorNavigationTargets_rawErrorParameterType_throwsWithTargetName() {
+        NullPointerException exception = assertThrows(
+                NullPointerException.class,
+                () -> registry.setErrorNavigationTargets(
+                        Collections.singleton(RawErrorView.class)));
+
+        assertTrue(exception.getMessage().contains("HasErrorParameter"),
+                exception.getMessage());
+        assertTrue(
+                exception.getMessage().contains(RawErrorView.class.getName()),
+                exception.getMessage());
+    }
+
+    @Tag("div")
+    @SuppressWarnings("rawtypes")
+    public static class RawErrorView extends Component
+            implements HasErrorParameter {
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter parameter) {
+            return 0;
+        }
     }
 
     @Override

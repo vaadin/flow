@@ -44,7 +44,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
@@ -67,6 +66,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 class VaadinSessionTest {
 
@@ -118,7 +123,7 @@ class VaadinSessionTest {
         mockService = new MockVaadinServletService();
         mockServlet = mockService.getServlet();
 
-        mockHttpSession = Mockito.mock(HttpSession.class);
+        mockHttpSession = mock(HttpSession.class);
         mockWrappedSession = new WrappedHttpSession(mockHttpSession) {
             final ReentrantLock lock = new ReentrantLock();
 
@@ -156,8 +161,8 @@ class VaadinSessionTest {
         mockService.storeSession(session, mockWrappedSession);
 
         ui = new UI();
-        vaadinRequest = new VaadinServletRequest(
-                Mockito.mock(HttpServletRequest.class), mockService) {
+        vaadinRequest = new VaadinServletRequest(mock(HttpServletRequest.class),
+                mockService) {
             @Override
             public String getParameter(String name) {
                 if ("restartApplication".equals(name)
@@ -323,7 +328,7 @@ class VaadinSessionTest {
             assertEquals(mockServlet, VaadinServlet.getCurrent());
         });
 
-        session.valueUnbound(Mockito.mock(HttpSessionBindingEvent.class));
+        session.valueUnbound(mock(HttpSessionBindingEvent.class));
         mockService.runPendingAccessTasks(session); // as soon as we changed
                                                     // session.accessSynchronously
                                                     // to session.access in
@@ -360,11 +365,11 @@ class VaadinSessionTest {
     void testValueUnbound() {
         MockVaadinSession vaadinSession = new MockVaadinSession(mockService);
 
-        vaadinSession.valueUnbound(Mockito.mock(HttpSessionBindingEvent.class));
+        vaadinSession.valueUnbound(mock(HttpSessionBindingEvent.class));
         assertEquals(1, vaadinSession.getCloseCount(),
                 "'valueUnbound' method doesn't call 'close' for the session");
 
-        vaadinSession.valueUnbound(Mockito.mock(HttpSessionBindingEvent.class));
+        vaadinSession.valueUnbound(mock(HttpSessionBindingEvent.class));
 
         assertEquals(1, vaadinSession.getCloseCount(),
                 "'valueUnbound' method may not call 'close' "
@@ -390,10 +395,10 @@ class VaadinSessionTest {
     @Test
     @Tag("com.vaadin.flow.testcategory.SlowTests")
     void threadLocalsWhenDeserializing() throws Exception {
-        ApplicationConfiguration configuration = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration configuration = mock(
+                ApplicationConfiguration.class);
 
-        Mockito.when(configuration.isDevModeSessionSerializationEnabled())
+        when(configuration.isDevModeSessionSerializationEnabled())
                 .thenReturn(true);
 
         mockServlet.getServletContext().setAttribute(
@@ -494,8 +499,8 @@ class VaadinSessionTest {
 
     @Test
     void valueUnbound_explicitVaadinSessionClose_wrappedSessionIsNotCleanedUp() {
-        ReentrantLock lock = Mockito.mock(ReentrantLock.class);
-        Mockito.when(lock.isHeldByCurrentThread()).thenReturn(true);
+        ReentrantLock lock = mock(ReentrantLock.class);
+        when(lock.isHeldByCurrentThread()).thenReturn(true);
         mockService = new MockVaadinServletService() {
             @Override
             protected Lock getSessionLock(WrappedSession wrappedSession) {
@@ -513,16 +518,15 @@ class VaadinSessionTest {
 
         vaadinSession.sessionClosedExplicitly = true;
 
-        WrappedSession httpSession = Mockito.mock(WrappedSession.class);
+        WrappedSession httpSession = mock(WrappedSession.class);
         vaadinSession.refreshTransients(httpSession, mockService);
 
         VaadinSession.setCurrent(vaadinSession);
-        mockService.setCurrentInstances(Mockito.mock(VaadinRequest.class),
-                Mockito.mock(VaadinResponse.class));
+        mockService.setCurrentInstances(mock(VaadinRequest.class),
+                mock(VaadinResponse.class));
 
         try {
-            vaadinSession
-                    .valueUnbound(Mockito.mock(HttpSessionBindingEvent.class));
+            vaadinSession.valueUnbound(mock(HttpSessionBindingEvent.class));
 
             assertNotNull(vaadinSession.getSession());
         } finally {
@@ -532,8 +536,8 @@ class VaadinSessionTest {
 
     @Test
     void valueUnbound_implicitVaadinSessionClose_wrappedSessionIsCleanedUp() {
-        ReentrantLock lock = Mockito.mock(ReentrantLock.class);
-        Mockito.when(lock.isHeldByCurrentThread()).thenReturn(true);
+        ReentrantLock lock = mock(ReentrantLock.class);
+        when(lock.isHeldByCurrentThread()).thenReturn(true);
         mockService = new MockVaadinServletService() {
             @Override
             protected Lock getSessionLock(WrappedSession wrappedSession) {
@@ -548,16 +552,15 @@ class VaadinSessionTest {
             }
         };
 
-        WrappedSession httpSession = Mockito.mock(WrappedSession.class);
+        WrappedSession httpSession = mock(WrappedSession.class);
         vaadinSession.refreshTransients(httpSession, mockService);
 
         VaadinSession.setCurrent(vaadinSession);
-        mockService.setCurrentInstances(Mockito.mock(VaadinRequest.class),
-                Mockito.mock(VaadinResponse.class));
+        mockService.setCurrentInstances(mock(VaadinRequest.class),
+                mock(VaadinResponse.class));
 
         try {
-            vaadinSession
-                    .valueUnbound(Mockito.mock(HttpSessionBindingEvent.class));
+            vaadinSession.valueUnbound(mock(HttpSessionBindingEvent.class));
 
             assertNull(vaadinSession.getSession());
         } finally {
@@ -567,8 +570,8 @@ class VaadinSessionTest {
 
     @Test
     void setState_closedState_sessionFieldIsCleanedUp() {
-        ReentrantLock lock = Mockito.mock(ReentrantLock.class);
-        Mockito.when(lock.isHeldByCurrentThread()).thenReturn(true);
+        ReentrantLock lock = mock(ReentrantLock.class);
+        when(lock.isHeldByCurrentThread()).thenReturn(true);
         mockService = new MockVaadinServletService() {
             @Override
             protected Lock getSessionLock(WrappedSession wrappedSession) {
@@ -577,7 +580,7 @@ class VaadinSessionTest {
         };
 
         VaadinSession vaadinSession = new VaadinSession(mockService);
-        WrappedSession httpSession = Mockito.mock(WrappedSession.class);
+        WrappedSession httpSession = mock(WrappedSession.class);
         vaadinSession.refreshTransients(httpSession, mockService);
 
         vaadinSession.setState(VaadinSessionState.CLOSING);
@@ -588,7 +591,7 @@ class VaadinSessionTest {
 
     @Test
     void valueUnbound_sessionIsNotInitialized_noAnyInteractions() {
-        VaadinSession session = Mockito.spy(TestVaadinSession.class);
+        VaadinSession session = spy(TestVaadinSession.class);
 
         try {
             Field serviceField = VaadinSession.class
@@ -599,14 +602,13 @@ class VaadinSessionTest {
             throw new RuntimeException(e);
         }
 
-        HttpSessionBindingEvent event = Mockito
-                .mock(HttpSessionBindingEvent.class);
+        HttpSessionBindingEvent event = mock(HttpSessionBindingEvent.class);
         session.valueUnbound(null);
 
-        Mockito.verify(session).valueUnbound(null);
-        Mockito.verify(session).getLogger();
-        Mockito.verifyNoInteractions(event);
-        Mockito.verifyNoMoreInteractions(session);
+        verify(session).valueUnbound(null);
+        verify(session).getLogger();
+        verifyNoInteractions(event);
+        verifyNoMoreInteractions(session);
     }
 
     public static class TestVaadinSession extends VaadinSession {

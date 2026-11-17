@@ -33,7 +33,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -96,10 +95,13 @@ import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @WebAppConfiguration
 @ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
@@ -351,7 +353,7 @@ class VaadinSecurityConfigurerTest {
         VaadinDefaultRequestCache requestCache = applicationContext
                 .getBean(VaadinDefaultRequestCache.class);
 
-        var mockSuccessHandler = Mockito.mock(
+        var mockSuccessHandler = mock(
                 VaadinSavedRequestAwareAuthenticationSuccessHandler.class);
         http.setSharedObject(
                 VaadinSavedRequestAwareAuthenticationSuccessHandler.class,
@@ -361,14 +363,13 @@ class VaadinSecurityConfigurerTest {
             c.loginView("/login");
         }).build();
 
-        Mockito.verify(mockSuccessHandler, times(1))
-                .setRequestCache(Mockito.eq(requestCache));
+        verify(mockSuccessHandler, times(1)).setRequestCache(eq(requestCache));
     }
 
     @Test
     void hillaAnonymousEndpointRequest_arePermitted() {
-        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = Mockito
-                .mockStatic(EndpointRequestUtil.class)) {
+        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = mockStatic(
+                EndpointRequestUtil.class)) {
             endpointRequestUtilMockedStatic
                     .when(EndpointRequestUtil::isHillaAvailable)
                     .thenReturn(true);
@@ -380,7 +381,7 @@ class VaadinSecurityConfigurerTest {
             var request = new MockHttpServletRequest("POST", path);
             request.setPathInfo(path);
 
-            Mockito.when(endpointRequestUtil.isAnonymousEndpoint(request))
+            when(endpointRequestUtil.isAnonymousEndpoint(request))
                     .thenReturn(true);
 
             var filters = http.with(configurer, Customizer.withDefaults())
@@ -397,8 +398,8 @@ class VaadinSecurityConfigurerTest {
 
     @Test
     void hillaEndpointRequest_areAuthenticated() {
-        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = Mockito
-                .mockStatic(EndpointRequestUtil.class)) {
+        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = mockStatic(
+                EndpointRequestUtil.class)) {
             endpointRequestUtilMockedStatic
                     .when(EndpointRequestUtil::isHillaAvailable)
                     .thenReturn(true);
@@ -410,7 +411,7 @@ class VaadinSecurityConfigurerTest {
             var request = new MockHttpServletRequest("POST", path);
             request.setPathInfo(path);
 
-            Mockito.when(endpointRequestUtil.isEndpointRequest(request))
+            when(endpointRequestUtil.isEndpointRequest(request))
                     .thenReturn(true);
 
             var filters = http.with(configurer, Customizer.withDefaults())
@@ -427,8 +428,8 @@ class VaadinSecurityConfigurerTest {
 
     @Test
     void hilla_checkAllowedRoutes() {
-        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = Mockito
-                .mockStatic(EndpointRequestUtil.class)) {
+        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = mockStatic(
+                EndpointRequestUtil.class)) {
             endpointRequestUtilMockedStatic
                     .when(EndpointRequestUtil::isHillaAvailable)
                     .thenReturn(true);
@@ -441,7 +442,7 @@ class VaadinSecurityConfigurerTest {
             request.setPathInfo(path);
 
             // Simulate usage of Hilla API, providing file-router request info
-            Mockito.when(fileRouterRequestUtil.isAnonymousRoute(request))
+            when(fileRouterRequestUtil.isAnonymousRoute(request))
                     .thenReturn(true);
 
             var filters = http.with(configurer, Customizer.withDefaults())

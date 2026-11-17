@@ -24,7 +24,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -40,14 +39,16 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Isolated
 class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     private RouteConfiguration routeConfiguration;
     private UI ui;
-    private VaadinService service = Mockito.mock(VaadinService.class);
-    private DeploymentConfiguration configuration = Mockito
-            .mock(DeploymentConfiguration.class);
+    private VaadinService service = mock(VaadinService.class);
+    private DeploymentConfiguration configuration = mock(
+            DeploymentConfiguration.class);
 
     @BeforeEach
     void init() throws NoSuchFieldException, IllegalAccessException {
@@ -57,11 +58,10 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
 
         VaadinService.setCurrent(service);
 
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
-        Mockito.when(service.getRouter()).thenReturn(router);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
+        when(service.getRouter()).thenReturn(router);
 
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        when(configuration.isProductionMode()).thenReturn(true);
         routeConfiguration = RouteConfiguration
                 .forRegistry(router.getRegistry());
     }

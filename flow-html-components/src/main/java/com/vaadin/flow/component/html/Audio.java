@@ -42,6 +42,7 @@ import com.vaadin.flow.component.Tag;
  *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/audio">MDN:
  *      &lt;audio&gt;</a>
  * @see Video
+ * @since 25.4
  */
 @NullMarked
 @Tag(Tag.AUDIO)

@@ -36,7 +36,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +45,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.BodySize;
@@ -68,6 +69,7 @@ import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
@@ -77,6 +79,16 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @Isolated
 public class VaadinAppShellInitializerTest {
@@ -243,6 +255,26 @@ public class VaadinAppShellInitializerTest {
             implements AppShellConfigurator {
     }
 
+    @JavaScript("./bundled.js")
+    @JavaScript("context://js/eager.js")
+    @JavaScript(value = "/js/lazy.js", loadMode = LoadMode.LAZY)
+    @JavaScript(value = "js/module.js", type = JavaScript.Type.MODULE)
+    @JavaScript("https://cdn.example.com/remote.js")
+    @JavaScript(value = "./js/module.js", type = JavaScript.Type.MODULE)
+    @JavaScript(value = "js/lazy-module.js", type = JavaScript.Type.MODULE, loadMode = LoadMode.LAZY)
+    @JavaScript(value = "context://js/dev.js", developmentOnly = true)
+    @JsModule("./bundled-module.js")
+    @JsModule("context://js/runtime-module.js")
+    @JsModule(value = "https://cdn.example.com/dev-module.js", developmentOnly = true)
+    public static class MyAppShellWithJavaScripts
+            implements AppShellConfigurator {
+    }
+
+    @JavaScript(value = "context://js/inline.js", loadMode = LoadMode.INLINE)
+    public static class MyAppShellWithInlineJavaScript
+            implements AppShellConfigurator {
+    }
+
     private VaadinAppShellInitializer initializer;
 
     private ServletContext servletContext;
@@ -269,7 +301,7 @@ public class VaadinAppShellInitializerTest {
         Lookup lookup = (Lookup) servletContext
                 .getAttribute(Lookup.class.getName());
 
-        Mockito.when(lookup.lookup(AppShellPredicate.class))
+        when(lookup.lookup(AppShellPredicate.class))
                 .thenReturn(AppShellConfigurator.class::isAssignableFrom);
 
         attributeMap.put(Lookup.class.getName(),
@@ -277,31 +309,30 @@ public class VaadinAppShellInitializerTest {
         attributeMap.put(ApplicationConfiguration.class.getName(), appConfig);
 
         service = mocks.getService();
-        Mockito.when(servletContext.getAttribute(Mockito.anyString()))
+        when(servletContext.getAttribute(anyString()))
                 .then(invocationOnMock -> attributeMap
                         .get(invocationOnMock.getArguments()[0].toString()));
-        Mockito.doAnswer(invocationOnMock -> attributeMap.put(
+        doAnswer(invocationOnMock -> attributeMap.put(
                 invocationOnMock.getArguments()[0].toString(),
                 invocationOnMock.getArguments()[1])).when(servletContext)
-                .setAttribute(Mockito.anyString(), Mockito.any());
+                .setAttribute(anyString(), any());
 
-        ServletRegistration registration = Mockito
-                .mock(ServletRegistration.class);
+        ServletRegistration registration = mock(ServletRegistration.class);
         context = new VaadinServletContext(servletContext);
 
         classes = new HashSet<>();
 
         Map<String, ServletRegistration> registry = new HashMap<>();
         registry.put("foo", registration);
-        Mockito.when(servletContext.getServletRegistrations())
+        when(servletContext.getServletRegistrations())
                 .thenReturn((Map) registry);
-        Mockito.when(servletContext.getInitParameterNames())
+        when(servletContext.getInitParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
 
         initializer = new VaadinAppShellInitializer();
         document = Document.createShell("");
 
-        pushConfiguration = Mockito.mock(PushConfiguration.class);
+        pushConfiguration = mock(PushConfiguration.class);
     }
 
     @AfterEach
@@ -404,8 +435,8 @@ public class VaadinAppShellInitializerTest {
         AppShellRegistry.getInstance(context)
                 .modifyPushConfiguration(pushConfiguration);
 
-        Mockito.verify(pushConfiguration).setPushMode(PushMode.MANUAL);
-        Mockito.verify(pushConfiguration).setTransport(Transport.WEBSOCKET);
+        verify(pushConfiguration).setPushMode(PushMode.MANUAL);
+        verify(pushConfiguration).setTransport(Transport.WEBSOCKET);
     }
 
     @Test
@@ -423,8 +454,7 @@ public class VaadinAppShellInitializerTest {
         AppShellRegistry.getInstance(context)
                 .modifyPushConfiguration(pushConfiguration);
 
-        Mockito.verify(pushConfiguration, Mockito.never())
-                .setPushMode(Mockito.any(PushMode.class));
+        verify(pushConfiguration, never()).setPushMode(any(PushMode.class));
     }
 
     @Test
@@ -502,8 +532,8 @@ public class VaadinAppShellInitializerTest {
     @Test
     public void should_not_throw_when_appShellAnnotationsAreAllowed_and_offendingClass()
             throws Exception {
-        Mockito.when(appConfig.getBooleanProperty(
-                Constants.ALLOW_APPSHELL_ANNOTATIONS, false)).thenReturn(true);
+        when(appConfig.getBooleanProperty(Constants.ALLOW_APPSHELL_ANNOTATIONS,
+                false)).thenReturn(true);
         classes.add(OffendingClass.class);
         initializer.process(classes, servletContext);
 
@@ -530,6 +560,70 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
+    public void runtimeJavaScriptOnAppShell_injectedAsScriptsInOrder()
+            throws Exception {
+        classes.add(MyAppShellWithJavaScripts.class);
+        initializer.process(classes, servletContext);
+
+        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
+                createVaadinRequest("/"));
+
+        // The bundled value is loaded through the bundle, and
+        // "./js/module.js" denotes the same module as "js/module.js"
+        List<Element> scripts = document.head().select("script");
+        assertEquals(8, scripts.size());
+        assertScript(scripts.get(0), "./js/eager.js", null, false);
+        assertScript(scripts.get(1), "/js/lazy.js", null, true);
+        assertScript(scripts.get(2), "./js/module.js", "module", false);
+        assertScript(scripts.get(3), "https://cdn.example.com/remote.js", null,
+                false);
+        // A module script is deferred anyway
+        assertScript(scripts.get(4), "./js/lazy-module.js", "module", false);
+        assertScript(scripts.get(5), "./js/dev.js", null, false);
+        // Runtime URL @JsModule values are not bundled either
+        assertScript(scripts.get(6), "./js/runtime-module.js", "module", false);
+        assertScript(scripts.get(7), "https://cdn.example.com/dev-module.js",
+                "module", false);
+    }
+
+    @Test
+    public void runtimeJavaScriptOnAppShell_productionMode_developmentOnlySkipped()
+            throws Exception {
+        mocks.setProductionMode(true);
+        classes.add(MyAppShellWithJavaScripts.class);
+        initializer.process(classes, servletContext);
+
+        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
+                createVaadinRequest("/"));
+
+        List<String> srcs = document.head().select("script").stream()
+                .map(script -> script.attr("src")).toList();
+        assertEquals(List.of("./js/eager.js", "/js/lazy.js", "./js/module.js",
+                "https://cdn.example.com/remote.js", "./js/lazy-module.js",
+                "./js/runtime-module.js"), srcs);
+    }
+
+    @Test
+    public void inlineJavaScriptOnAppShell_throws() throws Exception {
+        classes.add(MyAppShellWithInlineJavaScript.class);
+        initializer.process(classes, servletContext);
+        VaadinServletRequest request = createVaadinRequest("/");
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+
+        InvalidApplicationConfigurationException exception = assertThrows(
+                InvalidApplicationConfigurationException.class,
+                () -> registry.modifyIndexHtml(document, request));
+        assertTrue(exception.getMessage().contains("@Inline"));
+    }
+
+    private static void assertScript(Element script, String src, String type,
+            boolean defer) {
+        assertEquals(src, script.attr("src"));
+        assertEquals(type, script.hasAttr("type") ? script.attr("type") : null);
+        assertEquals(defer, script.hasAttr("defer"));
+    }
+
+    @Test
     public void duplicateStyleSheets_deduplicated() throws Exception {
         classes.add(MyAppShellWithDuplicateStyles.class);
         initializer.process(classes, servletContext);
@@ -544,24 +638,24 @@ public class VaadinAppShellInitializerTest {
 
     @Test
     public void should_link_to_PWA_article() throws Exception {
-        Mockito.when(appConfig.getBooleanProperty(
-                Constants.ALLOW_APPSHELL_ANNOTATIONS, false)).thenReturn(true);
+        when(appConfig.getBooleanProperty(Constants.ALLOW_APPSHELL_ANNOTATIONS,
+                false)).thenReturn(true);
         ArgumentCaptor<String> arg = ArgumentCaptor.forClass(String.class);
         classes.add(OffendingPwaClass.class);
         initializer.process(classes, servletContext);
-        Mockito.verify(logger, Mockito.times(1)).error(arg.capture());
+        verify(logger, times(1)).error(arg.capture());
         assertTrue(arg.getValue()
                 .contains("We changed the way you configure PWAs"));
     }
 
     @Test
     public void should_not_link_to_PWA_article() throws Exception {
-        Mockito.when(appConfig.getBooleanProperty(
-                Constants.ALLOW_APPSHELL_ANNOTATIONS, false)).thenReturn(true);
+        when(appConfig.getBooleanProperty(Constants.ALLOW_APPSHELL_ANNOTATIONS,
+                false)).thenReturn(true);
         ArgumentCaptor<String> arg = ArgumentCaptor.forClass(String.class);
         classes.add(OffendingNonPwaClass.class);
         initializer.process(classes, servletContext);
-        Mockito.verify(logger, Mockito.times(1)).error(arg.capture());
+        verify(logger, times(1)).error(arg.capture());
         assertFalse(arg.getValue()
                 .contains("We changed the way you configure PWAs"));
         assertTrue(arg.getValue().contains("@Viewport"));
@@ -638,7 +732,7 @@ public class VaadinAppShellInitializerTest {
 
     private Logger mockLog(Class clz) throws Exception {
         // wrap logger for clz in an spy
-        Logger spy = Mockito.spy(LoggerFactory.getLogger(clz.getName()));
+        Logger spy = spy(LoggerFactory.getLogger(clz.getName()));
         ConcurrentMap<String, Logger> ilogger = clearIlogger();
         // replace original logger with the spy
         ilogger.put(clz.getName(), spy);
@@ -656,15 +750,12 @@ public class VaadinAppShellInitializerTest {
     }
 
     private ApplicationConfiguration mockApplicationConfiguration() {
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(config.isProductionMode()).thenReturn(false);
+        ApplicationConfiguration config = mock(ApplicationConfiguration.class);
+        when(config.isProductionMode()).thenReturn(false);
 
-        Mockito.when(config.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
+        when(config.getStringProperty(anyString(), anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
-        Mockito.when(config.getBooleanProperty(Mockito.anyString(),
-                Mockito.anyBoolean()))
+        when(config.getBooleanProperty(anyString(), anyBoolean()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
         return config;
     }
@@ -681,12 +772,11 @@ public class VaadinAppShellInitializerTest {
 
     private HttpServletRequest createRequest(String pathInfo,
             String contextPath) {
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(request.getServletPath()).thenReturn("");
-        Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
-        Mockito.when(request.getRequestURL())
-                .thenReturn(new StringBuffer(pathInfo));
-        Mockito.when(request.getContextPath()).thenReturn(contextPath);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getServletPath()).thenReturn("");
+        when(request.getPathInfo()).thenReturn(pathInfo);
+        when(request.getRequestURL()).thenReturn(new StringBuffer(pathInfo));
+        when(request.getContextPath()).thenReturn(contextPath);
         return request;
     }
 }

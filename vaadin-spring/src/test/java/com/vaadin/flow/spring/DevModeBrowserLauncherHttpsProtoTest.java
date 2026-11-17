@@ -15,9 +15,10 @@
  */
 package com.vaadin.flow.spring;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.TestPropertySource;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @TestPropertySource(properties = { "server.port = 1235",
         "server.ssl.enabled = true" })
@@ -27,6 +28,6 @@ class DevModeBrowserLauncherHttpsProtoTest
     @Test
     void getUrl_withHttpsProto_givesUrlWithHttpsInUrl() {
         String url = DevModeBrowserLauncher.getUrl(app);
-        Assertions.assertEquals("https://localhost:1235/", url);
+        assertEquals("https://localhost:1235/", url);
     }
 }

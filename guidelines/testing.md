@@ -49,6 +49,20 @@ TypeScript tests run with Web Test Runner in a headless browser; run them with
 - ITs assert concrete outputs, not just "not null". If floating-point
   arithmetic would make assertions brittle, simplify the mock to emit
   stable values (different timestamps suffice for uniqueness).
+- After an action that triggers an asynchronous update — a server round
+  trip, a React or Lit re-render, a `setTimeout` or
+  `requestAnimationFrame` — wait for the expected state with
+  `waitUntil(...)` or `waitForElementPresent(...)` instead of asserting
+  right away. Never use a fixed `Thread.sleep` to wait for a state the
+  test can poll for.
+- Keep the failure message when an assertion becomes a wait: catch
+  `TimeoutException` and fail with the message and the expected and
+  actual values, as `verifyTitle` in
+  [PageIT](../flow-tests/test-default/src/test/java/com/vaadin/flow/test/dom/PageIT.java)
+  does. A bare `TimeoutException` does not say what went wrong.
+- Call `checkLogsForErrors()` right after each step that could log a
+  browser error, not only at the end of the test, so a failure points
+  at the step that caused it.
 - Add a short settle pause before snapshotting counts after a
   stop-like action — an in-flight event can still land right after the
   stop marker appears in the DOM.

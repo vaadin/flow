@@ -17,8 +17,11 @@ on:
 
 # Skip drafts. The `labeled` trigger is the manual override: adding the
 # `diagram` label asks for a diagram on a PR the bot passed over, so every
-# other label change must be ignored.
+# other label change must be ignored. Only vaadin/flow runs the bot: a copy of
+# this repository that has the organization secrets would otherwise spend the
+# shared API credits.
 if: >
+  github.repository == 'vaadin/flow' &&
   github.event.pull_request.draft == false &&
   (github.event.action != 'labeled' || github.event.label.name == 'diagram')
 

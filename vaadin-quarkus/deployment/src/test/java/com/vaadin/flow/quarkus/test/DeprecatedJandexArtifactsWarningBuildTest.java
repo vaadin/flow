@@ -18,9 +18,11 @@ package com.vaadin.flow.quarkus.test;
 import io.quarkus.test.QuarkusUnitTest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Verifies that the build warns about a {@code quarkus.index-dependency}
@@ -40,8 +42,8 @@ public class DeprecatedJandexArtifactsWarningBuildTest {
                     && record.getMessage()
                             .contains("deprecated Vaadin Jandex artifacts"))
             .assertLogRecords(records -> {
-                Assertions.assertEquals(1, records.size());
-                Assertions.assertTrue(records.get(0).getMessage().contains(
+                assertEquals(1, records.size());
+                assertTrue(records.get(0).getMessage().contains(
                         "the quarkus.index-dependency.vaadin configuration property"),
                         records.get(0).getMessage());
             });

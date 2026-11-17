@@ -22,6 +22,9 @@ env:
 
 jobs:
   cherry-pick:
+    # Only in vaadin/flow: a copy of this repository that has the organization
+    # secrets would otherwise open cherry-pick pull requests of its own.
+    if: github.repository == 'vaadin/flow'
     runs-on: ubuntu-26.04
     timeout-minutes: 180
     permissions:

@@ -142,6 +142,7 @@ public @interface Route {
      *
      * @return {@code true} to make the route available only in development
      *         mode, {@code false} to always make it available
+     * @since 25.3.4
      */
     boolean developmentOnly() default false;
 }

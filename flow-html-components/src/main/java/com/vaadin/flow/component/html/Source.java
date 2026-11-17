@@ -38,6 +38,7 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * @see <a href=
  *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/source">MDN:
  *      &lt;source&gt;</a>
+ * @since 25.4
  */
 @NullMarked
 @Tag(Tag.SOURCE)

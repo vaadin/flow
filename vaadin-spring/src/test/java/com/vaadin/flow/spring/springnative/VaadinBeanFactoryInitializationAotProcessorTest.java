@@ -24,12 +24,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
@@ -55,11 +53,13 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -76,6 +76,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -185,8 +186,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 withSettings().extraInterfaces(BeanDefinitionRegistry.class));
         BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
+        try (var mockedStatic = mockStatic(AutoConfigurationPackages.class)) {
             mockedStatic.when(() -> AutoConfigurationPackages.get(beanFactory))
                     .thenReturn(List.of(getClass().getPackageName()));
 
@@ -232,8 +232,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 withSettings().extraInterfaces(BeanDefinitionRegistry.class));
         BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
+        try (var mockedStatic = mockStatic(AutoConfigurationPackages.class)) {
             mockedStatic.when(() -> AutoConfigurationPackages.get(beanFactory))
                     .thenReturn(List.of(getClass().getPackageName()));
 
@@ -265,8 +264,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 withSettings().extraInterfaces(BeanDefinitionRegistry.class));
         BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
+        try (var mockedStatic = mockStatic(AutoConfigurationPackages.class)) {
             mockedStatic.when(() -> AutoConfigurationPackages.get(beanFactory))
                     .thenReturn(List.of(getClass().getPackageName()));
 
@@ -487,8 +485,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 ConfigurableListableBeanFactory.class);
         // Note: NOT adding BeanDefinitionRegistry interface
 
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
+        try (var mockedStatic = mockStatic(AutoConfigurationPackages.class)) {
             mockedStatic.when(() -> AutoConfigurationPackages.get(beanFactory))
                     .thenReturn(List.of(getClass().getPackageName()));
 
@@ -761,6 +758,49 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 .onMethodInvocation(TestJsDefinition.class, "addClass"))
                 .as("JavaScript definition methods should be invokable through reflection")
                 .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onMethodInvocation(TestValueJs.class, "readValue"))
+                .as("Inherited interface should be registered to resolve its generic return types")
+                .accepts(hints);
+        assertThat(
+                RuntimeHintsPredicates.reflection().onType(TestJsValue.class))
+                .as("Type bound to an inherited typed result should be registered for Jackson")
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection().onType(TestJsItem.class))
+                .as("Type argument of a typed result should be registered for Jackson")
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(TestJsArrayItem.class))
+                .as("Component type of an array result should be registered for Jackson")
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection().onType(ObjectNode.class))
+                .as("Jackson node types need no hints").rejects(hints);
+    }
+
+    @Test
+    void processAheadOfTime_jsDefinition_returnedSnippetTypeRegistered() {
+        RuntimeHints hints = processAotForHints(
+                createProcessorWithJsDefinitions(TestSnippetJs.class));
+
+        // Returned by an inherited method, so that is covered too
+        assertThat(RuntimeHintsPredicates.proxies()
+                .forInterfaces(TestItemTemplate.class))
+                .as("Returned snippet type should be registered as a JDK proxy")
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(TestItemTemplate.class))
+                .as("Returned snippet type should be registered for reflection")
+                .accepts(hints);
+        // The check that a snippet type declares no methods sees the inherited
+        // ones only if the interfaces it extends are registered too
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(TestBaseTemplate.class))
+                .as("Interfaces the snippet type extends should be registered for reflection")
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.proxies()
+                .forInterfaces(TestBaseTemplate.class))
+                .as("Only the returned snippet type should get a JDK proxy")
+                .rejects(hints);
     }
 
     @Test
@@ -772,7 +812,8 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
 
         assertThat(definitions)
                 .as("Should find @JsDefinition annotated interfaces")
-                .containsExactly(TestJsDefinition.class);
+                .containsExactlyInAnyOrder(TestJsDefinition.class,
+                        TestSnippetJs.class);
     }
 
     @Test
@@ -898,8 +939,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
             Collection<Class<?>> getSubtypesOf(String basePackage,
                     Class<?> parentType) {
                 return Arrays.stream(routeClasses)
-                        .filter(parentType::isAssignableFrom)
-                        .collect(Collectors.toList());
+                        .filter(parentType::isAssignableFrom).toList();
             }
         };
     }
@@ -936,8 +976,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 withSettings().extraInterfaces(BeanDefinitionRegistry.class));
         BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
+        try (var mockedStatic = mockStatic(AutoConfigurationPackages.class)) {
             mockedStatic.when(() -> AutoConfigurationPackages.get(beanFactory))
                     .thenReturn(List.of(getClass().getPackageName()));
 
@@ -977,8 +1016,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 withSettings().extraInterfaces(BeanDefinitionRegistry.class));
         BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
+        try (var mockedStatic = mockStatic(AutoConfigurationPackages.class)) {
             mockedStatic.when(() -> AutoConfigurationPackages.get(beanFactory))
                     .thenReturn(List.of(getClass().getPackageName()));
 
@@ -1178,9 +1216,47 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     }
 
     @JsDefinition
-    public interface TestJsDefinition {
+    public interface TestJsDefinition extends TestValueJs<TestJsValue> {
         @JsExpression("this.classList.add($0)")
         void addClass(String className);
+
+        @JsExpression("return []")
+        JavaScriptResult<List<TestJsItem>> readItems();
+
+        @JsExpression("return []")
+        JavaScriptResult<TestJsArrayItem[]> readArray();
+
+        @JsExpression("return {}")
+        JavaScriptResult<ObjectNode> readNode();
+    }
+
+    public interface TestBaseTemplate extends JsSnippet {
+    }
+
+    public interface TestItemTemplate extends TestBaseTemplate {
+    }
+
+    public interface TestBaseSnippetJs {
+        @JsExpression("return $0")
+        TestItemTemplate status(String label);
+    }
+
+    @JsDefinition
+    public interface TestSnippetJs extends TestBaseSnippetJs {
+    }
+
+    public interface TestValueJs<T> {
+        @JsExpression("return this.value")
+        JavaScriptResult<T> readValue();
+    }
+
+    public record TestJsValue(String value) {
+    }
+
+    public record TestJsItem(String name) {
+    }
+
+    public record TestJsArrayItem(String name) {
     }
 
     public static class TestMenuAccessControl implements MenuAccessControl {

@@ -21,7 +21,6 @@ import java.util.function.Function;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -39,12 +38,14 @@ import com.vaadin.flow.shared.ui.Transport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class BootstrapContextTest {
 
     private MockVaadinSession session;
     private UI ui;
-    private VaadinRequest request = Mockito.mock(VaadinRequest.class);
+    private VaadinRequest request = mock(VaadinRequest.class);
 
     private Function<VaadinRequest, String> callback = request -> "";;
 
@@ -81,12 +82,12 @@ class BootstrapContextTest {
     void getPushAnnotation_routeTargetPresents_pushFromTheClassDefinitionIsUsed() {
         ui.getInternals().getRouter().getRegistry().setRoute("foo",
                 MainView.class, Collections.emptyList());
-        Mockito.when(request
+        when(request
                 .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER))
                 .thenReturn("foo");
 
         BootstrapContext context = new JavaScriptBootstrapContext(request,
-                Mockito.mock(VaadinResponse.class), ui, callback);
+                mock(VaadinResponse.class), ui, callback);
 
         Optional<Push> push = context
                 .getPageConfigurationAnnotation(Push.class);
@@ -100,12 +101,12 @@ class BootstrapContextTest {
     void getPushAnnotation_routeTargetPresents_pushDefinedOnParentLayout_pushFromTheClassDefinitionIsUsed() {
         ui.getInternals().getRouter().getRegistry().setRoute("foo",
                 OtherView.class, Collections.singletonList(MainView.class));
-        Mockito.when(request
+        when(request
                 .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER))
                 .thenReturn("foo");
 
         BootstrapContext context = new JavaScriptBootstrapContext(request,
-                Mockito.mock(VaadinResponse.class), ui, callback);
+                mock(VaadinResponse.class), ui, callback);
 
         Optional<Push> push = context
                 .getPageConfigurationAnnotation(Push.class);
@@ -117,7 +118,7 @@ class BootstrapContextTest {
 
     @Test
     void getPushAnnotation_routeTargetIsAbsent_pushFromTheErrorNavigationTargetIsUsed() {
-        Mockito.when(request
+        when(request
                 .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER))
                 .thenReturn("bar");
 
@@ -127,7 +128,7 @@ class BootstrapContextTest {
                 Collections.singleton(CustomRouteNotFound.class));
 
         BootstrapContext context = new BootstrapContext(request,
-                Mockito.mock(VaadinResponse.class), session, ui, request -> "");
+                mock(VaadinResponse.class), session, ui, request -> "");
 
         Optional<Push> push = context
                 .getPageConfigurationAnnotation(Push.class);
@@ -139,7 +140,7 @@ class BootstrapContextTest {
 
     @Test
     void getPushAnnotation_routeTargetIsAbsent_pushIsDefinedOnParentLayout_pushFromTheErrorNavigationTargetParentLayoutIsUsed() {
-        Mockito.when(request
+        when(request
                 .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER))
                 .thenReturn("bar");
 
@@ -149,7 +150,7 @@ class BootstrapContextTest {
                 Collections.singleton(AnotherCustomRouteNotFound.class));
 
         BootstrapContext context = new BootstrapContext(request,
-                Mockito.mock(VaadinResponse.class), session, ui, request -> "");
+                mock(VaadinResponse.class), session, ui, request -> "");
 
         Optional<Push> push = context
                 .getPageConfigurationAnnotation(Push.class);

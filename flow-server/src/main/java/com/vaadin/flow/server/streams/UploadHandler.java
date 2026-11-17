@@ -197,6 +197,9 @@ public interface UploadHandler extends ElementRequestHandler {
 
     /**
      * JSON response structure for rejected files.
+     *
+     * @param rejected
+     *            the rejected files
      */
     record RejectedFilesResponse(List<UploadResult.RejectedFile> rejected)
             implements
@@ -205,6 +208,11 @@ public interface UploadHandler extends ElementRequestHandler {
 
     /**
      * JSON response structure for mixed upload results.
+     *
+     * @param accepted
+     *            the names of the accepted files
+     * @param rejected
+     *            the rejected files
      */
     record MixedUploadResponse(List<String> accepted,
             List<UploadResult.RejectedFile> rejected)

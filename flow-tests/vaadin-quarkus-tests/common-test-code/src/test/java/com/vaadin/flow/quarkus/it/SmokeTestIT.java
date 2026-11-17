@@ -25,6 +25,8 @@ import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.test.AbstractChromeIT;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @QuarkusIntegrationTest
 public class SmokeTestIT extends AbstractChromeIT {
 
@@ -35,7 +37,7 @@ public class SmokeTestIT extends AbstractChromeIT {
         waitForElementPresent(By.tagName("button"));
         final NativeButtonElement button = $(NativeButtonElement.class)
                 .single();
-        Assertions.assertTrue(button.isDisplayed());
+        assertTrue(button.isDisplayed());
 
         button.click();
 

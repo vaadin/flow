@@ -20,6 +20,8 @@ import com.vaadin.testbench.elementsbase.Element;
 
 /**
  * A TestBench element representing an <code>&lt;audio&gt;</code> element.
+ * 
+ * @since 25.4
  */
 @Element("audio")
 public class AudioElement extends TestBenchElement {

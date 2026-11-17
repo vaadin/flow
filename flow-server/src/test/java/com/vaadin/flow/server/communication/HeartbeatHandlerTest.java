@@ -18,7 +18,6 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
@@ -29,6 +28,7 @@ import com.vaadin.flow.server.VaadinSession;
 
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -54,7 +54,7 @@ class HeartbeatHandlerTest {
         HeartbeatHandler handler = new HeartbeatHandler();
         handler.synchronizedHandleRequest(session, request, response);
 
-        Mockito.verify(ui.getInternals(), times(1))
+        verify(ui.getInternals(), times(1))
                 .setLastHeartbeatTimestamp(anyLong());
     }
 
@@ -80,7 +80,6 @@ class HeartbeatHandlerTest {
                 eq("no-cache"));
 
         // Verify Content-Type header is NOT set
-        verify(response, never()).setHeader(eq("Content-Type"),
-                Mockito.anyString());
+        verify(response, never()).setHeader(eq("Content-Type"), anyString());
     }
 }
