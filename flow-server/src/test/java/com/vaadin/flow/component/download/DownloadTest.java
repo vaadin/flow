@@ -103,6 +103,17 @@ class DownloadTest {
     }
 
     @Test
+    void startUrl_clickStartsDownloadOfGivenUrl() {
+        Download.onClick(button, "/files/a.bin");
+
+        JsFunction action = actionOf(singleInstallFn());
+        assertEquals("download",
+                snippetOf(DownloadAction.DownloadJs.class, action));
+        assertEquals("/files/a.bin", ((JsFunction) action.getCaptures().get(0))
+                .getCaptures().get(0));
+    }
+
+    @Test
     void startUrlInNewTab_clickOpensGivenUrl() {
         Download.onClick(button, "/files/terms.html", DownloadTarget.NEW_TAB);
 
