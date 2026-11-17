@@ -31,6 +31,7 @@ import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
@@ -107,20 +108,14 @@ class ErrorViewHotswapperTest {
         // Verify refresh was not triggered
         assertFalse(event.getUIUpdateStrategy(ui).isPresent(),
                 "Should not trigger refresh for normal view");
-
-        ui.getInternals().getRouter().getRegistry().setRoute("new",
-                TestErrorView.class, Collections.emptyList());
-        var newRoute = new HotswapClassSessionEvent(service, session,
-                Set.of(TestErrorView.class), false);
-        hotswapper.onClassesChange(newRoute);
-        assertFalse(newRoute.getUIUpdateStrategy(ui).isPresent(),
-                "Should not reload a normal view when a route is added");
     }
 
     @Test
-    void onClassesChange_routeNotFoundShown_newClassLoaded_reloadsOnlyForNewRoute() {
-        ui.getInternals().showRouteTarget(createMockLocation(""),
-                new RouteNotFoundError(), Collections.emptyList());
+    void onClassesChange_noRoutesPageShown_reloadsOnlyForNewRoute() {
+        RouteNotFoundError noRoutesPage = new RouteNotFoundError();
+        RouteUtil.setNoRoutesPage(noRoutesPage, true);
+        ui.getInternals().showRouteTarget(createMockLocation(""), noRoutesPage,
+                Collections.emptyList());
 
         var notARoute = new HotswapClassSessionEvent(service, session,
                 Set.of(TestNormalView.class), false);
@@ -151,11 +146,12 @@ class ErrorViewHotswapperTest {
         ui.getInternals().showRouteTarget(createMockLocation("missing"),
                 new RouteNotFoundError(), Collections.emptyList());
 
-        var redefined = new HotswapClassSessionEvent(service, session,
-                Set.of(String.class), true);
-        hotswapper.onClassesChange(redefined);
+        var routeRedefined = new HotswapClassSessionEvent(service, session,
+                Set.of(TestNormalView.class), true);
+        hotswapper.onClassesChange(routeRedefined);
         assertEquals(UIUpdateStrategy.REFRESH,
-                redefined.getUIUpdateStrategy(ui).orElse(null));
+                routeRedefined.getUIUpdateStrategy(ui).orElse(null),
+                "Changing the only route should refresh in place");
 
         ui.getInternals().getRouter().getRegistry().setRoute("missing",
                 TestErrorView.class, Collections.emptyList());

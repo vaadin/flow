@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.AnnotationReader;
@@ -82,6 +83,9 @@ public class RouteUtil {
             + "having the same route.";
     public static final String ROUTE_CONFLICT_WITH_PARAMS = ROUTE_CONFLICT_PREFIX
             + "with parameter having the same route.";
+
+    private static final String NO_ROUTES_PAGE_KEY = RouteUtil.class.getName()
+            + ".noRoutesPage";
 
     protected RouteUtil() {
     }
@@ -1069,5 +1073,36 @@ public class RouteUtil {
         return Optional.ofNullable(routeModel.getNavigationRouteTarget(url))
                 .map(NavigationRouteTarget::getRouteTarget)
                 .map(ClientTarget.class::cast).map(ClientTarget::getTemplate);
+    }
+
+    /**
+     * Records whether the given route-not-found view shows the page for a
+     * project without any routes.
+     *
+     * @param view
+     *            the route-not-found view, not {@code null}
+     * @param noRoutesPage
+     *            {@code true} if the view shows the page for a project without
+     *            routes
+     * @see #isNoRoutesPage(Component)
+     */
+    public static void setNoRoutesPage(Component view, boolean noRoutesPage) {
+        ComponentUtil.setData(view, NO_ROUTES_PAGE_KEY,
+                noRoutesPage ? Boolean.TRUE : null);
+    }
+
+    /**
+     * Checks whether the given view is a route-not-found view showing the page
+     * for a project without any routes. In development mode, Copilot replaces
+     * the page body when this page is shown.
+     *
+     * @param view
+     *            the view to check, not {@code null}
+     * @return {@code true} if the view shows the page for a project without
+     *         routes
+     * @see #setNoRoutesPage(Component, boolean)
+     */
+    public static boolean isNoRoutesPage(Component view) {
+        return ComponentUtil.getData(view, NO_ROUTES_PAGE_KEY) != null;
     }
 }

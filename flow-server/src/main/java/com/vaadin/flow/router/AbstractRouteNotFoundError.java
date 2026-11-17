@@ -38,6 +38,7 @@ import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HttpStatusCode;
 
 /**
@@ -102,6 +103,7 @@ public abstract class AbstractRouteNotFoundError extends Component {
         template = template.replace("{{path}}", path);
 
         getElement().setChild(0, new Html(template).getElement());
+        RouteUtil.setNoRoutesPage(this, noRoutes && !productionMode);
         if (noRoutes && !productionMode) {
             getElement().executeJs(CopilotJs.class).reportNoRoutes();
         }

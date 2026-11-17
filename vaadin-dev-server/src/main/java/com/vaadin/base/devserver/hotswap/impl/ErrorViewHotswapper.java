@@ -24,22 +24,22 @@ import java.util.Set;
 import com.vaadin.base.devserver.hotswap.HotswapClassSessionEvent;
 import com.vaadin.base.devserver.hotswap.UIUpdateStrategy;
 import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.router.AbstractRouteNotFoundError;
+import com.vaadin.flow.router.internal.RouteUtil;
 
 /**
  * Re-attempts the navigation when hotswap occurs while an error view is
  * displayed. This ensures that fixing a broken class, or adding a missing
  * route, during development retries the navigation to the original location.
  * <p>
- * The UI is normally refreshed in place. The page is reloaded only when the
- * first routes of the project appear while the route-not-found page is shown:
- * in development mode, the page shown for a project without routes hands the
- * document over to Copilot, which replaces the page body, so an in-place
- * refresh would render the new view into detached DOM. A reload is not used
- * more widely because it is sent to every open browser tab, not only to the
- * affected one.
+ * The UI is normally refreshed in place. The page is reloaded only when routes
+ * exist while the page for a project without routes is shown: in development
+ * mode, that page hands the document over to Copilot, which replaces the page
+ * body, so an in-place refresh would render the new view into detached DOM. A
+ * reload is not used more widely because it is sent to every open browser tab,
+ * not only to the affected one.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -70,7 +70,7 @@ public class ErrorViewHotswapper implements VaadinHotswapper {
             if (redefined || changedClasses.stream()
                     .anyMatch(routeTargets::contains)) {
                 event.triggerUpdate(ui,
-                        isShowingNoRoutesPage(ui, routeTargets, changedClasses)
+                        !routeTargets.isEmpty() && isShowingNoRoutesPage(ui)
                                 ? UIUpdateStrategy.RELOAD
                                 : UIUpdateStrategy.REFRESH);
             }
@@ -85,17 +85,9 @@ public class ErrorViewHotswapper implements VaadinHotswapper {
         return routeTargets;
     }
 
-    /**
-     * Checks whether the UI shows the route-not-found page of a project that
-     * had no routes before the given classes changed, i.e. the page that
-     * Copilot takes over.
-     */
-    private static boolean isShowingNoRoutesPage(UI ui,
-            Set<Class<?>> routeTargets, Set<Class<?>> changedClasses) {
+    private static boolean isShowingNoRoutesPage(UI ui) {
         List<HasElement> chain = ui.getActiveRouterTargetsChain();
-        return !chain.isEmpty()
-                && chain.get(0) instanceof AbstractRouteNotFoundError
-                && !routeTargets.isEmpty()
-                && changedClasses.containsAll(routeTargets);
+        return !chain.isEmpty() && chain.get(0) instanceof Component view
+                && RouteUtil.isNoRoutesPage(view);
     }
 }
