@@ -56,7 +56,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 class ComputedSignalTest extends SignalTestBase {
 
     @Test
-    void cached_updateNotificationVsLastListenerDisposal_noDeadlock()
+    void cached_treeLockHolderRegistersVsLastListenerDisposal_noDeadlock()
             throws Exception {
         // Regression test for #25166: a lock-order inversion between the
         // CachedSignal leaf lock and a dependency's SignalTree lock.
