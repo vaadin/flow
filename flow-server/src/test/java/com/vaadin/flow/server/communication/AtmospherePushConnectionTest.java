@@ -26,12 +26,21 @@ import org.atmosphere.cpr.Broadcaster;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.communication.AtmospherePushConnection.PushMessage;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
+import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.tests.util.MockUI;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 /**
  * @author Vaadin Ltd
@@ -87,6 +96,50 @@ public class AtmospherePushConnectionTest {
                 new ByteArrayInputStream(baos.toByteArray())).readObject();
 
         Assert.assertEquals(State.DISCONNECTED, connection.getState());
+    }
+
+    @Test
+    public void push_sessionDestroyedWhileCreatingMessage_sendsOnlySessionExpired()
+            throws Exception {
+        // The UI of the shared setup is a spy whose getSession() is stubbed,
+        // so use a real UI that is removed from the session when it is
+        // destroyed
+        vaadinSession.lock();
+        UI ui = new MockUI(vaadinSession);
+        vaadinSession.unlock();
+        AtmospherePushConnection connection = new AtmospherePushConnection(ui);
+        connection.connect(resource);
+        vaadinSession.runWithLock(() -> {
+            vaadinSession.setConfiguration(
+                    vaadinSession.getService().getDeploymentConfiguration());
+            ui.doInit(Mockito.mock(VaadinRequest.class),
+                    vaadinSession.getNextUIid(), "foo");
+            vaadinSession.addUI(ui);
+            ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+            ui.getInternals().setPushConnection(connection);
+            // Queued like when another thread invalidates the HTTP session
+            // while this one holds the session lock
+            vaadinSession.getService().fireSessionDestroy(vaadinSession);
+
+            connection.push(false);
+            return null;
+        });
+
+        Assert.assertNull(ui.getSession());
+        Assert.assertEquals(State.DISCONNECTED, connection.getState());
+        Mockito.verify(resource).close();
+        // Only the message closing the UI is sent, before the connection is
+        // closed
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        Mockito.verify(broadcaster).broadcast(captor.capture(),
+                ArgumentMatchers.eq(resource));
+        String sent = ((PushMessage) captor.getValue()).message;
+        String prefix = "for(;;);[";
+        Assert.assertTrue(sent, sent.startsWith(prefix) && sent.endsWith("]"));
+        JsonObject message = Json
+                .parse(sent.substring(prefix.length(), sent.length() - 1));
+        Assert.assertTrue(message.toJson(), message.getObject("meta")
+                .getBoolean(JsonConstants.META_SESSION_EXPIRED));
     }
 
     @Test
