@@ -121,7 +121,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
     // A function as the file registers it, with its identifier in the group.
     // The registry of names is left out: it says what declared a function,
-    // not what a browser can run
+    // not what a browser can run. vite.generated.ts lists the functions of a
+    // bundle in its stats with the same pattern, and the two have to match.
     private static final Pattern FUNCTION_ID = Pattern.compile(
             "^window\\.Vaadin\\.Flow\\.(?:jsDefinitions|jsDefinitionsWithExecutionContext|jsSnippets)\\[\"([^\"]*)\"\\] = ",
             Pattern.MULTILINE);

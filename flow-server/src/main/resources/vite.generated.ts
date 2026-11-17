@@ -350,7 +350,8 @@ function statsExtracterPlugin(): PluginOption {
       }
       // The identifier of a function is a hash of its JavaScript, so listing
       // them lets a build tell whether the bundle carries every function it
-      // needs, even when the bundle carries more
+      // needs, even when the bundle carries more. The pattern is the one
+      // TaskGenerateJsDefinitions reads the generated file with.
       const jsDefinitionFunctionIds: string[] = [];
       if (hasJsDefinitions) {
         const fileBuffer = readFileSync(jsDefinitionsFile, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
