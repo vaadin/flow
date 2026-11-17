@@ -78,6 +78,12 @@ final class Jvm {
      * An operating system and CPU architecture, normalized so that the
      * spellings of a {@code release} file ({@code Darwin}, {@code x86_64}) and
      * of a running JVM ({@code Mac OS X}, {@code amd64}) compare equal.
+     * <p>
+     * Not {@code com.vaadin.flow.internal.Platform}: the daemon must not depend
+     * on flow-server (see the module's enforcer rule), and that class only
+     * reads the running JVM's properties, so it cannot parse a {@code release}
+     * file's {@code Darwin} or tell whether one platform runs another's
+     * binaries.
      *
      * @param os
      *            the normalized operating system, or {@code null} when unknown
