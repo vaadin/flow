@@ -313,21 +313,15 @@ public final class BrowserTab implements Serializable {
     }
 
     /**
-     * Destroys the browser tabs of the given session that have no open UI, and
-     * either whose UIs have not been active for the given time or whose last UI
-     * was closed longer ago than the given grace period.
+     * Records the last heartbeat of the UIs of the given session in their
+     * browser tabs, and when the last UI of a browser tab was first found
+     * closed. Call this before closed UIs are removed from the session, so that
+     * they still count.
      *
      * @param session
      *            the session to clean up, locked
-     * @param timeoutMillis
-     *            the time without activity after which a browser tab is
-     *            destroyed
-     * @param closedGraceMillis
-     *            the time after the last UI of a browser tab was closed, during
-     *            which a new UI can still continue the browser tab
      */
-    static void destroyInactiveTabs(VaadinSession session, long timeoutMillis,
-            long closedGraceMillis) {
+    static void updateTabActivity(VaadinSession session) {
         Registry registry = session.getAttribute(Registry.class);
         if (registry == null) {
             return;
@@ -347,19 +341,53 @@ public final class BrowserTab implements Serializable {
             }
         }
         long now = System.currentTimeMillis();
-        for (BrowserTab tab : new ArrayList<>(registry.tabs.values())) {
+        for (BrowserTab tab : registry.tabs.values()) {
             if (openTabs.contains(tab)) {
                 tab.closedTimestamp = -1;
-            } else {
-                if (tab.closedTimestamp < 0 && closedTabs.contains(tab)) {
-                    tab.closedTimestamp = now;
-                }
-                if (now - tab.lastActiveTimestamp >= timeoutMillis
-                        || tab.closedTimestamp >= 0 && now
-                                - tab.closedTimestamp >= closedGraceMillis) {
-                    registry.tabs.remove(tab.id);
-                    tab.destroy();
-                }
+            } else if (tab.closedTimestamp < 0 && closedTabs.contains(tab)) {
+                tab.closedTimestamp = now;
+            }
+        }
+    }
+
+    /**
+     * Destroys the browser tabs of the given session that have no open UI, and
+     * either whose UIs have not been active for the given time or whose last UI
+     * was closed longer ago than the given grace period. Call this after closed
+     * UIs are removed from the session, so that their detach listeners still
+     * get the browser tab of the UI.
+     *
+     * @param session
+     *            the session to clean up, locked
+     * @param timeoutMillis
+     *            the time without activity after which a browser tab is
+     *            destroyed
+     * @param closedGraceMillis
+     *            the time after the last UI of a browser tab was closed, during
+     *            which a new UI can still continue the browser tab
+     * @see #updateTabActivity(VaadinSession)
+     */
+    static void destroyInactiveTabs(VaadinSession session, long timeoutMillis,
+            long closedGraceMillis) {
+        Registry registry = session.getAttribute(Registry.class);
+        if (registry == null) {
+            return;
+        }
+        Set<BrowserTab> openTabs = new HashSet<>();
+        for (UI ui : session.getUIs()) {
+            BrowserTab tab = findTab(session, ui);
+            if (tab != null && !ui.isClosing()) {
+                openTabs.add(tab);
+            }
+        }
+        long now = System.currentTimeMillis();
+        for (BrowserTab tab : new ArrayList<>(registry.tabs.values())) {
+            if (!openTabs.contains(tab) && (now
+                    - tab.lastActiveTimestamp >= timeoutMillis
+                    || tab.closedTimestamp >= 0 && now
+                            - tab.closedTimestamp >= closedGraceMillis)) {
+                registry.tabs.remove(tab.id);
+                tab.destroy();
             }
         }
     }

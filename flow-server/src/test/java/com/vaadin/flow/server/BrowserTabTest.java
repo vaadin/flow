@@ -108,7 +108,7 @@ class BrowserTabTest {
         // An open UI that never used the tab also keeps it, by window name
         removeUI(ui);
         UI reloadedUI = addUI("tab-a");
-        BrowserTab.destroyInactiveTabs(session, 0, 0);
+        cleanup(0, 0);
 
         assertEquals(0, destroyed.get());
         assertSame(tab, BrowserTab.get(reloadedUI));
@@ -133,12 +133,12 @@ class BrowserTabTest {
         // A closing UI, like the one being reloaded, does not keep the tab,
         // but its recent heartbeat does until the timeout
         ui.close();
-        BrowserTab.destroyInactiveTabs(session, 60_000, 60_000);
+        cleanup(60_000, 60_000);
         removeUI(ui);
-        BrowserTab.destroyInactiveTabs(session, 60_000, 60_000);
+        cleanup(60_000, 60_000);
         assertEquals(0, destroyed.get());
 
-        BrowserTab.destroyInactiveTabs(session, 0, 60_000);
+        cleanup(0, 60_000);
         assertEquals(1, destroyed.get());
         assertThrows(IllegalStateException.class,
                 () -> tab.getAttribute("key"));
@@ -161,7 +161,7 @@ class BrowserTabTest {
         // The grace period starts when the cleanup first sees the last UI
         // closed, and the closed UI is removed in the same cleanup
         ui.close();
-        BrowserTab.destroyInactiveTabs(session, 60_000, 60_000);
+        cleanup(60_000, 60_000);
         removeUI(ui);
         assertEquals(0, destroyed.get());
 
@@ -169,13 +169,13 @@ class BrowserTabTest {
         // ends the grace period, so that closing that UI starts a new one
         Thread.sleep(20);
         UI reloadedUI = addUI("tab-a");
-        BrowserTab.destroyInactiveTabs(session, 60_000, 0);
+        cleanup(60_000, 0);
         reloadedUI.close();
-        BrowserTab.destroyInactiveTabs(session, 60_000, 10);
+        cleanup(60_000, 10);
         removeUI(reloadedUI);
         assertEquals(0, destroyed.get());
 
-        BrowserTab.destroyInactiveTabs(session, 60_000, 0);
+        cleanup(60_000, 0);
         assertEquals(1, destroyed.get());
     }
 
@@ -215,6 +215,12 @@ class BrowserTabTest {
         ui.getInternals().setExtendedClientDetails(details);
         session.addUI(ui);
         return ui;
+    }
+
+    private void cleanup(long timeoutMillis, long closedGraceMillis) {
+        BrowserTab.updateTabActivity(session);
+        BrowserTab.destroyInactiveTabs(session, timeoutMillis,
+                closedGraceMillis);
     }
 
     private void removeUI(UI ui) {

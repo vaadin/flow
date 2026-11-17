@@ -968,16 +968,22 @@ class VaadinServiceTest {
                     tab -> reloadedTabDestroyed.incrementAndGet());
             reloadedUI.getInternals().setLastHeartbeatTimestamp(now - 25_000);
             reloadedUI.close();
-            // A UI closed as inactive in this pass takes its tab along
+            // A UI closed as inactive in this pass takes its tab along, after
+            // the UI has been detached with its tab still available
             UI inactiveUI = addUI(session, 2);
             inactiveUI.getInternals().setLastHeartbeatTimestamp(now - 35_000);
-            BrowserTab.get(inactiveUI).addDestroyListener(
+            BrowserTab inactiveTab = BrowserTab.get(inactiveUI);
+            inactiveTab.addDestroyListener(
                     tab -> inactiveTabDestroyed.incrementAndGet());
+            List<BrowserTab> tabsOnDetach = new ArrayList<>();
+            inactiveUI.addDetachListener(
+                    event -> tabsOnDetach.add(BrowserTab.get(inactiveUI)));
 
             service.cleanupSession(session);
 
             assertEquals(0, reloadedTabDestroyed.get());
             assertEquals(1, inactiveTabDestroyed.get());
+            assertEquals(List.of(inactiveTab), tabsOnDetach);
         } finally {
             session.unlock();
         }
@@ -1004,7 +1010,6 @@ class VaadinServiceTest {
                     .addDestroyListener(tab -> destroyed.incrementAndGet());
             closedUI.close();
 
-            service.cleanupSession(session);
             service.cleanupSession(session);
 
             assertEquals(0, destroyed.get());
