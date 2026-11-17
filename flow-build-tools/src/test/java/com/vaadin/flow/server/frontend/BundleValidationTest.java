@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -38,6 +39,7 @@ import org.mockito.Mockito;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.DevBundleUtils;
@@ -45,6 +47,9 @@ import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Template;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.Mode;
@@ -61,6 +66,7 @@ import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.internal.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 import static com.vaadin.flow.server.Constants.PROD_BUNDLE_JAR_PATH;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
@@ -1103,6 +1109,45 @@ class BundleValidationTest {
 
         assertTrue(needsBuild,
                 "JavaScript declared by a JavaScript definition that the bundle was not built with should trigger a rebuild, whether the bundle carries another version of it or none at all");
+    }
+
+    static Stream<Arguments> modesAndBundledFunctions() {
+        // What the stats say the bundle registers: the function the
+        // application needs among others, and only others
+        return modes()
+                .flatMap(mode -> Stream.of(
+                        Arguments.of(mode,
+                                List.of("another function",
+                                        JsCall.functionId("this.focus()", 0,
+                                                false)),
+                                false),
+                        Arguments.of(mode, List.of("another function"), true)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("modesAndBundledFunctions")
+    void bundleListsFunctions_rebuildOnlyWhenOneIsMissing(Mode mode,
+            List<String> bundledFunctionIds, boolean expectedNeedsBuild) {
+        setupMode(mode);
+        doReturn(Set.of(BundledJs.class)).when(finder)
+                .getAnnotatedClasses(JsDefinition.class);
+        doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
+
+        ObjectNode stats = getBasicStats();
+        // The whole file differs, as the bundle was built with more
+        // definitions than the application has
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
+                FrontendUtils.GENERATED
+                        + FrontendUtils.JS_DEFINITIONS_FILE_NAME,
+                "not the hash of what the interfaces declare");
+        ArrayNode functionIds = stats.putArray("jsDefinitionFunctionIds");
+        bundledFunctionIds.forEach(functionIds::add);
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+
+        assertEquals(expectedNeedsBuild, needsBuild);
     }
 
     @ParameterizedTest
@@ -3022,6 +3067,12 @@ class BundleValidationTest {
     }
 
     @LoadDependenciesOnStartup
+    @JsDefinition
+    interface BundledJs {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
     static class AllEagerAppConf implements AppShellConfigurator {
 
     }
