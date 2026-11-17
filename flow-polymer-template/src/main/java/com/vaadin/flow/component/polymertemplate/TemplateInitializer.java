@@ -56,7 +56,7 @@ public class TemplateInitializer {
 
     private final PolymerParserData parserData;
 
-    private IdMapper idMapper;
+    private final IdMapper idMapper;
 
     /**
      * Creates a new initializer instance.
