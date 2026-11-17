@@ -46,18 +46,6 @@ import com.vaadin.flow.server.VaadinService;
  */
 public final class BundleUtils {
 
-    private BundleUtils() {
-        // Util methods only
-    }
-
-    /**
-     * Cached stats.json content to avoid repeated file I/O and parsing.
-     * Volatile ensures visibility across threads. The stats.json is a classpath
-     * resource that cannot change at runtime, making it safe to cache
-     * indefinitely.
-     */
-    private static volatile ObjectNode cachedStatsJson = null;
-
     /**
      * The key of the stats.json entry that lists the identifiers of the
      * functions the bundle registers for JavaScript definitions, event data and
@@ -71,6 +59,18 @@ public final class BundleUtils {
      */
     private static final Set<String> checkedJsFunctionDeclarers = ConcurrentHashMap
             .newKeySet();
+
+    private BundleUtils() {
+        // Util methods only
+    }
+
+    /**
+     * Cached stats.json content to avoid repeated file I/O and parsing.
+     * Volatile ensures visibility across threads. The stats.json is a classpath
+     * resource that cannot change at runtime, making it safe to cache
+     * indefinitely.
+     */
+    private static volatile ObjectNode cachedStatsJson = null;
 
     /**
      * Loads stats.json from the classpath (from the production bundle) and
