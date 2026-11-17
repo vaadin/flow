@@ -16,6 +16,7 @@
 package com.vaadin.flow.dom;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -74,11 +75,38 @@ public final class ElementEffect implements Serializable {
      * created the effect. {@code null} when not recorded.
      */
     private final @Nullable Throwable creationSite;
+    /**
+     * Whether the effect function is run for the first time when the owner is
+     * attached, rather than when the effect is created.
+     */
+    private final boolean runOnAttach;
 
+    /**
+     * Creates an effect owned by the given element, for implementing signal
+     * bindings. Unlike {@link #effect(Element, ContextualEffectAction)}, the
+     * effect function is run once right away when the element is not attached,
+     * so that the bound value is applied before attach.
+     *
+     * @param owner
+     *            the owner element, not <code>null</code>
+     * @param effectFunction
+     *            the effect function, not <code>null</code>
+     */
     public ElementEffect(Element owner, EffectAction effectFunction) {
         this(owner, (ContextualEffectAction) ctx -> effectFunction.execute());
     }
 
+    /**
+     * Creates an effect owned by the given element, for implementing signal
+     * bindings. Unlike {@link #effect(Element, ContextualEffectAction)}, the
+     * effect function is run once right away when the element is not attached,
+     * so that the bound value is applied before attach.
+     *
+     * @param owner
+     *            the owner element, not <code>null</code>
+     * @param effectFunction
+     *            the effect function, not <code>null</code>
+     */
     public ElementEffect(Element owner, ContextualEffectAction effectFunction) {
         this(owner, effectFunction, true);
     }
@@ -107,10 +135,10 @@ public final class ElementEffect implements Serializable {
         this.owner = owner;
 
         boolean attached = owner.getNode().isAttached();
-        creationSite = attached || runBeforeAttach
-                || ComponentTracker.isDisabled() ? null
-                        : new Throwable(
-                                "The signal effect that failed was created here");
+        runOnAttach = !attached && !runBeforeAttach;
+        creationSite = !runOnAttach || ComponentTracker.isDisabled() ? null
+                : new Throwable(
+                        "The signal effect that failed was created here");
 
         if (!attached && runBeforeAttach) {
             // Element is not yet attached: run a probe immediately so that
@@ -164,7 +192,8 @@ public final class ElementEffect implements Serializable {
     }
 
     private void addCreationSite(Exception e) {
-        if (creationSite != null) {
+        if (creationSite != null
+                && !Arrays.asList(e.getSuppressed()).contains(creationSite)) {
             e.addSuppressed(creationSite);
         }
     }
@@ -316,8 +345,10 @@ public final class ElementEffect implements Serializable {
         // Install the UI error handler so that exceptions during active
         // (post-attach) runs are routed to the session error handler instead
         // of being re-thrown.
-        errorHandler = (e, elem) -> ui.getSessionOrThrow().getErrorHandler()
-                .error(new ErrorEvent(e, elem.getNode()));
+        SerializableBiConsumer<Exception, Element> uiErrorHandler = (e,
+                elem) -> ui.getSessionOrThrow().getErrorHandler()
+                        .error(new ErrorEvent(e, elem.getNode()));
+        errorHandler = uiErrorHandler;
 
         SerializableExecutor uiDispatcher = command -> {
             if (UI.getCurrent() == ui) {
@@ -346,16 +377,28 @@ public final class ElementEffect implements Serializable {
             }
         };
 
-        if (effect == null) {
-            // First attach when the effect was not run before attach: create
-            // the Effect directly with the UI dispatcher so that the initial
-            // run uses the proper execution context.
+        if (effect == null && runOnAttach) {
+            // First attach of an effect that was not run before attach: run
+            // it synchronously as part of attaching, like activate() does
+            // below, rather than through the UI dispatcher, which would defer
+            // the run when attaching outside of the UI's own thread context.
+            // A programming error such as an effect that reads no signal is
+            // reported to the error handler like other effect failures, so
+            // that it does not abort attaching the rest of the tree.
             try {
-                effect = new Effect(this::executeAction, uiDispatcher);
-            } catch (MissingSignalUsageException e) {
+                effect = new Effect(this::executeAction, Runnable::run);
+            } catch (MissingSignalUsageException
+                    | DeniedSignalUsageException e) {
                 addCreationSite(e);
-                throw e;
+                uiErrorHandler.accept(e, owner);
+                return;
             }
+            effect.setDispatcher(uiDispatcher);
+        } else if (effect == null) {
+            // First attach for the already-attached path (effect not yet
+            // created): create the Effect directly with the UI dispatcher so
+            // that the initial run uses the proper execution context.
+            effect = new Effect(this::executeAction, uiDispatcher);
         } else {
             // Re-attach after detach (or the not-attached probe path):
             // swap the dispatcher and activate. activate() will only re-run

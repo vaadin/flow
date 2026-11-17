@@ -636,7 +636,7 @@ class ElementEffectTest {
 
     @ParameterizedTest
     @ValueSource(booleans = { true, false })
-    void effect_notAttached_noSignalRead_throwsOnAttachWithCreationSiteInDevelopmentMode(
+    void effect_notAttached_noSignalRead_reportedOnAttachWithCreationSiteInDevelopmentMode(
             boolean developmentMode) throws Exception {
         CurrentInstance.clearAll();
         withComponentTrackerEnabled(developmentMode, () -> {
@@ -644,19 +644,61 @@ class ElementEffectTest {
             Signal.effect(component, () -> {
                 // no signal read
             });
+            TestComponent sibling = new TestComponent();
+            AtomicInteger siblingAttachCount = new AtomicInteger();
+            sibling.addAttachListener(
+                    event -> siblingAttachCount.incrementAndGet());
+            TestComponent parent = new TestComponent();
+            parent.getElement().appendChild(component.getElement(),
+                    sibling.getElement());
 
-            MockUI ui = new MockUI();
-            var exception = assertThrows(MissingSignalUsageException.class,
-                    () -> ui.add(component));
+            VaadinService.setCurrent(service);
+            var session = new MockVaadinSession(service);
+            session.lock();
+            var ui = new MockUI(session);
+            var events = new ArrayList<ErrorEvent>();
+            session.setErrorHandler(events::add);
+            ui.add(parent);
 
+            assertEquals(1, siblingAttachCount.get(),
+                    "The rest of the tree should still be attached");
+            assertEquals(1, events.size(),
+                    "Error handler should have been called");
+            Throwable exception = events.get(0).getThrowable();
+            assertEquals(MissingSignalUsageException.class,
+                    exception.getClass());
             if (developmentMode) {
                 assertEquals(1, exception.getSuppressed().length);
                 assertCreatedIn(exception.getSuppressed()[0],
-                        "effect_notAttached_noSignalRead_throwsOnAttachWithCreationSiteInDevelopmentMode");
+                        "effect_notAttached_noSignalRead_reportedOnAttachWithCreationSiteInDevelopmentMode");
             } else {
                 assertEquals(0, exception.getSuppressed().length);
             }
         });
+    }
+
+    @Test
+    void effect_notAttached_attachedWithoutCurrentUI_runsDuringAttach() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        AtomicInteger count = new AtomicInteger();
+        Signal.effect(component, () -> {
+            signal.get();
+            count.incrementAndGet();
+        });
+
+        VaadinService.setCurrent(service);
+        var session = new MockVaadinSession(service);
+        session.lock();
+        var ui = new MockUI(session);
+        // Attaching e.g. inside VaadinSession.access(), which doesn't set
+        // the current UI
+        UI.setCurrent(null);
+        ui.add(component);
+
+        assertEquals(1, count.get(),
+                "Effect should run while the component is attached");
     }
 
     @Test
