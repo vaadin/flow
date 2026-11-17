@@ -183,7 +183,7 @@ class ComputedSignalTest extends SignalTestBase {
         ThreadMXBean tmx = ManagementFactory.getThreadMXBean();
         long[] deadlocked = null;
         for (int i = 0; i < 40 && deadlocked == null; i++) {
-            Thread.sleep(50);
+            Thread.sleep(50); // NOSONAR lets the threads race between checks
             deadlocked = tmx.findDeadlockedThreads();
         }
 

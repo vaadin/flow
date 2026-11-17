@@ -236,7 +236,7 @@ public class StagedTransaction extends Transaction {
             } else {
                 pendingCommits.forEach(PendingCommit::markAsAborted);
             }
-        } catch (RuntimeException | Error e) {
+        } catch (RuntimeException | Error e) { // NOSONAR
             trees.forEach(
                     tree -> SignalTree.unlockAfterFailure(tree.getLock(), e));
             throw e;

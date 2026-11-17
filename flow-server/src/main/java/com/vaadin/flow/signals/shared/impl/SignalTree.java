@@ -199,7 +199,7 @@ public abstract class SignalTree implements Serializable {
                 try {
                     listenToNext = invokeListener(invokeImmediate,
                             pendingFromOtherThread.getAndSet(false));
-                } catch (RuntimeException | Error e) {
+                } catch (RuntimeException | Error e) { // NOSONAR
                     /*
                      * This also covers a failure of another observer that
                      * propagates from a nested delivery of a change made by
@@ -208,7 +208,7 @@ public abstract class SignalTree implements Serializable {
                      */
                     try {
                         remove();
-                    } catch (RuntimeException | Error removeFailure) {
+                    } catch (RuntimeException | Error removeFailure) { // NOSONAR
                         // Keep the observer's own failure as the primary one
                         addSuppressedIfDistinct(e, removeFailure);
                     }
@@ -279,15 +279,6 @@ public abstract class SignalTree implements Serializable {
     }
 
     private static final ThreadLocal<DeliveryState> deliveryState = new ThreadLocal<>();
-
-    private static DeliveryState requireDeliveryState() {
-        DeliveryState state = deliveryState.get();
-        if (state == null) {
-            throw new IllegalStateException(
-                    "No signal tree lock is held by the current thread");
-        }
-        return state;
-    }
 
     /**
      * The tree lock. Keeps track of how many trees the current thread has
@@ -384,6 +375,44 @@ public abstract class SignalTree implements Serializable {
                 }
             }
         }
+
+        /*
+         * Runs all queued notifications even if some of them fail, so that no
+         * observer is left with a notification that is never delivered. The
+         * first failure is rethrown with any further failures as suppressed
+         * exceptions.
+         */
+        private static void deliverDeferredNotifications(DeliveryState state) {
+            if (state.queue.isEmpty()) {
+                return;
+            }
+            ArrayDeque<Runnable> batch = state.queue;
+            state.queue = new ArrayDeque<>();
+
+            state.deliveryDepth++;
+            try {
+                Throwable failure = null;
+                Runnable notification;
+                while ((notification = batch.poll()) != null) {
+                    try {
+                        notification.run();
+                    } catch (RuntimeException | Error e) { // NOSONAR
+                        if (failure == null) {
+                            failure = e;
+                        } else {
+                            addSuppressedIfDistinct(failure, e);
+                        }
+                    }
+                }
+                if (failure instanceof RuntimeException e) {
+                    throw e;
+                } else if (failure instanceof Error e) {
+                    throw e;
+                }
+            } finally {
+                state.deliveryDepth--;
+            }
+        }
     }
 
     private final Map<Id, List<Observer>> observers = new HashMap<>();
@@ -406,6 +435,15 @@ public abstract class SignalTree implements Serializable {
         assert type != null;
 
         this.type = type;
+    }
+
+    private static DeliveryState requireDeliveryState() {
+        DeliveryState state = deliveryState.get();
+        if (state == null) {
+            throw new IllegalStateException(
+                    "No signal tree lock is held by the current thread");
+        }
+        return state;
     }
 
     /**
@@ -439,43 +477,6 @@ public abstract class SignalTree implements Serializable {
         return lock;
     }
 
-    /*
-     * Runs all queued notifications even if some of them fail, so that no
-     * observer is left with a notification that is never delivered. The first
-     * failure is rethrown with any further failures as suppressed exceptions.
-     */
-    private static void deliverDeferredNotifications(DeliveryState state) {
-        if (state.queue.isEmpty()) {
-            return;
-        }
-        ArrayDeque<Runnable> batch = state.queue;
-        state.queue = new ArrayDeque<>();
-
-        state.deliveryDepth++;
-        try {
-            Throwable failure = null;
-            Runnable notification;
-            while ((notification = batch.poll()) != null) {
-                try {
-                    notification.run();
-                } catch (RuntimeException | Error e) {
-                    if (failure == null) {
-                        failure = e;
-                    } else {
-                        addSuppressedIfDistinct(failure, e);
-                    }
-                }
-            }
-            if (failure instanceof RuntimeException e) {
-                throw e;
-            } else if (failure instanceof Error e) {
-                throw e;
-            }
-        } finally {
-            state.deliveryDepth--;
-        }
-    }
-
     /**
      * Checks whether the tree lock is currently held.
      *
@@ -499,7 +500,7 @@ public abstract class SignalTree implements Serializable {
         T value;
         try {
             value = action.supply();
-        } catch (RuntimeException | Error e) {
+        } catch (RuntimeException | Error e) { // NOSONAR
             unlockAfterFailure(lock, e);
             throw e;
         }
@@ -517,7 +518,7 @@ public abstract class SignalTree implements Serializable {
         lock.lock();
         try {
             action.run();
-        } catch (RuntimeException | Error e) {
+        } catch (RuntimeException | Error e) { // NOSONAR
             unlockAfterFailure(lock, e);
             throw e;
         }
@@ -539,7 +540,7 @@ public abstract class SignalTree implements Serializable {
     static void unlockAfterFailure(ReentrantLock lock, Throwable failure) {
         try {
             lock.unlock();
-        } catch (RuntimeException | Error e) {
+        } catch (RuntimeException | Error e) { // NOSONAR
             addSuppressedIfDistinct(failure, e);
         }
     }
