@@ -73,6 +73,15 @@ public abstract class AsynchronousSignalTree extends SignalTree {
      * that applied a change or from {@link #confirm(List)} to submit changes
      * that were applied while waiting for the previous confirmation. It should
      * therefore not block while waiting for the commands to be confirmed.
+     * <p>
+     * Throwing an exception from this method is taken to mean that none of the
+     * commands were handed to the event log, unless they have already been
+     * passed to {@link #confirm(List)} before the exception is thrown. The
+     * commands are then kept and submitted again together with the next
+     * applied change, and the exception is rethrown to the caller. An
+     * implementation that might already have delivered the commands when a
+     * later step fails must therefore not throw, since that would cause the
+     * same commands to be submitted twice.
      *
      * @param commands
      *            the list of commands to submit, not <code>null</code>
