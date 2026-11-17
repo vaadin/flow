@@ -235,6 +235,17 @@ class TestProject(val gradleVersion: String = FlowPlugin.GRADLE_MINIMUM_SUPPORTE
      */
     val settingsFile: File get() = File(dir, "settings.gradle")
 
+    init {
+        // The nested builds share one TestKit daemon, which Gradle gives
+        // 512 MiB of heap by default. Generating the PWA splash screen icons
+        // (up to 2732x2048 pixels, four at a time) in production builds runs
+        // close to that limit and fails with OutOfMemoryError now and then.
+        // Setting org.gradle.jvmargs replaces Gradle's defaults, so keep its
+        // default metaspace limit.
+        newFile("gradle.properties",
+            "org.gradle.jvmargs=-Xmx1024m -XX:MaxMetaspaceSize=384m\n")
+    }
+
 
     private fun createGradleRunner(debug: Boolean): GradleRunner = GradleRunner.create()
         .withProjectDir(dir)

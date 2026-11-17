@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 
 import com.vaadin.flow.component.Component;
@@ -144,6 +146,33 @@ class ServerRpcHandlerTest {
 
         assertEquals(1, events.size());
         assertSame(ui, events.get(0).getUI());
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "'', the client sent no key for UI 3",
+            "key-of-ui-4, the key sent to UI 3 belongs to UI 4 of the same session",
+            "unknown-key, the key sent to UI 3 belongs to no UI of the session" })
+    void handleRpc_invalidCsrfToken_messageTellsWhereTheKeyIsFrom(
+            String sentToken, String expectedMessageStart) {
+        when(deploymentConfiguration.isXsrfProtectionEnabled())
+                .thenReturn(true);
+        when(ui.getUIId()).thenReturn(3);
+        when(ui.getCsrfToken()).thenReturn("key-of-ui-3");
+        UI otherUi = mock(UI.class);
+        when(otherUi.getUIId()).thenReturn(4);
+        when(otherUi.getCsrfToken()).thenReturn("key-of-ui-4");
+        when(session.getUIs()).thenReturn(List.of(ui, otherUi));
+        String msg = "{\"csrfToken\": \"" + sentToken + "\", \"rpc\":[]}";
+
+        InvalidUIDLSecurityKeyException e = assertThrows(
+                InvalidUIDLSecurityKeyException.class,
+                () -> serverRpcHandler.handleRpc(ui, msg, request));
+
+        assertTrue(e.getMessage().startsWith(expectedMessageStart),
+                e.getMessage());
+        // The message is logged, so it must not reveal any key
+        assertFalse(e.getMessage().contains("key-of-ui"), e.getMessage());
+        assertFalse(e.getMessage().contains("unknown-key"), e.getMessage());
     }
 
     @Test

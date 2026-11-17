@@ -49,7 +49,9 @@ import org.w3c.dom.NodeList;
  * emitted, because that is the only source accounting for profiles, dependency
  * management and transitivity. The enumeration here is therefore allowed to be
  * a superset: it is used to find the root, to name the modules left out of the
- * loop, and to know which poms invalidate the classpath cache.
+ * loop, to know which poms invalidate the classpath cache, and to admit a
+ * classpath module outside the root - one the reactor aggregates from beside
+ * it. A module it fails to enumerate under the root still reaches the loop.
  * <p>
  * A project with no aggregator above it resolves to a reactor of one, which is
  * exactly the behaviour the daemon had before it knew about reactors.

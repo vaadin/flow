@@ -76,7 +76,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         val tokenFileContent = JacksonUtils.readTree(tokenJson!!)
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
-        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).stringValue() }
     }
 
     @Test
@@ -87,7 +87,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         val tokenFileContent = JacksonUtils.readTree(tokenJson!!)
         expect("app-" + StringUtil.getHash("my-test-project",
             java.nio.charset.StandardCharsets.UTF_8
-        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).stringValue() }
     }
 
     /**
@@ -315,7 +315,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             repositories {
                 mavenLocal()
                 mavenCentral()
-                maven { url 'https://maven.vaadin.com/vaadin-prereleases' }
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
 
             dependencies {
@@ -768,7 +768,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             repositories {
                 mavenLocal()
                 mavenCentral()
-                maven { url 'https://maven.vaadin.com/vaadin-prereleases' }
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
 
             sourceSets {
@@ -899,6 +899,27 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         expect(true, buildResult.output) { buildResult.output.contains("!!!effective2.productionMode=true!!!") }
     }
 
+    @Test
+    fun testPluginEffectiveConfiguration_nodeFolderSystemPropertyOverridesBuildScript() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id 'com.vaadin.flow'
+            }
+            vaadin {
+                nodeFolder = '/from/build/script'
+            }
+            afterEvaluate {
+                println("!!!effective.nodeFolder=" + vaadin.effective.nodeFolder.getOrNull() + "!!!")
+            }
+        """.trimIndent()
+        )
+
+        val buildResult = testProject.build("help", "-Dvaadin.node.folder=/custom/node/bin")
+        expect(true, buildResult.output) { buildResult.output.contains("!!!effective.nodeFolder=/custom/node/bin!!!") }
+    }
+
     /**
      * Tests https://github.com/vaadin/flow/issues/22679
      * Verifies that vaadinBuildFrontend can propagate build info
@@ -939,7 +960,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         val tokenFileContent = JacksonUtils.readTree(tokenJson!!)
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
-        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).stringValue() }
 
         // Delete the cached token file so that Gradle's up-to-date check
         // detects a missing output and re-executes vaadinBuildFrontend.
@@ -958,7 +979,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         val newTokenFileContent = JacksonUtils.readTree(cachedTokenFile.readText())
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
-        )) { newTokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+        )) { newTokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).stringValue() }
     }
 
     @Test

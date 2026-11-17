@@ -74,12 +74,15 @@ reads well as a commit message a year from now: issue links, a lede they can
 understand without opening the diff, the risks spelled out, and a bullet list of
 what changed.
 
-Three rules shape it.
+Four rules shape it.
 
 - **Plain markdown only.** No HTML, no `<details>`, no checkboxes, no images —
-  they are unreadable in `git log`. Wrap lines at about 75 characters for the
-  same reason.
-- **The whole thing is a budget, not a summary of everything.** About 25 lines.
+  they are unreadable in `git log`.
+- **One line per paragraph and per bullet.** Do not wrap lines by hand: GitHub
+  renders every newline in a description as a line break, so wrapped text
+  looks broken on the pull request page. `git log` and terminals wrap long
+  lines on their own.
+- **The whole thing is a budget, not a summary of everything.** About 250 words.
   Long tables, API diffs and per-test rationale belong in the first comment.
 - **Anything that can surprise a reviewer is promoted to the top**, even when it
   is one line buried in a 60-line implementation section.
@@ -305,7 +308,7 @@ Only when the change genuinely needs them, always after `How to test`:
 ## Before posting
 
 - Read the description as if it were the commit message, because it will be one:
-  plain markdown, no HTML, no headings, wrapped at about 75 characters.
+  plain markdown, no HTML, no headings, one line per paragraph and per bullet.
 - Type of change, how to test and every `<details>` block are in the first
   comment, not in the description.
 - Summary at most 3 sentences, no class or method names in it.

@@ -23,8 +23,9 @@ import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.StringUtil;
 
 /**
- * Generate <code>tailwind.js</code> wrapper if it is missing in the generated
- * frontend folder.
+ * Generate the <code>tailwind.js</code> wrapper, which injects the compiled
+ * Tailwind CSS into the page, into the generated frontend folder. The file is
+ * written on every build.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

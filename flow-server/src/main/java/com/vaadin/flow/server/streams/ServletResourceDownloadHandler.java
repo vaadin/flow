@@ -143,6 +143,7 @@ public class ServletResourceDownloadHandler
      * player fetches in many small ranges.
      *
      * @return this instance for method chaining
+     * @since 25.4
      */
     public ServletResourceDownloadHandler enableRangeRequests() {
         rangeRequestsEnabled = true;
@@ -153,6 +154,8 @@ public class ServletResourceDownloadHandler
      * {@inheritDoc}
      * <p>
      * Range requests are answered after {@link #enableRangeRequests()}.
+     * 
+     * @since 25.4
      */
     @Override
     public boolean isRangeRequestsEnabled() {

@@ -42,6 +42,8 @@ import com.vaadin.flow.function.SerializableFunction;
  */
 public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
     /**
+     * The format of the hierarchy a data provider returns.
+     *
      * @since 25.0
      */
     public enum HierarchyFormat {

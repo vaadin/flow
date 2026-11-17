@@ -59,6 +59,7 @@ public class QuarkusInstantiator implements Instantiator {
      *            the instantiator to use for types that are not CDI beans
      * @param beanManager
      *            the bean manager to look up beans with
+     * @since 2.0
      */
     public QuarkusInstantiator(DefaultInstantiator delegate,
             BeanManager beanManager) {

@@ -31,7 +31,7 @@ import com.vaadin.flow.server.VaadinService;
  * another server with an older state.
  *
  * @see ServerRpcHandler.MessageIdSyncException
- * @since 25.4
+ * @since 25.3.3
  */
 public class MessageIdSyncErrorEvent extends EventObject {
 

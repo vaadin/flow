@@ -79,6 +79,7 @@ public interface ElementStateProvider extends Serializable {
      *            the name of the attribute
      * @param signal
      *            the signal to bind, not <code>null</code>
+     * @return the binding, which can be used to react to updates
      * @since 25.0
      */
     SignalBinding<String> bindAttributeSignal(Element owner, String attribute,
@@ -284,6 +285,7 @@ public interface ElementStateProvider extends Serializable {
      * @param writeCallback
      *            the callback to propagate value changes back, or
      *            <code>null</code> for a read-only binding
+     * @return the binding, which can be used to react to updates
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             given property
@@ -477,6 +479,7 @@ public interface ElementStateProvider extends Serializable {
      *            <code>null</code>
      * @param signal
      *            the signal to bind, not <code>null</code>
+     * @return the binding, which can be used to react to updates
      * @since 25.1
      */
     SignalBinding<Boolean> bindVisibleSignal(Element owner,

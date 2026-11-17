@@ -59,6 +59,7 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -712,6 +713,54 @@ class PushHandlerTest {
     }
 
     @Test
+    void connectionLost_staleResourceAfterReconnect_newConnectionIsKept()
+            throws Exception {
+        AtomicReference<UI> currentUi = new AtomicReference<>();
+        AtomicReference<VaadinSession> currentSession = new AtomicReference<>();
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinSession findVaadinSession(VaadinRequest request) {
+                return currentSession.get();
+            }
+
+            @Override
+            public UI findUI(VaadinRequest request) {
+                return currentUi.get();
+            }
+        };
+        MockVaadinSession session = new MockVaadinSession(service);
+        currentSession.set(session);
+        setProductionMode(service, false);
+
+        // Atmosphere reuses the tracking id when the client reconnects
+        AtmosphereResource oldResource = mockWebsocketResource("1");
+        AtmosphereResource newResource = mockWebsocketResource("1");
+
+        AtmospherePushConnection connection = session.runWithLock(() -> {
+            UI ui = new MockUI(session);
+            currentUi.set(ui);
+            ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+            AtmospherePushConnection pushConnection = new AtmospherePushConnection(
+                    ui);
+            ui.getInternals().setPushConnection(pushConnection);
+            pushConnection.connect(oldResource);
+            pushConnection.connect(newResource);
+            return pushConnection;
+        });
+
+        PushHandler handler = new PushHandler(service);
+        handler.connectionLost(mockEvent(oldResource));
+
+        assertTrue(connection.isConnected());
+        assertSame(newResource, connection.getResource());
+
+        handler.connectionLost(mockEvent(newResource));
+
+        assertFalse(connection.isConnected());
+        assertNull(connection.getResource());
+    }
+
+    @Test
     void connectionLost_connectWithoutSession_doNotSendNotification() {
         try {
             AtmosphereResource resource = mock(AtmosphereResource.class);
@@ -845,6 +894,13 @@ class PushHandlerTest {
         assertTrue(sessionIsSet.get());
 
         return service;
+    }
+
+    private static AtmosphereResourceEvent mockEvent(
+            AtmosphereResource resource) {
+        AtmosphereResourceEvent event = mock(AtmosphereResourceEvent.class);
+        when(event.getResource()).thenReturn(resource);
+        return event;
     }
 
     private static BufferedReader reader(String content) {

@@ -46,12 +46,15 @@ jobs:
   deploy:
     # Secrets are only handed to pull requests from a branch of this
     # repository. Deploying a fork would mean running its code with the Fly.io
-    # token, so forks are skipped.
+    # token, so forks are skipped. Only vaadin/flow deploys at all: a copy of
+    # this repository that has the organization secrets would otherwise publish
+    # its code on a preview URL.
     #
     # The label has to be present for every event type, and a `labeled` event
     # for some other label must not start a deployment of its own.
     if: >-
-      !github.event.pull_request.head.repo.fork
+      github.repository == 'vaadin/flow'
+      && !github.event.pull_request.head.repo.fork
       && contains(github.event.pull_request.labels.*.name, 'test deploy')
       && (github.event.action == 'synchronize' || github.event.action == 'reopened'
         || (github.event.action == 'labeled' && github.event.label.name == 'test deploy'))
@@ -170,9 +173,11 @@ jobs:
     # Merged or not, a closed pull request needs no preview, and neither does
     # one the label is removed from. A reopened one that still has the label is
     # deployed again. A pull request closed without the label has nothing left
-    # to destroy: removing the label already did it.
+    # to destroy: removing the label already did it. Only vaadin/flow deploys,
+    # so only vaadin/flow has something to destroy.
     if: >-
-      !github.event.pull_request.head.repo.fork
+      github.repository == 'vaadin/flow'
+      && !github.event.pull_request.head.repo.fork
       && ((github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'test deploy'))
         || (github.event.action == 'unlabeled' && github.event.label.name == 'test deploy'))
     timeout-minutes: 10

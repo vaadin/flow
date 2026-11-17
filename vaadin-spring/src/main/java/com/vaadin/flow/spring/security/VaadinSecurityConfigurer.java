@@ -425,6 +425,7 @@ public final class VaadinSecurityConfigurer
      *            the resolver for the URL to redirect to after authentication
      * @return the current configurer instance for method chaining
      * @see VaadinSavedRequestAwareAuthenticationSuccessHandler#setSuccessUrlResolver(VaadinSavedRequestAwareAuthenticationSuccessHandler.SuccessUrlResolver)
+     * @since 25.4
      */
     public VaadinSecurityConfigurer successUrlResolver(
             VaadinSavedRequestAwareAuthenticationSuccessHandler.SuccessUrlResolver successUrlResolver) {
@@ -453,6 +454,7 @@ public final class VaadinSecurityConfigurer
      * @param failureHandler
      *            the authentication failure handler
      * @return the current configurer instance for method chaining
+     * @since 25.4
      */
     public VaadinSecurityConfigurer failureHandler(
             AuthenticationFailureHandler failureHandler) {

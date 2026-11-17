@@ -1,9 +1,5 @@
-import {
-  ConnectionIndicator,
-  ConnectionState,
-  type ConnectionStateChangeListener,
-  type ConnectionStateStore
-} from '@vaadin/common-frontend';
+import { ConnectionIndicator } from './ConnectionIndicator';
+import { ConnectionState, type ConnectionStateChangeListener, type ConnectionStateStore } from './ConnectionState';
 import { collectBrowserDetails } from './BrowserHelpers';
 
 export interface FlowConfig {
@@ -86,6 +82,10 @@ function escapeRegExp(pattern: string) {
 }
 /**
  * Client API for flow UI operations.
+ *
+ * Creates the server-side UI lazily on the first server route and exposes it
+ * to the client router as a vaadin-router style route (`action`,
+ * `onBeforeEnter`, `onBeforeLeave`), which `Flow.tsx` adapts to React Router.
  */
 export class Flow {
   config: FlowConfig;
@@ -229,7 +229,7 @@ export class Flow {
     };
   }
 
-  // Send a remote call to `JavaScriptBootstrapUI` to check
+  // Send a remote call to `UI.leaveNavigation` on the server to check
   // whether navigation has to be cancelled.
   private async flowLeave(ctx: NavigationParameters, cmd?: PreventCommands): Promise<any> {
     // server -> server, viewing offline stub, or browser is offline
