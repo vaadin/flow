@@ -5,6 +5,8 @@ The implementation is based on `flow-plugin-base` which is also used by the Vaad
 
 Prerequisites:
 * Java 8 or higher
+* Gradle 7.6.4 or a newer 7.x version, or Gradle 8.3 or newer. Older versions fail to load the
+  multi-release Jackson jars on the plugin classpath.
 * node.js and npm. Vaadin will now automatically install node.js and npm, but you can also install those locally:
   * Windows/Mac: [node.js Download site](https://nodejs.org/en/download/)
   * Linux: Use package manager e.g. `sudo apt install npm` 
