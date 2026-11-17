@@ -34,6 +34,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 
 /**
@@ -211,8 +212,10 @@ public final class BundleUtils {
     public static void checkJsFunctionsBundled(Class<?> declaringType,
             Supplier<Collection<String>> functionIds) {
         VaadinService service = VaadinService.getCurrent();
-        if (service == null
-                || !service.getDeploymentConfiguration().isProductionMode()
+        // A service mocked for a test may have no configuration
+        DeploymentConfiguration configuration = service == null ? null
+                : service.getDeploymentConfiguration();
+        if (configuration == null || !configuration.isProductionMode()
                 || !checkedJsFunctionDeclarers.add(declaringType.getName())) {
             return;
         }
