@@ -74,40 +74,59 @@ final class Jvm {
     }
 
     /**
-     * An operating system and CPU architecture, spelled the same whichever side
-     * named them.
+     * An operating system, CPU architecture and C library, spelled the same
+     * whichever side named them.
      * <p>
      * A {@code release} file and the running JVM name the same platform
      * differently - {@code Darwin} is {@code Mac OS X}, {@code x86_64} is
      * {@code amd64} - so both are normalized before they are compared, or the
-     * daemon's own JDK would not match itself. An empty part is unknown.
+     * daemon's own JDK would not match itself. The C library tells a JDK built
+     * for Alpine ({@code musl}) from one built for glibc ({@code gnu}); Java
+     * has no property for it, so the daemon's own comes from its JDK's
+     * {@code release} file. An empty part is unknown.
      */
-    record Platform(String os, String arch) {
+    record Platform(String os, String arch, String libc) {
 
         /** The platform the daemon's own JVM runs on. */
         static Platform current() {
             return of(System.getProperty("os.name", ""),
-                    System.getProperty("os.arch", ""));
+                    System.getProperty("os.arch", ""),
+                    release(Path.of(System.getProperty("java.home", ".")))
+                            .getOrDefault("LIBC", ""));
         }
 
         /** A platform as either a {@code release} file or Java names it. */
-        static Platform of(String os, String arch) {
-            return new Platform(normalizeOs(os), normalizeArch(arch));
+        static Platform of(String os, String arch, String libc) {
+            String name = libc.trim().toLowerCase(Locale.ROOT);
+            return new Platform(normalizeOs(os), normalizeArch(arch),
+                    name.equals("default") ? "" : name);
         }
 
         /**
          * Whether a JDK built for {@code built} can run here. A part either
          * side leaves unknown is not held against the JDK: a {@code release}
          * file without {@code OS_NAME} says nothing about where it runs.
+         * <p>
+         * An {@code x86_64} JDK runs on an {@code aarch64} macOS or Windows
+         * through the emulation those systems ship (Rosetta, Prism), so it is
+         * not rejected there; the reverse has no such layer.
          */
         boolean runs(Platform built) {
-            return agrees(os, built.os) && agrees(arch, built.arch);
+            return agrees(os, built.os)
+                    && (agrees(arch, built.arch) || emulates(built.arch))
+                    && agrees(libc, built.libc);
         }
 
         @Override
         public String toString() {
             return (os.isEmpty() ? "unknown OS" : os) + " "
-                    + (arch.isEmpty() ? "unknown architecture" : arch);
+                    + (arch.isEmpty() ? "unknown architecture" : arch)
+                    + (libc.isEmpty() ? "" : " " + libc);
+        }
+
+        private boolean emulates(String builtArch) {
+            return arch.equals("aarch64") && builtArch.equals("x86_64")
+                    && (os.equals("macos") || os.equals("windows"));
         }
 
         private static boolean agrees(String here, String built) {
@@ -402,7 +421,8 @@ final class Jvm {
                 version != null ? version : "unknown version",
                 isJetBrains(release.get("IMPLEMENTOR"), binary),
                 Platform.of(release.getOrDefault("OS_NAME", ""),
-                        release.getOrDefault("OS_ARCH", "")));
+                        release.getOrDefault("OS_ARCH", ""),
+                        release.getOrDefault("LIBC", "")));
     }
 
     /** The launcher in a JDK home, whichever platform it is for. */

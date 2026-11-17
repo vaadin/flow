@@ -143,7 +143,7 @@ class JvmTest {
 
         // How Java names the platform a release file calls Linux x86_64.
         List<Jvm.Jdk> candidates = Jvm.candidates(homes(),
-                Jvm.Platform.of("Linux", "amd64"), logged::add);
+                platform("Linux", "amd64"), logged::add);
 
         // Closest to 21, the macOS JBR would have won and then failed to
         // execute in a Linux container sharing the host's ~/.vaadin.
@@ -158,25 +158,66 @@ class JvmTest {
 
     @Test
     void platformNamesAreNormalizedBeforeComparing() {
-        // Each pair is how a release file and Java name the same platform.
-        assertTrue(Jvm.Platform.of("Mac OS X", "aarch64")
-                .runs(Jvm.Platform.of("Darwin", "arm64")));
-        assertTrue(Jvm.Platform.of("Windows 11", "amd64")
-                .runs(Jvm.Platform.of("Windows", "x86_64")));
-        assertTrue(Jvm.Platform.of("Linux", "x86")
-                .runs(Jvm.Platform.of("Linux", "i686")));
-        assertFalse(Jvm.Platform.of("Mac OS X", "x86_64")
-                .runs(Jvm.Platform.of("Darwin", "aarch64")));
-        assertFalse(Jvm.Platform.of("Linux", "aarch64")
-                .runs(Jvm.Platform.of("Darwin", "aarch64")));
+        // Each pair is how Java and a release file name the same platform.
+        assertTrue(platform("Mac OS X", "aarch64")
+                .runs(platform("Darwin", "arm64")));
+        assertTrue(platform("Windows 11", "amd64")
+                .runs(platform("Windows", "x86_64")));
+        assertTrue(platform("Linux", "x86").runs(platform("Linux", "i686")));
+        assertFalse(platform("Mac OS X", "x86_64")
+                .runs(platform("Darwin", "aarch64")));
+        assertFalse(platform("Linux", "aarch64")
+                .runs(platform("Darwin", "aarch64")));
         // The trap a plain string compare falls into: the daemon's own JDK
         // has to match the platform it is running on.
         assertTrue(Jvm.Platform.current().runs(Jvm.current().platform()),
                 () -> Jvm.current().platform() + " vs "
                         + Jvm.Platform.current());
         // A release file that does not say is not held against the JDK.
-        assertTrue(Jvm.Platform.of("Linux", "amd64")
-                .runs(Jvm.Platform.of("", "")));
+        assertTrue(platform("Linux", "amd64").runs(platform("", "")));
+    }
+
+    @Test
+    void aJdkForTheOtherCLibraryIsRejected() {
+        // An Alpine JDK cannot run on glibc Linux, nor the reverse, though
+        // both are Linux x86_64.
+        assertFalse(Jvm.Platform.of("Linux", "amd64", "gnu")
+                .runs(Jvm.Platform.of("Linux", "x86_64", "musl")));
+        assertFalse(Jvm.Platform.of("Linux", "amd64", "musl")
+                .runs(Jvm.Platform.of("Linux", "x86_64", "gnu")));
+        assertTrue(Jvm.Platform.of("Linux", "amd64", "gnu")
+                .runs(Jvm.Platform.of("Linux", "x86_64", "gnu")));
+    }
+
+    @Test
+    void anX64JdkRunsUnderEmulationOnlyWhereTheOsProvidesIt() {
+        assertTrue(platform("Mac OS X", "aarch64")
+                .runs(platform("Darwin", "x86_64")));
+        assertTrue(platform("Windows 11", "aarch64")
+                .runs(platform("Windows", "x86_64")));
+        assertFalse(
+                platform("Linux", "aarch64").runs(platform("Linux", "x86_64")));
+    }
+
+    @Test
+    void anOverriddenHomeForAnotherPlatformIsUsedButWarnedAbout()
+            throws IOException {
+        String otherOs = Jvm.Platform.current().os().equals("linux") ? "Darwin"
+                : "Linux";
+        Path home = jdk("other", "21.0.5", "Eclipse Adoptium", otherOs,
+                "x86_64");
+        System.setProperty("vaadin.dev.javaHome", home.toString());
+        try {
+            // An explicit choice is honoured; the log says why it will fail.
+            assertEquals(home, chosen(0).home());
+        } finally {
+            System.clearProperty("vaadin.dev.javaHome");
+        }
+        assertTrue(
+                logged.stream().anyMatch(line -> line
+                        .startsWith("WARNING: vaadin.dev.javaHome is built for "
+                                + Jvm.Platform.of(otherOs, "x86_64", ""))),
+                () -> "expected a platform warning: " + logged);
     }
 
     @Test
@@ -236,6 +277,10 @@ class JvmTest {
         Optional<Jvm.Requirement> requirement = required == 0 ? Optional.empty()
                 : Optional.of(new Jvm.Requirement(required, "a test"));
         return Jvm.select(requirement, candidates(), logged::add);
+    }
+
+    private static Jvm.Platform platform(String os, String arch) {
+        return Jvm.Platform.of(os, arch, "");
     }
 
     /** Discovery over the temporary JDKs alone, on this machine's platform. */
