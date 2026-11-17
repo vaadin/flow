@@ -30,8 +30,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.Test;
@@ -781,23 +779,26 @@ class JsDefinitionProxyTest {
     }
 
     @Test
-    void createAndCreateSnippets_checkEveryFunctionIsBundled() {
+    void createAndCreateSnippets_checkEveryFunctionIsBundled()
+            throws NoSuchMethodException {
         try (MockedStatic<BundleUtils> bundleUtils = mockStatic(
                 BundleUtils.class, CALLS_REAL_METHODS)) {
             JsDefinitionProxy.create(GreeterJs.class, call -> null);
             JsDefinitionProxy.createSnippets(TemplateJs.class);
 
-            assertEquals(collectDeclaredIds(GreeterJs.class),
+            assertEquals(
+                    Set.of(JsCall.functionId("window.alert($0)", 1, false),
+                            JsCall.functionId("return this.value;", 0, false)),
                     captureCheckedIds(bundleUtils, GreeterJs.class));
-            assertEquals(collectDeclaredIds(TemplateJs.class),
+            assertEquals(
+                    Set.of(JsCall.functionId(
+                            TemplateJs.class.getMethod("label", String.class)),
+                            JsCall.functionId(TemplateJs.class.getMethod("echo",
+                                    Object.class)),
+                            JsCall.functionId(TemplateJs.class.getMethod("join",
+                                    String[].class))),
                     captureCheckedIds(bundleUtils, TemplateJs.class));
         }
-    }
-
-    private static Set<String> collectDeclaredIds(Class<?> definition) {
-        return Stream.of(definition.getMethods()).filter(
-                method -> method.isAnnotationPresent(JsExpression.class))
-                .map(JsCall::functionId).collect(Collectors.toSet());
     }
 
     @SuppressWarnings("unchecked")

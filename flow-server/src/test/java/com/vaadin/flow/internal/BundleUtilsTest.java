@@ -38,15 +38,14 @@ import com.vaadin.flow.server.VaadinService;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class BundleUtilsTest {
@@ -187,7 +186,7 @@ class BundleUtilsTest {
 
         BundleUtils.checkJsFunctionsBundled(CarriedJs.class,
                 () -> List.of("f00d"));
-        verify(logger, never()).error(anyString(), any(Object[].class));
+        verifyNoInteractions(logger);
 
         BundleUtils.checkJsFunctionsBundled(MissingJs.class,
                 () -> List.of("f00d", "dead"));
@@ -208,7 +207,7 @@ class BundleUtilsTest {
                 productionMode ? UnlistedJs.class : DevelopmentJs.class,
                 () -> List.of("dead"));
 
-        verify(logger, never()).error(anyString(), any(Object[].class));
+        verifyNoInteractions(logger);
     }
 
     private Logger mockCheck(boolean productionMode,

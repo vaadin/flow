@@ -55,10 +55,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 
 class ComponentEventBusTest {
 
@@ -871,6 +873,27 @@ class ComponentEventBusTest {
                             BundledEventData.getFunctionId(PATH_TARGET),
                             BundledEventData.getFunctionId(BUTTON_FILTER)),
                     Set.copyOf(ids.getValue().get()));
+        }
+    }
+
+    @DomEvent("plain-event")
+    public static class PlainEvent extends ComponentEvent<Component> {
+        public PlainEvent(Component source, boolean fromClient,
+                @EventData("event.detail") int detail) { // NOSONAR
+            super(source, fromClient);
+        }
+    }
+
+    @Test
+    void addListener_onlyPropertyPaths_notCheckedInTheBundle() {
+        try (MockedStatic<BundleUtils> bundleUtils = mockStatic(
+                BundleUtils.class, CALLS_REAL_METHODS)) {
+            new TestComponent().addListener(PlainEvent.class, event -> {
+            });
+
+            bundleUtils.verify(() -> BundleUtils
+                    .checkJsFunctionsBundled(eq(PlainEvent.class), any()),
+                    never());
         }
     }
 
