@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
@@ -36,6 +37,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.MissingSignalUsageException;
+import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
@@ -794,6 +796,43 @@ class EffectTest extends SignalTestBase {
 
         assertEquals(List.of(true, true), initialRuns,
                 "Racy change with async dispatcher should run with isInitialRun=true");
+    }
+
+    @Test
+    void sharedSignal_concurrentWriteBetweenValueAndUsage_effectRerun()
+            throws InterruptedException {
+        AtomicReference<SharedValueSignal<String>> self = new AtomicReference<>();
+        AtomicBoolean injectWrite = new AtomicBoolean(false);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial") {
+            @Override
+            protected @Nullable String extractValue(@Nullable Data data) {
+                @Nullable
+                String value = super.extractValue(data);
+                if (injectWrite.compareAndSet(true, false)) {
+                    // Simulate another thread writing right after the value
+                    // has been read but before the usage is created
+                    Thread writer = new Thread(
+                            () -> self.get().set("concurrent"));
+                    writer.start();
+                    try {
+                        writer.join();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                return value;
+            }
+        };
+        self.set(signal);
+
+        List<String> seen = new ArrayList<>();
+        injectWrite.set(true);
+        Signal.unboundEffect(() -> seen.add(signal.get()));
+
+        assertEquals("concurrent", signal.peek());
+        assertEquals("concurrent", seen.get(seen.size() - 1),
+                "Effect should observe the concurrent write");
     }
 
     @Test
