@@ -22,8 +22,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -33,6 +35,7 @@ import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.component.internal.KeyboardEvent;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -52,8 +55,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 
 class ComponentEventBusTest {
 
@@ -848,6 +855,72 @@ class ComponentEventBusTest {
     private static final String OFFSET = "event.clientX - element.offsetLeft";
     private static final String PATH_TARGET = "event.composedPath()[0]";
     private static final String BUTTON_FILTER = "event.button === 0";
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void addListener_bundledEventDataAndFilter_checkedInTheBundle() {
+        try (MockedStatic<BundleUtils> bundleUtils = mockStatic(
+                BundleUtils.class, CALLS_REAL_METHODS)) {
+            new TestComponent().addListener(OffsetEvent.class, event -> {
+            });
+
+            ArgumentCaptor<Supplier<Collection<String>>> ids = ArgumentCaptor
+                    .forClass(Supplier.class);
+            bundleUtils.verify(() -> BundleUtils.checkJsFunctionsBundled(
+                    eq(OffsetEvent.class), ids.capture()));
+            assertEquals(
+                    Set.of(BundledEventData.getFunctionId(OFFSET),
+                            BundledEventData.getFunctionId(PATH_TARGET),
+                            BundledEventData.getFunctionId(BUTTON_FILTER)),
+                    Set.copyOf(ids.getValue().get()));
+        }
+    }
+
+    @DomEvent("plain-event")
+    public static class PlainEvent extends ComponentEvent<Component> {
+        public PlainEvent(Component source, boolean fromClient,
+                @EventData("event.detail") int detail) { // NOSONAR
+            super(source, fromClient);
+        }
+    }
+
+    @DomEvent(value = "filtered-event", filter = BUTTON_FILTER)
+    public static class FilterOnlyEvent extends ComponentEvent<Component> {
+        public FilterOnlyEvent(Component source, boolean fromClient,
+                @EventData("event.detail") int detail) { // NOSONAR
+            super(source, fromClient);
+        }
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void addListener_bundledFilterOnly_checkedInTheBundle() {
+        try (MockedStatic<BundleUtils> bundleUtils = mockStatic(
+                BundleUtils.class, CALLS_REAL_METHODS)) {
+            new TestComponent().addListener(FilterOnlyEvent.class, event -> {
+            });
+
+            ArgumentCaptor<Supplier<Collection<String>>> ids = ArgumentCaptor
+                    .forClass(Supplier.class);
+            bundleUtils.verify(() -> BundleUtils.checkJsFunctionsBundled(
+                    eq(FilterOnlyEvent.class), ids.capture()));
+            assertEquals(Set.of(BundledEventData.getFunctionId(BUTTON_FILTER)),
+                    Set.copyOf(ids.getValue().get()));
+        }
+    }
+
+    @Test
+    void addListener_onlyPropertyPaths_notCheckedInTheBundle() {
+        try (MockedStatic<BundleUtils> bundleUtils = mockStatic(
+                BundleUtils.class, CALLS_REAL_METHODS)) {
+            new TestComponent().addListener(PlainEvent.class, event -> {
+            });
+
+            bundleUtils.verify(() -> BundleUtils
+                    .checkJsFunctionsBundled(eq(PlainEvent.class), any()),
+                    never());
+        }
+    }
 
     @Test
     void addListener_expressionEventDataAndFilter_sentAsTheFunctionsOfTheBundle() {
