@@ -47,7 +47,9 @@ import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
+import com.vaadin.flow.server.communication.UidlRequestHandler.MprPushStateJs;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.shared.JsonConstants;
 
 import static com.vaadin.flow.internal.FrontendUtils.FRONTEND;
@@ -59,6 +61,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class TaskGenerateJsDefinitionsTest {
 
@@ -487,6 +490,48 @@ class TaskGenerateJsDefinitionsTest {
 
         assertEquals(expected,
                 TaskGenerateJsDefinitions.collectFunctionIds(content));
+    }
+
+    @Test
+    void byteCodeScanner_rendersReachedAndFlowDefinitionsOnly() {
+        FrontendDependenciesScanner scanner = mock(
+                FrontendDependenciesScanner.class);
+        when(scanner.getClasses())
+                .thenReturn(Set.of(GreeterJs.class.getName()));
+        Options optimized = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(GreeterJs.class, LoggerJs.class,
+                        OffsetEvent.class, MprPushStateJs.class)),
+                null).withFrontendDirectory(frontendFolder)
+                .withProductionMode(true).useByteCodeScanner(true)
+                .withFrontendDependenciesScanner(scanner);
+
+        Set<String> functionIds = TaskGenerateJsDefinitions.collectFunctionIds(
+                new TaskGenerateJsDefinitions(optimized).getFileContent());
+
+        assertTrue(functionIds.containsAll(collectDeclaredIds(GreeterJs.class)),
+                "a reached definition is carried: " + functionIds);
+        assertTrue(
+                collectDeclaredIds(LoggerJs.class).stream()
+                        .noneMatch(functionIds::contains),
+                "a definition nothing reaches is not: " + functionIds);
+        assertFalse(
+                functionIds.contains(
+                        BundledEventData.getFunctionId(OFFSET_EXPRESSION)),
+                "nor the event data of an event type nothing reaches: "
+                        + functionIds);
+        assertTrue(
+                functionIds
+                        .containsAll(collectDeclaredIds(MprPushStateJs.class)),
+                "Flow's own definitions are carried whether reached or not: "
+                        + functionIds);
+    }
+
+    private static Set<String> collectDeclaredIds(Class<?> definition) {
+        Set<String> ids = Stream.of(definition.getMethods()).filter(
+                method -> method.isAnnotationPresent(JsExpression.class))
+                .map(JsCall::functionId).collect(Collectors.toSet());
+        assertFalse(ids.isEmpty(), definition + " declares no JavaScript");
+        return ids;
     }
 
     @Test
