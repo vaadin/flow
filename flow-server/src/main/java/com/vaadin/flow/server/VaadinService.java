@@ -1851,14 +1851,15 @@ public abstract class VaadinService implements Serializable {
             // destroyed
             int heartbeatInterval = getDeploymentConfiguration()
                     .getHeartbeatInterval();
+            long now = System.currentTimeMillis();
             if (heartbeatInterval > 0) {
-                BrowserTab.updateTabActivity(session);
+                BrowserTab.updateTabActivity(session, now);
             }
             removeClosedUIs(session);
             if (heartbeatInterval > 0) {
                 BrowserTab.destroyInactiveTabs(session,
                         1000L * getHeartbeatTimeout(),
-                        1000L * heartbeatInterval);
+                        1000L * heartbeatInterval, now);
             }
         } else {
             if (session.getState() == VaadinSessionState.OPEN) {

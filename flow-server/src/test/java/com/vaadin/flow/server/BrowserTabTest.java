@@ -151,8 +151,7 @@ class BrowserTabTest {
     }
 
     @Test
-    void destroyInactiveTabs_lastUIClosed_tabIsDestroyedAfterGracePeriod()
-            throws InterruptedException {
+    void destroyInactiveTabs_lastUIClosed_tabIsDestroyedAfterGracePeriod() {
         UI ui = addUI("tab-a");
         BrowserTab tab = BrowserTab.get(ui);
         AtomicInteger destroyed = new AtomicInteger();
@@ -160,22 +159,23 @@ class BrowserTabTest {
 
         // The grace period starts when the cleanup first sees the last UI
         // closed, and the closed UI is removed in the same cleanup
+        long closedAt = System.currentTimeMillis();
         ui.close();
-        cleanup(60_000, 60_000);
+        cleanup(60_000, 60_000, closedAt);
         removeUI(ui);
         assertEquals(0, destroyed.get());
 
         // A UI loaded in the tab within the grace period, as after a reload,
         // ends the grace period, so that closing that UI starts a new one
-        Thread.sleep(20);
+        long reloadedAt = closedAt + 20_000;
         UI reloadedUI = addUI("tab-a");
-        cleanup(60_000, 0);
+        cleanup(60_000, 0, reloadedAt);
         reloadedUI.close();
-        cleanup(60_000, 10);
+        cleanup(60_000, 10_000, reloadedAt);
         removeUI(reloadedUI);
         assertEquals(0, destroyed.get());
 
-        cleanup(60_000, 0);
+        cleanup(60_000, 0, reloadedAt);
         assertEquals(1, destroyed.get());
     }
 
@@ -218,9 +218,13 @@ class BrowserTabTest {
     }
 
     private void cleanup(long timeoutMillis, long closedGraceMillis) {
-        BrowserTab.updateTabActivity(session);
+        cleanup(timeoutMillis, closedGraceMillis, System.currentTimeMillis());
+    }
+
+    private void cleanup(long timeoutMillis, long closedGraceMillis, long now) {
+        BrowserTab.updateTabActivity(session, now);
         BrowserTab.destroyInactiveTabs(session, timeoutMillis,
-                closedGraceMillis);
+                closedGraceMillis, now);
     }
 
     private void removeUI(UI ui) {

@@ -320,8 +320,10 @@ public final class BrowserTab implements Serializable {
      *
      * @param session
      *            the session to clean up, locked
+     * @param now
+     *            the current time in milliseconds
      */
-    static void updateTabActivity(VaadinSession session) {
+    static void updateTabActivity(VaadinSession session, long now) {
         Registry registry = session.getAttribute(Registry.class);
         if (registry == null) {
             return;
@@ -340,7 +342,6 @@ public final class BrowserTab implements Serializable {
                 }
             }
         }
-        long now = System.currentTimeMillis();
         for (BrowserTab tab : registry.tabs.values()) {
             if (openTabs.contains(tab)) {
                 tab.closedTimestamp = -1;
@@ -365,10 +366,12 @@ public final class BrowserTab implements Serializable {
      * @param closedGraceMillis
      *            the time after the last UI of a browser tab was closed, during
      *            which a new UI can still continue the browser tab
-     * @see #updateTabActivity(VaadinSession)
+     * @param now
+     *            the current time in milliseconds
+     * @see #updateTabActivity(VaadinSession, long)
      */
     static void destroyInactiveTabs(VaadinSession session, long timeoutMillis,
-            long closedGraceMillis) {
+            long closedGraceMillis, long now) {
         Registry registry = session.getAttribute(Registry.class);
         if (registry == null) {
             return;
@@ -380,12 +383,11 @@ public final class BrowserTab implements Serializable {
                 openTabs.add(tab);
             }
         }
-        long now = System.currentTimeMillis();
         for (BrowserTab tab : new ArrayList<>(registry.tabs.values())) {
-            if (!openTabs.contains(tab) && (now
-                    - tab.lastActiveTimestamp >= timeoutMillis
-                    || tab.closedTimestamp >= 0 && now
-                            - tab.closedTimestamp >= closedGraceMillis)) {
+            boolean inactive = now - tab.lastActiveTimestamp >= timeoutMillis;
+            boolean closed = tab.closedTimestamp >= 0
+                    && now - tab.closedTimestamp >= closedGraceMillis;
+            if (!openTabs.contains(tab) && (inactive || closed)) {
                 registry.tabs.remove(tab.id);
                 tab.destroy();
             }
