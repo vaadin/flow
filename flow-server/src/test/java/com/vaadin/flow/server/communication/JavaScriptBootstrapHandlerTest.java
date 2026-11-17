@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.AfterEach;
@@ -286,24 +285,24 @@ class JavaScriptBootstrapHandlerTest {
                 invocation.getArgument(1))).when(session)
                 .setAttribute(any(Class.class), any());
 
-        // No browser tab is created while nobody listens for new tabs
+        // The browser tab is created even while nobody listens for new tabs,
+        // so a later UI in the same tab does not start a new one
         jsInitHandler.handleRequest(session, mocks.createRequest(mocks, "/",
-                "v-r=init&location=&v-sw=1&v-wn=tab-a"), response);
-        assertEquals(Set.of(SessionRouteRegistry.class), attributes.keySet());
+                "v-r=init&location=&v-sw=1&v-wn=tab-c"), response);
 
         List<String> events = new ArrayList<>();
         mocks.getService().addBrowserTabInitListener(
                 event -> events.add("tab " + event.getBrowserTab().getId()));
         mocks.getService().addUIInitListener(event -> events.add("ui"));
 
-        for (String windowName : List.of("tab-a", "tab-a", "tab-b")) {
+        for (String windowName : List.of("tab-a", "tab-a", "tab-b", "tab-c")) {
             jsInitHandler.handleRequest(session,
                     mocks.createRequest(mocks, "/",
                             "v-r=init&location=&v-sw=1&v-wn=" + windowName),
                     response);
         }
 
-        assertEquals(List.of("tab tab-a", "ui", "ui", "tab tab-b", "ui"),
+        assertEquals(List.of("tab tab-a", "ui", "ui", "tab tab-b", "ui", "ui"),
                 events);
     }
 

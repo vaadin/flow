@@ -40,22 +40,16 @@ class VaadinBrowserTabScopeTest extends AbstractUIScopedTest {
     private int nextUiId = 2;
 
     @Test
-    void get_currentUiIsSet_objectIsStored() {
+    void remove_currentUiIsSet_objectIsRemovedAndDestroyed() {
         mockUI();
-        get_currentScopeIsSet_objectIsStored(getScope());
-    }
+        Scope scope = getScope();
+        Object bean = scope.get("foo", Object::new);
+        AtomicInteger count = new AtomicInteger();
+        scope.registerDestructionCallback("foo", count::incrementAndGet);
 
-    @Test
-    void remove_currentUiIsSet_objectIsStored() {
-        mockUI();
-        remove_currentScopeIsSet_objectIsStored(getScope());
-    }
-
-    @Test
-    void registerDestructionCallback_currentUiIsSet_objectIsStored() {
-        mockUI();
-        registerDestructionCallback_currentScopeIsSet_objectIsStored(
-                getScope());
+        assertSame(bean, scope.remove("foo"));
+        assertEquals(1, count.get());
+        assertNotSame(bean, scope.get("foo", Object::new));
     }
 
     @Test
