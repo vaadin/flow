@@ -496,11 +496,12 @@ class TaskGenerateJsDefinitionsTest {
     void byteCodeScanner_rendersReachedAndFlowDefinitionsOnly() {
         FrontendDependenciesScanner scanner = mock(
                 FrontendDependenciesScanner.class);
-        when(scanner.getClasses())
-                .thenReturn(Set.of(GreeterJs.class.getName()));
+        when(scanner.getClasses()).thenReturn(Set.of(GreeterJs.class.getName(),
+                InheritingOffsetEvent.class.getName()));
         Options optimized = new Options(mock(Lookup.class),
                 new DefaultClassFinder(Set.of(GreeterJs.class, LoggerJs.class,
-                        OffsetEvent.class, MprPushStateJs.class)),
+                        OffsetEvent.class, InheritingOffsetEvent.class,
+                        MprPushStateJs.class)),
                 null).withFrontendDirectory(frontendFolder)
                 .withProductionMode(true).useByteCodeScanner(true)
                 .withFrontendDependenciesScanner(scanner);
@@ -519,6 +520,10 @@ class TaskGenerateJsDefinitionsTest {
                         BundledEventData.getFunctionId(OFFSET_EXPRESSION)),
                 "nor the event data of an event type nothing reaches: "
                         + functionIds);
+        assertTrue(
+                functionIds.contains(
+                        BundledEventData.getFunctionId(INHERITING_EXPRESSION)),
+                "a reached event type keeps its event data: " + functionIds);
         assertTrue(
                 functionIds
                         .containsAll(collectDeclaredIds(MprPushStateJs.class)),
