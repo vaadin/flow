@@ -70,9 +70,9 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
  * {@link JsDefinitionProxy#checkDefinition(Class)} is left out, with an error
  * in the log.
  * <p>
- * A build that uses the bytecode scanner renders only the definitions and event
- * types that the scanner reaches from the entry points of the application,
- * together with those of Flow itself, the same way it collects
+ * A production build that uses the bytecode scanner renders only the
+ * definitions and event types that the scanner reaches from the entry points of
+ * the application, together with those of Flow itself, the same way it collects
  * {@code @JsModule}. A class that is only used through reflection is reached by
  * naming it in {@code @Uses} on a class that is reached.
  * <p>
@@ -162,10 +162,13 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         Collection<Class<?>> definitions = classFinder
                 .getAnnotatedClasses(JsDefinition.class);
         Collection<Class<?>> eventTypes = findDomEventTypes(classFinder);
-        if (options.isUseByteCodeScanner()) {
-            // An optimized bundle carries what the application can reach, as
-            // it does for @JsModule, so that a library declaring JavaScript the
-            // application does not use leaves the bundle as it is
+        if (options.isProductionMode() && options.isUseByteCodeScanner()) {
+            // An optimized production bundle carries what the application can
+            // reach, as it does for @JsModule, so that a library declaring
+            // JavaScript the application does not use leaves the bundle as it
+            // is. Development keeps everything: the dev server calls
+            // definitions of its own that no entry point leads to, and a
+            // hotswapped class may start using any definition.
             Predicate<Class<?>> needed = createNeededFilter(classFinder);
             definitions = definitions.stream().filter(needed).toList();
             eventTypes = eventTypes.stream().filter(needed).toList();

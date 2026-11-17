@@ -531,6 +531,25 @@ class TaskGenerateJsDefinitionsTest {
                         + functionIds);
     }
 
+    @Test
+    void byteCodeScanner_developmentMode_rendersEveryDefinition() {
+        FrontendDependenciesScanner scanner = mock(
+                FrontendDependenciesScanner.class);
+        when(scanner.getClasses()).thenReturn(Set.of());
+        Options development = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(LoggerJs.class)), null)
+                .withFrontendDirectory(frontendFolder).withProductionMode(false)
+                .useByteCodeScanner(true)
+                .withFrontendDependenciesScanner(scanner);
+
+        Set<String> functionIds = TaskGenerateJsDefinitions.collectFunctionIds(
+                new TaskGenerateJsDefinitions(development).getFileContent());
+
+        assertTrue(functionIds.containsAll(collectDeclaredIds(LoggerJs.class)),
+                "a definition nothing reaches is still carried: "
+                        + functionIds);
+    }
+
     private static Set<String> collectDeclaredIds(Class<?> definition) {
         Set<String> ids = Stream.of(definition.getMethods()).filter(
                 method -> method.isAnnotationPresent(JsExpression.class))
