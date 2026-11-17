@@ -32,6 +32,7 @@ import './Shortcut';
 import './WakeLock';
 import './WebPush';
 import { isShareSupported } from './WebShare';
+import { windowNameReady } from './WindowName';
 
 const $wnd = window as any;
 
@@ -93,7 +94,8 @@ export async function collectBrowserDetails(): Promise<Record<string, string>> {
     params['v-tzid'] = '';
   }
 
-  /* Window name */
+  /* Window name, once Flow has given the tab one */
+  await windowNameReady();
   if ($wnd.name) {
     params['v-wn'] = $wnd.name;
   }
