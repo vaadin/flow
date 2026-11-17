@@ -21,7 +21,9 @@ strict mode and are tested in the other modules.
 All other `flow-tests` modules run with `csp=strict`: the `vaadin.csp` property
 of the `flow-tests` POM sets it, and the parent passes it to the application as
 a system property. In that mode these APIs throw a `CspViolationException`. This
-module sets the property to `off`, so it is the one place where they still run.
+module passes `off` to the application instead, a fixed value that
+`-Dvaadin.csp=...` does not change, so it is the one place where they still
+run.
 
 The rest of the setup is the one of [test-default](../test-default/README.md):
 Spring Boot, dev mode with frontend hotdeploy, and JUnit 6 (Jupiter).

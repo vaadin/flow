@@ -66,7 +66,9 @@
     <vaadin.frontend.hotdeploy>true</vaadin.frontend.hotdeploy>
     <vaadin.devmode.hostsAllowed>*</vaadin.devmode.hostsAllowed>
     <!-- Content Security Policy mode of the test applications: off, warn or
-            strict. Run with -Dvaadin.csp=off to test without it. -->
+            strict. Run with -Dvaadin.csp=off to test without it.
+            test-csp-off, test-csp-strict and test-csp-strict-spring-security
+            pin their own value and ignore this property. -->
     <vaadin.csp>strict</vaadin.csp>
   </properties>
 

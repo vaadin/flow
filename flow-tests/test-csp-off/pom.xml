@@ -23,10 +23,6 @@
     <!-- The parent's excludedGroups are JUnit 4 @Category classes that do not
          apply to the JUnit Platform provider. -->
     <excludedGroups/>
-    <!-- The one setting this module pins. The flow-tests parent passes it to
-         the application as the vaadin.csp system property, which takes
-         precedence over application.properties. -->
-    <vaadin.csp>off</vaadin.csp>
   </properties>
 
   <dependencyManagement>
@@ -113,6 +109,14 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>${spring.boot.version}</version>
+        <!-- A fixed value instead of the ${vaadin.csp} that the flow-tests
+             parent passes, so that -Dvaadin.csp=... for the whole suite does not
+             change the one setting this module is about -->
+        <configuration>
+          <systemPropertyVariables>
+            <vaadin.csp>off</vaadin.csp>
+          </systemPropertyVariables>
+        </configuration>
         <executions>
           <execution>
             <id>pre-integration-test</id>
