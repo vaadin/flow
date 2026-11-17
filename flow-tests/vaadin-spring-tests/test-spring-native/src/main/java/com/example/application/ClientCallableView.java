@@ -15,10 +15,15 @@
  */
 package com.example.application;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Route;
 
 /**
@@ -37,13 +42,19 @@ public class ClientCallableView extends Div {
     public record Greeting(String text) {
     }
 
+    @JsDefinition
+    public interface GreetJs extends Serializable {
+
+        @JsExpression("this.$server.greet({first: $0}).then(result => $1.textContent = result.text)")
+        void greet(String first, Element target);
+    }
+
     public ClientCallableView() {
         Span greeting = new Span();
         greeting.setId(GREETING_ID);
         NativeButton call = new NativeButton("Call the server",
-                event -> getElement().executeJs(
-                        "this.$server.greet({first: $0}).then(result => $1.textContent = result.text)",
-                        "native image", greeting));
+                event -> getElement().executeJs(GreetJs.class)
+                        .greet("native image", greeting.getElement()));
         call.setId(CALL_ID);
         add(call, greeting);
     }

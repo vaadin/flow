@@ -111,6 +111,14 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>${spring.boot.version}</version>
+        <!-- A fixed value instead of the ${vaadin.csp} that the flow-tests
+             parent passes, so that -Dvaadin.csp=... for the whole suite does not
+             change the one setting this module is about -->
+        <configuration>
+          <systemPropertyVariables>
+            <vaadin.csp>strict</vaadin.csp>
+          </systemPropertyVariables>
+        </configuration>
         <executions>
           <execution>
             <id>pre-integration-test</id>

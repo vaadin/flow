@@ -15,16 +15,27 @@
  */
 package com.vaadin.flow.test.routing;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 
 @Route("com.vaadin.flow.NavigationView")
 public class NavigationView extends Div {
+
+    @JsDefinition
+    public interface NavigatedListenerJs extends Serializable {
+
+        @JsExpression("if(!window.test) { window.addEventListener('vaadin-navigated', (e) => { window.testMessage = 'navigated to ' + window.location.pathname; }); window.test = true; }")
+        void listenForNavigated();
+    }
 
     public static final String SERVER_ID = "server-navigation";
     public static final String ANCHOR_ID = "anchor-navigation";
@@ -102,8 +113,7 @@ public class NavigationView extends Div {
         queuedSecond.setId(QUEUED_SECOND_ID);
         add(new Div(), queuedFirst, new Div(), queuedSecond);
 
-        getElement().executeJs(
-                "if(!window.test) { window.addEventListener('vaadin-navigated', (e) => { window.testMessage = 'navigated to ' + window.location.pathname; }); window.test = true; }");
+        getElement().executeJs(NavigatedListenerJs.class).listenForNavigated();
     }
 
 }

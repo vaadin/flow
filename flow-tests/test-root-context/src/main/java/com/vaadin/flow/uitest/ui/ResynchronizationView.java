@@ -15,8 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Route;
 
 /**
@@ -32,6 +36,15 @@ public class ResynchronizationView extends AbstractDivView {
     final static String ADDED_CLASS = "added";
     final static String REJECTED_CLASS = "rejected";
 
+    @JsDefinition
+    public interface ResyncJs extends Serializable {
+        @JsExpression("document.getElementById(\"" + ID
+                + "\").$server.clientCallable()" + ".then(_ => {})"
+                + ".catch(_ => { document.body.innerHTML += '<span class=\""
+                + REJECTED_CLASS + "\">rejected</span>';});")
+        void callAndReportRejection();
+    }
+
     public ResynchronizationView() {
         setId(ID);
 
@@ -45,12 +58,8 @@ public class ResynchronizationView extends AbstractDivView {
         add(createButton("Desync and call function", CALL_BUTTON, e -> {
             // add a span to <body> for the test (not to view, since the DOM
             // will be rebuilt on resync)
-            final String js = String.format(
-                    "document.getElementById(\"%s\").$server.clientCallable()"
-                            + ".then(_ => {})"
-                            + ".catch(_ => { document.body.innerHTML += '<span class=\"%s\">rejected</span>';});",
-                    ID, REJECTED_CLASS);
-            getUI().get().getPage().executeJs(js);
+            getUI().get().getPage().executeJs(ResyncJs.class)
+                    .callAndReportRejection();
         }));
     }
 

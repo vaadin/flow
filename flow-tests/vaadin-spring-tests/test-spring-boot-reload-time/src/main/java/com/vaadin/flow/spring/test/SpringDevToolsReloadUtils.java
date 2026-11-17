@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring.test;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -24,14 +25,27 @@ import java.util.stream.IntStream;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 
 public class SpringDevToolsReloadUtils {
+
+    @JsDefinition
+    public interface BenchmarkJs extends Serializable {
+
+        @JsExpression("window.benchmark.start()")
+        void start();
+
+        @JsExpression("window.benchmark.measureRender($0);")
+        void measureRender(Element target);
+    }
 
     public static NativeButton createReloadTriggerButton() {
         NativeButton startTriggerButton = new NativeButton("Click to Start",
                 event -> {
-                    UI.getCurrent().getPage()
-                            .executeJs("window.benchmark.start()");
+                    UI.getCurrent().getPage().executeJs(BenchmarkJs.class)
+                            .start();
                     Application.triggerReload();
                 });
         startTriggerButton.setId("start-button");

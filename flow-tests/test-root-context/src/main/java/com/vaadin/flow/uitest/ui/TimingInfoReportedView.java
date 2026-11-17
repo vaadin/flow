@@ -15,9 +15,13 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -33,7 +37,7 @@ public class TimingInfoReportedView extends Div {
             + "if (array.length != 5) { "
             + "  div.appendChild(document.createTextNode('ERROR: expected 5 values, got '+array.length())); "
             + "}"
-            + "for (i = 0; i < array.length; i++) { "
+            + "for (var i = 0; i < array.length; i++) { "
             + "  var value = 0+array[i];"
             + "  if ( value <0 || value >10000) {"
             + "     div.appendChild(document.createTextNode('ERROR: expected value "
@@ -47,12 +51,18 @@ public class TimingInfoReportedView extends Div {
             + "},0);";
   //@formatter:on
 
+    @JsDefinition
+    public interface TimingsJs extends Serializable {
+        @JsExpression(REPORT_TIMINGS)
+        void reportTimings();
+    }
+
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        getElement().executeJs(REPORT_TIMINGS);
+        getElement().executeJs(TimingsJs.class).reportTimings();
         NativeButton button = new NativeButton("test request");
-        button.addClickListener(
-                event -> getElement().executeJs(REPORT_TIMINGS));
+        button.addClickListener(event -> getElement().executeJs(TimingsJs.class)
+                .reportTimings());
         add(button);
     }
 

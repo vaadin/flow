@@ -15,21 +15,33 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.io.Serializable;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.dom.DomEvent;
+import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.DebounceSynchronizePropertyView", layout = ViewTestLayout.class)
 public class DebounceSynchronizePropertyView
         extends AbstractDebounceSynchronizeView {
+
+    @JsDefinition
+    public interface FilterJs extends Serializable {
+        @JsExpression("return element.value.length % 2 === 0;")
+        DomEventFilter hasEvenLength();
+    }
+
     private final HtmlComponent input = new HtmlComponent("input");
     private final Element inputElement = input.getElement();
 
@@ -39,8 +51,8 @@ public class DebounceSynchronizePropertyView
         Component eagerToggle = createModeToggle("Eager (every keypress)",
                 "eager");
         Component filteredToggle = createModeToggle("Filtered (even length)",
-                "filtered", registration -> registration
-                        .setFilter("element.value.length % 2 === 0"));
+                "filtered", registration -> registration.setFilterExpression(
+                        JsSnippets.of(FilterJs.class).hasEvenLength()));
         Component debounceToggle = createModeToggle(
                 "Debounce (when typing pauses)", "debounce",
                 registration -> registration.debounce(CHANGE_TIMEOUT));
