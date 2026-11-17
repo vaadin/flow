@@ -2,7 +2,7 @@ import { expect } from '@open-wc/testing';
 
 // API under test — importing registers window.Vaadin.Flow.getBrowserDetailsParameters.
 import { collectBrowserDetails } from '../../main/frontend/BrowserHelpers';
-import { initWindowName } from '../../main/frontend/WindowName';
+import { initBrowserTabIdentifier } from '../../main/frontend/BrowserTabIdentifier';
 
 const $wnd = window as any;
 
@@ -30,7 +30,7 @@ describe('BrowserHelpers', () => {
     window.name = '';
     sessionStorage.setItem('vaadin.windowName', 'returning-tab');
     try {
-      void initWindowName();
+      void initBrowserTabIdentifier();
       const params = await collectBrowserDetails();
 
       expect(params['v-wn']).to.equal('returning-tab');

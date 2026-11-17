@@ -1,12 +1,12 @@
 import { expect } from '@open-wc/testing';
 
 // API to test
-import { initWindowName } from '../../main/frontend/WindowName';
+import { initBrowserTabIdentifier } from '../../main/frontend/BrowserTabIdentifier';
 
 const STORAGE_KEY = 'vaadin.windowName';
 const CHANNEL_NAME = 'vaadin-window-name';
 
-describe('WindowName', () => {
+describe('BrowserTabIdentifier', () => {
   const originalName = window.name;
   let otherPage: BroadcastChannel | undefined;
 
@@ -54,14 +54,14 @@ describe('WindowName', () => {
     window.name = 'named-tab';
     sessionStorage.setItem(STORAGE_KEY, 'copied-from-opener');
 
-    await initWindowName();
+    await initBrowserTabIdentifier();
 
     expect(window.name).to.equal('named-tab');
     expect(sessionStorage.getItem(STORAGE_KEY)).to.equal('named-tab');
   });
 
   it('generates and stores a window name for a new tab', async () => {
-    await initWindowName();
+    await initBrowserTabIdentifier();
 
     expect(window.name).to.match(/^v-0\.\d+/);
     expect(sessionStorage.getItem(STORAGE_KEY)).to.equal(window.name);
@@ -71,7 +71,7 @@ describe('WindowName', () => {
     sessionStorage.setItem(STORAGE_KEY, 'returning-tab');
     openOtherPageUsing('some-other-tab');
 
-    await initWindowName();
+    await initBrowserTabIdentifier();
 
     expect(window.name).to.equal('returning-tab');
   });
@@ -80,7 +80,7 @@ describe('WindowName', () => {
     sessionStorage.setItem(STORAGE_KEY, 'original-tab');
     openOtherPageUsing('original-tab');
 
-    await initWindowName();
+    await initBrowserTabIdentifier();
 
     expect(window.name).to.match(/^v-0\.\d+/);
     expect(sessionStorage.getItem(STORAGE_KEY)).to.equal(window.name);
@@ -88,7 +88,7 @@ describe('WindowName', () => {
 
   it('answers only for its own window name', async () => {
     window.name = 'live-tab';
-    await initWindowName();
+    await initBrowserTabIdentifier();
 
     const answers = await queryFromOtherPage('other-tab', 'live-tab');
 
@@ -98,7 +98,7 @@ describe('WindowName', () => {
   it('answers for the stored name while taking it back', async () => {
     sessionStorage.setItem(STORAGE_KEY, 'returning-tab');
 
-    const ready = initWindowName();
+    const ready = initBrowserTabIdentifier();
     const answers = await queryFromOtherPage('returning-tab');
     await ready;
 

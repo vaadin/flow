@@ -32,7 +32,7 @@ import './Shortcut';
 import './WakeLock';
 import './WebPush';
 import { isShareSupported } from './WebShare';
-import { windowNameReady } from './WindowName';
+import { browserTabIdentifierReady } from './BrowserTabIdentifier';
 
 const $wnd = window as any;
 
@@ -95,7 +95,7 @@ export async function collectBrowserDetails(): Promise<Record<string, string>> {
   }
 
   /* Window name, once Flow has given the tab one */
-  await windowNameReady();
+  await browserTabIdentifierReady();
   if ($wnd.name) {
     params['v-wn'] = $wnd.name;
   }

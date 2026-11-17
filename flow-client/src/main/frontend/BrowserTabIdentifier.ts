@@ -112,7 +112,7 @@ async function resolveWindowName(openChannel: BroadcastChannel): Promise<void> {
  *
  * @returns a promise that resolves when `window.name` is set
  */
-export function initWindowName(): Promise<void> {
+export function initBrowserTabIdentifier(): Promise<void> {
   channel?.close();
   const openChannel = new BroadcastChannel(CHANNEL_NAME);
   openChannel.addEventListener('message', (event: MessageEvent<WindowNameMessage>) => {
@@ -127,11 +127,11 @@ export function initWindowName(): Promise<void> {
 }
 
 /**
- * Waits until a `window.name` that {@link initWindowName} is resolving has been
+ * Waits until a `window.name` that {@link initBrowserTabIdentifier} is resolving has been
  * set. Resolves right away if the name is not being resolved.
  *
  * @returns a promise that resolves when `window.name` can be read
  */
-export function windowNameReady(): Promise<void> {
+export function browserTabIdentifierReady(): Promise<void> {
   return ready;
 }

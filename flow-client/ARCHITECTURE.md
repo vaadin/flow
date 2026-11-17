@@ -190,8 +190,8 @@ navigation at a time, after the current one has finished its round trip.
   `true` while a server navigation is in progress, so TestBench waits for it
   like it waits for the engine.
 - **`@PreserveOnRefresh` needs `window.name`.** The `Flow` constructor
-  starts resolving it (`WindowName.ts`), and the browser details sent with
-  `?v-r=init` wait for it. Browsers can clear `window.name` on a visit to
+  starts resolving it (`BrowserTabIdentifier.ts`), and the browser details
+  sent with `?v-r=init` wait for it. Browsers can clear `window.name` on a visit to
   another site, so the top-level page also keeps it in `sessionStorage`.
   That storage is copied into duplicated tabs and `window.open()` windows,
   so a page only takes a stored name back when no other page answers on a

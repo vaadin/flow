@@ -1,7 +1,7 @@
 import { ConnectionIndicator } from './ConnectionIndicator';
 import { ConnectionState, type ConnectionStateChangeListener, type ConnectionStateStore } from './ConnectionState';
 import { collectBrowserDetails } from './BrowserHelpers';
-import { initWindowName } from './WindowName';
+import { initBrowserTabIdentifier } from './BrowserTabIdentifier';
 
 export interface FlowConfig {
   imports?: () => Promise<any>;
@@ -105,7 +105,7 @@ export class Flow {
 
   constructor(config?: FlowConfig) {
     // Resolve window.name early so @PreserveOnRefresh can use it to identify the browser tab
-    void initWindowName();
+    void initBrowserTabIdentifier();
 
     flowRoot.$ = flowRoot.$ || [];
     this.config = config || {};

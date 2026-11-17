@@ -3,7 +3,7 @@ import { expect } from '@open-wc/testing';
 // API to test
 import { ConnectionState, ConnectionStateStore } from '../../main/frontend/ConnectionState';
 import { Flow, type NavigationParameters } from '../../main/frontend/Flow';
-import { windowNameReady } from '../../main/frontend/WindowName';
+import { browserTabIdentifierReady } from '../../main/frontend/BrowserTabIdentifier';
 // Intern does not serve webpack chunks, adding deps here in order to
 // produce one chunk, because dynamic imports in Flow.ts  will not work.
 import '../../main/frontend/FlowBootstrap';
@@ -165,7 +165,7 @@ describe('Flow', () => {
     window.name = '';
     try {
       new Flow();
-      await windowNameReady();
+      await browserTabIdentifierReady();
 
       expect(window.name).to.match(/^v-0\.\d+/);
     } finally {
