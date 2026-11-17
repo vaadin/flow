@@ -884,6 +884,31 @@ class ComponentEventBusTest {
         }
     }
 
+    @DomEvent(value = "filtered-event", filter = BUTTON_FILTER)
+    public static class FilterOnlyEvent extends ComponentEvent<Component> {
+        public FilterOnlyEvent(Component source, boolean fromClient,
+                @EventData("event.detail") int detail) { // NOSONAR
+            super(source, fromClient);
+        }
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void addListener_bundledFilterOnly_checkedInTheBundle() {
+        try (MockedStatic<BundleUtils> bundleUtils = mockStatic(
+                BundleUtils.class, CALLS_REAL_METHODS)) {
+            new TestComponent().addListener(FilterOnlyEvent.class, event -> {
+            });
+
+            ArgumentCaptor<Supplier<Collection<String>>> ids = ArgumentCaptor
+                    .forClass(Supplier.class);
+            bundleUtils.verify(() -> BundleUtils.checkJsFunctionsBundled(
+                    eq(FilterOnlyEvent.class), ids.capture()));
+            assertEquals(Set.of(BundledEventData.getFunctionId(BUTTON_FILTER)),
+                    Set.copyOf(ids.getValue().get()));
+        }
+    }
+
     @Test
     void addListener_onlyPropertyPaths_notCheckedInTheBundle() {
         try (MockedStatic<BundleUtils> bundleUtils = mockStatic(
