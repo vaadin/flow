@@ -36,6 +36,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -210,32 +212,50 @@ class VaadinServiceTest {
     }
 
     @Test
-    void applySessionLockCheckStrategy_developmentMode_unlockedAccessThrows() {
-        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
-        configuration.setLockCheckStrategy(SessionLockCheckStrategy.LOG);
-        MockVaadinServletService service = new MockVaadinServletService(
-                configuration);
-        VaadinSession session = new MockVaadinSession(service);
-
-        service.applySessionLockCheckStrategy(session);
-
-        assertThrows(IllegalStateException.class, session::checkHasLock);
-    }
-
-    @Test
     void applySessionLockCheckStrategy_productionMode_usesConfiguredStrategy() {
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         configuration.setProductionMode(true);
         configuration.setLockCheckStrategy(SessionLockCheckStrategy.LOG);
         MockVaadinServletService service = new MockVaadinServletService(
                 configuration);
-        MockVaadinSession session = new MockVaadinSession(service);
+        ReentrantLock lock = new ReentrantLock();
+        VaadinSessionTest.VaadinSessionWithMockLogger session = new VaadinSessionTest.VaadinSessionWithMockLogger(
+                service) {
+            @Override
+            public Lock getLockInstance() {
+                return lock;
+            }
+        };
 
         service.applySessionLockCheckStrategy(session);
 
-        // LOG only warns, where THROW or the default ASSERT (assertions are
-        // enabled in tests) would fail
         session.checkHasLock();
+        assertThat(session.mockLogger.getLogs(), containsString(
+                "Cannot access state in VaadinSession or UI without locking the session."));
+    }
+
+    @Test
+    void findVaadinSession_newSessionInDevelopmentMode_unlockedAccessThrows()
+            throws SessionExpiredException {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setLockCheckStrategy(SessionLockCheckStrategy.LOG);
+        MockVaadinServletService service = new MockVaadinServletService(
+                configuration);
+        Map<String, Object> attributes = new HashMap<>();
+        WrappedSession wrappedSession = mock(WrappedSession.class);
+        when(wrappedSession.getAttribute(anyString()))
+                .thenAnswer(i -> attributes.get(i.getArgument(0)));
+        doAnswer(i -> attributes.put(i.getArgument(0), i.getArgument(1)))
+                .when(wrappedSession).setAttribute(anyString(), any());
+        VaadinRequest request = mock(VaadinRequest.class);
+        when(request.getWrappedSession()).thenReturn(wrappedSession);
+        when(request.getWrappedSession(true)).thenReturn(wrappedSession);
+        when(request.getWrappedSession(false)).thenReturn(wrappedSession);
+
+        VaadinSession session = service.findVaadinSession(request);
+
+        assertFalse(session.hasLock());
+        assertThrows(IllegalStateException.class, session::checkHasLock);
     }
 
     @Test
