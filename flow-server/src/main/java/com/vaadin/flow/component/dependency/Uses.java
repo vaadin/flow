@@ -40,11 +40,11 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * dependencies are also loaded when a component <code>A</code> is used. The
  * used class does not have to be a component: any class the production build
  * reaches through it, such as a {@link com.vaadin.flow.js.JsDefinition}
- * interface, counts as used, and its {@link JsModule} and {@link CssImport}
- * annotations are included in the bundle. What is loaded at runtime rather than
- * bundled, such as a {@link StyleSheet} or a {@link JavaScript} with a runtime
- * URL, is only loaded for a component, so it is not loaded for a used class
- * that is not one.
+ * interface, counts as used, and its {@link JsModule}, {@link CssImport} and
+ * bundled {@link JavaScript} annotations are included in the bundle. What is
+ * loaded at runtime rather than bundled, such as a {@link StyleSheet}, or a
+ * {@link JavaScript} with a runtime URL or {@code type = MODULE}, is only
+ * loaded for a component, so it is not loaded for a used class that is not one.
  * <p>
  * For {@code PolymerTemplate} implementations, used components will also be
  * instantiated if an element with the corresponding {@link Tag @Tag} value is
