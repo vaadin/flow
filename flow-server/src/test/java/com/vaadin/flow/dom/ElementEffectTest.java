@@ -678,14 +678,16 @@ class ElementEffectTest {
     }
 
     @Test
-    void effect_notAttached_attachedWithoutCurrentUI_runsDuringAttach() {
+    void effect_notAttached_attachedWithoutCurrentUI_runsDuringAttachAndLaterInUI() {
         CurrentInstance.clearAll();
         TestComponent component = new TestComponent();
         ValueSignal<String> signal = new ValueSignal<>("initial");
         AtomicInteger count = new AtomicInteger();
+        AtomicReference<UI> currentUI = new AtomicReference<>();
         Signal.effect(component, () -> {
             signal.get();
             count.incrementAndGet();
+            currentUI.set(UI.getCurrent());
         });
 
         VaadinService.setCurrent(service);
@@ -699,6 +701,17 @@ class ElementEffectTest {
 
         assertEquals(1, count.get(),
                 "Effect should run while the component is attached");
+
+        // A later change from outside the UI runs the effect in the UI
+        session.unlock();
+        signal.set("changed");
+        assertEquals(1, count.get(),
+                "Effect should not run on the thread that changed the signal");
+
+        service.flushExecutorAndAccessTasks(session);
+        assertEquals(2, count.get());
+        assertSame(ui, currentUI.get(),
+                "Effect should run with correct UI context");
     }
 
     @Test

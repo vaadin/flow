@@ -16,7 +16,6 @@
 package com.vaadin.flow.dom;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -192,8 +191,7 @@ public final class ElementEffect implements Serializable {
     }
 
     private void addCreationSite(Exception e) {
-        if (creationSite != null
-                && !Arrays.asList(e.getSuppressed()).contains(creationSite)) {
+        if (creationSite != null) {
             e.addSuppressed(creationSite);
         }
     }
@@ -382,16 +380,26 @@ public final class ElementEffect implements Serializable {
             // it synchronously as part of attaching, like activate() does
             // below, rather than through the UI dispatcher, which would defer
             // the run when attaching outside of the UI's own thread context.
-            // A programming error such as an effect that reads no signal is
-            // reported to the error handler like other effect failures, so
-            // that it does not abort attaching the rest of the tree.
+            // Changes from other threads, also during the first run, still go
+            // through the UI dispatcher.
+            Thread[] attachingThread = { Thread.currentThread() };
+            SerializableExecutor firstRunDispatcher = command -> {
+                if (attachingThread[0] == Thread.currentThread()) {
+                    command.run();
+                } else {
+                    uiDispatcher.execute(command);
+                }
+            };
             try {
-                effect = new Effect(this::executeAction, Runnable::run);
-            } catch (MissingSignalUsageException
-                    | DeniedSignalUsageException e) {
+                effect = new Effect(this::executeAction, firstRunDispatcher);
+            } catch (MissingSignalUsageException e) {
+                // Reported like other effect failures on attach, so that it
+                // does not abort attaching the rest of the tree
                 addCreationSite(e);
                 uiErrorHandler.accept(e, owner);
                 return;
+            } finally {
+                attachingThread[0] = null;
             }
             effect.setDispatcher(uiDispatcher);
         } else if (effect == null) {
