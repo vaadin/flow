@@ -107,6 +107,7 @@ class SpringClassesSerializableTest extends ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.spring\\.scopes\\.VaadinSessionScope",
                 "com\\.vaadin\\.flow\\.spring\\.scopes\\.AbstractScope",
                 "com\\.vaadin\\.flow\\.spring\\.scopes\\.VaadinUIScope",
+                "com\\.vaadin\\.flow\\.spring\\.scopes\\.VaadinBrowserTabScope",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.AuthenticationContext",
                 // Part of the security filter chain, not of session state,
                 // like the OidcUserService that holds it

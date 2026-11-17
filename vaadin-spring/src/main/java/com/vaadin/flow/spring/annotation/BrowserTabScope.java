@@ -1,0 +1,43 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.spring.annotation;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import org.springframework.context.annotation.Scope;
+
+import static com.vaadin.flow.spring.scopes.VaadinBrowserTabScope.VAADIN_BROWSER_TAB_SCOPE_NAME;
+
+/**
+ * Stereotype annotation for Spring's {@code @Scope("vaadin-browser-tab")}.
+ * <p>
+ * A bean in this scope is shared by all the UIs that are loaded in the same
+ * browser tab, and destroyed when the browser tab is destroyed. See
+ * {@link com.vaadin.flow.spring.scopes.VaadinBrowserTabScope} and
+ * {@link com.vaadin.flow.server.BrowserTab} for when that happens.
+ *
+ * @author Vaadin Ltd
+ */
+@Scope(VAADIN_BROWSER_TAB_SCOPE_NAME)
+@Target({ ElementType.TYPE, ElementType.METHOD })
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface BrowserTabScope {
+}
