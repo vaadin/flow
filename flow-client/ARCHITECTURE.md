@@ -191,12 +191,12 @@ navigation at a time, after the current one has finished its round trip.
   like it waits for the engine.
 - **`@PreserveOnRefresh` needs `window.name`.** The `Flow` constructor
   starts resolving it (`BrowserTabIdentifier.ts`), and the browser details
-  sent with `?v-r=init` wait for it. Browsers can clear `window.name` on a visit to
-  another site, so the top-level page also keeps it in `sessionStorage`.
-  That storage is copied into duplicated tabs and `window.open()` windows,
-  so a page only takes a stored name back when no other page answers on a
-  `BroadcastChannel` that it is using the name; otherwise it generates a new
-  one.
+  sent with `?v-r=init` wait for it. Browsers can clear `window.name` on a
+  visit to another site, so the top-level page also keeps it in
+  `sessionStorage`. That storage is copied into duplicated tabs and
+  `window.open()` windows, so a page only takes a stored name back when no
+  other page answers on a `BroadcastChannel` that it is using the name;
+  otherwise it generates a new one.
 - **Offline.** When the connection is down or `?v-r=init` fails, the route
   renders the offline stub (`offline-stub.html` in an iframe) instead of the
   container, and re-renders when the connection comes back. See
