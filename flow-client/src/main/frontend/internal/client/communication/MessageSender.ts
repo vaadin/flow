@@ -123,9 +123,6 @@ export class MessageSender {
           dispatchRequestEnd(this.#openRequest, 'discarded');
           this.#openRequest = null;
         }
-        // Lets page scripts that wait for a reply, like the router in Flow.ts,
-        // stop waiting.
-        this.#registry.getClientEvents().dispatchEvent(new CustomEvent<null>('vaadin-ui-terminated'));
       }
     });
   }

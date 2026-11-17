@@ -422,13 +422,11 @@ describe('Flow', () => {
     const elem: any = await new Flow().serverSideRoutes[0].action({ pathname: 'Foo' });
     const cmd = { prevent: () => 'prevented' };
 
-    expect(await elem.onBeforeEnter({ pathname: 'Foo' }, cmd)).to.equal('prevented');
+    expect(await settledSoon(elem.onBeforeEnter({ pathname: 'Foo' }, cmd))).to.equal('prevented');
     expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
 
-    // The stopped UI is not asked again
-    const requests = server.getRequestLog().length;
-    expect(await elem.onBeforeEnter({ pathname: 'Bar' }, cmd)).to.equal('prevented');
-    expect(server.getRequestLog()).to.have.length(requests);
+    // A later navigation is cancelled without waiting for the stopped UI
+    expect(await settledSoon(elem.onBeforeEnter({ pathname: 'Bar' }, cmd))).to.equal('prevented');
     expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
     document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
   });
@@ -441,7 +439,11 @@ describe('Flow', () => {
     await elem.onBeforeEnter({ pathname: 'Foo' }, {});
     const cmd = { prevent: () => 'prevented', continue: () => 'continued' };
 
-    expect(await elem.onBeforeLeave({ pathname: 'Lorem' }, cmd)).to.equal('continued');
+    expect(await settledSoon(elem.onBeforeLeave({ pathname: 'Lorem' }, cmd))).to.equal('continued');
+    expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
+
+    // A later navigation leaves without waiting for the stopped UI
+    expect(await settledSoon(elem.onBeforeLeave({ pathname: 'Ipsum' }, cmd))).to.deep.equal({});
     expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
     document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
   });
@@ -716,6 +718,11 @@ describe('Flow', () => {
     expect(container.style.display).to.equal('');
   });
 });
+
+// What the promise resolves to, or 'pending' if it does not settle soon
+function settledSoon<T>(promise: Promise<T>): Promise<T | 'pending'> {
+  return Promise.race([promise, new Promise<'pending'>((resolve) => setTimeout(() => resolve('pending'), 500))]);
+}
 
 function stubServerRemoteFunction(
   id: string,

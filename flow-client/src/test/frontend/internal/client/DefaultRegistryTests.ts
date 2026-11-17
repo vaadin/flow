@@ -9,7 +9,7 @@ import { DefaultConnectionStateHandler } from '../../../../main/frontend/interna
 import { DefaultRegistry } from '../../../../main/frontend/internal/client/DefaultRegistry';
 import { ClientEvents } from '../../../../main/frontend/internal/client/ClientEvents';
 import { MessageSender } from '../../../../main/frontend/internal/client/communication/MessageSender';
-import { UILifecycle } from '../../../../main/frontend/internal/client/UILifecycle';
+import { UILifecycle, UIState } from '../../../../main/frontend/internal/client/UILifecycle';
 
 function makeRegistry(): DefaultRegistry {
   const config = new ApplicationConfiguration();
@@ -59,5 +59,23 @@ describe('DefaultRegistry', () => {
     registry.reset();
     expect(registry.getUILifecycle()).to.not.equal(lifecycleBefore); // resettable -> new instance
     expect(registry.getApplicationConfiguration()).to.equal(config); // final -> same instance
+  });
+
+  it('announces on the client events when the current UI lifecycle stops', () => {
+    const registry = makeRegistry();
+    let terminations = 0;
+    registry.getClientEvents().addEventListener('vaadin-ui-terminated', () => terminations++);
+
+    // E.g. an exported web component resynchronizing its session.
+    const replaced = registry.getUILifecycle();
+    registry.reset();
+    replaced.setState(UIState.RUNNING);
+    replaced.setState(UIState.TERMINATED);
+    expect(terminations).to.equal(0);
+
+    registry.getUILifecycle().setState(UIState.RUNNING);
+    expect(terminations).to.equal(0);
+    registry.getUILifecycle().setState(UIState.TERMINATED);
+    expect(terminations).to.equal(1);
   });
 });
