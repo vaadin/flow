@@ -185,10 +185,13 @@ public class ComponentMetaData {
         List<Uses> usesList = AnnotationReader.getAnnotationsFor(componentClass,
                 Uses.class);
         for (Uses uses : usesList) {
-            Class<? extends Component> otherClass = uses.value();
-            if (!scannedClasses.contains(otherClass)) {
-                findDependencies(service, otherClass, dependencyInfo,
-                        scannedClasses);
+            Class<?> usedClass = uses.value();
+            // A used class that is not a component, such as a JavaScript
+            // definition, has no dependencies to load at runtime
+            if (Component.class.isAssignableFrom(usedClass)
+                    && !scannedClasses.contains(usedClass)) {
+                findDependencies(service, usedClass.asSubclass(Component.class),
+                        dependencyInfo, scannedClasses);
             }
         }
         return dependencyInfo;

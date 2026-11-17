@@ -22,19 +22,24 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Marks that an annotated component implicitly uses another component. This
- * will ensure that any dependencies of the used component are also loaded.
+ * Marks that the annotated class implicitly uses another class, so that what
+ * the used class needs on the client is available whenever the annotated class
+ * is used.
  * <p>
- * Marking class A with <code>@Uses(B.class)</code> will ensure all
- * {@link StyleSheet}, {@link JavaScript} dependencies for class <code>B</code>
- * are loaded when class <code>A</code> is used.
+ * Marking class A with <code>@Uses(B.class)</code> makes the production build
+ * treat <code>B</code> as used whenever <code>A</code> is, even if no code of
+ * <code>A</code> refers to <code>B</code> directly, for example because
+ * <code>B</code> is only reached through reflection. When <code>B</code> is a
+ * component, all its {@link StyleSheet}, {@link JavaScript} and other
+ * dependencies are also loaded when a component <code>A</code> is used. The
+ * used class can also be a {@link com.vaadin.flow.js.JsDefinition} interface or
+ * any other class whose client-side code the build collects.
  * <p>
  * For {@code PolymerTemplate} implementations, used components will also be
  * instantiated if an element with the corresponding {@link Tag @Tag} value is
@@ -54,11 +59,11 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public @interface Uses {
 
     /**
-     * Marks the component class to depend on.
+     * Marks the class to depend on.
      *
-     * @return the component class to depend on
+     * @return the class to depend on
      */
-    Class<? extends Component> value();
+    Class<?> value();
 
     /**
      * Internal annotation to enable use of multiple {@link Uses} annotations.

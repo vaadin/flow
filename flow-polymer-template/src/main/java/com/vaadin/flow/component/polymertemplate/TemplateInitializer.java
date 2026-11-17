@@ -189,6 +189,8 @@ public class TemplateInitializer {
 
         AnnotationReader
                 .getAnnotationValuesFor(templateType, Uses.class, Uses::value)
+                .filter(Component.class::isAssignableFrom)
+                .map(usedType -> usedType.asSubclass(Component.class))
                 .forEach(usedType -> AnnotationReader
                         .getAnnotationValueFor(usedType, Tag.class, Tag::value)
                         .map(tag -> tag.toLowerCase(Locale.ROOT))

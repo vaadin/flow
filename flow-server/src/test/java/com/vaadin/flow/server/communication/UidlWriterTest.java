@@ -155,6 +155,7 @@ class UidlWriterTest {
 
     @Tag("using")
     @Uses(UsedComponent.class)
+    @Uses(TestJs.class)
     public static class UsingComponent extends Component {
     }
 
