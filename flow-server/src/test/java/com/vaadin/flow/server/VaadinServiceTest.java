@@ -210,6 +210,35 @@ class VaadinServiceTest {
     }
 
     @Test
+    void applySessionLockCheckStrategy_developmentMode_unlockedAccessThrows() {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setLockCheckStrategy(SessionLockCheckStrategy.LOG);
+        MockVaadinServletService service = new MockVaadinServletService(
+                configuration);
+        VaadinSession session = new MockVaadinSession(service);
+
+        service.applySessionLockCheckStrategy(session);
+
+        assertThrows(IllegalStateException.class, session::checkHasLock);
+    }
+
+    @Test
+    void applySessionLockCheckStrategy_productionMode_usesConfiguredStrategy() {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setProductionMode(true);
+        configuration.setLockCheckStrategy(SessionLockCheckStrategy.LOG);
+        MockVaadinServletService service = new MockVaadinServletService(
+                configuration);
+        MockVaadinSession session = new MockVaadinSession(service);
+
+        service.applySessionLockCheckStrategy(session);
+
+        // LOG only warns, where THROW or the default ASSERT (assertions are
+        // enabled in tests) would fail
+        session.checkHasLock();
+    }
+
+    @Test
     void requestEnd_serviceFailure_threadLocalsCleared() {
         MockVaadinServletService service = new MockVaadinServletService() {
             @Override
