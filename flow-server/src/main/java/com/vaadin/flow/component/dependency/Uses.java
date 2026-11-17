@@ -38,8 +38,10 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * <code>B</code> is only reached through reflection. When <code>B</code> is a
  * component, all its {@link StyleSheet}, {@link JavaScript} and other
  * dependencies are also loaded when a component <code>A</code> is used. The
- * used class can also be a {@link com.vaadin.flow.js.JsDefinition} interface or
- * any other class whose client-side code the build collects.
+ * used class does not have to be a component: any class the production build
+ * reaches through it, such as a {@link com.vaadin.flow.js.JsDefinition}
+ * interface, counts as used, and its {@link JsModule}, {@link JavaScript} and
+ * {@link CssImport} annotations are included in the bundle.
  * <p>
  * For {@code PolymerTemplate} implementations, used components will also be
  * instantiated if an element with the corresponding {@link Tag @Tag} value is

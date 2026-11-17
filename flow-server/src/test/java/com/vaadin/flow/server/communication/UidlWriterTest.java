@@ -155,6 +155,7 @@ class UidlWriterTest {
 
     @Tag("using")
     @Uses(UsedComponent.class)
+    // Not a component, so it has no chunk of its own
     @Uses(TestJs.class)
     public static class UsingComponent extends Component {
     }
