@@ -7,10 +7,16 @@ string:
   values they return
 - `JsFunction.of(String, ...)`
 - `Page.addDynamicImport(String)`
-- string event filters (`setFilter(String)`, `@DomEvent(filter = ...)`) and
-  event data that is an expression rather than a property path
+- `Element.addJsInitializer(String, ...)`
+- element listener filters and event data given as an expression rather than
+  a property path: `setFilter(String)`, `addEventData(String)` and
+  `addEventDataElement(String)`
 - `Shortcuts.setShortcutListenOnElement(String, ...)`, a shortcut locator given
   as a string
+
+`@EventData` values and `@DomEvent(filter = ...)` are JavaScript in
+annotations too, but the build puts them into the bundle, so they work in the
+strict mode and are tested in the other modules.
 
 All other `flow-tests` modules run with `csp=strict`: the `vaadin.csp` property
 of the `flow-tests` POM sets it, and the parent passes it to the application as
