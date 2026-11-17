@@ -306,12 +306,12 @@ A name must be unique across all Vaadin jars. Name the jars that end up in an
 application's module graph, which includes Quarkus deployment jars, because
 Quarkus resolves them as modules when it builds the application. Test jars,
 build and test tooling, and jars that no module descriptor is expected to
-`requires` get no name, so they keep the one derived from their file name. In this repository, set the
-name with the `jpms.module.name` property in the module's `pom.xml`; the root
-pom writes the manifest entry and omits it when the property is empty. A
-released name can not change, because other modules `requires` it. The
-packages decide the name only when a jar is first named; when code later moves
-between jars, the jar keeps its name.
+`requires` get no name, so they keep the one derived from their file name. In
+this repository, set the name with the `jpms.module.name` property in the
+module's `pom.xml`; the root pom writes the manifest entry and omits it when the
+property is empty. A released name can not change, because other modules
+`requires` it. The packages decide the name only when a jar is first named; when
+code later moves between jars, the jar keeps its name.
 
 ## Dev Loop
 
