@@ -51,6 +51,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -205,6 +206,11 @@ public class UidlWriterTest {
         JsonObject response = session.runWithLock(() -> {
             session.setConfiguration(
                     session.getService().getDeploymentConfiguration());
+            // The mock service has no Lookup, which creating a UI needs to
+            // resolve the application configuration
+            session.getService().getContext().setAttribute(
+                    ApplicationConfiguration.class,
+                    mock(ApplicationConfiguration.class));
             UI ui = new MockUI(session);
             ui.doInit(mock(VaadinRequest.class), session.getNextUIid(), "foo");
             session.addUI(ui);
