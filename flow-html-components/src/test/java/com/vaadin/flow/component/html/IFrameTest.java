@@ -32,14 +32,11 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.DownloadHandler;
-import com.vaadin.flow.server.streams.DownloadResponse;
-import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.eq;
@@ -116,7 +113,7 @@ class IFrameTest extends ComponentTest {
     }
 
     @Test
-    void downloadHandler_isSetToInline() {
+    void downloadHandler_servedInline() throws Exception {
         Element element = mock(Element.class);
         class TestIFrame extends IFrame {
             public TestIFrame(DownloadHandler downloadHandler) {
@@ -128,12 +125,13 @@ class IFrameTest extends ComponentTest {
                 return element;
             }
         }
-        // dummy handler
-        InputStreamDownloadHandler handler = DownloadHandler
-                .fromInputStream(event -> DownloadResponse.error(500));
-        assertFalse(handler.isInline());
-        new TestIFrame(handler);
-        assertTrue(handler.isInline());
+        new TestIFrame(event -> event.setFileName("page.html"));
+
+        ArgumentCaptor<DownloadHandler> captor = ArgumentCaptor
+                .forClass(DownloadHandler.class);
+        verify(element).setAttribute(eq("src"), captor.capture());
+        assertEquals("inline; filename=\"page.html\"",
+                AssertUtils.servedContentDisposition(captor.getValue()));
     }
 
     @Test
