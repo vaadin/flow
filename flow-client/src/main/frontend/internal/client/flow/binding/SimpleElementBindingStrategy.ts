@@ -108,8 +108,9 @@ type EventExpression = (event: Event, element: Element) => unknown;
 /**
  * The settings of a declared snippet that the client runs when an event
  * occurs. Its key is `@` followed by the key of the snippet, or, for an
- * `@EventData` value that the build put into the bundle, the expression
- * itself, which the client compiles when the bundle has no function for it.
+ * `@EventData` value or a `@DomEvent` filter that the build put into the
+ * bundle, the expression itself, which the client compiles when the bundle has
+ * no function for it.
  * The settings of an expression that the client compiles or reads are only
  * its debounce settings, and its key is the expression.
  */
@@ -1261,7 +1262,8 @@ function handleDomEvent(event: Event, context: BindingContext): void {
     const settings = expressionSettings[key];
     if (isSnippetSettings(settings)) {
       debounceSettings[key] = settings[JsonConstants.EVENT_SETTINGS_DEBOUNCE];
-      // A key that is not a snippet key is a bundled @EventData value
+      // A key that is not a snippet key is a bundled @EventData value or
+      // @DomEvent filter
       const compiled = key.startsWith(JsonConstants.EVENT_SNIPPET_KEY_PREFIX)
         ? null
         : compileIfMissingFromBundle(key, settings, node.getTree());
@@ -1543,16 +1545,16 @@ function evaluateSnippet(settings: SnippetSettings, tree: StateTree, event: Even
 }
 
 /**
- * The ids of the bundled `@EventData` values that the bundle has no function
- * for and that the client has warned about, so that it warns once per value
- * rather than on every event.
+ * The ids of the bundled `@EventData` values and `@DomEvent` filters that the
+ * bundle has no function for and that the client has warned about, so that it
+ * warns once per value rather than on every event.
  */
 const warnedMissingBundledExpressions = new Set<string>();
 
 /**
- * Compiles an `@EventData` value that the build put into the bundle when the
- * bundle has no function for it, for example because the class that declares
- * the value changed after the build. The expression is compiled as the server
+ * Compiles an `@EventData` value or a `@DomEvent` filter that the build put
+ * into the bundle when the bundle has no function for it, for example because
+ * the class that declares the value changed after the build. The expression is compiled as the server
  * would otherwise have sent it, and a warning goes to the console once.
  *
  * If compiling is blocked too, by a Content Security Policy without
@@ -1566,6 +1568,10 @@ const warnedMissingBundledExpressions = new Set<string>();
  * The expression without the prefix is compiled, and the function that is
  * returned maps the DOM node that it returns to the closest state node id, as
  * the function of the bundle would be mapped.
+ *
+ * The key of a filter with a side effect is the conditional expression, such as
+ * `(filter) && event.preventDefault()`, which calls the method when compiled
+ * as the function of the bundle with the side effect would.
  *
  * @param key - the key of the entry: the expression, with the prefix of a
  * mapped value if it has one
@@ -1588,7 +1594,7 @@ function compileIfMissingFromBundle(key: string, settings: SnippetSettings, tree
     compiled = getOrCreateExpression(expression);
   } catch (error) {
     Console.error(
-      `No JavaScript in the bundle for the @EventData value "${expression}", and compiling it in the browser failed, so the event is not sent. ` +
+      `No JavaScript in the bundle for the @EventData value or @DomEvent filter "${expression}", and compiling it in the browser failed, so the event is not sent. ` +
         "A Content Security Policy without 'unsafe-eval' blocks compiling it. Build the frontend again or restart the application to put the value into the bundle."
     );
     throw error;
@@ -1596,7 +1602,7 @@ function compileIfMissingFromBundle(key: string, settings: SnippetSettings, tree
   if (!warnedMissingBundledExpressions.has(functionId)) {
     warnedMissingBundledExpressions.add(functionId);
     Console.warn(
-      `No JavaScript in the bundle for the @EventData value "${expression}", so it is compiled in the browser. ` +
+      `No JavaScript in the bundle for the @EventData value or @DomEvent filter "${expression}", so it is compiled in the browser. ` +
         'The build did not collect it, for example because the class that declares it changed after the build. Build the frontend again or restart the application to put the value into the bundle.'
     );
   }
@@ -1619,11 +1625,42 @@ const BUILT_IN_EXPRESSIONS = new Map<string, EventExpression>([
 ]);
 
 /**
+ * The expression that the server sends for `preventDefault()` or
+ * `stopPropagation()` on a listener with a filter expression, see
+ * `ElementListenerMap.makeConditional`: the filter in parentheses, then the
+ * call of the method when the filter passes.
+ */
+const CONDITIONAL_SIDE_EFFECT = /^\((.*)\) && event\.(preventDefault|stopPropagation)\(\)$/;
+
+/**
+ * Reads a conditional side effect whose filter is a property path without
+ * compiling it, so that a path filter works with `preventDefault()` under a
+ * Content Security Policy without `unsafe-eval`.
+ *
+ * @param expressionString - the expression the server sent
+ * @returns a function that returns what the compiled expression would, or
+ * undefined if the expression is not such a conditional
+ */
+function createConditionalSideEffectExpression(expressionString: string): EventExpression | undefined {
+  const match = CONDITIONAL_SIDE_EFFECT.exec(expressionString);
+  const filter = match === null ? undefined : createPropertyPathExpression(match[1]);
+  if (match === null || filter === undefined) {
+    return undefined;
+  }
+  const method = match[2] as 'preventDefault' | 'stopPropagation';
+  return (event, element) => {
+    const passes = filter(event, element);
+    return passes ? event[method]() : passes;
+  };
+}
+
+/**
  * Parses an event-data expression into a function `(event, element) => value`,
  * caching the result per expression string; mirrors getOrCreateExpression.
  * The expressions that Flow itself sends are not compiled, see
  * BUILT_IN_EXPRESSIONS, and neither are property paths, see
- * createPropertyPathExpression.
+ * createPropertyPathExpression, nor a side effect conditional on a property
+ * path, see createConditionalSideEffectExpression.
  */
 function getOrCreateExpression(expressionString: string): EventExpression {
   const builtIn = BUILT_IN_EXPRESSIONS.get(expressionString);
@@ -1639,6 +1676,7 @@ function getOrCreateExpression(expressionString: string): EventExpression {
     // Mirrors NativeFunction.create; the server controls these expressions.
     expression =
       createPropertyPathExpression(expressionString) ??
+      createConditionalSideEffectExpression(expressionString) ??
       (new Function('event', 'element', `return (${expressionString})`) as EventExpression);
     expressionCache.set(expressionString, expression);
   }

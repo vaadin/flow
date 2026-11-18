@@ -19,6 +19,7 @@
   </licenses>
 
   <properties>
+    <jpms.module.name>com.vaadin.flow.component.polymertemplate</jpms.module.name>
     <cvdlName>flow-polymer-template</cvdlName>
     <currentYear>2022</currentYear>
   </properties>
