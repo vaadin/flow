@@ -176,8 +176,7 @@ public class StreamResourceRegistry implements Serializable {
     public static class ElementStreamResource extends AbstractStreamResource {
         private final ElementRequestHandler elementRequestHandler;
         private final Element owner;
-        // read by the request thread without the session lock
-        private volatile DownloadDisposition disposition;
+        private DownloadDisposition disposition;
 
         public ElementStreamResource(
                 ElementRequestHandler elementRequestHandler, Element owner) {

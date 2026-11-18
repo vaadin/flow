@@ -233,7 +233,7 @@ class DownloadEventTest {
 
     @Test
     void dispositionInRequest_inlineWithoutFileName_writesDisposition() {
-        when(request.getAttribute(DownloadDisposition.class.getName()))
+        when(request.getAttribute(DownloadEvent.DISPOSITION_REQUEST_ATTRIBUTE))
                 .thenReturn(DownloadDisposition.ATTACHMENT);
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
@@ -243,7 +243,7 @@ class DownloadEventTest {
 
     @Test
     void dispositionInRequest_setFileName_keepsFileName() {
-        when(request.getAttribute(DownloadDisposition.class.getName()))
+        when(request.getAttribute(DownloadEvent.DISPOSITION_REQUEST_ATTRIBUTE))
                 .thenReturn(DownloadDisposition.INLINE);
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
@@ -254,7 +254,7 @@ class DownloadEventTest {
 
     @Test
     void dispositionInRequest_headerAlreadySet_doesNotOverrideHeader() {
-        when(request.getAttribute(DownloadDisposition.class.getName()))
+        when(request.getAttribute(DownloadEvent.DISPOSITION_REQUEST_ATTRIBUTE))
                 .thenReturn(DownloadDisposition.INLINE);
         when(response.containsHeader("Content-Disposition")).thenReturn(true);
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
