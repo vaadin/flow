@@ -291,6 +291,35 @@ Follow the existing implementations when you add one to an extension point,
 including one that is in review at the same time, instead of introducing a
 second shape for the same thing.
 
+Give every published runtime jar a stable JPMS module name, written to its
+manifest as `Automatic-Module-Name`. The same rule applies to the Flow,
+component and platform jars, so the names stay consistent across repositories:
+
+- A jar with Java packages is named after its main package: the root package
+  its own code lives under (`flow-data` → `com.vaadin.flow.data`,
+  `vaadin-grid-flow` → `com.vaadin.flow.component.grid`, `vaadin-cdi` →
+  `com.vaadin.cdi`). When that root is a namespace that other jars use too,
+  such as `com.vaadin.flow` or `com.vaadin`, use the package of the jar's main
+  API instead (`flow-server` → `com.vaadin.flow.server`,
+  `flow-polymer-template` → `com.vaadin.flow.component.polymertemplate`).
+- A jar without Java packages, such as a resource-only jar or an aggregator, is
+  named `com.vaadin.` followed by its artifact ID without a leading `vaadin-`,
+  with dashes replaced by dots (`flow-client` → `com.vaadin.flow.client`,
+  `vaadin-core` → `com.vaadin.core`).
+- When the name would equal the name of another jar or a namespace root, add a
+  qualifier (the `vaadin` artifact → `com.vaadin.platform`).
+
+A name must be unique across all Vaadin jars. Name the jars that end up in an
+application's module graph, which includes Quarkus deployment jars, because
+Quarkus resolves them as modules when it builds the application. Test jars,
+build and test tooling, and jars that no module descriptor is expected to
+`requires` get no name, so they keep the one derived from their file name. In
+this repository, set the name with the `jpms.module.name` property in the
+module's `pom.xml`; the root pom writes the manifest entry and omits it when the
+property is empty. A released name can not change, because other modules
+`requires` it. The packages decide the name only when a jar is first named; when
+code later moves between jars, the jar keeps its name.
+
 ## Dev Loop
 
 These cover `flow-devloop-daemon`, the in-app connector in `vaadin-dev-server`
