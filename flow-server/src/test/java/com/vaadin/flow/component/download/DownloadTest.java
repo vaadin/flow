@@ -38,6 +38,7 @@ import com.vaadin.flow.server.StreamResourceRegistry.ElementStreamResource;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
@@ -77,8 +78,7 @@ class DownloadTest {
     }
 
     @Test
-    void startHandler_clickStartsDownloadOfRegisteredResource()
-            throws Exception {
+    void startHandler_clickStartsDownloadOfRegisteredResource() {
         Download.onClick(button, event -> event.inline("report.pdf"));
 
         JsFunction installFn = singleInstallFn();
@@ -88,8 +88,8 @@ class DownloadTest {
         JsFunction action = actionOf(installFn);
         assertEquals("download",
                 snippetOf(DownloadAction.DownloadJs.class, action));
-        assertEquals("attachment; filename=\"report.pdf\"",
-                servedContentDisposition(action),
+        assertEquals(DownloadDisposition.ATTACHMENT,
+                registeredResource(action).getDisposition(),
                 "A saved file should be served as an attachment");
     }
 
@@ -105,8 +105,8 @@ class DownloadTest {
         JsFunction action = actionOf(singleInstallFn());
         assertEquals("openInNewTab",
                 snippetOf(OpenInNewTabAction.OpenInNewTabJs.class, action));
-        assertEquals("inline; filename=\"invoice.pdf\"",
-                servedContentDisposition(action));
+        assertEquals(DownloadDisposition.INLINE,
+                registeredResource(action).getDisposition());
         assertEquals("attachment; filename=\"invoice.pdf\"",
                 servedContentDisposition(handler, button.getElement()),
                 "The handler should keep serving an attachment elsewhere");
@@ -193,14 +193,6 @@ class DownloadTest {
                         && s.startsWith("VAADIN/dynamic/resource/"),
                 "Expected a Vaadin dynamic-resource URI, got: " + uri);
         return (String) uri;
-    }
-
-    private String servedContentDisposition(JsFunction action)
-            throws Exception {
-        ElementStreamResource resource = registeredResource(action);
-        return servedContentDisposition(
-                (DownloadHandler) resource.getElementRequestHandler(),
-                resource.getOwner());
     }
 
     private ElementStreamResource registeredResource(JsFunction action) {

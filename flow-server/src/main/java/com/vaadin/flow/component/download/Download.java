@@ -110,9 +110,9 @@ public final class Download implements Serializable {
      * {@link DownloadTarget#NEW_TAB} it is served inline, so that the browser
      * shows it, and with {@link DownloadTarget#SAVE_AS_FILE} as an attachment.
      * This applies to the file name that the handler gives, see
-     * {@link DownloadHandler#serveInline()}. The given handler is not changed,
-     * so the same instance can be used elsewhere, for example in an
-     * {@code Anchor} that downloads the content.
+     * {@link com.vaadin.flow.server.streams.DownloadDisposition}. The given
+     * handler is not changed, so the same instance can be used elsewhere, for
+     * example in an {@code Anchor} that downloads the content.
      * <p>
      * The handler is registered for the clicked component and follows its
      * lifecycle: it is only served while the component is attached, visible and
@@ -137,8 +137,8 @@ public final class Download implements Serializable {
         Objects.requireNonNull(handler, "handler must not be null");
         Objects.requireNonNull(target, "target must not be null");
         return bind(component, switch (target) {
-        case SAVE_AS_FILE -> new DownloadAction(handler.serveAsAttachment());
-        case NEW_TAB -> new OpenInNewTabAction(handler.serveInline());
+        case SAVE_AS_FILE -> new DownloadAction(handler);
+        case NEW_TAB -> new OpenInNewTabAction(handler);
         });
     }
 

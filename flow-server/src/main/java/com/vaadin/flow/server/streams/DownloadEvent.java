@@ -46,6 +46,14 @@ public class DownloadEvent {
     private static final String INLINE = "inline";
     private static final String CONTENT_DISPOSITION = "Content-Disposition";
 
+    /**
+     * The request attribute that carries the {@link DownloadDisposition} set on
+     * the registered resource. The request handler that serves the resource
+     * sets it under the name of the {@link DownloadDisposition} class.
+     */
+    private static final String DISPOSITION_REQUEST_ATTRIBUTE = DownloadDisposition.class
+            .getName();
+
     private final VaadinRequest request;
     private final VaadinResponse response;
     private final VaadinSession session;
@@ -54,21 +62,7 @@ public class DownloadEvent {
     private String contentType;
     private long contentLength = -1;
     private Exception exception;
-    private Disposition disposition;
-
-    /**
-     * How the place where a download handler is used wants the content to be
-     * served, overriding the type that the handler asks for.
-     */
-    enum Disposition {
-        INLINE(DownloadEvent.INLINE), ATTACHMENT(DownloadEvent.ATTACHMENT);
-
-        private final String type;
-
-        Disposition(String type) {
-            this.type = type;
-        }
-    }
+    private final DownloadDisposition disposition;
 
     public DownloadEvent(VaadinRequest request, VaadinResponse response,
             VaadinSession session, Element owningElement) {
@@ -76,6 +70,9 @@ public class DownloadEvent {
         this.response = response;
         this.session = session;
         this.owningElement = owningElement;
+        disposition = request == null ? null
+                : (DownloadDisposition) request
+                        .getAttribute(DISPOSITION_REQUEST_ATTRIBUTE);
     }
 
     /**
@@ -164,11 +161,12 @@ public class DownloadEvent {
      * <p>
      * The place where the handler is used can ask for the content to be shown
      * in the browser instead, for example the {@code src} of an image or a new
-     * browser tab. The header is then {@code inline} with the same file name.
+     * browser tab, by setting a {@link DownloadDisposition} on the registered
+     * resource. The header is then {@code inline} with the same file name.
      *
      * @param fileName
      *            the name to be assigned to the file
-     * @see DownloadHandler#serveInline()
+     * @see DownloadDisposition
      */
     public void setFileName(String fileName) {
         if (fileName != null) {
@@ -189,7 +187,7 @@ public class DownloadEvent {
      * as a file instead, for example a download link. The header is then
      * {@code attachment}.
      *
-     * @see DownloadHandler#serveAsAttachment()
+     * @see DownloadDisposition
      * @since 25.0
      */
     public void inline() {
@@ -218,7 +216,7 @@ public class DownloadEvent {
      *
      * @param fileName
      *            the suggested name for the file if saved by the user
-     * @see DownloadHandler#serveAsAttachment()
+     * @see DownloadDisposition
      * @since 25.0
      */
     public void inline(String fileName) {
@@ -237,22 +235,7 @@ public class DownloadEvent {
     }
 
     private String resolveType(String type) {
-        return disposition == null ? type : disposition.type;
-    }
-
-    /**
-     * Makes the Content-Disposition header that this event writes use the given
-     * type, whatever type the handler asks for. Only the first call has an
-     * effect, so the outermost wrapper of a handler, which is the one that the
-     * place of use added, decides.
-     *
-     * @param disposition
-     *            the type to serve the content with, not {@code null}
-     */
-    void requireDisposition(Disposition disposition) {
-        if (this.disposition == null) {
-            this.disposition = disposition;
-        }
+        return disposition == null ? type : disposition.getHeaderValue();
     }
 
     private static String buildContentDisposition(String type,

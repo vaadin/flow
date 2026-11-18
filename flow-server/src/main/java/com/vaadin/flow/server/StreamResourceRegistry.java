@@ -25,6 +25,7 @@ import java.util.Optional;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.ElementRequestHandler;
 
 /**
@@ -165,11 +166,68 @@ public class StreamResourceRegistry implements Serializable {
     public static class ElementStreamResource extends AbstractStreamResource {
         private final ElementRequestHandler elementRequestHandler;
         private final Element owner;
+        // read by the request thread without the session lock
+        private volatile DownloadDisposition disposition;
 
         public ElementStreamResource(
                 ElementRequestHandler elementRequestHandler, Element owner) {
+            this(elementRequestHandler, owner, null);
+        }
+
+        /**
+         * Creates a resource that serves the content of a download handler with
+         * the given disposition, whatever disposition the handler asks for.
+         *
+         * @param elementRequestHandler
+         *            the handler to serve, not {@code null}
+         * @param owner
+         *            the element that owns the resource, not {@code null}
+         * @param disposition
+         *            how the content is served, or {@code null} to let the
+         *            handler decide
+         * @see #setDisposition(DownloadDisposition)
+         */
+        public ElementStreamResource(
+                ElementRequestHandler elementRequestHandler, Element owner,
+                DownloadDisposition disposition) {
             this.elementRequestHandler = elementRequestHandler;
             this.owner = owner;
+            this.disposition = disposition;
+        }
+
+        /**
+         * Gets how the content of a download handler is served from this
+         * resource.
+         *
+         * @return the disposition, or {@code null} if the handler decides
+         */
+        public DownloadDisposition getDisposition() {
+            return disposition;
+        }
+
+        /**
+         * Sets how the content of a download handler is served from this
+         * resource: shown in the browser or saved as a file. Whether content is
+         * shown or saved depends on where it is used, so the code that
+         * registers the handler decides, and the handler itself is not changed.
+         * The type of the {@code Content-Disposition} header that the handler
+         * writes through
+         * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
+         * or
+         * {@link com.vaadin.flow.server.streams.DownloadEvent#inline(String)}
+         * is replaced, and the file name is kept. A header that the handler
+         * sets directly on the response is left as it is.
+         * <p>
+         * The value can be changed while the resource is registered, and
+         * applies to the requests that arrive after that. The URL of the
+         * resource does not change.
+         *
+         * @param disposition
+         *            how the content is served, or {@code null} to let the
+         *            handler decide
+         */
+        public void setDisposition(DownloadDisposition disposition) {
+            this.disposition = disposition;
         }
 
         public ElementRequestHandler getElementRequestHandler() {
