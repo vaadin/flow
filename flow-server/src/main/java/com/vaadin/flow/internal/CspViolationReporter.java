@@ -115,7 +115,7 @@ public final class CspViolationReporter {
     }
 
     private static boolean isEnabled(CspMode mode) {
-        return mode == CspMode.WARN || mode == CspMode.STRICT;
+        return (mode == CspMode.WARN) || (mode == CspMode.STRICT);
     }
 
     private static CspMode getCspMode(VaadinService service) {
@@ -123,9 +123,10 @@ public final class CspViolationReporter {
         // built in a background thread before it is attached, and no
         // configuration for a service created with the no-argument
         // constructor: there is no mode to apply then
-        DeploymentConfiguration configuration = service == null ? null
+        DeploymentConfiguration configuration = (service == null) ? null
                 : service.getDeploymentConfiguration();
-        return configuration == null ? CspMode.OFF : configuration.getCspMode();
+        return (configuration == null) ? CspMode.OFF
+                : configuration.getCspMode();
     }
 
     private static void reportStringJavaScriptWithDetail(String detail) {
