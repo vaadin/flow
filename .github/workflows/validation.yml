@@ -995,7 +995,7 @@ jobs:
         run: |
           MODULES=$(./scripts/computeMatrix.js slow-tests)
           echo "Running slow tests in $MODULES"
-          cmd="mvn -V -B -ntp -e -fae -Pslow-tests -pl $MODULES -Dfailsafe.forkCount=4 -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2"
+          cmd="mvn -V -B -ntp -e -fae -Pslow-tests -pl $MODULES -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2"
           set -x -e
           LOG=mvn-slow-tests.out
           : > "$LOG"
