@@ -342,6 +342,57 @@ class CspModeTest {
         }
     }
 
+    @Test
+    void strict_stringJavaScriptWithDetail_throwsWithDetailAndTraceFromApi() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+
+        CspViolationException exception = assertThrows(
+                CspViolationException.class,
+                () -> reportFromComponent("series[2].formatter"));
+
+        assertTrue(
+                exception.getMessage().endsWith(
+                        " The JavaScript is in \"series[2].formatter\"."),
+                exception.getMessage());
+        assertTraceLeadsFromApiToTest(exception, CspModeTest.class,
+                "reportFromComponent");
+    }
+
+    @Test
+    void warn_stringJavaScriptWithDetail_logsOncePerCallSiteAndDetail() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.WARN);
+        Logger logger = mock(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            loggerFactory.when(
+                    () -> LoggerFactory.getLogger(CspViolationReporter.class))
+                    .thenReturn(logger);
+
+            // One call site, as for a component that reports before the
+            // client response
+            reportFromComponent("tooltip.formatter");
+            reportFromComponent("tooltip.formatter");
+            reportFromComponent("series[2].formatter");
+        }
+
+        ArgumentCaptor<String> messages = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Throwable> warnings = ArgumentCaptor
+                .forClass(Throwable.class);
+        verify(logger, times(2)).warn(messages.capture(), warnings.capture());
+        assertTrue(messages.getAllValues().get(0)
+                .endsWith(" The JavaScript is in \"tooltip.formatter\"."));
+        assertTrue(messages.getAllValues().get(1)
+                .endsWith(" The JavaScript is in \"series[2].formatter\"."));
+        for (Throwable warning : warnings.getAllValues()) {
+            assertTraceLeadsFromApiToTest(warning, CspModeTest.class,
+                    "reportFromComponent");
+        }
+    }
+
+    private static void reportFromComponent(String detail) {
+        CspViolationReporter.reportStringJavaScript(detail);
+    }
+
     @SuppressWarnings("removal")
     private static void delegateShortcutToStringLocator(UI ui) {
         Clickable owner = new Clickable();

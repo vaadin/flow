@@ -18,6 +18,7 @@ package com.vaadin.flow.internal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,7 +36,7 @@ import com.vaadin.flow.server.VaadinService;
  * Security Policy without <code>unsafe-eval</code> blocks.
  * <p>
  * What happens depends on the {@link CspMode} of the current service: nothing
- * in {@link CspMode#OFF}, a warning logged once per call site in
+ * in {@link CspMode#OFF}, a warning logged once per call site and detail in
  * {@link CspMode#WARN}, and a {@link CspViolationException} in
  * {@link CspMode#STRICT}. Every string-based call is reported, including the
  * ones that Vaadin itself makes. Both the warning and the exception carry a
@@ -49,7 +50,8 @@ public final class CspViolationReporter {
 
     private static final String MESSAGE = "JavaScript is sent to the browser as a string, which the browser has to compile and a Content Security Policy without 'unsafe-eval' blocks. The stack trace leads from the API to the code that called it.";
 
-    // Bounded by the number of call sites in the code for each service
+    // Bounded by the number of call sites in the code, and of the details
+    // reported from them, for each service
     private static final Map<VaadinService, Set<String>> warnedCalls = Collections
             .synchronizedMap(new WeakHashMap<>());
 
@@ -61,11 +63,43 @@ public final class CspViolationReporter {
      * Reports a call to an API that sends JavaScript to the browser as a
      * string. Called by the API itself, which is where the stack trace of the
      * report starts.
+     * <p>
+     * A warning is logged once per call site. Use
+     * {@link #reportStringJavaScript(String)} when the call site does not tell
+     * what is reported, e.g. when a component reports from an action that runs
+     * before the client response.
      *
      * @throws CspViolationException
      *             in the {@link CspMode#STRICT} mode
      */
     public static void reportStringJavaScript() {
+        reportStringJavaScriptWithDetail(null);
+    }
+
+    /**
+     * Reports a call to an API that sends JavaScript to the browser as a
+     * string, with a detail that tells what is reported. Called by the API
+     * itself, which is where the stack trace of the report starts.
+     * <p>
+     * The detail is added to the message, and a warning is logged once per call
+     * site and detail. This identifies the report when the call site alone does
+     * not, e.g. when a component reports from an action that runs before the
+     * client response, where the stack does not reach the application code that
+     * set the JavaScript. Use {@link #reportStringJavaScript()} when the call
+     * site is enough.
+     *
+     * @param detail
+     *            a short description of what is reported, e.g. the path of the
+     *            option that has the JavaScript, not <code>null</code>
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} mode
+     */
+    public static void reportStringJavaScript(String detail) {
+        Objects.requireNonNull(detail, "The detail must not be null");
+        reportStringJavaScriptWithDetail(detail);
+    }
+
+    private static void reportStringJavaScriptWithDetail(String detail) {
         // No service outside of a request or UI.access, e.g. for a component
         // built in a background thread before it is attached, and no
         // configuration for a service created with the no-argument
@@ -79,18 +113,24 @@ public final class CspViolationReporter {
             return;
         }
 
-        CspViolationException violation = new CspViolationException(MESSAGE);
+        String message = detail == null ? MESSAGE
+                : MESSAGE + " The JavaScript is in \"" + detail + "\".";
+        CspViolationException violation = new CspViolationException(message);
         StackTraceElement[] stack = violation.getStackTrace();
-        // Start the trace at the API rather than at this method
-        violation.setStackTrace(Arrays.copyOfRange(stack, 1, stack.length));
+        // Start the trace at the API rather than at the two methods of this
+        // class
+        violation.setStackTrace(Arrays.copyOfRange(stack, 2, stack.length));
 
         if (mode == CspMode.STRICT) {
             throw violation;
         }
+        String callSite = getCallSite(violation.getStackTrace());
+        // Different details from one call site are different reports
+        String key = detail == null ? callSite : detail + '\n' + callSite;
         if (warnedCalls
-                .computeIfAbsent(service, key -> ConcurrentHashMap.newKeySet())
-                .add(getCallSite(violation.getStackTrace()))) {
-            LoggerFactory.getLogger(CspViolationReporter.class).warn(MESSAGE,
+                .computeIfAbsent(service, k -> ConcurrentHashMap.newKeySet())
+                .add(key)) {
+            LoggerFactory.getLogger(CspViolationReporter.class).warn(message,
                     violation);
         }
     }
