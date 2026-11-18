@@ -42,6 +42,7 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -170,6 +171,8 @@ class ErrorViewHotswapperTest {
         assertEquals(UIUpdateStrategy.REFRESH,
                 newRoute.getUIUpdateStrategy(ui).orElse(null),
                 "Adding a route to a project that has routes should refresh in place");
+        assertNull(session.getAttribute(SessionRouteRegistry.class),
+                "Hotswap should not create a session route registry");
     }
 
     @Test
