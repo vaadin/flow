@@ -12,6 +12,10 @@
   <name>Generic HTML 5 Drag and Drop support for Flow</name>
   <description>${project.name}</description>
 
+  <properties>
+    <jpms.module.name>com.vaadin.flow.component.dnd</jpms.module.name>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>com.vaadin</groupId>
