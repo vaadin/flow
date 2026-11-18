@@ -32,6 +32,8 @@ import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
@@ -207,7 +209,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      *
      * The content is served with a <code>Content-Disposition: inline</code>
      * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadHandler#serveInline()}.
+     * see {@link DownloadDisposition#INLINE}.
      *
      * @param downloadHandler
      *            the download handler callback that provides a resource from
@@ -286,7 +288,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      *
      * The content is served with a <code>Content-Disposition: inline</code>
      * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadHandler#serveInline()}.
+     * see {@link DownloadDisposition#INLINE}.
      *
      * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
      * that the iframe content is still served when the component, or one of its
@@ -303,7 +305,9 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
     public void setSrc(DownloadHandler downloadHandler) {
         UrlUtil.cancelUrlValidation(this, SRC);
         getElement().setAttribute(SRC,
-                downloadHandler.serveInline().allowDisabled());
+                new StreamResourceRegistry.ElementStreamResource(
+                        downloadHandler.allowDisabled(), getElement(),
+                        DownloadDisposition.INLINE));
     }
 
     /**

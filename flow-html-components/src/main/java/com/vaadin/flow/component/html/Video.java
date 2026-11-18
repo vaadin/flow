@@ -19,6 +19,8 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
@@ -98,7 +100,7 @@ public class Video extends Media {
      * <p>
      * The content is served with a <code>Content-Disposition: inline</code>
      * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadHandler#serveInline()}.
+     * see {@link DownloadDisposition#INLINE}.
      * <p>
      * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
      * that the poster is still served when the video, or one of its ancestors,
@@ -113,7 +115,9 @@ public class Video extends Media {
      */
     public void setPoster(DownloadHandler downloadHandler) {
         getElement().setAttribute(POSTER_ATTRIBUTE,
-                downloadHandler.serveInline().allowDisabled());
+                new StreamResourceRegistry.ElementStreamResource(
+                        downloadHandler.allowDisabled(), getElement(),
+                        DownloadDisposition.INLINE));
     }
 
     /**
