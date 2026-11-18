@@ -500,8 +500,11 @@ function getSlowTestModules() {
   const regexGroups = /<id>\s*slow-tests\s*<\/id>[\s\S]*?<groups>([\s\S]*?)<\/groups>/;
   const categories = ['pom.xml', 'flow-tests/pom.xml'].flatMap(pom => {
     const content = fs.readFileSync(pom).toString().replace(regexComment, '');
-    return (regexGroups.exec(content) || [])[1].split(',')
-      .map(c => c.trim()).filter(Boolean);
+    const groups = regexGroups.exec(content);
+    if (!groups) {
+      throw new Error(`${pom}: no <groups> in the slow-tests profile`);
+    }
+    return groups[1].split(',').map(c => c.trim()).filter(Boolean);
   });
   return [...new Set(grep(getModulesRecursive(''), globalExclusions))]
     .filter(module => fs.existsSync(module + '/src/test/java'))
@@ -744,7 +747,8 @@ Keys
   }
 }
 
-main();
+if (require.main === module) {
+  main();
+}
 
-
-
+module.exports = { getSlowTestModules };
