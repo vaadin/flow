@@ -15,26 +15,46 @@
  */
 package com.vaadin.flow.uitest.ui.push;
 
-import org.junit.Assert;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.vaadin.flow.testcategory.PushTests;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+/**
+ * Checks that push keeps working after the push connection has been idle for
+ * longer than the server's idle timeouts, which close an idle websocket and
+ * resume a suspended long polling request. The view is served by
+ * {@link IdlePushChannelServlet}, which shortens those timeouts so that the
+ * test does not have to wait for the five minute default.
+ */
 @Category(PushTests.class)
 public abstract class IdlePushChannelIT extends ChromeBrowserTest {
 
-    private static final int SEVEN_MINUTES_IN_MS = 7 * 60 * 1000;
+    @Override
+    protected String getTestPath() {
+        return "/idle-push/" + URLEncoder.encode(getViewClass().getName(),
+                StandardCharsets.UTF_8);
+    }
 
     @Test
     public void longWaitBetweenActions() throws Exception {
         open();
         BasicPushIT.getIncrementButton(this).click();
-        Assert.assertEquals(1, BasicPushIT.getClientCounter(this));
-        Thread.sleep(SEVEN_MINUTES_IN_MS);
+        testBench().disableWaitForVaadin();
+        waitUntil(driver -> BasicPushIT.getClientCounter(this) == 1);
+
+        Thread.sleep(3 * IdlePushChannelServlet.IDLE_TIMEOUT_MS);
+
         BasicPushIT.getIncrementButton(this).click();
-        Assert.assertEquals(2, BasicPushIT.getClientCounter(this));
+        waitUntil(driver -> BasicPushIT.getClientCounter(this) == 2);
+
+        // The server can still push to the client
+        BasicPushIT.getServerCounterStartButton(this).click();
+        waitUntil(driver -> BasicPushIT.getServerCounter(this) > 0);
     }
 
 }
