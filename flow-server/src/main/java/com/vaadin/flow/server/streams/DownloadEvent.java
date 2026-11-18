@@ -47,11 +47,12 @@ public class DownloadEvent {
     private static final String CONTENT_DISPOSITION = "Content-Disposition";
 
     /**
-     * The request attribute that carries the {@link DownloadDisposition} set on
-     * the registered resource. The request handler that serves the resource
-     * sets it under the name of the {@link DownloadDisposition} class.
+     * The request attribute that carries the {@link DownloadDisposition} of the
+     * resource that is served, set by the request handler that serves it.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
      */
-    private static final String DISPOSITION_REQUEST_ATTRIBUTE = DownloadDisposition.class
+    public static final String DISPOSITION_REQUEST_ATTRIBUTE = DownloadDisposition.class
             .getName();
 
     private final VaadinRequest request;
