@@ -30,6 +30,7 @@ import com.vaadin.flow.component.trigger.internal.DownloadAction;
 import com.vaadin.flow.component.trigger.internal.OpenInNewTabAction;
 import com.vaadin.flow.component.trigger.internal.TriggerInputJs;
 import com.vaadin.flow.component.trigger.internal.TriggerTestUtil;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.server.StreamResourceRegistry;
@@ -129,8 +130,13 @@ class DownloadTest {
         Download.onClick(button, handler.allowDisabled(),
                 DownloadTarget.NEW_TAB);
 
+        JsFunction action = actionOf(singleInstallFn());
         assertEquals("inline; filename=\"invoice.pdf\"",
-                servedContentDisposition(actionOf(singleInstallFn())));
+                servedContentDisposition(action));
+        assertEquals(DisabledUpdateMode.ALWAYS,
+                registeredResource(action).getElementRequestHandler()
+                        .getDisabledUpdateMode(),
+                "The content should still be served when the button is disabled");
     }
 
     @Test
@@ -214,12 +220,15 @@ class DownloadTest {
 
     private String servedContentDisposition(JsFunction action)
             throws Exception {
-        URI uri = URI.create(resourceUri(action));
-        ElementStreamResource resource = (ElementStreamResource) registry
-                .getResource(uri).orElseThrow();
+        ElementStreamResource resource = registeredResource(action);
         return servedContentDisposition(
                 (DownloadHandler) resource.getElementRequestHandler(),
                 resource.getOwner());
+    }
+
+    private ElementStreamResource registeredResource(JsFunction action) {
+        URI uri = URI.create(resourceUri(action));
+        return (ElementStreamResource) registry.getResource(uri).orElseThrow();
     }
 
     private static String servedContentDisposition(DownloadHandler handler,
