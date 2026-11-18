@@ -195,7 +195,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
 
     /**
      * Writes the Content-Disposition header with the given file name, as
-     * {@code inline} if {@link #inline()} has been called and as
+     * {@code inline} if {@link #isInline()} returns {@code true} and as
      * {@code attachment} otherwise. The place where the handler is used can
      * still override the type, see {@link DownloadHandler#serveInline()}.
      *
@@ -204,8 +204,11 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * @param fileName
      *            the file name to put in the header
      */
+    // isInline() is called rather than the field read, so that subclasses
+    // overriding it keep working until it is removed
+    @SuppressWarnings({ "removal", "java:S5738" })
     void writeContentDisposition(DownloadEvent downloadEvent, String fileName) {
-        if (inline) {
+        if (isInline()) {
             downloadEvent.inline(fileName);
         } else {
             downloadEvent.setFileName(fileName);

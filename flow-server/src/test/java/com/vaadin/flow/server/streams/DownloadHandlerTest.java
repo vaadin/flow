@@ -162,6 +162,21 @@ class DownloadHandlerTest {
     }
 
     @Test
+    @SuppressWarnings("removal")
+    void builtInHandler_isInlineOverridden_servedInline() throws Exception {
+        DownloadHandler handler = new InputStreamDownloadHandler(
+                event -> DownloadResponse.error(500), "q3.pdf") {
+            @Override
+            public boolean isInline() {
+                return true;
+            }
+        };
+
+        assertEquals("inline; filename=\"q3.pdf\"",
+                servedContentDisposition(handler));
+    }
+
+    @Test
     void serveAsAttachment_handlerAsksForInline_servedAsAttachment()
             throws Exception {
         DownloadHandler handler = event -> event.inline("q3.pdf");
