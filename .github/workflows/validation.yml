@@ -174,6 +174,11 @@ jobs:
       matrix: ${{fromJson(needs.build.outputs.matrix-unit)}}
     runs-on: ubuntu-26.04
     steps:
+      # Keep in sync with the job's timeout-minutes: a retry of a Maven build
+      # must end before the job timeout cancels it and hides the transfer
+      # error that caused it.
+      - name: Set retry deadline
+        run: echo "MAVEN_RETRY_DEADLINE=$(( $(date +%s) + 29 * 60 ))" >> "$GITHUB_ENV"
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
@@ -220,14 +225,10 @@ jobs:
           [ -n "${{matrix.module}}" ] && \
             ARGS="-pl ${{matrix.module}} -Dtest=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
-          cmd="mvn -B -ntp -T 1C -Pcoverage $ARGS"
+          args="-B -ntp -T 1C -Pcoverage $ARGS"
           set -x -e
-          LOG=mvn-unit-tests-${{matrix.current}}.out
-          : > "$LOG"
-          $cmd verify -Dmaven.javadoc.skip=false </dev/null >"$LOG" 2>&1 &
-          MVN_PID=$!
-          tail -f --pid=$MVN_PID "$LOG" &
-          wait $MVN_PID
+          scripts/runMavenWithRetry.sh mvn-unit-tests-${{matrix.current}}.out \
+            $args verify -Dmaven.javadoc.skip=false
       - name: Package coverage reports
         # Some modules (see moduleSplits in computeMatrix.js) run their tests
         # split over several matrix jobs, each producing a partial
