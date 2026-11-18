@@ -247,8 +247,11 @@ public class Anchor extends HtmlContainer
      * implementing AbstractDownloadHandler.
      *
      * LinkMode determines if the attribute `download` should be set or not.
-     * {@link AttachmentType#DOWNLOAD} will set the download attribute, where as
-     * {@link AttachmentType#INLINE} will remove it.
+     * {@link AttachmentType#DOWNLOAD} will set the download attribute and serve
+     * the content as an attachment, where as {@link AttachmentType#INLINE} will
+     * remove it and serve the content inline, whatever the handler asks for.
+     * The choice is kept for handlers set later with
+     * {@link #setHref(DownloadHandler)}.
      *
      * @see #setHref(DownloadHandler, AttachmentType)
      * @see #setText(String)
