@@ -498,7 +498,10 @@ class AnchorTest extends ComponentTest {
             anchor.setHref(handler);
         } else {
             anchor.setHref(handler);
+            String href = anchor.getHref();
             anchor.setDownload(download);
+            assertEquals(href, anchor.getHref(),
+                    "Changing the choice should keep the URL of the handler");
         }
 
         assertEquals(download, anchor.isDownload());
@@ -529,8 +532,7 @@ class AnchorTest extends ComponentTest {
         ElementStreamResource resource = (ElementStreamResource) attachTo
                 .getSession().getResourceRegistry()
                 .getResource(URI.create(anchor.getHref())).orElseThrow();
-        return AssertUtils.servedContentDisposition(
-                (DownloadHandler) resource.getElementRequestHandler());
+        return AssertUtils.servedContentDisposition(resource);
     }
 
     @Test

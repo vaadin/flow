@@ -20,6 +20,9 @@ import org.mockito.ArgumentCaptor;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry.ElementStreamResource;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
@@ -74,14 +77,15 @@ class VideoTest extends MediaTest {
                 event -> DownloadResponse.error(500), "poster.jpg");
         new TestVideo().setPoster(handler);
 
-        ArgumentCaptor<DownloadHandler> captor = ArgumentCaptor
-                .forClass(DownloadHandler.class);
+        ArgumentCaptor<AbstractStreamResource> captor = ArgumentCaptor
+                .forClass(AbstractStreamResource.class);
         verify(element).setAttribute(eq("poster"), captor.capture());
         assertEquals(DisabledUpdateMode.ALWAYS,
-                captor.getValue().getDisabledUpdateMode(),
+                ((ElementStreamResource) captor.getValue())
+                        .getElementRequestHandler().getDisabledUpdateMode(),
                 "The browser fetches the poster while rendering, so it must be served even when the video is disabled");
-        assertEquals("inline; filename=\"poster.jpg\"",
-                AssertUtils.servedContentDisposition(captor.getValue()),
+        assertEquals(DownloadDisposition.INLINE,
+                ((ElementStreamResource) captor.getValue()).getDisposition(),
                 "The poster is rendered in the page, so it must be served inline rather than as a download");
         assertEquals("attachment; filename=\"poster.jpg\"",
                 AssertUtils.servedContentDisposition(handler),

@@ -28,6 +28,8 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 
@@ -107,7 +109,7 @@ public class Image extends HtmlComponent
      *
      * The content is served with a <code>Content-Disposition: inline</code>
      * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadHandler#serveInline()}.
+     * see {@link DownloadDisposition#INLINE}.
      *
      * @param downloadHandler
      *            the download handler callback that provides an image data, not
@@ -234,7 +236,7 @@ public class Image extends HtmlComponent
      *
      * The content is served with a <code>Content-Disposition: inline</code>
      * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadHandler#serveInline()}.
+     * see {@link DownloadDisposition#INLINE}.
      *
      * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
      * that the image is still served when the component, or one of its
@@ -248,7 +250,9 @@ public class Image extends HtmlComponent
      */
     public void setSrc(DownloadHandler downloadHandler) {
         getElement().setAttribute("src",
-                downloadHandler.serveInline().allowDisabled());
+                new StreamResourceRegistry.ElementStreamResource(
+                        downloadHandler.allowDisabled(), getElement(),
+                        DownloadDisposition.INLINE));
     }
 
     /**

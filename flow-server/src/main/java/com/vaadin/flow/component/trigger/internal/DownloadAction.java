@@ -25,6 +25,7 @@ import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
@@ -120,7 +121,8 @@ public class DownloadAction extends Action {
      * Downloads from a {@link DownloadHandler}. The handler is registered as a
      * stream resource scoped to the trigger host element the first time this
      * action is wired to each trigger; re-attaching the host re-registers the
-     * resource with the same URL.
+     * resource with the same URL. The content is served as an attachment,
+     * whatever the handler asks for.
      *
      * @param handler
      *            produces the response when the URL is fetched, not
@@ -128,7 +130,8 @@ public class DownloadAction extends Action {
      */
     public DownloadAction(DownloadHandler handler) {
         this.urlInput = new DownloadHandlerInput(
-                Objects.requireNonNull(handler, "handler must not be null"));
+                Objects.requireNonNull(handler, "handler must not be null"),
+                DownloadDisposition.ATTACHMENT);
         this.filenameInput = null;
     }
 

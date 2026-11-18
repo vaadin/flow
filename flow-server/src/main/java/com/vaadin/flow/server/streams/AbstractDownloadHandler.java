@@ -164,10 +164,11 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      *             show content, such as {@code Image} and {@code IFrame}, and
      *             {@code Download.onClick} with a new tab already serve it
      *             inline. For an {@code Anchor}, use {@code setDownload(false)}
-     *             or {@code AttachmentType.INLINE}. Elsewhere, register
-     *             {@link #serveInline()} instead of this handler. Once this
-     *             method is removed, an {@code Anchor} without such a choice
-     *             serves a built-in handler as a download.
+     *             or {@code AttachmentType.INLINE}. Elsewhere, register the
+     *             handler with {@link DownloadDisposition#INLINE} on its
+     *             {@code ElementStreamResource} instead. Once this method is
+     *             removed, an {@code Anchor} without such a choice serves a
+     *             built-in handler as a download.
      */
     @Deprecated(since = "25.4", forRemoval = true)
     public R inline() {
@@ -185,8 +186,8 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      *             handler is used decides how the content is served. A custom
      *             handler names its content with
      *             {@link DownloadEvent#setFileName(String)}, and the place of
-     *             use serves it inline or as an attachment with
-     *             {@link #serveInline()} or {@link #serveAsAttachment()}.
+     *             use serves it inline or as an attachment with a
+     *             {@link DownloadDisposition} on the registered resource.
      */
     @Deprecated(since = "25.4", forRemoval = true)
     public boolean isInline() {
@@ -197,7 +198,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * Writes the Content-Disposition header with the given file name, as
      * {@code inline} if {@link #isInline()} returns {@code true} and as
      * {@code attachment} otherwise. The place where the handler is used can
-     * still override the type, see {@link DownloadHandler#serveInline()}.
+     * still override the type, see {@link DownloadDisposition}.
      *
      * @param downloadEvent
      *            the download event
