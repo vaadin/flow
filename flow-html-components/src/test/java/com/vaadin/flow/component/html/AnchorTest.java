@@ -29,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -413,7 +414,7 @@ class AnchorTest extends ComponentTest {
         attachTo.add(anchor);
 
         assertTrue(anchor.isDownload(),
-                "Inline download handlers should not add download attribute");
+                "AttachmentType.DOWNLOAD should set the download attribute even for an inline handler");
         assertEquals("attachment; filename=\"report.pdf\"",
                 servedContentDisposition(attachTo, anchor));
     }
@@ -446,15 +447,33 @@ class AnchorTest extends ComponentTest {
                 servedContentDisposition(attachTo, anchor));
     }
 
-    @Test
-    void setHrefString_afterHandler_setDownloadKeepsStringHref() {
+    @ParameterizedTest
+    @ValueSource(strings = { "setHref", "setUnsafeHref", "removeHref",
+            "setHrefResource" })
+    @SuppressWarnings("removal")
+    void hrefReplaced_afterHandler_setDownloadKeepsNewHref(String method) {
         mockUI();
         Anchor anchor = new Anchor(event -> event.setFileName("a.pdf"), "bar");
-        anchor.setHref("/plain");
+        switch (method) {
+        case "setHref" -> anchor.setHref("/plain");
+        case "setUnsafeHref" -> anchor.setUnsafeHref("/plain");
+        case "removeHref" -> anchor.removeHref();
+        case "setHrefResource" -> anchor.setHref(new AbstractStreamResource() {
+            @Override
+            public String getName() {
+                return "baz";
+            }
+        });
+        default -> throw new IllegalArgumentException(method);
+        }
+        String href = anchor.getHref();
+        boolean hasHrefAttribute = anchor.getElement().hasAttribute("href");
 
         anchor.setDownload(false);
 
-        assertEquals("/plain", anchor.getHref());
+        assertEquals(href, anchor.getHref());
+        assertEquals(hasHrefAttribute,
+                anchor.getElement().hasAttribute("href"));
         assertFalse(anchor.isDownload());
     }
 
@@ -527,15 +546,25 @@ class AnchorTest extends ComponentTest {
     }
 
     @Test
-    void customDownloadHandler_nullType_constructorSetsDownloadMode() {
-        mockUI();
-        DownloadHandler downloadHandler = DownloadHandler
-                .forServletResource("null/path");
+    void customDownloadHandler_nullType_constructorSetsDownloadMode()
+            throws Exception {
+        UI attachTo = createUiWithDefaultSafeUrlSchemes();
+        UI.setCurrent(attachTo);
         Anchor anchor = new Anchor(event -> {
         }, null, "bar");
+        attachTo.add(anchor);
 
         assertTrue(anchor.isDownload(),
                 "Custom download handlers should by default add download attribute");
+
+        anchor.setHref(DownloadHandler
+                .fromInputStream(event -> DownloadResponse.error(500), "x.pdf")
+                .inline());
+
+        assertTrue(anchor.isDownload(),
+                "A null type is kept as a choice for later handlers");
+        assertEquals("attachment; filename=\"x.pdf\"",
+                servedContentDisposition(attachTo, anchor));
     }
 
     @Test
