@@ -19,6 +19,8 @@ import java.io.File;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
@@ -63,8 +65,10 @@ class DownloadHandlerTest {
                 "Wrapped handler must forward the event to the delegate");
     }
 
-    @Test
-    void allowDisabled_forwardsUrlPostfixAllowInertAndRangeRequests() {
+    @ParameterizedTest
+    @ValueSource(strings = { "allowDisabled", "serveInline",
+            "serveAsAttachment" })
+    void views_forwardUrlPostfixAllowInertAndRangeRequests(String view) {
         DownloadHandler delegate = new DownloadHandler() {
             @Override
             public void handleDownloadRequest(DownloadEvent event) {
@@ -86,7 +90,12 @@ class DownloadHandlerTest {
             }
         };
 
-        DownloadHandler wrapped = delegate.allowDisabled();
+        DownloadHandler wrapped = switch (view) {
+        case "allowDisabled" -> delegate.allowDisabled();
+        case "serveInline" -> delegate.serveInline();
+        case "serveAsAttachment" -> delegate.serveAsAttachment();
+        default -> throw new IllegalArgumentException(view);
+        };
 
         assertEquals("icon.svg", wrapped.getUrlPostfix());
         assertTrue(wrapped.isAllowInert());
@@ -182,33 +191,12 @@ class DownloadHandlerTest {
     }
 
     @Test
-    void serveInline_forwardsHandlerPropertiesAndCombinesWithAllowDisabled() {
-        DownloadHandler delegate = new DownloadHandler() {
-            @Override
-            public void handleDownloadRequest(DownloadEvent event) {
-            }
-
-            @Override
-            public String getUrlPostfix() {
-                return "q3.pdf";
-            }
-
-            @Override
-            public boolean isAllowInert() {
-                return true;
-            }
-
-            @Override
-            public boolean isRangeRequestsEnabled() {
-                return true;
-            }
+    void serveInline_keepsDisabledModeAndCombinesWithAllowDisabled() {
+        DownloadHandler delegate = event -> {
         };
 
         DownloadHandler inline = delegate.serveInline();
 
-        assertEquals("q3.pdf", inline.getUrlPostfix());
-        assertTrue(inline.isAllowInert());
-        assertTrue(inline.isRangeRequestsEnabled());
         assertEquals(DisabledUpdateMode.ONLY_WHEN_ENABLED,
                 inline.getDisabledUpdateMode());
         assertEquals(DisabledUpdateMode.ALWAYS,
