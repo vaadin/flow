@@ -54,6 +54,21 @@ public class DownloadEvent {
     private String contentType;
     private long contentLength = -1;
     private Exception exception;
+    private Disposition disposition;
+
+    /**
+     * How the place where a download handler is used wants the content to be
+     * served, overriding the type that the handler asks for.
+     */
+    enum Disposition {
+        INLINE(DownloadEvent.INLINE), ATTACHMENT(DownloadEvent.ATTACHMENT);
+
+        private final String type;
+
+        Disposition(String type) {
+            this.type = type;
+        }
+    }
 
     public DownloadEvent(VaadinRequest request, VaadinResponse response,
             VaadinSession session, Element owningElement) {
@@ -146,9 +161,14 @@ public class DownloadEvent {
      * <p>
      * If the Content-Disposition header has already been set, this method will
      * not override it.
+     * <p>
+     * The place where the handler is used can ask for the content to be shown
+     * in the browser instead, for example the {@code src} of an image or a new
+     * browser tab. The header is then {@code inline} with the same file name.
      *
      * @param fileName
      *            the name to be assigned to the file
+     * @see DownloadHandler#serveInline()
      */
     public void setFileName(String fileName) {
         if (fileName != null) {
@@ -164,12 +184,17 @@ public class DownloadEvent {
      * <p>
      * If the Content-Disposition header has already been set, this method will
      * not override it.
-     * 
+     * <p>
+     * The place where the handler is used can ask for the content to be saved
+     * as a file instead, for example a download link. The header is then
+     * {@code attachment}.
+     *
+     * @see DownloadHandler#serveAsAttachment()
      * @since 25.0
      */
     public void inline() {
         if (!response.containsHeader(CONTENT_DISPOSITION)) {
-            response.setHeader(CONTENT_DISPOSITION, INLINE);
+            response.setHeader(CONTENT_DISPOSITION, resolveType(INLINE));
         }
     }
 
@@ -186,9 +211,14 @@ public class DownloadEvent {
      * <p>
      * If the Content-Disposition header has already been set, this method will
      * not override it.
+     * <p>
+     * The place where the handler is used can ask for the content to be saved
+     * as a file instead, for example a download link. The header is then
+     * {@code attachment} with the same file name.
      *
      * @param fileName
      *            the suggested name for the file if saved by the user
+     * @see DownloadHandler#serveAsAttachment()
      * @since 25.0
      */
     public void inline(String fileName) {
@@ -202,8 +232,27 @@ public class DownloadEvent {
         String cleanedFileName = fileName == null ? null
                 : EncodeUtil.removeControlCharacters(fileName);
         response.setHeader(CONTENT_DISPOSITION,
-                buildContentDisposition(type, cleanedFileName));
+                buildContentDisposition(resolveType(type), cleanedFileName));
         this.fileName = cleanedFileName;
+    }
+
+    private String resolveType(String type) {
+        return disposition == null ? type : disposition.type;
+    }
+
+    /**
+     * Makes the Content-Disposition header that this event writes use the given
+     * type, whatever type the handler asks for. Only the first call has an
+     * effect, so the outermost wrapper of a handler, which is the one that the
+     * place of use added, decides.
+     *
+     * @param disposition
+     *            the type to serve the content with, not {@code null}
+     */
+    void requireDisposition(Disposition disposition) {
+        if (this.disposition == null) {
+            this.disposition = disposition;
+        }
     }
 
     private static String buildContentDisposition(String type,

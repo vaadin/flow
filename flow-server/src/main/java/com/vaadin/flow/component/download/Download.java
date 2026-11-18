@@ -24,7 +24,6 @@ import com.vaadin.flow.component.trigger.internal.ClickTrigger;
 import com.vaadin.flow.component.trigger.internal.DownloadAction;
 import com.vaadin.flow.component.trigger.internal.OpenInNewTabAction;
 import com.vaadin.flow.component.trigger.internal.Trigger;
-import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.TransferProgressAwareHandler;
 import com.vaadin.flow.shared.Registration;
@@ -107,28 +106,20 @@ public final class Download implements Serializable {
      * DownloadEvent.setFileName} or the file name of a
      * {@link com.vaadin.flow.server.streams.DownloadResponse DownloadResponse}.
      * <p>
-     * With {@link DownloadTarget#NEW_TAB}, the browser shows the content only
-     * when it is served inline. The built-in handlers, such as
-     * {@link DownloadHandler#forFile(java.io.File)}, are switched to serve the
-     * content inline. This changes the given handler instance for good, so it
-     * also serves inline wherever else it is used; do not reuse it where the
-     * content should be downloaded, such as in an {@code Anchor}. A custom
-     * handler should call
-     * {@link com.vaadin.flow.server.streams.DownloadEvent#inline(String)
-     * DownloadEvent.inline} itself, since content served as an attachment is
-     * saved instead of shown.
+     * The target decides how the content is served: with
+     * {@link DownloadTarget#NEW_TAB} it is served inline, so that the browser
+     * shows it, and with {@link DownloadTarget#SAVE_AS_FILE} as an attachment.
+     * This applies to the file name that the handler gives, see
+     * {@link DownloadHandler#serveInline()}. The given handler is not changed,
+     * so the same instance can be used elsewhere, for example in an
+     * {@code Anchor} that downloads the content.
      * <p>
      * The handler is registered for the clicked component and follows its
      * lifecycle: it is only served while the component is attached, visible and
      * enabled. A button that disables itself on click can be disabled before
      * the browser requests the content; pass
      * {@link DownloadHandler#allowDisabled() handler.allowDisabled()} to serve
-     * the content in that case. The handler that {@code allowDisabled()}
-     * returns can no longer be switched to inline, so for
-     * {@link DownloadTarget#NEW_TAB} call
-     * {@link AbstractDownloadHandler#inline() inline()} on a built-in handler
-     * first, for example
-     * {@code DownloadHandler.forFile(file).inline().allowDisabled()}.
+     * the content in that case.
      *
      * @param component
      *            the component whose clicks deliver the content, not
@@ -146,15 +137,8 @@ public final class Download implements Serializable {
         Objects.requireNonNull(handler, "handler must not be null");
         Objects.requireNonNull(target, "target must not be null");
         return bind(component, switch (target) {
-        case SAVE_AS_FILE -> new DownloadAction(handler);
-        case NEW_TAB -> {
-            if (handler instanceof AbstractDownloadHandler<?> builtIn) {
-                // the built-in handlers serve an attachment by default,
-                // which the browser would save instead of showing in the tab
-                builtIn.inline();
-            }
-            yield new OpenInNewTabAction(handler);
-        }
+        case SAVE_AS_FILE -> new DownloadAction(handler.serveAsAttachment());
+        case NEW_TAB -> new OpenInNewTabAction(handler.serveInline());
         });
     }
 
