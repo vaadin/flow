@@ -18,11 +18,12 @@ package com.vaadin.flow.uitest.ui.push;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.vaadin.flow.testcategory.PushTests;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.AbstractBrowserConsoleTest;
 
 /**
  * Checks that push keeps working after the push connection has been idle for
@@ -32,7 +33,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
  * test does not have to wait for the five minute default.
  */
 @Category(PushTests.class)
-public abstract class IdlePushChannelIT extends ChromeBrowserTest {
+public abstract class IdlePushChannelIT extends AbstractBrowserConsoleTest {
 
     @Override
     protected String getTestPath() {
@@ -46,8 +47,16 @@ public abstract class IdlePushChannelIT extends ChromeBrowserTest {
         BasicPushIT.getIncrementButton(this).click();
         testBench().disableWaitForVaadin();
         waitUntil(driver -> BasicPushIT.getClientCounter(this) == 1);
+        getBrowserLogs(true);
 
         Thread.sleep(3 * IdlePushChannelServlet.IDLE_TIMEOUT_MS);
+
+        // The idle timeout ended the push connection and the client opened a
+        // new one; without it, this test would not test an idle timeout
+        Assert.assertTrue("Push connection was not re-established while idle",
+                getBrowserLogs(false).stream().map(String::valueOf)
+                        .anyMatch(log -> log
+                                .startsWith("Push connection re-established")));
 
         BasicPushIT.getIncrementButton(this).click();
         waitUntil(driver -> BasicPushIT.getClientCounter(this) == 2);

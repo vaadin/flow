@@ -21,7 +21,7 @@ import jakarta.servlet.annotation.WebServlet;
 import org.atmosphere.cpr.ApplicationConfig;
 
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.uitest.servlet.ViewTestServlet;
 
 /**
  * Servlet with short push idle timeouts, so that a test can let the push
@@ -33,7 +33,7 @@ import com.vaadin.flow.server.VaadinServlet;
                 + IdlePushChannelServlet.IDLE_TIMEOUT_MS),
         @WebInitParam(name = InitParameters.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING, value = ""
                 + IdlePushChannelServlet.IDLE_TIMEOUT_MS) })
-public class IdlePushChannelServlet extends VaadinServlet {
+public class IdlePushChannelServlet extends ViewTestServlet {
 
     /**
      * Idle time after which the server closes a websocket push connection and
