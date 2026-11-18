@@ -490,9 +490,7 @@
       </activation>
       <properties>
         <groups/>
-        <excludedGroups>com.vaadin.flow.testcategory.SlowTests,
-                    com.vaadin.flow.testcategory.ScreenshotTests,
-                    com.vaadin.flow.testcategory.PushTests,
+        <excludedGroups>${slowTestGroups}
                     com.vaadin.flow.testcategory.IgnoreIE11,</excludedGroups>
       </properties>
     </profile>

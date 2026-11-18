@@ -207,9 +207,10 @@
     <vaadin.test.quietOutput>true</vaadin.test.quietOutput>
 
     <!-- Skip these categories in validation, use -Pslow-tests to run them.
-            Override slowTestGroups to change the categories: both
-            excludedGroups and the slow-tests profile read it, and so does
-            scripts/computeMatrix.js -->
+            Both excludedGroups and the slow-tests profile read
+            slowTestGroups. scripts/computeMatrix.js reads it from this pom
+            and flow-tests/pom.xml only, so override it there to add
+            categories the Slow Tests job runs -->
     <slowTestGroups>com.vaadin.flow.testcategory.SlowTests</slowTestGroups>
     <excludedGroups>${slowTestGroups}</excludedGroups>
     <failsafe.parallel>all</failsafe.parallel>

@@ -14,13 +14,13 @@ const FILES = {
   'pom.xml':
     '<modules><module>slow</module><module>plain</module><module>no-tests</module>' +
     '<!-- <module>commented</module> --><module>flow-tests</module></modules>' +
-    property('com.vaadin.flow.testcategory.SlowTests'),
+    property('com.vaadin.flow.testcategory.RootOnlyTests'),
   'flow-tests/pom.xml':
     '<modules><module>push</module><module>vaadin-cdi-tests</module></modules>' +
     '<!-- <slowTestGroups>com.vaadin.flow.testcategory.CommentedTests</slowTestGroups> -->' +
     property('com.vaadin.flow.testcategory.SlowTests,\n    com.vaadin.flow.testcategory.PushTests,'),
   'slow/pom.xml': '',
-  [`slow/${TEST_DIR}/ATest.java`]: '@Tag("com.vaadin.flow.testcategory.SlowTests")',
+  [`slow/${TEST_DIR}/ATest.java`]: '@Tag("com.vaadin.flow.testcategory.RootOnlyTests")',
   'plain/pom.xml': '',
   [`plain/${TEST_DIR}/BTest.java`]: 'import com.vaadin.flow.testcategory.CommentedTests;',
   'no-tests/pom.xml': '',
@@ -54,7 +54,10 @@ test('slow-tests lists the modules whose tests use a category of either slowTest
   assert.deepStrictEqual(inReactor(FILES, getSlowTestModules), ['slow', 'flow-tests/push']);
 });
 
-test('slow-tests fails naming the pom when it has no slowTestGroups', () => {
-  const files = { ...FILES, 'flow-tests/pom.xml': '<modules><module>push</module></modules>' };
-  assert.throws(() => inReactor(files, getSlowTestModules), /flow-tests\/pom\.xml: no slowTestGroups/);
-});
+for (const pom of ['pom.xml', 'flow-tests/pom.xml']) {
+  test(`slow-tests fails naming ${pom} when it has no slowTestGroups`, () => {
+    const files = { ...FILES, [pom]: '<modules><module>flow-tests</module><module>push</module></modules>' };
+    const escaped = pom.replace(/[./]/g, '\\$&');
+    assert.throws(() => inReactor(files, getSlowTestModules), new RegExp(`^Error: ${escaped}: no slowTestGroups`));
+  });
+}
