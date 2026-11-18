@@ -26,11 +26,14 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry.ElementStreamResource;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
@@ -107,11 +110,12 @@ class IFrameTest extends ComponentTest {
 
         new TestIFrame().setSrc(lambda);
 
-        ArgumentCaptor<DownloadHandler> captor = ArgumentCaptor
-                .forClass(DownloadHandler.class);
+        ArgumentCaptor<AbstractStreamResource> captor = ArgumentCaptor
+                .forClass(AbstractStreamResource.class);
         verify(element).setAttribute(eq("src"), captor.capture());
         assertEquals(DisabledUpdateMode.ALWAYS,
-                captor.getValue().getDisabledUpdateMode());
+                ((ElementStreamResource) captor.getValue())
+                        .getElementRequestHandler().getDisabledUpdateMode());
     }
 
     @Test
@@ -131,11 +135,11 @@ class IFrameTest extends ComponentTest {
                 event -> DownloadResponse.error(500), "page.html");
         new TestIFrame(handler);
 
-        ArgumentCaptor<DownloadHandler> captor = ArgumentCaptor
-                .forClass(DownloadHandler.class);
+        ArgumentCaptor<AbstractStreamResource> captor = ArgumentCaptor
+                .forClass(AbstractStreamResource.class);
         verify(element).setAttribute(eq("src"), captor.capture());
-        assertEquals("inline; filename=\"page.html\"",
-                AssertUtils.servedContentDisposition(captor.getValue()));
+        assertEquals(DownloadDisposition.INLINE,
+                ((ElementStreamResource) captor.getValue()).getDisposition());
         assertEquals("attachment; filename=\"page.html\"",
                 AssertUtils.servedContentDisposition(handler),
                 "The given handler must not be changed");

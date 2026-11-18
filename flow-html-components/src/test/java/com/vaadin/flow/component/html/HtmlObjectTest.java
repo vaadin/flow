@@ -26,9 +26,12 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.StreamResourceRegistry.ElementStreamResource;
 import com.vaadin.flow.server.StreamResourceWriter;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
@@ -156,12 +159,12 @@ class HtmlObjectTest extends ComponentTest {
         new TestHtmlObject(handler, "type", new Param("param", "paramValue"));
         new TestHtmlObject(handler, new Param("param", "paramValue"));
 
-        ArgumentCaptor<DownloadHandler> captor = ArgumentCaptor
-                .forClass(DownloadHandler.class);
+        ArgumentCaptor<AbstractStreamResource> captor = ArgumentCaptor
+                .forClass(AbstractStreamResource.class);
         verify(element, times(4)).setAttribute(eq("data"), captor.capture());
-        for (DownloadHandler registered : captor.getAllValues()) {
-            assertEquals("inline; filename=\"doc.pdf\"",
-                    AssertUtils.servedContentDisposition(registered));
+        for (AbstractStreamResource registered : captor.getAllValues()) {
+            assertEquals(DownloadDisposition.INLINE,
+                    ((ElementStreamResource) registered).getDisposition());
         }
         assertEquals("attachment; filename=\"doc.pdf\"",
                 AssertUtils.servedContentDisposition(handler),

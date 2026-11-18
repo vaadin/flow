@@ -20,6 +20,8 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
@@ -76,7 +78,7 @@ public class Source extends HtmlComponent {
      * <p>
      * The content is served with a <code>Content-Disposition: inline</code>
      * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadHandler#serveInline()}.
+     * see {@link DownloadDisposition#INLINE}.
      *
      * @param downloadHandler
      *            the download handler that serves the media file, not
@@ -114,7 +116,7 @@ public class Source extends HtmlComponent {
      * <p>
      * The content is served with a <code>Content-Disposition: inline</code>
      * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadHandler#serveInline()}.
+     * see {@link DownloadDisposition#INLINE}.
      * <p>
      * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
      * that the media file is still served when the media component, or one of
@@ -129,7 +131,9 @@ public class Source extends HtmlComponent {
      */
     public void setSrc(DownloadHandler downloadHandler) {
         getElement().setAttribute(SRC_ATTRIBUTE,
-                downloadHandler.serveInline().allowDisabled());
+                new StreamResourceRegistry.ElementStreamResource(
+                        downloadHandler.allowDisabled(), getElement(),
+                        DownloadDisposition.INLINE));
     }
 
     /**

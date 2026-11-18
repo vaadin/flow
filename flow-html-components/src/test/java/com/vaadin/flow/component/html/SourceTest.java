@@ -20,6 +20,9 @@ import org.mockito.ArgumentCaptor;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry.ElementStreamResource;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
@@ -79,14 +82,15 @@ class SourceTest extends ComponentTest {
                 event -> DownloadResponse.error(500), "clip.webm");
         new TestSource().setSrc(handler);
 
-        ArgumentCaptor<DownloadHandler> captor = ArgumentCaptor
-                .forClass(DownloadHandler.class);
+        ArgumentCaptor<AbstractStreamResource> captor = ArgumentCaptor
+                .forClass(AbstractStreamResource.class);
         verify(element).setAttribute(eq("src"), captor.capture());
         assertEquals(DisabledUpdateMode.ALWAYS,
-                captor.getValue().getDisabledUpdateMode(),
+                ((ElementStreamResource) captor.getValue())
+                        .getElementRequestHandler().getDisabledUpdateMode(),
                 "The browser fetches the media file while rendering, so it must be served even when the player is disabled");
-        assertEquals("inline; filename=\"clip.webm\"",
-                AssertUtils.servedContentDisposition(captor.getValue()),
+        assertEquals(DownloadDisposition.INLINE,
+                ((ElementStreamResource) captor.getValue()).getDisposition(),
                 "The media file is rendered in the page, so it must be served inline rather than as a download");
         assertEquals("attachment; filename=\"clip.webm\"",
                 AssertUtils.servedContentDisposition(handler),

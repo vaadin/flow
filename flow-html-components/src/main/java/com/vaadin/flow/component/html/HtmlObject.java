@@ -27,6 +27,8 @@ import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.signals.Signal;
 
@@ -154,7 +156,7 @@ public class HtmlObject extends HtmlContainer implements
      *
      * The content is served with a <code>Content-Disposition: inline</code>
      * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadHandler#serveInline()}.
+     * see {@link DownloadDisposition#INLINE}.
      *
      * @see #setData(DownloadHandler)
      * @see #setType(String)
@@ -176,7 +178,7 @@ public class HtmlObject extends HtmlContainer implements
      *
      * The content is served with a <code>Content-Disposition: inline</code>
      * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadHandler#serveInline()}.
+     * see {@link DownloadDisposition#INLINE}.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -203,7 +205,7 @@ public class HtmlObject extends HtmlContainer implements
      *
      * The content is served with a <code>Content-Disposition: inline</code>
      * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadHandler#serveInline()}.
+     * see {@link DownloadDisposition#INLINE}.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -228,7 +230,7 @@ public class HtmlObject extends HtmlContainer implements
      *
      * The content is served with a <code>Content-Disposition: inline</code>
      * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadHandler#serveInline()}.
+     * see {@link DownloadDisposition#INLINE}.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -324,14 +326,16 @@ public class HtmlObject extends HtmlContainer implements
      *
      * The content is served with a <code>Content-Disposition: inline</code>
      * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadHandler#serveInline()}.
+     * see {@link DownloadDisposition#INLINE}.
      *
      * @param data
      *            a "data" attribute value, not {@code null}
      * @since 24.8
      */
     public void setData(DownloadHandler data) {
-        getElement().setAttribute("data", data.serveInline());
+        getElement().setAttribute("data",
+                new StreamResourceRegistry.ElementStreamResource(data,
+                        getElement(), DownloadDisposition.INLINE));
     }
 
     /**
