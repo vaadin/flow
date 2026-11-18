@@ -929,11 +929,13 @@ jobs:
     name: Slow Tests
     # Ports the TeamCity 'Validation-SlowTests' build. The validation profiles
     # leave out the tests tagged SlowTests (and, under flow-tests, PushTests
-    # and ScreenshotTests); -Pslow-tests runs only those. The module list is
-    # every module that has such tests, except vaadin-cdi-tests: its slow tests
-    # need an application server and belong to the cdi-tests job. A separate
-    # check rather than part of test-results, so it can be made required on
-    # its own. Needs the TestBench license, so not for forks.
+    # and ScreenshotTests); -Pslow-tests runs only those. The module list
+    # covers the modules of the main reactor that have such tests. The slow
+    # tests of vaadin-cdi-tests and vaadin-quarkus-tests are not run here: they
+    # need an application server or a separate build, and neither the cdi-tests
+    # nor the quarkus-tests job enables their slow-tests profiles either. A
+    # separate check rather than part of test-results, so it can be made
+    # required on its own. Needs the TestBench license, so not for forks.
     permissions:
       contents: read
       checks: write
