@@ -53,8 +53,12 @@ public abstract class AbstractClientServerCounterIT extends ChromeBrowserTest {
         getServerCounterStartButton().click();
         waitUntilServerCounterChanges();
 
-        new PushConnectionTracker(getDriver()).assertOnlyTransport(
-                getViewClass().getAnnotation(CustomPush.class).transport());
+        // The polling view has no push
+        CustomPush push = getViewClass().getAnnotation(CustomPush.class);
+        if (push != null) {
+            new PushConnectionTracker(getDriver())
+                    .assertOnlyTransport(push.transport());
+        }
     }
 
     public static int getClientCounter(TestBenchTestCase t) {

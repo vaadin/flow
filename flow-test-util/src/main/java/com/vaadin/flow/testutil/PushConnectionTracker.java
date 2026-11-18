@@ -88,10 +88,11 @@ public class PushConnectionTracker {
 
     /**
      * Gets the transports of all push connection attempts the browser has made
-     * so far, in the order it made them. A websocket counts when the browser
-     * starts to open it, whether or not it opens. Each long polling request
-     * counts on its own, so long polling adds an entry whenever a request is
-     * renewed.
+     * so far, in the order it made them. Requests that open no connection, such
+     * as messages sent to the server over the push URL, are left out. A
+     * websocket counts when the browser starts to open it, whether or not it
+     * opens. Each long polling request counts on its own, so long polling adds
+     * an entry whenever a request is renewed.
      *
      * @return the Atmosphere transport names, such as {@code websocket},
      *         {@code long-polling} or {@code sse}
@@ -111,9 +112,11 @@ public class PushConnectionTracker {
                 continue;
             }
             String transport = getTransport(url);
-            // Atmosphere tells the server about a closed connection with a
-            // request of its own, which opens no connection
-            if (transport != null && !"close".equals(transport)) {
+            // Atmosphere sends a closed connection notice and, with a
+            // unidirectional transport, messages to the server as requests of
+            // their own, which open no connection
+            if (transport != null && !"close".equals(transport)
+                    && !"polling".equals(transport)) {
                 transports.add(transport);
             }
         }
