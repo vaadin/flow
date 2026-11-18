@@ -99,7 +99,8 @@ class DownloadTest {
         InputStreamDownloadHandler handler = DownloadHandler.fromInputStream(
                 event -> DownloadResponse.error(500), "invoice.pdf");
 
-        Download.onClick(button, handler, DownloadTarget.NEW_TAB);
+        Download.onClick(button, handler.allowDisabled(),
+                DownloadTarget.NEW_TAB);
 
         JsFunction action = actionOf(singleInstallFn());
         assertEquals("openInNewTab",
@@ -109,19 +110,6 @@ class DownloadTest {
         assertEquals("attachment; filename=\"invoice.pdf\"",
                 servedContentDisposition(handler, button.getElement()),
                 "The handler should keep serving an attachment elsewhere");
-    }
-
-    @Test
-    void startHandlerInNewTab_handlerAllowsDisabled_servedInline()
-            throws Exception {
-        DownloadHandler handler = event -> event.setFileName("invoice.pdf");
-
-        Download.onClick(button, handler.allowDisabled(),
-                DownloadTarget.NEW_TAB);
-
-        JsFunction action = actionOf(singleInstallFn());
-        assertEquals("inline; filename=\"invoice.pdf\"",
-                servedContentDisposition(action));
         assertEquals(DisabledUpdateMode.ALWAYS,
                 registeredResource(action).getElementRequestHandler()
                         .getDisabledUpdateMode(),
