@@ -1,6 +1,7 @@
 import { ConnectionIndicator } from './ConnectionIndicator';
 import { ConnectionState, type ConnectionStateChangeListener, type ConnectionStateStore } from './ConnectionState';
 import { collectBrowserDetails } from './BrowserHelpers';
+import { loadAtmosphere } from './internal/client/communication/AtmosphereLoader';
 
 export interface FlowConfig {
   imports?: () => Promise<any>;
@@ -319,11 +320,9 @@ export class Flow {
 
       let atmosphere: Promise<unknown> | undefined;
       if (typeof pushScript === 'string') {
-        // vaadinPush.js is the atmosphere.js ES module. It is handed to the
-        // client engine below rather than shared through a common loader
-        // module, because in dev mode Vite pre-bundles the engine, which then
-        // has its own copy of every module it imports.
-        atmosphere = import(/* @vite-ignore */ new URL(pushScript, document.baseURI).href);
+        // Handed to the client engine, which in dev mode is pre-bundled with
+        // its own copy of the loader
+        atmosphere = loadAtmosphere(pushScript);
         await atmosphere;
       }
       const { appId } = appConfig;
