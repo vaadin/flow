@@ -510,6 +510,11 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * Ensures that all items along the specified path are preloaded into the
      * cache, starting from the root level, and returns the flat index of the
      * target item.
+     * <p>
+     * If the path reaches a level without items, for example an expanded item
+     * that no longer has children, the resolution stops there and the flat
+     * index of the deepest resolved item is returned, or {@code 0} if the
+     * hierarchy is empty.
      *
      * @since 25.0
      * @param path
