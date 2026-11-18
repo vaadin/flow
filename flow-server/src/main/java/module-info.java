@@ -34,11 +34,11 @@ open module com.vaadin.flow.server {
 
     // The client-side push library
     requires com.vaadin.flow.push;
-    requires atmosphere.runtime;
+    requires com.vaadin.external.atmosphere.runtime;
 
     // Provided by the environment when the related feature is used
     requires static jakarta.annotation;
-    requires static license.checker;
+    requires static com.vaadin.pro.licensechecker;
     // Compile-time only annotations
     requires static org.jspecify;
     requires static osgi.cmpn;
