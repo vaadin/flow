@@ -524,6 +524,12 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     private void resolveIndexPath(Cache<T> cache, int... path) {
+        if (cache.getSize() == 0) {
+            // An empty level (empty tree, or an expanded item that no longer
+            // has children) has no item to resolve, so the path ends here
+            return;
+        }
+
         var restPath = Arrays.copyOfRange(path, 1, path.length);
 
         var index = Math.min(path[0], cache.getSize() - 1);
