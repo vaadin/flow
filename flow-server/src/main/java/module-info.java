@@ -41,7 +41,7 @@ open module com.vaadin.flow.server {
     requires static com.vaadin.pro.licensechecker;
     // Compile-time only annotations
     requires static org.jspecify;
-    requires static osgi.cmpn;
+    requires static org.osgi.service.component.annotations;
 
     exports com.vaadin.experimental;
     exports com.vaadin.flow.component;

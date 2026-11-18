@@ -182,6 +182,7 @@
     <bnd.version>7.4.0</bnd.version>
     <osgi.core.version>8.0.0</osgi.core.version>
     <osgi.compendium.version>7.0.0</osgi.compendium.version>
+    <osgi.component.annotations.version>1.5.1</osgi.component.annotations.version>
     <osgi.annotation.version>8.1.0</osgi.annotation.version>
 
     <maven.test.skip>false</maven.test.skip>
