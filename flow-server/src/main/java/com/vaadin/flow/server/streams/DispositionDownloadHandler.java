@@ -17,7 +17,6 @@ package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
 
-import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.server.streams.DownloadEvent.Disposition;
 
 /**
@@ -26,14 +25,13 @@ import com.vaadin.flow.server.streams.DownloadEvent.Disposition;
  * {@link DownloadHandler#serveInline()} and
  * {@link DownloadHandler#serveAsAttachment()}.
  */
-class DispositionDownloadHandler implements DownloadHandler {
+class DispositionDownloadHandler extends DelegatingDownloadHandler {
 
-    private final DownloadHandler delegate;
     private final Disposition disposition;
 
     DispositionDownloadHandler(DownloadHandler delegate,
             Disposition disposition) {
-        this.delegate = delegate;
+        super(delegate);
         this.disposition = disposition;
     }
 
@@ -53,26 +51,6 @@ class DispositionDownloadHandler implements DownloadHandler {
     @Override
     public void handleDownloadRequest(DownloadEvent event) throws IOException {
         event.requireDisposition(disposition);
-        delegate.handleDownloadRequest(event);
-    }
-
-    @Override
-    public String getUrlPostfix() {
-        return delegate.getUrlPostfix();
-    }
-
-    @Override
-    public boolean isAllowInert() {
-        return delegate.isAllowInert();
-    }
-
-    @Override
-    public boolean isRangeRequestsEnabled() {
-        return delegate.isRangeRequestsEnabled();
-    }
-
-    @Override
-    public DisabledUpdateMode getDisabledUpdateMode() {
-        return delegate.getDisabledUpdateMode();
+        super.handleDownloadRequest(event);
     }
 }

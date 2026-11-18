@@ -184,29 +184,7 @@ public interface DownloadHandler extends ElementRequestHandler {
         if (getDisabledUpdateMode() == DisabledUpdateMode.ALWAYS) {
             return this;
         }
-        DownloadHandler delegate = this;
-        return new DownloadHandler() {
-            @Override
-            public void handleDownloadRequest(DownloadEvent event)
-                    throws IOException {
-                delegate.handleDownloadRequest(event);
-            }
-
-            @Override
-            public String getUrlPostfix() {
-                return delegate.getUrlPostfix();
-            }
-
-            @Override
-            public boolean isAllowInert() {
-                return delegate.isAllowInert();
-            }
-
-            @Override
-            public boolean isRangeRequestsEnabled() {
-                return delegate.isRangeRequestsEnabled();
-            }
-
+        return new DelegatingDownloadHandler(this) {
             @Override
             public DisabledUpdateMode getDisabledUpdateMode() {
                 return DisabledUpdateMode.ALWAYS;
