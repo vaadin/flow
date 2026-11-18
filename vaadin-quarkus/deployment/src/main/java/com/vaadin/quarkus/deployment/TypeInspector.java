@@ -30,7 +30,11 @@ import org.jboss.jandex.TypeVariable;
  * various type structures, including parameterized types, type variables,
  * method signatures, and complex type hierarchies.
  */
-class TypeInspector {
+final class TypeInspector {
+
+    private TypeInspector() {
+        // utility class
+    }
 
     /**
      * Recursively collects concrete class types from a Type, including those
@@ -43,8 +47,7 @@ class TypeInspector {
      */
     static Set<ClassInfo> collectTypes(Type type, IndexView index) {
         Set<ClassInfo> concreteTypes = new HashSet<>();
-        Set<Type> visited = new HashSet<>();
-        collectConcreteTypes(type, index, concreteTypes, visited);
+        collectConcreteTypes(type, index, concreteTypes);
         return concreteTypes;
     }
 
@@ -61,22 +64,11 @@ class TypeInspector {
      */
     static Set<ClassInfo> collectTypes(MethodInfo methodInfo, IndexView index) {
         Set<ClassInfo> concreteTypes = new HashSet<>();
-        Set<Type> visited = new HashSet<>();
-        collectConcreteTypesFromMethod(methodInfo, index, concreteTypes,
-                visited);
-        return concreteTypes;
-    }
-
-    private static void collectConcreteTypesFromMethod(MethodInfo methodInfo,
-            IndexView index, Set<ClassInfo> concreteTypes, Set<Type> visited) {
-        // Inspect return type
-        collectConcreteTypes(methodInfo.returnType(), index, concreteTypes,
-                visited);
-
-        // Inspect parameter types
+        collectConcreteTypes(methodInfo.returnType(), index, concreteTypes);
         for (Type paramType : methodInfo.parameterTypes()) {
-            collectConcreteTypes(paramType, index, concreteTypes, visited);
+            collectConcreteTypes(paramType, index, concreteTypes);
         }
+        return concreteTypes;
     }
 
     /**
@@ -91,71 +83,51 @@ class TypeInspector {
      *            the set to collect concrete types into
      */
     private static void collectConcreteTypes(Type type, IndexView index,
-            Set<ClassInfo> collector, Set<Type> visited) {
+            Set<ClassInfo> collector) {
         if (type == null) {
-            return;
-        }
-        if (visited.contains(type)) {
             return;
         }
 
         switch (type.kind()) {
-        case PRIMITIVE:
-        case VOID:
-            // Ignore primitive types
-            break;
-
-        case CLASS:
-            // Add the class type
+        case PRIMITIVE, VOID, UNRESOLVED_TYPE_VARIABLE -> {
+            // no class to collect
+        }
+        case TYPE_VARIABLE_REFERENCE -> {
+            // Only occurs inside the bounds of the type variable it refers
+            // to, which are already being inspected. Following it would
+            // recurse forever.
+        }
+        case CLASS -> {
             ClassInfo classInfo = index.getClassByName(type.name());
             if (classInfo != null) {
                 collector.add(classInfo);
             }
-            break;
-
-        case PARAMETERIZED_TYPE:
+        }
+        case PARAMETERIZED_TYPE -> {
             // For parameterized types (e.g., List<String>), inspect both the
             // owner and type arguments
             ParameterizedType paramType = type.asParameterizedType();
-
-            // Collect the owner type (e.g., List)
-            collectConcreteTypes(paramType.owner(), index, collector, visited);
-
-            // Collect type arguments (e.g., String in List<String>)
+            collectConcreteTypes(paramType.owner(), index, collector);
             for (Type arg : paramType.arguments()) {
-                collectConcreteTypes(arg, index, collector, visited);
+                collectConcreteTypes(arg, index, collector);
             }
-            break;
-
-        case TYPE_VARIABLE:
+        }
+        case TYPE_VARIABLE -> {
             // For type variables (e.g., T in <T>), inspect bounds
             TypeVariable typeVar = type.asTypeVariable();
             for (Type bound : typeVar.bounds()) {
-                collectConcreteTypes(bound, index, collector, visited);
+                collectConcreteTypes(bound, index, collector);
             }
-            break;
-
-        case ARRAY:
-            // For arrays, inspect the component type
-            collectConcreteTypes(type.asArrayType().constituent(), index,
-                    collector, visited);
-            break;
-
-        case WILDCARD_TYPE:
+        }
+        case ARRAY -> collectConcreteTypes(type.asArrayType().constituent(),
+                index, collector);
+        case WILDCARD_TYPE -> {
             // For wildcard types (e.g., ? extends Foo), inspect bounds
-            Type extendsBound = type.asWildcardType().extendsBound();
-            if (extendsBound != null) {
-                collectConcreteTypes(extendsBound, index, collector, visited);
-            }
-            Type superBound = type.asWildcardType().superBound();
-            if (superBound != null) {
-                collectConcreteTypes(superBound, index, collector, visited);
-            }
-            break;
-
-        case UNRESOLVED_TYPE_VARIABLE:
-            // Skip unresolved type variables
-            break;
+            collectConcreteTypes(type.asWildcardType().extendsBound(), index,
+                    collector);
+            collectConcreteTypes(type.asWildcardType().superBound(), index,
+                    collector);
+        }
         }
     }
 

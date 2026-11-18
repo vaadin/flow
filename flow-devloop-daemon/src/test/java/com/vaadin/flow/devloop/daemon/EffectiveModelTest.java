@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -94,6 +95,32 @@ class EffectiveModelTest {
         assertTrue(model().orElseThrow()
                 .plugin("org.eclipse.jetty.ee10", "jetty-ee10-maven-plugin")
                 .isEmpty());
+    }
+
+    /**
+     * The execution that runs a goal is the one a pom has not switched off by
+     * binding it to phase {@code none}; its keys are not configuration.
+     */
+    @Test
+    void theExecutionRunningAGoalIsFound() throws IOException {
+        write("""
+                plugins=1
+                plugin.0=org.apache.maven.plugins\\:maven-compiler-plugin\\:3.13.0
+                execution.0.0=default-compile
+                execution.0.0.phase=none
+                execution.0.0.goals=compile
+                execution.0.1=java-compile
+                execution.0.1.phase=compile
+                execution.0.1.goals=compile
+                """);
+        EffectiveModel model = model().orElseThrow();
+
+        assertEquals(Optional.of("java-compile"),
+                model.findExecution("org.apache.maven.plugins",
+                        "maven-compiler-plugin", "compile"));
+        assertEquals(Map.of(), model
+                .plugin("org.apache.maven.plugins", "maven-compiler-plugin")
+                .orElseThrow().configuration());
     }
 
     @Test

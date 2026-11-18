@@ -159,7 +159,6 @@
                of our test build configs -->
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.20.0</version>
     </dependency>
 
     <dependency>
@@ -179,7 +178,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-enforcer-plugin</artifactId>
-          <version>3.6.3</version>
+          <version>3.7.0</version>
           <dependencies>
             <dependency>
               <groupId>de.skuzzle.enforcer</groupId>
@@ -264,7 +263,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>license-maven-plugin</artifactId>
-          <version>2.7.1</version>
+          <version>2.9.0</version>
           <configuration>
             <!-- Default is system -->
             <excludedScopes>system,test</excludedScopes>
@@ -355,6 +354,20 @@
         <module>test-spring-white-list</module>
         <module>test-spring-filter-packages</module>
 
+      </modules>
+    </profile>
+
+    <profile>
+      <!-- Built into a GraalVM native image, which takes minutes, so it runs
+           in .github/workflows/spring-native.yml rather than in validation -->
+      <id>native</id>
+      <activation>
+        <property>
+          <name>native</name>
+        </property>
+      </activation>
+      <modules>
+        <module>test-spring-native</module>
       </modules>
     </profile>
 

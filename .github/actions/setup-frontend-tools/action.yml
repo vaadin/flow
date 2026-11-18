@@ -1,0 +1,41 @@
+# Installs the Node.js version, and optionally the pnpm version, that Flow
+# installs by default. The versions are read from FrontendTools through
+# scripts/frontendToolVersions.sh, so no workflow carries its own copy of them
+# and each maintenance branch uses its own versions.
+#
+# Being a local action, it needs the Flow checkout to be in place first.
+name: Set up the Flow frontend tools
+description: Installs the Node.js and pnpm versions Flow installs by default
+inputs:
+  pnpm:
+    description: Whether to install pnpm as well
+    default: 'false'
+  cache:
+    description: Passed to actions/setup-node
+    default: ''
+  cache-dependency-path:
+    description: Passed to actions/setup-node
+    default: ''
+outputs:
+  node-version:
+    description: The Node.js version from FrontendTools
+    value: ${{ steps.versions.outputs.node-version }}
+  pnpm-version:
+    description: The pnpm version from FrontendTools
+    value: ${{ steps.versions.outputs.pnpm-version }}
+runs:
+  using: composite
+  steps:
+    - name: Read the frontend tool versions
+      id: versions
+      shell: bash
+      run: '"$GITHUB_ACTION_PATH/../../../scripts/frontendToolVersions.sh" >> "$GITHUB_OUTPUT"'
+    - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      with:
+        node-version: ${{ steps.versions.outputs.node-version }}
+        cache: ${{ inputs.cache }}
+        cache-dependency-path: ${{ inputs.cache-dependency-path }}
+    - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      if: ${{ inputs.pnpm == 'true' }}
+      with:
+        version: ${{ steps.versions.outputs.pnpm-version }}

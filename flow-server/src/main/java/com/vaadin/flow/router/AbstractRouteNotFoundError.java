@@ -77,8 +77,8 @@ public abstract class AbstractRouteNotFoundError extends Component {
         path = Jsoup.clean(path, Safelist.none());
         additionalInfo = Jsoup.clean(additionalInfo, Safelist.none());
 
-        boolean productionMode = event.getUI().getSession().getConfiguration()
-                .isProductionMode();
+        boolean productionMode = event.getUI().getSessionOrThrow()
+                .getConfiguration().isProductionMode();
         String template;
         String routes = getRoutes(event);
 

@@ -269,7 +269,7 @@ public final class ElementEffect implements Serializable {
         // Install the UI error handler so that exceptions during active
         // (post-attach) runs are routed to the session error handler instead
         // of being re-thrown.
-        errorHandler = (e, elem) -> ui.getSession().getErrorHandler()
+        errorHandler = (e, elem) -> ui.getSessionOrThrow().getErrorHandler()
                 .error(new ErrorEvent(e, elem.getNode()));
 
         SerializableExecutor uiDispatcher = command -> {
@@ -368,6 +368,7 @@ public final class ElementEffect implements Serializable {
      *            the value type of the {@link Signal}s in the list
      * @param <S>
      *            the type of the {@link Signal}s in the list
+     * @return a registration that removes the binding
      * @throws IllegalStateException
      *             thrown if parent element has default-slot children, or if the
      *             child factory produces elements with a {@code slot} attribute

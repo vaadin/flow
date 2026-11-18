@@ -49,7 +49,9 @@ import org.w3c.dom.NodeList;
  * emitted, because that is the only source accounting for profiles, dependency
  * management and transitivity. The enumeration here is therefore allowed to be
  * a superset: it is used to find the root, to name the modules left out of the
- * loop, and to know which poms invalidate the classpath cache.
+ * loop, to know which poms invalidate the classpath cache, and to admit a
+ * classpath module outside the root - one the reactor aggregates from beside
+ * it. A module it fails to enumerate under the root still reaches the loop.
  * <p>
  * A project with no aggregator above it resolves to a reactor of one, which is
  * exactly the behaviour the daemon had before it knew about reactors.
@@ -443,11 +445,31 @@ final class Reactor {
      * @return the plugin, or empty when this build does not run it
      */
     Optional<PluginConfig> plugin(String groupId, String artifactId) {
-        return EffectiveModel
-                .read(app.dir(),
-                        List.of(app.dir().resolve("pom.xml"),
-                                root.resolve("pom.xml")))
-                .flatMap(model -> model.plugin(groupId, artifactId));
+        return appModel().flatMap(model -> model.plugin(groupId, artifactId));
+    }
+
+    /**
+     * The application module's execution of a plugin goal, as Maven assembled
+     * it; see {@link EffectiveModel#findExecution}.
+     *
+     * @param groupId
+     *            the plugin's group
+     * @param artifactId
+     *            the plugin's artifact
+     * @param goal
+     *            the goal the execution runs
+     * @return the execution id, or empty when there is no current model or it
+     *         names no such execution
+     */
+    Optional<String> findExecution(String groupId, String artifactId,
+            String goal) {
+        return appModel().flatMap(
+                model -> model.findExecution(groupId, artifactId, goal));
+    }
+
+    private Optional<EffectiveModel> appModel() {
+        return EffectiveModel.read(app.dir(),
+                List.of(app.dir().resolve("pom.xml"), root.resolve("pom.xml")));
     }
 
     /**

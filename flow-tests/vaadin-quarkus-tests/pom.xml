@@ -36,6 +36,7 @@
     <module>development</module>
     <module>embedded-plugin</module>
     <module>push-dispatch-it</module>
+    <module>custom-servlet-it</module>
 
     <!-- Codestarts tests -->
     <module>codestarts</module>

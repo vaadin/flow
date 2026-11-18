@@ -84,6 +84,8 @@ public interface PluginAdapterBuild extends PluginAdapterBase {
      *
      * Created production bundle optimization is defined by
      * {@link #optimizeBundle} parameter.
+     *
+     * @return {@code true} to force the production build
      */
     boolean forceProductionBuild();
 

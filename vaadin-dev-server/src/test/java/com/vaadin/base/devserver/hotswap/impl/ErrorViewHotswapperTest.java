@@ -20,7 +20,6 @@ import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassSessionEvent;
 import com.vaadin.base.devserver.hotswap.UIUpdateStrategy;
@@ -39,6 +38,8 @@ import com.vaadin.tests.util.MockUI;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class ErrorViewHotswapperTest {
 
@@ -59,8 +60,8 @@ class ErrorViewHotswapperTest {
     }
 
     private Location createMockLocation(String path) {
-        Location location = Mockito.mock(Location.class);
-        Mockito.when(location.getPath()).thenReturn(path);
+        Location location = mock(Location.class);
+        when(location.getPath()).thenReturn(path);
         return location;
     }
 

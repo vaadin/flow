@@ -46,6 +46,7 @@ import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.ConstantPoolKey;
+import com.vaadin.flow.internal.CssBundler;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ResourceContentHash;
@@ -85,7 +86,7 @@ public class UidlWriter implements Serializable {
      * Provides context information for the resolve operations.
      */
     public static class ResolveContext implements Serializable {
-        private VaadinService service;
+        private final VaadinService service;
 
         /**
          * Creates a new context.
@@ -119,7 +120,9 @@ public class UidlWriter implements Serializable {
      *            false if it is a response to a client message
      * @param resync
      *            True iff the client should be asked to resynchronize
-     * @return JSON object containing the UIDL response
+     * @return JSON object containing the UIDL response, or a session expired
+     *         message if running the pending access tasks of the session
+     *         removed the UI from it, as destroying the session does
      * @since 2.1
      */
     public ObjectNode createUidl(UI ui, boolean async, boolean resync) {
@@ -127,12 +130,20 @@ public class UidlWriter implements Serializable {
 
         UIInternals uiInternals = ui.getInternals();
 
-        VaadinSession session = ui.getSession();
+        VaadinSession session = ui.getSessionOrThrow();
         VaadinService service = session.getService();
 
         // Purge pending access calls as they might produce additional changes
         // to write out
         service.runPendingAccessTasks(session);
+
+        if (ui.getSession() == null) {
+            // A pending task destroyed the session and removed the UI from it,
+            // e.g. because another thread invalidated the HTTP session while
+            // this request held the session lock
+            return JacksonUtils
+                    .readTree(VaadinService.createSessionExpiredJSON(async));
+        }
 
         // Paints components
         getLogger().debug("* Creating response to client");
@@ -211,7 +222,9 @@ public class UidlWriter implements Serializable {
      * @param async
      *            True if this message is sent by the server asynchronously,
      *            false if it is a response to a client message.
-     * @return JSON object containing the UIDL response
+     * @return JSON object containing the UIDL response, or a session expired
+     *         message if running the pending access tasks of the session
+     *         removed the UI from it, as destroying the session does
      */
     public ObjectNode createUidl(UI ui, boolean async) {
         return createUidl(ui, async, false);
@@ -251,9 +264,24 @@ public class UidlWriter implements Serializable {
             ResolveContext context) {
         ObjectNode dependencyJson = JacksonUtils.getMapper()
                 .valueToTree(dependency);
-        if (dependency.getLoadMode() == LoadMode.INLINE) {
-            dependencyJson.put(Dependency.KEY_CONTENTS,
-                    getDependencyContents(dependency.getUrl(), context));
+        JsonNode encodedDynamicImport = dependency.getEncodedDynamicImport();
+        if (encodedDynamicImport != null) {
+            // Sent as the function value rather than the string that keys it,
+            // so the client decodes it instead of compiling an expression
+            dependencyJson.set(Dependency.KEY_URL, encodedDynamicImport);
+        } else if (dependency.getLoadMode() == LoadMode.INLINE) {
+            String contents = getDependencyContents(dependency.getUrl(),
+                    context);
+            if (dependency.getLayer() != null) {
+                try {
+                    contents = CssBundler.wrapInLayer(contents,
+                            dependency.getLayer());
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalStateException("Cannot inline '"
+                            + dependency.getUrl() + "': " + e.getMessage(), e);
+                }
+            }
+            dependencyJson.put(Dependency.KEY_CONTENTS, contents);
             dependencyJson.remove(Dependency.KEY_URL);
         } else if (dependency.getType() == Dependency.Type.STYLESHEET && context
                 .getService().getDeploymentConfiguration().isProductionMode()) {
@@ -446,17 +474,35 @@ public class UidlWriter implements Serializable {
                     Stream.of(successChannel, errorChannel));
         }
 
-        ObjectNode function = JacksonUtils.createObjectNode();
-        function.put(JsonConstants.UIDL_KEY_JS_FUNCTION, call.getFunctionId());
+        return Stream.concat(parameters.map(JacksonCodec::encodeWithTypeInfo),
+                Stream.of(constantOf(encodeFunctionReference(call),
+                        constantPool)))
+                .collect(JacksonUtils.asArray());
+    }
+
+    /**
+     * Encodes the reference to the function of the bundle that the given call
+     * runs: an object naming the function, and for a variadic call how many
+     * arguments it carries. An invocation of declared JavaScript sends this in
+     * place of an expression, through the constant pool like any other value an
+     * invocation runs, and the client tells the two apart by this being an
+     * object rather than a string.
+     * <p>
+     * Package private for {@link UidlRequestHandler}, which recognizes the
+     * router's push state by the constant this is sent as.
+     *
+     * @param call
+     *            the call to reference the function of, not <code>null</code>
+     * @return the reference, not <code>null</code>
+     */
+    static ObjectNode encodeFunctionReference(JsCall call) {
+        ObjectNode reference = JacksonUtils.createObjectNode();
+        reference.put(JsonConstants.UIDL_KEY_JS_FUNCTION, call.getFunctionId());
         if (call.isVariadic()) {
-            function.put(JsonConstants.UIDL_KEY_JS_ARGUMENT_COUNT,
+            reference.put(JsonConstants.UIDL_KEY_JS_ARGUMENT_COUNT,
                     call.flattenArguments().size());
         }
-
-        return Stream
-                .concat(parameters.map(JacksonCodec::encodeWithTypeInfo),
-                        Stream.of(constantOf(function, constantPool)))
-                .collect(JacksonUtils.asArray());
+        return reference;
     }
 
     /**
@@ -528,8 +574,8 @@ public class UidlWriter implements Serializable {
      */
     private ArrayNode createPerformanceData(UI ui) {
         ArrayNode timings = JacksonUtils.createArrayNode();
-        timings.add(ui.getSession().getCumulativeRequestDuration());
-        timings.add(ui.getSession().getLastRequestDuration());
+        timings.add(ui.getSessionOrThrow().getCumulativeRequestDuration());
+        timings.add(ui.getSessionOrThrow().getLastRequestDuration());
         return timings;
     }
 

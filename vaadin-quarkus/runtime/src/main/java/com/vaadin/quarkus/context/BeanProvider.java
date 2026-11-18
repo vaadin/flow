@@ -509,7 +509,7 @@ public final class BeanProvider {
     }
 
     private static Set<Bean<?>> filterDefaultScopedBeans(Set<Bean<?>> beans) {
-        Set<Bean<?>> result = new HashSet<Bean<?>>(beans.size());
+        Set<Bean<?>> result = HashSet.newHashSet(beans.size());
 
         for (Bean<?> currentBean : beans) {
             if (!Dependent.class.isAssignableFrom(currentBean.getScope())) {

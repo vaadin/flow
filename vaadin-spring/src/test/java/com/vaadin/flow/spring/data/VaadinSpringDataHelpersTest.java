@@ -17,12 +17,10 @@ package com.vaadin.flow.spring.data;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -35,6 +33,9 @@ import com.vaadin.flow.data.provider.QuerySortOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 
 class VaadinSpringDataHelpersTest {
 
@@ -90,10 +91,10 @@ class VaadinSpringDataHelpersTest {
 
     @Test
     void fromPagingRepository_fetchesItemsFromPagingRepoAccordingToVaadinQuery() {
-        PagingAndSortingRepository repo = Mockito
-                .mock(PagingAndSortingRepository.class);
+        PagingAndSortingRepository repo = mock(
+                PagingAndSortingRepository.class);
 
-        Mockito.doAnswer(mock -> {
+        doAnswer(mock -> {
             PageRequest pageRequest = mock.getArgument(0);
             int from = pageRequest.getPageNumber() * pageRequest.getPageSize();
 
@@ -107,9 +108,9 @@ class VaadinSpringDataHelpersTest {
             // given string items 'Item XYZ' ordered according to a given query
             List<String> items = itemsStream.skip(from)
                     .limit(pageRequest.getPageSize()).map(i -> "Item " + i)
-                    .collect(Collectors.toList());
+                    .toList();
             return new PageImpl<>(items);
-        }).when(repo).findAll(Mockito.any(PageRequest.class));
+        }).when(repo).findAll(any(PageRequest.class));
 
         CallbackDataProvider.FetchCallback<String, Void> callback = VaadinSpringDataHelpers
                 .fromPagingRepository(repo);
@@ -117,8 +118,7 @@ class VaadinSpringDataHelpersTest {
         // when items with indexes 100..149 and descending order are fetched
         Query<String, Void> query = new Query<>(100, 50,
                 QuerySortOrder.desc("someSortField").build(), null, null);
-        List<String> result = callback.fetch(query)
-                .collect(Collectors.toList());
+        List<String> result = callback.fetch(query).toList();
 
         // then the result should contain items 'Item 399'...'Item 350'.
         assertEquals(50, result.size());

@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.DevToolsMessageHandler;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -74,7 +75,7 @@ import com.vaadin.flow.theme.Theme;
         Template.class, LoadDependenciesOnStartup.class,
         TypeScriptBootstrapModifier.class, DevToolsMessageHandler.class,
         Component.class, Layout.class, StyleSheet.class,
-        StyleSheet.Container.class, JsDefinition.class })
+        StyleSheet.Container.class, JsDefinition.class, ComponentEvent.class })
 @WebListener
 public class DevModeStartupListener
         implements VaadinServletContextStartupInitializer, Serializable,
@@ -91,6 +92,7 @@ public class DevModeStartupListener
     }
 
     @Override
+    @SuppressWarnings("removal")
     public void initialize(Set<Class<?>> classes, VaadinContext context)
             throws VaadinInitializerException {
         lookupDevModeHandlerManager(context).initDevModeHandler(classes,
@@ -115,6 +117,7 @@ public class DevModeStartupListener
     }
 
     @Override
+    @SuppressWarnings("removal")
     public void contextDestroyed(ServletContextEvent ctx) {
         if (devModeHandlerManager == null) {
             // devModeHandlerManager should never be null here.
@@ -135,6 +138,7 @@ public class DevModeStartupListener
             devModeHandlerManager.stopDevModeHandler();
         }
         devModeHandlerManager = null;
+        ComponentUtil.unregisterAllComponentClasses();
     }
 
     private DevModeHandlerManager lookupDevModeHandlerManager(

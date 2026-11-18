@@ -41,6 +41,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 
 @Isolated
 class TaskGenerateTsConfigTest {
@@ -61,8 +63,8 @@ class TaskGenerateTsConfigTest {
     void setUp() throws IOException {
         npmFolder = Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
                 .toFile();
-        featureFlags = Mockito.mock(FeatureFlags.class);
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+        featureFlags = mock(FeatureFlags.class);
+        Options options = new Options(mock(Lookup.class), npmFolder)
                 .withFeatureFlags(featureFlags);
 
         taskGenerateTsConfig = new TaskGenerateTsConfig(options);
@@ -244,9 +246,9 @@ class TaskGenerateTsConfigTest {
         File tsconfig = writeTestTsConfigContent(
                 "tsconfig-custom-content.json");
         MockLogger logger = new MockLogger();
-        try (MockedStatic<AbstractTaskClientGenerator> client = Mockito
-                .mockStatic(AbstractTaskClientGenerator.class,
-                        Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<AbstractTaskClientGenerator> client = mockStatic(
+                AbstractTaskClientGenerator.class,
+                Mockito.CALLS_REAL_METHODS)) {
             client.when(() -> AbstractTaskClientGenerator.log())
                     .thenReturn(logger);
             taskGenerateTsConfig.execute();
@@ -263,9 +265,9 @@ class TaskGenerateTsConfigTest {
         File tsconfig = writeTestTsConfigContent(
                 "tsconfig-custom-content.json");
         MockLogger logger = new MockLogger();
-        try (MockedStatic<AbstractTaskClientGenerator> client = Mockito
-                .mockStatic(AbstractTaskClientGenerator.class,
-                        Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<AbstractTaskClientGenerator> client = mockStatic(
+                AbstractTaskClientGenerator.class,
+                Mockito.CALLS_REAL_METHODS)) {
             client.when(() -> AbstractTaskClientGenerator.log())
                     .thenReturn(logger);
             taskGenerateTsConfig.execute();

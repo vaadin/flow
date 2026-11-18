@@ -24,7 +24,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 
@@ -32,6 +31,7 @@ import static com.vaadin.flow.internal.FrontendUtils.COMMERCIAL_BANNER_JS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class TaskGenerateCommercialBannerTest {
     @TempDir
@@ -45,7 +45,7 @@ class TaskGenerateCommercialBannerTest {
     void setUp() throws IOException {
         frontendFolder = Files
                 .createTempDirectory(temporaryFolder.toPath(), "tmp").toFile();
-        options = new Options(Mockito.mock(Lookup.class), null)
+        options = new Options(mock(Lookup.class), null)
                 .withFrontendDirectory(frontendFolder);
         options.withProductionMode(true);
         options.withBundleBuild(true);

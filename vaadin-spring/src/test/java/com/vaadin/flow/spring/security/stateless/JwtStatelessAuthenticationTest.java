@@ -23,7 +23,6 @@ import javax.crypto.spec.SecretKeySpec;
 import java.util.Arrays;
 import java.util.Base64;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -67,6 +66,7 @@ import com.vaadin.flow.spring.security.RequestUtil;
 
 import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -233,10 +233,9 @@ class JwtStatelessAuthenticationTest {
             Cookie jwtSignature) {
         Cookie jwtCookie2 = result.getResponse()
                 .getCookie("jwt.headerAndPayload");
-        Assertions.assertNotEquals(jwtCookie.getValue(), jwtCookie2.getValue());
+        assertNotEquals(jwtCookie.getValue(), jwtCookie2.getValue());
         Cookie jwtSignature2 = result.getResponse().getCookie("jwt.signature");
-        Assertions.assertNotEquals(jwtSignature.getValue(),
-                jwtSignature2.getValue());
+        assertNotEquals(jwtSignature.getValue(), jwtSignature2.getValue());
     }
 
     @TestConfiguration

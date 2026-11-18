@@ -42,6 +42,13 @@ import static com.vaadin.flow.server.Constants.TARGET;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.contains;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
     @TempDir
@@ -106,9 +113,9 @@ class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
                 .getTestJar("jar-with-frontend-resources.jar");
         TaskCopyFrontendFiles task = taskFor(legacyJar);
 
-        Logger logger = Mockito.spy(Logger.class);
-        try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
-                .mockStatic(LoggerFactory.class)) {
+        Logger logger = spy(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactoryMocked = mockStatic(
+                LoggerFactory.class)) {
             loggerFactoryMocked
                     .when(() -> LoggerFactory.getLogger(task.getClass()))
                     .thenReturn(logger);
@@ -117,11 +124,10 @@ class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
             task.execute();
             task.execute();
 
-            Mockito.verify(logger, Mockito.times(1)).warn(
-                    Mockito.contains("deprecated"),
-                    Mockito.eq(legacyJar.getName()),
-                    Mockito.eq(COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT),
-                    Mockito.eq(RESOURCES_FRONTEND_DEFAULT));
+            verify(logger, times(1)).warn(contains("deprecated"),
+                    eq(legacyJar.getName()),
+                    eq(COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT),
+                    eq(RESOURCES_FRONTEND_DEFAULT));
         }
     }
 
@@ -130,18 +136,18 @@ class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         TaskCopyFrontendFiles task = taskFor(
                 TestUtils.getTestJar("jar-with-modern-frontend.jar"));
 
-        Logger logger = Mockito.spy(Logger.class);
-        try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
-                .mockStatic(LoggerFactory.class)) {
+        Logger logger = spy(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactoryMocked = mockStatic(
+                LoggerFactory.class)) {
             loggerFactoryMocked
                     .when(() -> LoggerFactory.getLogger(task.getClass()))
                     .thenReturn(logger);
 
             task.execute();
 
-            Mockito.verify(logger, Mockito.never()).warn(
-                    Mockito.contains("deprecated"), Mockito.<Object> any(),
-                    Mockito.<Object> any(), Mockito.<Object> any());
+            verify(logger, never()).warn(contains("deprecated"),
+                    Mockito.<Object> any(), Mockito.<Object> any(),
+                    Mockito.<Object> any());
         }
     }
 

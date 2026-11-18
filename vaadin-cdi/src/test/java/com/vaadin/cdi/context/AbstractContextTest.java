@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,12 +21,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.cdi.AbstractWeldTest;
 import com.vaadin.cdi.util.BeanProvider;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public abstract class AbstractContextTest<T extends TestBean>
         extends AbstractWeldTest {
@@ -47,7 +49,7 @@ public abstract class AbstractContextTest<T extends TestBean>
 
     @Test
     public void get_contextNotActive_ExceptionThrown() {
-        Assertions.assertThrows(ContextNotActiveException.class, () -> {
+        assertThrows(ContextNotActiveException.class, () -> {
             final T reference = BeanProvider
                     .getContextualReference(getBeanType());
             reference.getState();
@@ -59,10 +61,10 @@ public abstract class AbstractContextTest<T extends TestBean>
         createContext().activate();
         T referenceA = BeanProvider.getContextualReference(getBeanType());
         referenceA.setState("hello");
-        Assertions.assertEquals("hello", referenceA.getState());
+        assertEquals("hello", referenceA.getState());
         T referenceB = BeanProvider.getContextualReference(getBeanType());
-        Assertions.assertEquals("hello", referenceB.getState());
-        Assertions.assertEquals(1, TestBean.getBeanCount());
+        assertEquals("hello", referenceB.getState());
+        assertEquals(1, TestBean.getBeanCount());
     }
 
     @Test
@@ -73,14 +75,14 @@ public abstract class AbstractContextTest<T extends TestBean>
         createContext().activate();
         if (isNormalScoped()) {
             // proxy delegates to the active context automatically
-            Assertions.assertEquals("", referenceA.getState());
+            assertEquals("", referenceA.getState());
         } else {
             // pseudo scoped bean ignores active context after creation
-            Assertions.assertEquals("hello", referenceA.getState());
+            assertEquals("hello", referenceA.getState());
         }
         final T referenceB = BeanProvider.getContextualReference(getBeanType());
-        Assertions.assertEquals("", referenceB.getState());
-        Assertions.assertEquals(2, TestBean.getBeanCount());
+        assertEquals("", referenceB.getState());
+        assertEquals(2, TestBean.getBeanCount());
     }
 
     @Test
@@ -93,11 +95,11 @@ public abstract class AbstractContextTest<T extends TestBean>
         contextUnderTestB.activate();
         final T referenceB = BeanProvider.getContextualReference(getBeanType());
         referenceB.setState("hello");
-        Assertions.assertEquals(2, TestBean.getBeanCount());
+        assertEquals(2, TestBean.getBeanCount());
         contextUnderTestA.destroy();
-        Assertions.assertEquals(1, TestBean.getBeanCount());
+        assertEquals(1, TestBean.getBeanCount());
         contextUnderTestB.destroy();
-        Assertions.assertEquals(0, TestBean.getBeanCount());
+        assertEquals(0, TestBean.getBeanCount());
     }
 
     protected UnderTestContext createContext() {

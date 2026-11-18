@@ -19,6 +19,7 @@ import jakarta.servlet.ServletContext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,13 +28,11 @@ import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 
 import com.vaadin.experimental.FeatureFlags;
@@ -46,6 +45,12 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 @PWA(name = "foo", shortName = "bar")
 class PwaRegistryTest {
@@ -102,7 +107,7 @@ class PwaRegistryTest {
                 PwaWithCustomIconPath.class.getAnnotation(PWA.class));
         splashIconsForAppleDevices = registry.getIcons().stream().filter(
                 icon -> "apple-touch-startup-image".equals(icon.getRel()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Test
@@ -187,15 +192,14 @@ class PwaRegistryTest {
             boolean productionMode,
             BiFunction<PwaRegistry, VaadinRequest, T> action)
             throws IOException {
-        try (MockedStatic<VaadinService> vaadinService = Mockito
-                .mockStatic(VaadinService.class);
-                MockedStatic<FeatureFlags> featureFlags = Mockito
-                        .mockStatic(FeatureFlags.class)) {
+        try (MockedStatic<VaadinService> vaadinService = mockStatic(
+                VaadinService.class);
+                MockedStatic<FeatureFlags> featureFlags = mockStatic(
+                        FeatureFlags.class)) {
 
-            VaadinServletService vaadinServiceMocked = Mockito
-                    .mock(VaadinServletService.class);
-            Mockito.when(vaadinServiceMocked
-                    .isResourceAvailable(Mockito.anyString()))
+            VaadinServletService vaadinServiceMocked = mock(
+                    VaadinServletService.class);
+            when(vaadinServiceMocked.isResourceAvailable(anyString()))
                     .thenAnswer((InvocationOnMock invocation) -> {
                         final String resourceUrl = (String) invocation
                                 .getArguments()[0];
@@ -206,8 +210,7 @@ class PwaRegistryTest {
                     });
             // Mimic ServiceContextUriResolver, which expands context:// to the
             // context root and base:// to the servlet root
-            Mockito.when(
-                    vaadinServiceMocked.resolveResource(Mockito.anyString()))
+            when(vaadinServiceMocked.resolveResource(anyString()))
                     .thenAnswer(invocation -> {
                         String url = invocation.getArgument(0);
                         if (url.startsWith(
@@ -226,48 +229,44 @@ class PwaRegistryTest {
                     });
             // Only declared resources are readable, so ResourceContentHash
             // computes a hash for those and returns null for the rest
-            Mockito.when(
-                    vaadinServiceMocked.getStaticResource(Mockito.anyString()))
-                    .thenAnswer(invocation -> resources
-                            .contains(invocation.getArgument(0))
-                                    ? PwaRegistryTest.class.getResource(
-                                            "/META-INF/resources/icons/icon.png")
-                                    : null);
+            when(vaadinServiceMocked.getStaticResource(anyString())).thenAnswer(
+                    invocation -> resources.contains(invocation.getArgument(0))
+                            ? PwaRegistryTest.class.getResource(
+                                    "/META-INF/resources/icons/icon.png")
+                            : null);
 
             final Map<String, Object> attributeMap = new HashMap<>();
-            ServletContext servletContext = Mockito.mock(ServletContext.class);
-            Mockito.when(servletContext.getAttribute(Mockito.anyString()))
+            ServletContext servletContext = mock(ServletContext.class);
+            when(servletContext.getAttribute(anyString()))
                     .then(invocation -> attributeMap
                             .get(invocation.getArguments()[0].toString()));
-            Mockito.doAnswer(invocation -> attributeMap.put(
+            doAnswer(invocation -> attributeMap.put(
                     invocation.getArguments()[0].toString(),
                     invocation.getArguments()[1])).when(servletContext)
-                    .setAttribute(Mockito.anyString(), Mockito.any());
+                    .setAttribute(anyString(), any());
 
             final VaadinServletContext context = new VaadinServletContext(
                     servletContext);
 
             MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
             deploymentConfiguration.setProductionMode(productionMode);
-            Mockito.when(vaadinServiceMocked.getDeploymentConfiguration())
+            when(vaadinServiceMocked.getDeploymentConfiguration())
                     .thenReturn(deploymentConfiguration);
 
             vaadinService.when(VaadinService::getCurrent)
                     .thenReturn(vaadinServiceMocked);
-            Mockito.when(vaadinServiceMocked.getContext()).thenReturn(context);
+            when(vaadinServiceMocked.getContext()).thenReturn(context);
 
-            FeatureFlags flags = Mockito.mock(FeatureFlags.class);
-            featureFlags.when(() -> FeatureFlags.get(Mockito.any()))
-                    .thenReturn(flags);
+            FeatureFlags flags = mock(FeatureFlags.class);
+            featureFlags.when(() -> FeatureFlags.get(any())).thenReturn(flags);
 
             AppShellRegistry.getInstance(context).setShell(appShell);
 
             // The request that fetches sw-runtime.js; its servlet root is what
             // the stylesheet entries are relative to
-            VaadinRequest request = Mockito.mock(VaadinRequest.class);
-            Mockito.when(request.getService()).thenReturn(vaadinServiceMocked);
-            Mockito.when(vaadinServiceMocked
-                    .getContextRootRelativePath(Mockito.any()))
+            VaadinRequest request = mock(VaadinRequest.class);
+            when(request.getService()).thenReturn(vaadinServiceMocked);
+            when(vaadinServiceMocked.getContextRootRelativePath(any()))
                     .thenReturn(contextRootRelativePath);
 
             return action.apply(new PwaRegistry(pwa, servletContext), request);
@@ -295,8 +294,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 2732 && icon.getHeight() == 2048);
         List<String> mediaQueriesForIPadPro129 = splashIconsForAppleDevices
                 .stream().filter(iPadPro129)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPadPro129.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPadPro129.stream()
@@ -308,8 +306,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 2388 && icon.getHeight() == 1668);
         List<String> mediaQueriesForIPadPro11And105 = splashIconsForAppleDevices
                 .stream().filter(iPadPro11And105)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPadPro11And105.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPadPro11And105.stream()
@@ -321,8 +318,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 2224 && icon.getHeight() == 1668);
         List<String> mediaQueriesForIPadAir105 = splashIconsForAppleDevices
                 .stream().filter(iPadAir105)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPadAir105.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPadAir105.stream()
@@ -334,8 +330,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 2160 && icon.getHeight() == 1620);
         List<String> mediaQueriesForIPad102 = splashIconsForAppleDevices
                 .stream().filter(iPad102)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPad102.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPad102.stream()
@@ -347,8 +342,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 2048 && icon.getHeight() == 1536);
         List<String> mediaQueriesForIPad97And79 = splashIconsForAppleDevices
                 .stream().filter(iPad97And79)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPad97And79.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPad97And79.stream()
@@ -363,8 +357,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 2778 && icon.getHeight() == 1284);
         List<String> mediaQueriesForIPhone13ProMaxAnd12ProMax = splashIconsForAppleDevices
                 .stream().filter(iPhone13ProMaxAnd12ProMax)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPhone13ProMaxAnd12ProMax.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPhone13ProMaxAnd12ProMax.stream()
@@ -376,8 +369,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 2532 && icon.getHeight() == 1170);
         List<String> mediaQueriesForIPhone13ProAnd12ProAnd13And12 = splashIconsForAppleDevices
                 .stream().filter(iPhone13ProAnd12ProAnd13And12)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPhone13ProAnd12ProAnd13And12.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPhone13ProAnd12ProAnd13And12.stream()
@@ -389,8 +381,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 2436 && icon.getHeight() == 1125);
         List<String> mediaQueriesForIPhone13MiniAnd12MiniAnd11ProAndXSAndX = splashIconsForAppleDevices
                 .stream().filter(iPhone13MiniAnd12MiniAnd11ProAndXSAndX)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPhone13MiniAnd12MiniAnd11ProAndXSAndX
                 .stream().filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPhone13MiniAnd12MiniAnd11ProAndXSAndX
@@ -402,8 +393,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 2688 && icon.getHeight() == 1242);
         List<String> mediaQueriesForIPhone11ProMaxAndXSMax = splashIconsForAppleDevices
                 .stream().filter(iPhone11ProMaxAndXSMax)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPhone11ProMaxAndXSMax.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPhone11ProMaxAndXSMax.stream()
@@ -415,8 +405,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 1792 && icon.getHeight() == 828);
         List<String> mediaQueriesForIPhone11AndXR = splashIconsForAppleDevices
                 .stream().filter(iPhone11AndXR)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPhone11AndXR.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPhone11AndXR.stream()
@@ -428,8 +417,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 2208 && icon.getHeight() == 1242);
         List<String> mediaQueriesForIPhone8PlusAnd7PlusAnd6sPlusAnd6Plus = splashIconsForAppleDevices
                 .stream().filter(iPhone8PlusAnd7PlusAnd6sPlusAnd6Plus)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPhone8PlusAnd7PlusAnd6sPlusAnd6Plus
                 .stream().filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPhone8PlusAnd7PlusAnd6sPlusAnd6Plus
@@ -441,8 +429,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 1334 && icon.getHeight() == 750);
         List<String> mediaQueriesForIPhone8And7And6sAnd6AndSE47 = splashIconsForAppleDevices
                 .stream().filter(iPhone8And7And6sAnd6AndSE47)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPhone8And7And6sAnd6AndSE47.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPhone8And7And6sAnd6AndSE47.stream()
@@ -454,8 +441,7 @@ class PwaRegistryTest {
                 || (icon.getWidth() == 1136 && icon.getHeight() == 640);
         List<String> mediaQueriesForIPhone5AndSE47AndIPod5AndLater = splashIconsForAppleDevices
                 .stream().filter(iPhone5AndSE47AndIPod5AndLater)
-                .map(icon -> icon.asElement().attr("media"))
-                .collect(Collectors.toList());
+                .map(icon -> icon.asElement().attr("media")).toList();
         assertEquals(1, mediaQueriesForIPhone5AndSE47AndIPod5AndLater.stream()
                 .filter(media -> media.contains("portrait")).count());
         assertEquals(1, mediaQueriesForIPhone5AndSE47AndIPod5AndLater.stream()
@@ -477,6 +463,27 @@ class PwaRegistryTest {
         String sw = runtimeServiceWorkerJs(
                 PwaRegistryTest.class.getAnnotation(PWA.class));
         assertTrue(sw.contains("{ url: '.', revision:"));
+    }
+
+    @Test
+    void pwaWithoutCustomOfflinePath_offlineHtmlShowsAppNameAndLargestIcon()
+            throws IOException {
+        PwaRegistry registry = preparePwaRegistry(
+                PwaRegistryTest.class.getAnnotation(PWA.class));
+        PwaIcon largestCachedIcon = registry.getIcons().stream()
+                .filter(PwaIcon::shouldBeCached)
+                .max(Comparator.comparingInt(PwaIcon::getWidth)).get();
+        // The 512x512 manifest icon is the largest one the default @PWA caches
+        assertEquals(512, largestCachedIcon.getWidth());
+
+        String html = registry.getOfflineHtml();
+
+        assertTrue(html.contains("<div class=\"app-name\">foo</div>"), html);
+        assertTrue(
+                html.contains(
+                        "<img src=\"" + largestCachedIcon.getHref() + "\""),
+                html);
+        assertFalse(html.contains("%%%"), html);
     }
 
     @Test

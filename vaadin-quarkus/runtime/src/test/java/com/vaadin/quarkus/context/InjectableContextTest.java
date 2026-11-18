@@ -28,10 +28,8 @@ import io.quarkus.arc.InjectableBean;
 import io.quarkus.arc.InjectableContext;
 import io.quarkus.arc.InjectableContext.ContextState;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.ReflectTools;
 
@@ -40,6 +38,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
 
 /**
  * Basic tests for {@link InjectableContext} implementations.
@@ -52,10 +55,9 @@ public abstract class InjectableContextTest<C extends InjectableContext> {
     private List<UnderTestContext> contexts;
 
     @SuppressWarnings("unchecked")
-    final CreationalContext<TestBean> creationalContext = Mockito
-            .mock(CreationalContext.class);
-    final InjectableBean<TestBean> contextual = Mockito
-            .mock(InjectableBean.class);
+    final CreationalContext<TestBean> creationalContext = mock(
+            CreationalContext.class);
+    final InjectableBean<TestBean> contextual = mock(InjectableBean.class);
 
     private C context;
 
@@ -69,14 +71,13 @@ public abstract class InjectableContextTest<C extends InjectableContext> {
         contexts = new ArrayList<>();
         destroyedBeans.clear();
 
-        Mockito.doAnswer(invocation -> createBean()).when(contextual)
+        doAnswer(invocation -> createBean()).when(contextual)
                 .create(creationalContext);
 
-        Mockito.doAnswer(invocation -> {
+        doAnswer(invocation -> {
             destroyedBeans.add(invocation.getArgument(0));
             return null;
-        }).when(contextual).destroy(Mockito.any(),
-                Mockito.eq(creationalContext));
+        }).when(contextual).destroy(any(), eq(creationalContext));
 
         context = createQuarkusContext();
     }
@@ -89,10 +90,8 @@ public abstract class InjectableContextTest<C extends InjectableContext> {
 
     @Test
     public void get_contextNotActive_ExceptionThrown() {
-        Assertions.assertThrows(ContextNotActiveException.class, () -> {
-            C context = createQuarkusContext();
-            context.get(contextual);
-        });
+        assertThrows(ContextNotActiveException.class,
+                () -> context.get(contextual));
     }
 
     @Test

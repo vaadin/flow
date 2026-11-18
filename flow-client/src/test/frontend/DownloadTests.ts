@@ -1,0 +1,100 @@
+import { expect } from '@open-wc/testing';
+
+// API under test — importing registers window.Vaadin.Flow.download.
+import '../../main/frontend/Download';
+
+const $wnd = window as any;
+
+describe('download.start', () => {
+  let container: HTMLElement;
+  let button: HTMLElement;
+  let clickedAnchor: HTMLAnchorElement | undefined;
+  let clickedAnchorParent: Node | null;
+  let insideCaptureClicks: number;
+  let bubbledClickTargets: EventTarget[];
+
+  // Mirrors how overlays detect an outside click: a capture-phase listener on
+  // the document that checks whether the click happened inside the overlay.
+  function captureListener(e: Event) {
+    if (e.composedPath().includes(container)) {
+      insideCaptureClicks += 1;
+    }
+  }
+
+  // Records the anchor while it is still in the document, then prevents the
+  // default action so the test does not actually navigate or download.
+  function anchorClickListener(e: Event) {
+    if (e.target instanceof HTMLAnchorElement && e.target.hasAttribute('download')) {
+      clickedAnchor = e.target;
+      clickedAnchorParent = e.target.parentNode;
+      e.preventDefault();
+    }
+  }
+
+  beforeEach(() => {
+    clickedAnchor = undefined;
+    clickedAnchorParent = null;
+    insideCaptureClicks = 0;
+    bubbledClickTargets = [];
+    container = document.createElement('div');
+    container.addEventListener('click', (e) => bubbledClickTargets.push(e.target!));
+    button = document.createElement('button');
+    container.appendChild(button);
+    document.body.appendChild(container);
+    document.documentElement.addEventListener('click', captureListener, true);
+    window.addEventListener('click', anchorClickListener, true);
+  });
+
+  afterEach(() => {
+    document.documentElement.removeEventListener('click', captureListener, true);
+    window.removeEventListener('click', anchorClickListener, true);
+    container.remove();
+  });
+
+  it('clicks the anchor next to the element that fired the event', () => {
+    button.addEventListener('click', (e) => {
+      $wnd.Vaadin.Flow.download.start('/files/a.bin', 'b.bin', e);
+    });
+
+    button.click();
+
+    expect(clickedAnchor).to.exist;
+    expect(clickedAnchor!.getAttribute('href')).to.equal('/files/a.bin');
+    expect(clickedAnchor!.download).to.equal('b.bin');
+    expect(clickedAnchorParent).to.equal(container);
+    // The overlay-style listener sees both clicks as inside clicks.
+    expect(insideCaptureClicks).to.equal(2);
+    // Ancestors of the trigger element only see the original click.
+    expect(bubbledClickTargets).to.deep.equal([button]);
+    expect(container.querySelector('a')).to.be.null;
+  });
+
+  const withoutAttachedElement: Array<[string, () => Event | undefined]> = [
+    ['no event', () => undefined],
+    ['a non-element current target', () => eventWithCurrentTarget(window)],
+    ['a current target in a detached subtree', () => eventWithCurrentTarget(detachedButton())]
+  ];
+
+  // Has a parent node but is not in the document.
+  function detachedButton(): Element {
+    const parent = document.createElement('div');
+    return parent.appendChild(document.createElement('button'));
+  }
+
+  function eventWithCurrentTarget(currentTarget: EventTarget): Event {
+    const event = new Event('click');
+    Object.defineProperty(event, 'currentTarget', { value: currentTarget });
+    return event;
+  }
+
+  withoutAttachedElement.forEach(([description, createEvent]) => {
+    it(`falls back to the document body with ${description}`, () => {
+      $wnd.Vaadin.Flow.download.start('/files/a.bin', undefined, createEvent());
+
+      expect(clickedAnchor).to.exist;
+      expect(clickedAnchor!.download).to.equal('');
+      expect(clickedAnchorParent).to.equal(document.body);
+      expect(document.body.querySelector('a[download]')).to.be.null;
+    });
+  });
+});

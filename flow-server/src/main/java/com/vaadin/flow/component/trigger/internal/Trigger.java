@@ -52,12 +52,13 @@ import com.vaadin.flow.shared.Registration;
  * client response is built.
  * <p>
  * Each {@link Action} passed to {@link #triggers(Action...)} produces one
- * {@link Element#addJsInitializer addJsInitializer} registration on the host
- * element via {@link #install(JsFunction)} — so a call with N actions yields N
+ * JavaScript initializer registration on the host element via
+ * {@link #install(JsFunction)} — so a call with N actions yields N
  * registrations, all detached by {@link #remove()}. Subclasses implement
  * {@code install} to wire the rendered {@link JsFunction} to whatever client
- * API the trigger wraps (typically passing it to {@code addJsInitializer}
- * alongside whatever literal values the install expression needs).
+ * API the trigger wraps (typically with
+ * {@link Element#addJsInitializer(JsFunction)} and an initializer declared as a
+ * snippet that captures the action alongside whatever literal values it needs).
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  * 
@@ -195,8 +196,15 @@ public abstract class Trigger implements Serializable {
         // Record intent now so the deferred wiring is not flagged as forgotten;
         // the actual triggers(...) call (which also sets armed) runs at attach.
         armed = true;
-        attachTarget.getElement().getNode()
-                .runWhenAttached(ui -> triggers(action.get()));
+        // remove() may run before the target attaches; the pending wiring must
+        // then not build or install the action once the target does attach.
+        boolean[] removed = { false };
+        registrations.add(() -> removed[0] = true);
+        attachTarget.getElement().getNode().runWhenAttached(ui -> {
+            if (!removed[0]) {
+                triggers(action.get());
+            }
+        });
     }
 
     /**
@@ -204,21 +212,25 @@ public abstract class Trigger implements Serializable {
      * the {@link Registration} that detaches it. Called once per action passed
      * to {@link #triggers(Action...)}.
      * <p>
-     * Implementations typically call
-     * {@link Element#addJsInitializer(String, Object...)
-     * getHost().addJsInitializer} with an install expression that hands the
-     * action {@link JsFunction} to whatever client API the trigger wraps:
+     * Implementations typically pass
+     * {@link Element#addJsInitializer(JsFunction) getHost().addJsInitializer}
+     * an initializer that hands the action {@link JsFunction} to whatever
+     * client API the trigger wraps. The initializer is declared as a snippet,
+     * so that nothing is compiled from a string in the browser:
      *
-     * <pre>{@code
+     * <pre>
+     * &#64;JsExpression("this.addEventListener($1, $0);"
+     *         + "return () =&gt; this.removeEventListener($1, $0);")
+     * JsFunction listenToEvent(JsFunction action, String eventName);
+     *
+     * // In install, with LISTEN_JS = JsSnippets.of(ListenJs.class)
      * return getHost().addJsInitializer(
-     *         "this.addEventListener($1, $0);"
-     *                 + "return () => this.removeEventListener($1, $0);",
-     *         action, eventName);
-     * }</pre>
+     *         LISTEN_JS.listenToEvent(action, eventName));
+     * </pre>
      *
-     * The expression runs with {@code this} bound to the host element. The
-     * captures are made available as {@code $0}, {@code $1}, … in the order
-     * passed.
+     * The initializer runs with {@code this} bound to the host element, and
+     * returns the function that uninstalls it. The arguments of the snippet are
+     * made available as {@code $0}, {@code $1}, … in the order passed.
      *
      * @param action
      *            the rendered action {@link JsFunction}; takes one runtime
@@ -230,8 +242,23 @@ public abstract class Trigger implements Serializable {
     protected abstract Registration install(JsFunction action);
 
     /**
+     * Adds a cleanup that runs when this trigger is removed. Actions and inputs
+     * call it from {@link Action#toJs(Trigger)} or
+     * {@link Action.Input#toJs(Trigger)} for state they set up besides the
+     * client-side listener, such as a registered stream resource.
+     *
+     * @param cleanup
+     *            the cleanup to run on {@link #remove()}, not {@code null}
+     * @since 25.4
+     */
+    public final void addCleanup(Registration cleanup) {
+        registrations.add(Objects.requireNonNull(cleanup));
+    }
+
+    /**
      * Removes this trigger and all wirings created from it. The corresponding
-     * client-side listeners are detached as part of the next synchronisation.
+     * client-side listeners are detached as part of the next synchronisation,
+     * and the cleanups registered by its actions run.
      */
     public final void remove() {
         registrations.forEach(Registration::remove);

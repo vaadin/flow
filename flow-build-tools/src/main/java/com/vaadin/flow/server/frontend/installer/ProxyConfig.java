@@ -272,7 +272,7 @@ public class ProxyConfig {
             return id + "{" + "protocol='" + protocol + '\'' + ", host='" + host
                     + '\'' + ", port=" + port
                     + (useAuthentication()
-                            ? ", with username/passport authentication"
+                            ? ", with username/password authentication"
                             : "")
                     + '}';
         }

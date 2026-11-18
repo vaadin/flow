@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,7 +23,6 @@ import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.cdi.annotation.VaadinSessionScoped;
 import com.vaadin.cdi.context.VaadinSessionScopedContext.ContextualStorageManager;
@@ -39,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -258,7 +258,7 @@ public class SessionContextTest
             Field f = ContextualStorageManager.class
                     .getDeclaredField("beanManager");
             f.setAccessible(true);
-            f.set(target, Mockito.mock(BeanManager.class));
+            f.set(target, mock(BeanManager.class));
             return target;
         } catch (ReflectiveOperationException e) {
             throw new AssertionError("Failed to inject BeanManager", e);

@@ -79,6 +79,10 @@ class HtmlComponentSmokeTest {
         testValues.put(Component.class, new Paragraph("Component"));
         testValues.put(HasText.WhiteSpace.class, HasText.WhiteSpace.PRE_LINE);
         testValues.put(TableHeaderCell.Scope.class, TableHeaderCell.Scope.COL);
+        testValues.put(Media.Preload.class, Media.Preload.METADATA);
+        testValues.put(NativeForm.Method.class, NativeForm.Method.POST);
+        testValues.put(NativeForm.Enctype.class, NativeForm.Enctype.MULTIPART);
+        testValues.put(NativeButton.Type.class, NativeButton.Type.RESET);
     }
 
     private static final Map<Class<?>, Map<Class<?>, Object>> specialTestValues = new HashMap<>();
@@ -303,8 +307,29 @@ class HtmlComponentSmokeTest {
             return true;
         }
 
+        // NativeForm.setUnsafeAction has no getter of its own and
+        // setTarget(AnchorTargetValue) has no test value; NativeFormTest
+        // covers both
+        if (method.getDeclaringClass() == NativeForm.class
+                && (method.getName().equals("setUnsafeAction")
+                        || method.getName().equals("setTarget"))) {
+            return true;
+        }
+
         if (method.getDeclaringClass() == Image.class
                 && method.getName().startsWith("setSrc")
+                && method.getParameterTypes()[0] == DownloadHandler.class) {
+            return true;
+        }
+
+        if (method.getDeclaringClass() == Source.class
+                && method.getName().equals("setSrc")
+                && method.getParameterTypes()[0] == DownloadHandler.class) {
+            return true;
+        }
+
+        if (method.getDeclaringClass() == Video.class
+                && method.getName().equals("setPoster")
                 && method.getParameterTypes()[0] == DownloadHandler.class) {
             return true;
         }

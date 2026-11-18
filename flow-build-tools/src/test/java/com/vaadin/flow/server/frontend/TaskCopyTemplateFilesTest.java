@@ -26,7 +26,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -40,6 +39,8 @@ import com.vaadin.flow.testutil.TestUtils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class TaskCopyTemplateFilesTest {
 
@@ -71,12 +72,11 @@ class TaskCopyTemplateFilesTest {
                 .createTempDirectory(temporaryFolder.toPath(), "tmp").toFile();
         resourceOutputDirectory = new File(projectDirectory,
                 "target/" + Constants.VAADIN_SERVLET_RESOURCES);
-        finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getSubTypesOf(Template.class))
+        finder = mock(ClassFinder.class);
+        when(finder.getSubTypesOf(Template.class))
                 .thenReturn(Collections.singleton(MyLitElementView.class));
         Class clazz = JsModule.class;
-        Mockito.when(finder.loadClass(JsModule.class.getName()))
-                .thenReturn(clazz);
+        when(finder.loadClass(JsModule.class.getName())).thenReturn(clazz);
     }
 
     @Test
@@ -94,7 +94,7 @@ class TaskCopyTemplateFilesTest {
     @Test
     void bundleReused_npmPackageTemplateInBundle_projectTemplateCopied()
             throws Exception {
-        Mockito.when(finder.getSubTypesOf(Template.class)).thenReturn(
+        when(finder.getSubTypesOf(Template.class)).thenReturn(
                 Set.of(MyLitElementView.class, NpmPackageView.class));
 
         File frontendDirectory = new File(projectDirectory,
@@ -110,8 +110,7 @@ class TaskCopyTemplateFilesTest {
         bundledTemplate.getParentFile().mkdirs();
         Files.writeString(bundledTemplate.toPath(), "from the bundle");
 
-        Options options = new Options(Mockito.mock(Lookup.class),
-                projectDirectory)
+        Options options = new Options(mock(Lookup.class), projectDirectory)
                 .withBuildResultFolders(frontendDirectory,
                         resourceOutputDirectory)
                 .withFrontendDirectory(frontendDirectory)
@@ -133,7 +132,7 @@ class TaskCopyTemplateFilesTest {
     @Test
     void templateFromNpmPackage_copiedIntoBundle_foundWhenBundleIsReused()
             throws Exception {
-        Mockito.when(finder.getSubTypesOf(Template.class))
+        when(finder.getSubTypesOf(Template.class))
                 .thenReturn(Set.of(NpmPackageView.class));
 
         File frontendDirectory = new File(projectDirectory,
@@ -148,8 +147,7 @@ class TaskCopyTemplateFilesTest {
         source.getParentFile().mkdirs();
         Files.writeString(source.toPath(), "export class Breadcrumbs {}");
 
-        Options options = new Options(Mockito.mock(Lookup.class),
-                projectDirectory)
+        Options options = new Options(mock(Lookup.class), projectDirectory)
                 .withBuildResultFolders(frontendDirectory,
                         resourceOutputDirectory)
                 .withFrontendDirectory(frontendDirectory).withBundleBuild(true);
@@ -183,7 +181,7 @@ class TaskCopyTemplateFilesTest {
 
     @Test
     void bundleBuild_templateSourceNotFound_executionFails() throws Exception {
-        Mockito.when(finder.getSubTypesOf(Template.class))
+        when(finder.getSubTypesOf(Template.class))
                 .thenReturn(Set.of(NpmPackageView.class));
 
         File frontendDirectory = new File(projectDirectory,
@@ -197,8 +195,7 @@ class TaskCopyTemplateFilesTest {
         staleTemplate.getParentFile().mkdirs();
         Files.writeString(staleTemplate.toPath(), "from an earlier build");
 
-        Options options = new Options(Mockito.mock(Lookup.class),
-                projectDirectory)
+        Options options = new Options(mock(Lookup.class), projectDirectory)
                 .withBuildResultFolders(frontendDirectory,
                         resourceOutputDirectory)
                 .withFrontendDirectory(frontendDirectory).withBundleBuild(true);
@@ -212,15 +209,14 @@ class TaskCopyTemplateFilesTest {
     @Test
     void templateSourceNotFound_executionFailsNamingTheClass()
             throws Exception {
-        Mockito.when(finder.getSubTypesOf(Template.class))
+        when(finder.getSubTypesOf(Template.class))
                 .thenReturn(Set.of(NpmPackageView.class));
 
         File frontendDirectory = new File(projectDirectory,
                 FrontendUtils.FRONTEND);
         frontendDirectory.mkdirs();
 
-        Options options = new Options(Mockito.mock(Lookup.class),
-                projectDirectory)
+        Options options = new Options(mock(Lookup.class), projectDirectory)
                 .withBuildResultFolders(frontendDirectory,
                         resourceOutputDirectory)
                 .withFrontendDirectory(frontendDirectory);
@@ -244,8 +240,7 @@ class TaskCopyTemplateFilesTest {
         frontendDirectory.mkdirs();
         new File(frontendDirectory, "my-lit-element-view.js").createNewFile();
 
-        Options options = new Options(Mockito.mock(Lookup.class),
-                projectDirectory)
+        Options options = new Options(mock(Lookup.class), projectDirectory)
                 .withBuildResultFolders(frontendDirectory,
                         resourceOutputDirectory)
                 .withFrontendDirectory(frontendDirectory);

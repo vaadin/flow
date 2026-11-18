@@ -26,8 +26,12 @@ import com.vaadin.flow.internal.JacksonUtils;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 
 /**
- * Filters out versions based on package json (if user has defined a custom
- * version then this version is not included into the result).
+ * Filters the versions to pin, read from a versions file, down to the ones that
+ * can be pinned: numeric versions, without SNAPSHOT builds, and URL versions.
+ * When the user has changed the version of a package in package.json to an
+ * older one than the versions file declares, a warning is logged; the version
+ * the user declared is respected through the overrides, not by leaving it out
+ * here.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -47,8 +51,8 @@ class VersionsJsonFilter {
     }
 
     /**
-     * Collect framework managed versions to enforce that the user hasn't
-     * changed.
+     * Gets the versions that can be pinned, warning about the packages the user
+     * has pinned to an older version in package.json.
      *
      * @param versions
      *            to be filtered for user managed ones
@@ -59,6 +63,13 @@ class VersionsJsonFilter {
     ObjectNode getFilteredVersions(ObjectNode versions, String versionOrigin) {
         ObjectNode json = JacksonUtils.createObjectNode();
         for (String key : JacksonUtils.getKeys(versions)) {
+            if (FrontendBuildUtils
+                    .isUrlVersion(versions.get(key).asString(null))) {
+                // a URL cannot be compared with the version of the user, so it
+                // is used as is
+                json.put(key, versions.get(key).asString());
+                continue;
+            }
             final FrontendVersion version = FrontendUtils
                     .getPackageVersionFromJson(versions, key, versionOrigin);
             if (version == null) {

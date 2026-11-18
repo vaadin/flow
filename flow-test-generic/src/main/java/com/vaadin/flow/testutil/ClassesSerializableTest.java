@@ -140,6 +140,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeFeatureRegistry",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeFeatures",
                 "com\\.vaadin\\.flow\\.internal\\.CustomElementNameValidator",
+                "com\\.vaadin\\.flow\\.internal\\.CspViolationReporter",
+                "com\\.vaadin\\.flow\\.internal\\.StackTraceUtil",
                 "com\\.vaadin\\.flow\\.router\\.HighlightActions",
                 "com\\.vaadin\\.flow\\.router\\.HighlightConditions",
                 "com\\.vaadin\\.flow\\.router\\.ParameterDeserializer",
@@ -148,6 +150,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.internal\\.JavaScriptSemantics",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeProperties",
                 "com\\.vaadin\\.flow\\.internal\\.AnnotationReader",
+                "com\\.vaadin\\.flow\\.internal\\.ToStringBuilder",
                 "com\\.vaadin\\.flow\\.server\\.StaticFileHandlerFactory",
                 "com\\.vaadin\\.flow\\.server\\.dau\\.DauEnforcementException",
                 "com\\.vaadin\\.flow\\.server\\.dau\\.FlowDauIntegration",
@@ -210,7 +213,10 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.component\\.template\\.internal\\.InjectableFieldConsumer",
                 "com\\.vaadin\\.flow\\.component\\.template\\.internal\\.ParserData",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentMetaData(\\$.*)?",
+                "com\\.vaadin\\.flow\\.js\\.JsCall\\$DeclaredMethod",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentTracker",
+                "com\\.vaadin\\.flow\\.component\\.internal\\.BundledEventData",
+                "com\\.vaadin\\.flow\\.component\\.internal\\.DomEventInfo",
                 "com\\.vaadin\\.flow\\.dom\\.ElementEffect",
                 "com\\.vaadin\\.flow\\.dom\\.ElementFactory",
                 "com\\.vaadin\\.flow\\.dom\\.NodeVisitor",
@@ -219,6 +225,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.internal\\.ReflectTools(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.FutureAccess",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.ElementPropertyMap\\$PutResult",
+                "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeMap\\$SharedKeySet\\$RegistryReference",
                 "com\\.vaadin\\.flow\\.client\\.osgi\\.OSGiClientStaticResource(\\$.*)?",
                 "com\\.vaadin\\.flow\\.osgi\\.support\\.OsgiVaadinContributor(\\$.*)?",
                 "com\\.vaadin\\.flow\\.osgi\\.support\\.OsgiVaadinStaticResource(\\$.*)?",
@@ -232,6 +239,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.communication\\.WebComponentBootstrapHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.streams\\.TransferContext",
                 "com\\.vaadin\\.flow\\.server\\.streams\\.DownloadEvent",
+                "com\\.vaadin\\.flow\\.server\\.streams\\.AbstractDownloadHandler\\$ClientOutputStream",
+                "com\\.vaadin\\.flow\\.server\\.streams\\.AbstractDownloadHandler\\$SeekableContent",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.StreamRequestHandler\\$PathData",
                 "com\\.vaadin\\.flow\\.server\\.streams\\.UploadEvent",
                 "com\\.vaadin\\.flow\\.server\\.streams\\.UploadMetadata",
@@ -269,6 +278,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 // Static Utilities
                 "com\\.vaadin\\.flow\\.component\\.wakelock\\.WakeLock",
                 "com\\.vaadin\\.flow\\.js\\.JsDefinitionProxy",
+                "com\\.vaadin\\.flow\\.js\\.JsSnippets",
 
                 // Flow client classes
                 "com\\.vaadin\\.client\\..*",
@@ -278,6 +288,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.FileDownloader(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.NodeInstaller",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.NodeInstaller\\$InstallData",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.NodeInstaller\\$DefaultNodeChecksums",
                 "com\\.vaadin\\.flow\\.internal\\.Platform",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.ProxyConfig\\$Proxy",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.ProxyConfig",
@@ -355,7 +366,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
 
         List<String> classes = new ArrayList<>();
         List<Pattern> excludes = getExcludedPatterns().map(Pattern::compile)
-                .collect(Collectors.toList());
+                .toList();
         for (String location : rawClasspathEntries) {
             if (!isTestClassPath(location)) {
                 classes.addAll(findServerClasses(location, excludes));

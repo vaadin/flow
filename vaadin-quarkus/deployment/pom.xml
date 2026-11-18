@@ -12,6 +12,10 @@
   <name>Vaadin Quarkus - Deployment</name>
   <description>Build time part of the Quarkus integration for Vaadin applications.</description>
 
+  <properties>
+    <jpms.module.name>com.vaadin.quarkus.deployment</jpms.module.name>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -39,6 +43,12 @@
 
     <!-- Test scope -->
     <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-data</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit-internal</artifactId>
       <scope>test</scope>
@@ -54,4 +64,19 @@
       <artifactId>jakarta.servlet-api</artifactId>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <!-- FlowJandexIndexTest checks that the Flow indexes have this
+                 format -->
+            <jandex.format.version>${jandex.format.version}</jandex.format.version>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

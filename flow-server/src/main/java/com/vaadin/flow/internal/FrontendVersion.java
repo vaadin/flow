@@ -234,6 +234,7 @@ public class FrontendVersion
      * @param other
      *            the version to compare
      * @return whether the package targets match
+     * @since 25.3.1
      */
     public boolean hasSamePackageTarget(FrontendVersion other) {
         return Objects.equals(aliasTarget, other.aliasTarget);
@@ -245,6 +246,7 @@ public class FrontendVersion
      * @param other
      *            the version to compare
      * @return whether the target and parsed version are equal
+     * @since 25.3.1
      */
     public boolean isSameDependency(FrontendVersion other) {
         return hasSamePackageTarget(other) && isEqualTo(other);
@@ -348,9 +350,7 @@ public class FrontendVersion
 
     @Override
     public String toString() {
-        return "FrontendVersion [" + "majorVersion=" + majorVersion
-                + ", minorVersion=" + minorVersion + ", revision=" + revision
-                + ", buildIdentifier=" + buildIdentifier + "]";
+        return ToStringBuilder.of(this).addValue(version).toString();
     }
 
     @Override

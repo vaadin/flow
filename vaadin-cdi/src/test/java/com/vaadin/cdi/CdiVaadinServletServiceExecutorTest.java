@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,17 +30,19 @@ import org.jboss.weld.junit.MockBean;
 import org.jboss.weld.junit5.EnableWeld;
 import org.jboss.weld.junit5.WeldInitiator;
 import org.jboss.weld.junit5.WeldSetup;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.cdi.context.ServiceUnderTestContext;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.ServiceException;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 @EnableWeld
 public class CdiVaadinServletServiceExecutorTest {
@@ -56,7 +58,7 @@ public class CdiVaadinServletServiceExecutorTest {
                 throws ServiceException {
             initService(beanManager);
             Executor executor = service.getExecutor();
-            Assertions.assertSame(managedExecutorService, executor);
+            assertSame(managedExecutorService, executor);
         }
     }
 
@@ -72,7 +74,7 @@ public class CdiVaadinServletServiceExecutorTest {
                 throws Exception {
             initService(beanManager);
             Executor executor = service.getExecutor();
-            Assertions.assertSame(customExecutor, executor);
+            assertSame(customExecutor, executor);
         }
     }
 
@@ -87,9 +89,9 @@ public class CdiVaadinServletServiceExecutorTest {
                 throws ServiceException {
             initService(beanManager);
             Executor executor = service.getExecutor();
-            Assertions.assertNotNull(executor);
-            Assertions.assertNotSame(managedExecutorService, executor);
-            Assertions.assertNotSame(customExecutor, executor);
+            assertNotNull(executor);
+            assertNotSame(managedExecutorService, executor);
+            assertNotSame(customExecutor, executor);
         }
     }
 
@@ -108,8 +110,7 @@ public class CdiVaadinServletServiceExecutorTest {
             var initWeldMethod = ReflectTools.findMethod(WeldInitiator.class,
                     "initWeld", Object.class);
             initWeldMethod.setAccessible(true);
-            Throwable error = Assertions.assertThrows(
-                    InvocationTargetException.class,
+            Throwable error = assertThrows(InvocationTargetException.class,
                     () -> initWeldMethod.invoke(weld, this));
             error = error.getCause();
             while (error != null && !(error instanceof IllegalStateException)) {
@@ -127,7 +128,7 @@ public class CdiVaadinServletServiceExecutorTest {
     class AmbiguousVaadinServiceEnabledWithAlternativeExecutor
             extends BaseTest {
 
-        Executor expectedExecutor = Mockito.mock(Executor.class);
+        Executor expectedExecutor = mock(Executor.class);
 
         @WeldSetup
         public WeldInitiator weld = withManagedExecutorService().addBeans(
@@ -142,16 +143,16 @@ public class CdiVaadinServletServiceExecutorTest {
                 throws ServiceException {
             initService(beanManager);
             Executor executor = service.getExecutor();
-            Assertions.assertSame(expectedExecutor, executor);
+            assertSame(expectedExecutor, executor);
         }
     }
 
     private static abstract class BaseTest {
 
-        ManagedExecutorService managedExecutorService = Mockito
-                .mock(ManagedExecutorService.class);
+        ManagedExecutorService managedExecutorService = mock(
+                ManagedExecutorService.class);
 
-        Executor customExecutor = Mockito.mock(Executor.class);
+        Executor customExecutor = mock(Executor.class);
 
         @Inject
         BeanManager beanManager;

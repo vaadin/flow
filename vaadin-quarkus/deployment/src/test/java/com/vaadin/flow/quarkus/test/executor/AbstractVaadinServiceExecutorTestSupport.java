@@ -25,10 +25,11 @@ import org.eclipse.microprofile.context.ManagedExecutor;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.server.ServiceException;
+
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 abstract class AbstractVaadinServiceExecutorTestSupport {
 
@@ -46,7 +47,7 @@ abstract class AbstractVaadinServiceExecutorTestSupport {
         var service = new TestQuarkusVaadinServletService(beanManager);
         service.init();
         var executor = service.getExecutor();
-        Assertions.assertSame(expectedExecutor(), executor);
+        assertSame(expectedExecutor(), executor);
     }
 
     static QuarkusUnitTest quarkusUnitTest(Class<?>... testClasses) {

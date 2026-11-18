@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -222,8 +221,7 @@ public final class OpenInCurrentIde {
     }
 
     private static List<Info> getProcessTree() {
-        return getParentProcesses().stream().map(p -> p.info())
-                .collect(Collectors.toList());
+        return getParentProcesses().stream().map(p -> p.info()).toList();
     }
 
     private static Optional<Info> findIdeCommandInfo() {

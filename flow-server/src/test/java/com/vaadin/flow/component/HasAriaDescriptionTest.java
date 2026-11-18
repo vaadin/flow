@@ -15,8 +15,11 @@
  */
 package com.vaadin.flow.component;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HasAriaDescriptionTest {
 
@@ -29,14 +32,13 @@ class HasAriaDescriptionTest {
     @Test
     void setAriaDescribedBy() {
         TestComponent component = new TestComponent();
-        Assertions.assertFalse(component.getAriaDescribedBy().isPresent());
+        assertFalse(component.getAriaDescribedBy().isPresent());
 
         component.setAriaDescribedBy("description-id");
-        Assertions.assertEquals("description-id",
-                component.getAriaDescribedBy().get());
+        assertEquals("description-id", component.getAriaDescribedBy().get());
 
         component.setAriaDescribedBy((String) null);
-        Assertions.assertFalse(component.getAriaDescribedBy().isPresent());
+        assertFalse(component.getAriaDescribedBy().isPresent());
     }
 
     @Test
@@ -50,9 +52,8 @@ class HasAriaDescriptionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         String generatedId = descriptionComponent.getId().get();
-        Assertions.assertTrue(generatedId.startsWith("ariadescribedby-"));
-        Assertions.assertEquals(generatedId,
-                component.getAriaDescribedBy().get());
+        assertTrue(generatedId.startsWith("ariadescribedby-"));
+        assertEquals(generatedId, component.getAriaDescribedBy().get());
     }
 
     @Test
@@ -66,8 +67,7 @@ class HasAriaDescriptionTest {
         component.setAriaDescribedBy(descriptionComponent);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        Assertions.assertEquals("description-id",
-                component.getAriaDescribedBy().get());
+        assertEquals("description-id", component.getAriaDescribedBy().get());
     }
 
     @Test
@@ -81,9 +81,8 @@ class HasAriaDescriptionTest {
         component.setAriaDescribedBy("explicit-id");
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        Assertions.assertEquals("explicit-id",
-                component.getAriaDescribedBy().get());
-        Assertions.assertFalse(descriptionComponent.getId().isPresent());
+        assertEquals("explicit-id", component.getAriaDescribedBy().get());
+        assertFalse(descriptionComponent.getId().isPresent());
     }
 
     @Test
@@ -97,8 +96,8 @@ class HasAriaDescriptionTest {
         component.setAriaDescribedBy((String) null);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        Assertions.assertFalse(component.getAriaDescribedBy().isPresent());
-        Assertions.assertFalse(descriptionComponent.getId().isPresent());
+        assertFalse(component.getAriaDescribedBy().isPresent());
+        assertFalse(descriptionComponent.getId().isPresent());
     }
 
     @Test
@@ -113,9 +112,9 @@ class HasAriaDescriptionTest {
         component.setAriaDescribedBy(secondDescription);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        Assertions.assertFalse(firstDescription.getId().isPresent(),
+        assertFalse(firstDescription.getId().isPresent(),
                 "The superseded description should keep its original id");
-        Assertions.assertEquals(secondDescription.getId().orElse(null),
+        assertEquals(secondDescription.getId().orElse(null),
                 component.getAriaDescribedBy().orElse(null));
     }
 
@@ -130,7 +129,6 @@ class HasAriaDescriptionTest {
         descriptionComponent.setId("description-id");
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        Assertions.assertEquals("description-id",
-                component.getAriaDescribedBy().get());
+        assertEquals("description-id", component.getAriaDescribedBy().get());
     }
 }

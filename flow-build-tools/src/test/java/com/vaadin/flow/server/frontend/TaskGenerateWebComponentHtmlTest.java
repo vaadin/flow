@@ -24,7 +24,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
@@ -32,6 +31,7 @@ import com.vaadin.flow.internal.FrontendUtils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class TaskGenerateWebComponentHtmlTest {
     @TempDir
@@ -44,7 +44,7 @@ class TaskGenerateWebComponentHtmlTest {
     void setup() throws IOException {
         frontendFolder = Files
                 .createTempDirectory(temporaryFolder.toPath(), "tmp").toFile();
-        Options options = new Options(Mockito.mock(Lookup.class), null)
+        Options options = new Options(mock(Lookup.class), null)
                 .withFrontendDirectory(frontendFolder);
         taskGenerateWebComponentHtml = new TaskGenerateWebComponentHtml(
                 options);

@@ -24,7 +24,6 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
@@ -33,6 +32,8 @@ import com.vaadin.flow.testutil.TestUtils;
 
 import static com.vaadin.flow.server.Constants.TARGET;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 class FrontendResourcesAreCopiedAfterCleaningTest {
 
@@ -81,9 +82,8 @@ class FrontendResourcesAreCopiedAfterCleaningTest {
         ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
                 FrontendResourcesAreCopiedAfterCleaningTest.class
                         .getClassLoader());
-        Lookup mockLookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(classFinder).when(mockLookup)
-                .lookup(ClassFinder.class);
+        Lookup mockLookup = mock(Lookup.class);
+        doReturn(classFinder).when(mockLookup).lookup(ClassFinder.class);
         Options options = new Options(mockLookup, npmFolder)
                 .withBuildDirectory(TARGET);
 
@@ -100,9 +100,8 @@ class FrontendResourcesAreCopiedAfterCleaningTest {
         ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
                 FrontendResourcesAreCopiedAfterCleaningTest.class
                         .getClassLoader());
-        Lookup mockLookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(classFinder).when(mockLookup)
-                .lookup(ClassFinder.class);
+        Lookup mockLookup = mock(Lookup.class);
+        doReturn(classFinder).when(mockLookup).lookup(ClassFinder.class);
         Options options = new Options(mockLookup, npmFolder)
                 .withBuildDirectory(TARGET).withEmbeddableWebComponents(false)
                 .enableImportsUpdate(false).createMissingPackageJson(true)

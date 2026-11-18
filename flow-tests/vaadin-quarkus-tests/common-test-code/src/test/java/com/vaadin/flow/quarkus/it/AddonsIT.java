@@ -16,11 +16,12 @@
 package com.vaadin.flow.quarkus.it;
 
 import io.quarkus.test.junit.QuarkusIntegrationTest;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.test.AbstractChromeIT;
 import com.vaadin.testbench.TestBenchElement;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusIntegrationTest
 public class AddonsIT extends AbstractChromeIT {
@@ -34,9 +35,9 @@ public class AddonsIT extends AbstractChromeIT {
     void addonWithoutJandexIndexedOnApplicationPropertiesShouldBeRendered() {
         open();
         TestBenchElement addon = waitUntil(driver -> $("hello-world").single());
-        Assertions.assertTrue(addon.$("span").withId("without-jandex").exists(),
+        assertTrue(addon.$("span").withId("without-jandex").exists(),
                 "Expecting span element with id 'without-jandex' to be present in 'hello-world' shadow DOM, but was not");
-        Assertions.assertTrue(
+        assertTrue(
                 addon.$("axa-input-text").id("npm-dep").$("input").single()
                         .hasClassName("a-input-text__input"),
                 "Expecting axa-input-text element with id 'npm-dep' to be rendered in 'hello-world' shadow DOM, but was not");
@@ -47,9 +48,9 @@ public class AddonsIT extends AbstractChromeIT {
         open();
         TestBenchElement addon = waitUntil(
                 driver -> $("hello-world-jandex").single());
-        Assertions.assertTrue(addon.$("span").withId("with-jandex").exists(),
+        assertTrue(addon.$("span").withId("with-jandex").exists(),
                 "Expecting span element with id 'with-jandex' to be present in 'hello-world-jandex' shadow DOM, but was not");
-        Assertions.assertTrue(
+        assertTrue(
                 addon.$("axa-input-text").id("npm-dep-jandex").$("input")
                         .single().hasClassName("a-input-text__input"),
                 "Expecting axa-input-text element with id 'npm-dep-jandex' to be rendered in 'hello-world-jandex' shadow DOM, but was not");

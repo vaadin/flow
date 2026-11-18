@@ -16,12 +16,18 @@
 package com.vaadin.base.devserver.devloop;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -53,6 +59,17 @@ final class DevLoopRegistration {
     static final String DAEMON_PORT_PROPERTY = "vaadin.devloop.daemonPort";
     static final String TOKEN_PROPERTY = "vaadin.devloop.token";
 
+    /**
+     * How long one loopback address is given to answer.
+     * <p>
+     * Both ends are on this machine and the daemon is already listening by the
+     * time it launches the application, so a connection that is going to happen
+     * happens in microseconds. The window is for the address that answers
+     * neither way - filtered rather than refused - and it is short because
+     * there is a second address to try after it.
+     */
+    private static final int CONNECT_TIMEOUT_MILLIS = 2000;
+
     /** Whitespace and C0 controls, which is everything that breaks a line. */
     private static final Pattern CONTROL_OR_SPACE_RUN = Pattern
             .compile("[\\s\\p{Cntrl}]+");
@@ -65,6 +82,12 @@ final class DevLoopRegistration {
      * the daemon owns this JVM and serves exactly one application in it.
      */
     private static volatile VaadinService service;
+
+    /**
+     * The registration connection while it is open, so that an undeploy can
+     * close it; see {@link #start}.
+     */
+    private static final AtomicReference<Socket> REGISTRATION = new AtomicReference<>();
 
     private DevLoopRegistration() {
     }
@@ -116,6 +139,17 @@ final class DevLoopRegistration {
         PublicResourcesLiveUpdater.suspend(vaadinService.getContext());
         ThemeLiveUpdater.suspend(vaadinService.getContext());
 
+        // An application server can undeploy this application while the JVM
+        // lives on - WildFly and Payara Server do it at every start, booting
+        // the deployment their configuration persisted from the last run and
+        // then replacing it with the one the build plugin deploys. The JVM
+        // exiting is what closes this connection otherwise, so an undeployed
+        // copy would go on speaking for the process: the daemon would send
+        // its redefines to a service that no longer serves anything, and the
+        // open connection would keep that copy's class loader alive with the
+        // previous build's classes in it.
+        vaadinService.addServiceDestroyListener(event -> closeRegistration());
+
         String mode = modeOf(vaadinService);
 
         Thread thread = new Thread(() -> hold(port, token, mode),
@@ -166,13 +200,106 @@ final class DevLoopRegistration {
                 : Hotswapper.getRegistered(current);
     }
 
+    /**
+     * Connects to the daemon on whichever loopback address it bound.
+     * <p>
+     * Both ends ask for {@link InetAddress#getLoopbackAddress()}, and that is
+     * not one address: it is IPv4 or IPv6 depending on the JVM asking. The
+     * daemon and the application are different JVMs, and a server may change
+     * the answer for its own while starting - measured against Payara Micro
+     * 7.2026.9, whose boot leaves the application JVM preferring IPv6, so the
+     * daemon was listening on {@code 127.0.0.1} and the application dialled
+     * {@code ::1} and was refused. The application then ran with no
+     * registration at all: serving pages, invisible to the loop, and every
+     * apply reporting that there was nothing to apply to.
+     * <p>
+     * So the preferred address is tried first and the other literal after it,
+     * rather than either end being pinned to one family. Nothing is widened -
+     * every candidate is a loopback address, so the daemon's port stays
+     * unreachable from off the machine.
+     * <p>
+     * Each attempt is given {@link #CONNECT_TIMEOUT_MILLIS} rather than the
+     * operating system's default. A loopback that refuses answers at once, but
+     * one that is filtered rather than refused answers not at all - and the
+     * default would then be spent twice, once per address, before the
+     * application gave up registering and ran on invisible to the loop.
+     *
+     * @param port
+     *            the port the daemon passed at launch
+     * @return the connected socket
+     * @throws IOException
+     *             if no loopback address accepted the connection, carrying the
+     *             failure from the address the JVM itself prefers
+     */
+    static Socket connectToDaemon(int port) throws IOException {
+        IOException refused = null;
+        for (InetAddress address : loopbackAddresses()) {
+            Socket socket = new Socket();
+            try {
+                socket.connect(new InetSocketAddress(address, port),
+                        CONNECT_TIMEOUT_MILLIS);
+                return socket;
+            } catch (IOException e) {
+                close(socket);
+                // Kept only if nothing else answers, and the first is the one
+                // worth reporting: it is the address this JVM would call the
+                // loopback, so it is the one a reader will go looking at.
+                if (refused == null) {
+                    refused = e;
+                }
+            }
+        }
+        // getLoopbackAddress always yields one candidate, so the loop runs at
+        // least once - but nothing here enforces that, and an empty list would
+        // otherwise leave this method throwing a NullPointerException out of a
+        // signature that promises an IOException.
+        throw refused != null ? refused
+                : new IOException("no loopback address to reach the dev-loop "
+                        + "daemon on port " + port);
+    }
+
+    private static void close(Socket socket) {
+        try {
+            socket.close();
+        } catch (IOException e) {
+            // Nothing was connected, and the address that failed is already
+            // being reported.
+            LOGGER.debug("Could not close an unconnected socket", e);
+        }
+    }
+
+    /**
+     * Every loopback address worth trying, the JVM's own preference first.
+     *
+     * @return the candidates, without duplicates
+     */
+    static List<InetAddress> loopbackAddresses() {
+        List<InetAddress> candidates = new ArrayList<>();
+        candidates.add(InetAddress.getLoopbackAddress());
+        for (String literal : new String[] { "127.0.0.1", "::1" }) {
+            try {
+                // A literal, so this resolves without asking a name server.
+                InetAddress address = InetAddress.getByName(literal);
+                if (!candidates.contains(address)) {
+                    candidates.add(address);
+                }
+            } catch (UnknownHostException e) {
+                // A stack without that family. The other candidate answers for
+                // it, and if neither does the connect below reports it.
+                LOGGER.debug("No loopback address {} on this host", literal, e);
+            }
+        }
+        return candidates;
+    }
+
     private static void hold(int port, String token, String mode) {
-        try (Socket socket = new Socket(InetAddress.getLoopbackAddress(), port);
+        try (Socket socket = connectToDaemon(port);
                 PrintWriter out = new PrintWriter(socket.getOutputStream(),
                         true, StandardCharsets.UTF_8);
                 BufferedReader in = new BufferedReader(new InputStreamReader(
                         socket.getInputStream(), StandardCharsets.UTF_8))) {
             socket.setKeepAlive(true);
+            REGISTRATION.set(socket);
             out.println(token + " register " + mode + " "
                     + ProcessHandle.current().pid());
             LOGGER.info("Registered with the dev-loop daemon on port {} ({})",
@@ -189,6 +316,24 @@ final class DevLoopRegistration {
         } catch (Exception e) {
             LOGGER.info("The dev-loop registration ended: {}", e.toString());
             LOGGER.debug("The dev-loop registration ended", e);
+        }
+    }
+
+    /**
+     * Closes the registration connection, which is how the daemon learns this
+     * application is gone while the JVM it ran in is not.
+     */
+    private static void closeRegistration() {
+        Socket open = REGISTRATION.getAndSet(null);
+        if (open == null) {
+            return;
+        }
+        LOGGER.info(
+                "The application is being undeployed; closing the dev-loop registration");
+        try {
+            open.close();
+        } catch (IOException e) {
+            LOGGER.debug("Could not close the dev-loop registration", e);
         }
     }
 

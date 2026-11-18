@@ -2,6 +2,7 @@ import { expect } from '@open-wc/testing';
 import { testRegistry } from './testRegistry';
 import { DependencyLoader } from '../../../../main/frontend/internal/client/DependencyLoader';
 import { ResourceLoader } from '../../../../main/frontend/internal/client/ResourceLoader';
+import { runWhenEagerDependenciesLoaded } from '../../../../main/frontend/internal/client/EagerDependencyTracker';
 import type { ResourceLoadListener } from '../../../../main/frontend/internal/client/ResourceRegistry';
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -45,7 +46,8 @@ function makeRegistry() {
     completeAll,
     registry: testRegistry({
       URIResolver: { resolveVaadinUri: (uri: string) => `resolved:${uri}` },
-      ResourceLoader: resourceLoader
+      ResourceLoader: resourceLoader,
+      StateTree: {}
     })
   };
   active.push(fixture);
@@ -69,6 +71,18 @@ describe('DependencyLoader (class)', () => {
     expect(call).to.not.equal(undefined);
     expect(call?.args[0]).to.equal('resolved:styles.css');
     expect(call?.args[2]).to.equal('dep-1');
+    // No layer
+    expect(call?.args[3]).to.equal(null);
+  });
+
+  it('loads a stylesheet into the cascade layer of the dependency', () => {
+    const registry = makeRegistry();
+    new DependencyLoader(registry.registry).loadDependencies(
+      new Map([['EAGER', [{ type: 'STYLESHEET', url: 'styles.css', id: 'dep-1', layer: 'theme' }]]])
+    );
+    const call = registry.calls.find((c) => c.method === 'loadStylesheet');
+    expect(call?.args[0]).to.equal('resolved:styles.css');
+    expect(call?.args[3]).to.equal('theme');
   });
 
   it('routes eager JavaScript to loadScript with defer=true', () => {
@@ -100,6 +114,51 @@ describe('DependencyLoader (class)', () => {
     // DYNAMIC_IMPORT is always eager, so it loads immediately.
     const call = registry.calls.find((c) => c.method === 'loadDynamicImport');
     expect(call?.args[0]).to.equal('import("x")');
+  });
+
+  it('loads a dynamic import sent as a function by calling the function from the bundle', () => {
+    // Registered as the generated bundle registers a snippet called with no parameters
+    const global = window as unknown as { Vaadin?: { Flow?: { jsSnippets?: Record<string, unknown> } } };
+    global.Vaadin ??= {};
+    global.Vaadin.Flow ??= {};
+    const snippets = (global.Vaadin.Flow.jsSnippets ??= {});
+    snippets['import-fn'] = ($0: unknown) => () => `loaded ${String($0)}`;
+    const dynamicImport = { '@v-fn': { id: 'import-fn', captures: ['chunk-7'] } };
+    const registry = makeRegistry();
+    try {
+      new DependencyLoader(registry.registry).loadDependencies(
+        new Map([['LAZY', [{ type: 'DYNAMIC_IMPORT', url: dynamicImport }]]])
+      );
+      const call = registry.calls.find((c) => c.method === 'loadDynamicImport');
+      expect(call?.args[0]).to.equal(JSON.stringify(dynamicImport));
+      expect((call?.args[2] as () => unknown)()).to.equal('loaded chunk-7');
+    } finally {
+      delete snippets['import-fn'];
+    }
+  });
+
+  it('fails only the dynamic import when its function cannot be decoded', async () => {
+    // A node the client does not have, which the codec cannot resolve
+    const dynamicImport = { '@v-fn': { id: 'import-fn', captures: [{ '@v-node': 42 }] } };
+    const registry = testRegistry({
+      SystemErrorHandler: { handleError: () => {} },
+      StateTree: { getNode: () => null }
+    });
+    const resourceLoader = new ResourceLoader(registry, false);
+    registry.register('ResourceLoader', resourceLoader);
+    const errors: string[] = [];
+    const originalError = console.error;
+    console.error = (error: unknown) => errors.push(String(error));
+    try {
+      new DependencyLoader(registry).loadDependencies(
+        new Map([['LAZY', [{ type: 'DYNAMIC_IMPORT', url: dynamicImport }]]])
+      );
+      // The eager gate opens again, so the rest of the message is processed
+      await new Promise<void>((resolve) => runWhenEagerDependenciesLoaded(resolve));
+    } finally {
+      console.error = originalError;
+    }
+    expect(errors.some((error) => error.includes('getDomNode'))).to.be.true;
   });
 
   it('defers lazy dependencies until after eager ones complete', async () => {

@@ -24,13 +24,13 @@ import java.util.concurrent.Executor;
 
 import io.quarkus.arc.Unremovable;
 import io.quarkus.test.QuarkusUnitTest;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.mockito.Mockito;
 
 import com.vaadin.quarkus.annotation.VaadinServiceEnabled;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class QuarkusVaadinServletServiceAmbiguousExecutorTest
         extends AbstractVaadinServiceExecutorTestSupport {
@@ -38,9 +38,9 @@ class QuarkusVaadinServletServiceAmbiguousExecutorTest
     @RegisterExtension
     static final QuarkusUnitTest config = quarkusUnitTest(TestConfig.class)
             .assertException(error -> {
-                Assertions.assertInstanceOf(DeploymentException.class, error);
+                assertInstanceOf(DeploymentException.class, error);
                 error = error.getCause();
-                Assertions.assertInstanceOf(IllegalStateException.class, error);
+                assertInstanceOf(IllegalStateException.class, error);
                 assertTrue(error.getMessage()
                         .contains("at most one Executor bean"));
                 assertTrue(
@@ -61,7 +61,7 @@ class QuarkusVaadinServletServiceAmbiguousExecutorTest
         @VaadinServiceEnabled
         @Unremovable
         Executor vaadinExecutor1() {
-            return Mockito.mock(Executor.class);
+            return mock(Executor.class);
         }
 
         @Produces
@@ -69,7 +69,7 @@ class QuarkusVaadinServletServiceAmbiguousExecutorTest
         @VaadinServiceEnabled
         @Unremovable
         Executor vaadinExecutor2() {
-            return Mockito.mock(Executor.class);
+            return mock(Executor.class);
         }
     }
 }

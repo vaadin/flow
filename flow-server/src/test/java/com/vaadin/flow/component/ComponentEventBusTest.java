@@ -16,23 +16,29 @@
 package com.vaadin.flow.component;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
+import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.component.internal.KeyboardEvent;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.MessageDigestUtil;
+import com.vaadin.flow.internal.change.MapPutChange;
+import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.router.RouterLink;
@@ -46,6 +52,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mockStatic;
 
 class ComponentEventBusTest {
 
@@ -782,15 +790,117 @@ class ComponentEventBusTest {
     @Test // #7826
     void addListener_eventDataExpressionsPresent_constantPoolKeyNotCreatedAfterEachExpression() {
         final TestButton button = new TestButton();
-        try (MockedStatic<MessageDigestUtil> util = Mockito
-                .mockStatic(MessageDigestUtil.class)) {
-            util.when(() -> MessageDigestUtil.sha256(Mockito.anyString()))
-                    .thenReturn(
-                            new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, });
+        try (MockedStatic<MessageDigestUtil> util = mockStatic(
+                MessageDigestUtil.class)) {
+            util.when(() -> MessageDigestUtil.sha256(anyString())).thenReturn(
+                    new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, });
             button.addClickListener(event -> {
             });
             util.verifyNoInteractions();
         }
+    }
+
+    @DomEvent("element-data-event")
+    public static class ElementDataEvent extends ComponentEvent<Component> {
+        // Only the event data annotations of the parameters are used
+        public ElementDataEvent(Component source, boolean fromClient,
+                @EventData("event.target") Element target, // NOSONAR
+                @EventData("element.parentNode") Component parent,
+                @EventData("event.detail") int detail) {
+            super(source, fromClient);
+        }
+    }
+
+    @Test
+    void addListener_elementAndComponentEventData_sameExpressionsAsAddEventDataElement() {
+        TestComponent component = new TestComponent();
+        Element element = new Element("div");
+
+        component.addListener(ElementDataEvent.class, event -> {
+        });
+        element.addEventListener("element-data-event", event -> {
+        }).addEventDataElement("event.target")
+                .addEventDataElement("element.parentNode")
+                .addEventData("event.detail");
+
+        Set<String> expressions = component.getElement().getNode()
+                .getFeature(ElementListenerMap.class)
+                .getExpressions("element-data-event");
+        assertEquals(3, expressions.size());
+        assertEquals(element.getNode().getFeature(ElementListenerMap.class)
+                .getExpressions("element-data-event"), expressions);
+    }
+
+    @DomEvent(value = "offset-event", filter = BUTTON_FILTER)
+    public static class OffsetEvent extends ComponentEvent<Component> {
+        private final double offset;
+
+        // Only the event data annotations of the parameters are used
+        public OffsetEvent(Component source, boolean fromClient,
+                @EventData(OFFSET) double offset,
+                @EventData("event.clientX") double clientX, // NOSONAR
+                @EventData(PATH_TARGET) Element target) { // NOSONAR
+            super(source, fromClient);
+            this.offset = offset;
+        }
+    }
+
+    private static final String OFFSET = "event.clientX - element.offsetLeft";
+    private static final String PATH_TARGET = "event.composedPath()[0]";
+    private static final String BUTTON_FILTER = "event.button === 0";
+
+    @Test
+    void addListener_expressionEventDataAndFilter_sentAsTheFunctionsOfTheBundle() {
+        TestComponent component = new TestComponent();
+        AtomicReference<OffsetEvent> received = new AtomicReference<>();
+        component.addListener(OffsetEvent.class, received::set);
+        ElementListenerMap listenerMap = component.getElement().getNode()
+                .getFeature(ElementListenerMap.class);
+
+        ConstantPoolKey key = (ConstantPoolKey) collectSettingsValue(
+                listenerMap, "offset-event");
+        ObjectNode exported = JacksonUtils.createObjectNode();
+        key.export(exported);
+        JsonNode settings = exported.get(key.getId());
+
+        assertEquals(BundledEventData.getFunctionId(OFFSET),
+                settings.get(OFFSET).get(JsonConstants.EVENT_SETTINGS_FUNCTION)
+                        .asString());
+        assertTrue(settings.get("event.clientX").isBoolean(),
+                "the client reads a property path without compiling it");
+        // A value mapped to an element runs the function of its expression,
+        // and the client maps what the function returns to a state node
+        JsonNode mapped = settings
+                .get(JsonConstants.MAP_STATE_NODE_EVENT_DATA + PATH_TARGET);
+        assertEquals(BundledEventData.getFunctionId(PATH_TARGET),
+                mapped.get(JsonConstants.EVENT_SETTINGS_FUNCTION).asString());
+        assertTrue(mapped.get(JsonConstants.EVENT_SETTINGS_MAP_ELEMENT)
+                .asBoolean());
+        assertFalse(settings.get(OFFSET)
+                .has(JsonConstants.EVENT_SETTINGS_MAP_ELEMENT));
+        // The filter runs the function of the bundle as well
+        assertEquals(BundledEventData.getFunctionId(BUTTON_FILTER),
+                settings.get(BUTTON_FILTER)
+                        .get(JsonConstants.EVENT_SETTINGS_FUNCTION).asString());
+
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put(OFFSET, 42.5);
+        eventData.put(BUTTON_FILTER, false);
+        fireDomEvent(component, "offset-event", eventData);
+        assertNull(received.get());
+        eventData.put(BUTTON_FILTER, true);
+        fireDomEvent(component, "offset-event", eventData);
+        assertEquals(42.5, received.get().offset);
+    }
+
+    private static Object collectSettingsValue(ElementListenerMap listenerMap,
+            String eventType) {
+        List<NodeChange> changes = new ArrayList<>();
+        listenerMap.collectChanges(changes::add);
+        return changes.stream().filter(MapPutChange.class::isInstance)
+                .map(MapPutChange.class::cast)
+                .filter(change -> eventType.equals(change.getKey())).findFirst()
+                .orElseThrow().getValue();
     }
 
     @Test

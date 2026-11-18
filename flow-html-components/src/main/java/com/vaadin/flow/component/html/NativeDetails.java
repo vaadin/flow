@@ -315,6 +315,36 @@ public class NativeDetails extends HtmlComponent
     }
 
     /**
+     * Sets the name of the group this details belongs to. Details elements
+     * sharing the same name form a group in which at most one can be open at a
+     * time: opening one closes the others, like an accordion.
+     *
+     * @param name
+     *            the group name, or {@code null} or an empty string to remove
+     *            the details from any group
+     * @since 25.4
+     */
+    public void setName(String name) {
+        if (name == null || name.isEmpty()) {
+            getElement().removeAttribute("name");
+        } else {
+            getElement().setAttribute("name", name);
+        }
+    }
+
+    /**
+     * Gets the name of the group this details belongs to.
+     *
+     * @return the group name, or {@code null} if the details does not belong to
+     *         a group
+     * @see #setName(String)
+     * @since 25.4
+     */
+    public String getName() {
+        return getElement().getAttribute("name");
+    }
+
+    /**
      * Represents the DOM event "toggle".
      * <p>
      * In addition to the usual events supported by HTML elements, the details

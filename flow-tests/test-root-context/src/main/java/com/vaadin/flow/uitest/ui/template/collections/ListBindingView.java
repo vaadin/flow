@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -58,8 +57,7 @@ public class ListBindingView extends PolymerTemplate<ListBindingModel> {
 
     @EventHandler
     private void reset() {
-        getModel().setMessages(RESET_STATE.stream().map(Message::new)
-                .collect(Collectors.toList()));
+        getModel().setMessages(RESET_STATE.stream().map(Message::new).toList());
     }
 
     @EventHandler

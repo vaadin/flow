@@ -23,7 +23,6 @@ import org.jsoup.nodes.Element;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
@@ -32,7 +31,10 @@ import com.vaadin.flow.shared.ApplicationConstants;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class AppShellRegistryStyleSheetDataFilePathTest {
 
@@ -41,6 +43,15 @@ class AppShellRegistryStyleSheetDataFilePathTest {
     @StyleSheet("context://from-context.css")
     @StyleSheet("https://cdn.example.com/remote.css")
     public static class MyShell implements AppShellConfigurator {
+    }
+
+    @StyleSheet(value = "theme.css", layer = "theme.base")
+    @StyleSheet("app.css")
+    public static class LayeredShell implements AppShellConfigurator {
+    }
+
+    @StyleSheet(value = "theme.css", layer = "theme;}")
+    public static class InvalidLayerShell implements AppShellConfigurator {
     }
 
     @StyleSheet("same.css")
@@ -82,6 +93,39 @@ class AppShellRegistryStyleSheetDataFilePathTest {
         assertEquals(1, links.size());
         assertEquals("./same.css", links.get(0).attr("href"));
         assertEquals("same.css", links.get(0).attr("data-file-path"));
+    }
+
+    @Test
+    void modifyIndex_styleSheetWithLayer_trackedWithLayer() {
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(LayeredShell.class);
+
+        registry.modifyIndexHtml(document, createRequest("/", "/ctx"));
+
+        // The dev tools find the style sheet by these to hotswap or remove it
+        // in its layer
+        List<Element> themes = document.head()
+                .select("[data-file-path=theme.css]");
+        assertEquals(1, themes.size());
+        Element theme = themes.get(0);
+        assertEquals("appShell-theme.css", theme.attr("data-id"));
+        assertEquals("theme.base", theme.attr("data-layer"));
+
+        List<Element> apps = document.head().select("[data-file-path=app.css]");
+        assertEquals(1, apps.size());
+        assertFalse(apps.get(0).hasAttr("data-layer"));
+    }
+
+    @Test
+    void modifyIndex_invalidLayer_throws() {
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(InvalidLayerShell.class);
+        VaadinServletRequest request = createRequest("/", "/ctx");
+
+        InvalidApplicationConfigurationException exception = assertThrows(
+                InvalidApplicationConfigurationException.class,
+                () -> registry.modifyIndexHtml(document, request));
+        assertTrue(exception.getMessage().contains("theme;}"));
     }
 
     @Test
@@ -307,13 +351,12 @@ class AppShellRegistryStyleSheetDataFilePathTest {
 
     private VaadinServletRequest createRequest(String pathInfo,
             String contextPath, String servletPath) {
-        jakarta.servlet.http.HttpServletRequest req = Mockito
-                .mock(jakarta.servlet.http.HttpServletRequest.class);
-        Mockito.when(req.getServletPath()).thenReturn(servletPath);
-        Mockito.when(req.getPathInfo()).thenReturn(pathInfo);
-        Mockito.when(req.getRequestURL())
-                .thenReturn(new StringBuffer(pathInfo));
-        Mockito.when(req.getContextPath()).thenReturn(contextPath);
+        jakarta.servlet.http.HttpServletRequest req = mock(
+                jakarta.servlet.http.HttpServletRequest.class);
+        when(req.getServletPath()).thenReturn(servletPath);
+        when(req.getPathInfo()).thenReturn(pathInfo);
+        when(req.getRequestURL()).thenReturn(new StringBuffer(pathInfo));
+        when(req.getContextPath()).thenReturn(contextPath);
         return new VaadinServletRequest(req, mocks.getService());
     }
 }

@@ -70,6 +70,15 @@ public class TaskGenerateWebComponentBootstrap
         lines.add("import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT
                 + "FlowClient.js';");
         lines.add("init();");
+        // Server-side APIs such as Element.sizeSignal() rely on the browser
+        // helpers that Flow.ts installs for regular applications.
+        lines.add("import '" + FrontendUtils.JAR_RESOURCES_IMPORT
+                + "BrowserHelpers.js';");
+        // The connection state and the loading indicator, which Flow.ts also
+        // imports for regular applications. Importing it from the engine
+        // instead would pull Lit into the dev-mode pre-bundle of the engine.
+        lines.add("import '" + FrontendUtils.JAR_RESOURCES_IMPORT
+                + "ConnectionIndicator.js';");
 
         applyCssImportWhenNoTheme(lines);
         return String.join("\n", lines);

@@ -54,10 +54,13 @@ import com.vaadin.base.devserver.ThemeLiveUpdater;
 import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.base.devserver.hotswap.Hotswapper;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandler;
@@ -65,7 +68,9 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ThemeUtils;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.theme.Theme;
 
@@ -93,10 +98,26 @@ final class DevLoopRedefiner {
             .getLogger(DevLoopRedefiner.class);
 
     /**
-     * Where the agent publishes the JVM's instrumentation handle. The system
-     * properties table is a {@code Hashtable<Object, Object>} and can therefore
-     * carry an arbitrary object, which is what makes this work regardless of
-     * which class loader owns the application classes.
+     * The agent class that holds the JVM's instrumentation handle.
+     * <p>
+     * Named as a string and loaded through the system class loader rather than
+     * imported: the agent jar is on the system class path, because that is
+     * where {@code -javaagent} puts it, but it is not necessarily on the class
+     * path of whatever loader owns the application - a servlet container's
+     * webapp loader usually cannot see it at all. Going through
+     * {@link ClassLoader#getSystemClassLoader()} reaches the one copy from
+     * anywhere.
+     */
+    private static final String AGENT_CLASS = "com.vaadin.flow.devloop.agent.DevLoopAgent";
+
+    /**
+     * Where an older agent published the handle.
+     * <p>
+     * Read as a fallback so that a dev server newer than the agent jar beside
+     * it still works. Nothing writes it any more: an {@link Instrumentation} in
+     * the system properties table is a non-string value in a table the rest of
+     * the JVM reads as strings, and WildFly's transactions subsystem died on
+     * exactly that.
      */
     private static final String INSTRUMENTATION_PROPERTY = "devloop.instrumentation";
 
@@ -1351,8 +1372,20 @@ final class DevLoopRedefiner {
     }
 
     private static Instrumentation instrumentation() {
-        Object value = System.getProperties().get(INSTRUMENTATION_PROPERTY);
-        return value instanceof Instrumentation inst ? inst : null;
+        try {
+            Object value = ClassLoader.getSystemClassLoader()
+                    .loadClass(AGENT_CLASS).getMethod("get").invoke(null);
+            if (value instanceof Instrumentation inst) {
+                return inst;
+            }
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            // No agent on this JVM, or one too old to answer. Either way the
+            // fallback below is the remaining chance, and a missing handle is
+            // reported by the caller as "no instrumentation" rather than here.
+            LOGGER.debug("no instrumentation handle from {}", AGENT_CLASS, e);
+        }
+        Object legacy = System.getProperties().get(INSTRUMENTATION_PROPERTY);
+        return legacy instanceof Instrumentation inst ? inst : null;
     }
 
     /**
@@ -1433,14 +1466,27 @@ final class DevLoopRedefiner {
         // browser has, and editing what it declares changes everything.
         if (type.isAnnotationPresent(JsDefinition.class)) {
             for (Method method : type.getMethods()) {
-                JsExpression expression = method
-                        .getAnnotation(JsExpression.class);
-                if (expression != null) {
-                    imports.add("jsdefinition:" + JsCall.functionId(
-                            expression.value(), method.getParameterCount(),
-                            method.isVarArgs()));
+                if (method.isAnnotationPresent(JsExpression.class)) {
+                    imports.add("jsdefinition:" + fingerprintOf(method));
                 }
             }
+        }
+        // The names a snippet type of the application declares are the
+        // parameters of every generated function that returns it, which lives
+        // in the bundle as well, so editing them needs the same restart even
+        // though no definition is redefined along with the type
+        if (JsDefinitionProxy.isApplicationSnippetType(type)) {
+            JsFunctionParameterNames parameterNames = type
+                    .getDeclaredAnnotation(JsFunctionParameterNames.class);
+            imports.add("jssnippet:" + (parameterNames == null ? ""
+                    : String.join(",", parameterNames.value())));
+        }
+        // An @EventData value or a @DomEvent filter that the client would
+        // compile is generated into the bundle in the same way, and identified
+        // by the same kind of hash
+        if (type.isAnnotationPresent(DomEvent.class)
+                && ComponentEvent.class.isAssignableFrom(type)) {
+            imports.addAll(eventDataFingerprints(type));
         }
         for (NpmPackage npmPackage : type
                 .getDeclaredAnnotationsByType(NpmPackage.class)) {
@@ -1461,6 +1507,60 @@ final class DevLoopRedefiner {
         }
         java.util.Collections.sort(imports);
         return String.join(";", imports);
+    }
+
+    /**
+     * What identifies the functions the build generates for the
+     * {@link com.vaadin.flow.component.EventData} values and the
+     * {@link DomEvent#filter()} of a DOM event type. Scanned without a cache,
+     * as the build does, so the comparison sees what the class declares now.
+     */
+    private static List<String> eventDataFingerprints(Class<?> type) {
+        List<String> fingerprints = new ArrayList<>(
+                bundledEventDataFingerprints(type));
+        String filter = BundledEventData.getBundledFilter(type);
+        if (filter != null) {
+            fingerprints.add(
+                    "eventfilter:" + BundledEventData.getFunctionId(filter));
+        }
+        return fingerprints;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<String> bundledEventDataFingerprints(Class<?> type) {
+        try {
+            return BundledEventData
+                    .getBundledEventData(
+                            (Class<? extends ComponentEvent<?>>) type)
+                    .stream()
+                    .map(expression -> "eventdata:"
+                            + BundledEventData.getFunctionId(expression))
+                    .toList();
+        } catch (IllegalArgumentException e) {
+            // An event the build leaves out: what is wrong with it still tells
+            // one edit from another, and listening to it reports the reason
+            LOGGER.debug("Fingerprinting {} by why it can not be listened to",
+                    type, e);
+            return List.of("eventdata:invalid:" + e.getMessage());
+        }
+    }
+
+    /**
+     * What identifies the function the build generates for a method of a
+     * JavaScript definition, which covers everything the generated function is
+     * made of: for a snippet, the names it is called with as well.
+     */
+    private static String fingerprintOf(Method method) {
+        try {
+            return JsCall.functionId(method);
+        } catch (IllegalArgumentException e) {
+            // Names the build can not generate a function with: what was
+            // declared is still what tells one edit from another, and the
+            // restart that follows reports what is wrong with it
+            LOGGER.debug("Fingerprinting {} by why it can not be generated",
+                    method, e);
+            return "invalid:" + e.getMessage();
+        }
     }
 
     /**

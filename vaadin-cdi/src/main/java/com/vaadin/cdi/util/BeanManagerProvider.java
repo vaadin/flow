@@ -148,6 +148,13 @@ public class BeanManagerProvider implements Extension {
     private final Map<ClassLoader, BeanManagerInfo> bmInfos = new ConcurrentHashMap<>();
 
     /**
+     * Creates a new bean manager provider.
+     */
+    public BeanManagerProvider() {
+        // Nothing to initialize
+    }
+
+    /**
      * Indicates whether the {@link BeanManagerProvider} has been initialized.
      * Usually it's not necessary to call this method in application code. It's
      * useful e.g. for other frameworks to check if DeltaSpike and the CDI
@@ -305,6 +312,9 @@ public class BeanManagerProvider implements Extension {
      *
      * In EARs with multiple webapps, each WAR might get a different Extension.
      * This depends on the container used.
+     *
+     * @param adv
+     *            the after deployment validation event
      */
     public void cleanupFinalBeanManagers(
             @Observes AfterDeploymentValidation adv) {
