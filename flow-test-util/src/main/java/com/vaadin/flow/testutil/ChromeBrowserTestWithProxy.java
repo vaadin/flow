@@ -94,6 +94,9 @@ public abstract class ChromeBrowserTestWithProxy
                 createProxy(getProxyPort());
                 break;
             } catch (IOException e) {
+                // The port counter is per JVM, so a test in another failsafe
+                // fork may hold the same port: try the next one.
+                proxyPort = null;
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException exception) {
