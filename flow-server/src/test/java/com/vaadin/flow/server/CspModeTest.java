@@ -373,23 +373,40 @@ class CspModeTest {
             reportFromComponent("tooltip.formatter");
             reportFromComponent("tooltip.formatter");
             reportFromComponent("series[2].formatter");
+            reportFromOtherComponent("tooltip.formatter");
         }
 
         ArgumentCaptor<String> messages = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<Throwable> warnings = ArgumentCaptor
                 .forClass(Throwable.class);
-        verify(logger, times(2)).warn(messages.capture(), warnings.capture());
-        assertTrue(messages.getAllValues().get(0)
-                .endsWith(" The JavaScript is in \"tooltip.formatter\"."));
-        assertTrue(messages.getAllValues().get(1)
-                .endsWith(" The JavaScript is in \"series[2].formatter\"."));
-        for (Throwable warning : warnings.getAllValues()) {
-            assertTraceLeadsFromApiToTest(warning, CspModeTest.class,
-                    "reportFromComponent");
-        }
+        verify(logger, times(3)).warn(messages.capture(), warnings.capture());
+        assertTrue(
+                messages.getAllValues().get(0).contains("tooltip.formatter"));
+        assertTrue(
+                messages.getAllValues().get(1).contains("series[2].formatter"));
+        assertTrue(
+                messages.getAllValues().get(2).contains("tooltip.formatter"));
+        assertTraceLeadsFromApiToTest(warnings.getAllValues().get(0),
+                CspModeTest.class, "reportFromComponent");
+        assertTraceLeadsFromApiToTest(warnings.getAllValues().get(1),
+                CspModeTest.class, "reportFromComponent");
+        assertTraceLeadsFromApiToTest(warnings.getAllValues().get(2),
+                CspModeTest.class, "reportFromOtherComponent");
+    }
+
+    @Test
+    void stringJavaScriptWithNullDetail_throws() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.WARN);
+
+        assertThrows(NullPointerException.class,
+                () -> CspViolationReporter.reportStringJavaScript(null));
     }
 
     private static void reportFromComponent(String detail) {
+        CspViolationReporter.reportStringJavaScript(detail);
+    }
+
+    private static void reportFromOtherComponent(String detail) {
         CspViolationReporter.reportStringJavaScript(detail);
     }
 
