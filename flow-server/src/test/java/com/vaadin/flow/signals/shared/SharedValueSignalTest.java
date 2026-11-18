@@ -565,6 +565,27 @@ public class SharedValueSignalTest extends SignalTestBase {
         assertFalse(usage.hasChanges());
     }
 
+    @SuppressWarnings("deprecation")
+    @Test
+    void usageTracking_overridesLegacyCreateUsage_overrideUsedByGet() {
+        AtomicInteger legacyCalls = new AtomicInteger();
+        SharedValueSignal<String> signal = new SharedValueSignal<>("value") {
+            @Override
+            protected Usage createUsage(Transaction transaction) {
+                legacyCalls.incrementAndGet();
+                return super.createUsage(transaction);
+            }
+        };
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.get();
+        });
+        assertEquals(1, legacyCalls.get());
+
+        signal.set("update");
+        assertTrue(usage.hasChanges());
+    }
+
     @Test
     void result_successfulOperation_resolvedThroughResultNotifier() {
         TestExecutor notifier = useTestResultNotifier();

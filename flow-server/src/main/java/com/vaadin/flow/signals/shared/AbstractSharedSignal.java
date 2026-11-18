@@ -110,6 +110,27 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
         UsageStatistics.markAsUsed("flow/shared-signal", null);
     }
 
+    /*
+     * Subclasses that override createUsage(Transaction) keep having their
+     * override called from get() so that it doesn't silently stop working.
+     */
+    private static final ClassValue<Boolean> OVERRIDES_LEGACY_CREATE_USAGE = new ClassValue<>() {
+        @Override
+        protected Boolean computeValue(Class<?> type) {
+            for (Class<?> current = type; current != null
+                    && current != AbstractSharedSignal.class; current = current
+                            .getSuperclass()) {
+                try {
+                    current.getDeclaredMethod("createUsage", Transaction.class);
+                    return true;
+                } catch (NoSuchMethodException e) { // NOSONAR
+                    // not declared on this level
+                }
+            }
+            return false;
+        }
+    };
+
     /**
      * Signal validator that accepts anything. This is defined as a constant to
      * enable using <code>==</code> to detect and optimize cases where no
@@ -192,7 +213,10 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
          */
         T value = extractValue(data);
         if (UsageTracker.isActive()) {
-            UsageTracker.registerUsage(createUsage(transaction, data));
+            UsageTracker
+                    .registerUsage(OVERRIDES_LEGACY_CREATE_USAGE.get(getClass())
+                            ? createUsage(transaction)
+                            : createUsage(transaction, data));
         }
         return value;
     }
@@ -443,10 +467,11 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
      * <p>
      * This reads the data of this signal from the transaction and then
      * delegates to {@link #createUsage(Transaction, Data)}. {@link #get()}
-     * doesn't use this method but calls {@link #createUsage(Transaction, Data)}
-     * directly with the data the returned value was extracted from, so that a
-     * concurrent change between reading the value and creating the usage is
-     * detected.
+     * calls {@link #createUsage(Transaction, Data)} directly with the data the
+     * returned value was extracted from, so that a concurrent change between
+     * reading the value and creating the usage is detected. For compatibility,
+     * {@link #get()} still calls this method instead if a subclass overrides
+     * it, but such a subclass doesn't get that concurrent change detected.
      *
      * @param transaction
      *            the transaction for which the usage occurs, not

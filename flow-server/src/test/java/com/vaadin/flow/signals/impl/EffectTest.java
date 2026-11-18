@@ -835,9 +835,9 @@ class EffectTest extends SignalTestBase {
         assertEquals("concurrent", signal.peek());
         // The re-run starts while the first run is still in progress, so the
         // order of the recorded values is not significant
-        assertTrue(seen.contains("concurrent"),
-                "Effect should re-run for the concurrent write, but saw "
-                        + seen);
+        assertEquals(2, seen.size(), "Effect should run twice, saw " + seen);
+        assertTrue(seen.containsAll(List.of("initial", "concurrent")),
+                "Effect should re-run for the concurrent write, saw " + seen);
     }
 
     @Test
