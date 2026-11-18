@@ -31,6 +31,8 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.component.trigger.internal.RequestWebNotificationPermissionAction;
+import com.vaadin.flow.component.trigger.internal.TriggerTestUtil;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -41,6 +43,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.tests.util.MockUI;
 
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -110,9 +113,6 @@ class WebNotificationTest {
         assertFalse(ui.getInternals().isWebNotificationPermissionWired());
     }
 
-    // JsFunction.getBody() is the only way to see the JavaScript a
-    // string-based action runs; it is deprecated for removal
-    @SuppressWarnings("removal")
     @Test
     void onClick_requestPermission_requestsInsideTheClickHandler() {
         UI ui = new MockUI();
@@ -121,8 +121,9 @@ class WebNotificationTest {
 
         WebNotification.onClick(button).requestPermission();
 
-        assertEquals("window.Vaadin.Flow.webNotification.requestPermission()",
-                clickHandler(ui).getBody());
+        assertEquals("requestPermission", snippetOf(
+                RequestWebNotificationPermissionAction.RequestWebNotificationPermissionJs.class,
+                clickHandler(ui)));
     }
 
     @Test
@@ -343,9 +344,8 @@ class WebNotificationTest {
 
     private static JsFunction clickHandler(UI ui) {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        JsFunction install = (JsFunction) ui.getInternals()
-                .dumpPendingJavaScriptInvocations().get(0).getInvocation()
-                .getParameters().get(2);
+        JsFunction install = TriggerTestUtil.installFn(ui.getInternals()
+                .dumpPendingJavaScriptInvocations().get(0).getInvocation());
         assertTrue(install.getCaptures().contains("click"),
                 "click trigger install captures: " + install.getCaptures());
         return (JsFunction) install.getCaptures().get(0);

@@ -15,7 +15,12 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 
 /**
  * Asks the browser for permission to show notifications when the bound trigger
@@ -31,9 +36,29 @@ import com.vaadin.flow.dom.JsFunction;
  */
 public class RequestWebNotificationPermissionAction extends Action {
 
+    private static final RequestWebNotificationPermissionJs REQUEST_PERMISSION_JS = JsSnippets
+            .of(RequestWebNotificationPermissionJs.class);
+
     @Override
     protected JsFunction toJs(Trigger trigger) {
-        return JsFunction
-                .of("window.Vaadin.Flow.webNotification.requestPermission()");
+        return REQUEST_PERMISSION_JS.requestPermission();
+    }
+
+    /**
+     * How notification permission is requested, as snippets for
+     * {@link JsSnippets#of(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    @JsDefinition
+    public interface RequestWebNotificationPermissionJs extends Serializable {
+
+        /**
+         * An action that asks the browser for permission to show notifications.
+         *
+         * @return the action function
+         */
+        @JsExpression("window.Vaadin.Flow.webNotification.requestPermission()")
+        JsFunction requestPermission();
     }
 }
