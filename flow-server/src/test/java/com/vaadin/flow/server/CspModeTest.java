@@ -315,6 +315,15 @@ class CspModeTest {
             new Element("div").executeJs("return 1");
             JsFunction.of("return 1");
         });
+        assertFalse(CspViolationReporter.isEnabled());
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "OFF, false", "WARN, true", "STRICT, true" })
+    void isEnabled_onlyInModesThatReport(CspMode mode, boolean enabled) {
+        setup.getDeploymentConfiguration().setCspMode(mode);
+
+        assertEquals(enabled, CspViolationReporter.isEnabled());
     }
 
     @ParameterizedTest

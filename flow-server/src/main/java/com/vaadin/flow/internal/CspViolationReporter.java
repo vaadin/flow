@@ -99,17 +99,39 @@ public final class CspViolationReporter {
         reportStringJavaScriptWithDetail(detail);
     }
 
-    private static void reportStringJavaScriptWithDetail(String detail) {
+    /**
+     * Checks whether string JavaScript is reported for the current service,
+     * i.e. whether its {@link CspMode} is {@link CspMode#WARN} or
+     * {@link CspMode#STRICT}. A caller that does extra work to collect what it
+     * reports, e.g. to find the detail for
+     * {@link #reportStringJavaScript(String)}, can skip that work when this
+     * returns <code>false</code>.
+     *
+     * @return <code>true</code> if reports are logged or thrown,
+     *         <code>false</code> if they are ignored
+     */
+    public static boolean isEnabled() {
+        return isEnabled(getCspMode(VaadinService.getCurrent()));
+    }
+
+    private static boolean isEnabled(CspMode mode) {
+        return mode == CspMode.WARN || mode == CspMode.STRICT;
+    }
+
+    private static CspMode getCspMode(VaadinService service) {
         // No service outside of a request or UI.access, e.g. for a component
         // built in a background thread before it is attached, and no
         // configuration for a service created with the no-argument
         // constructor: there is no mode to apply then
-        VaadinService service = VaadinService.getCurrent();
         DeploymentConfiguration configuration = service == null ? null
                 : service.getDeploymentConfiguration();
-        CspMode mode = configuration == null ? CspMode.OFF
-                : configuration.getCspMode();
-        if (mode != CspMode.WARN && mode != CspMode.STRICT) {
+        return configuration == null ? CspMode.OFF : configuration.getCspMode();
+    }
+
+    private static void reportStringJavaScriptWithDetail(String detail) {
+        VaadinService service = VaadinService.getCurrent();
+        CspMode mode = getCspMode(service);
+        if (!isEnabled(mode)) {
             return;
         }
 
