@@ -20,6 +20,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
@@ -29,14 +30,14 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.StreamResourceWriter;
 import com.vaadin.flow.server.streams.DownloadHandler;
-import com.vaadin.flow.server.streams.DownloadResponse;
-import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class HtmlObjectTest extends ComponentTest {
@@ -116,7 +117,7 @@ class HtmlObjectTest extends ComponentTest {
     }
 
     @Test
-    void downloadHandler_isSetToInline() {
+    void downloadHandler_servedInline() throws Exception {
         Element element = mock(Element.class);
         StateNode node = mock(StateNode.class);
         when(element.getNode()).thenReturn(node);
@@ -146,26 +147,19 @@ class HtmlObjectTest extends ComponentTest {
                 return element;
             }
         }
-        InputStreamDownloadHandler handler = createDummyDownloadHandler();
-        assertFalse(handler.isInline());
+        DownloadHandler handler = event -> event.setFileName("doc.pdf");
         new TestHtmlObject(handler);
-        assertTrue(handler.isInline());
-
-        handler = createDummyDownloadHandler();
         new TestHtmlObject(handler, "type");
-        assertTrue(handler.isInline());
-
-        handler = createDummyDownloadHandler();
         new TestHtmlObject(handler, "type", new Param("param", "paramValue"));
-        assertTrue(handler.isInline());
-
-        handler = createDummyDownloadHandler();
         new TestHtmlObject(handler, new Param("param", "paramValue"));
-        assertTrue(handler.isInline());
+
+        ArgumentCaptor<DownloadHandler> captor = ArgumentCaptor
+                .forClass(DownloadHandler.class);
+        verify(element, times(4)).setAttribute(eq("data"), captor.capture());
+        for (DownloadHandler registered : captor.getAllValues()) {
+            assertEquals("inline; filename=\"doc.pdf\"",
+                    AssertUtils.servedContentDisposition(registered));
+        }
     }
 
-    private InputStreamDownloadHandler createDummyDownloadHandler() {
-        return DownloadHandler
-                .fromInputStream(event -> DownloadResponse.error(500));
-    }
 }

@@ -30,8 +30,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.DownloadEvent;
 import com.vaadin.flow.server.streams.DownloadHandler;
-import com.vaadin.flow.server.streams.DownloadResponse;
-import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -90,7 +88,7 @@ class ImageTest extends ComponentTest {
     }
 
     @Test
-    void downloadHandler_isSetToInline() {
+    void downloadHandler_servedInline() throws Exception {
         Element element = mock(Element.class);
         class TestImage extends Image {
             public TestImage(DownloadHandler downloadHandler, String alt) {
@@ -102,12 +100,13 @@ class ImageTest extends ComponentTest {
                 return element;
             }
         }
-        // dummy handler
-        InputStreamDownloadHandler handler = DownloadHandler
-                .fromInputStream(event -> DownloadResponse.error(500));
-        assertFalse(handler.isInline());
-        new TestImage(handler, "test.png");
-        assertTrue(handler.isInline());
+        new TestImage(event -> event.setFileName("photo.png"), "photo");
+
+        ArgumentCaptor<DownloadHandler> captor = ArgumentCaptor
+                .forClass(DownloadHandler.class);
+        verify(element).setAttribute(eq("src"), captor.capture());
+        assertEquals("inline; filename=\"photo.png\"",
+                AssertUtils.servedContentDisposition(captor.getValue()));
     }
 
     /**
