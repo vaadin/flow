@@ -30,6 +30,7 @@ import com.vaadin.flow.internal.EncodeUtil;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.StreamRequestHandler;
 
 /**
  * Class containing meta-data for handling the requested client download.
@@ -45,15 +46,6 @@ public class DownloadEvent {
     private static final String ATTACHMENT = "attachment";
     private static final String INLINE = "inline";
     private static final String CONTENT_DISPOSITION = "Content-Disposition";
-
-    /**
-     * The request attribute that carries the {@link DownloadDisposition} of the
-     * resource that is served, set by the request handler that serves it.
-     * <p>
-     * For internal use only. May be renamed or removed in a future release.
-     */
-    public static final String DISPOSITION_REQUEST_ATTRIBUTE = DownloadDisposition.class
-            .getName();
 
     private final VaadinRequest request;
     private final VaadinResponse response;
@@ -72,8 +64,8 @@ public class DownloadEvent {
         this.session = session;
         this.owningElement = owningElement;
         disposition = request == null ? null
-                : (DownloadDisposition) request
-                        .getAttribute(DISPOSITION_REQUEST_ATTRIBUTE);
+                : (DownloadDisposition) request.getAttribute(
+                        StreamRequestHandler.DISPOSITION_REQUEST_ATTRIBUTE);
     }
 
     /**
