@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.openqa.selenium.TimeoutException;
 
 import com.vaadin.flow.testcategory.PushTests;
 import com.vaadin.flow.testutil.AbstractBrowserConsoleTest;
@@ -42,28 +43,50 @@ public abstract class IdlePushChannelIT extends AbstractBrowserConsoleTest {
     }
 
     @Test
-    public void longWaitBetweenActions() throws Exception {
+    public void longWaitBetweenActions() {
         open();
         BasicPushIT.getIncrementButton(this).click();
         testBench().disableWaitForVaadin();
-        waitUntil(driver -> BasicPushIT.getClientCounter(this) == 1);
+        waitForClientCounter(1);
         getBrowserLogs(true);
 
-        Thread.sleep(3 * IdlePushChannelServlet.IDLE_TIMEOUT_MS);
-
-        // The idle timeout ended the push connection and the client opened a
-        // new one; without it, this test would not test an idle timeout
-        Assert.assertTrue("Push connection was not re-established while idle",
-                getBrowserLogs(false).stream().map(String::valueOf)
-                        .anyMatch(log -> log
-                                .startsWith("Push connection re-established")));
+        // The idle timeout ends the push connection and the client opens a
+        // new one; without it, this test would not test an idle timeout.
+        // Reading the logs does not touch the server, so the connection
+        // stays idle meanwhile.
+        try {
+            waitUntil(
+                    driver -> getBrowserLogs(false).stream()
+                            .map(String::valueOf)
+                            .anyMatch(log -> log.startsWith(
+                                    "Push connection re-established")),
+                    10 * IdlePushChannelServlet.IDLE_TIMEOUT_MS / 1000);
+        } catch (TimeoutException e) {
+            Assert.fail("Push connection was not re-established while idle. "
+                    + "Browser logs: " + getBrowserLogs(false));
+        }
 
         BasicPushIT.getIncrementButton(this).click();
-        waitUntil(driver -> BasicPushIT.getClientCounter(this) == 2);
+        waitForClientCounter(2);
 
         // The server can still push to the client
         BasicPushIT.getServerCounterStartButton(this).click();
-        waitUntil(driver -> BasicPushIT.getServerCounter(this) > 0);
+        try {
+            waitUntil(driver -> BasicPushIT.getServerCounter(this) > 0);
+        } catch (TimeoutException e) {
+            Assert.fail("Server push did not reach the client after the idle "
+                    + "period. Expected server counter > 0 but was "
+                    + BasicPushIT.getServerCounter(this));
+        }
+    }
+
+    private void waitForClientCounter(int expected) {
+        try {
+            waitUntil(driver -> BasicPushIT.getClientCounter(this) == expected);
+        } catch (TimeoutException e) {
+            Assert.fail("Expected client counter " + expected + " but was "
+                    + BasicPushIT.getClientCounter(this));
+        }
     }
 
 }
