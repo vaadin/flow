@@ -90,6 +90,10 @@ test('stops after the last attempt when the transfer error persists', () => {
 
 for (const [name, failure] of [
   ['failing tests', TEST_FAILURE],
+  [
+    'a test timeout',
+    '[ERROR] Failed to execute goal org.apache.maven.plugins:maven-failsafe-plugin:3.5.3:verify (default) on project bar: There was a timeout in the fork'
+  ],
   ['Javadoc errors', JAVADOC_ERROR]
 ]) {
   test(`does not retry a build with ${name} next to a transfer error`, () => {
