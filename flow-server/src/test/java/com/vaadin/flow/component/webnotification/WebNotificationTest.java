@@ -17,6 +17,7 @@ package com.vaadin.flow.component.webnotification;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -121,9 +122,13 @@ class WebNotificationTest {
 
         WebNotification.onClick(button).requestPermission();
 
+        JsFunction handler = clickHandler(ui);
         assertEquals("requestPermission", snippetOf(
                 RequestWebNotificationPermissionAction.RequestWebNotificationPermissionJs.class,
-                clickHandler(ui)));
+                handler));
+        assertEquals("window.Vaadin.Flow.webNotification.requestPermission()",
+                Objects.requireNonNull(handler.getDeclaredCall())
+                        .getExpression());
     }
 
     @Test
