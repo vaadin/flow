@@ -512,6 +512,23 @@ class AnchorTest extends ComponentTest {
     }
 
     @Test
+    void setDownload_afterContentServed_laterRequestsServedWithNewChoice()
+            throws Exception {
+        UI attachTo = createUiWithDefaultSafeUrlSchemes();
+        UI.setCurrent(attachTo);
+        Anchor anchor = new Anchor(event -> event.setFileName("q3.pdf"),
+                AttachmentType.INLINE, "bar");
+        attachTo.add(anchor);
+        assertEquals("inline; filename=\"q3.pdf\"",
+                servedContentDisposition(attachTo, anchor));
+
+        anchor.setDownload(true);
+
+        assertEquals("attachment; filename=\"q3.pdf\"",
+                servedContentDisposition(attachTo, anchor));
+    }
+
+    @Test
     void setHrefWithAttachmentType_newHandler_typeIsKept() throws Exception {
         UI attachTo = createUiWithDefaultSafeUrlSchemes();
         UI.setCurrent(attachTo);
