@@ -27,7 +27,9 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.TextNode;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
@@ -1530,7 +1532,15 @@ public class Element extends Node<Element> {
             builder.append(getText());
             return;
         }
-        parseInnerHtml().ifPresent(html -> builder.append(html.wholeText()));
+        // Match the browser's textContent: <br> adds nothing, while the
+        // contents of <script> and <style> are included
+        parseInnerHtml().ifPresent(html -> html.nodeStream().forEach(node -> {
+            if (node instanceof TextNode text) {
+                builder.append(text.getWholeText());
+            } else if (node instanceof DataNode data) {
+                builder.append(data.getWholeData());
+            }
+        }));
         getChildren().forEach(child -> child.appendTextRecursively(builder));
     }
 
