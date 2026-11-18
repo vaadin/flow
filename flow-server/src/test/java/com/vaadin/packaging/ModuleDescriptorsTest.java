@@ -53,7 +53,7 @@ class ModuleDescriptorsTest {
             .compile("^\\s*exports\\s+([\\w.]+)", Pattern.MULTILINE);
 
     private static final Pattern PROVIDES = Pattern
-            .compile("provides\\s+([\\w.]+)\\s+with\\s+([\\w.,\\s]+);");
+            .compile("provides\\s+([\\w.]+)\\s+with([^;]+);");
 
     private static final Pattern USES = Pattern
             .compile("^\\s*uses\\s+([\\w.]+)\\s*;", Pattern.MULTILINE);

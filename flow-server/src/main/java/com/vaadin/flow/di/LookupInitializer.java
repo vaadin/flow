@@ -34,8 +34,11 @@ import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
@@ -166,9 +169,9 @@ public class LookupInitializer implements AbstractLookupInitializer {
      */
     protected static class ResourceProviderImpl implements ResourceProvider {
 
-        private Map<String, CachedStreamData> cache = new ConcurrentHashMap<>();
+        private final Map<String, CachedStreamData> cache = new ConcurrentHashMap<>();
 
-        private volatile ClassLoader applicationClassLoader;
+        private final AtomicReference<ClassLoader> applicationClassLoader = new AtomicReference<>();
 
         /**
          * Creates a new instance.
@@ -191,13 +194,13 @@ public class LookupInitializer implements AbstractLookupInitializer {
          */
         protected void setApplicationClassLoader(
                 ClassLoader applicationClassLoader) {
-            this.applicationClassLoader = applicationClassLoader;
+            this.applicationClassLoader.set(applicationClassLoader);
         }
 
         private List<ClassLoader> getClassLoaders() {
             ClassLoader flowClassLoader = ResourceProviderImpl.class
                     .getClassLoader();
-            ClassLoader application = applicationClassLoader;
+            ClassLoader application = applicationClassLoader.get();
             if (application == null || application == flowClassLoader) {
                 return List.of(flowClassLoader);
             }
@@ -364,6 +367,10 @@ public class LookupInitializer implements AbstractLookupInitializer {
         } catch (UnsupportedOperationException | SecurityException e) {
             // Not available, for example in a listener declared by a tag
             // library: keep the class loader of Flow
+            LoggerFactory.getLogger(LookupInitializer.class).debug(
+                    "The class loader of the servlet context is not available, "
+                            + "resources are looked up with the class loader of Flow only",
+                    e);
             return;
         }
         for (Object provider : providers) {
