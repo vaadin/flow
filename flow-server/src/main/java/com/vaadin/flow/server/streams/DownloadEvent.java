@@ -46,10 +46,10 @@ public class DownloadEvent {
     private static final String INLINE = "inline";
     private static final String CONTENT_DISPOSITION = "Content-Disposition";
 
-    private VaadinRequest request;
-    private VaadinResponse response;
-    private VaadinSession session;
-    private Element owningElement;
+    private final VaadinRequest request;
+    private final VaadinResponse response;
+    private final VaadinSession session;
+    private final Element owningElement;
     private String fileName;
     private String contentType;
     private long contentLength = -1;

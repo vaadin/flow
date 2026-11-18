@@ -182,7 +182,7 @@ class DownloadHandlerTest {
     @Test
     void serveAsAttachment_onInlineView_outermostViewDecides()
             throws Exception {
-        DownloadHandler handler = event -> event.inline();
+        DownloadHandler handler = DownloadEvent::inline;
 
         assertEquals("attachment", servedContentDisposition(
                 handler.serveInline().allowDisabled().serveAsAttachment()));
