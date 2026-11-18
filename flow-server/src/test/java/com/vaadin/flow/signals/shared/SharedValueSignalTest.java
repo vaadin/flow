@@ -565,16 +565,11 @@ public class SharedValueSignalTest extends SignalTestBase {
         assertFalse(usage.hasChanges());
     }
 
-    @SuppressWarnings("removal")
     @Test
-    void usageTracking_overridesLegacyCreateUsage_overrideUsedByGet() {
+    void usageTracking_superclassOverridesLegacyCreateUsage_overrideUsedByGet() {
         AtomicInteger legacyCalls = new AtomicInteger();
-        SharedValueSignal<String> signal = new SharedValueSignal<>("value") {
-            @Override
-            protected Usage createUsage(Transaction transaction) {
-                legacyCalls.incrementAndGet();
-                return super.createUsage(transaction);
-            }
+        // Subclass of a class that declares the override
+        SharedValueSignal<String> signal = new LegacyUsageSignal(legacyCalls) {
         };
 
         Usage usage = UsageTracker.track(signal::get);
@@ -793,6 +788,22 @@ public class SharedValueSignalTest extends SignalTestBase {
                 "signal value");
 
         assertEquals("SharedValueSignal[signal value]", signal.toString());
+    }
+
+    private static class LegacyUsageSignal extends SharedValueSignal<String> {
+        private final AtomicInteger legacyCalls;
+
+        LegacyUsageSignal(AtomicInteger legacyCalls) {
+            super("value");
+            this.legacyCalls = legacyCalls;
+        }
+
+        @SuppressWarnings("removal")
+        @Override
+        protected Usage createUsage(Transaction transaction) {
+            legacyCalls.incrementAndGet();
+            return super.createUsage(transaction);
+        }
     }
 
     public static class AsyncSharedValueSignal
