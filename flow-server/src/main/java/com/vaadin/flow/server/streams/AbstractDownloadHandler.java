@@ -165,7 +165,9 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      *             {@code Download.onClick} with a new tab already serve it
      *             inline. For an {@code Anchor}, use {@code setDownload(false)}
      *             or {@code AttachmentType.INLINE}. Elsewhere, register
-     *             {@link #serveInline()} instead of this handler.
+     *             {@link #serveInline()} instead of this handler. Once this
+     *             method is removed, an {@code Anchor} without such a choice
+     *             serves a built-in handler as a download.
      */
     @Deprecated(since = "25.4", forRemoval = true)
     public R inline() {
@@ -180,7 +182,11 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * @return true if the content is to be displayed inline, false if it is to
      *         be downloaded as a file
      * @deprecated {@link #inline()} is deprecated, since the place where the
-     *             handler is used decides how the content is served
+     *             handler is used decides how the content is served. A custom
+     *             handler names its content with
+     *             {@link DownloadEvent#setFileName(String)}, and the place of
+     *             use serves it inline or as an attachment with
+     *             {@link #serveInline()} or {@link #serveAsAttachment()}.
      */
     @Deprecated(since = "25.4", forRemoval = true)
     public boolean isInline() {
