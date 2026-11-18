@@ -96,7 +96,8 @@ class DownloadTest {
     @Test
     void startHandlerInNewTab_clickOpensRegisteredResourceInline()
             throws Exception {
-        DownloadHandler handler = event -> event.setFileName("invoice.pdf");
+        InputStreamDownloadHandler handler = DownloadHandler.fromInputStream(
+                event -> DownloadResponse.error(500), "invoice.pdf");
 
         Download.onClick(button, handler, DownloadTarget.NEW_TAB);
 
@@ -105,18 +106,6 @@ class DownloadTest {
                 snippetOf(OpenInNewTabAction.OpenInNewTabJs.class, action));
         assertEquals("inline; filename=\"invoice.pdf\"",
                 servedContentDisposition(action));
-    }
-
-    @Test
-    void startHandlerInNewTab_builtInHandler_handlerNotChanged()
-            throws Exception {
-        InputStreamDownloadHandler handler = DownloadHandler.fromInputStream(
-                event -> DownloadResponse.error(500), "invoice.pdf");
-
-        Download.onClick(button, handler, DownloadTarget.NEW_TAB);
-
-        assertEquals("inline; filename=\"invoice.pdf\"",
-                servedContentDisposition(actionOf(singleInstallFn())));
         assertEquals("attachment; filename=\"invoice.pdf\"",
                 servedContentDisposition(handler, button.getElement()),
                 "The handler should keep serving an attachment elsewhere");
