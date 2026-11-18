@@ -137,7 +137,7 @@ public final class CspViolationReporter {
         }
 
         String message = (detail == null) ? MESSAGE
-                : MESSAGE + " The JavaScript is in \"" + detail + "\".";
+                : (MESSAGE + " The JavaScript is in \"" + detail + "\".");
         CspViolationException violation = new CspViolationException(message);
         StackTraceElement[] stack = violation.getStackTrace();
         // Start the trace at the API rather than at the two methods of this
@@ -149,7 +149,7 @@ public final class CspViolationReporter {
         }
         String callSite = getCallSite(violation.getStackTrace());
         // Different details from one call site are different reports
-        String key = (detail == null) ? callSite : detail + '\n' + callSite;
+        String key = (detail == null) ? callSite : (detail + '\n' + callSite);
         if (warnedCalls
                 .computeIfAbsent(service, k -> ConcurrentHashMap.newKeySet())
                 .add(key)) {
