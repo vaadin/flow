@@ -100,16 +100,6 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
         I create(Id childId);
     }
 
-    private final SignalTree tree;
-    private final Id id;
-    private final CommandValidator validator;
-
-    private static final ObjectMapper OBJECT_MAPPER;
-    static {
-        OBJECT_MAPPER = new ObjectMapper();
-        UsageStatistics.markAsUsed("flow/shared-signal", null);
-    }
-
     /*
      * Subclasses that override createUsage(Transaction) keep having their
      * override called from get() so that it doesn't silently stop working.
@@ -130,6 +120,16 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
             return false;
         }
     };
+
+    private final SignalTree tree;
+    private final Id id;
+    private final CommandValidator validator;
+
+    private static final ObjectMapper OBJECT_MAPPER;
+    static {
+        OBJECT_MAPPER = new ObjectMapper();
+        UsageStatistics.markAsUsed("flow/shared-signal", null);
+    }
 
     /**
      * Signal validator that accepts anything. This is defined as a constant to
@@ -213,8 +213,8 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
          */
         T value = extractValue(data);
         if (UsageTracker.isActive()) {
-            UsageTracker
-                    .registerUsage(OVERRIDES_LEGACY_CREATE_USAGE.get(getClass())
+            UsageTracker.registerUsage(
+                    OVERRIDES_LEGACY_CREATE_USAGE.get(getClass()).booleanValue()
                             ? createUsage(transaction)
                             : createUsage(transaction, data));
         }
@@ -480,7 +480,7 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
      * @deprecated override {@link #createUsage(Transaction, Data)} instead,
      *             since that is the method used by {@link #get()}
      */
-    @Deprecated
+    @Deprecated(since = "25.4", forRemoval = true)
     protected Usage createUsage(Transaction transaction) {
         return createUsage(transaction, data(transaction));
     }

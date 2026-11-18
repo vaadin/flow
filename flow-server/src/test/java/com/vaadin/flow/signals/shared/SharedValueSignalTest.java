@@ -565,7 +565,7 @@ public class SharedValueSignalTest extends SignalTestBase {
         assertFalse(usage.hasChanges());
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("removal")
     @Test
     void usageTracking_overridesLegacyCreateUsage_overrideUsedByGet() {
         AtomicInteger legacyCalls = new AtomicInteger();
@@ -577,9 +577,7 @@ public class SharedValueSignalTest extends SignalTestBase {
             }
         };
 
-        Usage usage = UsageTracker.track(() -> {
-            signal.get();
-        });
+        Usage usage = UsageTracker.track(signal::get);
         assertEquals(1, legacyCalls.get());
 
         signal.set("update");

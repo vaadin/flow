@@ -801,8 +801,7 @@ class EffectTest extends SignalTestBase {
     }
 
     @Test
-    void sharedSignal_concurrentWriteBetweenValueAndUsage_effectRerun()
-            throws InterruptedException {
+    void sharedSignal_concurrentWriteBetweenValueAndUsage_effectRerun() {
         AtomicReference<SharedValueSignal<String>> self = new AtomicReference<>();
         AtomicBoolean injectWrite = new AtomicBoolean(false);
 
