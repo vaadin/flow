@@ -177,6 +177,8 @@ class DownloadHandlerTest {
 
         assertEquals("attachment", servedContentDisposition(
                 handler.serveInline().allowDisabled().serveAsAttachment()));
+        assertEquals("attachment", servedContentDisposition(
+                handler.serveInline().serveAsAttachment()));
     }
 
     @Test

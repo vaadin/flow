@@ -30,6 +30,7 @@ import com.vaadin.flow.component.trigger.internal.DownloadAction;
 import com.vaadin.flow.component.trigger.internal.OpenInNewTabAction;
 import com.vaadin.flow.component.trigger.internal.TriggerInputJs;
 import com.vaadin.flow.component.trigger.internal.TriggerTestUtil;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.StreamResourceRegistry.ElementStreamResource;
@@ -37,6 +38,8 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
+import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
 
@@ -101,6 +104,21 @@ class DownloadTest {
                 snippetOf(OpenInNewTabAction.OpenInNewTabJs.class, action));
         assertEquals("inline; filename=\"invoice.pdf\"",
                 servedContentDisposition(action));
+    }
+
+    @Test
+    void startHandlerInNewTab_builtInHandler_handlerNotChanged()
+            throws Exception {
+        InputStreamDownloadHandler handler = DownloadHandler.fromInputStream(
+                event -> DownloadResponse.error(500), "invoice.pdf");
+
+        Download.onClick(button, handler, DownloadTarget.NEW_TAB);
+
+        assertEquals("inline; filename=\"invoice.pdf\"",
+                servedContentDisposition(actionOf(singleInstallFn())));
+        assertEquals("attachment; filename=\"invoice.pdf\"",
+                servedContentDisposition(handler, button.getElement()),
+                "The handler should keep serving an attachment elsewhere");
     }
 
     @Test
@@ -199,15 +217,21 @@ class DownloadTest {
         URI uri = URI.create(resourceUri(action));
         ElementStreamResource resource = (ElementStreamResource) registry
                 .getResource(uri).orElseThrow();
+        return servedContentDisposition(
+                (DownloadHandler) resource.getElementRequestHandler(),
+                resource.getOwner());
+    }
+
+    private static String servedContentDisposition(DownloadHandler handler,
+            Element owner) throws Exception {
         VaadinResponse response = mock(VaadinResponse.class);
         AtomicReference<String> header = new AtomicReference<>();
         doAnswer(invocation -> {
             header.set(invocation.getArgument(1));
             return null;
         }).when(response).setHeader(eq("Content-Disposition"), any());
-        resource.getElementRequestHandler().handleRequest(
-                mock(VaadinRequest.class), response, mock(VaadinSession.class),
-                resource.getOwner());
+        handler.handleRequest(mock(VaadinRequest.class), response,
+                mock(VaadinSession.class), owner);
         return header.get();
     }
 
