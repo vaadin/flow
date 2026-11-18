@@ -35,9 +35,9 @@ public enum DownloadTarget {
      * file otherwise.
      * <p>
      * Content from a handler is served inline for this use only, see
-     * {@link com.vaadin.flow.server.streams.DownloadHandler#serveInline()
-     * DownloadHandler.serveInline}. The handler itself is not changed, so the
-     * same instance can also be used where the content is downloaded.
+     * {@link com.vaadin.flow.server.streams.DownloadDisposition}. The handler
+     * itself is not changed, so the same instance can also be used where the
+     * content is downloaded.
      * <p>
      * The new tab is opened without access to the opening page
      * ({@code noopener}) and without a {@code Referer} header
