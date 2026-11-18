@@ -1,7 +1,6 @@
 import { ConnectionIndicator } from './ConnectionIndicator';
 import { ConnectionState, type ConnectionStateChangeListener, type ConnectionStateStore } from './ConnectionState';
 import { collectBrowserDetails } from './BrowserHelpers';
-import { loadAtmosphere } from './internal/client/communication/AtmosphereLoader';
 
 export interface FlowConfig {
   imports?: () => Promise<any>;
@@ -318,9 +317,14 @@ export class Flow {
 
       const { pushScript, appConfig } = this.response;
 
+      let atmosphere: Promise<unknown> | undefined;
       if (typeof pushScript === 'string') {
-        // The push connection uses this load instead of starting its own
-        await loadAtmosphere(pushScript);
+        // vaadinPush.js is the atmosphere.js ES module. It is handed to the
+        // client engine below rather than shared through a common loader
+        // module, because in dev mode Vite pre-bundles the engine, which then
+        // has its own copy of every module it imports.
+        atmosphere = import(/* @vite-ignore */ new URL(pushScript, document.baseURI).href);
+        await atmosphere;
       }
       const { appId } = appConfig;
 
@@ -353,7 +357,7 @@ export class Flow {
       // pre-bundled dependency. Importing './FlowClient' relatively would make
       // the dev server serve the ~90 modules of the client engine one by one.
       const clientMod = await import('vaadin-flow-client');
-      await this.flowInitClient(clientMod);
+      await this.flowInitClient(clientMod, atmosphere);
 
       // hide flow progress indicator
       this.loadingFinished();
@@ -395,8 +399,8 @@ export class Flow {
 
   // After the flow-client javascript module has been loaded, this initializes flow UI
   // in the browser.
-  private async flowInitClient(clientMod: any): Promise<void> {
-    clientMod.init();
+  private async flowInitClient(clientMod: any, atmosphere?: Promise<unknown>): Promise<void> {
+    clientMod.init(atmosphere);
     // client init is async, we need to loop until initialized
     return new Promise((resolve) => {
       const intervalId = setInterval(() => {

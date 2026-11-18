@@ -17,6 +17,8 @@ export class WebSocketConnection extends Connection {
 
     const request = {
       transport: 'websocket',
+      // The server only accepts the dev tools connection over websocket
+      fallbackTransport: 'websocket',
       url,
       contentType: 'application/json; charset=UTF-8',
       reconnect: true,
@@ -46,8 +48,14 @@ export class WebSocketConnection extends Connection {
       open: () => {
         this.canSend = true;
       },
-      close: () => {
+      // Fired for every unexpected close, also of a failed reconnect attempt,
+      // but reported only once, as the status stays ERROR until the server
+      // says hello on a new connection.
+      close: (response: any) => {
         this.canSend = false;
+        if (this.status !== ConnectionStatus.ERROR) {
+          this.handleError(`Lost connection to the dev server: ${response?.reasonPhrase ?? 'connection closed'}`);
+        }
       },
       clientTimeout: () => {
         this.canSend = false;

@@ -1,1 +1,1 @@
-export const init: () => void;
+export const init: (atmosphere?: Promise<unknown>) => void;

@@ -15,9 +15,9 @@
  */
 
 // Loads vaadinPush.js, the ES module build of atmosphere.js that flow-push
-// serves. Kept apart from AtmospherePushConnection so that Flow.ts can start
-// the load during bootstrap without pulling the connection into its chunk, and
-// both end up with the same module.
+// serves. The module is loaded once per page: Flow.ts loads it during bootstrap
+// and hands it to FlowClient.init, which stores it here with
+// setAtmosphereModule, so that the push connection reuses it.
 
 let atmosphereModule: Promise<unknown> | null = null;
 
