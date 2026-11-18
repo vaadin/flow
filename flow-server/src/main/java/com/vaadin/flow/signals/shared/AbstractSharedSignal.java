@@ -213,10 +213,14 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
          */
         T value = extractValue(data);
         if (UsageTracker.isActive()) {
-            UsageTracker.registerUsage(
-                    OVERRIDES_LEGACY_CREATE_USAGE.get(getClass()).booleanValue()
-                            ? createUsage(transaction)
-                            : createUsage(transaction, data));
+            Usage usage;
+            if (OVERRIDES_LEGACY_CREATE_USAGE.get(getClass()).booleanValue()) {
+                // Deprecated method still called while subclasses override it
+                usage = createUsage(transaction); // NOSONAR
+            } else {
+                usage = createUsage(transaction, data);
+            }
+            UsageTracker.registerUsage(usage);
         }
         return value;
     }
