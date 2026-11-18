@@ -53,6 +53,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -514,6 +515,33 @@ class InputStreamDownloadHandlerTest {
 
         verify(response).setHeader("Content-Disposition",
                 "inline; filename=\"download\"");
+    }
+
+    @Test
+    @SuppressWarnings("removal")
+    void isInlineOverridden_responseFileNameServedInline() throws IOException {
+        InputStream stream = mock(InputStream.class);
+        when(stream.read(any(), anyInt(), anyInt())).thenReturn(-1);
+        DownloadHandler handler = new InputStreamDownloadHandler(
+                event -> new DownloadResponse(stream, "report.pdf",
+                        "application/pdf", 0),
+                "q3.pdf") {
+            @Override
+            public boolean isInline() {
+                return true;
+            }
+        };
+
+        DownloadEvent event = new DownloadEvent(request, response, session,
+                new Element("t"));
+        when(response.getOutputStream()).thenReturn(outputStream);
+        when(response.getService()).thenReturn(service);
+        handler.handleDownloadRequest(event);
+
+        verify(response).setHeader("Content-Disposition",
+                "inline; filename=\"report.pdf\"");
+        verify(response, never()).setHeader(eq("Content-Disposition"),
+                startsWith("attachment"));
     }
 
     @Test

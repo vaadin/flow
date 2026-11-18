@@ -31,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 class DownloadHandlerTest {
 
@@ -145,24 +144,5 @@ class DownloadHandlerTest {
 
         assertSame(wrappedOnce, wrappedTwice,
                 "Wrapping a handler that is already ALWAYS must be a no-op");
-    }
-
-    @Test
-    @SuppressWarnings("removal")
-    void builtInHandler_isInlineOverridden_servedInline() throws Exception {
-        DownloadHandler handler = new InputStreamDownloadHandler(
-                event -> DownloadResponse.error(500), "q3.pdf") {
-            @Override
-            public boolean isInline() {
-                return true;
-            }
-        };
-        VaadinResponse response = mock(VaadinResponse.class);
-
-        handler.handleRequest(mock(VaadinRequest.class), response,
-                mock(VaadinSession.class), mock(Element.class));
-
-        verify(response).setHeader("Content-Disposition",
-                "inline; filename=\"q3.pdf\"");
     }
 }
