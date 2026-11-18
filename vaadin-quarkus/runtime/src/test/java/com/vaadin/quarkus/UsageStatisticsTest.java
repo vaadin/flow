@@ -19,7 +19,6 @@ import jakarta.enterprise.inject.spi.BeanManager;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -45,8 +44,7 @@ public class UsageStatisticsTest {
         // QuarkusVaadinServlet will call statistics in development mode
         // There will be other entries too to filter out
         List<UsageStatistics.UsageEntry> entries = UsageStatistics.getEntries()
-                .filter(entry -> entry.getName().contains("quarkus"))
-                .collect(Collectors.toList());
+                .filter(entry -> entry.getName().contains("quarkus")).toList();
         assertEquals(1, entries.size(), "One quarkus call should be recorded");
 
         UsageStatistics.UsageEntry entry = entries.get(0);
@@ -60,8 +58,7 @@ public class UsageStatisticsTest {
         // QuarkusVaadinServlet will call statistics in development mode
         // There will be other entries too to filter out
         List<UsageStatistics.UsageEntry> entries = UsageStatistics.getEntries()
-                .filter(entry -> entry.getName().contains("quarkus"))
-                .collect(Collectors.toList());
+                .filter(entry -> entry.getName().contains("quarkus")).toList();
         assertEquals(0, entries.size(),
                 "No entries should be available in production mode");
     }

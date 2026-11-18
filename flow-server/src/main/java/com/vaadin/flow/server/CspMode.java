@@ -61,10 +61,10 @@ public enum CspMode {
      * the development tools need {@code eval}.
      * <p>
      * <strong>Note:</strong> Vaadin itself still uses APIs that need
-     * {@code eval}, not only for its own components but also for the event data
-     * and filter expressions of DOM event listeners, such as those of a click
-     * listener. Until that is changed, those calls throw, so the mode is not
-     * yet usable for applications.
+     * {@code eval} in some places, such as the event filters of double and
+     * single click listeners and of keyboard shortcuts. Until those are
+     * changed, they throw in this mode. Event data that is a property path,
+     * such as that of a click listener, does not need {@code eval}.
      */
     STRICT
 }

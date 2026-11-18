@@ -15,13 +15,24 @@
  */
 package com.vaadin.flow.spring.security;
 
+import jakarta.servlet.Filter;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+
 import java.security.Principal;
+import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.security.web.servlet.ApplicationContextRequestMatcher;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -32,8 +43,12 @@ import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.web.FilterChainProxy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AuthorizationManagerWebInvocationPrivilegeEvaluator.HttpServletRequestTransformer;
+import org.springframework.security.web.access.PathPatternRequestTransformer;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
+import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
@@ -41,6 +56,7 @@ import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
 import com.vaadin.flow.spring.AuthenticationUtil;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -54,6 +70,13 @@ class SpringAccessPathCheckerTest {
 
     @Autowired
     private WebInvocationPrivilegeEvaluator evaluator;
+
+    @Autowired
+    @Qualifier(AbstractSecurityWebApplicationInitializer.DEFAULT_FILTER_NAME)
+    private Filter springSecurityFilterChain;
+
+    @Autowired
+    private ServletContext servletContext;
 
     @Test
     @WithAnonymousUser
@@ -180,6 +203,107 @@ class SpringAccessPathCheckerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
+    void checkAccess_nullPrincipalWithFilterChainProxy_configuredAnonymousAuthoritiesApplied() {
+        var checker = createCheckerWithFilterChainProxy(
+                new PathPatternRequestTransformer());
+
+        assertTrue(checker.hasAccess("guest", null, role -> false),
+                "Access to guest only path should be allowed when principal is null and the filter chain gives GUEST to anonymous users");
+        assertFalse(checker.hasAccess("admin", null, role -> false),
+                "Access to admin only path should not be allowed when principal is null, even if an admin user is on the thread");
+        assertTrue(checker.hasAccess("api", null, role -> false),
+                "Access to api path should be allowed when principal is null and the matching api filter chain gives API to anonymous users");
+        assertTrue(checker.hasAccess("empty", null, role -> false),
+                "Access to empty path should be allowed with the default anonymous authentication when the matching filter chain gives no authorities to anonymous users");
+    }
+
+    @Test
+    @WithAnonymousUser
+    void checkAccess_nullPrincipalWithFilterChainProxy_threadAnonymousAuthenticationReplaced() {
+        var checker = createCheckerWithFilterChainProxy(
+                new PathPatternRequestTransformer());
+
+        assertTrue(checker.hasAccess("guest", null, role -> false),
+                "Access to guest only path should be allowed with the anonymous authentication of the matching filter chain, not with the one on the thread");
+        assertTrue(checker.hasAccess("api", null, role -> false),
+                "Access to api path should be allowed with the anonymous authentication of the matching filter chain, not with the one on the thread");
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void checkAccess_nullPrincipalWithFilterChainProxy_requestTransformerApplied() {
+        // Matches every path against the api chain, which gives API to
+        // anonymous users: the guest path is then checked with that
+        // authentication and denied
+        HttpServletRequestTransformer toApiPath = request -> new PathPatternRequestTransformer()
+                .transform(new HttpServletRequestWrapper(request) {
+                    @Override
+                    public String getRequestURI() {
+                        return getContextPath() + "/api/any";
+                    }
+
+                    @Override
+                    public String getServletPath() {
+                        return "/api/any";
+                    }
+                });
+        var checker = createCheckerWithFilterChainProxy(toApiPath);
+
+        assertFalse(checker.hasAccess("guest", null, role -> false),
+                "Access to guest only path should not be allowed when the transformed request selects the api filter chain");
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void checkAccess_nullPrincipalWithFilterChainProxy_servletContextBoundToRequest() {
+        var checker = createCheckerWithFilterChainProxy(
+                new PathPatternRequestTransformer());
+
+        assertTrue(checker.hasAccess("context", null, role -> false),
+                "Access to context path should be allowed when principal is null and the filter chain selected by a matcher reading the servlet context gives CONTEXT to anonymous users");
+
+        var withoutServletContext = new SpringAccessPathChecker(evaluator, null,
+                SecurityContextHolder.getContextHolderStrategy(),
+                () -> (FilterChainProxy) springSecurityFilterChain,
+                new PathPatternRequestTransformer());
+        assertThrows(IllegalArgumentException.class,
+                () -> withoutServletContext.hasAccess("context", null,
+                        role -> false),
+                "A matcher reading the servlet context should fail when the checker has none");
+    }
+
+    private SpringAccessPathChecker createCheckerWithFilterChainProxy(
+            HttpServletRequestTransformer requestTransformer) {
+        var checker = new SpringAccessPathChecker(evaluator, null,
+                SecurityContextHolder.getContextHolderStrategy(),
+                () -> (FilterChainProxy) springSecurityFilterChain,
+                requestTransformer);
+        checker.setServletContext(servletContext);
+        return checker;
+    }
+
+    /**
+     * Reads the web application context from the servlet context of the
+     * request, like Spring Boot's {@code EndpointRequest} and
+     * {@code PathRequest} matchers.
+     */
+    private static class ContextPathRequestMatcher
+            extends ApplicationContextRequestMatcher<ApplicationContext> {
+
+        ContextPathRequestMatcher() {
+            super(ApplicationContext.class);
+        }
+
+        @Override
+        protected boolean matches(HttpServletRequest request,
+                Supplier<ApplicationContext> context) {
+            return context.get() != null
+                    && request.getServletPath().startsWith("/context");
+        }
+    }
+
+    @Test
     void checkAccess_nullPrincipal_customAnonymousAuthenticationPreserved() {
         SecurityContextHolder.getContext()
                 .setAuthentication(new AnonymousAuthenticationToken("key",
@@ -214,10 +338,52 @@ class SpringAccessPathCheckerTest {
         }
 
         @Bean
+        @Order(0)
+        public SecurityFilterChain contextFilterChain(HttpSecurity http) {
+            var matcherBuilder = PathPatternRequestMatcher.withDefaults();
+            http.securityMatcher(new ContextPathRequestMatcher())
+                    .anonymous(
+                            anonymous -> anonymous.authorities("ROLE_CONTEXT"))
+                    .authorizeHttpRequests(cfg -> cfg
+                            .requestMatchers(
+                                    matcherBuilder.matcher("/context/**"))
+                            .hasRole("CONTEXT"));
+            return http.build();
+        }
+
+        @Bean
+        @Order(1)
+        public SecurityFilterChain apiFilterChain(HttpSecurity http) {
+            var matcherBuilder = PathPatternRequestMatcher.withDefaults();
+            http.securityMatcher(matcherBuilder.matcher("/api/**"))
+                    .anonymous(anonymous -> anonymous.authorities("ROLE_API"))
+                    .authorizeHttpRequests(cfg -> cfg
+                            .requestMatchers(matcherBuilder.matcher("/api/**"))
+                            .hasRole("API"));
+            return http.build();
+        }
+
+        @Bean
+        @Order(2)
+        public SecurityFilterChain emptyAnonymousFilterChain(
+                HttpSecurity http) {
+            var matcherBuilder = PathPatternRequestMatcher.withDefaults();
+            http.securityMatcher(matcherBuilder.matcher("/empty/**"))
+                    .anonymous(anonymous -> anonymous.authorities(List.of()))
+                    .authorizeHttpRequests(cfg -> cfg
+                            .requestMatchers(
+                                    matcherBuilder.matcher("/empty/**"))
+                            .hasRole("ANONYMOUS"));
+            return http.build();
+        }
+
+        @Bean
+        @Order(3)
         public SecurityFilterChain testingFilterChain(HttpSecurity http) {
             // @formatter:off
             var matcherBuilder = PathPatternRequestMatcher.withDefaults();
-            http.authorizeHttpRequests(cfg -> cfg
+            http.anonymous(anonymous -> anonymous.authorities("ROLE_GUEST"))
+                .authorizeHttpRequests(cfg -> cfg
                     .requestMatchers(matcherBuilder.matcher("/")).anonymous()
                     .requestMatchers(matcherBuilder.matcher("/admin/**")).hasRole("ADMIN")
                     .requestMatchers(matcherBuilder.matcher("/guest/**")).hasRole("GUEST")

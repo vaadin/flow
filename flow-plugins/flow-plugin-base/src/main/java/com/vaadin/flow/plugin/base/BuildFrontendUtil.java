@@ -411,6 +411,8 @@ public class BuildFrontendUtil {
      *             - a ExecutionFailedException.
      * @throws URISyntaxException
      *             - - Could not build an URI from nodeDownloadRoot().
+     * @throws IOException
+     *             if reading or writing the build files fails
      */
     public static void runDevBuildNodeUpdater(PluginAdapterBuild adapter)
             throws ExecutionFailedException, URISyntaxException, IOException {
@@ -1122,6 +1124,8 @@ public class BuildFrontendUtil {
      *
      * @param adapter
      *            used plugin adapter implementation
+     * @throws IOException
+     *             if deleting the token file fails
      */
     public static void removeBuildFile(PluginAdapterBuild adapter)
             throws IOException {

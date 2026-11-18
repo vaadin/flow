@@ -24,13 +24,13 @@
 import './Clipboard';
 import './Download';
 import './ElementResize';
-import './FlowShortcut.js';
-import './FlowWebPush.js';
 import { currentFullscreenState } from './Fullscreen';
 import './Geolocation';
 import { currentVisibility } from './PageVisibility';
 import { currentScreenOrientationAngle, currentScreenOrientationType } from './ScreenOrientation';
+import './Shortcut';
 import './WakeLock';
+import './WebPush';
 import { isShareSupported } from './WebShare';
 
 const $wnd = window as any;

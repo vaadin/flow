@@ -24,14 +24,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import com.vaadin.flow.testutil.junit6.AbstractBrowserIT;
 import com.vaadin.testbench.BrowserTest;
-import com.vaadin.testbench.BrowserTestBase;
-import com.vaadin.testbench.DriverSupplier;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -45,8 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * reloads on purpose.
  */
 @Isolated
-class DevLoopSpringStatisticsIT extends BrowserTestBase
-        implements DriverSupplier {
+class DevLoopSpringStatisticsIT extends AbstractBrowserIT {
 
     private static final Path VIEW = AbstractDevLoopIT.MUTABLE
             .resolve("TaskListView.java");
@@ -55,14 +50,8 @@ class DevLoopSpringStatisticsIT extends BrowserTestBase
     private SourcePatch patch;
 
     @Override
-    public WebDriver createDriver() {
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless=new", "--disable-gpu",
-                "--disable-backgrounding-occluded-windows");
-        // Required in CI and containers, which disable the Chrome sandbox and
-        // have a small /dev/shm.
-        options.addArguments("--no-sandbox", "--disable-dev-shm-usage");
-        return new ChromeDriver(options);
+    protected String getRootURL() {
+        return AbstractDevLoopIT.ROOT_URL;
     }
 
     @BeforeEach
@@ -109,8 +98,7 @@ class DevLoopSpringStatisticsIT extends BrowserTestBase
     }
 
     private void openTheView() {
-        getDriver()
-                .get("http://localhost:" + AbstractDevLoopIT.SERVER_PORT + "/");
+        getDriver().get(getRootURL() + "/");
         // The first snapshot after navigating is usually empty - Vaadin renders
         // client-side - so wait for something the view owns.
         new WebDriverWait(getDriver(), Duration.ofMinutes(2))

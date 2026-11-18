@@ -2509,6 +2509,8 @@ public class UIInternals implements Serializable {
      * browser.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface ChunkJs extends Serializable {
