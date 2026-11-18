@@ -35,6 +35,7 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -70,38 +71,135 @@ class ModuleDescriptorsTest {
     private static final Set<String> SKIPPED_DIRECTORIES = Set.of("target",
             "node_modules", "flow-tests");
 
+    private static final Pattern COMMENT = Pattern
+            .compile("//[^\\n]*|/\\*.*?\\*/", Pattern.DOTALL);
+
     @Test
     void moduleDescriptors_exportAllPackagesProvideAllServicesAndUseLoadedServices()
             throws IOException {
         List<Path> descriptors = findDescriptors();
-        assertFalse(descriptors.isEmpty(), "No module descriptors found");
+        Set<String> names = descriptors.stream()
+                .map(ModuleDescriptorsTest::moduleName)
+                .collect(Collectors.toCollection(TreeSet::new));
+        assertTrue(
+                names.containsAll(Set.of("flow-data", "flow-dnd",
+                        "flow-html-components", "flow-lit-template",
+                        "flow-push", "flow-react", "flow-server")),
+                "Module descriptors not found: " + names);
+        assertFalse(names.contains("test-jpms"),
+                "Test applications are not checked");
 
         List<String> errors = new ArrayList<>();
         for (Path descriptor : descriptors) {
             Path sources = descriptor.getParent();
-            Path module = sources.getParent().getParent().getParent();
-            String name = module.normalize().getFileName().toString();
-            String content = Files.readString(descriptor);
-
-            Set<String> missingExports = packages(sources);
-            missingExports.removeAll(matches(EXPORTS, content));
-            missingExports.forEach(pkg -> errors
-                    .add(name + ": package " + pkg + " is not exported"));
-
-            Map<String, Set<String>> provided = provides(content);
-            services(module).forEach((service, providers) -> {
-                Set<String> missing = new TreeSet<>(providers);
-                missing.removeAll(provided.getOrDefault(service, Set.of()));
-                missing.forEach(provider -> errors.add(name + ": provider "
-                        + provider + " of " + service + " is not provided"));
-            });
-
-            Set<String> missingUses = loadedServices(sources);
-            missingUses.removeAll(matches(USES, content));
-            missingUses.forEach(service -> errors.add(name + ": service "
-                    + service + " is loaded but not declared with uses"));
+            errors.addAll(check(moduleName(descriptor),
+                    Files.readString(descriptor), packages(sources),
+                    services(moduleOf(descriptor)), loadedServices(sources)));
         }
         assertTrue(errors.isEmpty(), String.join("\n", errors));
+    }
+
+    @Test
+    void flowServer_servicesAndLoadedServicesFound() throws IOException {
+        Path module = Path.of(".");
+        assertEquals(Set.of("com.vaadin.experimental.FeatureFlagProvider",
+                "com.vaadin.flow.di.Instantiator",
+                "com.vaadin.flow.server.VaadinServiceInitListener",
+                "com.vaadin.flow.server.communication.PushConnectionFactory",
+                "com.vaadin.flow.server.startup.NavigationTargetFilter"),
+                loadedServices(module.resolve("src/main/java")));
+        Map<String, Set<String>> services = services(module);
+        assertEquals(
+                Set.of("com.vaadin.experimental.FeatureFlagProvider",
+                        "jakarta.servlet.ServletContainerInitializer"),
+                services.keySet());
+        assertTrue(services.get("com.vaadin.experimental.FeatureFlagProvider")
+                .contains("com.vaadin.experimental.CoreFeatureFlagProvider"));
+    }
+
+    @Test
+    void check_reportsMissingExportProviderAndUses() {
+        String descriptor = """
+                module a {
+                    exports a.one;
+                    provides a.Service with a.First, // a comment
+                            /* another */ a.Second;
+                    uses a.Used;
+                }
+                """;
+        assertEquals(List.of(),
+                check("a", descriptor, Set.of("a.one"),
+                        Map.of("a.Service", Set.of("a.First", "a.Second")),
+                        Set.of("a.Used")));
+        assertEquals(List.of("a: package a.two is not exported",
+                "a: provider a.Other of a.OtherService is not provided",
+                "a: provider a.Third of a.Service is not provided",
+                "a: service a.Loaded is loaded but not declared with uses"),
+                check("a", descriptor, Set.of("a.one", "a.two"),
+                        new TreeMap<>(Map.of("a.Service",
+                                Set.of("a.First", "a.Second", "a.Third"),
+                                "a.OtherService", Set.of("a.Other"))),
+                        Set.of("a.Used", "a.Loaded")));
+    }
+
+    @Test
+    void loadedServiceTypes_qualifiedThroughImportsOrPackage() {
+        String source = """
+                package a.b;
+
+                import c.d.Imported;
+
+                class Loader {
+                    void load() {
+                        ServiceLoader.load(Imported.class);
+                        ServiceLoader
+                                .load(
+                                        Local.class, null);
+                        ServiceLoader.load(Imported.Nested.class);
+                        ServiceLoader.load(e.f.Qualified.class);
+                    }
+                }
+                """;
+        assertEquals(Set.of("c.d.Imported", "a.b.Local", "c.d.Imported.Nested",
+                "e.f.Qualified"), loadedServices(source));
+    }
+
+    /**
+     * Lists what the module descriptor misses, given what its module contains.
+     */
+    private static List<String> check(String name, String descriptor,
+            Set<String> packages, Map<String, Set<String>> services,
+            Set<String> loadedServices) {
+        String content = COMMENT.matcher(descriptor).replaceAll(" ");
+        List<String> errors = new ArrayList<>();
+
+        Set<String> missingExports = new TreeSet<>(packages);
+        missingExports.removeAll(matches(EXPORTS, content));
+        missingExports.forEach(pkg -> errors
+                .add(name + ": package " + pkg + " is not exported"));
+
+        Map<String, Set<String>> provided = provides(content);
+        services.forEach((service, providers) -> {
+            Set<String> missing = new TreeSet<>(providers);
+            missing.removeAll(provided.getOrDefault(service, Set.of()));
+            missing.forEach(provider -> errors.add(name + ": provider "
+                    + provider + " of " + service + " is not provided"));
+        });
+
+        Set<String> missingUses = new TreeSet<>(loadedServices);
+        missingUses.removeAll(matches(USES, content));
+        missingUses.forEach(service -> errors.add(name + ": service " + service
+                + " is loaded but not declared with uses"));
+        return errors;
+    }
+
+    private static Path moduleOf(Path descriptor) {
+        return descriptor.getParent().getParent().getParent().getParent();
+    }
+
+    private static String moduleName(Path descriptor) {
+        return moduleOf(descriptor).toAbsolutePath().normalize().getFileName()
+                .toString();
     }
 
     private static List<Path> findDescriptors() throws IOException {
@@ -172,36 +270,45 @@ class ModuleDescriptorsTest {
         return result;
     }
 
-    /**
-     * Finds the service types loaded with a class literal. A service type
-     * passed in a variable, as by {@code Lookup}, is registered with
-     * {@code Module.addUses} where it is loaded instead.
-     */
     private static Set<String> loadedServices(Path sources) throws IOException {
         Set<String> result = new TreeSet<>();
         try (Stream<Path> files = javaFiles(sources)) {
             for (Path file : files.toList()) {
-                String content = Files.readString(file);
-                for (String type : matches(SERVICE_LOADER_LOAD, content)) {
-                    result.add(qualify(type, content));
-                }
+                result.addAll(loadedServices(Files.readString(file)));
             }
         }
         return result;
     }
 
-    private static String qualify(String type, String content) {
-        if (type.contains(".")) {
+    /**
+     * Finds the service types a source file loads with a class literal. A
+     * service type passed in a variable, as by {@code Lookup}, is registered
+     * with {@code Module.addUses} where it is loaded instead.
+     */
+    private static Set<String> loadedServices(String source) {
+        Set<String> result = new TreeSet<>();
+        for (String type : matches(SERVICE_LOADER_LOAD, source)) {
+            result.add(qualify(type, source));
+        }
+        return result;
+    }
+
+    private static String qualify(String type, String source) {
+        // A name that starts with a package is already qualified
+        if (Character.isLowerCase(type.charAt(0))) {
             return type;
         }
+        int dot = type.indexOf('.');
+        String outer = dot < 0 ? type : type.substring(0, dot);
+        String nested = dot < 0 ? "" : type.substring(dot);
         Matcher imported = Pattern
-                .compile("^\\s*import\\s+([\\w.]+\\." + type + ")\\s*;",
+                .compile("^\\s*import\\s+([\\w.]+\\." + outer + ")\\s*;",
                         Pattern.MULTILINE)
-                .matcher(content);
+                .matcher(source);
         if (imported.find()) {
-            return imported.group(1);
+            return imported.group(1) + nested;
         }
-        Matcher pkg = PACKAGE.matcher(content);
+        Matcher pkg = PACKAGE.matcher(source);
         return pkg.find() ? pkg.group(1) + "." + type : type;
     }
 
