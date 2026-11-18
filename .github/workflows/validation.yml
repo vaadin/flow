@@ -929,9 +929,10 @@ jobs:
     name: Slow Tests
     # Ports the TeamCity 'Validation-SlowTests' build. The validation profiles
     # leave out the tests tagged SlowTests (and, under flow-tests, PushTests
-    # and ScreenshotTests); -Pslow-tests runs only those. The module list
-    # covers the modules of the main reactor that have such tests. The slow
-    # tests of vaadin-cdi-tests and vaadin-quarkus-tests are not run here: they
+    # and ScreenshotTests); -Pslow-tests runs only those. computeMatrix.js
+    # lists the modules whose tests use those categories, leaving out the
+    # modules excluded from the other test jobs too. So the slow tests of
+    # vaadin-cdi-tests and vaadin-quarkus-tests are not run here: they
     # need an application server or a separate build, and neither the cdi-tests
     # nor the quarkus-tests job enables their slow-tests profiles either. A
     # separate check rather than part of test-results, so it can be made
@@ -990,7 +991,8 @@ jobs:
           eval $cmd -T 2C -q || eval $cmd
       - name: Run Slow Tests
         run: |
-          MODULES=flow-server,flow-build-tools,flow-polymer2lit,flow-tests/test-root-context
+          MODULES=$(./scripts/computeMatrix.js slow-tests)
+          echo "Running slow tests in $MODULES"
           cmd="mvn -V -B -ntp -e -fae -Pslow-tests -pl $MODULES -Dfailsafe.forkCount=4 -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2"
           set -x -e
           LOG=mvn-slow-tests.out
