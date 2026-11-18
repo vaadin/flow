@@ -65,6 +65,7 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -211,6 +212,8 @@ class CspModeTest {
         CspViolationException exception = assertThrows(
                 CspViolationException.class, () -> call.accept(ui));
 
+        assertFalse(exception.getMessage().contains("The JavaScript is in"),
+                exception.getMessage());
         assertTraceLeadsFromApiToTest(exception, api, method);
     }
 
