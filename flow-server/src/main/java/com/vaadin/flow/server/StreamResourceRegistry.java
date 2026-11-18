@@ -156,10 +156,20 @@ public class StreamResourceRegistry implements Serializable {
     }
 
     /**
-     * Internal wrapper class for wrapping {@link ElementRequestHandler}
-     * instances as {@link AbstractStreamResource} compatible instances.
+     * Wraps an {@link ElementRequestHandler} as an
+     * {@link AbstractStreamResource}, owned by an element.
+     * <p>
+     * Register it with
+     * {@link Element#setAttribute(String, AbstractStreamResource)} or
+     * {@link #registerResource(AbstractStreamResource)}. For a
+     * {@link com.vaadin.flow.server.streams.DownloadHandler}, the resource can
+     * also say whether the browser should show the content or save it, see
+     * {@link #setDisposition(DownloadDisposition)}:
      *
-     * For internal use only. May be renamed or removed in a future release.
+     * <pre>
+     * getElement().setAttribute("src", new ElementStreamResource(handler,
+     *         getElement(), DownloadDisposition.INLINE));
+     * </pre>
      * 
      * @since 24.8
      */

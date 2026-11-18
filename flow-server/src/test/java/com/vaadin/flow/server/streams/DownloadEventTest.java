@@ -230,4 +230,37 @@ class DownloadEventTest {
         downloadEvent.setContentLength(contentLength);
         verify(response, times(0)).setContentLengthLong(contentLength);
     }
+
+    @Test
+    void dispositionInRequest_inlineWithoutFileName_writesDisposition() {
+        when(request.getAttribute(DownloadDisposition.class.getName()))
+                .thenReturn(DownloadDisposition.ATTACHMENT);
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.inline();
+        verify(response).setHeader("Content-Disposition", "attachment");
+    }
+
+    @Test
+    void dispositionInRequest_setFileName_keepsFileName() {
+        when(request.getAttribute(DownloadDisposition.class.getName()))
+                .thenReturn(DownloadDisposition.INLINE);
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.setFileName("q3.pdf");
+        verify(response).setHeader("Content-Disposition",
+                "inline; filename=\"q3.pdf\"");
+    }
+
+    @Test
+    void dispositionInRequest_headerAlreadySet_doesNotOverrideHeader() {
+        when(request.getAttribute(DownloadDisposition.class.getName()))
+                .thenReturn(DownloadDisposition.INLINE);
+        when(response.containsHeader("Content-Disposition")).thenReturn(true);
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.setFileName("q3.pdf");
+        verify(response, times(0)).setHeader(eq("Content-Disposition"),
+                anyString());
+    }
 }
