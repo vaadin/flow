@@ -505,7 +505,12 @@
     <profile>
       <id>slow-tests</id>
       <properties>
-        <groups>${excludedGroups}</groups>
+        <!-- The categories excludedGroups leaves out by default. Not
+             ${excludedGroups}, which this profile empties, so it would
+             resolve to no filter and run every test. -->
+        <groups>com.vaadin.flow.testcategory.SlowTests,
+            com.vaadin.flow.testcategory.ScreenshotTests,
+            com.vaadin.flow.testcategory.PushTests,</groups>
         <excludedGroups/>
       </properties>
     </profile>
