@@ -21,11 +21,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -34,9 +37,12 @@ import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry.ElementStreamResource;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
+import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 import com.vaadin.flow.server.streams.ServletResourceDownloadHandler;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
@@ -418,6 +424,60 @@ class AnchorTest extends ComponentTest {
 
         assertFalse(anchor.isDownload(),
                 "Inline download handlers should not add download attribute");
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "false, true", "false, false", "true, true", "true, false" })
+    void setDownload_beforeOrAfterSetHref_decidesAttributeAndHowContentIsServed(
+            boolean download, boolean downloadSetFirst) throws Exception {
+        UI attachTo = createUiWithDefaultSafeUrlSchemes();
+        UI.setCurrent(attachTo);
+        // a built-in handler that serves an attachment, or a handler that
+        // asks for inline, so the choice always differs from the handler's
+        InputStreamDownloadHandler builtIn = DownloadHandler.fromInputStream(
+                event -> DownloadResponse.error(500), "report.pdf");
+        DownloadHandler handler = download ? builtIn.serveInline() : builtIn;
+        Anchor anchor = new Anchor();
+        attachTo.add(anchor);
+
+        if (downloadSetFirst) {
+            anchor.setDownload(download);
+            anchor.setHref(handler);
+        } else {
+            anchor.setHref(handler);
+            anchor.setDownload(download);
+        }
+
+        assertEquals(download, anchor.isDownload());
+        assertEquals(
+                (download ? "attachment" : "inline")
+                        + "; filename=\"report.pdf\"",
+                servedContentDisposition(attachTo, anchor));
+    }
+
+    @Test
+    void setHrefWithAttachmentType_newHandler_typeIsKept() throws Exception {
+        UI attachTo = createUiWithDefaultSafeUrlSchemes();
+        UI.setCurrent(attachTo);
+        Anchor anchor = new Anchor(event -> event.setFileName("a.pdf"),
+                AttachmentType.INLINE, "bar");
+        attachTo.add(anchor);
+
+        anchor.setHref(DownloadHandler.fromInputStream(
+                event -> DownloadResponse.error(500), "report.pdf"));
+
+        assertFalse(anchor.isDownload());
+        assertEquals("inline; filename=\"report.pdf\"",
+                servedContentDisposition(attachTo, anchor));
+    }
+
+    private static String servedContentDisposition(UI attachTo, Anchor anchor)
+            throws Exception {
+        ElementStreamResource resource = (ElementStreamResource) attachTo
+                .getSession().getResourceRegistry()
+                .getResource(URI.create(anchor.getHref())).orElseThrow();
+        return AssertUtils.servedContentDisposition(
+                (DownloadHandler) resource.getElementRequestHandler());
     }
 
     @Test
