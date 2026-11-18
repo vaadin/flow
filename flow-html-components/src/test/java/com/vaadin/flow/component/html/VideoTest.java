@@ -21,6 +21,8 @@ import org.mockito.ArgumentCaptor;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
+import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -68,7 +70,9 @@ class VideoTest extends MediaTest {
                 return element;
             }
         }
-        new TestVideo().setPoster(event -> event.setFileName("poster.jpg"));
+        InputStreamDownloadHandler handler = DownloadHandler.fromInputStream(
+                event -> DownloadResponse.error(500), "poster.jpg");
+        new TestVideo().setPoster(handler);
 
         ArgumentCaptor<DownloadHandler> captor = ArgumentCaptor
                 .forClass(DownloadHandler.class);
@@ -79,5 +83,8 @@ class VideoTest extends MediaTest {
         assertEquals("inline; filename=\"poster.jpg\"",
                 AssertUtils.servedContentDisposition(captor.getValue()),
                 "The poster is rendered in the page, so it must be served inline rather than as a download");
+        assertEquals("attachment; filename=\"poster.jpg\"",
+                AssertUtils.servedContentDisposition(handler),
+                "The given handler must not be changed");
     }
 }

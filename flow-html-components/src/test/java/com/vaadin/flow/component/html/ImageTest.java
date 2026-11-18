@@ -30,6 +30,8 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.DownloadEvent;
 import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
+import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -100,13 +102,18 @@ class ImageTest extends ComponentTest {
                 return element;
             }
         }
-        new TestImage(event -> event.setFileName("photo.png"), "photo");
+        InputStreamDownloadHandler handler = DownloadHandler.fromInputStream(
+                event -> DownloadResponse.error(500), "photo.png");
+        new TestImage(handler, "photo");
 
         ArgumentCaptor<DownloadHandler> captor = ArgumentCaptor
                 .forClass(DownloadHandler.class);
         verify(element).setAttribute(eq("src"), captor.capture());
         assertEquals("inline; filename=\"photo.png\"",
                 AssertUtils.servedContentDisposition(captor.getValue()));
+        assertEquals("attachment; filename=\"photo.png\"",
+                AssertUtils.servedContentDisposition(handler),
+                "The given handler must not be changed");
     }
 
     /**
