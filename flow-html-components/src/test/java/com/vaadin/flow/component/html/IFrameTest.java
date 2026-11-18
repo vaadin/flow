@@ -32,6 +32,8 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
+import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
@@ -125,13 +127,18 @@ class IFrameTest extends ComponentTest {
                 return element;
             }
         }
-        new TestIFrame(event -> event.setFileName("page.html"));
+        InputStreamDownloadHandler handler = DownloadHandler.fromInputStream(
+                event -> DownloadResponse.error(500), "page.html");
+        new TestIFrame(handler);
 
         ArgumentCaptor<DownloadHandler> captor = ArgumentCaptor
                 .forClass(DownloadHandler.class);
         verify(element).setAttribute(eq("src"), captor.capture());
         assertEquals("inline; filename=\"page.html\"",
                 AssertUtils.servedContentDisposition(captor.getValue()));
+        assertEquals("attachment; filename=\"page.html\"",
+                AssertUtils.servedContentDisposition(handler),
+                "The given handler must not be changed");
     }
 
     @Test

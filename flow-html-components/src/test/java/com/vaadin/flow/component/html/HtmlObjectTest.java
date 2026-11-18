@@ -30,6 +30,8 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.StreamResourceWriter;
 import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
+import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -147,7 +149,8 @@ class HtmlObjectTest extends ComponentTest {
                 return element;
             }
         }
-        DownloadHandler handler = event -> event.setFileName("doc.pdf");
+        InputStreamDownloadHandler handler = DownloadHandler.fromInputStream(
+                event -> DownloadResponse.error(500), "doc.pdf");
         new TestHtmlObject(handler);
         new TestHtmlObject(handler, "type");
         new TestHtmlObject(handler, "type", new Param("param", "paramValue"));
@@ -160,6 +163,9 @@ class HtmlObjectTest extends ComponentTest {
             assertEquals("inline; filename=\"doc.pdf\"",
                     AssertUtils.servedContentDisposition(registered));
         }
+        assertEquals("attachment; filename=\"doc.pdf\"",
+                AssertUtils.servedContentDisposition(handler),
+                "The given handler must not be changed");
     }
 
 }
