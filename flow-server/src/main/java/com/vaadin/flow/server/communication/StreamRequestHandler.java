@@ -44,7 +44,6 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.DownloadDisposition;
-import com.vaadin.flow.server.streams.DownloadEvent;
 import com.vaadin.flow.server.streams.UploadHandler;
 import com.vaadin.flow.shared.Registration;
 
@@ -71,6 +70,14 @@ public class StreamRequestHandler implements RequestHandler {
      * @since 4.0
      */
     public static final String DYN_RES_PREFIX = "VAADIN/dynamic/resource/";
+
+    /**
+     * The request attribute that carries the
+     * {@link com.vaadin.flow.server.streams.DownloadDisposition} of the
+     * resource that is served, for the download event to read.
+     */
+    public static final String DISPOSITION_REQUEST_ATTRIBUTE = DownloadDisposition.class
+            .getName();
 
     private final StreamResourceHandler resourceHandler = new StreamResourceHandler();
     private final StreamReceiverHandler receiverHandler;
@@ -221,8 +228,8 @@ public class StreamRequestHandler implements RequestHandler {
         }
         VaadinRequest transferRequest = transfer.wrapRequest(request);
         if (disposition != null) {
-            transferRequest.setAttribute(
-                    DownloadEvent.DISPOSITION_REQUEST_ATTRIBUTE, disposition);
+            transferRequest.setAttribute(DISPOSITION_REQUEST_ATTRIBUTE,
+                    disposition);
         }
         try {
             elementRequest.getElementRequestHandler().handleRequest(
