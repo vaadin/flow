@@ -22,9 +22,11 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 import com.vaadin.flow.testcategory.PushTests;
-import com.vaadin.flow.testutil.AbstractBrowserConsoleTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.PushConnectionTracker;
 
 /**
  * Checks that push keeps working after the push connection has been idle for
@@ -34,7 +36,12 @@ import com.vaadin.flow.testutil.AbstractBrowserConsoleTest;
  * test does not have to wait for the five minute default.
  */
 @Category(PushTests.class)
-public abstract class IdlePushChannelIT extends AbstractBrowserConsoleTest {
+public abstract class IdlePushChannelIT extends ChromeBrowserTest {
+
+    @Override
+    protected void updateHeadlessChromeOptions(ChromeOptions chromeOptions) {
+        PushConnectionTracker.enable(chromeOptions);
+    }
 
     @Override
     protected String getTestPath() {
@@ -48,23 +55,20 @@ public abstract class IdlePushChannelIT extends AbstractBrowserConsoleTest {
         BasicPushIT.getIncrementButton(this).click();
         testBench().disableWaitForVaadin();
         waitForClientCounter(1);
-        getBrowserLogs(true);
-        String reconnected = "Push connection re-established using "
-                + getViewClass().getAnnotation(CustomPush.class).transport()
-                        .getIdentifier();
+        PushConnectionTracker pushConnections = new PushConnectionTracker(
+                getDriver());
+        int attempts = pushConnections.getAttemptCount();
 
         // The idle timeout ends the push connection and the client opens a
         // new one; without it, this test would not test an idle timeout.
-        // Reading the logs does not touch the server, so the connection
-        // stays idle meanwhile.
+        // Reading the browser's network log does not touch the server, so
+        // the connection stays idle meanwhile.
         try {
-            waitUntil(
-                    driver -> getBrowserLogs(false).stream()
-                            .map(String::valueOf).anyMatch(reconnected::equals),
+            waitUntil(driver -> pushConnections.getAttemptCount() > attempts,
                     10 * IdlePushChannelServlet.IDLE_TIMEOUT_MS / 1000);
         } catch (TimeoutException e) {
             Assert.fail("Push connection was not re-established while idle. "
-                    + "Browser logs: " + getBrowserLogs(false));
+                    + "Push connections: " + pushConnections.getTransports());
         }
 
         BasicPushIT.getIncrementButton(this).click();
@@ -79,6 +83,9 @@ public abstract class IdlePushChannelIT extends AbstractBrowserConsoleTest {
                     + "period. Expected server counter > 0 but was "
                     + BasicPushIT.getServerCounter(this));
         }
+
+        pushConnections.assertOnlyTransport(
+                getViewClass().getAnnotation(CustomPush.class).transport());
     }
 
     private void waitForClientCounter(int expected) {
