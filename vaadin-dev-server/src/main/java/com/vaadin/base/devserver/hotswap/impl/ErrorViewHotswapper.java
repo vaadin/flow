@@ -39,11 +39,12 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
  * route, during development retries the navigation to the original location.
  * <p>
  * The UI is normally refreshed in place. The page is reloaded only when routes
- * exist while the page for a project without routes is shown: in development
- * mode, that page hands the document over to Copilot, which replaces the page
- * body, so an in-place refresh would render the new view into detached DOM. A
- * reload is not used more widely because it is sent to every open browser tab,
- * not only to the affected one.
+ * exist while the page for a project without routes is shown and Copilot has
+ * taken it over: Copilot replaces the page body, so an in-place refresh would
+ * render the new view into detached DOM. Without Copilot, that page is
+ * refreshed in place like any other error view. A reload is not used more
+ * widely because it is sent to every open browser tab, not only to the affected
+ * one.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

@@ -1076,14 +1076,14 @@ public class RouteUtil {
     }
 
     /**
-     * Records whether the given route-not-found view shows the page for a
-     * project without any routes.
+     * Records whether Copilot has taken over the page for a project without any
+     * routes, shown by the given route-not-found view.
      *
      * @param view
      *            the route-not-found view, not {@code null}
      * @param noRoutesPage
-     *            {@code true} if the view shows the page for a project without
-     *            routes
+     *            {@code true} if Copilot has replaced the page body with its
+     *            page for a project without routes
      * @see #isNoRoutesPage(Component)
      */
     public static void setNoRoutesPage(Component view, boolean noRoutesPage) {
@@ -1092,14 +1092,13 @@ public class RouteUtil {
     }
 
     /**
-     * Checks whether the given view is a route-not-found view showing the page
-     * for a project without any routes. In development mode, Copilot replaces
-     * the page body when this page is shown.
+     * Checks whether the given view is a route-not-found view whose page for a
+     * project without any routes has been taken over by Copilot, which replaces
+     * the page body in development mode.
      *
      * @param view
      *            the view to check, not {@code null}
-     * @return {@code true} if the view shows the page for a project without
-     *         routes
+     * @return {@code true} if Copilot has taken over the page of the view
      * @see #setNoRoutesPage(Component, boolean)
      */
     public static boolean isNoRoutesPage(Component view) {

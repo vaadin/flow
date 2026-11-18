@@ -26,12 +26,15 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.tests.util.MockUI;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
@@ -94,6 +97,8 @@ class RouteNotFoundErrorTest {
     @Test
     void setErrorParameter_devMode_noRoutes() {
         RouteNotFoundError page = new RouteNotFoundError();
+        MockUI ui = new MockUI();
+        ui.add(page);
         BeforeEnterEvent event = createEvent(false);
 
         ErrorParameter<NotFoundException> param = new ErrorParameter<>(
@@ -124,6 +129,13 @@ class RouteNotFoundErrorTest {
 
         assertThat(page.getElement().toString(),
                 containsString("No views found"));
+        assertFalse(RouteUtil.isNoRoutesPage(page),
+                "The page is marked only once Copilot has taken over");
+
+        List<PendingJavaScriptInvocation> invocations = ui
+                .dumpPendingJsInvocations();
+        invocations.get(invocations.size() - 1)
+                .complete(JacksonUtils.nullNode());
         assertTrue(RouteUtil.isNoRoutesPage(page));
     }
 

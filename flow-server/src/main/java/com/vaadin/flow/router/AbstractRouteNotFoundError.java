@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.js.JsDefinition;
@@ -103,9 +104,12 @@ public abstract class AbstractRouteNotFoundError extends Component {
         template = template.replace("{{path}}", path);
 
         getElement().setChild(0, new Html(template).getElement());
-        RouteUtil.setNoRoutesPage(this, noRoutes && !productionMode);
+        RouteUtil.setNoRoutesPage(this, false);
         if (noRoutes && !productionMode) {
-            getElement().executeJs(CopilotJs.class).reportNoRoutes();
+            // Copilot replaces the page body once told, so the page is marked
+            // only when it actually was, not when Copilot is missing
+            getElement().executeJs(CopilotJs.class).reportNoRoutes()
+                    .then(ignore -> RouteUtil.setNoRoutesPage(this, true));
         }
         return HttpStatusCode.NOT_FOUND.getCode();
     }
@@ -215,16 +219,22 @@ public abstract class AbstractRouteNotFoundError extends Component {
         /**
          * Tells Copilot that the project has no routes yet, waiting for it to
          * load rather than assuming it already has.
+         *
+         * @return the pending result, which completes once Copilot has been
+         *         told, and never if Copilot is not available
          */
         @JsExpression("""
-                (function poll() {
-                    if (window.Vaadin?.copilot?.noRoutesInProject) {
-                        window.Vaadin.copilot.noRoutesInProject();
-                    } else {
-                        setTimeout(poll, 100);
-                    }
-                })();
+                return new Promise((resolve) => {
+                    (function poll() {
+                        if (window.Vaadin?.copilot?.noRoutesInProject) {
+                            window.Vaadin.copilot.noRoutesInProject();
+                            resolve();
+                        } else {
+                            setTimeout(poll, 100);
+                        }
+                    })();
+                });
                 """)
-        void reportNoRoutes();
+        PendingJavaScriptResult reportNoRoutes();
     }
 }
