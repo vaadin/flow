@@ -205,7 +205,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      *            the file name to put in the header
      */
     void writeContentDisposition(DownloadEvent downloadEvent, String fileName) {
-        if (isInline()) {
+        if (inline) {
             downloadEvent.inline(fileName);
         } else {
             downloadEvent.setFileName(fileName);
