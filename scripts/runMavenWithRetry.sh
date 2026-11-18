@@ -23,7 +23,8 @@
 # that such a transfer error stopped is retried here: a build that failed for
 # any other reason is reported as it is. With -fae the reactor goes on after
 # the module that hit the transfer error, so a build that also has failing
-# tests is reported as it is too, rather than rerun with those failures.
+# tests or Javadoc errors is reported as it is too, rather than rerun with
+# those failures.
 
 set -u
 
@@ -55,8 +56,10 @@ while true; do
   fi
   # The goal failure, not the per-class result: a test class that failed and
   # then passed on a rerun is logged as an error too, but is only a flake.
+  # A Javadoc error would fail every retry as well, and each retry would log
+  # it again for javadocErrorsToJUnit.py to report once more.
   if tail -c +$((offset + 1)) "$LOG" \
-      | grep -qE '^\[ERROR\].*(There are test failures|There was a timeout)'; then
+      | grep -qE '^\[ERROR\].*(There are test failures|There was a timeout)|^\[ERROR\] \S+\.java:[0-9]+: error: '; then
     exit $status
   fi
   delay=$((attempt * 30))

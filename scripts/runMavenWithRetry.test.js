@@ -14,6 +14,7 @@ const TRANSFER_WARNING = '[WARNING] Could not transfer metadata a:b:1-SNAPSHOT/m
 const TEST_FAILURE =
   '[ERROR] Failed to execute goal org.apache.maven.plugins:maven-failsafe-plugin:3.5.3:verify (default) on project bar: There are test failures.';
 const FLAKY_CLASS = '[ERROR] Tests run: 3, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 2 s <<< FAILURE! -- in FooIT';
+const JAVADOC_ERROR = '[ERROR] /home/runner/work/flow/flow-server/src/main/java/Foo.java:12: error: unknown tag: foo';
 const OTHER_FAILURE = '[ERROR] Failed to execute goal on project foo: Compilation failure';
 
 /**
@@ -87,9 +88,14 @@ test('stops after the last attempt when the transfer error persists', () => {
   assert.deepStrictEqual(run([{ log: TRANSFER_ERROR, status: 1 }]), { status: 1, runs: 3 });
 });
 
-test('does not retry a build with failing tests next to a transfer error', () => {
-  assert.deepStrictEqual(run([{ log: `${TEST_FAILURE}\n${TRANSFER_ERROR}`, status: 1 }]), { status: 1, runs: 1 });
-});
+for (const [name, failure] of [
+  ['failing tests', TEST_FAILURE],
+  ['Javadoc errors', JAVADOC_ERROR]
+]) {
+  test(`does not retry a build with ${name} next to a transfer error`, () => {
+    assert.deepStrictEqual(run([{ log: `${failure}\n${TRANSFER_ERROR}`, status: 1 }]), { status: 1, runs: 1 });
+  });
+}
 
 test('does not retry a failure that only logged a transfer warning', () => {
   assert.deepStrictEqual(run([{ log: `${TRANSFER_WARNING}\n${OTHER_FAILURE}`, status: 1 }]), {
