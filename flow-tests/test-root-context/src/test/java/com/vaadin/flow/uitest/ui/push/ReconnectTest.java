@@ -21,13 +21,24 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
+import com.vaadin.flow.testutil.PushConnectionTracker;
+
 public abstract class ReconnectTest extends PushChromeBrowserTestWithProxy {
+
+    private PushConnectionTracker pushConnections;
+
+    @Override
+    protected void updateHeadlessChromeOptions(ChromeOptions chromeOptions) {
+        PushConnectionTracker.enable(chromeOptions);
+    }
 
     @Override
     public void setup() throws Exception {
         super.setup();
+        pushConnections = new PushConnectionTracker(getDriver());
 
         open((String[]) null);
 
@@ -81,9 +92,8 @@ public abstract class ReconnectTest extends PushChromeBrowserTestWithProxy {
     }
 
     private void waitForNextReconnectionAttempt() {
-        waitUntil(driver -> getBrowserLogs(true).stream()
-                .filter(String.class::isInstance)
-                .anyMatch("Reopening push connection"::equals));
+        int attempts = pushConnections.getAttemptCount();
+        waitUntil(driver -> pushConnections.getAttemptCount() > attempts);
     }
 
     private void connectAndVerifyConnectionEstablished() throws IOException {

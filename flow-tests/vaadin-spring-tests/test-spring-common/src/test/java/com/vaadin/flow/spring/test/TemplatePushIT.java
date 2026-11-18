@@ -16,10 +16,18 @@
 package com.vaadin.flow.spring.test;
 
 import org.junit.Test;
+import org.openqa.selenium.chrome.ChromeOptions;
 
+import com.vaadin.flow.shared.ui.Transport;
+import com.vaadin.flow.testutil.PushConnectionTracker;
 import com.vaadin.testbench.TestBenchElement;
 
 public class TemplatePushIT extends AbstractSpringTest {
+
+    @Override
+    protected void updateHeadlessChromeOptions(ChromeOptions chromeOptions) {
+        PushConnectionTracker.enable(chromeOptions);
+    }
 
     @Test
     public void elementChangesPushed() throws Exception {
@@ -30,6 +38,8 @@ public class TemplatePushIT extends AbstractSpringTest {
         waitUntil(foo -> {
             return "from Element API".equals(label.getText());
         }, 5);
+        new PushConnectionTracker(getDriver())
+                .assertOnlyTransport(Transport.WEBSOCKET);
     }
 
     @Test
@@ -41,6 +51,8 @@ public class TemplatePushIT extends AbstractSpringTest {
         waitUntil(foo -> {
             return "from execJS".equals(label.getText());
         }, 5);
+        new PushConnectionTracker(getDriver())
+                .assertOnlyTransport(Transport.WEBSOCKET);
     }
 
     @Test
@@ -52,6 +64,8 @@ public class TemplatePushIT extends AbstractSpringTest {
         waitUntil(foo -> {
             return "from callFunction".equals(label.getText());
         }, 5);
+        new PushConnectionTracker(getDriver())
+                .assertOnlyTransport(Transport.WEBSOCKET);
     }
 
     @Override

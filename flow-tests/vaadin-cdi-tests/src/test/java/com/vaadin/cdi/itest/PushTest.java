@@ -28,6 +28,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 import com.vaadin.cdi.annotation.RouteScoped;
 import com.vaadin.cdi.annotation.UIScoped;
@@ -37,10 +38,17 @@ import com.vaadin.cdi.itest.push.ManagedExecutorPushComponent;
 import com.vaadin.cdi.itest.push.PushComponent;
 import com.vaadin.cdi.itest.push.WebsocketPushView;
 import com.vaadin.cdi.itest.push.WebsocketXhrPushView;
+import com.vaadin.flow.shared.ui.Transport;
+import com.vaadin.flow.testutil.PushConnectionTracker;
 
 @NotThreadSafe
 @Category(NeedsCDICompliantContainer.class)
 public class PushTest extends AbstractCdiTest {
+
+    @Override
+    protected void updateHeadlessChromeOptions(ChromeOptions chromeOptions) {
+        PushConnectionTracker.enable(chromeOptions);
+    }
 
     @Deployment(testable = false)
     public static WebArchive deployment() {
@@ -57,6 +65,8 @@ public class PushTest extends AbstractCdiTest {
         getDriver().get(getTestURL() + "websocket-xhr");
         click(PushComponent.RUN_BACKGROUND);
         waitForPush();
+        new PushConnectionTracker(getDriver())
+                .assertOnlyTransport(Transport.WEBSOCKET_XHR);
         assertAllExceptRequestAndSessionActive();
     }
 
@@ -75,6 +85,8 @@ public class PushTest extends AbstractCdiTest {
         getDriver().get(getTestURL() + "websocket");
         click(PushComponent.RUN_BACKGROUND);
         waitForPush();
+        new PushConnectionTracker(getDriver())
+                .assertOnlyTransport(Transport.WEBSOCKET);
         assertAllExceptRequestAndSessionActive();
     }
 

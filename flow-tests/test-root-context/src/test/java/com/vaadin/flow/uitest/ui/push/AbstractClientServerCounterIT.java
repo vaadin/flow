@@ -20,13 +20,20 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.PushConnectionTracker;
 import com.vaadin.flow.uitest.ui.push.components.ClientServerCounter;
 import com.vaadin.testbench.TestBenchTestCase;
 
 public abstract class AbstractClientServerCounterIT extends ChromeBrowserTest {
+
+    @Override
+    protected void updateHeadlessChromeOptions(ChromeOptions chromeOptions) {
+        PushConnectionTracker.enable(chromeOptions);
+    }
 
     @Test
     public void testServerInitiatedCommunication() throws InterruptedException {
@@ -45,6 +52,13 @@ public abstract class AbstractClientServerCounterIT extends ChromeBrowserTest {
         // Test server initiated push
         getServerCounterStartButton().click();
         waitUntilServerCounterChanges();
+
+        // The polling view has no push
+        CustomPush push = getViewClass().getAnnotation(CustomPush.class);
+        if (push != null) {
+            new PushConnectionTracker(getDriver())
+                    .assertOnlyTransport(push.transport());
+        }
     }
 
     public static int getClientCounter(TestBenchTestCase t) {
