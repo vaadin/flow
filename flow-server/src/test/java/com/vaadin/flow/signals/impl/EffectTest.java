@@ -687,6 +687,47 @@ class EffectTest extends SignalTestBase {
     }
 
     @Test
+    void passivateActivate_changeThroughNestedCached_callbackReRun() {
+        ValueSignal<Integer> source = new ValueSignal<>(1);
+        Signal<Integer> inner = Signal.cached(source.map(value -> value * 10));
+        Signal<Integer> outer = Signal.cached(() -> inner.get() + 1);
+        ArrayList<Integer> invocations = new ArrayList<>();
+
+        Effect effect = new Effect(() -> {
+            invocations.add(outer.get());
+        });
+        assertEquals(List.of(11), invocations);
+
+        effect.passivate();
+        source.set(2);
+        effect.activate();
+        assertEquals(List.of(11, 21), invocations);
+
+        source.set(3);
+        assertEquals(List.of(11, 21, 31), invocations,
+                "Effect should remain active after activate");
+    }
+
+    @Test
+    void passivateActivate_noOpChangeThroughNestedCached_callbackNotReRun() {
+        ValueSignal<Integer> source = new ValueSignal<>(1);
+        Signal<Integer> inner = Signal.cached(source.map(value -> value % 10));
+        Signal<Integer> outer = Signal.cached(() -> inner.get() + 1);
+        ArrayList<Integer> invocations = new ArrayList<>();
+
+        Effect effect = new Effect(() -> {
+            invocations.add(outer.get());
+        });
+        assertEquals(List.of(2), invocations);
+
+        effect.passivate();
+        source.set(11);
+        effect.activate();
+        assertEquals(List.of(2), invocations,
+                "Callback should not re-run when the cached value is the same");
+    }
+
+    @Test
     void passivateActivate_noChanges_nextChangeIsNotInitialRun() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         List<Boolean> initialRuns = new ArrayList<>();
