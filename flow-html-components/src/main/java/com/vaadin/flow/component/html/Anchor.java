@@ -32,6 +32,7 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.signals.Signal;
 
@@ -69,11 +70,11 @@ public class Anchor extends HtmlContainer
     private Serializable href;
 
     /**
-     * The handler that the href serves, or {@code null} if the href is not
-     * bound to a handler. Kept so that the handler can be registered again when
-     * the way it is served changes.
+     * The resource that serves the handler of the href, or {@code null} if the
+     * href is not bound to a handler. Kept so that the way it is served can be
+     * changed without registering the handler again.
      */
-    private DownloadHandler downloadHandler;
+    private StreamResourceRegistry.ElementStreamResource downloadResource;
 
     /**
      * The choice made with {@link #setDownload(boolean)} or an
@@ -321,7 +322,7 @@ public class Anchor extends HtmlContainer
         UrlUtil.validateUrl(this, HREF, href, "setUnsafeHref(String)",
                 this::clearHref);
         this.href = href;
-        downloadHandler = null;
+        downloadResource = null;
         assignHrefAttribute();
     }
 
@@ -347,7 +348,7 @@ public class Anchor extends HtmlContainer
         }
         UrlUtil.cancelUrlValidation(this, HREF);
         this.href = href;
-        downloadHandler = null;
+        downloadResource = null;
         assignHrefAttribute();
     }
 
@@ -362,7 +363,7 @@ public class Anchor extends HtmlContainer
         UrlUtil.cancelUrlValidation(this, HREF);
         getElement().removeAttribute(HREF);
         href = null;
-        downloadHandler = null;
+        downloadResource = null;
     }
 
     private void clearHref() {
@@ -382,7 +383,7 @@ public class Anchor extends HtmlContainer
     public void setHref(AbstractStreamResource href) {
         UrlUtil.cancelUrlValidation(this, HREF);
         this.href = href;
-        downloadHandler = null;
+        downloadResource = null;
         setRouterIgnore(true);
         assignHrefAttribute();
     }
@@ -455,15 +456,9 @@ public class Anchor extends HtmlContainer
     private void assignDownloadHandler(DownloadHandler handler,
             AttachmentType defaultType) {
         UrlUtil.cancelUrlValidation(this, HREF);
-        downloadHandler = handler;
-        DownloadHandler served = handler;
-        if (attachmentType == AttachmentType.INLINE) {
-            served = handler.serveInline();
-        } else if (attachmentType == AttachmentType.DOWNLOAD) {
-            served = handler.serveAsAttachment();
-        }
-        this.href = new StreamResourceRegistry.ElementStreamResource(served,
-                this.getElement());
+        downloadResource = new StreamResourceRegistry.ElementStreamResource(
+                handler, this.getElement(), toDisposition(attachmentType));
+        this.href = downloadResource;
         setRouterIgnore(true);
         assignHrefAttribute();
         setDownloadAttribute((attachmentType == null ? defaultType
@@ -493,11 +488,18 @@ public class Anchor extends HtmlContainer
     public void setDownload(boolean download) {
         attachmentType = download ? AttachmentType.DOWNLOAD
                 : AttachmentType.INLINE;
-        if (downloadHandler != null) {
-            assignDownloadHandler(downloadHandler, attachmentType);
-        } else {
-            setDownloadAttribute(download);
+        if (downloadResource != null) {
+            downloadResource.setDisposition(toDisposition(attachmentType));
         }
+        setDownloadAttribute(download);
+    }
+
+    private static DownloadDisposition toDisposition(AttachmentType type) {
+        if (type == null) {
+            return null;
+        }
+        return type == AttachmentType.INLINE ? DownloadDisposition.INLINE
+                : DownloadDisposition.ATTACHMENT;
     }
 
     private void setDownloadAttribute(boolean download) {
