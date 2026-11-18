@@ -43,6 +43,7 @@ import com.vaadin.flow.server.UploadException;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.UploadHandler;
 import com.vaadin.flow.shared.Registration;
 
@@ -214,10 +215,16 @@ public class StreamRequestHandler implements RequestHandler {
         } finally {
             session.unlock();
         }
+        VaadinRequest transferRequest = transfer.wrapRequest(request);
+        DownloadDisposition disposition = elementRequest.getDisposition();
+        if (disposition != null) {
+            // DownloadEvent reads it under the name of the enum class
+            transferRequest.setAttribute(DownloadDisposition.class.getName(),
+                    disposition);
+        }
         try {
             elementRequest.getElementRequestHandler().handleRequest(
-                    transfer.wrapRequest(request),
-                    transfer.wrapResponse(response), session,
+                    transferRequest, transfer.wrapResponse(response), session,
                     elementRequest.getOwner());
         } finally {
             if (transferRegistration != null) {

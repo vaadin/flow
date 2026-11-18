@@ -215,56 +215,6 @@ public interface DownloadHandler extends ElementRequestHandler {
     }
 
     /**
-     * Returns a view of this handler that serves its content to be shown in the
-     * browser, with a {@code Content-Disposition: inline} header.
-     * <p>
-     * Whether content is shown or saved depends on where it is used, not on
-     * what it is: the same PDF can be shown in a new browser tab and saved from
-     * a download link. Code that uses a handler in a place that shows the
-     * content, such as the {@code src} of an image or a new browser tab, calls
-     * this method and registers the returned handler. This handler itself is
-     * not changed, so it is served as before wherever else it is used.
-     * <p>
-     * The returned handler replaces the type of every
-     * {@code Content-Disposition} header that the handler writes through
-     * {@link DownloadEvent#setFileName(String)} or
-     * {@link DownloadEvent#inline(String)}, and keeps the file name. A header
-     * that the handler sets directly on the response is left as it is. When
-     * views are nested, the outermost one decides.
-     * <p>
-     * The returned handler delegates {@link #getUrlPostfix()},
-     * {@link #isAllowInert()}, {@link #isRangeRequestsEnabled()} and
-     * {@link #getDisabledUpdateMode()} to this handler, so it can be combined
-     * with {@link #allowDisabled()} in either order.
-     *
-     * @return a handler that serves the content of this handler inline, or
-     *         {@code this} if this handler already is such a view
-     * @see #serveAsAttachment()
-     */
-    default DownloadHandler serveInline() {
-        return DispositionDownloadHandler.wrap(this,
-                DownloadEvent.Disposition.INLINE);
-    }
-
-    /**
-     * Returns a view of this handler that serves its content to be saved as a
-     * file, with a {@code Content-Disposition: attachment} header.
-     * <p>
-     * This is the counterpart of {@link #serveInline()} for places that save
-     * the content, such as a download link. It replaces the type of the header
-     * in the same way and leaves this handler unchanged.
-     *
-     * @return a handler that serves the content of this handler as an
-     *         attachment, or {@code this} if this handler already is such a
-     *         view
-     * @see #serveInline()
-     */
-    default DownloadHandler serveAsAttachment() {
-        return DispositionDownloadHandler.wrap(this,
-                DownloadEvent.Disposition.ATTACHMENT);
-    }
-
-    /**
      * Get a download handler for serving given {@link File}.
      * <p>
      * The downloaded file name is resolved as <code>file.getName()</code>.
