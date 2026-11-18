@@ -49,6 +49,9 @@ public abstract class IdlePushChannelIT extends AbstractBrowserConsoleTest {
         testBench().disableWaitForVaadin();
         waitForClientCounter(1);
         getBrowserLogs(true);
+        String reconnected = "Push connection re-established using "
+                + getViewClass().getAnnotation(CustomPush.class).transport()
+                        .getIdentifier();
 
         // The idle timeout ends the push connection and the client opens a
         // new one; without it, this test would not test an idle timeout.
@@ -57,9 +60,7 @@ public abstract class IdlePushChannelIT extends AbstractBrowserConsoleTest {
         try {
             waitUntil(
                     driver -> getBrowserLogs(false).stream()
-                            .map(String::valueOf)
-                            .anyMatch(log -> log.startsWith(
-                                    "Push connection re-established")),
+                            .map(String::valueOf).anyMatch(reconnected::equals),
                     10 * IdlePushChannelServlet.IDLE_TIMEOUT_MS / 1000);
         } catch (TimeoutException e) {
             Assert.fail("Push connection was not re-established while idle. "
