@@ -31,6 +31,9 @@ import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinitionProxy;
+import com.vaadin.flow.js.JsSnippet;
 
 /**
  * Represents an html import, stylesheet or JavaScript to include on the page.
@@ -198,10 +201,10 @@ public class Dependency implements Serializable {
      * @throws IllegalArgumentException
      *             if the function captures an element or a component, attached
      *             or not, directly or in a collection, a map, an array or a
-     *             captured function, or an attached one in a bean property: the
-     *             browser loads dependencies before it applies the changes of
-     *             the same round trip, and a detached element cannot be
-     *             referenced
+     *             captured function or other snippet, or an attached one in a
+     *             bean property: the browser loads dependencies before it
+     *             applies the changes of the same round trip, and a detached
+     *             element cannot be referenced
      * @since 25.4
      */
     public Dependency(JsFunction dynamicImport) {
@@ -232,6 +235,11 @@ public class Dependency implements Serializable {
         }
         if (value instanceof JsFunction function) {
             return function.getCaptures().stream()
+                    .anyMatch(Dependency::capturesElement);
+        }
+        if (value instanceof JsSnippet snippet && JsDefinitionProxy
+                .findDeclaredCall(snippet) instanceof JsCall call) {
+            return call.flattenArguments().stream()
                     .anyMatch(Dependency::capturesElement);
         }
         if (value instanceof Iterable<?> iterable) {

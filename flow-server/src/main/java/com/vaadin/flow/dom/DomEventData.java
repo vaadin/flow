@@ -23,8 +23,8 @@ import tools.jackson.databind.JavaType;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
 
@@ -113,8 +113,9 @@ import com.vaadin.flow.js.JsSnippets;
  *            the type of the value
  * @see JsSnippets#of(Class)
  * @see DomEventFilter
+ * @since 25.4
  */
-@JsCalledWith({ "event", "element" })
+@JsFunctionParameterNames({ "event", "element" })
 public final class DomEventData<T> implements JsSnippet {
 
     private final JsCall declaredCall;

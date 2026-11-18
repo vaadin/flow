@@ -962,6 +962,7 @@ public class Binder<BEAN> implements Serializable {
          * @return this BindingBuilder configured with the appropriate type
          * @throws IllegalStateException
          *             if {@code bind} has already been called
+         * @since 25.4
          */
         default <NEWTARGET> BindingBuilder<BEAN, NEWTARGET> withNullSafeConverter(
                 SerializableFunction<TARGET, NEWTARGET> toModel,

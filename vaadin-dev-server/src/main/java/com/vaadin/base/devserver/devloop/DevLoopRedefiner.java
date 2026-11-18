@@ -68,7 +68,9 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ThemeUtils;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.theme.Theme;
 
@@ -1469,8 +1471,19 @@ final class DevLoopRedefiner {
                 }
             }
         }
-        // An @EventData value that the client would compile is generated into
-        // the bundle in the same way, and identified by the same kind of hash
+        // The names a snippet type of the application declares are the
+        // parameters of every generated function that returns it, which lives
+        // in the bundle as well, so editing them needs the same restart even
+        // though no definition is redefined along with the type
+        if (JsDefinitionProxy.isApplicationSnippetType(type)) {
+            JsFunctionParameterNames parameterNames = type
+                    .getDeclaredAnnotation(JsFunctionParameterNames.class);
+            imports.add("jssnippet:" + (parameterNames == null ? ""
+                    : String.join(",", parameterNames.value())));
+        }
+        // An @EventData value or a @DomEvent filter that the client would
+        // compile is generated into the bundle in the same way, and identified
+        // by the same kind of hash
         if (type.isAnnotationPresent(DomEvent.class)
                 && ComponentEvent.class.isAssignableFrom(type)) {
             imports.addAll(eventDataFingerprints(type));
@@ -1498,12 +1511,23 @@ final class DevLoopRedefiner {
 
     /**
      * What identifies the functions the build generates for the
-     * {@link com.vaadin.flow.component.EventData} values of a DOM event type.
-     * Scanned without a cache, as the build does, so the comparison sees what
-     * the class declares now.
+     * {@link com.vaadin.flow.component.EventData} values and the
+     * {@link DomEvent#filter()} of a DOM event type. Scanned without a cache,
+     * as the build does, so the comparison sees what the class declares now.
      */
-    @SuppressWarnings("unchecked")
     private static List<String> eventDataFingerprints(Class<?> type) {
+        List<String> fingerprints = new ArrayList<>(
+                bundledEventDataFingerprints(type));
+        String filter = BundledEventData.getBundledFilter(type);
+        if (filter != null) {
+            fingerprints.add(
+                    "eventfilter:" + BundledEventData.getFunctionId(filter));
+        }
+        return fingerprints;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<String> bundledEventDataFingerprints(Class<?> type) {
         try {
             return BundledEventData
                     .getBundledEventData(

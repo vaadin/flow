@@ -25,10 +25,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
@@ -63,10 +67,11 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
  * {@link JsDefinitionProxy#checkDefinition(Class)} is left out, with an error
  * in the log.
  * <p>
- * The snippet registry also holds the {@link EventData} values of the
- * {@link DomEvent} classes on the class path that the client would otherwise
- * compile from a string, see {@link BundledEventData}, so that the server can
- * send the identifier of a function instead of the value.
+ * The snippet registry also holds the {@link EventData} values and the
+ * {@link DomEvent#filter()} of the {@link DomEvent} classes on the class path
+ * that the client would otherwise compile from a string, see
+ * {@link BundledEventData}, so that the server can send the identifier of a
+ * function instead of the value.
  * <p>
  * This is what lets the client run a server-initiated call without compiling
  * anything from a string: the server sends the identifier of the function to
@@ -108,6 +113,11 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     // What a message about a call names it by, which is of no use to a browser
     // running the application and is left out of a production bundle
     private static final String NAMES = "window.Vaadin.Flow.jsDefinitionNames = window.Vaadin.Flow.jsDefinitionNames || {};";
+
+    // A name as nameOf renders it, with the interface it names in the group
+    private static final Pattern DEFINITION_NAME = Pattern.compile(
+            "^window\\.Vaadin\\.Flow\\.jsDefinitionNames\\[\"[^\"]*\"\\] = \"([^\"/]+)\\.[^.\"/]+/\\d+\";$",
+            Pattern.MULTILINE);
 
     // Writing this file again while the application runs replaces it in the
     // browser that has it: everything above only writes into the registry, so
@@ -184,11 +194,12 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     }
 
     /**
-     * Renders one snippet per distinct {@link EventData} value of the given
-     * event types that {@link BundledEventData} puts into the bundle, under the
-     * identifier the server sends for it. The snippet captures nothing, and the
-     * function it evaluates to is called with the event and the element, the
-     * same names the client compiles such a value with.
+     * Renders one snippet per distinct {@link EventData} value and
+     * {@link DomEvent#filter()} of the given event types that
+     * {@link BundledEventData} puts into the bundle, under the identifier the
+     * server sends for it. The snippet captures nothing, and the function it
+     * evaluates to is called with the event and the element, the same names the
+     * client compiles such a value with.
      */
     private static List<String> renderEventDataLines(
             Collection<Class<?>> eventTypes, boolean withNames) {
@@ -197,18 +208,31 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         Map<String, String> expressions = new TreeMap<>();
         Map<String, String> declaredBy = new HashMap<>();
         eventTypes.stream().sorted(Comparator.comparing(Class::getName))
-                .forEach(eventType -> findBundledEventData(eventType)
-                        .forEach(eventData -> {
-                            // A value mapped to an element shares the
-                            // function of its expression, and the client maps
-                            // what the function returns
-                            String functionId = BundledEventData
-                                    .getFunctionId(eventData);
-                            expressions.putIfAbsent(functionId,
-                                    BundledEventData.getExpression(eventData));
-                            declaredBy.putIfAbsent(functionId,
-                                    eventType.getName());
-                        }));
+                .forEach(eventType -> {
+                    findBundledEventData(eventType).forEach(eventData -> {
+                        // A value mapped to an element shares the function
+                        // of its expression, and the client maps what the
+                        // function returns
+                        String functionId = BundledEventData
+                                .getFunctionId(eventData);
+                        expressions.putIfAbsent(functionId,
+                                BundledEventData.getExpression(eventData));
+                        declaredBy.putIfAbsent(functionId,
+                                eventType.getName()
+                                        + " @EventData(\"" + BundledEventData
+                                                .getExpression(eventData)
+                                        + "\")");
+                    });
+                    String filter = BundledEventData
+                            .getBundledFilter(eventType);
+                    if (filter != null) {
+                        String functionId = BundledEventData
+                                .getFunctionId(filter);
+                        expressions.putIfAbsent(functionId, filter);
+                        declaredBy.putIfAbsent(functionId, eventType.getName()
+                                + " @DomEvent(filter = \"" + filter + "\")");
+                    }
+                });
 
         List<String> lines = new ArrayList<>();
         expressions.forEach((functionId, expression) -> {
@@ -226,8 +250,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             if (withNames) {
                 lines.add(String.format(
                         "window.Vaadin.Flow.jsDefinitionNames[%s] = %s;", id,
-                        quote(declaredBy.get(functionId) + " @EventData(\""
-                                + expression + "\")")));
+                        quote(declaredBy.get(functionId))));
             }
         });
         return lines.stream().flatMap(
@@ -293,6 +316,30 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         return definitions.stream()
                 .filter(definition -> !isInGeneratedFile(definition, generated))
                 .toList();
+    }
+
+    /**
+     * The names of the JavaScript definitions that the generated file names a
+     * function of, for a caller that has to find which of them a change of
+     * another class affects without scanning for them. Only a file written for
+     * a development build names what declared its functions.
+     *
+     * @param options
+     *            where the file is, not <code>null</code>
+     * @return the binary names of the definitions, empty when there is no file
+     *         or it names nothing
+     */
+    public static Set<String> findDefinitionNamesInGeneratedFile(
+            Options options) {
+        String generated = readGeneratedFile(options);
+        Set<String> names = new LinkedHashSet<>();
+        if (generated != null) {
+            Matcher matcher = DEFINITION_NAME.matcher(generated);
+            while (matcher.find()) {
+                names.add(matcher.group(1));
+            }
+        }
+        return names;
     }
 
     /**
@@ -517,8 +564,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                 function.add(String.format(
                         "window.Vaadin.Flow.jsSnippets[%s] = function (%s) {",
                         functionId, parameters));
-                function.add(String.format("  return function (%s) {",
-                        String.join(", ", JsCall.getCalledWithNames(method))));
+                function.add(String.format("  return function (%s) {", String
+                        .join(", ", JsCall.getFunctionParameterNames(method))));
                 function.add(expression);
                 function.add("  };");
                 function.add("};");

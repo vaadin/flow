@@ -41,6 +41,7 @@ import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyModifier;
+import com.vaadin.flow.component.KeyUpEvent;
 import com.vaadin.flow.component.Shortcuts;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
@@ -54,9 +55,9 @@ import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.JsonConstants;
@@ -77,7 +78,7 @@ class CspModeTest {
     @JsDefinition
     interface LoggerJs extends Serializable {
         @JsExpression("console.log($0, value);")
-        @JsCalledWith("value")
+        @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
     }
 
@@ -112,7 +113,7 @@ class CspModeTest {
     private static class RouteView extends Component {
     }
 
-    @DomEvent("offset-event")
+    @DomEvent(value = "offset-event", filter = "event.button === 0", preventDefault = true)
     public static class OffsetEvent extends ComponentEvent<Component> {
         // Only the event data annotations of the parameters are used
         public OffsetEvent(Component source, boolean fromClient,
@@ -257,8 +258,12 @@ class CspModeTest {
             });
             clickable.addDoubleClickListener(e -> {
             });
-            // The build puts the event data that is not a property path into
-            // the bundle
+            // The filter of the key up event is a property path
+            ComponentUtil.addListener(clickable, KeyUpEvent.class, e -> {
+            });
+            // The build puts the event data and the filter that are not
+            // property paths into the bundle, also when the filter decides
+            // whether the default is prevented
             ComponentUtil.addListener(clickable, OffsetEvent.class, e -> {
             });
             // also a value of an element, whose function returns the DOM node
