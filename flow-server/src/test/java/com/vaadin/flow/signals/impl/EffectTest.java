@@ -713,8 +713,9 @@ class EffectTest extends SignalTestBase {
 
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial") {
             @Override
-            protected Usage createUsage(Transaction transaction) {
-                Usage usage = super.createUsage(transaction);
+            protected Usage createUsage(Transaction transaction,
+                    @Nullable Data data) {
+                Usage usage = super.createUsage(transaction, data);
 
                 return new Usage() {
                     @Override
@@ -757,8 +758,9 @@ class EffectTest extends SignalTestBase {
 
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial") {
             @Override
-            protected Usage createUsage(Transaction transaction) {
-                Usage usage = super.createUsage(transaction);
+            protected Usage createUsage(Transaction transaction,
+                    @Nullable Data data) {
+                Usage usage = super.createUsage(transaction, data);
 
                 return new Usage() {
                     @Override
@@ -831,8 +833,11 @@ class EffectTest extends SignalTestBase {
         Signal.unboundEffect(() -> seen.add(signal.get()));
 
         assertEquals("concurrent", signal.peek());
-        assertEquals("concurrent", seen.get(seen.size() - 1),
-                "Effect should observe the concurrent write");
+        // The re-run starts while the first run is still in progress, so the
+        // order of the recorded values is not significant
+        assertTrue(seen.contains("concurrent"),
+                "Effect should re-run for the concurrent write, but saw "
+                        + seen);
     }
 
     @Test
@@ -842,8 +847,9 @@ class EffectTest extends SignalTestBase {
 
         SharedValueSignal<String> signal = new SharedValueSignal<>("signal") {
             @Override
-            protected Usage createUsage(Transaction transaction) {
-                Usage usage = super.createUsage(transaction);
+            protected Usage createUsage(Transaction transaction,
+                    @Nullable Data data) {
+                Usage usage = super.createUsage(transaction, data);
 
                 return new Usage() {
                     @Override

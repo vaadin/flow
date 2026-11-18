@@ -192,7 +192,7 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
          */
         T value = extractValue(data);
         if (UsageTracker.isActive()) {
-            UsageTracker.registerUsage(createUsage(transaction));
+            UsageTracker.registerUsage(createUsage(transaction, data));
         }
         return value;
     }
@@ -440,14 +440,46 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
 
     /**
      * Creates a usage instance based on the current state of this signal.
+     * <p>
+     * This reads the data of this signal from the transaction and then
+     * delegates to {@link #createUsage(Transaction, Data)}. {@link #get()}
+     * doesn't use this method but calls {@link #createUsage(Transaction, Data)}
+     * directly with the data the returned value was extracted from, so that a
+     * concurrent change between reading the value and creating the usage is
+     * detected.
      *
      * @param transaction
      *            the transaction for which the usage occurs, not
      *            <code>null</code>
      * @return a usage instance, not <code>null</code>
+     * @deprecated override {@link #createUsage(Transaction, Data)} instead,
+     *             since that is the method used by {@link #get()}
      */
+    @Deprecated
     protected Usage createUsage(Transaction transaction) {
-        Data data = data(transaction);
+        return createUsage(transaction, data(transaction));
+    }
+
+    /**
+     * Creates a usage instance that detects changes compared to the given data
+     * of this signal.
+     * <p>
+     * Unlike {@link #createUsage(Transaction)}, which reads the current data
+     * itself, this method uses the provided data as the baseline for change
+     * detection. {@link #get()} passes the same data that its return value was
+     * extracted from, so that a change that is applied concurrently by another
+     * thread after reading the value is reported as a change by the usage.
+     *
+     * @param transaction
+     *            the transaction for which the usage occurs, not
+     *            <code>null</code>
+     * @param data
+     *            the data of this signal to use as the baseline for change
+     *            detection, or <code>null</code> if there is no node for this
+     *            signal
+     * @return a usage instance, not <code>null</code>
+     */
+    protected Usage createUsage(Transaction transaction, @Nullable Data data) {
         if (data == null) {
             // Node is removed so no usage to track
             return UsageTracker.NO_USAGE;
