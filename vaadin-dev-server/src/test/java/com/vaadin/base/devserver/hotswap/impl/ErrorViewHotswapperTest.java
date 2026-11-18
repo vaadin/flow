@@ -182,7 +182,7 @@ class ErrorViewHotswapperTest {
         SessionRouteRegistry.getSessionRegistry(session).setRoute("",
                 TestNormalView.class, Collections.emptyList());
         var event = new HotswapClassSessionEvent(service, session,
-                Set.of(TestNormalView.class), true);
+                Set.of(TestNormalView.class), false);
         hotswapper.onClassesChange(event);
         assertEquals(UIUpdateStrategy.RELOAD,
                 event.getUIUpdateStrategy(ui).orElse(null));

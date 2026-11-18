@@ -28,7 +28,10 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 /**
  * Re-attempts the navigation when hotswap occurs while an error view is
@@ -80,12 +83,17 @@ public class ErrorViewHotswapper implements VaadinHotswapper {
 
     private static Set<Class<?>> getRouteTargets(UI ui) {
         // Router.getRegistry() depends on VaadinSession.getCurrent(), which is
-        // not set while hotswapping, so resolve the UI's own session registry;
-        // it also includes the application routes
+        // not set while hotswapping, so resolve the registry of the UI's own
+        // session; a session registry also includes the application routes
+        VaadinSession session = ui.getSession();
+        RouteRegistry registry = session
+                .getAttribute(SessionRouteRegistry.class) != null
+                        ? SessionRouteRegistry.getSessionRegistry(session)
+                        : ApplicationRouteRegistry
+                                .getInstance(session.getService().getContext());
         Set<Class<?>> routeTargets = new HashSet<>();
-        SessionRouteRegistry.getSessionRegistry(ui.getSession())
-                .getRegisteredRoutes().forEach(
-                        route -> routeTargets.add(route.getNavigationTarget()));
+        registry.getRegisteredRoutes().forEach(
+                route -> routeTargets.add(route.getNavigationTarget()));
         return routeTargets;
     }
 
