@@ -344,7 +344,8 @@ public class StateNode implements Serializable {
             }
         }
         // Attaching under a parent changes the visibility that the node
-        // inherits
+        // inherits. This is checked only after all attach listeners have run,
+        // since they can still change the visibility of nodes in the subtree.
         for (Pair<StateNode, Boolean> pair : attachedNodes) {
             StateNode node = pair.getFirst();
             if (node.isRegistered() && node.hasVisibilityChangeListeners()) {
@@ -944,7 +945,8 @@ public class StateNode implements Serializable {
      */
     public Registration addVisibilityChangeListener(
             Command visibilityChangeListener) {
-        assert visibilityChangeListener != null;
+        Objects.requireNonNull(visibilityChangeListener,
+                "Visibility change listener can not be null");
 
         if (visibilityChangeListeners == null) {
             visibilityChangeListeners = new ArrayList<>(1);
