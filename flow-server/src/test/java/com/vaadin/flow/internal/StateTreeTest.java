@@ -960,8 +960,8 @@ class StateTreeTest {
         AtomicInteger whenVisibleExecutions = new AtomicInteger();
         AtomicInteger regularExecutions = new AtomicInteger();
         tree.beforeClientResponse(child.getNode(),
-                Set.of(StateTree.ExecutionFlag.WHEN_VISIBLE),
-                context -> whenVisibleExecutions.incrementAndGet());
+                context -> whenVisibleExecutions.incrementAndGet(),
+                StateTree.ExecutionFlag.WHEN_VISIBLE);
         tree.beforeClientResponse(child.getNode(),
                 context -> regularExecutions.incrementAndGet());
 
@@ -1008,8 +1008,8 @@ class StateTreeTest {
         AtomicInteger executions = new AtomicInteger();
         StateTree.ExecutionRegistration registration = tree
                 .beforeClientResponse(element.getNode(),
-                        Set.of(StateTree.ExecutionFlag.WHEN_VISIBLE),
-                        context -> executions.incrementAndGet());
+                        context -> executions.incrementAndGet(),
+                        StateTree.ExecutionFlag.WHEN_VISIBLE);
         tree.runExecutionsBeforeClientResponse();
         registration.remove();
 
@@ -1023,9 +1023,8 @@ class StateTreeTest {
             Element parent) {
         Element child = ElementFactory.createDiv();
         parent.appendChild(child);
-        tree.beforeClientResponse(child.getNode(),
-                Set.of(StateTree.ExecutionFlag.WHEN_VISIBLE), context -> {
-                });
+        tree.beforeClientResponse(child.getNode(), context -> {
+        }, StateTree.ExecutionFlag.WHEN_VISIBLE);
         tree.runExecutionsBeforeClientResponse();
         parent.removeChild(child);
         return new WeakReference<>(child.getNode());

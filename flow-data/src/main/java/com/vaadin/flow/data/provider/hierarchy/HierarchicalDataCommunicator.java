@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -156,11 +155,10 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         }
         flushRequest = new FlushRequest<>();
         stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(stateNode,
-                        EnumSet.of(ExecutionFlag.WHEN_VISIBLE), context -> {
-                            flush(context);
-                            flushRequest = null;
-                        }));
+                .beforeClientResponse(stateNode, context -> {
+                    flush(context);
+                    flushRequest = null;
+                }, ExecutionFlag.WHEN_VISIBLE));
         return flushRequest;
     }
 

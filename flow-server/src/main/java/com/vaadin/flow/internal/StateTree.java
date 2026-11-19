@@ -106,12 +106,12 @@ public class StateTree implements NodeOwner {
         private final Set<ExecutionFlag> flags;
 
         private BeforeClientResponseEntry(int index, StateNode stateNode,
-                Set<ExecutionFlag> flags,
-                SerializableConsumer<ExecutionContext> execution) {
+                SerializableConsumer<ExecutionContext> execution,
+                ExecutionFlag... flags) {
             this.index = index;
             this.stateNode = stateNode;
-            this.flags = flags.isEmpty() ? EnumSet.noneOf(ExecutionFlag.class)
-                    : EnumSet.copyOf(flags);
+            this.flags = EnumSet.noneOf(ExecutionFlag.class);
+            Collections.addAll(this.flags, flags);
             this.execution = execution;
             originalOwner = stateNode.getOwner();
         }
@@ -154,7 +154,7 @@ public class StateTree implements NodeOwner {
 
     /**
      * A flag that changes when a task registered with
-     * {@link StateTree#beforeClientResponse(StateNode, Set, SerializableConsumer)}
+     * {@link StateTree#beforeClientResponse(StateNode, SerializableConsumer, ExecutionFlag...)}
      * is run.
      */
     public enum ExecutionFlag {
@@ -401,11 +401,12 @@ public class StateTree implements NodeOwner {
      *            the task to be executed. Can not be <code>null</code>
      * @return a registration that can be used to cancel the execution of the
      *         task
-     * @see #beforeClientResponse(StateNode, Set, SerializableConsumer)
+     * @see #beforeClientResponse(StateNode, SerializableConsumer,
+     *      ExecutionFlag...)
      */
     public ExecutionRegistration beforeClientResponse(StateNode context,
             SerializableConsumer<ExecutionContext> execution) {
-        return beforeClientResponse(context, Set.of(), execution);
+        return beforeClientResponse(context, execution, new ExecutionFlag[0]);
     }
 
     /**
@@ -421,24 +422,24 @@ public class StateTree implements NodeOwner {
      * @param context
      *            the StateNode relevant for the execution. Can not be
      *            <code>null</code>
-     * @param flags
-     *            the flags for the execution, or an empty set for none. Can not
-     *            be <code>null</code>
      * @param execution
      *            the task to be executed. Can not be <code>null</code>
+     * @param flags
+     *            the flags for the execution, none for a task that is run like
+     *            one registered without flags
      * @return a registration that can be used to cancel the execution of the
      *         task
      */
     public ExecutionRegistration beforeClientResponse(StateNode context,
-            Set<ExecutionFlag> flags,
-            SerializableConsumer<ExecutionContext> execution) {
+            SerializableConsumer<ExecutionContext> execution,
+            ExecutionFlag... flags) {
         checkHasLock();
         assert context != null : "The 'context' parameter can not be null";
         Objects.requireNonNull(flags, "The 'flags' parameter can not be null");
         assert execution != null : "The 'execution' parameter can not be null";
 
         BeforeClientResponseEntry entry = new BeforeClientResponseEntry(
-                nextBeforeClientResponseIndex, context, flags, execution);
+                nextBeforeClientResponseIndex, context, execution, flags);
         nextBeforeClientResponseIndex++;
         ExecutionRegistration registration = context
                 .addBeforeClientResponseEntry(entry);

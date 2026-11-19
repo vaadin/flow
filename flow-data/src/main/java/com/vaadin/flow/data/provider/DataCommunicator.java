@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1715,8 +1714,7 @@ public class DataCommunicator<T> implements Serializable {
                 request.owner = stateNode.getOwner();
                 if (!request.cancelled) {
                     ui.getInternals().getStateTree().beforeClientResponse(
-                            stateNode, EnumSet.of(ExecutionFlag.WHEN_VISIBLE),
-                            action);
+                            stateNode, action, ExecutionFlag.WHEN_VISIBLE);
                 }
             });
             return request;
