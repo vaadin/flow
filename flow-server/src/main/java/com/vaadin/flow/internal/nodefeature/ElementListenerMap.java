@@ -431,9 +431,10 @@ public class ElementListenerMap extends NodeMap {
                     .toList();
             List<String> compiled = eventData.stream()
                     .filter(value -> !declared.contains(value)).toList();
-            if (compiled.stream()
-                    .anyMatch(ElementListenerMap::isCompiledByClient)) {
-                CspViolationReporter.reportStringJavaScript();
+            List<String> reported = compiled.stream()
+                    .filter(ElementListenerMap::isCompiledByClient).toList();
+            if (!reported.isEmpty()) {
+                CspViolationReporter.reportStringEventData(reported);
             }
 
             if (!declared.isEmpty()) {
@@ -532,7 +533,7 @@ public class ElementListenerMap extends NodeMap {
                     // bundle
                     return updateFilter(new BundledExpressionEntry(filter));
                 }
-                CspViolationReporter.reportStringJavaScript();
+                CspViolationReporter.reportStringFilter(filter);
             }
             return updateFilter(
                     filter == null ? null : new ExpressionEntry(filter));

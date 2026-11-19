@@ -448,7 +448,7 @@ public class Page implements Serializable {
             addDynamicImport(JsFunction.ofDeclaredCall(fallback));
             return;
         }
-        CspViolationReporter.reportStringJavaScript();
+        CspViolationReporter.reportStringDynamicImport(expression);
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
     }
 

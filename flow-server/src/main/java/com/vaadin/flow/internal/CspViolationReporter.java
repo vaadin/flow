@@ -15,18 +15,24 @@
  */
 package com.vaadin.flow.internal;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.CspMode;
 import com.vaadin.flow.server.CspViolationException;
@@ -123,7 +129,86 @@ public final class CspViolationReporter {
     public static void reportStringExecuteJs(String expression,
             int parameterCount) {
         Objects.requireNonNull(expression, "The expression must not be null");
-        report(null, new StringCall(expression, parameterCount));
+        report(null, new ExecuteJsCall(expression, parameterCount));
+    }
+
+    /**
+     * Reports a function created from a string body, as
+     * <code>JsFunction.of</code> and the string <code>addJsInitializer</code>
+     * do. Called by the API itself, which is where the stack trace of the
+     * report starts.
+     * <p>
+     * Like {@link #reportStringExecuteJs(String, int)}, the message adds the
+     * declared method for the body and says how to use it.
+     *
+     * @param body
+     *            the body of the function, not <code>null</code>
+     * @param captureCount
+     *            the number of values the function captures
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} mode
+     */
+    public static void reportStringFunction(String body, int captureCount) {
+        Objects.requireNonNull(body, "The body must not be null");
+        report(null, new FunctionBody(body, captureCount, false));
+    }
+
+    /**
+     * Reports a dynamic import given as a string expression. Called by the API
+     * itself, which is where the stack trace of the report starts.
+     * <p>
+     * Like {@link #reportStringExecuteJs(String, int)}, the message adds the
+     * declared method for the expression and says how to use it.
+     *
+     * @param expression
+     *            the expression that returns a <code>Promise</code>, not
+     *            <code>null</code>
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} mode
+     */
+    public static void reportStringDynamicImport(String expression) {
+        Objects.requireNonNull(expression, "The expression must not be null");
+        report(null, new FunctionBody(expression, 0, true));
+    }
+
+    /**
+     * Reports an event filter given as a string expression. Called by the API
+     * itself, which is where the stack trace of the report starts.
+     * <p>
+     * The message says how to declare the filter: as a filter snippet when the
+     * call is in code the developer can change, or in
+     * {@link com.vaadin.flow.js.JsStringFallback#filters()} when it is in an
+     * add-on.
+     *
+     * @param filter
+     *            the filter, not <code>null</code>
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} mode
+     */
+    public static void reportStringFilter(String filter) {
+        Objects.requireNonNull(filter, "The filter must not be null");
+        report(null, new Filter(filter));
+    }
+
+    /**
+     * Reports event data values given as string expressions. Called by the API
+     * itself, which is where the stack trace of the report starts.
+     * <p>
+     * The message says how to declare the values: as event data snippets when
+     * the call is in code the developer can change, or in
+     * {@link com.vaadin.flow.js.JsStringFallback#eventData()} when it is in an
+     * add-on.
+     *
+     * @param eventData
+     *            the values the browser would compile, possibly mapped to an
+     *            element, not <code>null</code> and not empty
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} mode
+     */
+    public static void reportStringEventData(List<String> eventData) {
+        Objects.requireNonNull(eventData, "The event data must not be null");
+        report(null, new EventData(eventData.stream()
+                .map(BundledEventData::getExpression).toList()));
     }
 
     /**
@@ -157,14 +242,199 @@ public final class CspViolationReporter {
     }
 
     /**
-     * A call that sends an expression with a number of parameters, which a
-     * declared method can stand in for.
+     * JavaScript sent as a string that the message can say how to declare.
+     * <p>
+     * Whether the call is in code the developer can change decides between
+     * using the declared JavaScript directly and declaring a fallback for the
+     * string. The stack can not tell: an add-on and the application are both
+     * application code there, and an application can have its own code in jars.
+     * So each message describes both.
      */
-    private record StringCall(String expression, int parameterCount) {
+    private sealed interface StringJavaScript {
+
+        /**
+         * What tells this JavaScript apart from other JavaScript reported from
+         * the same call site.
+         */
+        String key();
+
+        /**
+         * The part of the message that says how to declare the JavaScript.
+         *
+         * @param name
+         *            the name to suggest for the declared method
+         * @param stack
+         *            the stack, starting at the API
+         */
+        String describeFix(String name, StackTraceElement[] stack);
+    }
+
+    private record ExecuteJsCall(String expression,
+            int parameterCount) implements StringJavaScript {
+
+        @Override
+        public String key() {
+            return "executeJs " + parameterCount + ":" + expression;
+        }
+
+        @Override
+        public String describeFix(String name, StackTraceElement[] stack) {
+            // The API is the first frame: Element.executeJs or Page.executeJs
+            String target = stack[0].getClassName().equals(Page.class.getName())
+                    ? "page"
+                    : "element";
+            return """
+                     Declare the JavaScript in a @JsDefinition interface, for \
+                    example:
+
+                        @JsDefinition
+                        public interface YourJs {
+                            @JsExpression("%s")
+                            PendingJavaScriptResult %s(%s);
+                        }
+
+                    If this call is in your own code, call that method instead \
+                    of sending the string: %s.executeJs(YourJs.class).%s(%s). \
+                    If the call is in an add-on that you can not change, also \
+                    add @JsStringFallback to the interface, next to \
+                    @JsDefinition. Then the string call runs the method from \
+                    the bundle.
+                    """.formatted(escapeJavaString(expression), name,
+                    declareParameters(parameterCount), target, name,
+                    passArguments(parameterCount));
+        }
+    }
+
+    private record FunctionBody(String body, int captureCount,
+            boolean dynamicImport) implements StringJavaScript {
+
+        @Override
+        public String key() {
+            return "function " + captureCount + ":" + body;
+        }
+
+        @Override
+        public String describeFix(String name, StackTraceElement[] stack) {
+            String function = "JsSnippets.of(YourFunctions.class)." + name + "("
+                    + passArguments(captureCount) + ")";
+            String use;
+            if (dynamicImport) {
+                use = "page.addDynamicImport(" + function + ")";
+            } else if (isCalledBy(stack, Element.class, "addJsInitializer")) {
+                use = "element.addJsInitializer(" + function + ")";
+            } else {
+                use = function;
+            }
+            return """
+                     Declare the function in a @JsDefinition interface, for \
+                    example:
+
+                        @JsDefinition
+                        public interface YourFunctions {
+                            @JsExpression("%s")
+                            JsFunction %s(%s);
+                        }
+
+                    If this call is in your own code, create the function from \
+                    that method instead of from the string: %s. If the call is \
+                    in an add-on that you can not change, also add \
+                    @JsStringFallback to the interface, next to @JsDefinition. \
+                    Keep that interface for functions only: methods that run \
+                    JavaScript go into another one. Then the string runs the \
+                    function from the bundle.
+                    """.formatted(escapeJavaString(body), name,
+                    declareParameters(captureCount), use);
+        }
+    }
+
+    private record Filter(String filter) implements StringJavaScript {
+
+        @Override
+        public String key() {
+            return "filter " + filter;
+        }
+
+        @Override
+        public String describeFix(String name, StackTraceElement[] stack) {
+            String escaped = escapeJavaString(filter);
+            return """
+                     If this call is in your own code, declare the filter in a \
+                    @JsDefinition interface and set it with \
+                    registration.setFilterExpression(JsSnippets.of(YourJs.class).%s()) \
+                    instead of setFilter:
+
+                        @JsDefinition
+                        public interface YourJs {
+                            @JsExpression("return (%s);")
+                            DomEventFilter %s();
+                        }
+
+                    If the call is in an add-on that you can not change, list \
+                    the filter on a @JsDefinition interface instead. Then \
+                    setting it runs a function from the bundle:
+
+                        @JsDefinition
+                        @JsStringFallback(filters = "%s")
+                        public interface YourFallbacks {
+                        }
+                    """
+                    .formatted(name, escaped, name, escaped);
+        }
+    }
+
+    private record EventData(List<String> values) implements StringJavaScript {
+
+        @Override
+        public String key() {
+            return "eventData " + String.join("\n", values);
+        }
+
+        @Override
+        public String describeFix(String name, StackTraceElement[] stack) {
+            StringBuilder methods = new StringBuilder();
+            List<String> names = new ArrayList<>();
+            for (int index = 0; index < values.size(); index++) {
+                String methodName = (index == 0) ? name : name + (index + 1);
+                names.add(methodName);
+                methods.append(index == 0 ? "" : "\n").append("""
+                                @JsExpression("return (%s);")
+                                DomEventData<Object> %s();
+                        """.formatted(escapeJavaString(values.get(index)),
+                        methodName));
+            }
+            String listed = values.stream()
+                    .map(value -> "\"" + escapeJavaString(value) + "\"")
+                    .collect(Collectors.joining(", "));
+            if (values.size() > 1) {
+                listed = "{ " + listed + " }";
+            }
+            return """
+                     If this call is in your own code, declare the event data \
+                    in a @JsDefinition interface. Keep what \
+                    JsSnippets.of(YourJs.class).%s() returns, add it with \
+                    registration.addEventData instead of the string, and read \
+                    the value with event.getEventData for the same object:
+
+                        @JsDefinition
+                        public interface YourJs {
+                    %s    }
+
+                    If the call is in an add-on that you can not change, list \
+                    the event data on a @JsDefinition interface instead. Then \
+                    adding it runs a function from the bundle, and the value is \
+                    read under the same string as before:
+
+                        @JsDefinition
+                        @JsStringFallback(eventData = %s)
+                        public interface YourFallbacks {
+                        }
+                    """
+                    .formatted(String.join("(), ", names), methods, listed);
+        }
     }
 
     private static void report(@Nullable String detail,
-            @Nullable StringCall call) {
+            @Nullable StringJavaScript javaScript) {
         VaadinService service = VaadinService.getCurrent();
         CspMode mode = getCspMode(service);
         if (!isEnabled(mode)) {
@@ -180,8 +450,8 @@ public final class CspViolationReporter {
         if (detail != null) {
             message += " The JavaScript is in \"" + detail + "\".";
         }
-        if (call != null) {
-            message += describeFallback(call, stack);
+        if (javaScript != null) {
+            message += javaScript.describeFix(suggestMethodName(stack), stack);
         }
         CspViolationException violation = new CspViolationException(message);
         violation.setStackTrace(stack);
@@ -189,14 +459,14 @@ public final class CspViolationReporter {
         if (mode == CspMode.STRICT) {
             throw violation;
         }
-        // Different details or expressions from one call site are different
+        // Different details or JavaScript from one call site are different
         // reports
         String key = getCallSite(stack);
         if (detail != null) {
             key = detail + '\n' + key;
         }
-        if (call != null) {
-            key = call.parameterCount() + ":" + call.expression() + '\n' + key;
+        if (javaScript != null) {
+            key = javaScript.key() + '\n' + key;
         }
         if (warnedCalls
                 .computeIfAbsent(service, k -> ConcurrentHashMap.newKeySet())
@@ -206,48 +476,33 @@ public final class CspViolationReporter {
         }
     }
 
+    private static String declareParameters(int count) {
+        return IntStream.range(0, count).mapToObj(index -> "Object arg" + index)
+                .collect(Collectors.joining(", "));
+    }
+
+    private static String passArguments(int count) {
+        return IntStream.range(0, count).mapToObj(index -> "arg" + index)
+                .collect(Collectors.joining(", "));
+    }
+
     /**
-     * The declared method that replaces a string call, named after the
-     * application code that made it, so that methods pasted for different call
-     * sites do not get the same name.
-     * <p>
-     * Whether the call is in code the developer can change decides between
-     * calling the method and marking its interface as a fallback. The stack can
-     * not tell: an add-on and the application are both application code there,
-     * and an application can have its own code in jars. So both are described.
+     * Whether the given method of the given class is between the API and the
+     * application code, such as the string initializer of an element that
+     * creates its function with <code>JsFunction.of</code>.
      */
-    private static String describeFallback(StringCall call,
-            StackTraceElement[] stack) {
-        StringBuilder parameters = new StringBuilder();
-        StringBuilder arguments = new StringBuilder();
-        for (int index = 0; index < call.parameterCount(); index++) {
-            String separator = (index == 0) ? "" : ", ";
-            parameters.append(separator).append("Object arg").append(index);
-            arguments.append(separator).append("arg").append(index);
+    private static boolean isCalledBy(StackTraceElement[] stack, Class<?> type,
+            String method) {
+        for (StackTraceElement frame : stack) {
+            if (frame.getClassName().equals(type.getName())
+                    && frame.getMethodName().equals(method)) {
+                return true;
+            }
+            if (StackTraceUtil.isApplicationClass(frame.getClassName())) {
+                return false;
+            }
         }
-        String name = suggestMethodName(stack);
-        // The API is the first frame: Element.executeJs or Page.executeJs
-        String target = stack[0].getClassName().equals(Page.class.getName())
-                ? "page"
-                : "element";
-        return """
-                 Declare the JavaScript in a @JsDefinition interface, for \
-                example:
-
-                    @JsDefinition
-                    public interface YourJs {
-                        @JsExpression("%s")
-                        PendingJavaScriptResult %s(%s);
-                    }
-
-                If this call is in your own code, call that method instead of \
-                sending the string: %s.executeJs(YourJs.class).%s(%s). If the \
-                call is in an add-on that you can not change, also add \
-                @JsStringFallback to the interface, next to @JsDefinition. Then \
-                the string call runs the method from the bundle.
-                """
-                .formatted(escapeJavaString(call.expression()), name,
-                        parameters, target, name, arguments);
+        return false;
     }
 
     private static String suggestMethodName(StackTraceElement[] stack) {

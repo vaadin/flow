@@ -139,7 +139,7 @@ public final class JsFunction implements JsSnippet {
         if (fallback != null) {
             return ofDeclaredCall(fallback);
         }
-        CspViolationReporter.reportStringJavaScript();
+        CspViolationReporter.reportStringFunction(body, captures.length);
         @Nullable
         Object[] copy = captures.clone();
         // Dry-run encode each capture so unsupported types fail fast. Mirrors

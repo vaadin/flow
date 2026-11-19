@@ -449,6 +449,65 @@ class CspModeTest {
     }
 
     @Test
+    void strict_stringFunction_messageDeclaresFunctionForEachUse() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+
+        String plain = assertThrows(CspViolationException.class,
+                () -> JsFunction.of("this.title = $0", "tip")).getMessage();
+        String initializer = assertThrows(CspViolationException.class, () -> ui
+                .getElement().addJsInitializer("this.title = $0", "tip"))
+                .getMessage();
+        String dynamicImport = assertThrows(CspViolationException.class,
+                () -> ui.getPage().addDynamicImport("return Promise.resolve()"))
+                .getMessage();
+
+        assertTrue(
+                plain.contains(
+                        """
+                                        @JsExpression("this.title = $0")
+                                        JsFunction cspModeTestStrict_stringFunction_messageDeclaresFunctionForEachUse(Object arg0);
+                                """),
+                plain);
+        assertTrue(plain.contains(": JsSnippets.of(YourFunctions.class)."),
+                plain);
+        assertTrue(initializer.contains(
+                "element.addJsInitializer(JsSnippets.of(YourFunctions.class)."),
+                initializer);
+        assertTrue(dynamicImport.contains(
+                "page.addDynamicImport(JsSnippets.of(YourFunctions.class)."),
+                dynamicImport);
+        assertTrue(dynamicImport.contains("@JsStringFallback"), dynamicImport);
+    }
+
+    @Test
+    void strict_stringFilterAndEventData_messagesDeclareThemBothWays() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        DomListenerRegistration registration = ui.getElement()
+                .addEventListener("click", e -> {
+                });
+
+        String filter = assertThrows(CspViolationException.class,
+                () -> registration.setFilter("event.button == \"left\""))
+                .getMessage();
+        String eventData = assertThrows(CspViolationException.class,
+                () -> registration.addEventData("event.x * 2")).getMessage();
+
+        // Own code declares a snippet, an add-on lists the string
+        assertTrue(filter.contains(
+                "@JsExpression(\"return (event.button == \\\"left\\\");\")"),
+                filter);
+        assertTrue(filter.contains("DomEventFilter "), filter);
+        assertTrue(filter.contains(
+                "@JsStringFallback(filters = \"event.button == \\\"left\\\"\")"),
+                filter);
+        assertTrue(eventData.contains("DomEventData<Object> "), eventData);
+        assertTrue(
+                eventData.contains(
+                        "@JsStringFallback(eventData = \"event.x * 2\")"),
+                eventData);
+    }
+
+    @Test
     void warn_stringExecuteJs_logsOncePerCallSiteAndExpression() {
         setup.getDeploymentConfiguration().setCspMode(CspMode.WARN);
         Logger logger = mock(Logger.class);
