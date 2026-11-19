@@ -786,7 +786,9 @@ class RequestUtilTest {
         when(fileRouterRequestUtil.isSecuredRoute(request)).thenReturn(true);
         when(fileRouterRequestUtil.getAllowedAuthorities(request))
                 .thenReturn(Set.of(allowedRole));
-        requestUtil.setRolePrefixHolder(new VaadinRolePrefixHolder(rolePrefix));
+        // No prefix means no VaadinRolePrefixHolder bean at all
+        requestUtil.setRolePrefixHolder(rolePrefix == null ? null
+                : new VaadinRolePrefixHolder(rolePrefix));
         try {
             assertTrue(requestUtil
                     .authorizeHillaRoute(
