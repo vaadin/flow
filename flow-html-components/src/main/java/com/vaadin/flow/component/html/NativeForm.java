@@ -112,6 +112,7 @@ import com.vaadin.flow.signals.Signal;
  *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/form">MDN:
  *      &lt;form&gt;</a>
  * @author Vaadin Ltd
+ * @since 25.4
  */
 @NullMarked
 @Tag("form")

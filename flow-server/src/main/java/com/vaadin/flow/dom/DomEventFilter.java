@@ -18,8 +18,8 @@ package com.vaadin.flow.dom;
 import java.util.Objects;
 
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
 
@@ -86,8 +86,9 @@ import com.vaadin.flow.js.JsSnippets;
  *
  * @see JsSnippets#of(Class)
  * @see DomEventData
+ * @since 25.4
  */
-@JsCalledWith({ "event", "element" })
+@JsFunctionParameterNames({ "event", "element" })
 public final class DomEventFilter implements JsSnippet {
 
     private final JsCall declaredCall;

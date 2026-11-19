@@ -30,6 +30,8 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -64,12 +66,16 @@ import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockVaadinContext.RoutePathProviderImpl;
+import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.tests.util.MockUI;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -422,6 +428,28 @@ class UidlWriterTest {
 
         @JsExpression("this.method($0, ...$1)")
         void methodWithMany(String value, Object... rest);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void createUidl_sessionDestroyedByPendingTask_respondsSessionExpired(
+            boolean async) throws Exception {
+        MockVaadinSession session = new MockVaadinSession();
+        ObjectNode response = session.runWithLock(() -> {
+            UI ui = new MockUI(session);
+            ui.doInit(mock(VaadinRequest.class), session.getNextUIid(), "foo");
+            session.addUI(ui);
+            // Queued like when another thread invalidates the HTTP session
+            // while this one holds the session lock
+            session.getService().fireSessionDestroy(session);
+
+            return new UidlWriter().createUidl(ui, async);
+        });
+
+        assertTrue(JacksonUtils.jsonEquals(
+                JacksonUtils.readTree(
+                        VaadinService.createSessionExpiredJSON(async)),
+                response), response.toString());
     }
 
     @Test

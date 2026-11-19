@@ -22,6 +22,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -167,11 +168,52 @@ class JsDefinitionProxyTest {
     @JsDefinition
     interface LoggerJs extends Serializable {
         @JsExpression("console.log($0, value);")
-        @JsCalledWith("value")
+        @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
 
         @JsExpression("return (value) => console.log($0, value);")
         JsSnippet createSnippet(String prefix);
+    }
+
+    @JsFunctionParameterNames({ "html", "item" })
+    interface TemplateSnippet extends JsSnippet {
+        // Allowed, as it is not something the snippet has to implement
+        static String describe() {
+            return "template";
+        }
+    }
+
+    @JsDefinition
+    interface TemplateJs extends Serializable {
+        @JsExpression("return html`<b>${$0}: ${item.name}</b>`;")
+        TemplateSnippet label(String prefix);
+
+        @JsExpression("return html`${$0}`;")
+        TemplateSnippet echo(Object value);
+
+        @JsExpression("return html`${$0.join(' ')}`;")
+        TemplateSnippet join(String... parts);
+    }
+
+    @JsDefinition
+    interface OtherTemplateJs extends Serializable {
+        @JsExpression("return html`<i>${$0}: ${item.name}</i>`;")
+        TemplateSnippet label(String prefix);
+    }
+
+    interface ActionSnippet extends JsSnippet {
+        void run();
+
+        default void runTwice() {
+            run();
+            run();
+        }
+    }
+
+    @JsDefinition
+    interface ActionJs extends Serializable {
+        @JsExpression("console.log('run');")
+        ActionSnippet createAction();
     }
 
     @JsDefinition
@@ -199,9 +241,9 @@ class JsDefinitionProxyTest {
     }
 
     @JsDefinition
-    interface CalledWithInvalidNameJs extends Serializable {
+    interface FunctionParameterNamesInvalidNameJs extends Serializable {
         @JsExpression("console.log(value);")
-        @JsCalledWith("not-a-name")
+        @JsFunctionParameterNames("not-a-name")
         JsFunction createLogger();
     }
 
@@ -210,8 +252,8 @@ class JsDefinitionProxyTest {
     }
 
     @JsDefinition
-    @JsCalledWith("value")
-    interface CalledWithOnDefinitionJs extends Serializable {
+    @JsFunctionParameterNames("value")
+    interface FunctionParameterNamesOnDefinitionJs extends Serializable {
         @JsExpression("console.log(value);")
         JsFunction createLogger();
     }
@@ -219,7 +261,7 @@ class JsDefinitionProxyTest {
     @JsDefinition
     interface MixedJs extends Serializable {
         @JsExpression("console.log($0, value);")
-        @JsCalledWith("value")
+        @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
 
         @JsExpression("console.log($0);")
@@ -227,9 +269,9 @@ class JsDefinitionProxyTest {
     }
 
     @JsDefinition
-    interface CalledWithWhenRunJs extends Serializable {
+    interface FunctionParameterNamesWhenRunJs extends Serializable {
         @JsExpression("console.log(value);")
-        @JsCalledWith("value")
+        @JsFunctionParameterNames("value")
         void log();
     }
 
@@ -517,6 +559,73 @@ class JsDefinitionProxyTest {
     }
 
     @Test
+    void createSnippets_snippetTypeOfTheApplication_answersWithAnImplementationOfIt() {
+        TemplateJs templates = JsDefinitionProxy
+                .createSnippets(TemplateJs.class);
+
+        TemplateSnippet label = templates.label("Name");
+
+        assertEquals(new JsCall(TemplateJs.class, "label", List.of("Name")),
+                JsDefinitionProxy.findDeclaredCall(label),
+                "the snippet should name what declared it, for the client to look it up by");
+        assertEquals(templates.label("Name"), label);
+        assertEquals(templates.label("Name").hashCode(), label.hashCode());
+        assertNotEquals(templates.label("Other"), label);
+        assertNotEquals(templates.echo("Name"), label);
+        assertNotEquals(
+                JsDefinitionProxy.createSnippets(OtherTemplateJs.class)
+                        .label("Name"),
+                label,
+                "a method of the same name in another definition declares another function");
+        // Including a proxy that is not a snippet, such as the definition
+        for (Object other : Arrays.asList(null, JsFunction.of("return 1"),
+                templates)) {
+            assertNotEquals(label, other,
+                    "a snippet should not be equal to " + other);
+        }
+        assertTrue(label.toString().contains("TemplateSnippet"),
+                label.toString());
+        assertEquals(label, SerializationUtils.roundtrip(label));
+        SelfReference unencodable = new SelfReference();
+        assertThrows(RuntimeException.class, () -> templates.echo(unencodable),
+                "a capture the client can not receive should fail when declared");
+    }
+
+    @Test
+    void createSnippets_snippetTypeOfTheApplication_equalWhenArgumentsHaveEqualContents() {
+        TemplateJs templates = JsDefinitionProxy
+                .createSnippets(TemplateJs.class);
+
+        TemplateSnippet joined = templates.join("a", "b");
+        assertEquals(templates.join("a", "b"), joined,
+                "trailing arguments should be compared by their contents");
+        assertEquals(templates.join("a", "b").hashCode(), joined.hashCode());
+        assertNotEquals(templates.join("a", "c"), joined);
+        assertEquals(joined, SerializationUtils.roundtrip(joined));
+
+        TemplateSnippet echoed = templates.echo(new String[] { "a" });
+        assertEquals(templates.echo(new String[] { "a" }), echoed,
+                "an array argument should be compared by its contents");
+        assertEquals(templates.echo(new String[] { "a" }).hashCode(),
+                echoed.hashCode());
+        assertNotEquals(templates.echo(new String[] { "b" }), echoed);
+    }
+
+    @Test
+    void checkDefinition_snippetTypeOfTheApplicationWithMethods_throws() {
+        // Nothing could implement them, as the snippet only exists on the
+        // client
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> JsDefinitionProxy.checkDefinition(ActionJs.class));
+
+        assertTrue(
+                exception.getMessage().contains(ActionSnippet.class.getName())
+                        && exception.getMessage().contains("run, runTwice"),
+                exception.getMessage());
+    }
+
+    @Test
     void createSnippets_domEventSnippetCaptureTheClientCanNotReceive_throwsWhenDeclared() {
         EventJs events = JsDefinitionProxy.createSnippets(EventJs.class);
         SelfReference unencodable = new SelfReference();
@@ -590,22 +699,23 @@ class JsDefinitionProxyTest {
     }
 
     @Test
-    void createSnippets_calledWithANameAFunctionCanNotDeclare_throws() {
+    void createSnippets_parameterNameAFunctionCanNotDeclare_throws() {
         // When the implementation is handed out, rather than when the snippet
         // is evaluated and the browser reports a syntax error
         assertThrows(IllegalArgumentException.class, () -> JsDefinitionProxy
-                .createSnippets(CalledWithInvalidNameJs.class));
+                .createSnippets(FunctionParameterNamesInvalidNameJs.class));
     }
 
     @Test
-    void checkDefinition_calledWithOnTheDefinition_throws() {
+    void checkDefinition_functionParameterNamesOnTheDefinition_throws() {
         // The names would otherwise be ignored, and the expression would fail
         // in the browser on the first call
         IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class, () -> JsDefinitionProxy
-                        .checkDefinition(CalledWithOnDefinitionJs.class));
+                IllegalArgumentException.class,
+                () -> JsDefinitionProxy.checkDefinition(
+                        FunctionParameterNamesOnDefinitionJs.class));
 
-        assertTrue(exception.getMessage().contains("@JsCalledWith"),
+        assertTrue(exception.getMessage().contains("@JsFunctionParameterNames"),
                 exception.getMessage());
     }
 
@@ -636,14 +746,14 @@ class JsDefinitionProxyTest {
     }
 
     @Test
-    void create_calledWithOnAMethodRunningJavaScript_throws() {
+    void create_functionParameterNamesOnAMethodRunningJavaScript_throws() {
         // A call runs the expression rather than a function around it, so the
         // names would never be declared
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> proxy(CalledWithWhenRunJs.class));
+                () -> proxy(FunctionParameterNamesWhenRunJs.class));
 
-        assertTrue(exception.getMessage().contains("@JsCalledWith"),
+        assertTrue(exception.getMessage().contains("@JsFunctionParameterNames"),
                 exception.getMessage());
     }
 

@@ -59,6 +59,13 @@
     </profile>
     <profile>
       <id>bun</id>
+      <activation>
+        <!-- -Dbun instead of -Pbun: Maven 4 fails the build when a requested
+             profile is not in any selected module -->
+        <property>
+          <name>bun</name>
+        </property>
+      </activation>
       <modules>
         <module>test-bun</module>
         <module>test-bun/pom-production.xml</module>
