@@ -57,7 +57,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -1362,7 +1361,7 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         // Verify that requestFlush has been invoked
-        verify(stateNode, atLeastOnce()).runWhenAttached(any());
+        verify(stateNode).runWhenAttached(any());
 
         // Verify the estimated count is now 100 + 4 * pageSize = 300
         assertEquals(300, dataCommunicator.getItemCount());

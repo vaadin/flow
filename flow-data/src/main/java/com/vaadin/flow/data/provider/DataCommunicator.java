@@ -46,6 +46,7 @@ import com.vaadin.flow.data.provider.ArrayUpdater.Update;
 import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
+import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
@@ -129,10 +130,10 @@ public class DataCommunicator<T> implements Serializable {
     private Registration dataProviderUpdateRegistration;
     private HashSet<T> updatedData = new HashSet<>();
     private FlushRequest flushRequest;
+    private FlushRequest visibleFlushRequest;
     private FlushRequest flushUpdatedDataRequest;
     private boolean flushInProgress = false;
     private boolean flushUpdatedDataInProgress = false;
-    private boolean hiddenItemCountUpdateRequested = false;
 
     private CallbackDataProvider.CountCallback<T, ?> countCallback;
     private int itemCountEstimate = -1;
@@ -1205,45 +1206,56 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void requestFlush(boolean forced) {
-        requestHiddenItemCountUpdate();
         if (!shouldRequestFlush(forced)) {
             return;
         }
-        flushRequest = FlushRequest.register(stateNode, context -> {
-            flushInProgress = true;
-            try {
-                if (!context.isClientSideInitialized()) {
-                    reset();
-                    arrayUpdater.initialize();
-                }
-                flush();
-            } finally {
-                flushRequest = null;
-                flushInProgress = false;
-            }
-        });
+        flushRequest = FlushRequest.register(stateNode, this::runFlushRequest);
     }
 
     /**
-     * Keeps the item count and its change events up to date while the component
-     * is hidden, since the flush that normally updates them waits for the
-     * component to become visible. Applications rely on the events regardless
+     * Sends the changes to the client if the component is visible. Changes for
+     * a hidden component are not delivered before it becomes visible, so the
+     * flush is then registered again to run once it is visible. The item count
+     * is still updated, since applications rely on its change events regardless
      * of visibility, for example to show the component again once there are
      * items.
      */
-    private void requestHiddenItemCountUpdate() {
-        if (!fetchEnabled || hiddenItemCountUpdateRequested) {
+    private void runFlushRequest(FlushRequest request,
+            ExecutionContext context) {
+        if (request == flushRequest) {
+            flushRequest = null;
+        }
+        if (!stateNode.isVisible()) {
+            updateAssumedSize();
+            fireItemCountEvent(assumedSize);
+            if (visibleFlushRequest == null
+                    || !visibleFlushRequest.canExecute(stateNode)) {
+                visibleFlushRequest = FlushRequest.register(stateNode,
+                        this::runFlushRequest, ExecutionFlag.WHEN_VISIBLE);
+            }
             return;
         }
-        hiddenItemCountUpdateRequested = true;
-        stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(stateNode, context -> {
-                    hiddenItemCountUpdateRequested = false;
-                    if (!stateNode.isVisible()) {
-                        updateAssumedSize();
-                        fireItemCountEvent(assumedSize);
-                    }
-                }));
+        // Both a pending request and one that waited for the component to
+        // become visible can be run in the same response, but one flush
+        // sends everything
+        for (FlushRequest other : new FlushRequest[] { flushRequest,
+                visibleFlushRequest }) {
+            if (other != null && other != request) {
+                other.cancelled = true;
+            }
+        }
+        flushRequest = null;
+        visibleFlushRequest = null;
+        flushInProgress = true;
+        try {
+            if (!context.isClientSideInitialized()) {
+                reset();
+                arrayUpdater.initialize();
+            }
+            flush();
+        } finally {
+            flushInProgress = false;
+        }
     }
 
     private boolean shouldRequestFlush(boolean forced) {
@@ -1264,15 +1276,16 @@ public class DataCommunicator<T> implements Serializable {
         if (!shouldRequestFlushUpdatedData()) {
             return;
         }
-        flushUpdatedDataRequest = FlushRequest.register(stateNode, context -> {
-            flushUpdatedDataInProgress = true;
-            try {
-                flushUpdatedData();
-            } finally {
-                flushUpdatedDataRequest = null;
-                flushUpdatedDataInProgress = false;
-            }
-        });
+        flushUpdatedDataRequest = FlushRequest.register(stateNode,
+                (request, context) -> {
+                    flushUpdatedDataInProgress = true;
+                    try {
+                        flushUpdatedData();
+                    } finally {
+                        flushUpdatedDataRequest = null;
+                        flushUpdatedDataInProgress = false;
+                    }
+                }, ExecutionFlag.WHEN_VISIBLE);
     }
 
     private boolean shouldRequestFlushUpdatedData() {
@@ -1707,14 +1720,19 @@ public class DataCommunicator<T> implements Serializable {
         private boolean cancelled;
 
         static FlushRequest register(StateNode stateNode,
-                SerializableConsumer<ExecutionContext> action) {
+                SerializableBiConsumer<FlushRequest, ExecutionContext> action,
+                ExecutionFlag... flags) {
             FlushRequest request = new FlushRequest();
             request.owner = stateNode.getOwner();
             stateNode.runWhenAttached(ui -> {
                 request.owner = stateNode.getOwner();
                 if (!request.cancelled) {
-                    ui.getInternals().getStateTree().beforeClientResponse(
-                            stateNode, action, ExecutionFlag.WHEN_VISIBLE);
+                    ui.getInternals().getStateTree()
+                            .beforeClientResponse(stateNode, context -> {
+                                if (!request.cancelled) {
+                                    action.accept(request, context);
+                                }
+                            }, flags);
                 }
             });
             return request;
