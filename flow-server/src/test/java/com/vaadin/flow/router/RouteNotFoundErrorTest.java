@@ -57,6 +57,8 @@ class RouteNotFoundErrorTest {
     void setErrorParameter_productionMode_pathContainRoutesTemplate_renderedElementHasNoRoutes() {
 
         RouteNotFoundError page = new RouteNotFoundError();
+        // A reused view instance must drop a mark from an earlier render
+        RouteUtil.setNoRoutesPage(page, true);
         BeforeEnterEvent event = createEvent(true);
 
         ErrorParameter<NotFoundException> param = new ErrorParameter<NotFoundException>(

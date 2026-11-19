@@ -45,9 +45,10 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
  * refreshed in place like any other error view.
  * <p>
  * A reload is not used more widely because it is sent to every open browser tab
- * and recreates their UIs. A refresh reaches only the affected UI when push is
- * enabled; without push it is also sent to every open tab, but it only
- * re-navigates each tab in place instead of reloading the page.
+ * and recreates their UIs, unless they use {@code @PreserveOnRefresh}. A
+ * refresh reaches only the affected UIs when they all use push; otherwise it is
+ * also sent to every open tab, but it only re-navigates each tab in place
+ * instead of reloading the page.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
