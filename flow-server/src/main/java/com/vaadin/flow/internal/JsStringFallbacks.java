@@ -24,14 +24,19 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
+import com.vaadin.flow.component.internal.BundledEventData;
+import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
@@ -43,18 +48,19 @@ import com.vaadin.flow.server.VaadinService;
 
 /**
  * Matches JavaScript that is sent as a string against the
- * {@link JsStringFallback} interfaces of the application, so that the call runs
- * the declared function from the bundle instead of compiling the string in the
- * browser.
+ * {@link JsStringFallback} interfaces of the application, so that the browser
+ * runs a function from the bundle instead of compiling the string.
  * <p>
  * The build checks the marked interfaces with {@link #collectFallbacks} and
  * lists their names in {@link Constants#JS_STRING_FALLBACKS_FILE}. The list is
- * read the first time a service matches a call, which only happens in the modes
- * that report string JavaScript.
+ * read the first time a service matches a string, which only happens in the
+ * modes that report string JavaScript.
  * <p>
- * A string call matches a declared method when the text and the parameter count
- * are the same, which is the identity
- * {@link JsCall#functionId(String, int, boolean)} gives the function in the
+ * A string matches what is declared for it when the text is the same, and for a
+ * call or a function also the number of parameters: the same identity that
+ * {@link JsCall#functionId(String, int, boolean)},
+ * {@link JsCall#snippetFunctionId(String, List, int, boolean)} and
+ * {@link BundledEventData#getFunctionId(String)} give the function in the
  * bundle.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
@@ -64,31 +70,54 @@ public final class JsStringFallbacks {
     private static final String RESOURCE = Constants.VAADIN_SERVLET_RESOURCES
             + Constants.JS_STRING_FALLBACKS_FILE;
 
-    private static final Map<VaadinService, Map<String, Method>> fallbacks = Collections
+    private static final Map<VaadinService, Fallbacks> fallbacks = Collections
             .synchronizedMap(new WeakHashMap<>());
+
+    /**
+     * What the {@link JsStringFallback} interfaces of an application declare.
+     *
+     * @param calls
+     *            the methods that run JavaScript, by function identifier
+     * @param functions
+     *            the methods that return a {@link JsFunction}, by function
+     *            identifier
+     * @param filters
+     *            the declared filters
+     * @param eventData
+     *            the declared event data values
+     */
+    public record Fallbacks(Map<String, Method> calls,
+            Map<String, Method> functions, Set<String> filters,
+            Set<String> eventData) {
+
+        private static final Fallbacks NONE = new Fallbacks(Map.of(), Map.of(),
+                Set.of(), Set.of());
+    }
 
     private JsStringFallbacks() {
     }
 
     /**
-     * Checks the fallback interfaces and maps each declared method by the
-     * identifier of its function.
+     * Checks the fallback interfaces and collects what they declare.
      *
      * @param definitionTypes
      *            the interfaces marked with {@link JsStringFallback}, not
      *            <code>null</code>
-     * @return the declared methods by function identifier, not
-     *         <code>null</code>
+     * @return what the interfaces declare, not <code>null</code>
      * @throws IllegalArgumentException
-     *             if a type is not a {@link JsDefinition} of calls, has a
-     *             method that a string call can not match, or two methods
-     *             declare the same JavaScript with the same parameter count
+     *             if a type is not a {@link JsDefinition}, declares something
+     *             that no string can match, or two methods declare the same
+     *             JavaScript with the same parameter count
      */
-    public static Map<String, Method> collectFallbacks(
+    public static Fallbacks collectFallbacks(
             Collection<Class<?>> definitionTypes) {
-        Map<String, Method> byFunctionId = new HashMap<>();
+        Map<String, Method> calls = new HashMap<>();
+        Map<String, Method> functions = new HashMap<>();
+        Set<String> filters = new HashSet<>();
+        Set<String> eventData = new HashSet<>();
         for (Class<?> definitionType : definitionTypes) {
-            checkFallbackDefinition(definitionType);
+            boolean snippets = checkFallbackDefinition(definitionType);
+            Map<String, Method> byFunctionId = snippets ? functions : calls;
             for (Method method : collectDeclaredMethods(definitionType)) {
                 Method previous = byFunctionId
                         .putIfAbsent(JsCall.functionId(method), method);
@@ -96,18 +125,24 @@ public final class JsStringFallbacks {
                     throw new IllegalArgumentException("Methods "
                             + describe(previous) + " and " + describe(method)
                             + " declare the same JavaScript with the same"
-                            + " parameter count, so a string call could not"
-                            + " tell which of them it stands for. Keep one of"
-                            + " them");
+                            + " parameter count, so a string could not tell"
+                            + " which of them it stands for. Keep one of them");
                 }
             }
+            JsStringFallback annotation = definitionType
+                    .getAnnotation(JsStringFallback.class);
+            if (annotation != null) {
+                filters.addAll(Arrays.asList(annotation.filters()));
+                eventData.addAll(Arrays.asList(annotation.eventData()));
+            }
         }
-        return Map.copyOf(byFunctionId);
+        return new Fallbacks(Map.copyOf(calls), Map.copyOf(functions),
+                Set.copyOf(filters), Set.copyOf(eventData));
     }
 
     /**
-     * Finds the declared call that stands in for JavaScript sent as a string,
-     * in the service of the current request.
+     * Finds the declared call that stands in for an <code>executeJs</code> call
+     * with a string expression, in the service of the current request.
      *
      * @param expression
      *            the JavaScript the string call sends, not <code>null</code>
@@ -122,19 +157,72 @@ public final class JsStringFallbacks {
      */
     public static @Nullable JsCall findDeclaredCall(String expression,
             @Nullable Object[] parameters) {
-        if (!CspViolationReporter.isEnabled()) {
-            return null;
-        }
-        // Enabled means there is a service with a configuration
-        VaadinService service = VaadinService.getCurrent();
-        Method method = fallbacks
-                .computeIfAbsent(service, JsStringFallbacks::loadFallbacks)
-                .get(JsCall.functionId(expression, parameters.length, false));
-        if (method == null) {
-            return null;
-        }
-        return new JsCall(method.getDeclaringClass(), method.getName(),
-                Arrays.asList(parameters));
+        Fallbacks current = getFallbacks();
+        Method method = (current == null) ? null
+                : current.calls().get(JsCall.functionId(expression,
+                        parameters.length, false));
+        return (method == null) ? null
+                : new JsCall(method.getDeclaringClass(), method.getName(),
+                        Arrays.asList(parameters));
+    }
+
+    /**
+     * Finds the declared call of a method returning a {@link JsFunction} that
+     * stands in for a function created from a string body, in the service of
+     * the current request.
+     *
+     * @param body
+     *            the body of the function, not <code>null</code>
+     * @param captures
+     *            the values the function captures, not <code>null</code>
+     * @return the call to create the declared function with, or
+     *         <code>null</code> if the application declared nothing for the
+     *         body, or the mode does not report string JavaScript
+     * @throws IllegalStateException
+     *             if the list the build wrote names a class that can not be
+     *             loaded or no longer fits
+     */
+    public static @Nullable JsCall findDeclaredFunction(String body,
+            @Nullable Object[] captures) {
+        Fallbacks current = getFallbacks();
+        // A function from a string has no parameter names
+        Method method = (current == null) ? null
+                : current.functions().get(JsCall.snippetFunctionId(body,
+                        List.of(), captures.length, false));
+        return (method == null) ? null
+                : new JsCall(method.getDeclaringClass(), method.getName(),
+                        Arrays.asList(captures));
+    }
+
+    /**
+     * Checks whether the application declared a filter, so that the bundle has
+     * a function for it, in the service of the current request.
+     *
+     * @param filter
+     *            the filter, not <code>null</code>
+     * @return <code>true</code> if the filter is declared and the mode reports
+     *         string JavaScript
+     */
+    public static boolean isDeclaredFilter(String filter) {
+        Fallbacks current = getFallbacks();
+        return current != null && current.filters().contains(filter);
+    }
+
+    /**
+     * Checks whether the application declared an event data value, so that the
+     * bundle has a function for it, in the service of the current request.
+     *
+     * @param eventData
+     *            the event data value, possibly mapped to an element, not
+     *            <code>null</code>
+     * @return <code>true</code> if the value is declared and the mode reports
+     *         string JavaScript
+     */
+    public static boolean isDeclaredEventData(String eventData) {
+        Fallbacks current = getFallbacks();
+        // The bundle has one function for a value, mapped to an element or not
+        return current != null && current.eventData()
+                .contains(BundledEventData.getExpression(eventData));
     }
 
     /**
@@ -160,14 +248,28 @@ public final class JsStringFallbacks {
     }
 
     /**
+     * What the current service matches strings against, or <code>null</code>
+     * when the mode does not report string JavaScript and strings are sent as
+     * they are.
+     */
+    private static @Nullable Fallbacks getFallbacks() {
+        if (!CspViolationReporter.isEnabled()) {
+            return null;
+        }
+        // Enabled means there is a service with a configuration
+        return fallbacks.computeIfAbsent(VaadinService.getCurrent(),
+                JsStringFallbacks::loadFallbacks);
+    }
+
+    /**
      * Reads the interfaces the build listed for the application of a service.
      */
-    private static Map<String, Method> loadFallbacks(VaadinService service) {
+    private static Fallbacks loadFallbacks(VaadinService service) {
         ClassLoader classLoader = service.getClassLoader();
         List<Class<?>> definitionTypes = new ArrayList<>();
         try (InputStream list = classLoader.getResourceAsStream(RESOURCE)) {
             if (list == null) {
-                return Map.of();
+                return Fallbacks.NONE;
             }
             JsonNode names = JacksonUtils.getMapper().readTree(list);
             for (JsonNode name : names) {
@@ -191,29 +293,65 @@ public final class JsStringFallbacks {
         }
     }
 
-    private static void checkFallbackDefinition(Class<?> definitionType) {
-        if (JsDefinitionProxy.checkDefinition(
-                definitionType) != JsDefinitionProxy.Kind.CALLS) {
-            throw new IllegalArgumentException(definitionType.getName()
-                    + " declares snippets, but only a call can stand in for"
-                    + " JavaScript that is sent as a string");
-        }
+    /**
+     * Checks that what a type declares can stand in for strings.
+     *
+     * @return whether the type declares snippets rather than calls
+     */
+    private static boolean checkFallbackDefinition(Class<?> definitionType) {
+        boolean snippets = JsDefinitionProxy.checkDefinition(
+                definitionType) == JsDefinitionProxy.Kind.SNIPPETS;
         for (Method method : collectDeclaredMethods(definitionType)) {
-            // A string call passes a fixed list of values: matching a rest
+            String name = "Method " + method.getName() + " of "
+                    + definitionType.getName();
+            // A string passes a fixed list of values: matching a rest
             // parameter would need the count of fixed parameters guessed
             if (method.isVarArgs()) {
-                throw new IllegalArgumentException("Method " + method.getName()
-                        + " of " + definitionType.getName()
-                        + " is variadic. Declare one method per parameter"
-                        + " count that the string call is made with");
+                throw new IllegalArgumentException(
+                        name + " is variadic. Declare one method per parameter"
+                                + " count that the string is sent with");
             }
             if (method.isAnnotationPresent(JsWithExecutionContext.class)) {
-                throw new IllegalArgumentException("Method " + method.getName()
-                        + " of " + definitionType.getName()
+                throw new IllegalArgumentException(name
                         + " gets the execution context, which a string call"
                         + " does not have");
             }
+            if (snippets && !JsFunction.class.equals(method.getReturnType())) {
+                throw new IllegalArgumentException(name + " returns "
+                        + method.getReturnType().getSimpleName()
+                        + ". Only a JsFunction can stand in for a function"
+                        + " made from a string; list filters and event data"
+                        + " in @JsStringFallback instead");
+            }
+            if (snippets
+                    && !JsCall.getFunctionParameterNames(method).isEmpty()) {
+                throw new IllegalArgumentException(name
+                        + " declares parameter names, which a function made"
+                        + " from a string does not have");
+            }
         }
+        JsStringFallback annotation = definitionType
+                .getAnnotation(JsStringFallback.class);
+        if (annotation != null) {
+            for (String filter : annotation.filters()) {
+                if (!BundledEventData.isBundledFilter(filter)) {
+                    throw new IllegalArgumentException("The filter \"" + filter
+                            + "\" declared by " + definitionType.getName()
+                            + " is a property path, which the browser reads"
+                            + " without compiling it. Remove it");
+                }
+            }
+            for (String value : annotation.eventData()) {
+                if (!ElementListenerMap.isCompiledByClient(value)) {
+                    throw new IllegalArgumentException("The event data \""
+                            + value + "\" declared by "
+                            + definitionType.getName()
+                            + " is a property path, which the browser reads"
+                            + " without compiling it. Remove it");
+                }
+            }
+        }
+        return snippets;
     }
 
     private static List<Method> collectDeclaredMethods(

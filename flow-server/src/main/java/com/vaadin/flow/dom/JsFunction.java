@@ -24,6 +24,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsFunctionParameterNames;
@@ -133,6 +134,11 @@ public final class JsFunction implements JsSnippet {
     public static JsFunction of(String body, @Nullable Object... captures) {
         Objects.requireNonNull(body, "body");
         Objects.requireNonNull(captures, "captures");
+        JsCall fallback = JsStringFallbacks.findDeclaredFunction(body,
+                captures);
+        if (fallback != null) {
+            return ofDeclaredCall(fallback);
+        }
         CspViolationReporter.reportStringJavaScript();
         @Nullable
         Object[] copy = captures.clone();

@@ -30,9 +30,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.dom.DomListenerRegistration;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.CspMode;
@@ -40,6 +43,7 @@ import com.vaadin.flow.server.CspViolationException;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -47,14 +51,43 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JsStringFallbacksTest {
 
+    private static final String FILTER = "event.key === 'Escape'";
+
+    private static final String EVENT_DATA = "event.target.value.trim().length";
+
+    private static final String IMPORT = "return Promise.resolve()";
+
     @JsDefinition
-    @JsStringFallback
+    @JsStringFallback(filters = FILTER, eventData = EVENT_DATA)
     interface AddonFallbacks {
         @JsExpression("return this.scrollTop")
         PendingJavaScriptResult scrollTop();
 
         @JsExpression("document.title = $0 + ' (' + $1 + ')'")
         void setTitle(Object title, Object count);
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    interface FunctionFallbacks {
+        @JsExpression("this.title = $0")
+        JsFunction setTitle(Object title);
+
+        @JsExpression(IMPORT)
+        JsFunction load();
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    interface NamedFunctionFallbacks {
+        @JsExpression("return value * 2")
+        @JsFunctionParameterNames("value")
+        JsFunction twice();
+    }
+
+    @JsDefinition
+    @JsStringFallback(filters = "event.detail")
+    interface PathFilterFallbacks {
     }
 
     @JsDefinition
@@ -88,7 +121,8 @@ class JsStringFallbacksTest {
     void setUp() throws Exception {
         setup = new MockServletServiceSessionSetup();
         ui = new MockUI(setup.getSession());
-        listFallbacks("[\"" + AddonFallbacks.class.getName() + "\"]");
+        listFallbacks("[\"" + AddonFallbacks.class.getName() + "\", \""
+                + FunctionFallbacks.class.getName() + "\"]");
     }
 
     @AfterEach
@@ -169,6 +203,57 @@ class JsStringFallbacksTest {
                 ui.onlyScheduledJsCall().definitionType());
         assertThrows(CspViolationException.class,
                 () -> ui.getElement().executeJs("return this.scrollTop"));
+    }
+
+    @Test
+    void strict_matchingFunctionBody_usesDeclaredFunction() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+
+        JsFunction function = JsFunction.of("this.title = $0", "tip");
+
+        JsCall call = function.getDeclaredCall();
+        assertEquals(FunctionFallbacks.class, call.definitionType());
+        assertEquals("setTitle", call.methodName());
+        assertEquals(List.of("tip"), call.arguments());
+        // An initializer and a dynamic import are functions made from strings
+        assertDoesNotThrow(() -> {
+            ui.getElement().addJsInitializer("this.title = $0", "tip");
+            ui.getPage().addDynamicImport(IMPORT);
+        });
+        assertThrows(CspViolationException.class,
+                () -> JsFunction.of("this.title = $0"));
+    }
+
+    @Test
+    void strict_matchingFilterAndEventData_useBundledFunctions() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        DomListenerRegistration registration = ui.getElement()
+                .addEventListener("keydown", event -> {
+                });
+
+        registration.setFilter(FILTER);
+        registration.addEventData(EVENT_DATA);
+
+        assertEquals(FILTER, registration.getFilter());
+        assertThrows(CspViolationException.class,
+                () -> registration.setFilter("event.key === 'Enter'"));
+        assertThrows(CspViolationException.class, () -> registration
+                .addEventData("event.target.value.length + 1"));
+    }
+
+    @Test
+    void collectFallbacks_functionWithParameterNamesOrPathFilter_throws() {
+        IllegalArgumentException named = assertThrows(
+                IllegalArgumentException.class,
+                () -> JsStringFallbacks.collectFallbacks(
+                        List.of(NamedFunctionFallbacks.class)));
+        assertTrue(named.getMessage().contains("twice"), named.getMessage());
+
+        IllegalArgumentException path = assertThrows(
+                IllegalArgumentException.class, () -> JsStringFallbacks
+                        .collectFallbacks(List.of(PathFilterFallbacks.class)));
+        assertTrue(path.getMessage().contains("event.detail"),
+                path.getMessage());
     }
 
     @Test

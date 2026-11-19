@@ -221,7 +221,31 @@ public record JsCall(Class<?> definitionType, String methodName,
         if (!JsSnippet.class.isAssignableFrom(method.getReturnType())) {
             return functionId(expression, parameterCount, variadic);
         }
-        List<String> parameterNames = getFunctionParameterNames(method);
+        return snippetFunctionId(expression, getFunctionParameterNames(method),
+                parameterCount, variadic);
+    }
+
+    /**
+     * Gets the identifier of the function that a method declaring a
+     * {@link JsSnippet} registers in the generated bundle, from what the method
+     * declares.
+     *
+     * @param expression
+     *            the declared JavaScript, not <code>null</code>
+     * @param parameterNames
+     *            the names of the parameters of the snippet function, as
+     *            {@link JsFunctionParameterNames} declares them, not
+     *            <code>null</code>
+     * @param parameterCount
+     *            the number of parameters of the declaring method, which are
+     *            the captures of the snippet
+     * @param variadic
+     *            whether its last parameter collects a variable number of
+     *            arguments
+     * @return the function identifier, not <code>null</code>
+     */
+    public static String snippetFunctionId(String expression,
+            List<String> parameterNames, int parameterCount, boolean variadic) {
         // A call is hashed from what starts with the parameter count, so a
         // snippet starting with anything else never shares its hash input
         String kind = "(" + String.join(",", parameterNames) + ")=>";

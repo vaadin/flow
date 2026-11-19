@@ -922,4 +922,23 @@ class TaskGenerateJsDefinitionsTest {
         assertFalse(new File(resources, Constants.JS_STRING_FALLBACKS_FILE)
                 .exists());
     }
+
+    @JsDefinition
+    @JsStringFallback(filters = "event.key === 'Escape'", eventData = "event.target.value.trim().length")
+    public interface EventFallbacks {
+    }
+
+    @Test
+    void stringFallbackFiltersAndEventData_areBundledLikeEventAnnotations() {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(EventFallbacks.class), true);
+
+        for (String expression : List.of("event.key === 'Escape'",
+                "event.target.value.trim().length")) {
+            assertTrue(content.contains("window.Vaadin.Flow.jsSnippets[\""
+                    + BundledEventData.getFunctionId(expression)
+                    + "\"] = function () {"), content);
+            assertTrue(content.contains(expression), content);
+        }
+    }
 }

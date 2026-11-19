@@ -51,6 +51,7 @@ import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.ParameterizedConstantPoolKey;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.MapPutChange;
@@ -423,12 +424,22 @@ public class ElementListenerMap extends NodeMap {
 
         private DomListenerRegistration addEventData(List<String> eventData) {
             requireEventData(eventData);
-            if (eventData.stream()
+            // What the application declared as a fallback is in the bundle
+            List<String> declared = eventData.stream()
+                    .filter(value -> isCompiledByClient(value)
+                            && JsStringFallbacks.isDeclaredEventData(value))
+                    .toList();
+            List<String> compiled = eventData.stream()
+                    .filter(value -> !declared.contains(value)).toList();
+            if (compiled.stream()
                     .anyMatch(ElementListenerMap::isCompiledByClient)) {
                 CspViolationReporter.reportStringJavaScript();
             }
 
-            appendEventData(eventData);
+            if (!declared.isEmpty()) {
+                addBundledEventData(declared);
+            }
+            appendEventData(compiled);
 
             listenerMap.updateEventSettings(type);
 
@@ -516,6 +527,11 @@ public class ElementListenerMap extends NodeMap {
         @Override
         public DomListenerRegistration setFilter(String filter) {
             if (filter != null && !isPropertyPath(filter)) {
+                if (JsStringFallbacks.isDeclaredFilter(filter)) {
+                    // What the application declared as a fallback is in the
+                    // bundle
+                    return updateFilter(new BundledExpressionEntry(filter));
+                }
                 CspViolationReporter.reportStringJavaScript();
             }
             return updateFilter(

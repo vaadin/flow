@@ -306,7 +306,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         definitions.stream().sorted(Comparator.comparing(Class::getName))
                 .forEach(definition -> lines
                         .addAll(renderDefinitionLines(definition, withNames)));
-        lines.addAll(renderEventDataLines(eventTypes, withNames));
+        lines.addAll(renderEventDataLines(eventTypes, definitions, withNames));
         lines.addAll(FOOTER);
         return String.join(System.lineSeparator(), lines);
     }
@@ -320,7 +320,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * client compiles such a value with.
      */
     private static List<String> renderEventDataLines(
-            Collection<Class<?>> eventTypes, boolean withNames) {
+            Collection<Class<?>> eventTypes, Collection<Class<?>> definitions,
+            boolean withNames) {
         // By identifier, for an output that does not depend on the order of
         // the scan, each with the first event type that declares it
         Map<String, String> expressions = new TreeMap<>();
@@ -349,6 +350,34 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                         expressions.putIfAbsent(functionId, filter);
                         declaredBy.putIfAbsent(functionId, eventType.getName()
                                 + " @DomEvent(filter = \"" + filter + "\")");
+                    }
+                });
+        // The filters and event data an application declares for an add-on
+        // that sets them as strings are the same functions
+        definitions.stream()
+                .filter(definition -> definition
+                        .isAnnotationPresent(JsStringFallback.class))
+                .sorted(Comparator.comparing(Class::getName))
+                .forEach(definition -> {
+                    JsStringFallback fallback = definition
+                            .getAnnotation(JsStringFallback.class);
+                    for (String filter : fallback.filters()) {
+                        String functionId = BundledEventData
+                                .getFunctionId(filter);
+                        expressions.putIfAbsent(functionId, filter);
+                        declaredBy.putIfAbsent(functionId,
+                                definition.getName()
+                                        + " @JsStringFallback(filters = \""
+                                        + filter + "\")");
+                    }
+                    for (String eventData : fallback.eventData()) {
+                        String functionId = BundledEventData
+                                .getFunctionId(eventData);
+                        expressions.putIfAbsent(functionId, eventData);
+                        declaredBy.putIfAbsent(functionId,
+                                definition.getName()
+                                        + " @JsStringFallback(eventData = \""
+                                        + eventData + "\")");
                     }
                 });
 

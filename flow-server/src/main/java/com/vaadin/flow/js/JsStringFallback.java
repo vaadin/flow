@@ -26,36 +26,78 @@ import java.lang.annotation.Target;
  * JavaScript that is sent as a string, typically by an add-on that the
  * application can not change.
  * <p>
- * The value of each {@link JsExpression} method is the exact string that is
- * sent, and the method has as many parameters as the string call passes. When
- * the Content Security Policy mode reports string JavaScript, a call such as
- * <code>element.executeJs("return this.scrollTop")</code> then runs the
- * function that the build put in the bundle for
+ * When the Content Security Policy mode reports string JavaScript, a string
+ * that matches what a marked interface declares exactly, including whitespace,
+ * runs JavaScript from the bundle instead of being refused in the
+ * {@code strict} mode or reported in the {@code warn} mode. A string that does
+ * not match is refused or reported as before. In the {@code off} mode strings
+ * are sent as they are.
+ * <p>
+ * What a string is matched against depends on the API that sends it:
+ * <ul>
+ * <li>{@code Element.executeJs(String, Object...)} and
+ * {@code Page.executeJs(String, Object...)}: a method whose
+ * {@link JsExpression} value is the string, with as many parameters as the call
+ * passes.
+ * <li>{@code JsFunction.of(String, Object...)}, and so
+ * {@code Element.addJsInitializer(String, Object...)}, and
+ * {@code Page.addDynamicImport(String)}: a method that returns a
+ * {@code JsFunction}, whose {@link JsExpression} value is the function body,
+ * with as many parameters as there are captures and no
+ * {@link JsFunctionParameterNames}. Methods that return snippets can not be in
+ * the same interface as methods that run JavaScript, so these go into an
+ * interface of their own.
+ * <li>{@code DomListenerRegistration.setFilter(String)} and
+ * {@code DomListenerRegistration.addEventData(String)}: the strings listed in
+ * {@link #filters()} and {@link #eventData()}.
+ * </ul>
+ * For example:
  *
  * <pre>
  * &#64;JsDefinition
- * &#64;JsStringFallback
+ * &#64;JsStringFallback(filters = "event.key === 'Escape'")
  * public interface AddonFallbacks {
  *     &#64;JsExpression("return this.scrollTop")
  *     PendingJavaScriptResult scrollTop();
  * }
- * </pre>
  *
- * instead of being refused in the {@code strict} mode or reported in the
- * {@code warn} mode. A string that does not match exactly, including
- * whitespace, is refused or reported as before. In the {@code off} mode the
- * string is sent as it is.
+ * &#64;JsDefinition
+ * &#64;JsStringFallback
+ * public interface AddonFunctionFallbacks {
+ *     &#64;JsExpression("this.title = $0")
+ *     JsFunction setTitle(Object title);
+ * }
+ * </pre>
  * <p>
  * The build finds the marked interfaces together with the other
  * {@link JsDefinition} interfaces, and fails if one of them can not stand in
- * for a string call: a method that declares a snippet, is variadic, or declares
- * the same JavaScript with the same parameter count as another marked method.
- * <p>
- * Only {@code Element.executeJs(String, Object...)} and
- * {@code Page.executeJs(String, Object...)} are matched.
+ * for a string: a variadic method, a snippet method that does not return a
+ * {@code JsFunction} or declares parameter names, two methods that declare the
+ * same JavaScript with the same parameter count, or a filter or event data
+ * value that is a property path, which the browser reads without compiling it.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface JsStringFallback {
+
+    /**
+     * The filters, as passed to {@code DomListenerRegistration.setFilter}, that
+     * the build puts into the bundle as functions, so that setting one of them
+     * runs the function instead of compiling the filter.
+     *
+     * @return the filters, empty by default
+     */
+    String[] filters() default {};
+
+    /**
+     * The event data values, as passed to
+     * {@code DomListenerRegistration.addEventData}, that the build puts into
+     * the bundle as functions, so that adding one of them runs the function
+     * instead of compiling the value. The value is sent under the same key, so
+     * reading the event data does not change.
+     *
+     * @return the event data values, empty by default
+     */
+    String[] eventData() default {};
 }

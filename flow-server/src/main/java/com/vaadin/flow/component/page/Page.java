@@ -442,6 +442,12 @@ public class Page implements Serializable {
      *             in the {@link CspMode#STRICT} Content Security Policy mode
      */
     public void addDynamicImport(String expression) {
+        JsCall fallback = JsStringFallbacks.findDeclaredFunction(expression,
+                new Object[0]);
+        if (fallback != null) {
+            addDynamicImport(JsFunction.ofDeclaredCall(fallback));
+            return;
+        }
         CspViolationReporter.reportStringJavaScript();
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
     }
