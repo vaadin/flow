@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
@@ -40,12 +41,15 @@ import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -805,5 +809,117 @@ class TaskGenerateJsDefinitionsTest {
                 new File(new File(frontendFolder, GENERATED),
                         JS_DEFINITIONS_FILE_NAME).exists(),
                 "the generated file should be where the bootstrap imports it from");
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    public interface TitleFallbacks {
+        @JsExpression("document.title = $0")
+        void setTitle(Object title);
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    public interface FocusFallbacks {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    public interface VariadicFallbacks {
+        @JsExpression("console.log(...$0)")
+        void log(Object... values);
+    }
+
+    @Test
+    void stringFallbacks_areListedByNameForTheServer() throws Exception {
+        File resources = new File(temporaryFolder, "resources");
+        Options withFallbacks = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(TitleFallbacks.class,
+                        FocusFallbacks.class, GreeterJs.class)),
+                null).withFrontendDirectory(frontendFolder)
+                .withBuildResultFolders(new File(temporaryFolder, "webapp"),
+                        resources);
+        TaskGenerateJsDefinitions fallbackTask = new TaskGenerateJsDefinitions(
+                withFallbacks);
+
+        fallbackTask.execute();
+
+        File list = new File(resources, Constants.JS_STRING_FALLBACKS_FILE);
+        assertEquals(
+                List.of(FocusFallbacks.class.getName(),
+                        TitleFallbacks.class.getName()),
+                JacksonUtils.getMapper().readTree(list).valueStream()
+                        .map(JsonNode::asString).toList());
+        assertTrue(
+                fallbackTask.getFileContent().contains(
+                        JsCall.functionId("document.title = $0", 1, false)),
+                "a fallback is a definition, so its function is in the bundle");
+    }
+
+    @Test
+    void noStringFallbacks_removesAListLeftBehind() throws Exception {
+        File resources = new File(temporaryFolder, "resources");
+        File list = new File(resources, Constants.JS_STRING_FALLBACKS_FILE);
+        list.getParentFile().mkdirs();
+        Files.writeString(list.toPath(), "[\"com.example.Removed\"]");
+        options.withBuildResultFolders(new File(temporaryFolder, "webapp"),
+                resources);
+
+        task.execute();
+
+        assertFalse(list.exists());
+    }
+
+    @Test
+    void stringFallback_thatCanNotMatchAStringCall_failsTheBuild() {
+        File resources = new File(temporaryFolder, "resources");
+        Options withVariadic = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(VariadicFallbacks.class)), null)
+                .withFrontendDirectory(frontendFolder).withBuildResultFolders(
+                        new File(temporaryFolder, "webapp"), resources);
+
+        ExecutionFailedException exception = assertThrows(
+                ExecutionFailedException.class,
+                () -> new TaskGenerateJsDefinitions(withVariadic).execute());
+
+        assertTrue(exception.getMessage().contains("log"),
+                exception.getMessage());
+        assertTrue(exception.getMessage().contains("variadic"),
+                exception.getMessage());
+    }
+
+    @Test
+    void updateStringFallbacks_listsNewlyMarkedAndDropsNoLongerMarked()
+            throws Exception {
+        File resources = new File(temporaryFolder, "resources");
+        File list = new File(resources, Constants.JS_STRING_FALLBACKS_FILE);
+        list.getParentFile().mkdirs();
+        // GreeterJs stands for an interface whose annotation was removed
+        Files.writeString(list.toPath(), "[\"" + GreeterJs.class.getName()
+                + "\", \"" + TitleFallbacks.class.getName() + "\"]");
+
+        boolean affected = TaskGenerateJsDefinitions.updateStringFallbacks(
+                resources, Set.of(GreeterJs.class, FocusFallbacks.class));
+
+        assertTrue(affected);
+        assertEquals(
+                List.of(FocusFallbacks.class.getName(),
+                        TitleFallbacks.class.getName()),
+                JacksonUtils.getMapper().readTree(list).valueStream()
+                        .map(JsonNode::asString).toList());
+    }
+
+    @Test
+    void updateStringFallbacks_unrelatedClass_listLeftAlone() throws Exception {
+        File resources = new File(temporaryFolder, "resources");
+
+        boolean affected = TaskGenerateJsDefinitions
+                .updateStringFallbacks(resources, Set.of(NothingJs.class));
+
+        assertFalse(affected);
+        assertFalse(new File(resources, Constants.JS_STRING_FALLBACKS_FILE)
+                .exists());
     }
 }

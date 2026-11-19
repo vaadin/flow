@@ -41,7 +41,9 @@ import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.CssBundler;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
@@ -608,6 +610,11 @@ public class Page implements Serializable {
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
+        JsCall fallback = JsStringFallbacks.findDeclaredCall(expression,
+                parameters);
+        if (fallback != null) {
+            return ui.getInternals().addJavaScriptInvocation(fallback);
+        }
         CspViolationReporter.reportStringJavaScript();
         return ui.getInternals().addJavaScriptInvocation(
                 new JavaScriptInvocation(expression, parameters));

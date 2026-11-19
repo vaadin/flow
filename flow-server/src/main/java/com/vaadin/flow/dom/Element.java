@@ -61,6 +61,7 @@ import com.vaadin.flow.internal.DiscardAwareExecution;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
@@ -2021,6 +2022,11 @@ public class Element extends Node<Element> {
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
+        JsCall fallback = JsStringFallbacks.findDeclaredCall(expression,
+                parameters);
+        if (fallback != null) {
+            return scheduleJsCall(fallback);
+        }
         CspViolationReporter.reportStringJavaScript();
         return scheduleExecuteJs(expression, parameters);
     }
