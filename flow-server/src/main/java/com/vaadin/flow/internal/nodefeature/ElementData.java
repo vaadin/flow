@@ -144,8 +144,12 @@ public class ElementData extends NodeMap {
     @Override
     protected Serializable put(String key, Serializable value,
             boolean emitChange) {
+        if (!NodeProperties.VISIBLE.equals(key)) {
+            return super.put(key, value, emitChange);
+        }
+        boolean visibleBefore = isVisible();
         Serializable oldValue = super.put(key, value, emitChange);
-        if (NodeProperties.VISIBLE.equals(key)
+        if (isVisible() != visibleBefore
                 && getNode().getOwner() instanceof StateTree tree) {
             tree.fireVisibilityChangeListeners();
         }

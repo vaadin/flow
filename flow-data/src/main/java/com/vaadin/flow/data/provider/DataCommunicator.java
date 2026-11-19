@@ -132,6 +132,7 @@ public class DataCommunicator<T> implements Serializable {
     private boolean flushInProgress = false;
     private boolean flushUpdatedDataInProgress = false;
     private boolean flushWaitsForVisibility = false;
+    private boolean clientSideInitializationPending = false;
     private boolean flushUpdatedDataWaitsForVisibility = false;
 
     private CallbackDataProvider.CountCallback<T, ?> countCallback;
@@ -1211,12 +1212,18 @@ public class DataCommunicator<T> implements Serializable {
         }
         flushRequest = FlushRequest.register(stateNode, context -> {
             if (!stateNode.isVisible()) {
+                // The client side counts as initialized once the hidden node
+                // has been sent, but nothing has initialized it for data yet
+                clientSideInitializationPending |= !context
+                        .isClientSideInitialized();
                 waitForVisibility();
                 return;
             }
             flushInProgress = true;
             try {
-                if (!context.isClientSideInitialized()) {
+                if (!context.isClientSideInitialized()
+                        || clientSideInitializationPending) {
+                    clientSideInitializationPending = false;
                     reset();
                     arrayUpdater.initialize();
                 }

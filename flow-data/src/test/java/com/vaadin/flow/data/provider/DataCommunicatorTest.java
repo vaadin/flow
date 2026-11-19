@@ -58,6 +58,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -2048,15 +2050,47 @@ public class DataCommunicatorTest {
         verify(dataGenerator, never()).generateData(any(), any());
         assertNull(lastSet);
 
-        // Another flush is requested while the one that waited for the
-        // component to become visible runs in the same response
         element.setVisible(true);
-        dataCommunicator.reset();
         fakeClientCommunication();
 
         assertEquals(1, fetches.get());
         verify(arrayUpdater).startUpdate(40);
         assertEquals(Range.withLength(0, 30), lastSet);
+    }
+
+    @Test
+    void refresh_nodeHidden_itemSentOnceVisible() {
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        dataCommunicator.setViewportRange(0, 30);
+        fakeClientCommunication();
+        clearInvocations(dataGenerator);
+        Item item = new Item(1);
+
+        element.setVisible(false);
+        dataCommunicator.refresh(item);
+        fakeClientCommunication();
+        verify(dataGenerator, never()).generateData(any(), any());
+
+        element.setVisible(true);
+        fakeClientCommunication();
+        verify(dataGenerator).generateData(eq(item), any());
+    }
+
+    @Test
+    void attachedWhileHidden_clientSideInitializedOnceVisible() {
+        Element hidden = new Element("div");
+        hidden.setVisible(false);
+        ui.getElement().appendChild(hidden);
+        ArrayUpdater hiddenUpdater = mock(ArrayUpdater.class);
+        when(hiddenUpdater.startUpdate(anyInt())).thenReturn(update);
+        new DataCommunicator<>(dataGenerator, hiddenUpdater, data -> {
+        }, hidden.getNode());
+        fakeClientCommunication();
+        verify(hiddenUpdater, never()).initialize();
+
+        hidden.setVisible(true);
+        fakeClientCommunication();
+        verify(hiddenUpdater).initialize();
     }
 
     private void fakeClientCommunication() {

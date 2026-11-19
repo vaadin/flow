@@ -97,6 +97,21 @@ class HierarchicalDataCommunicatorBasicTest
     }
 
     @Test
+    void attachedWhileHidden_clientSideInitializedOnceVisible() {
+        var hidden = new Element("div");
+        hidden.setVisible(false);
+        ui.getElement().appendChild(hidden);
+        new HierarchicalDataCommunicator<>(compositeDataGenerator, arrayUpdater,
+                hidden.getNode(), () -> null);
+        fakeClientCommunication();
+        clearInvocations(arrayUpdater);
+
+        hidden.setVisible(true);
+        fakeClientCommunication();
+        verify(arrayUpdater).initialize();
+    }
+
+    @Test
     void setViewportRange_flush_emptyRangeSent() {
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();

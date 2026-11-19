@@ -107,6 +107,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     private FlushRequest<T> flushRequest = null;
     private boolean flushWaitsForVisibility = false;
+    private boolean clientSideInitializationPending = false;
     private Range viewportRange = Range.withLength(0, 0);
     private int lastUpdateId = -1;
 
@@ -170,7 +171,11 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                     if (!stateNode.isVisible()) {
                         // Nothing sent for a hidden component is delivered
                         // before it becomes visible, so the request keeps
-                        // collecting changes until then
+                        // collecting changes until then. The client side
+                        // counts as initialized once the hidden node has been
+                        // sent, but nothing has initialized it for data yet.
+                        clientSideInitializationPending |= !context
+                                .isClientSideInitialized();
                         flushWaitsForVisibility = true;
                         return;
                     }
@@ -712,7 +717,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     private void flush(ExecutionContext context) {
-        if (!context.isClientSideInitialized()) {
+        if (!context.isClientSideInitialized()
+                || clientSideInitializationPending) {
+            clientSideInitializationPending = false;
             reset();
             arrayUpdater.initialize();
         }
