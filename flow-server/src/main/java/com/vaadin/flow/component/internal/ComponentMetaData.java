@@ -183,8 +183,14 @@ public class ComponentMetaData {
                 AnnotationReader.getAnnotationsFor(type, CssImport.class));
 
         for (Uses uses : AnnotationReader.getAnnotationsFor(type, Uses.class)) {
-            if (!scannedClasses.contains(uses.value())) {
-                findDependencies(service, uses.value(), dependencyInfo,
+            Class<?> usedClass = uses.value();
+            // The build treats only components and interfaces as classes
+            // whose runtime values are loaded, and bundles those of any other
+            // class instead, so loading them here too would load them twice
+            if ((usedClass.isInterface()
+                    || Component.class.isAssignableFrom(usedClass))
+                    && !scannedClasses.contains(usedClass)) {
+                findDependencies(service, usedClass, dependencyInfo,
                         scannedClasses);
             }
         }

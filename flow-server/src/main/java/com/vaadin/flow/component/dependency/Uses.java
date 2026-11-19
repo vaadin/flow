@@ -39,9 +39,12 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * {@link JavaScript} and other dependencies of <code>B</code> are also loaded
  * when a component <code>A</code> is used, the same way as those of an
  * interface that <code>A</code> implements. The used class does not have to be
- * a component: it can be, for example, a
- * {@link com.vaadin.flow.js.JsDefinition} interface that <code>A</code> runs
- * JavaScript of.
+ * a component: it can be an interface, for example a
+ * {@link com.vaadin.flow.js.JsDefinition} that <code>A</code> runs JavaScript
+ * of. A used class that is neither a component nor an interface is only treated
+ * as used by the build, which bundles its {@link JsModule}, {@link CssImport}
+ * and bundled {@link JavaScript} values. What is loaded at runtime, such as a
+ * {@link StyleSheet}, is not loaded for such a class.
  * <p>
  * For {@code PolymerTemplate} implementations, used components will also be
  * instantiated if an element with the corresponding {@link Tag @Tag} value is

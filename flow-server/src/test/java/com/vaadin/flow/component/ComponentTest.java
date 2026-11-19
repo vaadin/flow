@@ -1348,8 +1348,15 @@ public class ComponentTest {
     public interface NonComponentWithDependencies {
     }
 
+    // Neither a component nor an interface, so the build bundles what it
+    // declares and nothing of it is loaded at runtime
+    @StyleSheet("plain-class.css")
+    public static class PlainClassWithDependencies {
+    }
+
     @Tag("span")
     @Uses(NonComponentWithDependencies.class)
+    @Uses(PlainClassWithDependencies.class)
     @JavaScript("uses.js")
     public static class UsesComponentWithDependencies extends Component {
 
