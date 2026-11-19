@@ -169,28 +169,26 @@ public class ComponentMetaData {
 
         scannedClasses.add(type);
 
-        // Read from any class, as a used class does not have to be a
-        // component: its dependencies are loaded with the component that
-        // uses it, the same way those of an interface the component
-        // implements are
-        dependencyInfo.jsModules.addAll(
-                AnnotationReader.getAnnotationsFor(type, JsModule.class));
-        dependencyInfo.javaScripts.addAll(
-                AnnotationReader.getAnnotationsFor(type, JavaScript.class));
-        dependencyInfo.styleSheets.addAll(
-                AnnotationReader.getAnnotationsFor(type, StyleSheet.class));
-        dependencyInfo.cssImports.addAll(
-                AnnotationReader.getAnnotationsFor(type, CssImport.class));
+        // The build treats only components and interfaces as classes whose
+        // runtime values are loaded, and bundles those of any other class
+        // instead, so loading them here too would load them twice. An
+        // interface named in @Uses is read like one the component implements
+        if (type.isInterface() || Component.class.isAssignableFrom(type)) {
+            dependencyInfo.jsModules.addAll(
+                    AnnotationReader.getAnnotationsFor(type, JsModule.class));
+            dependencyInfo.javaScripts.addAll(
+                    AnnotationReader.getAnnotationsFor(type, JavaScript.class));
+            dependencyInfo.styleSheets.addAll(
+                    AnnotationReader.getAnnotationsFor(type, StyleSheet.class));
+            dependencyInfo.cssImports.addAll(
+                    AnnotationReader.getAnnotationsFor(type, CssImport.class));
+        }
 
+        // Followed from any class, as the build follows the classes that
+        // any used class names in turn
         for (Uses uses : AnnotationReader.getAnnotationsFor(type, Uses.class)) {
-            Class<?> usedClass = uses.value();
-            // The build treats only components and interfaces as classes
-            // whose runtime values are loaded, and bundles those of any other
-            // class instead, so loading them here too would load them twice
-            if ((usedClass.isInterface()
-                    || Component.class.isAssignableFrom(usedClass))
-                    && !scannedClasses.contains(usedClass)) {
-                findDependencies(service, usedClass, dependencyInfo,
+            if (!scannedClasses.contains(uses.value())) {
+                findDependencies(service, uses.value(), dependencyInfo,
                         scannedClasses);
             }
         }

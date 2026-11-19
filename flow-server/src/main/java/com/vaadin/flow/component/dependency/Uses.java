@@ -44,7 +44,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * of. A used class that is neither a component nor an interface is only treated
  * as used by the build, which bundles its {@link JsModule}, {@link CssImport}
  * and bundled {@link JavaScript} values. What is loaded at runtime, such as a
- * {@link StyleSheet}, is not loaded for such a class.
+ * {@link StyleSheet}, is not loaded for such a class. The classes that it names
+ * in its own <code>@Uses</code> are handled as usual.
  * <p>
  * For {@code PolymerTemplate} implementations, used components will also be
  * instantiated if an element with the corresponding {@link Tag @Tag} value is
