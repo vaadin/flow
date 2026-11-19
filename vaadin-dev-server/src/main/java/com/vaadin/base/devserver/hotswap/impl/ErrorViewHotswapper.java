@@ -42,9 +42,12 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
  * exist while the page for a project without routes is shown and Copilot has
  * taken it over: Copilot replaces the page body, so an in-place refresh would
  * render the new view into detached DOM. Without Copilot, that page is
- * refreshed in place like any other error view. A reload is not used more
- * widely because it is sent to every open browser tab, not only to the affected
- * one.
+ * refreshed in place like any other error view.
+ * <p>
+ * A reload is not used more widely because it is sent to every open browser tab
+ * and recreates their UIs. A refresh reaches only the affected UI when push is
+ * enabled; without push it is also sent to every open tab, but it only
+ * re-navigates each tab in place instead of reloading the page.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
