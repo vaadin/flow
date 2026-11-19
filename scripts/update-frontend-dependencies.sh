@@ -32,9 +32,7 @@ esac
 # update pass below and updated separately with a forced "minor" target, which
 # keeps patches/minors flowing while blocking the next major.
 # - @babel/*: Babel 8 is not compatible, so it must stay on the 7.x line.
-# - vite-plugin-checker: 1.0.0 shows errors in a drawer loaded from
-#   /VAADIN/__checker/, which Flow does not forward to the Vite dev server.
-minorFilter="@babel/* vite-plugin-checker"
+minorFilter="@babel/*"
 mainReject="$minorFilter${reject:+ $reject}"
 
 echo "Current branch: $currentBranch"
