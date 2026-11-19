@@ -47,7 +47,6 @@ import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.StateTree.ExecutionFlag;
 
 /**
  * WARNING: Direct use of this class in application code is not recommended and
@@ -107,6 +106,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     private final SerializableSupplier<ValueProvider<T, String>> uniqueKeyProviderSupplier;
 
     private FlushRequest<T> flushRequest = null;
+    private boolean flushWaitsForVisibility = false;
     private Range viewportRange = Range.withLength(0, 0);
     private int lastUpdateId = -1;
 
@@ -147,6 +147,12 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         setDataProvider(new TreeDataProvider<>(new TreeData<>()), null);
 
         stateNode.addAttachListener(this::requestFlush);
+        stateNode.addVisibilityChangeListener(() -> {
+            if (flushWaitsForVisibility && stateNode.isVisible()) {
+                flushWaitsForVisibility = false;
+                scheduleFlush();
+            }
+        });
     }
 
     private FlushRequest<T> requestFlush() {
@@ -154,12 +160,23 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             return flushRequest;
         }
         flushRequest = new FlushRequest<>();
+        scheduleFlush();
+        return flushRequest;
+    }
+
+    private void scheduleFlush() {
         stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(stateNode, context -> {
+                .beforeClientResponse(stateNode, (context) -> {
+                    if (!stateNode.isVisible()) {
+                        // Nothing sent for a hidden component is delivered
+                        // before it becomes visible, so the request keeps
+                        // collecting changes until then
+                        flushWaitsForVisibility = true;
+                        return;
+                    }
                     flush(context);
                     flushRequest = null;
-                }, ExecutionFlag.WHEN_VISIBLE));
-        return flushRequest;
+                }));
     }
 
     /**

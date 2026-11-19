@@ -162,6 +162,10 @@ public class StateNode implements Serializable {
 
     private List<Command> detachListeners;
 
+    private List<Command> visibilityChangeListeners;
+
+    private boolean visibleWhenLastChecked;
+
     private NodeOwner owner = NullOwner.get();
 
     private StateNode parent;
@@ -337,6 +341,14 @@ public class StateNode implements Serializable {
             if (node.isRegistered() && (isInitial || node.hasBeenDetached)) {
                 node.hasBeenAttached = true;
                 node.fireAttachListeners(isInitial);
+            }
+        }
+        // Attaching under a parent changes the visibility that the node
+        // inherits
+        for (Pair<StateNode, Boolean> pair : attachedNodes) {
+            StateNode node = pair.getFirst();
+            if (node.isRegistered() && node.hasVisibilityChangeListeners()) {
+                node.fireVisibilityChangeListenersIfChanged();
             }
         }
     }
@@ -914,6 +926,67 @@ public class StateNode implements Serializable {
         detachListeners.add(detachListener);
 
         return () -> removeDetachListener(detachListener);
+    }
+
+    /**
+     * Adds a command as a visibility change listener. It is executed whenever
+     * the effective visibility of this node, as reported by
+     * {@link #isVisible()}, changes while the node is attached, either because
+     * the visibility of the node or one of its ancestors is set, or because the
+     * node is attached under a parent with a different visibility than it had
+     * when the listener was last run.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param visibilityChangeListener
+     *            the visibility change listener to add, not <code>null</code>
+     * @return an event registration handle for removing the listener
+     */
+    public Registration addVisibilityChangeListener(
+            Command visibilityChangeListener) {
+        assert visibilityChangeListener != null;
+
+        if (visibilityChangeListeners == null) {
+            visibilityChangeListeners = new ArrayList<>(1);
+            visibleWhenLastChecked = isVisible();
+        }
+        visibilityChangeListeners.add(visibilityChangeListener);
+        updateVisibilityListenerNode();
+
+        return () -> removeVisibilityChangeListener(visibilityChangeListener);
+    }
+
+    private void removeVisibilityChangeListener(
+            Command visibilityChangeListener) {
+        if (visibilityChangeListeners == null) {
+            return;
+        }
+        visibilityChangeListeners.remove(visibilityChangeListener);
+
+        if (visibilityChangeListeners.isEmpty()) {
+            visibilityChangeListeners = null;
+        }
+        updateVisibilityListenerNode();
+    }
+
+    private void updateVisibilityListenerNode() {
+        if (isRegistered() && owner instanceof StateTree tree) {
+            tree.updateVisibilityListenerNode(this);
+        }
+    }
+
+    boolean hasVisibilityChangeListeners() {
+        return visibilityChangeListeners != null;
+    }
+
+    void fireVisibilityChangeListenersIfChanged() {
+        boolean visible = isVisible();
+        if (visibilityChangeListeners == null
+                || visible == visibleWhenLastChecked) {
+            return;
+        }
+        visibleWhenLastChecked = visible;
+        new ArrayList<>(visibilityChangeListeners).forEach(Command::execute);
     }
 
     private void removeAttachListener(Command attachListener) {

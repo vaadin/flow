@@ -46,7 +46,6 @@ import com.vaadin.flow.data.provider.ArrayUpdater.Update;
 import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
-import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
@@ -57,7 +56,6 @@ import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
-import com.vaadin.flow.internal.StateTree.ExecutionFlag;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -130,10 +128,11 @@ public class DataCommunicator<T> implements Serializable {
     private Registration dataProviderUpdateRegistration;
     private HashSet<T> updatedData = new HashSet<>();
     private FlushRequest flushRequest;
-    private FlushRequest visibleFlushRequest;
     private FlushRequest flushUpdatedDataRequest;
     private boolean flushInProgress = false;
     private boolean flushUpdatedDataInProgress = false;
+    private boolean flushWaitsForVisibility = false;
+    private boolean flushUpdatedDataWaitsForVisibility = false;
 
     private CallbackDataProvider.CountCallback<T, ?> countCallback;
     private int itemCountEstimate = -1;
@@ -335,6 +334,7 @@ public class DataCommunicator<T> implements Serializable {
 
         stateNode.addAttachListener(this::handleAttach);
         stateNode.addDetachListener(this::handleDetach);
+        stateNode.addVisibilityChangeListener(this::handleVisibilityChange);
 
         requestFlush();
     }
@@ -1209,52 +1209,50 @@ public class DataCommunicator<T> implements Serializable {
         if (!shouldRequestFlush(forced)) {
             return;
         }
-        flushRequest = FlushRequest.register(stateNode, this::runFlushRequest);
+        flushRequest = FlushRequest.register(stateNode, context -> {
+            if (!stateNode.isVisible()) {
+                waitForVisibility();
+                return;
+            }
+            flushInProgress = true;
+            try {
+                if (!context.isClientSideInitialized()) {
+                    reset();
+                    arrayUpdater.initialize();
+                }
+                flush();
+            } finally {
+                flushRequest = null;
+                flushInProgress = false;
+            }
+        });
     }
 
     /**
-     * Sends the changes to the client if the component is visible. Changes for
-     * a hidden component are not delivered before it becomes visible, so the
-     * flush is then registered again to run once it is visible. The item count
-     * is still updated, since applications rely on its change events regardless
-     * of visibility, for example to show the component again once there are
-     * items.
+     * Postpones the flush of a hidden component until it becomes visible, since
+     * nothing sent to the client for it is delivered before that. The item
+     * count is still updated, since applications rely on its change events
+     * regardless of visibility, for example to show the component again once
+     * there are items.
      */
-    private void runFlushRequest(FlushRequest request,
-            ExecutionContext context) {
-        if (request == flushRequest) {
-            flushRequest = null;
-        }
+    private void waitForVisibility() {
+        flushRequest = null;
+        flushWaitsForVisibility = true;
+        updateAssumedSize();
+        fireItemCountEvent(assumedSize);
+    }
+
+    private void handleVisibilityChange() {
         if (!stateNode.isVisible()) {
-            updateAssumedSize();
-            fireItemCountEvent(assumedSize);
-            if (visibleFlushRequest == null
-                    || !visibleFlushRequest.canExecute(stateNode)) {
-                visibleFlushRequest = FlushRequest.register(stateNode,
-                        this::runFlushRequest, ExecutionFlag.WHEN_VISIBLE);
-            }
             return;
         }
-        // Both a pending request and one that waited for the component to
-        // become visible can be run in the same response, but one flush
-        // sends everything
-        if (flushRequest != null && flushRequest != request) {
-            flushRequest.cancelled = true;
+        if (flushWaitsForVisibility) {
+            flushWaitsForVisibility = false;
+            requestFlush();
         }
-        if (visibleFlushRequest != null && visibleFlushRequest != request) {
-            visibleFlushRequest.cancelled = true;
-        }
-        flushRequest = null;
-        visibleFlushRequest = null;
-        flushInProgress = true;
-        try {
-            if (!context.isClientSideInitialized()) {
-                reset();
-                arrayUpdater.initialize();
-            }
-            flush();
-        } finally {
-            flushInProgress = false;
+        if (flushUpdatedDataWaitsForVisibility) {
+            flushUpdatedDataWaitsForVisibility = false;
+            requestFlushUpdatedData();
         }
     }
 
@@ -1276,16 +1274,20 @@ public class DataCommunicator<T> implements Serializable {
         if (!shouldRequestFlushUpdatedData()) {
             return;
         }
-        flushUpdatedDataRequest = FlushRequest.register(stateNode,
-                (request, context) -> {
-                    flushUpdatedDataInProgress = true;
-                    try {
-                        flushUpdatedData();
-                    } finally {
-                        flushUpdatedDataRequest = null;
-                        flushUpdatedDataInProgress = false;
-                    }
-                }, ExecutionFlag.WHEN_VISIBLE);
+        flushUpdatedDataRequest = FlushRequest.register(stateNode, context -> {
+            if (!stateNode.isVisible()) {
+                flushUpdatedDataRequest = null;
+                flushUpdatedDataWaitsForVisibility = true;
+                return;
+            }
+            flushUpdatedDataInProgress = true;
+            try {
+                flushUpdatedData();
+            } finally {
+                flushUpdatedDataRequest = null;
+                flushUpdatedDataInProgress = false;
+            }
+        });
     }
 
     private boolean shouldRequestFlushUpdatedData() {
@@ -1720,19 +1722,14 @@ public class DataCommunicator<T> implements Serializable {
         private boolean cancelled;
 
         static FlushRequest register(StateNode stateNode,
-                SerializableBiConsumer<FlushRequest, ExecutionContext> action,
-                ExecutionFlag... flags) {
+                SerializableConsumer<ExecutionContext> action) {
             FlushRequest request = new FlushRequest();
             request.owner = stateNode.getOwner();
             stateNode.runWhenAttached(ui -> {
                 request.owner = stateNode.getOwner();
                 if (!request.cancelled) {
                     ui.getInternals().getStateTree()
-                            .beforeClientResponse(stateNode, context -> {
-                                if (!request.cancelled) {
-                                    action.accept(request, context);
-                                }
-                            }, flags);
+                            .beforeClientResponse(stateNode, action);
                 }
             });
             return request;

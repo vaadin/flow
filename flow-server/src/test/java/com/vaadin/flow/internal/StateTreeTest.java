@@ -949,49 +949,13 @@ class StateTreeTest {
     }
 
     @Test
-    void beforeClientResponse_whenVisibleForHiddenNode_runOnceNodeIsVisible() {
-        UI ui = tree.getUI();
-        Element parent = ElementFactory.createDiv();
-        Element child = ElementFactory.createDiv();
-        ui.getElement().appendChild(parent);
-        parent.appendChild(child);
-        parent.setVisible(false);
-
-        AtomicInteger whenVisibleExecutions = new AtomicInteger();
-        AtomicInteger regularExecutions = new AtomicInteger();
-        tree.beforeClientResponse(child.getNode(),
-                context -> whenVisibleExecutions.incrementAndGet(),
-                StateTree.ExecutionFlag.WHEN_VISIBLE);
-        tree.beforeClientResponse(child.getNode(),
-                context -> regularExecutions.incrementAndGet());
-
-        tree.runExecutionsBeforeClientResponse();
-        tree.runExecutionsBeforeClientResponse();
-
-        assertEquals(1, regularExecutions.get());
-        assertEquals(0, whenVisibleExecutions.get(),
-                "a WHEN_VISIBLE execution should wait while an ancestor is hidden");
-
-        // Made visible by another execution of the same round
-        tree.beforeClientResponse(parent.getNode(),
-                context -> parent.setVisible(true));
-        tree.runExecutionsBeforeClientResponse();
-        assertEquals(1, whenVisibleExecutions.get(),
-                "the postponed execution should run in the round that made the node visible");
-
-        tree.runExecutionsBeforeClientResponse();
-        assertEquals(1, whenVisibleExecutions.get());
-    }
-
-    @Test
-    void beforeClientResponse_whenVisibleForHiddenNode_nodeGarbageCollectedWhenDetached()
+    void visibilityChangeListener_nodeDetached_nodeGarbageCollected()
             throws InterruptedException {
-        UI ui = tree.getUI();
         Element parent = ElementFactory.createDiv();
-        ui.getElement().appendChild(parent);
-        parent.setVisible(false);
+        tree.getUI().getElement().appendChild(parent);
 
-        WeakReference<StateNode> ref = detachChildWithWaitingExecution(parent);
+        WeakReference<StateNode> ref = detachChildWithVisibilityListener(
+                parent);
         // Collect to release from list of detached nodes
         tree.collectChanges(value -> {
         });
@@ -999,33 +963,12 @@ class StateTreeTest {
         assertTrue(TestUtil.isGarbageCollected(ref));
     }
 
-    @Test
-    void beforeClientResponse_whenVisibleForHiddenNode_waitingExecutionCanBeRemoved() {
-        Element element = ElementFactory.createDiv();
-        tree.getUI().getElement().appendChild(element);
-        element.setVisible(false);
-
-        AtomicInteger executions = new AtomicInteger();
-        StateTree.ExecutionRegistration registration = tree
-                .beforeClientResponse(element.getNode(),
-                        context -> executions.incrementAndGet(),
-                        StateTree.ExecutionFlag.WHEN_VISIBLE);
-        tree.runExecutionsBeforeClientResponse();
-        registration.remove();
-
-        element.setVisible(true);
-        tree.runExecutionsBeforeClientResponse();
-
-        assertEquals(0, executions.get());
-    }
-
-    private WeakReference<StateNode> detachChildWithWaitingExecution(
+    private static WeakReference<StateNode> detachChildWithVisibilityListener(
             Element parent) {
         Element child = ElementFactory.createDiv();
         parent.appendChild(child);
-        tree.beforeClientResponse(child.getNode(), context -> {
-        }, StateTree.ExecutionFlag.WHEN_VISIBLE);
-        tree.runExecutionsBeforeClientResponse();
+        child.getNode().addVisibilityChangeListener(() -> {
+        });
         parent.removeChild(child);
         return new WeakReference<>(child.getNode());
     }

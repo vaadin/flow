@@ -16,15 +16,14 @@
 package com.vaadin.flow.internal;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -103,21 +102,13 @@ public class StateTree implements NodeOwner {
         private final StateNode stateNode;
         private final int index;
         private final NodeOwner originalOwner;
-        private final Set<ExecutionFlag> flags;
 
         private BeforeClientResponseEntry(int index, StateNode stateNode,
-                SerializableConsumer<ExecutionContext> execution,
-                ExecutionFlag... flags) {
+                SerializableConsumer<ExecutionContext> execution) {
             this.index = index;
             this.stateNode = stateNode;
-            this.flags = EnumSet.noneOf(ExecutionFlag.class);
-            Collections.addAll(this.flags, flags);
             this.execution = execution;
             originalOwner = stateNode.getOwner();
-        }
-
-        private boolean hasFlag(ExecutionFlag flag) {
-            return flags.contains(flag);
         }
 
         private int getIndex() {
@@ -153,25 +144,6 @@ public class StateTree implements NodeOwner {
     }
 
     /**
-     * A flag that changes when a task registered with
-     * {@link StateTree#beforeClientResponse(StateNode, SerializableConsumer, ExecutionFlag...)}
-     * is run.
-     */
-    public enum ExecutionFlag {
-        /**
-         * Runs the task only while its node is visible, which means that the
-         * node and all its ancestors are visible. JavaScript invocations for a
-         * node that is not visible are held back until it becomes visible
-         * again, so a task whose only purpose is to update the client side of
-         * its node, such as sending the items of a data component, would pile
-         * up undelivered invocations for every response written while the node
-         * is hidden. The task instead waits on the node and runs before the
-         * first response after the node has become visible.
-         */
-        WHEN_VISIBLE
-    }
-
-    /**
      * A registration object for removing a task registered for execution before
      * the client response.
      */
@@ -193,10 +165,9 @@ public class StateTree implements NodeOwner {
     private Set<StateNode> pendingExecutionNodes = new HashSet<>();
 
     /**
-     * Nodes that hold a task with {@link ExecutionFlag#WHEN_VISIBLE} which is
-     * waiting for the node to become visible.
+     * Registered nodes that have visibility change listeners.
      */
-    private final Set<StateNode> invisibleExecutionNodes = new HashSet<>();
+    private final Set<StateNode> visibilityListenerNodes = new HashSet<>();
 
     private int nextBeforeClientResponseIndex = 1;
 
@@ -262,6 +233,9 @@ public class StateTree implements NodeOwner {
             // A response is written for the node again
             node.getBeforeClientResponseEntries().forEach(StateTree::restore);
         }
+        if (node.hasVisibilityChangeListeners()) {
+            visibilityListenerNodes.add(node);
+        }
 
         return nodeId;
     }
@@ -285,11 +259,40 @@ public class StateTree implements NodeOwner {
         }
 
         pendingExecutionNodes.remove(node);
-        invisibleExecutionNodes.remove(node);
+        visibilityListenerNodes.remove(node);
         // The executions stay on the node, but no response is written for a
         // node that is not in the tree
         node.getBeforeClientResponseEntries().forEach(StateTree::discard);
         uiInternals.discardPendingJavaScriptInvocations(node);
+    }
+
+    /**
+     * Fires the visibility change listeners of the nodes in this tree whose
+     * visibility has changed since their listeners were last fired. Called when
+     * the visibility of an element in this tree is set, since that can change
+     * the visibility of any of its descendants.
+     *
+     * @see StateNode#addVisibilityChangeListener(com.vaadin.flow.server.Command)
+     */
+    public void fireVisibilityChangeListeners() {
+        new ArrayList<>(visibilityListenerNodes)
+                .forEach(StateNode::fireVisibilityChangeListenersIfChanged);
+    }
+
+    /**
+     * Starts or stops tracking the given registered node for visibility
+     * changes, depending on whether it has visibility change listeners.
+     *
+     * @param node
+     *            the node whose listeners were added or removed, not
+     *            <code>null</code>
+     */
+    void updateVisibilityListenerNode(StateNode node) {
+        if (node.hasVisibilityChangeListeners()) {
+            visibilityListenerNodes.add(node);
+        } else {
+            visibilityListenerNodes.remove(node);
+        }
     }
 
     @Override
@@ -401,45 +404,15 @@ public class StateTree implements NodeOwner {
      *            the task to be executed. Can not be <code>null</code>
      * @return a registration that can be used to cancel the execution of the
      *         task
-     * @see #beforeClientResponse(StateNode, SerializableConsumer,
-     *      ExecutionFlag...)
      */
     public ExecutionRegistration beforeClientResponse(StateNode context,
             SerializableConsumer<ExecutionContext> execution) {
-        return beforeClientResponse(context, execution, new ExecutionFlag[0]);
-    }
-
-    /**
-     * Registers a task to be executed before the response is sent to the
-     * client, with flags that change when it is run. The task is otherwise run
-     * like a task registered with
-     * {@link #beforeClientResponse(StateNode, SerializableConsumer)}.
-     * <p>
-     * With {@link ExecutionFlag#WHEN_VISIBLE}, the execution is also postponed
-     * while the node is not visible, until the first response after it has
-     * become visible.
-     *
-     * @param context
-     *            the StateNode relevant for the execution. Can not be
-     *            <code>null</code>
-     * @param execution
-     *            the task to be executed. Can not be <code>null</code>
-     * @param flags
-     *            the flags for the execution, none for a task that is run like
-     *            one registered without flags
-     * @return a registration that can be used to cancel the execution of the
-     *         task
-     */
-    public ExecutionRegistration beforeClientResponse(StateNode context,
-            SerializableConsumer<ExecutionContext> execution,
-            ExecutionFlag... flags) {
         checkHasLock();
         assert context != null : "The 'context' parameter can not be null";
-        Objects.requireNonNull(flags, "The 'flags' parameter can not be null");
         assert execution != null : "The 'execution' parameter can not be null";
 
         BeforeClientResponseEntry entry = new BeforeClientResponseEntry(
-                nextBeforeClientResponseIndex, context, execution, flags);
+                nextBeforeClientResponseIndex, context, execution);
         nextBeforeClientResponseIndex++;
         ExecutionRegistration registration = context
                 .addBeforeClientResponseEntry(entry);
@@ -480,14 +453,6 @@ public class StateTree implements NodeOwner {
                     // before the round.
                     node.addBeforeClientResponseEntry(entry);
                     discard(entry);
-                    return;
-                }
-                if (entry.hasFlag(ExecutionFlag.WHEN_VISIBLE)
-                        && !node.isVisible()) {
-                    // Postpone until the node is visible, since nothing it
-                    // would send to the client is delivered before that
-                    node.addBeforeClientResponseEntry(entry);
-                    invisibleExecutionNodes.add(node);
                     return;
                 }
                 try {
@@ -536,15 +501,6 @@ public class StateTree implements NodeOwner {
     }
 
     private List<StateTree.BeforeClientResponseEntry> flushCallbacks() {
-        // A node can be made visible by any execution, so this is checked
-        // again for every round of executions
-        invisibleExecutionNodes.removeIf(node -> {
-            if (!node.isVisible()) {
-                return false;
-            }
-            pendingExecutionNodes.add(node);
-            return true;
-        });
         if (!hasCallbacks()) {
             return Collections.emptyList();
         }

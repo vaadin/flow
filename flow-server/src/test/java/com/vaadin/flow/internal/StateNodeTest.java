@@ -365,6 +365,43 @@ public class StateNodeTest {
     }
 
     @Test
+    public void visibilityChangeListener_effectiveVisibilityChanges_listenerTriggered() {
+        UI ui = new UI();
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+        ui.getElement().appendChild(parent);
+        parent.appendChild(child);
+
+        List<Boolean> notified = new ArrayList<>();
+        Registration registration = child.getNode().addVisibilityChangeListener(
+                () -> notified.add(child.getNode().isVisible()));
+
+        parent.setVisible(false);
+        parent.setVisible(false);
+        assertEquals(List.of(false), notified,
+                "Hiding an ancestor should notify once");
+
+        child.setVisible(false);
+        parent.setVisible(true);
+        assertEquals(List.of(false), notified,
+                "Visibility that stays hidden should not notify");
+
+        child.setVisible(true);
+        assertEquals(List.of(false, true), notified);
+
+        Element hiddenParent = ElementFactory.createDiv();
+        hiddenParent.setVisible(false);
+        ui.getElement().appendChild(hiddenParent);
+        hiddenParent.appendChild(child);
+        assertEquals(List.of(false, true, false), notified,
+                "Moving under a hidden parent should notify");
+
+        registration.remove();
+        hiddenParent.setVisible(true);
+        assertEquals(List.of(false, true, false), notified);
+    }
+
+    @Test
     public void detachListener_onSetParent_listenerTriggered() {
         StateNode root = new TestStateTree().getRootNode();
         TestStateNode child = new TestStateNode();
