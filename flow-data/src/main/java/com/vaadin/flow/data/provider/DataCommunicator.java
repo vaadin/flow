@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -49,13 +50,14 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
+import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
-import com.vaadin.flow.internal.VisibleNodeExecution;
+import com.vaadin.flow.internal.StateTree.ExecutionFlag;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -1705,14 +1707,15 @@ public class DataCommunicator<T> implements Serializable {
         private boolean cancelled;
 
         static FlushRequest register(StateNode stateNode,
-                VisibleNodeExecution action) {
+                SerializableConsumer<ExecutionContext> action) {
             FlushRequest request = new FlushRequest();
             request.owner = stateNode.getOwner();
             stateNode.runWhenAttached(ui -> {
                 request.owner = stateNode.getOwner();
                 if (!request.cancelled) {
-                    ui.getInternals().getStateTree()
-                            .beforeClientResponse(stateNode, action);
+                    ui.getInternals().getStateTree().beforeClientResponse(
+                            stateNode, EnumSet.of(ExecutionFlag.WHEN_VISIBLE),
+                            action);
                 }
             });
             return request;

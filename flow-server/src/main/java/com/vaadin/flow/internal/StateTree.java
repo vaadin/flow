@@ -18,6 +18,7 @@ package com.vaadin.flow.internal;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -101,13 +102,21 @@ public class StateTree implements NodeOwner {
         private final StateNode stateNode;
         private final int index;
         private final NodeOwner originalOwner;
+        private final Set<ExecutionFlag> flags;
 
         private BeforeClientResponseEntry(int index, StateNode stateNode,
+                Set<ExecutionFlag> flags,
                 SerializableConsumer<ExecutionContext> execution) {
             this.index = index;
             this.stateNode = stateNode;
+            this.flags = flags.isEmpty() ? EnumSet.noneOf(ExecutionFlag.class)
+                    : EnumSet.copyOf(flags);
             this.execution = execution;
             originalOwner = stateNode.getOwner();
+        }
+
+        private boolean hasFlag(ExecutionFlag flag) {
+            return flags.contains(flag);
         }
 
         private int getIndex() {
@@ -143,6 +152,25 @@ public class StateTree implements NodeOwner {
     }
 
     /**
+     * A flag that changes when a task registered with
+     * {@link StateTree#beforeClientResponse(StateNode, Set, SerializableConsumer)}
+     * is run.
+     */
+    public enum ExecutionFlag {
+        /**
+         * Runs the task only while its node is visible, which means that the
+         * node and all its ancestors are visible. JavaScript invocations for a
+         * node that is not visible are held back until it becomes visible
+         * again, so a task whose only purpose is to update the client side of
+         * its node, such as sending the items of a data component, would pile
+         * up undelivered invocations for every response written while the node
+         * is hidden. The task instead waits on the node and runs before the
+         * first response after the node has become visible.
+         */
+        WHEN_VISIBLE
+    }
+
+    /**
      * A registration object for removing a task registered for execution before
      * the client response.
      */
@@ -164,8 +192,8 @@ public class StateTree implements NodeOwner {
     private Set<StateNode> pendingExecutionNodes = new HashSet<>();
 
     /**
-     * Nodes that hold a {@link VisibleNodeExecution} which is waiting for the
-     * node to become visible.
+     * Nodes that hold a task with {@link ExecutionFlag#WHEN_VISIBLE} which is
+     * waiting for the node to become visible.
      */
     private Set<StateNode> invisibleExecutionNodes = new HashSet<>();
 
@@ -360,9 +388,7 @@ public class StateTree implements NodeOwner {
      * <p>
      * If the {@link StateNode} related to the task is not attached to the
      * document by the time the task is evaluated, the execution is postponed to
-     * before the next response. A task that is a {@link VisibleNodeExecution}
-     * is likewise postponed while the node is not visible, until the first
-     * response after it has become visible.
+     * before the next response.
      * <p>
      * The task receives a {@link ExecutionContext} as parameter, which contains
      * information about the node state before the response.
@@ -374,15 +400,44 @@ public class StateTree implements NodeOwner {
      *            the task to be executed. Can not be <code>null</code>
      * @return a registration that can be used to cancel the execution of the
      *         task
+     * @see #beforeClientResponse(StateNode, Set, SerializableConsumer)
      */
     public ExecutionRegistration beforeClientResponse(StateNode context,
             SerializableConsumer<ExecutionContext> execution) {
+        return beforeClientResponse(context, Set.of(), execution);
+    }
+
+    /**
+     * Registers a task to be executed before the response is sent to the
+     * client, with flags that change when it is run. The task is otherwise run
+     * like a task registered with
+     * {@link #beforeClientResponse(StateNode, SerializableConsumer)}.
+     * <p>
+     * With {@link ExecutionFlag#WHEN_VISIBLE}, the execution is also postponed
+     * while the node is not visible, until the first response after it has
+     * become visible.
+     *
+     * @param context
+     *            the StateNode relevant for the execution. Can not be
+     *            <code>null</code>
+     * @param flags
+     *            the flags for the execution, or an empty set for none. Can not
+     *            be <code>null</code>
+     * @param execution
+     *            the task to be executed. Can not be <code>null</code>
+     * @return a registration that can be used to cancel the execution of the
+     *         task
+     */
+    public ExecutionRegistration beforeClientResponse(StateNode context,
+            Set<ExecutionFlag> flags,
+            SerializableConsumer<ExecutionContext> execution) {
         checkHasLock();
         assert context != null : "The 'context' parameter can not be null";
+        assert flags != null : "The 'flags' parameter can not be null";
         assert execution != null : "The 'execution' parameter can not be null";
 
         BeforeClientResponseEntry entry = new BeforeClientResponseEntry(
-                nextBeforeClientResponseIndex, context, execution);
+                nextBeforeClientResponseIndex, context, flags, execution);
         nextBeforeClientResponseIndex++;
         ExecutionRegistration registration = context
                 .addBeforeClientResponseEntry(entry);
@@ -425,7 +480,7 @@ public class StateTree implements NodeOwner {
                     discard(entry);
                     return;
                 }
-                if (entry.getExecution() instanceof VisibleNodeExecution
+                if (entry.hasFlag(ExecutionFlag.WHEN_VISIBLE)
                         && !node.isVisible()) {
                     // Postpone until the node is visible, since nothing it
                     // would send to the client is delivered before that

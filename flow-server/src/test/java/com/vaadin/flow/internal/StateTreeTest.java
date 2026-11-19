@@ -949,7 +949,7 @@ class StateTreeTest {
     }
 
     @Test
-    void beforeClientResponse_visibleNodeExecutionForHiddenNode_runOnceNodeIsVisible() {
+    void beforeClientResponse_whenVisibleForHiddenNode_runOnceNodeIsVisible() {
         UI ui = new UI();
         StateTree tree = ui.getInternals().getStateTree();
         Element parent = ElementFactory.createDiv();
@@ -958,11 +958,11 @@ class StateTreeTest {
         parent.appendChild(child);
         parent.setVisible(false);
 
-        AtomicInteger visibleNodeExecutions = new AtomicInteger();
+        AtomicInteger whenVisibleExecutions = new AtomicInteger();
         AtomicInteger regularExecutions = new AtomicInteger();
         tree.beforeClientResponse(child.getNode(),
-                (VisibleNodeExecution) context -> visibleNodeExecutions
-                        .incrementAndGet());
+                Set.of(StateTree.ExecutionFlag.WHEN_VISIBLE),
+                context -> whenVisibleExecutions.incrementAndGet());
         tree.beforeClientResponse(child.getNode(),
                 context -> regularExecutions.incrementAndGet());
 
@@ -970,22 +970,22 @@ class StateTreeTest {
         tree.runExecutionsBeforeClientResponse();
 
         assertEquals(1, regularExecutions.get());
-        assertEquals(0, visibleNodeExecutions.get(),
-                "an execution that needs a visible node should wait while an ancestor is hidden");
+        assertEquals(0, whenVisibleExecutions.get(),
+                "a WHEN_VISIBLE execution should wait while an ancestor is hidden");
 
         // Made visible by another execution of the same round
         tree.beforeClientResponse(parent.getNode(),
                 context -> parent.setVisible(true));
         tree.runExecutionsBeforeClientResponse();
-        assertEquals(1, visibleNodeExecutions.get(),
+        assertEquals(1, whenVisibleExecutions.get(),
                 "the postponed execution should run in the round that made the node visible");
 
         tree.runExecutionsBeforeClientResponse();
-        assertEquals(1, visibleNodeExecutions.get());
+        assertEquals(1, whenVisibleExecutions.get());
     }
 
     @Test
-    void beforeClientResponse_visibleNodeExecutionForHiddenNode_nodeGarbageCollectedWhenDetached()
+    void beforeClientResponse_whenVisibleForHiddenNode_nodeGarbageCollectedWhenDetached()
             throws InterruptedException {
         UI ui = new UI();
         StateTree tree = ui.getInternals().getStateTree();
@@ -996,7 +996,7 @@ class StateTreeTest {
         parent.setVisible(false);
 
         tree.beforeClientResponse(child.getNode(),
-                (VisibleNodeExecution) context -> {
+                Set.of(StateTree.ExecutionFlag.WHEN_VISIBLE), context -> {
                 });
         tree.runExecutionsBeforeClientResponse();
         parent.removeChild(child);

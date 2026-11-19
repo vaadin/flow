@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -47,7 +48,7 @@ import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.VisibleNodeExecution;
+import com.vaadin.flow.internal.StateTree.ExecutionFlag;
 
 /**
  * WARNING: Direct use of this class in application code is not recommended and
@@ -154,12 +155,12 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             return flushRequest;
         }
         flushRequest = new FlushRequest<>();
-        VisibleNodeExecution execution = context -> {
-            flush(context);
-            flushRequest = null;
-        };
         stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(stateNode, execution));
+                .beforeClientResponse(stateNode,
+                        EnumSet.of(ExecutionFlag.WHEN_VISIBLE), context -> {
+                            flush(context);
+                            flushRequest = null;
+                        }));
         return flushRequest;
     }
 
