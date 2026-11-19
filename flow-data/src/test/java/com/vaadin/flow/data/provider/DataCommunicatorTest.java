@@ -2033,6 +2033,7 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
         fetches.set(0);
         clearInvocations(arrayUpdater, dataGenerator);
+        lastSet = null;
 
         element.setVisible(false);
         size.set(40);
@@ -2046,6 +2047,7 @@ public class DataCommunicatorTest {
         assertEquals(0, fetches.get());
         verify(arrayUpdater, never()).startUpdate(anyInt());
         verify(dataGenerator, never()).generateData(any(), any());
+        assertNull(lastSet);
 
         element.setVisible(true);
         fakeClientCommunication();
