@@ -68,6 +68,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -414,6 +415,51 @@ class CspModeTest {
                 () -> CspViolationReporter.reportStringJavaScript(null));
     }
 
+    @Test
+    void strict_stringExecuteJs_messageHasMethodToDeclareForIt() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+
+        CspViolationException exception = assertThrows(
+                CspViolationException.class,
+                () -> executeJsOnUi("return \"a\"\n  + $0", "b"));
+
+        assertTrue(exception.getMessage().contains("@JsStringFallback"),
+                exception.getMessage());
+        assertTrue(
+                exception.getMessage().contains(
+                        """
+                                    @JsExpression("return \\"a\\"\\n  + $0")
+                                    PendingJavaScriptResult cspModeTestExecuteJsOnUi(Object arg0);
+                                """),
+                exception.getMessage());
+        assertTraceLeadsFromApiToTest(exception, Element.class, "executeJs");
+    }
+
+    @Test
+    void warn_stringExecuteJs_logsOncePerCallSiteAndExpression() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.WARN);
+        Logger logger = mock(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            loggerFactory.when(
+                    () -> LoggerFactory.getLogger(CspViolationReporter.class))
+                    .thenReturn(logger);
+
+            // One call site, as for an add-on that concatenates a value into
+            // the expression
+            executeJsOnUi("return 1");
+            executeJsOnUi("return 1");
+            executeJsOnUi("return 2");
+        }
+
+        ArgumentCaptor<String> messages = ArgumentCaptor.forClass(String.class);
+        verify(logger, times(2)).warn(messages.capture(), any(Throwable.class));
+        assertTrue(messages.getAllValues().get(0)
+                .contains("@JsExpression(\"return 1\")"));
+        assertTrue(messages.getAllValues().get(1)
+                .contains("@JsExpression(\"return 2\")"));
+    }
+
     private static void reportFromComponent(String detail) {
         CspViolationReporter.reportStringJavaScript(detail);
     }
@@ -433,6 +479,10 @@ class CspModeTest {
 
     private void executeJsOnUi() {
         ui.getElement().executeJs("return 1");
+    }
+
+    private void executeJsOnUi(String expression, Object... parameters) {
+        ui.getElement().executeJs(expression, parameters);
     }
 
     private static void assertTraceLeadsFromApiToTest(Throwable violation,

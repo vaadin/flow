@@ -615,7 +615,8 @@ public class Page implements Serializable {
         if (fallback != null) {
             return ui.getInternals().addJavaScriptInvocation(fallback);
         }
-        CspViolationReporter.reportStringJavaScript();
+        CspViolationReporter.reportStringExecuteJs(expression,
+                parameters.length);
         return ui.getInternals().addJavaScriptInvocation(
                 new JavaScriptInvocation(expression, parameters));
     }

@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -73,7 +74,7 @@ public final class CspViolationReporter {
      *             in the {@link CspMode#STRICT} mode
      */
     public static void reportStringJavaScript() {
-        reportStringJavaScriptWithDetail(null);
+        report(null, null);
     }
 
     /**
@@ -96,7 +97,31 @@ public final class CspViolationReporter {
      */
     public static void reportStringJavaScript(String detail) {
         Objects.requireNonNull(detail, "The detail must not be null");
-        reportStringJavaScriptWithDetail(detail);
+        report(detail, null);
+    }
+
+    /**
+     * Reports a call to <code>executeJs</code> with a string expression. Called
+     * by the API itself, which is where the stack trace of the report starts.
+     * <p>
+     * The message adds the method that, declared in a
+     * {@link com.vaadin.flow.js.JsStringFallback} interface, would run the
+     * expression from the bundle instead, ready to paste. A warning is logged
+     * once per call site and expression, so a call site that sends different
+     * strings, such as one that concatenates values into them, is reported for
+     * each of them.
+     *
+     * @param expression
+     *            the expression that is sent, not <code>null</code>
+     * @param parameterCount
+     *            the number of parameters the expression is sent with
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} mode
+     */
+    public static void reportStringExecuteJs(String expression,
+            int parameterCount) {
+        Objects.requireNonNull(expression, "The expression must not be null");
+        report(null, new StringCall(expression, parameterCount));
     }
 
     /**
@@ -129,33 +154,122 @@ public final class CspViolationReporter {
                 : configuration.getCspMode();
     }
 
-    private static void reportStringJavaScriptWithDetail(String detail) {
+    /**
+     * A call that sends an expression with a number of parameters, which a
+     * declared method can stand in for.
+     */
+    private record StringCall(String expression, int parameterCount) {
+    }
+
+    private static void report(@Nullable String detail,
+            @Nullable StringCall call) {
         VaadinService service = VaadinService.getCurrent();
         CspMode mode = getCspMode(service);
         if (!isEnabled(mode)) {
             return;
         }
 
-        String message = (detail == null) ? MESSAGE
-                : (MESSAGE + " The JavaScript is in \"" + detail + "\".");
-        CspViolationException violation = new CspViolationException(message);
-        StackTraceElement[] stack = violation.getStackTrace();
+        StackTraceElement[] fullStack = new Throwable().getStackTrace();
         // Start the trace at the API rather than at the two methods of this
         // class
-        violation.setStackTrace(Arrays.copyOfRange(stack, 2, stack.length));
+        StackTraceElement[] stack = Arrays.copyOfRange(fullStack, 2,
+                fullStack.length);
+        String message = MESSAGE;
+        if (detail != null) {
+            message += " The JavaScript is in \"" + detail + "\".";
+        }
+        if (call != null) {
+            message += describeFallback(call, stack);
+        }
+        CspViolationException violation = new CspViolationException(message);
+        violation.setStackTrace(stack);
 
         if (mode == CspMode.STRICT) {
             throw violation;
         }
-        String callSite = getCallSite(violation.getStackTrace());
-        // Different details from one call site are different reports
-        String key = (detail == null) ? callSite : (detail + '\n' + callSite);
+        // Different details or expressions from one call site are different
+        // reports
+        String key = getCallSite(stack);
+        if (detail != null) {
+            key = detail + '\n' + key;
+        }
+        if (call != null) {
+            key = call.parameterCount() + ":" + call.expression() + '\n' + key;
+        }
         if (warnedCalls
                 .computeIfAbsent(service, k -> ConcurrentHashMap.newKeySet())
                 .add(key)) {
             LoggerFactory.getLogger(CspViolationReporter.class).warn(message,
                     violation);
         }
+    }
+
+    /**
+     * The method that would stand in for a string call, named after the
+     * application code that made it, so that methods pasted for different call
+     * sites do not get the same name.
+     */
+    private static String describeFallback(StringCall call,
+            StackTraceElement[] stack) {
+        StringBuilder parameters = new StringBuilder();
+        for (int index = 0; index < call.parameterCount(); index++) {
+            parameters.append(index == 0 ? "" : ", ").append("Object arg")
+                    .append(index);
+        }
+        return """
+                 To run it from the bundle instead, declare this method in a \
+                @JsDefinition interface that is marked with @JsStringFallback:
+
+                    @JsExpression("%s")
+                    PendingJavaScriptResult %s(%s);
+                """.formatted(escapeJavaString(call.expression()),
+                suggestMethodName(stack), parameters);
+    }
+
+    private static String suggestMethodName(StackTraceElement[] stack) {
+        for (StackTraceElement frame : stack) {
+            if (!StackTraceUtil.isApplicationClass(frame.getClassName())) {
+                continue;
+            }
+            String className = frame.getClassName();
+            String simpleName = className
+                    .substring(className.lastIndexOf('.') + 1);
+            // A nested class names itself, an anonymous one its outer class
+            for (String part : simpleName.split("\\$")) {
+                if (!part.isEmpty() && !Character.isDigit(part.charAt(0))) {
+                    simpleName = part;
+                }
+            }
+            String method = frame.getMethodName();
+            if (method.startsWith("lambda$")) {
+                // lambda$enclosingMethod$0
+                method = method.split("\\$")[1];
+            }
+            if (method.startsWith("<")) {
+                // A constructor or static initializer adds nothing to the name
+                method = "";
+            }
+            String name = Character.toLowerCase(simpleName.charAt(0))
+                    + simpleName.substring(1)
+                    + (method.isEmpty() ? ""
+                            : Character.toUpperCase(method.charAt(0))
+                                    + method.substring(1));
+            return isJavaIdentifier(name) ? name : "call";
+        }
+        return "call";
+    }
+
+    private static boolean isJavaIdentifier(String name) {
+        if (name.isEmpty()
+                || !Character.isJavaIdentifierStart(name.charAt(0))) {
+            return false;
+        }
+        return name.chars().allMatch(Character::isJavaIdentifierPart);
+    }
+
+    private static String escapeJavaString(String value) {
+        return value.replace("\\", "\\\\").replace("\"", "\\\"")
+                .replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t");
     }
 
     /**

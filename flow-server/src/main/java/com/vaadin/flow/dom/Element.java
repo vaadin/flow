@@ -2027,7 +2027,8 @@ public class Element extends Node<Element> {
         if (fallback != null) {
             return scheduleJsCall(fallback);
         }
-        CspViolationReporter.reportStringJavaScript();
+        CspViolationReporter.reportStringExecuteJs(expression,
+                parameters.length);
         return scheduleExecuteJs(expression, parameters);
     }
 
