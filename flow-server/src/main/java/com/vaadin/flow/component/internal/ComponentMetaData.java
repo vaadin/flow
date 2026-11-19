@@ -163,35 +163,29 @@ public class ComponentMetaData {
     }
 
     private static DependencyInfo findDependencies(VaadinService service,
-            Class<? extends Component> componentClass,
-            DependencyInfo dependencyInfo,
-            Set<Class<? extends Component>> scannedClasses) {
-        assert !scannedClasses.contains(componentClass);
+            Class<?> type, DependencyInfo dependencyInfo,
+            Set<Class<?>> scannedClasses) {
+        assert !scannedClasses.contains(type);
 
-        scannedClasses.add(componentClass);
+        scannedClasses.add(type);
 
-        List<JsModule> jsModules = AnnotationReader
-                .getJsModuleAnnotations(componentClass);
-
-        dependencyInfo.jsModules.addAll(jsModules);
-
+        // Read from any class, as a used class does not have to be a
+        // component: its dependencies are loaded with the component that
+        // uses it, the same way those of an interface the component
+        // implements are
+        dependencyInfo.jsModules.addAll(
+                AnnotationReader.getAnnotationsFor(type, JsModule.class));
         dependencyInfo.javaScripts.addAll(
-                AnnotationReader.getJavaScriptAnnotations(componentClass));
+                AnnotationReader.getAnnotationsFor(type, JavaScript.class));
         dependencyInfo.styleSheets.addAll(
-                AnnotationReader.getStyleSheetAnnotations(componentClass));
+                AnnotationReader.getAnnotationsFor(type, StyleSheet.class));
         dependencyInfo.cssImports.addAll(
-                AnnotationReader.getCssImportAnnotations(componentClass));
+                AnnotationReader.getAnnotationsFor(type, CssImport.class));
 
-        List<Uses> usesList = AnnotationReader.getAnnotationsFor(componentClass,
-                Uses.class);
-        for (Uses uses : usesList) {
-            Class<?> usedClass = uses.value();
-            // A used class that is not a component, such as a JavaScript
-            // definition, has no dependencies to load at runtime
-            if (Component.class.isAssignableFrom(usedClass)
-                    && !scannedClasses.contains(usedClass)) {
-                findDependencies(service, usedClass.asSubclass(Component.class),
-                        dependencyInfo, scannedClasses);
+        for (Uses uses : AnnotationReader.getAnnotationsFor(type, Uses.class)) {
+            if (!scannedClasses.contains(uses.value())) {
+                findDependencies(service, uses.value(), dependencyInfo,
+                        scannedClasses);
             }
         }
         return dependencyInfo;

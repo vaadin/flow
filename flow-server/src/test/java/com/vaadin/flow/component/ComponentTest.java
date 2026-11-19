@@ -1340,7 +1340,8 @@ public class ComponentTest {
 
     }
 
-    // Not a component, so nothing it declares is loaded at runtime
+    // Not a component, but what it declares is loaded with the component
+    // that uses it
     @StyleSheet("non-component.css")
     @JavaScript("context://non-component.js")
     public interface NonComponentWithDependencies {
@@ -1383,10 +1384,14 @@ public class ComponentTest {
 
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 ui.getInternals().getDependencyList().getPendingSendToClient());
-        assertEquals(1, pendingDependencies.size());
+        assertEquals(3, pendingDependencies.size());
 
         assertDependency(Dependency.Type.STYLESHEET, "context://css.css",
                 pendingDependencies);
+        assertDependency(Dependency.Type.STYLESHEET,
+                "context://non-component.css", pendingDependencies);
+        assertDependency(Dependency.Type.JAVASCRIPT,
+                "context://non-component.js", pendingDependencies);
     }
 
     @Test
@@ -1398,7 +1403,7 @@ public class ComponentTest {
 
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 internals.getDependencyList().getPendingSendToClient());
-        assertEquals(1, pendingDependencies.size());
+        assertEquals(3, pendingDependencies.size());
 
         assertDependency(Dependency.Type.STYLESHEET, "context://css.css",
                 pendingDependencies);
