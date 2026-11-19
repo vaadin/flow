@@ -137,6 +137,39 @@ describe('DependencyLoader (class)', () => {
     }
   });
 
+  it('loads a dynamic import sent as a function without compiling a string', async () => {
+    // What a page without unsafe-eval allows: the ResourceLoader gets the
+    // function from the bundle, so it compiles nothing from the description
+    const global = window as unknown as { Vaadin?: { Flow?: { jsSnippets?: Record<string, unknown> } } };
+    global.Vaadin ??= {};
+    global.Vaadin.Flow ??= {};
+    const snippets = (global.Vaadin.Flow.jsSnippets ??= {});
+    let loads = 0;
+    snippets['import-fn'] = () => () => {
+      loads += 1;
+      return Promise.resolve();
+    };
+    const registry = testRegistry({ SystemErrorHandler: { handleError: () => {} }, StateTree: {} });
+    registry.register('ResourceLoader', new ResourceLoader(registry, false));
+    const originalFunction = globalThis.Function;
+    const compiled: string[] = [];
+    globalThis.Function = function (...args: string[]) {
+      compiled.push(args.join(','));
+      throw new EvalError('Refused to compile a string');
+    } as unknown as FunctionConstructor;
+    try {
+      new DependencyLoader(registry).loadDependencies(
+        new Map([['LAZY', [{ type: 'DYNAMIC_IMPORT', url: { '@v-fn': { id: 'import-fn', captures: [] } } }]]])
+      );
+      await new Promise<void>((resolve) => runWhenEagerDependenciesLoaded(resolve));
+    } finally {
+      globalThis.Function = originalFunction;
+      delete snippets['import-fn'];
+    }
+    expect(compiled).to.eql([]);
+    expect(loads).to.equal(1);
+  });
+
   it('fails only the dynamic import when its function cannot be decoded', async () => {
     // A node the client does not have, which the codec cannot resolve
     const dynamicImport = { '@v-fn': { id: 'import-fn', captures: [{ '@v-node': 42 }] } };
