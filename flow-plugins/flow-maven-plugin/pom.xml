@@ -62,7 +62,7 @@
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-build-api</artifactId>
-      <version>1.2.0</version>
+      <version>1.4.0</version>
       <exclusions>
         <!-- declared below instead, so there is one path to it and the build converges -->
         <exclusion>
