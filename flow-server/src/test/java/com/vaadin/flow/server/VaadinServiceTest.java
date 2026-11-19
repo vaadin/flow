@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -46,6 +47,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.MockedStatic;
 
 import com.vaadin.flow.component.Component;
@@ -411,6 +414,24 @@ class VaadinServiceTest {
                 "@Theme on the app shell should be reported");
     }
 
+    @ParameterizedTest
+    @EnumSource(CspMode.class)
+    void cspMode_modeReported(CspMode mode) {
+        UsageStatistics.resetEntries();
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setCspMode(mode);
+        MockVaadinServletService service = new MockVaadinServletService(
+                configuration, false);
+
+        service.init(new MockInstantiator());
+
+        String expected = "flow/csp-" + mode.name().toLowerCase(Locale.ROOT);
+        assertEquals(List.of(expected),
+                getUsageStatisticsNames().stream()
+                        .filter(name -> name.startsWith("flow/csp-")).toList(),
+                "Only the configured CSP mode should be reported");
+    }
+
     @Test
     void productionMode_noUsageStatisticsCollected() {
         UsageStatistics.resetEntries();
@@ -421,6 +442,7 @@ class VaadinServiceTest {
 
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         configuration.setProductionMode(true);
+        configuration.setCspMode(CspMode.STRICT);
         configuration.setApplicationOrSystemProperty(
                 InitParameters.SERVLET_PARAMETER_ENABLE_PNPM, "true");
         VaadinServiceInitListener initListener = event -> {
