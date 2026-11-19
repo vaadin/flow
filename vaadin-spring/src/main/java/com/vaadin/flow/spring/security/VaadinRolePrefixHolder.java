@@ -135,10 +135,8 @@ public class VaadinRolePrefixHolder implements Serializable {
                 field.setAccessible(true);
                 rolePrefix = (String) field.get(source);
             } catch (IllegalAccessException e) {
-                getLogger().warn(
-                        String.format("Could not read %s#rolePrefix field.",
-                                type.getSimpleName()),
-                        e);
+                getLogger().warn("Could not read {}#rolePrefix field.",
+                        type.getSimpleName(), e);
             }
         }
         this.rolePrefixSet = true;
