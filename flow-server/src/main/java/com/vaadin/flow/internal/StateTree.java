@@ -195,7 +195,7 @@ public class StateTree implements NodeOwner {
      * Nodes that hold a task with {@link ExecutionFlag#WHEN_VISIBLE} which is
      * waiting for the node to become visible.
      */
-    private Set<StateNode> invisibleExecutionNodes = new HashSet<>();
+    private final Set<StateNode> invisibleExecutionNodes = new HashSet<>();
 
     private int nextBeforeClientResponseIndex = 1;
 

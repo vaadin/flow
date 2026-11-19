@@ -950,8 +950,7 @@ class StateTreeTest {
 
     @Test
     void beforeClientResponse_whenVisibleForHiddenNode_runOnceNodeIsVisible() {
-        UI ui = new UI();
-        StateTree tree = ui.getInternals().getStateTree();
+        UI ui = tree.getUI();
         Element parent = ElementFactory.createDiv();
         Element child = ElementFactory.createDiv();
         ui.getElement().appendChild(parent);
@@ -987,27 +986,29 @@ class StateTreeTest {
     @Test
     void beforeClientResponse_whenVisibleForHiddenNode_nodeGarbageCollectedWhenDetached()
             throws InterruptedException {
-        UI ui = new UI();
-        StateTree tree = ui.getInternals().getStateTree();
+        UI ui = tree.getUI();
         Element parent = ElementFactory.createDiv();
-        Element child = ElementFactory.createDiv();
         ui.getElement().appendChild(parent);
-        parent.appendChild(child);
         parent.setVisible(false);
 
-        tree.beforeClientResponse(child.getNode(),
-                Set.of(StateTree.ExecutionFlag.WHEN_VISIBLE), context -> {
-                });
-        tree.runExecutionsBeforeClientResponse();
-        parent.removeChild(child);
-
-        WeakReference<StateNode> ref = new WeakReference<>(child.getNode());
-        child = null;
+        WeakReference<StateNode> ref = detachChildWithWaitingExecution(parent);
         // Collect to release from list of detached nodes
         tree.collectChanges(value -> {
         });
 
         assertTrue(TestUtil.isGarbageCollected(ref));
+    }
+
+    private WeakReference<StateNode> detachChildWithWaitingExecution(
+            Element parent) {
+        Element child = ElementFactory.createDiv();
+        parent.appendChild(child);
+        tree.beforeClientResponse(child.getNode(),
+                Set.of(StateTree.ExecutionFlag.WHEN_VISIBLE), context -> {
+                });
+        tree.runExecutionsBeforeClientResponse();
+        parent.removeChild(child);
+        return new WeakReference<>(child.getNode());
     }
 
     private static class TestExecution implements DiscardAwareExecution {
