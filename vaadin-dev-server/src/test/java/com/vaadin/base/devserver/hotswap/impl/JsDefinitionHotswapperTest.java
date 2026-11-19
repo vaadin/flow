@@ -40,6 +40,7 @@ import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.Options;
@@ -319,6 +320,26 @@ class JsDefinitionHotswapperTest {
         File list = Path.of(projectFolder.getPath(), "target", "classes",
                 Constants.VAADIN_SERVLET_RESOURCES,
                 Constants.JS_STRING_FALLBACKS_FILE).toFile();
+        assertTrue(Files.readString(list.toPath())
+                .contains(FallbackJs.class.getName()), list::toString);
+    }
+
+    @Test
+    void stringFallbackChanged_gradleProject_listedWithGradleResources()
+            throws IOException {
+        ((MockDeploymentConfiguration) service.getDeploymentConfiguration())
+                .setApplicationOrSystemProperty(InitParameters.BUILD_FOLDER,
+                        "build");
+        // What Gradle has on the class path of the running application
+        File gradleResources = Path
+                .of(projectFolder.getPath(), "build", "resources", "main")
+                .toFile();
+        gradleResources.mkdirs();
+
+        classesChanged(FallbackJs.class);
+
+        File list = new File(gradleResources, Constants.VAADIN_SERVLET_RESOURCES
+                + Constants.JS_STRING_FALLBACKS_FILE);
         assertTrue(Files.readString(list.toPath())
                 .contains(FallbackJs.class.getName()), list::toString);
     }

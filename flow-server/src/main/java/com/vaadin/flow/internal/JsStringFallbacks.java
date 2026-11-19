@@ -301,6 +301,22 @@ public final class JsStringFallbacks {
     private static boolean checkFallbackDefinition(Class<?> definitionType) {
         boolean snippets = JsDefinitionProxy.checkDefinition(
                 definitionType) == JsDefinitionProxy.Kind.SNIPPETS;
+        // A matched string is sent as a call of the method found by its name
+        // and parameter count, so two methods that share both could not be
+        // told apart when the call is sent
+        Map<String, Method> byNameAndCount = new HashMap<>();
+        for (Method method : collectDeclaredMethods(definitionType)) {
+            Method previous = byNameAndCount.putIfAbsent(
+                    method.getName() + "/" + method.getParameterCount(),
+                    method);
+            if (previous != null) {
+                throw new IllegalArgumentException("Methods "
+                        + describe(previous) + " and " + describe(method)
+                        + " have the same name and parameter count, so the"
+                        + " call that stands in for a string could not tell"
+                        + " them apart. Rename one of them");
+            }
+        }
         for (Method method : collectDeclaredMethods(definitionType)) {
             String name = "Method " + method.getName() + " of "
                     + definitionType.getName();

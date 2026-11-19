@@ -99,6 +99,16 @@ class JsStringFallbacksTest {
 
     @JsDefinition
     @JsStringFallback
+    interface OverloadedFallbacks {
+        @JsExpression("console.log('text', $0)")
+        void log(String text);
+
+        @JsExpression("console.log('number', $0)")
+        void log(Integer number);
+    }
+
+    @JsDefinition
+    @JsStringFallback
     interface DuplicateFallbacks {
         @JsExpression("return this.scrollTop")
         PendingJavaScriptResult readScrollTop();
@@ -254,6 +264,18 @@ class JsStringFallbacksTest {
                         .collectFallbacks(List.of(PathFilterFallbacks.class)));
         assertTrue(path.getMessage().contains("event.detail"),
                 path.getMessage());
+    }
+
+    @Test
+    void collectFallbacks_sameNameAndParameterCount_throws() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> JsStringFallbacks
+                        .collectFallbacks(List.of(OverloadedFallbacks.class)));
+
+        assertTrue(exception.getMessage().contains("same name"),
+                exception.getMessage());
+        assertTrue(exception.getMessage().contains("log"),
+                exception.getMessage());
     }
 
     @Test

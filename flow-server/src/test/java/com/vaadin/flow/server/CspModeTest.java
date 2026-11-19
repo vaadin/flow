@@ -508,6 +508,25 @@ class CspModeTest {
     }
 
     @Test
+    void strict_callSiteSendingDifferentStrings_messageSaysOneDeclarationMatchesOneString() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+
+        // One call site, as for an add-on that concatenates a value into the
+        // expression
+        String first = assertThrows(CspViolationException.class,
+                () -> executeJsOnUi("return 'orange'")).getMessage();
+        String same = assertThrows(CspViolationException.class,
+                () -> executeJsOnUi("return 'orange'")).getMessage();
+        String different = assertThrows(CspViolationException.class,
+                () -> executeJsOnUi("return 'blue'")).getMessage();
+
+        assertFalse(first.contains("sent different JavaScript before"), first);
+        assertFalse(same.contains("sent different JavaScript before"), same);
+        assertTrue(different.contains("sent different JavaScript before"),
+                different);
+    }
+
+    @Test
     void warn_stringExecuteJs_logsOncePerCallSiteAndExpression() {
         setup.getDeploymentConfiguration().setCspMode(CspMode.WARN);
         Logger logger = mock(Logger.class);

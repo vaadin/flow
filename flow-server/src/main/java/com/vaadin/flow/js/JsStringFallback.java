@@ -69,12 +69,20 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  * <p>
+ * The JavaScript in the bundle runs in JavaScript strict mode, since the bundle
+ * is made of modules, while a string that the browser compiles does not. A
+ * string that only works outside strict mode, for example one that assigns to a
+ * variable it never declares, fails the same way when it runs from the bundle.
+ * Since the declared text has to be the same string, such a string can not be
+ * fixed with a fallback: the code that sends it has to change.
+ * <p>
  * The build finds the marked interfaces together with the other
  * {@link JsDefinition} interfaces, and fails if one of them can not stand in
  * for a string: a variadic method, a snippet method that does not return a
  * {@code JsFunction} or declares parameter names, two methods that declare the
- * same JavaScript with the same parameter count, or a filter or event data
- * value that is a property path, which the browser reads without compiling it.
+ * same JavaScript with the same parameter count, two methods of one interface
+ * with the same name and parameter count, or a filter or event data value that
+ * is a property path, which the browser reads without compiling it.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

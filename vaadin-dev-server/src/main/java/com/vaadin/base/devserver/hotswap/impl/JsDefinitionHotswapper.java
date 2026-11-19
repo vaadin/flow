@@ -15,10 +15,8 @@
  */
 package com.vaadin.base.devserver.hotswap.impl;
 
-import java.io.File;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
+import com.vaadin.base.devserver.startup.DevModeInitializer;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JsStringFallbacks;
@@ -40,7 +39,6 @@ import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.server.AbstractConfiguration;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.Options;
@@ -146,7 +144,9 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
             Set<Class<?>> changed) {
         try {
             if (TaskGenerateJsDefinitions.updateStringFallbacks(
-                    getResourceOutputDirectory(service), changed)) {
+                    DevModeInitializer.getServletResourceOutputDirectory(
+                            service.getDeploymentConfiguration()),
+                    changed)) {
                 JsStringFallbacks.reloadFallbacks(service);
             }
         } catch (UncheckedIOException e) {
@@ -154,18 +154,6 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
                     "Could not update the @JsStringFallback list for the changed classes",
                     e);
         }
-    }
-
-    /**
-     * The folder the development mode build writes the files the server reads
-     * to, the same that {@code DevModeInitializer} gives it.
-     */
-    private static File getResourceOutputDirectory(VaadinService service) {
-        AbstractConfiguration configuration = service
-                .getDeploymentConfiguration();
-        return Paths.get(configuration.getProjectFolder().getPath(),
-                configuration.getBuildFolder(), "classes",
-                Constants.VAADIN_SERVLET_RESOURCES).toFile();
     }
 
     /**

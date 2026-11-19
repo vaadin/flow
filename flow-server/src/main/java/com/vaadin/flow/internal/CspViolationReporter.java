@@ -63,6 +63,21 @@ public final class CspViolationReporter {
     private static final Map<VaadinService, Set<String>> warnedCalls = Collections
             .synchronizedMap(new WeakHashMap<>());
 
+    // The first JavaScript that each call site reported, to tell when a call
+    // site sends different strings. Bounded by the number of call sites, for
+    // each service
+    private static final Map<VaadinService, Map<String, String>> firstJavaScript = Collections
+            .synchronizedMap(new WeakHashMap<>());
+
+    private static final String VARYING_JAVASCRIPT = """
+            This call site has sent different JavaScript before, so the string \
+            is probably built from values that change. A declaration matches \
+            one exact string only. In your own code, declare it once and pass \
+            the changing values as parameters ($0, $1, ...). For an add-on, \
+            each string has to be declared, which only works when the values \
+            are few and known.
+            """;
+
     private CspViolationReporter() {
         // Only static helpers
     }
@@ -360,11 +375,11 @@ public final class CspViolationReporter {
             return """
                      If this call is in your own code, declare the filter in a \
                     @JsDefinition interface and set it with \
-                    registration.setFilterExpression(JsSnippets.of(YourJs.class).%s()) \
+                    registration.setFilterExpression(JsSnippets.of(YourEventJs.class).%s()) \
                     instead of setFilter:
 
                         @JsDefinition
-                        public interface YourJs {
+                        public interface YourEventJs {
                             @JsExpression("return (%s);")
                             DomEventFilter %s();
                         }
@@ -411,12 +426,12 @@ public final class CspViolationReporter {
             return """
                      If this call is in your own code, declare the event data \
                     in a @JsDefinition interface. Keep what \
-                    JsSnippets.of(YourJs.class).%s() returns, add it with \
+                    JsSnippets.of(YourEventJs.class).%s() returns, add it with \
                     registration.addEventData instead of the string, and read \
                     the value with event.getEventData for the same object:
 
                         @JsDefinition
-                        public interface YourJs {
+                        public interface YourEventJs {
                     %s    }
 
                     If the call is in an add-on that you can not change, list \
@@ -452,6 +467,12 @@ public final class CspViolationReporter {
         }
         if (javaScript != null) {
             message += javaScript.describeFix(suggestMethodName(stack), stack);
+            String first = firstJavaScript
+                    .computeIfAbsent(service, k -> new ConcurrentHashMap<>())
+                    .putIfAbsent(getCallSite(stack), javaScript.key());
+            if (first != null && !first.equals(javaScript.key())) {
+                message += "\n" + VARYING_JAVASCRIPT;
+            }
         }
         CspViolationException violation = new CspViolationException(message);
         violation.setStackTrace(stack);
