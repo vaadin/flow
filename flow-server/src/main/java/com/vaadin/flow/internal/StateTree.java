@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -433,7 +434,7 @@ public class StateTree implements NodeOwner {
             SerializableConsumer<ExecutionContext> execution) {
         checkHasLock();
         assert context != null : "The 'context' parameter can not be null";
-        assert flags != null : "The 'flags' parameter can not be null";
+        Objects.requireNonNull(flags, "The 'flags' parameter can not be null");
         assert execution != null : "The 'execution' parameter can not be null";
 
         BeforeClientResponseEntry entry = new BeforeClientResponseEntry(
