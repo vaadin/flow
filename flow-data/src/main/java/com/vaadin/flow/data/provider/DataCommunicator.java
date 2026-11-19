@@ -72,7 +72,8 @@ import com.vaadin.flow.shared.communication.PushMode;
  * are fetched from the data provider or sent, and the changes made in the
  * meantime are sent in one update before the first response after the node has
  * become visible again. The item count is still updated, and item count change
- * events fired, while the node is hidden.
+ * events fired, while the node is hidden. With an undefined size, the count is
+ * then the estimate, since the actual count is only found by fetching items.
  *
  * @param <T>
  *            the bean type

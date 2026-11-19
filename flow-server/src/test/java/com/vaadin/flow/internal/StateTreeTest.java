@@ -999,6 +999,26 @@ class StateTreeTest {
         assertTrue(TestUtil.isGarbageCollected(ref));
     }
 
+    @Test
+    void beforeClientResponse_whenVisibleForHiddenNode_waitingExecutionCanBeRemoved() {
+        Element element = ElementFactory.createDiv();
+        tree.getUI().getElement().appendChild(element);
+        element.setVisible(false);
+
+        AtomicInteger executions = new AtomicInteger();
+        StateTree.ExecutionRegistration registration = tree
+                .beforeClientResponse(element.getNode(),
+                        Set.of(StateTree.ExecutionFlag.WHEN_VISIBLE),
+                        context -> executions.incrementAndGet());
+        tree.runExecutionsBeforeClientResponse();
+        registration.remove();
+
+        element.setVisible(true);
+        tree.runExecutionsBeforeClientResponse();
+
+        assertEquals(0, executions.get());
+    }
+
     private WeakReference<StateNode> detachChildWithWaitingExecution(
             Element parent) {
         Element child = ElementFactory.createDiv();
