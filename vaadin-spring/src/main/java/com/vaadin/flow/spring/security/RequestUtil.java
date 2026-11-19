@@ -270,7 +270,7 @@ public class RequestUtil {
         if (roles.isEmpty()) {
             return roles;
         }
-        var rolePrefix = getRolePrefix();
+        var rolePrefix = getRolePrefix(request);
         if (rolePrefix == null || rolePrefix.isEmpty()) {
             return roles;
         }
@@ -283,8 +283,17 @@ public class RequestUtil {
         this.rolePrefixHolder = rolePrefixHolder;
     }
 
-    private String getRolePrefix() {
-        if (rolePrefixHolder != null && rolePrefixHolder.isSet()) {
+    private String getRolePrefix(HttpServletRequest request) {
+        if (rolePrefixHolder == null) {
+            return "ROLE_";
+        }
+        if (!rolePrefixHolder.isSet()) {
+            // A prefix configured only on the filter chain is not known
+            // before a Vaadin request has run, but the request being
+            // authorized already carries it
+            rolePrefixHolder.resetRolePrefixFromServletRequest(request);
+        }
+        if (rolePrefixHolder.isSet()) {
             return rolePrefixHolder.getRolePrefix();
         }
         // The default of SecurityContextHolderAwareRequestWrapper

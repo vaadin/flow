@@ -37,8 +37,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
+import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
@@ -797,6 +799,38 @@ class RequestUtilTest {
                                     deniedAuthority),
                             new RequestAuthorizationContext(request))
                     .isGranted());
+        } finally {
+            requestUtil.setRolePrefixHolder(rolePrefixHolder.getIfAvailable());
+        }
+    }
+
+    @Test
+    void authorizeHillaRoute_rolePrefixOnlyInFilterChain_usedBeforeHolderIsSet() {
+        // http.servletApi(s -> s.rolePrefix("CUSTOM_")) without a
+        // GrantedAuthorityDefaults bean: the holder is not set before a Vaadin
+        // request has run, but the request being authorized carries the prefix
+        var request = new SecurityContextHolderAwareRequestWrapper(
+                createRequest("/hilla", null),
+                new AuthenticationTrustResolverImpl(), "CUSTOM_");
+        when(fileRouterRequestUtil.isSecuredRoute(request)).thenReturn(true);
+        when(fileRouterRequestUtil.getAllowedAuthorities(request))
+                .thenReturn(Set.of("foo"));
+        var holder = new VaadinRolePrefixHolder(null);
+        requestUtil.setRolePrefixHolder(holder);
+        try {
+            assertTrue(requestUtil
+                    .authorizeHillaRoute(
+                            () -> new TestingAuthenticationToken("user", "pass",
+                                    "CUSTOM_foo"),
+                            new RequestAuthorizationContext(request))
+                    .isGranted());
+            assertFalse(requestUtil
+                    .authorizeHillaRoute(
+                            () -> new TestingAuthenticationToken("user", "pass",
+                                    "ROLE_foo"),
+                            new RequestAuthorizationContext(request))
+                    .isGranted());
+            assertEquals("CUSTOM_", holder.getRolePrefix());
         } finally {
             requestUtil.setRolePrefixHolder(rolePrefixHolder.getIfAvailable());
         }

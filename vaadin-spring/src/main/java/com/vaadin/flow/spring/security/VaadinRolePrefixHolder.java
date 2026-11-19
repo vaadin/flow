@@ -144,22 +144,43 @@ public class VaadinRolePrefixHolder implements Serializable {
         this.rolePrefixSet = true;
     }
 
+    /**
+     * Reset role prefix from the given servlet request, if it is or wraps a
+     * {@link SecurityContextHolderAwareRequestWrapper}. Method doesn't do
+     * anything if role prefix is not found.
+     *
+     * @param request
+     *            servlet request used to find active role prefix
+     */
+    void resetRolePrefixFromServletRequest(ServletRequest request) {
+        SecurityContextHolderAwareRequestWrapper requestWrapper = findSecurityContextHolderAwareRequestWrapper(
+                request);
+        if (requestWrapper != null) {
+            resetRolePrefix(requestWrapper);
+        }
+    }
+
     private SecurityContextHolderAwareRequestWrapper findSecurityContextHolderAwareRequestWrapper(
             VaadinRequest request) {
         if (request instanceof VaadinServletRequest) {
-            ServletRequest servletRequest = ((VaadinServletRequest) request)
-                    .getRequest();
-            Set<Object> checkedWrappers = new HashSet<>();
-            while (servletRequest instanceof ServletRequestWrapper
-                    && !checkedWrappers.contains(servletRequest)) {
-                checkedWrappers.add(servletRequest);
-                if (SecurityContextHolderAwareRequestWrapper.class
-                        .isAssignableFrom(servletRequest.getClass())) {
-                    return (SecurityContextHolderAwareRequestWrapper) servletRequest;
-                }
-                servletRequest = ((ServletRequestWrapper) servletRequest)
-                        .getRequest();
+            return findSecurityContextHolderAwareRequestWrapper(
+                    ((VaadinServletRequest) request).getRequest());
+        }
+        return null;
+    }
+
+    private SecurityContextHolderAwareRequestWrapper findSecurityContextHolderAwareRequestWrapper(
+            ServletRequest servletRequest) {
+        Set<Object> checkedWrappers = new HashSet<>();
+        while (servletRequest instanceof ServletRequestWrapper
+                && !checkedWrappers.contains(servletRequest)) {
+            checkedWrappers.add(servletRequest);
+            if (SecurityContextHolderAwareRequestWrapper.class
+                    .isAssignableFrom(servletRequest.getClass())) {
+                return (SecurityContextHolderAwareRequestWrapper) servletRequest;
             }
+            servletRequest = ((ServletRequestWrapper) servletRequest)
+                    .getRequest();
         }
         return null;
     }
