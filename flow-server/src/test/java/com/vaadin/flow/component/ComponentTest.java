@@ -1340,15 +1340,15 @@ public class ComponentTest {
 
     }
 
-    // Not a component, but what it declares is loaded with the component
-    // that uses it
+    // Not a component, but what it declares and uses is loaded with the
+    // component that uses it
     @StyleSheet("non-component.css")
     @JavaScript("context://non-component.js")
+    @Uses(ComponentWithDependencies.class)
     public interface NonComponentWithDependencies {
     }
 
     @Tag("span")
-    @Uses(ComponentWithDependencies.class)
     @Uses(NonComponentWithDependencies.class)
     @JavaScript("uses.js")
     public static class UsesComponentWithDependencies extends Component {
@@ -1407,6 +1407,10 @@ public class ComponentTest {
 
         assertDependency(Dependency.Type.STYLESHEET, "context://css.css",
                 pendingDependencies);
+        assertDependency(Dependency.Type.STYLESHEET,
+                "context://non-component.css", pendingDependencies);
+        assertDependency(Dependency.Type.JAVASCRIPT,
+                "context://non-component.js", pendingDependencies);
     }
 
     @Test
