@@ -77,6 +77,11 @@ import java.lang.annotation.Target;
  * using a {@link JsDefinition}. The report for a call site that sends different
  * strings says so.
  * <p>
+ * JavaScript that only the browser refuses is not supported either, since Flow
+ * does not run it: an inline event handler attribute, such as {@code onclick},
+ * or a call to {@code eval} or {@code new Function} in an add-on's own frontend
+ * files. The add-on has to change.
+ * <p>
  * The JavaScript in the bundle runs in JavaScript strict mode, since the bundle
  * is made of modules, while a string that the browser compiles does not. A
  * string that only works outside strict mode, for example one that assigns to a
