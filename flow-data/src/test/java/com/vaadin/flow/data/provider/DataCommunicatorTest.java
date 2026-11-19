@@ -2048,7 +2048,10 @@ public class DataCommunicatorTest {
         verify(dataGenerator, never()).generateData(any(), any());
         assertNull(lastSet);
 
+        // Another flush is requested while the one that waited for the
+        // component to become visible runs in the same response
         element.setVisible(true);
+        dataCommunicator.reset();
         fakeClientCommunication();
 
         assertEquals(1, fetches.get());

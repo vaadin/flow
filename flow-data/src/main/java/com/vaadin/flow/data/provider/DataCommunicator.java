@@ -1238,11 +1238,11 @@ public class DataCommunicator<T> implements Serializable {
         // Both a pending request and one that waited for the component to
         // become visible can be run in the same response, but one flush
         // sends everything
-        for (FlushRequest other : new FlushRequest[] { flushRequest,
-                visibleFlushRequest }) {
-            if (other != null && other != request) {
-                other.cancelled = true;
-            }
+        if (flushRequest != null && flushRequest != request) {
+            flushRequest.cancelled = true;
+        }
+        if (visibleFlushRequest != null && visibleFlushRequest != request) {
+            visibleFlushRequest.cancelled = true;
         }
         flushRequest = null;
         visibleFlushRequest = null;
