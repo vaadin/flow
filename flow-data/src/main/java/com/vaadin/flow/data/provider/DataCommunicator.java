@@ -66,10 +66,11 @@ import com.vaadin.flow.shared.communication.PushMode;
  * client-side.
  * <p>
  * Changes are sent to the client before a response is written for a state node
- * that is visible. While the node or one of its ancestors is hidden, nothing is
- * fetched from the data provider or sent, and the changes made in the meantime
- * are sent in one update before the first response after the node has become
- * visible again.
+ * that is visible. While the node or one of its ancestors is hidden, no items
+ * are fetched from the data provider or sent, and the changes made in the
+ * meantime are sent in one update before the first response after the node has
+ * become visible again. The item count is still updated, and item count change
+ * events fired, while the node is hidden.
  *
  * @param <T>
  *            the bean type
@@ -129,6 +130,7 @@ public class DataCommunicator<T> implements Serializable {
     private FlushRequest flushUpdatedDataRequest;
     private boolean flushInProgress = false;
     private boolean flushUpdatedDataInProgress = false;
+    private boolean hiddenItemCountUpdateRequested = false;
 
     private CallbackDataProvider.CountCallback<T, ?> countCallback;
     private int itemCountEstimate = -1;
@@ -1201,6 +1203,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void requestFlush(boolean forced) {
+        requestHiddenItemCountUpdate();
         if (!shouldRequestFlush(forced)) {
             return;
         }
@@ -1217,6 +1220,28 @@ public class DataCommunicator<T> implements Serializable {
                 flushInProgress = false;
             }
         });
+    }
+
+    /**
+     * Keeps the item count and its change events up to date while the component
+     * is hidden, since the flush that normally updates them waits for the
+     * component to become visible. Applications rely on the events regardless
+     * of visibility, for example to show the component again once there are
+     * items.
+     */
+    private void requestHiddenItemCountUpdate() {
+        if (!fetchEnabled || hiddenItemCountUpdateRequested) {
+            return;
+        }
+        hiddenItemCountUpdateRequested = true;
+        stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
+                .beforeClientResponse(stateNode, context -> {
+                    hiddenItemCountUpdateRequested = false;
+                    if (!stateNode.isVisible()) {
+                        updateAssumedSize();
+                        fireItemCountEvent(assumedSize);
+                    }
+                }));
     }
 
     private boolean shouldRequestFlush(boolean forced) {
@@ -1263,15 +1288,7 @@ public class DataCommunicator<T> implements Serializable {
                 activeKeyOrder.size());
 
         // Phase 1: Find all items that the client should have
-
-        // With defined size the backend is only queried when necessary
-        if (definedSize && (reloadViewportRange || sizeReset)) {
-            assumedSize = getDataProviderSize();
-        } else if (!definedSize
-                && (!skipCountIncreaseUntilReset || sizeReset)) {
-            // with undefined size, size estimate is checked when scrolling down
-            updateUndefinedSize();
-        }
+        updateAssumedSize();
         effectiveRequested = viewportRange
                 .restrictTo(Range.withLength(0, assumedSize));
 
@@ -1308,6 +1325,17 @@ public class DataCommunicator<T> implements Serializable {
 
             performUpdate(oldActive, effectiveRequested, previousActive,
                     activation);
+        }
+    }
+
+    private void updateAssumedSize() {
+        // With defined size the backend is only queried when necessary
+        if (definedSize && (reloadViewportRange || sizeReset)) {
+            assumedSize = getDataProviderSize();
+        } else if (!definedSize
+                && (!skipCountIncreaseUntilReset || sizeReset)) {
+            // with undefined size, size estimate is checked when scrolling down
+            updateUndefinedSize();
         }
     }
 

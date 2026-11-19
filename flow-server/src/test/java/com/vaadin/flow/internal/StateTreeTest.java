@@ -977,10 +977,37 @@ class StateTreeTest {
         tree.beforeClientResponse(parent.getNode(),
                 context -> parent.setVisible(true));
         tree.runExecutionsBeforeClientResponse();
-        tree.runExecutionsBeforeClientResponse();
-
         assertEquals(1, visibleNodeExecutions.get(),
-                "the postponed execution should run once, in the round that made the node visible");
+                "the postponed execution should run in the round that made the node visible");
+
+        tree.runExecutionsBeforeClientResponse();
+        assertEquals(1, visibleNodeExecutions.get());
+    }
+
+    @Test
+    void beforeClientResponse_visibleNodeExecutionForHiddenNode_nodeGarbageCollectedWhenDetached()
+            throws InterruptedException {
+        UI ui = new UI();
+        StateTree tree = ui.getInternals().getStateTree();
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+        ui.getElement().appendChild(parent);
+        parent.appendChild(child);
+        parent.setVisible(false);
+
+        tree.beforeClientResponse(child.getNode(),
+                (VisibleNodeExecution) context -> {
+                });
+        tree.runExecutionsBeforeClientResponse();
+        parent.removeChild(child);
+
+        WeakReference<StateNode> ref = new WeakReference<>(child.getNode());
+        child = null;
+        // Collect to release from list of detached nodes
+        tree.collectChanges(value -> {
+        });
+
+        assertTrue(TestUtil.isGarbageCollected(ref));
     }
 
     private static class TestExecution implements DiscardAwareExecution {

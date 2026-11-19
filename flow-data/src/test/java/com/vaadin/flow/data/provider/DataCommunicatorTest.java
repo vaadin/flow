@@ -1360,8 +1360,9 @@ public class DataCommunicatorTest {
         dataCommunicator.setDefinedSize(false);
         fakeClientCommunication();
 
-        // Verify that requestFlush has been invoked
-        verify(stateNode).runWhenAttached(any());
+        // Verify that requestFlush has been invoked. It also requests an
+        // item count update for when the node is hidden.
+        verify(stateNode, times(2)).runWhenAttached(any());
 
         // Verify the estimated count is now 100 + 4 * pageSize = 300
         assertEquals(300, dataCommunicator.getItemCount());
@@ -2015,7 +2016,8 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    void reset_nodeHidden_nothingFetchedOrSentUntilVisible() {
+    void nodeHidden_itemsSentOnceVisible_itemCountUpdatedWhileHidden() {
+        AtomicInteger size = new AtomicInteger(100);
         AtomicInteger fetches = new AtomicInteger();
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             fetches.incrementAndGet();
@@ -2023,27 +2025,33 @@ public class DataCommunicatorTest {
                     .range(query.getOffset(),
                             query.getOffset() + query.getLimit())
                     .mapToObj(Item::new);
-        }, query -> 100), null);
+        }, query -> size.get()), null);
+        AtomicInteger lastItemCount = new AtomicInteger(-1);
+        new TestComponent(element).addItemChangeListener(
+                event -> lastItemCount.set(event.getItemCount()));
         dataCommunicator.setViewportRange(0, 30);
         fakeClientCommunication();
         fetches.set(0);
-        clearInvocations(arrayUpdater);
-        lastSet = null;
+        clearInvocations(arrayUpdater, dataGenerator);
 
         element.setVisible(false);
+        size.set(40);
         dataCommunicator.reset();
         fakeClientCommunication();
-        dataCommunicator.reset();
+        dataCommunicator.refresh(new Item(1));
         fakeClientCommunication();
 
+        assertEquals(40, lastItemCount.get(),
+                "item count events should be fired while hidden");
         assertEquals(0, fetches.get());
         verify(arrayUpdater, never()).startUpdate(anyInt());
+        verify(dataGenerator, never()).generateData(any(), any());
 
         element.setVisible(true);
         fakeClientCommunication();
 
         assertEquals(1, fetches.get());
-        verify(arrayUpdater).startUpdate(anyInt());
+        verify(arrayUpdater).startUpdate(40);
         assertEquals(Range.withLength(0, 30), lastSet);
     }
 
