@@ -428,11 +428,24 @@ class CspModeTest {
         assertTrue(
                 exception.getMessage().contains(
                         """
-                                    @JsExpression("return \\"a\\"\\n  + $0")
-                                    PendingJavaScriptResult cspModeTestExecuteJsOnUi(Object arg0);
+                                    @JsDefinition
+                                    public interface YourJs {
+                                        @JsExpression("return \\"a\\"\\n  + $0")
+                                        PendingJavaScriptResult cspModeTestExecuteJsOnUi(Object arg0);
+                                    }
                                 """),
                 exception.getMessage());
+        // Own code calls the method, an add-on gets the interface marked
+        assertTrue(exception.getMessage().contains(
+                "element.executeJs(YourJs.class).cspModeTestExecuteJsOnUi(arg0)"),
+                exception.getMessage());
         assertTraceLeadsFromApiToTest(exception, Element.class, "executeJs");
+
+        CspViolationException onPage = assertThrows(CspViolationException.class,
+                () -> ui.getPage().executeJs("return 1"));
+        assertTrue(
+                onPage.getMessage().contains("page.executeJs(YourJs.class)."),
+                onPage.getMessage());
     }
 
     @Test

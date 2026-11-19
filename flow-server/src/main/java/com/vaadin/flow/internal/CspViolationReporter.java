@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.CspMode;
 import com.vaadin.flow.server.CspViolationException;
@@ -104,12 +105,13 @@ public final class CspViolationReporter {
      * Reports a call to <code>executeJs</code> with a string expression. Called
      * by the API itself, which is where the stack trace of the report starts.
      * <p>
-     * The message adds the method that, declared in a
-     * {@link com.vaadin.flow.js.JsStringFallback} interface, would run the
-     * expression from the bundle instead, ready to paste. A warning is logged
-     * once per call site and expression, so a call site that sends different
-     * strings, such as one that concatenates values into them, is reported for
-     * each of them.
+     * The message adds a declared method for the expression, ready to paste,
+     * and says how to use it: called through <code>executeJs(Class)</code> when
+     * the call is in code the developer can change, or in an interface marked
+     * with {@link com.vaadin.flow.js.JsStringFallback} when it is in an add-on
+     * that the developer can not change. A warning is logged once per call site
+     * and expression, so a call site that sends different strings, such as one
+     * that concatenates values into them, is reported for each of them.
      *
      * @param expression
      *            the expression that is sent, not <code>null</code>
@@ -205,25 +207,47 @@ public final class CspViolationReporter {
     }
 
     /**
-     * The method that would stand in for a string call, named after the
+     * The declared method that replaces a string call, named after the
      * application code that made it, so that methods pasted for different call
      * sites do not get the same name.
+     * <p>
+     * Whether the call is in code the developer can change decides between
+     * calling the method and marking its interface as a fallback. The stack can
+     * not tell: an add-on and the application are both application code there,
+     * and an application can have its own code in jars. So both are described.
      */
     private static String describeFallback(StringCall call,
             StackTraceElement[] stack) {
         StringBuilder parameters = new StringBuilder();
+        StringBuilder arguments = new StringBuilder();
         for (int index = 0; index < call.parameterCount(); index++) {
-            parameters.append(index == 0 ? "" : ", ").append("Object arg")
-                    .append(index);
+            String separator = (index == 0) ? "" : ", ";
+            parameters.append(separator).append("Object arg").append(index);
+            arguments.append(separator).append("arg").append(index);
         }
+        String name = suggestMethodName(stack);
+        // The API is the first frame: Element.executeJs or Page.executeJs
+        String target = stack[0].getClassName().equals(Page.class.getName())
+                ? "page"
+                : "element";
         return """
-                 To run it from the bundle instead, declare this method in a \
-                @JsDefinition interface that is marked with @JsStringFallback:
+                 Declare the JavaScript in a @JsDefinition interface, for \
+                example:
 
-                    @JsExpression("%s")
-                    PendingJavaScriptResult %s(%s);
-                """.formatted(escapeJavaString(call.expression()),
-                suggestMethodName(stack), parameters);
+                    @JsDefinition
+                    public interface YourJs {
+                        @JsExpression("%s")
+                        PendingJavaScriptResult %s(%s);
+                    }
+
+                If this call is in your own code, call that method instead of \
+                sending the string: %s.executeJs(YourJs.class).%s(%s). If the \
+                call is in an add-on that you can not change, also add \
+                @JsStringFallback to the interface, next to @JsDefinition. Then \
+                the string call runs the method from the bundle.
+                """
+                .formatted(escapeJavaString(call.expression()), name,
+                        parameters, target, name, arguments);
     }
 
     private static String suggestMethodName(StackTraceElement[] stack) {
