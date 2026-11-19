@@ -948,6 +948,41 @@ class StateTreeTest {
                 ui.getInternals().dumpPendingJavaScriptInvocations().size());
     }
 
+    @Test
+    void beforeClientResponse_visibleNodeExecutionForHiddenNode_runOnceNodeIsVisible() {
+        UI ui = new UI();
+        StateTree tree = ui.getInternals().getStateTree();
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+        ui.getElement().appendChild(parent);
+        parent.appendChild(child);
+        parent.setVisible(false);
+
+        AtomicInteger visibleNodeExecutions = new AtomicInteger();
+        AtomicInteger regularExecutions = new AtomicInteger();
+        tree.beforeClientResponse(child.getNode(),
+                (VisibleNodeExecution) context -> visibleNodeExecutions
+                        .incrementAndGet());
+        tree.beforeClientResponse(child.getNode(),
+                context -> regularExecutions.incrementAndGet());
+
+        tree.runExecutionsBeforeClientResponse();
+        tree.runExecutionsBeforeClientResponse();
+
+        assertEquals(1, regularExecutions.get());
+        assertEquals(0, visibleNodeExecutions.get(),
+                "an execution that needs a visible node should wait while an ancestor is hidden");
+
+        // Made visible by another execution of the same round
+        tree.beforeClientResponse(parent.getNode(),
+                context -> parent.setVisible(true));
+        tree.runExecutionsBeforeClientResponse();
+        tree.runExecutionsBeforeClientResponse();
+
+        assertEquals(1, visibleNodeExecutions.get(),
+                "the postponed execution should run once, in the round that made the node visible");
+    }
+
     private static class TestExecution implements DiscardAwareExecution {
         private int executed;
         private int discarded;

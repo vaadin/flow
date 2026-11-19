@@ -163,6 +163,12 @@ public class StateTree implements NodeOwner {
 
     private Set<StateNode> pendingExecutionNodes = new HashSet<>();
 
+    /**
+     * Nodes that hold a {@link VisibleNodeExecution} which is waiting for the
+     * node to become visible.
+     */
+    private Set<StateNode> invisibleExecutionNodes = new HashSet<>();
+
     private int nextBeforeClientResponseIndex = 1;
 
     private final StateNode rootNode;
@@ -250,6 +256,7 @@ public class StateTree implements NodeOwner {
         }
 
         pendingExecutionNodes.remove(node);
+        invisibleExecutionNodes.remove(node);
         // The executions stay on the node, but no response is written for a
         // node that is not in the tree
         node.getBeforeClientResponseEntries().forEach(StateTree::discard);
@@ -353,7 +360,9 @@ public class StateTree implements NodeOwner {
      * <p>
      * If the {@link StateNode} related to the task is not attached to the
      * document by the time the task is evaluated, the execution is postponed to
-     * before the next response.
+     * before the next response. A task that is a {@link VisibleNodeExecution}
+     * is likewise postponed while the node is not visible, until the first
+     * response after it has become visible.
      * <p>
      * The task receives a {@link ExecutionContext} as parameter, which contains
      * information about the node state before the response.
@@ -416,6 +425,14 @@ public class StateTree implements NodeOwner {
                     discard(entry);
                     return;
                 }
+                if (entry.getExecution() instanceof VisibleNodeExecution
+                        && !node.isVisible()) {
+                    // Postpone until the node is visible, since nothing it
+                    // would send to the client is delivered before that
+                    node.addBeforeClientResponseEntry(entry);
+                    invisibleExecutionNodes.add(node);
+                    return;
+                }
                 try {
                     ExecutionContext context = new ExecutionContext(getUI(),
                             node.isClientSideInitialized());
@@ -462,6 +479,15 @@ public class StateTree implements NodeOwner {
     }
 
     private List<StateTree.BeforeClientResponseEntry> flushCallbacks() {
+        // A node can be made visible by any execution, so this is checked
+        // again for every round of executions
+        invisibleExecutionNodes.removeIf(node -> {
+            if (!node.isVisible()) {
+                return false;
+            }
+            pendingExecutionNodes.add(node);
+            return true;
+        });
         if (!hasCallbacks()) {
             return Collections.emptyList();
         }

@@ -24,6 +24,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
@@ -56,6 +57,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -2009,6 +2012,39 @@ public class DataCommunicatorTest {
 
     private int getPageSizeIncrease() {
         return dataCommunicator.getPageSize() * 4;
+    }
+
+    @Test
+    void reset_nodeHidden_nothingFetchedOrSentUntilVisible() {
+        AtomicInteger fetches = new AtomicInteger();
+        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            fetches.incrementAndGet();
+            return IntStream
+                    .range(query.getOffset(),
+                            query.getOffset() + query.getLimit())
+                    .mapToObj(Item::new);
+        }, query -> 100), null);
+        dataCommunicator.setViewportRange(0, 30);
+        fakeClientCommunication();
+        fetches.set(0);
+        clearInvocations(arrayUpdater);
+        lastSet = null;
+
+        element.setVisible(false);
+        dataCommunicator.reset();
+        fakeClientCommunication();
+        dataCommunicator.reset();
+        fakeClientCommunication();
+
+        assertEquals(0, fetches.get());
+        verify(arrayUpdater, never()).startUpdate(anyInt());
+
+        element.setVisible(true);
+        fakeClientCommunication();
+
+        assertEquals(1, fetches.get());
+        verify(arrayUpdater).startUpdate(anyInt());
+        assertEquals(Range.withLength(0, 30), lastSet);
     }
 
     private void fakeClientCommunication() {

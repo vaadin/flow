@@ -47,6 +47,7 @@ import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.VisibleNodeExecution;
 
 /**
  * WARNING: Direct use of this class in application code is not recommended and
@@ -153,11 +154,12 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             return flushRequest;
         }
         flushRequest = new FlushRequest<>();
+        VisibleNodeExecution execution = context -> {
+            flush(context);
+            flushRequest = null;
+        };
         stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(stateNode, (context) -> {
-                    flush(context);
-                    flushRequest = null;
-                }));
+                .beforeClientResponse(stateNode, execution));
         return flushRequest;
     }
 

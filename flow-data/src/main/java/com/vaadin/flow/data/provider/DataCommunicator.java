@@ -49,13 +49,13 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
-import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.VisibleNodeExecution;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -64,6 +64,12 @@ import com.vaadin.flow.shared.communication.PushMode;
  * communication implementations. It uses data generators ({@link BiFunction}s)
  * to write {@link ObjectNode}s representing each data object to be sent to the
  * client-side.
+ * <p>
+ * Changes are sent to the client before a response is written for a state node
+ * that is visible. While the node or one of its ancestors is hidden, nothing is
+ * fetched from the data provider or sent, and the changes made in the meantime
+ * are sent in one update before the first response after the node has become
+ * visible again.
  *
  * @param <T>
  *            the bean type
@@ -1671,7 +1677,7 @@ public class DataCommunicator<T> implements Serializable {
         private boolean cancelled;
 
         static FlushRequest register(StateNode stateNode,
-                SerializableConsumer<ExecutionContext> action) {
+                VisibleNodeExecution action) {
             FlushRequest request = new FlushRequest();
             request.owner = stateNode.getOwner();
             stateNode.runWhenAttached(ui -> {
