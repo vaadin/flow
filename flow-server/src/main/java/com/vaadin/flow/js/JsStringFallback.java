@@ -69,6 +69,14 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  * <p>
+ * Strings that are built from values that change, for example by joining a
+ * color into the JavaScript text, are not supported: a declaration matches one
+ * exact string, and the bundle can only hold strings that are known when the
+ * application is built. Such a string has to be fixed in the code that sends
+ * it, by passing the values as parameters ({@code $0}, {@code $1}, ...) or by
+ * using a {@link JsDefinition}. The report for a call site that sends different
+ * strings says so.
+ * <p>
  * The JavaScript in the bundle runs in JavaScript strict mode, since the bundle
  * is made of modules, while a string that the browser compiles does not. A
  * string that only works outside strict mode, for example one that assigns to a

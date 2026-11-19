@@ -524,6 +524,10 @@ class CspModeTest {
         assertFalse(same.contains("sent different JavaScript before"), same);
         assertTrue(different.contains("sent different JavaScript before"),
                 different);
+        assertTrue(
+                different.contains(
+                        "@JsStringFallback does not support strings like this"),
+                different);
     }
 
     @Test

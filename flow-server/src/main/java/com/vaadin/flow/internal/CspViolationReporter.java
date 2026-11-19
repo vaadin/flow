@@ -72,10 +72,11 @@ public final class CspViolationReporter {
     private static final String VARYING_JAVASCRIPT = """
             This call site has sent different JavaScript before, so the string \
             is probably built from values that change. A declaration matches \
-            one exact string only. In your own code, declare it once and pass \
-            the changing values as parameters ($0, $1, ...). For an add-on, \
-            each string has to be declared, which only works when the values \
-            are few and known.
+            one exact string only, so @JsStringFallback does not support \
+            strings like this. In your own code, declare the JavaScript once \
+            and pass the changing values as parameters ($0, $1, ...). For an \
+            add-on, the add-on itself has to change: ask its maintainers to \
+            pass the values as parameters or to use a @JsDefinition.
             """;
 
     private CspViolationReporter() {
