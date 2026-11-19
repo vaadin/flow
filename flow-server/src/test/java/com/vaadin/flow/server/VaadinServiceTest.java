@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -48,7 +47,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.MockedStatic;
 
 import com.vaadin.flow.component.Component;
@@ -415,8 +414,9 @@ class VaadinServiceTest {
     }
 
     @ParameterizedTest
-    @EnumSource(CspMode.class)
-    void cspMode_modeReported(CspMode mode) {
+    @CsvSource({ "OFF, flow/csp-off", "WARN, flow/csp-warn",
+            "STRICT, flow/csp-strict" })
+    void cspMode_modeReported(CspMode mode, String expectedKey) {
         UsageStatistics.resetEntries();
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         configuration.setCspMode(mode);
@@ -425,8 +425,7 @@ class VaadinServiceTest {
 
         service.init(new MockInstantiator());
 
-        String expected = "flow/csp-" + mode.name().toLowerCase(Locale.ROOT);
-        assertEquals(List.of(expected),
+        assertEquals(List.of(expectedKey),
                 getUsageStatisticsNames().stream()
                         .filter(name -> name.startsWith("flow/csp-")).toList(),
                 "Only the configured CSP mode should be reported");

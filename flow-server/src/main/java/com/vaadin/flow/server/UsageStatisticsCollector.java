@@ -87,9 +87,11 @@ class UsageStatisticsCollector implements Serializable {
      */
     private static void addCspModeUsageStatistics(
             DeploymentConfiguration configuration) {
-        UsageStatistics.markAsUsed("flow/csp-"
-                + configuration.getCspMode().name().toLowerCase(Locale.ROOT),
-                null);
+        // A mocked configuration returns null instead of the default OFF
+        CspMode mode = Objects.requireNonNullElse(configuration.getCspMode(),
+                CspMode.OFF);
+        UsageStatistics.markAsUsed(
+                "flow/csp-" + mode.name().toLowerCase(Locale.ROOT), null);
     }
 
     /**
