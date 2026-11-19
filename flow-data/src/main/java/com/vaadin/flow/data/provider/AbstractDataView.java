@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
@@ -182,6 +183,16 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     @Override
     public void refreshAll() {
         dataProviderSupplier.get().refreshAll();
+    }
+
+    @Override
+    public void notifyItemsAdded(Collection<T> items) {
+        dataProviderSupplier.get().notifyItemsAdded(items);
+    }
+
+    @Override
+    public void notifyItemsRemoved(Collection<T> items) {
+        dataProviderSupplier.get().notifyItemsRemoved(items);
     }
 
     @Override

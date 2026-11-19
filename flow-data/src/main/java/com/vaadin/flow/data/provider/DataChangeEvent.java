@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.util.Collection;
 import java.util.EventObject;
+import java.util.List;
 
 import com.vaadin.flow.server.Command;
 
@@ -102,6 +104,87 @@ public class DataChangeEvent<T> extends EventObject {
          */
         public boolean isRefreshChildren() {
             return refreshChildren;
+        }
+    }
+
+    /**
+     * An event fired when items have been added to a {@code DataProvider}, or
+     * moved to a new position in it. All other items are unchanged.
+     * <p>
+     * A listener that does not need the details can handle this event like any
+     * other {@link DataChangeEvent}. A listing component uses it to update the
+     * item count and the visible items while keeping the state it holds for the
+     * unchanged items, such as components rendered for them.
+     *
+     * @param <T>
+     *            the data type
+     * @see DataProvider#notifyItemsAdded(Collection)
+     */
+    public static class ItemsAddedEvent<T> extends DataChangeEvent<T> {
+
+        private final List<T> items;
+
+        /**
+         * Creates a new event originating from the given data provider.
+         *
+         * @param source
+         *            the data provider, not {@code null}
+         * @param items
+         *            the added items, not {@code null}
+         */
+        public ItemsAddedEvent(DataProvider<T, ?> source, Collection<T> items) {
+            super(source);
+            this.items = List.copyOf(items);
+        }
+
+        /**
+         * Gets the added items.
+         *
+         * @return an unmodifiable list of the added items, never {@code null}
+         */
+        public List<T> getItems() {
+            return items;
+        }
+    }
+
+    /**
+     * An event fired when items have been removed from a {@code DataProvider}.
+     * All other items are unchanged.
+     * <p>
+     * A listener that does not need the details can handle this event like any
+     * other {@link DataChangeEvent}. A listing component uses it to update the
+     * item count and the visible items while keeping the state it holds for the
+     * remaining items, such as components rendered for them.
+     *
+     * @param <T>
+     *            the data type
+     * @see DataProvider#notifyItemsRemoved(Collection)
+     */
+    public static class ItemsRemovedEvent<T> extends DataChangeEvent<T> {
+
+        private final List<T> items;
+
+        /**
+         * Creates a new event originating from the given data provider.
+         *
+         * @param source
+         *            the data provider, not {@code null}
+         * @param items
+         *            the removed items, not {@code null}
+         */
+        public ItemsRemovedEvent(DataProvider<T, ?> source,
+                Collection<T> items) {
+            super(source);
+            this.items = List.copyOf(items);
+        }
+
+        /**
+         * Gets the removed items.
+         *
+         * @return an unmodifiable list of the removed items, never {@code null}
+         */
+        public List<T> getItems() {
+            return items;
         }
     }
 

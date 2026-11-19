@@ -16,10 +16,11 @@
 package com.vaadin.flow.data.provider;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
@@ -210,9 +211,15 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @Override
     public AbstractListDataView<T> addItem(T item) {
         final ListDataProvider<T> dataProvider = getDataProvider();
-        if (!contains(item)) {
-            dataProvider.getItems().add(item);
-            dataProvider.refreshAll();
+        final Collection<T> backendItems = dataProvider.getItems();
+        // The backing collection, not the filtered and sorted items, so that
+        // an item hidden by a filter is not added a second time
+        final IdentifierProvider<T> identifierProvider = getIdentifierProvider();
+        final Object identifier = getIdentifier(identifierProvider, item);
+        if (backendItems.stream().noneMatch(nextItem -> identifier
+                .equals(getIdentifier(identifierProvider, nextItem)))) {
+            backendItems.add(item);
+            dataProvider.notifyItemsAdded(List.of(item));
         }
         return this;
     }
@@ -223,14 +230,9 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         if (!items.isEmpty()) {
             final ListDataProvider<T> dataProvider = getDataProvider();
             Collection<T> backendItems = dataProvider.getItems();
-            //@formatter:off
-            items.stream()
-                    .filter(this::contains)
-                    .forEach(item ->
-                            removeItemIfPresent(item, dataProvider));
-            //@formatter:on
+            removeItemsIfPresent(items, backendItems);
             backendItems.addAll(items);
-            dataProvider.refreshAll();
+            dataProvider.notifyItemsAdded(items);
         }
         return this;
     }
@@ -272,7 +274,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     public AbstractListDataView<T> removeItem(T item) {
         final ListDataProvider<T> dataProvider = getDataProvider();
         removeItemIfPresent(item, dataProvider);
-        dataProvider.refreshAll();
+        dataProvider.notifyItemsRemoved(List.of(item));
         return this;
     }
 
@@ -283,8 +285,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
             return this;
         }
         final ListDataProvider<T> dataProvider = getDataProvider();
-        items.forEach(item -> removeItemIfPresent(item, dataProvider));
-        dataProvider.refreshAll();
+        removeItemsIfPresent(items, dataProvider.getItems());
+        dataProvider.notifyItemsRemoved(items);
         return this;
     }
 
@@ -321,6 +323,28 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         dataProvider.getItems().removeIf(nextItem -> equals(item, nextItem));
     }
 
+    /**
+     * Removes the given items from the backing collection in a single pass, by
+     * comparing identifiers through a hash set instead of scanning the
+     * collection once per item.
+     */
+    private void removeItemsIfPresent(Collection<T> items,
+            Collection<T> backendItems) {
+        IdentifierProvider<T> identifierProvider = getIdentifierProvider();
+        Set<Object> identifiers = new HashSet<>();
+        for (T item : items) {
+            identifiers.add(getIdentifier(identifierProvider, item));
+        }
+        backendItems.removeIf(nextItem -> identifiers
+                .contains(getIdentifier(identifierProvider, nextItem)));
+    }
+
+    private static <T> Object getIdentifier(
+            IdentifierProvider<T> identifierProvider, T item) {
+        return Objects.requireNonNull(identifierProvider.apply(item),
+                NULL_IDENTIFIER_ERROR_MESSAGE);
+    }
+
     private void addItemOnTarget(T item, T target,
             String targetItemNotFoundErrorMessage,
             SerializableFunction<Integer, Integer> insertItemsIndexProvider) {
@@ -350,7 +374,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         removeItemIfPresent(item, dataProvider);
         itemList.add(insertItemsIndexProvider
                 .apply(getItemIndex(target, itemList.stream())), item);
-        dataProvider.refreshAll();
+        dataProvider.notifyItemsAdded(List.of(item));
     }
 
     private void addItemCollectionOnTarget(Collection<T> items, T target,
@@ -383,34 +407,30 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
          * such a case, then the target item would be deleted and we never know
          * the position to drop the items to.
          */
-        final AtomicBoolean containsTargetItem = new AtomicBoolean(false);
-        items.forEach(item -> {
-            /*
-             * Check if an input items collection contains the target item. All
-             * non-target items are deleted from backend if present, so as to be
-             * placed to proper position with a proper order later on.
-             */
-            if (equals(target, item)) {
-                containsTargetItem.set(true);
-            } else {
-                removeItemIfPresent(item, dataProvider);
-            }
-        });
+        /*
+         * Check if an input items collection contains the target item. All
+         * non-target items are deleted from backend if present, so as to be
+         * placed to proper position with a proper order later on.
+         */
+        final List<T> nonTargetItems = items.stream()
+                .filter(item -> !equals(target, item)).toList();
+        final boolean containsTargetItem = nonTargetItems.size() < items.size();
+        removeItemsIfPresent(nonTargetItems, itemList);
         int targetItemIndex = getItemIndex(target, itemList.stream());
 
         /*
          * If the target item is in a collection then remove it from backend and
          * store its index so as to add an items at a desired position further.
          */
-        if (containsTargetItem.get()) {
+        if (containsTargetItem) {
             itemList.remove(targetItemIndex);
         }
 
         final int indexToInsertItems = insertItemsIndexProvider
-                .apply(targetItemIndex, containsTargetItem.get());
+                .apply(targetItemIndex, containsTargetItem);
 
         itemList.addAll(indexToInsertItems, items);
-        dataProvider.refreshAll();
+        dataProvider.notifyItemsAdded(items);
     }
 
     private void fireFilteringOrSortingChangeEvent(

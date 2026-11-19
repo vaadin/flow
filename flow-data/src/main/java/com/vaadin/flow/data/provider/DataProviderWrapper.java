@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -76,6 +77,16 @@ public abstract class DataProviderWrapper<T, F, M>
     @Override
     public void refreshItem(T item) {
         dataProvider.refreshItem(item);
+    }
+
+    @Override
+    public void notifyItemsAdded(Collection<T> items) {
+        dataProvider.notifyItemsAdded(items);
+    }
+
+    @Override
+    public void notifyItemsRemoved(Collection<T> items) {
+        dataProvider.notifyItemsRemoved(items);
     }
 
     @Override
