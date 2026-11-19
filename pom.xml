@@ -134,11 +134,11 @@
     <maven.jar.plugin.version>3.5.1</maven.jar.plugin.version>
     <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
     <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
-    <maven.exec.plugin.version>3.6.4</maven.exec.plugin.version>
+    <maven.exec.plugin.version>3.7.0</maven.exec.plugin.version>
     <!-- Maven 3.8 still binds install:2.4 by default, which corrupts local
          repository metadata when modules install in parallel (-T). -->
     <maven.install.plugin.version>3.2.0</maven.install.plugin.version>
-    <testbench.version>25.4.0-alpha1</testbench.version>
+    <testbench.version>25.4.0-beta1</testbench.version>
     <jetty.version>12.1.15</jetty.version>
     <properties-maven-plugin.version>1.4.0</properties-maven-plugin.version>
     <build-helper-maven-plugin.version>3.8.0</build-helper-maven-plugin.version>
@@ -170,10 +170,16 @@
     <atmosphere.runtime.version>3.0.5.slf4jvaadin1</atmosphere.runtime.version>
     <atmosphere.client.version>4.0.3</atmosphere.client.version>
 
+    <!-- JPMS: stable module name, written as Automatic-Module-Name by the
+         maven-jar-plugin configuration. A module that publishes a runtime
+         jar sets it following the naming rule in CONVENTIONS.md (Build &
+         Dependencies). Empty means no entry. -->
+    <jpms.module.name/>
+
     <!-- OSGi -->
     <!-- Note: the parserVersion value is set by build-helper-maven-plugin -->
     <osgi.bundle.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</osgi.bundle.version>
-    <bnd.version>7.4.0</bnd.version>
+    <bnd.version>7.5.0</bnd.version>
     <osgi.core.version>7.0.0</osgi.core.version>
     <osgi.compendium.version>7.0.0</osgi.compendium.version>
     <osgi.annotation.version>8.1.0</osgi.annotation.version>
@@ -492,6 +498,24 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
           <version>${maven.jar.plugin.version}</version>
+          <executions>
+            <execution>
+              <!-- Only the main jar gets the module name, a test-jar
+                   with the same name would clash on the module path -->
+              <id>default-jar</id>
+              <configuration>
+                <archive>
+                  <manifestEntries>
+                    <!-- Stable JPMS module name for jars used from the
+                         module path. Modules publishing a runtime jar set
+                         the jpms.module.name property; the entry is
+                         omitted when the property is empty. -->
+                    <Automatic-Module-Name>${jpms.module.name}</Automatic-Module-Name>
+                  </manifestEntries>
+                </archive>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -791,6 +815,10 @@
         <version>3.12.0</version>
         <configuration>
           <quiet>true</quiet>
+          <!-- Generate on the class path even for jars that declare an
+               Automatic-Module-Name; on the module path, dependencies with
+               overlapping packages (e.g. jakarta.servlet and Tomcat) fail -->
+          <legacyMode>true</legacyMode>
         </configuration>
         <executions>
           <execution>
