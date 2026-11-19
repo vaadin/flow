@@ -396,9 +396,13 @@ public class StateNodeTest {
         assertEquals(List.of(false, true, false), notified,
                 "Moving under a hidden parent should notify");
 
-        registration.remove();
         hiddenParent.setVisible(true);
-        assertEquals(List.of(false, true, false), notified);
+        assertEquals(List.of(false, true, false, true), notified,
+                "The moved node should still be listened to");
+
+        registration.remove();
+        hiddenParent.setVisible(false);
+        assertEquals(List.of(false, true, false, true), notified);
     }
 
     @Test
