@@ -555,6 +555,35 @@ class CspModeTest {
                 .contains("@JsExpression(\"return 2\")"));
     }
 
+    @Test
+    void warn_callSiteSendingManyStrings_stopsLoggingAtTheLimit() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.WARN);
+        Logger logger = mock(Logger.class);
+        // The number of reports a call site logs at most
+        int limit = 10;
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            loggerFactory.when(
+                    () -> LoggerFactory.getLogger(CspViolationReporter.class))
+                    .thenReturn(logger);
+
+            // One call site, as for an add-on that concatenates a changing
+            // value into the expression
+            for (int i = 0; i < limit + 5; i++) {
+                executeJsOnUi("return " + i);
+            }
+            executeJsOnUi("return 0");
+        }
+
+        ArgumentCaptor<String> messages = ArgumentCaptor.forClass(String.class);
+        verify(logger, times(limit)).warn(messages.capture(),
+                any(Throwable.class));
+        assertFalse(messages.getAllValues().get(limit - 2)
+                .contains("further ones from it are not logged"));
+        assertTrue(messages.getAllValues().get(limit - 1)
+                .contains("further ones from it are not logged"));
+    }
+
     private static void reportFromComponent(String detail) {
         CspViolationReporter.reportStringJavaScript(detail);
     }

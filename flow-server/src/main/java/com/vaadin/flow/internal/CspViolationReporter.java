@@ -18,6 +18,7 @@ package com.vaadin.flow.internal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -58,10 +59,19 @@ public final class CspViolationReporter {
 
     private static final String MESSAGE = "JavaScript is sent to the browser as a string, which the browser has to compile and a Content Security Policy without 'unsafe-eval' blocks. The stack trace leads from the API to the code that called it.";
 
-    // Bounded by the number of call sites in the code, and of the details
-    // reported from them, for each service
-    private static final Map<VaadinService, Set<String>> warnedCalls = Collections
+    // What each call site has logged, by the detail and the JavaScript it was
+    // for. Bounded by the number of call sites in the code, times
+    // MAX_LOGGED_PER_CALL_SITE, for each service
+    private static final Map<VaadinService, Map<String, Set<String>>> warnedCalls = Collections
             .synchronizedMap(new WeakHashMap<>());
+
+    // A call site that builds its string from changing values would otherwise
+    // log, and keep, one entry for each value
+    private static final int MAX_LOGGED_PER_CALL_SITE = 10;
+
+    private static final String NO_MORE_FROM_CALL_SITE = """
+            This call site has now logged %d different reports, so further \
+            ones from it are not logged.""".formatted(MAX_LOGGED_PER_CALL_SITE);
 
     // The first JavaScript that each call site reported, to tell when a call
     // site sends different strings. Bounded by the number of call sites, for
@@ -482,20 +492,23 @@ public final class CspViolationReporter {
             throw violation;
         }
         // Different details or JavaScript from one call site are different
-        // reports
-        String key = getCallSite(stack);
-        if (detail != null) {
-            key = detail + '\n' + key;
+        // reports, since each needs its own declaration
+        String report = (detail == null ? "" : detail) + '\n'
+                + (javaScript == null ? "" : javaScript.key());
+        Set<String> logged = warnedCalls
+                .computeIfAbsent(service, k -> new ConcurrentHashMap<>())
+                .computeIfAbsent(getCallSite(stack), k -> new HashSet<>());
+        synchronized (logged) {
+            if (logged.size() >= MAX_LOGGED_PER_CALL_SITE
+                    || !logged.add(report)) {
+                return;
+            }
+            if (logged.size() == MAX_LOGGED_PER_CALL_SITE) {
+                message += "\n" + NO_MORE_FROM_CALL_SITE;
+            }
         }
-        if (javaScript != null) {
-            key = javaScript.key() + '\n' + key;
-        }
-        if (warnedCalls
-                .computeIfAbsent(service, k -> ConcurrentHashMap.newKeySet())
-                .add(key)) {
-            LoggerFactory.getLogger(CspViolationReporter.class).warn(message,
-                    violation);
-        }
+        LoggerFactory.getLogger(CspViolationReporter.class).warn(message,
+                violation);
     }
 
     private static String declareParameters(int count) {
