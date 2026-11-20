@@ -27,12 +27,6 @@
       }
     },
     {
-      "name": "vaadin.compiled.web.components.path",
-      "type": "java.lang.String",
-      "description": "Path of the compiled server-side web components module.",
-      "defaultValue": "vaadin-web-components"
-    },
-    {
       "name": "vaadin.csp",
       "type": "com.vaadin.flow.server.CspMode",
       "description": "Content Security Policy mode of the application.",
@@ -49,11 +43,6 @@
       "type": "java.lang.Boolean",
       "description": "Whether the development tools are shown in the browser in development mode.",
       "defaultValue": true
-    },
-    {
-      "name": "vaadin.devmode.frontend-extra-file-extensions",
-      "type": "java.lang.String",
-      "description": "Comma-separated list of extra file extensions of frontend files to compute hashes for when checking whether the development bundle is up to date."
     },
     {
       "name": "vaadin.devmode.live-reload.enabled",
@@ -136,57 +125,9 @@
       "description": "Fully qualified class name of the MenuAccessControl implementation to use."
     },
     {
-      "name": "vaadin.node.download.root",
-      "type": "java.lang.String",
-      "description": "URL to download Node.js from when it has to be installed."
-    },
-    {
-      "name": "vaadin.node.folder",
-      "type": "java.lang.String",
-      "description": "Folder that contains the Node.js executable. When set, only this installation is used."
-    },
-    {
-      "name": "vaadin.node.version",
-      "type": "java.lang.String",
-      "description": "Node.js version to install when no suitable installation is found."
-    },
-    {
-      "name": "vaadin.npm.exclude-postinstall-packages",
-      "type": "java.lang.String",
-      "description": "Comma-separated list of npm packages whose postinstall scripts are not run, including built-in ones."
-    },
-    {
-      "name": "vaadin.npm.exclude-web-components",
-      "type": "java.lang.Boolean",
-      "description": "Whether the npm packages of web components are excluded from the frontend build.",
-      "defaultValue": false
-    },
-    {
-      "name": "vaadin.npm.minimum-frontend-package-age-days",
-      "type": "java.lang.Integer",
-      "description": "Minimum age, in days, of a frontend package version before npm, pnpm or bun may install it. 0 disables the check. When not set, the npm or pnpm configuration is used, or 1 day if there is none."
-    },
-    {
-      "name": "vaadin.npm.postinstall-packages",
-      "type": "java.lang.String",
-      "description": "Comma-separated list of npm packages to run postinstall scripts for, in addition to the built-in ones."
-    },
-    {
       "name": "vaadin.page-title.generator",
       "type": "java.lang.String",
       "description": "Fully qualified class name of the PageTitleGenerator implementation to use by default for the whole application."
-    },
-    {
-      "name": "vaadin.pnpm.global",
-      "type": "java.lang.Boolean",
-      "description": "Whether a globally installed pnpm is used instead of the version Vaadin installs.",
-      "defaultValue": false
-    },
-    {
-      "name": "vaadin.production-mode",
-      "type": "java.lang.Boolean",
-      "description": "Whether the application runs in production mode. Usually set by the build, not by hand.",
-      "defaultValue": false
     },
     {
       "name": "vaadin.push-long-polling-suspend-timeout",
@@ -209,12 +150,6 @@
       "name": "vaadin.request-timing",
       "type": "java.lang.Boolean",
       "description": "Whether the server sends timing information to the client. Enabled by default in development mode and disabled in production mode."
-    },
-    {
-      "name": "vaadin.require.home.node",
-      "type": "java.lang.Boolean",
-      "description": "Whether the Node.js executable installed in the user home directory is required.",
-      "defaultValue": false
     },
     {
       "name": "vaadin.reuse-dev-server",
