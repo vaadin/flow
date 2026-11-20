@@ -20,10 +20,12 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 import com.vaadin.flow.component.download.Download;
+import com.vaadin.flow.component.download.DownloadTarget;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
 import com.vaadin.flow.component.trigger.internal.DownloadAction;
+import com.vaadin.flow.component.trigger.internal.OpenInNewTabAction;
 import com.vaadin.flow.component.trigger.internal.PropertyInput;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
@@ -43,6 +45,15 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
  * Two more buttons use the public {@link Download#onClick} API: one whose
  * handler decides the file name when the file is requested, and one whose
  * handler fails so the IT can check that the browser gets an error response.
+ * <p>
+ * The {@code open-tab-*} buttons do the same for {@link OpenInNewTabAction}: a
+ * static URL with default features, a static URL with a custom features string
+ * (which replaces the defaults verbatim), an {@link Input}-backed
+ * {@link PropertyInput} resolved at fire time, and a {@link DownloadHandler}
+ * opened through {@link Download#onClick} with {@link DownloadTarget#NEW_TAB}.
+ * The IT replaces {@code window.open} with a recording shim so the assertions
+ * don't depend on the browser actually opening a popup — and so the popup
+ * blocker doesn't interfere.
  */
 @Route(value = "com.vaadin.flow.uitest.ui.TriggerDownloadView", layout = ViewTestLayout.class)
 public class TriggerDownloadView extends AbstractDivView {
@@ -68,6 +79,18 @@ public class TriggerDownloadView extends AbstractDivView {
      * when the file is requested, sent back in {@code Content-Disposition}.
      */
     static final String LAZY_FILENAME = "lazy-name.txt";
+
+    /**
+     * Custom features used by the {@code #open-tab-features} button. Includes
+     * {@code noopener,noreferrer} explicitly so the assertion still proves
+     * round-trip without surrendering the security defaults.
+     */
+    static final String CUSTOM_FEATURES = "noopener,noreferrer,width=600,height=400";
+
+    /**
+     * Content served by the {@code #open-tab-handler} button's handler.
+     */
+    static final String NEW_TAB_CONTENT = "Generated on the server";
 
     @Override
     protected void onShow() {
@@ -116,5 +139,45 @@ public class TriggerDownloadView extends AbstractDivView {
                 DownloadHandler.fromInputStream(event -> {
                     throw new IllegalStateException("report not available");
                 }));
+
+        addOpenInNewTabButtons();
+    }
+
+    private void addOpenInNewTabButtons() {
+        NativeButton urlButton = new NativeButton("Open URL");
+        urlButton.setId("open-tab");
+        NativeButton urlWithFeaturesButton = new NativeButton(
+                "Open URL with custom features");
+        urlWithFeaturesButton.setId("open-tab-features");
+        NativeButton inputButton = new NativeButton("Open URL from input");
+        inputButton.setId("open-tab-input");
+        Input urlField = new Input();
+        urlField.setId("open-tab-url-source");
+        // Wired with an Input-based URL so a malicious value typed into the
+        // field exercises the client-side javascript: guard (the constructor
+        // already blocks static javascript: strings server-side).
+        NativeButton jsInputButton = new NativeButton(
+                "Open javascript: URL from input");
+        jsInputButton.setId("open-tab-js-input");
+        NativeButton handlerButton = new NativeButton("Open handler content");
+        handlerButton.setId("open-tab-handler");
+
+        add(urlButton, urlWithFeaturesButton, inputButton, urlField,
+                jsInputButton, handlerButton);
+
+        new ClickTrigger(urlButton)
+                .triggers(new OpenInNewTabAction("https://example.com/docs"));
+        new ClickTrigger(urlWithFeaturesButton).triggers(new OpenInNewTabAction(
+                "https://example.com/help", CUSTOM_FEATURES));
+        new ClickTrigger(inputButton).triggers(new OpenInNewTabAction(
+                new PropertyInput<>(urlField, "value", String.class)));
+        new ClickTrigger(jsInputButton).triggers(new OpenInNewTabAction(
+                new PropertyInput<>(urlField, "value", String.class)));
+        byte[] content = NEW_TAB_CONTENT.getBytes(StandardCharsets.UTF_8);
+        Download.onClick(handlerButton,
+                DownloadHandler.fromInputStream(event -> new DownloadResponse(
+                        new ByteArrayInputStream(content), "notes.txt",
+                        "text/plain", content.length)),
+                DownloadTarget.NEW_TAB);
     }
 }

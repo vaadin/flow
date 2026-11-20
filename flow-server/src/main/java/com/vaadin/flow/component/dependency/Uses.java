@@ -35,13 +35,17 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * Marking class A with <code>@Uses(B.class)</code> makes the production build
  * treat <code>B</code> as used whenever <code>A</code> is, even if no code of
  * <code>A</code> refers to <code>B</code> directly, for example because
- * <code>B</code> is only reached through reflection. When <code>B</code> is a
- * component, all its {@link StyleSheet}, {@link JavaScript} and other
- * dependencies are also loaded when a component <code>A</code> is used. The
- * used class does not have to be a component: any class the production build
- * reaches through it, such as a {@link com.vaadin.flow.js.JsDefinition}
- * interface, counts as used, and its {@link JsModule}, {@link JavaScript} and
- * {@link CssImport} annotations are included in the bundle.
+ * <code>B</code> is only reached through reflection. All {@link StyleSheet},
+ * {@link JavaScript} and other dependencies of <code>B</code> are also loaded
+ * when a component <code>A</code> is used, the same way as those of an
+ * interface that <code>A</code> implements. The used class does not have to be
+ * a component: it can be an interface, for example a
+ * {@link com.vaadin.flow.js.JsDefinition} that <code>A</code> runs JavaScript
+ * of. A used class that is neither a component nor an interface is only treated
+ * as used by the build, which bundles its {@link JsModule}, {@link CssImport}
+ * and bundled {@link JavaScript} values. What is loaded at runtime, such as a
+ * {@link StyleSheet}, is not loaded for such a class. The classes that it names
+ * in its own <code>@Uses</code> are handled as usual.
  * <p>
  * For {@code PolymerTemplate} implementations, used components will also be
  * instantiated if an element with the corresponding {@link Tag @Tag} value is

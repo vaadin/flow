@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.download;
 
+import java.io.File;
+import java.net.URI;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -25,16 +27,20 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.trigger.internal.DownloadAction;
+import com.vaadin.flow.component.trigger.internal.OpenInNewTabAction;
 import com.vaadin.flow.component.trigger.internal.TriggerInputJs;
 import com.vaadin.flow.component.trigger.internal.TriggerTestUtil;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.FileDownloadHandler;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -46,6 +52,7 @@ class DownloadTest {
 
     private UI ui;
     private TestButton button;
+    private StreamResourceRegistry registry;
 
     @BeforeEach
     void setUp() {
@@ -53,15 +60,21 @@ class DownloadTest {
         // The mock session has no resource registry by default; install a
         // real one so a DownloadHandler can be registered.
         VaadinSession session = ui.getSessionOrThrow();
-        when(session.getResourceRegistry())
-                .thenReturn(new StreamResourceRegistry(session));
+        registry = new StreamResourceRegistry(session);
+        when(session.getResourceRegistry()).thenReturn(registry);
         button = new TestButton();
         ui.getElement().appendChild(button.getElement());
     }
 
     @Test
     void startHandler_clickStartsDownloadOfRegisteredResource() {
-        Download.onClick(button, event -> event.getOutputStream().write(1));
+        FileDownloadHandler handler = DownloadHandler
+                .forFile(new File("report.pdf"));
+
+        Download.onClick(button, handler);
+
+        assertFalse(handler.isInline(),
+                "A saved file should keep being served as an attachment");
 
         JsFunction installFn = singleInstallFn();
         assertTrue(installFn.getCaptures().contains("click"),
@@ -71,6 +84,45 @@ class DownloadTest {
         assertEquals("download",
                 snippetOf(DownloadAction.DownloadJs.class, action));
         resourceUri(action);
+    }
+
+    @Test
+    void startHandlerInNewTab_clickOpensRegisteredResourceInline() {
+        FileDownloadHandler handler = DownloadHandler
+                .forFile(new File("invoice.pdf"));
+        assertFalse(handler.isInline());
+
+        Download.onClick(button, handler, DownloadTarget.NEW_TAB);
+
+        assertTrue(handler.isInline(),
+                "A built-in handler should serve its content inline");
+        JsFunction action = actionOf(singleInstallFn());
+        assertEquals("openInNewTab",
+                snippetOf(OpenInNewTabAction.OpenInNewTabJs.class, action));
+        resourceUri(action);
+    }
+
+    @Test
+    void startUrl_clickStartsDownloadOfGivenUrl() {
+        Download.onClick(button, "/files/a.bin");
+
+        JsFunction action = actionOf(singleInstallFn());
+        assertEquals("download",
+                snippetOf(DownloadAction.DownloadJs.class, action));
+        assertEquals("/files/a.bin", ((JsFunction) action.getCaptures().get(0))
+                .getCaptures().get(0));
+    }
+
+    @Test
+    void startUrlInNewTab_clickOpensGivenUrl() {
+        Download.onClick(button, "/files/terms.html", DownloadTarget.NEW_TAB);
+
+        JsFunction action = actionOf(singleInstallFn());
+        assertEquals("openInNewTab",
+                snippetOf(OpenInNewTabAction.OpenInNewTabJs.class, action));
+        assertEquals("/files/terms.html",
+                ((JsFunction) action.getCaptures().get(0)).getCaptures()
+                        .get(0));
     }
 
     @Test
@@ -103,6 +155,20 @@ class DownloadTest {
                 pending.get(0).getInvocation().getExpression()
                         .contains("disposeInitializer"),
                 "Removal should emit the dispose invocation");
+    }
+
+    @Test
+    void removeNewTabRegistration_handlerNoLongerServed() {
+        Registration registration = Download.onClick(button,
+                event -> event.getOutputStream().write(1),
+                DownloadTarget.NEW_TAB);
+        URI uri = URI.create(resourceUri(actionOf(singleInstallFn())));
+        assertTrue(registry.getResource(uri).isPresent());
+
+        registration.remove();
+
+        assertFalse(registry.getResource(uri).isPresent(),
+                "Removing the registration should unregister the handler");
     }
 
     private static String resourceUri(JsFunction action) {
