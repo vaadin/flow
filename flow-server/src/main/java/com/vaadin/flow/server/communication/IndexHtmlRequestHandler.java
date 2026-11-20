@@ -99,6 +99,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     public static final String LIVE_RELOAD_PORT_ATTR = "livereload.port";
     private static final String CONTENT_SECURITY_POLICY_HEADER = "Content-Security-Policy";
     private static final String CSP_SELF = "'self'";
+    private static final String CSP_DATA = "data:";
 
     // Not static: a SecureRandom in a static field would be created at build
     // time in native images that initialize classes at build time (Quarkus)
@@ -290,9 +291,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 .setDirective("script-src", "'nonce-" + nonce + "'",
                         "'strict-dynamic'")
                 .setDirective("style-src", CSP_SELF, "'unsafe-inline'")
-                .setDirective("img-src", CSP_SELF, "data:")
-                .setDirective("font-src", CSP_SELF, "data:")
-                .setDirective("connect-src", CSP_SELF, "data:")
+                .setDirective("img-src", CSP_SELF, CSP_DATA)
+                .setDirective("font-src", CSP_SELF, CSP_DATA)
+                .setDirective("connect-src", CSP_SELF, CSP_DATA)
                 .setDirective("worker-src", CSP_SELF)
                 .setDirective("object-src", "'none'")
                 .setDirective("base-uri", CSP_SELF);
