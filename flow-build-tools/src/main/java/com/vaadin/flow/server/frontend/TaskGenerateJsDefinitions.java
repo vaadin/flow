@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -358,51 +359,84 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                 .filter(definition -> definition
                         .isAnnotationPresent(JsStringFallback.class))
                 .sorted(Comparator.comparing(Class::getName))
-                .forEach(definition -> {
-                    JsStringFallback fallback = definition
-                            .getAnnotation(JsStringFallback.class);
-                    for (String filter : fallback.filters()) {
-                        String functionId = BundledEventData
-                                .getFunctionId(filter);
-                        expressions.putIfAbsent(functionId, filter);
-                        declaredBy.putIfAbsent(functionId,
-                                definition.getName()
-                                        + " @JsStringFallback(filters = \""
-                                        + filter + "\")");
-                    }
-                    for (String eventData : fallback.eventData()) {
-                        String functionId = BundledEventData
-                                .getFunctionId(eventData);
-                        expressions.putIfAbsent(functionId, eventData);
-                        declaredBy.putIfAbsent(functionId,
-                                definition.getName()
-                                        + " @JsStringFallback(eventData = \""
-                                        + eventData + "\")");
-                    }
+                .flatMap(definition -> findFallbackEventData(definition)
+                        .stream())
+                .forEach(data -> {
+                    expressions.putIfAbsent(data.functionId(),
+                            data.expression());
+                    declaredBy.putIfAbsent(data.functionId(),
+                            data.declaredBy());
                 });
 
         List<String> lines = new ArrayList<>();
         expressions.forEach((functionId, expression) -> {
-            String id = quote(functionId);
-            lines.add(String.format(
-                    "window.Vaadin.Flow.jsSnippets[%s] = function () {", id));
-            lines.add("  return function (event, element) {");
-            // On lines of their own, so that a value ending with a comment
-            // does not comment out what closes it
-            lines.add("    return (");
-            lines.add(expression);
-            lines.add("    );");
-            lines.add("  };");
-            lines.add("};");
+            lines.add(renderEventDataFunction(functionId, expression));
             if (withNames) {
-                lines.add(String.format(
-                        "window.Vaadin.Flow.jsDefinitionNames[%s] = %s;", id,
-                        quote(declaredBy.get(functionId))));
+                lines.add(renderEventDataName(functionId,
+                        declaredBy.get(functionId)));
             }
         });
         return lines.stream().flatMap(
                 line -> Arrays.stream(line.split(System.lineSeparator())))
                 .toList();
+    }
+
+    /**
+     * A filter or event data value that an interface marked with
+     * {@link JsStringFallback} lists, which the bundle has a function for.
+     */
+    private record FallbackEventData(String functionId, String expression,
+            String declaredBy) {
+    }
+
+    /**
+     * The filters and event data that the given definition lists in
+     * {@link JsStringFallback}, empty when it is not marked with it.
+     */
+    private static List<FallbackEventData> findFallbackEventData(
+            Class<?> definition) {
+        JsStringFallback fallback = definition
+                .getAnnotation(JsStringFallback.class);
+        if (fallback == null) {
+            return List.of();
+        }
+        List<FallbackEventData> found = new ArrayList<>();
+        for (String filter : fallback.filters()) {
+            found.add(new FallbackEventData(
+                    BundledEventData.getFunctionId(filter), filter,
+                    definition.getName() + " @JsStringFallback(filters = \""
+                            + filter + "\")"));
+        }
+        for (String eventData : fallback.eventData()) {
+            found.add(new FallbackEventData(
+                    BundledEventData.getFunctionId(eventData), eventData,
+                    definition.getName() + " @JsStringFallback(eventData = \""
+                            + eventData + "\")"));
+        }
+        return found;
+    }
+
+    /**
+     * Renders the function of an event data value or a filter, which captures
+     * nothing and evaluates to a function called with the event and the
+     * element.
+     */
+    private static String renderEventDataFunction(String functionId,
+            String expression) {
+        return String.join(System.lineSeparator(),
+                String.format(
+                        "window.Vaadin.Flow.jsSnippets[%s] = function () {",
+                        quote(functionId)),
+                "  return function (event, element) {",
+                // On lines of their own, so that a value ending with a comment
+                // does not comment out what closes it
+                "    return (", expression, "    );", "  };", "};");
+    }
+
+    private static String renderEventDataName(String functionId,
+            String declaredBy) {
+        return String.format("window.Vaadin.Flow.jsDefinitionNames[%s] = %s;",
+                quote(functionId), quote(declaredBy));
     }
 
     /**
@@ -545,12 +579,18 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         if (generated == null) {
             return false;
         }
+        // The functions of the filters and event data are found on their
+        // own: the file has them after every definition, and names each by
+        // the first class that declares it
+        boolean eventDataInFile = findFallbackEventData(definition).stream()
+                .allMatch(data -> generated.contains(renderEventDataFunction(
+                        data.functionId(), data.expression())));
         List<String> declared = renderDefinitionLines(definition, true);
         if (declared.isEmpty()) {
-            // Declares no JavaScript, so there is nothing to carry
-            return true;
+            // Declares no JavaScript of its own to carry
+            return eventDataInFile;
         }
-        return generated
+        return eventDataInFile && generated
                 .contains(String.join(System.lineSeparator(), declared));
     }
 
@@ -570,14 +610,31 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         if (generated == null || generated.isBlank()) {
             return renderFileContent(definitions, true);
         }
-        List<String> missing = definitions.stream()
+        List<String> missing = new ArrayList<>(definitions.stream()
                 .sorted(Comparator.comparing(Class::getName))
                 .flatMap(definition -> renderFunctions(definition, true)
                         .stream())
                 .filter(function -> !generated.contains(function))
                 .flatMap(function -> Arrays
                         .stream(function.split(System.lineSeparator())))
-                .toList();
+                .toList());
+        // A filter or event data value listed in @JsStringFallback, as a
+        // class change can list another one without changing any method
+        Set<String> addedEventData = new HashSet<>();
+        definitions.stream().sorted(Comparator.comparing(Class::getName))
+                .flatMap(definition -> findFallbackEventData(definition)
+                        .stream())
+                .forEach(data -> {
+                    String function = renderEventDataFunction(data.functionId(),
+                            data.expression());
+                    if (!generated.contains(function)
+                            && addedEventData.add(data.functionId())) {
+                        missing.addAll(Arrays.asList(
+                                function.split(System.lineSeparator())));
+                        missing.add(renderEventDataName(data.functionId(),
+                                data.declaredBy()));
+                    }
+                });
         if (missing.isEmpty()) {
             return generated;
         }

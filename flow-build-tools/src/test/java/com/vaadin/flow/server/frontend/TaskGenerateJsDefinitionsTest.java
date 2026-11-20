@@ -985,4 +985,46 @@ class TaskGenerateJsDefinitionsTest {
             assertTrue(content.contains(expression), content);
         }
     }
+
+    @Test
+    void updateJsDefinitions_stringFallbackListingNewEventData_addsTheirFunctions()
+            throws IOException {
+        // A class change that lists other filters and event data, with no
+        // method that changed
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+        generated.getParentFile().mkdirs();
+        Files.writeString(generated.toPath(), TaskGenerateJsDefinitions
+                .renderFileContent(List.of(GreeterJs.class), true));
+        assertEquals(List.of(EventFallbacks.class),
+                TaskGenerateJsDefinitions.findMissingFromGeneratedFile(options,
+                        List.of(EventFallbacks.class)),
+                "the file has no function for what the interface lists");
+
+        List<Class<?>> missing = TaskGenerateJsDefinitions
+                .updateJsDefinitions(options, List.of(EventFallbacks.class));
+
+        assertTrue(missing.isEmpty());
+        String written = Files.readString(generated.toPath());
+        for (String expression : List.of("event.key === 'Escape'",
+                "event.target.value.trim().length")) {
+            String functionId = BundledEventData.getFunctionId(expression);
+            assertTrue(written.contains("window.Vaadin.Flow.jsSnippets[\""
+                    + functionId + "\"] = function () {"), written);
+            assertTrue(
+                    written.contains("window.Vaadin.Flow.jsDefinitionNames[\""
+                            + functionId + "\"]"),
+                    written);
+        }
+        assertTrue(
+                TaskGenerateJsDefinitions.findMissingFromGeneratedFile(options,
+                        List.of(EventFallbacks.class)).isEmpty(),
+                "the file now has a function for everything listed");
+
+        TaskGenerateJsDefinitions.updateJsDefinitions(options,
+                List.of(EventFallbacks.class));
+        assertEquals(written, Files.readString(generated.toPath()),
+                "a second update should add nothing");
+    }
 }
