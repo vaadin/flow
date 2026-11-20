@@ -22,7 +22,8 @@ const OTHER_FAILURE = '[ERROR] Failed to execute goal on project foo: Compilatio
  * the given status on each attempt, repeating the last attempt when there
  * are more attempts than entries. sleep and pkill are stubbed so that a
  * retry neither waits nor stops other Java processes. env is added to the
- * script's environment, which otherwise sets no attempt limit or deadline.
+ * script's environment, which otherwise sets no attempt limit, deadline or
+ * retry duration.
  * When clock is given, date is stubbed to return that time and then 100
  * seconds more on each call, so every attempt takes 100 seconds and the
  * next one starts 100 seconds after it ended.
@@ -53,7 +54,7 @@ echo $((${clock} + calls * 100))`
     }
     bin('sleep', 'true');
     bin('pkill', 'true');
-    const { MAVEN_MAX_ATTEMPTS, MAVEN_RETRY_DEADLINE, ...inherited } = process.env;
+    const { MAVEN_MAX_ATTEMPTS, MAVEN_RETRY_DEADLINE, MAVEN_RETRY_DURATION, ...inherited } = process.env;
     const result = spawnSync(SCRIPT, [path.join(dir, 'mvn.out')], {
       env: { ...inherited, ...env, PATH: `${dir}:${process.env.PATH}` },
       encoding: 'utf8'
@@ -132,4 +133,20 @@ test('does not retry when the retry cannot end before the deadline', () => {
   assert.deepStrictEqual(withDeadline(T + 229), { status: 1, runs: 1 });
   assert.deepStrictEqual(withDeadline(T + 459), { status: 1, runs: 2 });
   assert.deepStrictEqual(withDeadline(T + 460), { status: 0, runs: 3 });
+});
+
+test('sizes a retry by the expected duration when the failed attempt was shorter', () => {
+  const T = 1000000;
+  const attempts = [
+    { log: TRANSFER_ERROR, status: 1 },
+    { log: 'BUILD SUCCESS', status: 0 }
+  ];
+  const withDeadline = (deadline, duration) =>
+    run(attempts, { MAVEN_RETRY_DEADLINE: `${deadline}`, MAVEN_RETRY_DURATION: `${duration}` }, T);
+  // The first attempt fails at T + 100 after 100 seconds, so a retry that
+  // takes 600 seconds would end at T + 730 and one that is expected to take
+  // less than the failed attempt still at T + 230.
+  assert.deepStrictEqual(withDeadline(T + 729, 600), { status: 1, runs: 1 });
+  assert.deepStrictEqual(withDeadline(T + 730, 600), { status: 0, runs: 2 });
+  assert.deepStrictEqual(withDeadline(T + 229, 50), { status: 1, runs: 1 });
 });

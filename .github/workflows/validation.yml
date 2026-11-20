@@ -220,6 +220,11 @@ jobs:
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Unit Test
+        # A full run's expected length, generously above the longest seen, for
+        # runMavenWithRetry.sh to size a retry by: a transfer error usually
+        # stops the build within a minute.
+        env:
+          MAVEN_RETRY_DURATION: 600
         run: |
           echo Running TESTS: ${{ strategy.job-index }} ${{matrix.module}} ${{ matrix.args }}
           [ -n "${{matrix.module}}" ] && \
@@ -360,6 +365,11 @@ jobs:
           fi
       - name: Run ITs
         timeout-minutes: 22
+        # A full run's expected length, generously above the longest seen, for
+        # runMavenWithRetry.sh to size a retry by: a transfer error usually
+        # stops the build within a minute.
+        env:
+          MAVEN_RETRY_DURATION: 1080
         run: |
           [ -n "${{matrix.module}}" ] && \
             ARGS="-Dfailsafe.forkCount=4 -pl ${{matrix.module}} -Dit.test=${{matrix.args}}" || \
@@ -528,6 +538,9 @@ jobs:
       - name: Run CDI ITs
         if: ${{ steps.decide.outputs.run == 'true' }}
         timeout-minutes: 35
+        # A full run's expected length, as in the Unit Test step.
+        env:
+          MAVEN_RETRY_DURATION: 300
         run: |
           # enforcer:enforce has to be named explicitly: the Flow parent keeps
           # the dependencyConvergence rule in the default-cli execution, so no
@@ -689,6 +702,9 @@ jobs:
       - name: Run Quarkus ITs
         if: ${{ steps.decide.outputs.run == 'true' }}
         timeout-minutes: 35
+        # A full run's expected length, as in the Unit Test step.
+        env:
+          MAVEN_RETRY_DURATION: 240
         run: |
           # -am, and the reactor rooted at the suite rather than at the
           # repository: the build job installs with -DskipTests, which
@@ -1144,9 +1160,7 @@ jobs:
       # Keep in sync with the job's timeout-minutes. Both builds below run
       # whole reactors and retry a transfer error. A retry that the job
       # timeout cuts off would hide that error, so a retry must end a minute
-      # before the timeout. This only guards the retry itself: a late retry
-      # of the base build can still leave too little time for the apicmp
-      # build.
+      # before the timeout.
       - name: Set retry deadline
         run: echo "MAVEN_RETRY_DEADLINE=$(( $(date +%s) + 14 * 60 ))" >> "$GITHUB_ENV"
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
@@ -1200,6 +1214,10 @@ jobs:
           echo "BASE_API_VERSION=${baseVersion}" >> $GITHUB_OUTPUT
       - name: Build base version locally
         working-directory: ../base-build
+        # A full run's expected length, as in the Unit Test step, plus that of
+        # the apicmp build below, which still has to fit after a retry.
+        env:
+          MAVEN_RETRY_DURATION: 540
         run: |
           echo "Building base version ${{ steps.base-version.outputs.BASE_API_VERSION }} from merge base ${{ steps.merge-base.outputs.merge_base_sha }} with ${{ env._BASE_REF }}"
           echo "Running in $(pwd)"
@@ -1216,6 +1234,9 @@ jobs:
         # profile comes from vaadin-parent, which compares the file named
         # after the packaging and so cannot handle the maven-plugin modules.
         # flow-tests is left out too, as it builds with flow-maven-plugin.
+        # A full run's expected length, as in the Unit Test step.
+        env:
+          MAVEN_RETRY_DURATION: 240
         run: |
           echo "Running in $(pwd)"
           MODULES=$(sed -n 's|.*<module>\(.*\)</module>.*|\1|p' pom.xml | while read -r m; do

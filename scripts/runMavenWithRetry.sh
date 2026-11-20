@@ -8,9 +8,14 @@
 #
 # MAVEN_MAX_ATTEMPTS sets the number of attempts (default 3). When
 # MAVEN_RETRY_DEADLINE is set to a time in seconds since the epoch, a retry
-# is only started when it can end before then, assuming it takes as long as
-# the failed attempt: a job that is cancelled by its timeout halfway through
-# a retry reports less than the transfer error that caused it.
+# is only started when it can end before then: a job that is cancelled by its
+# timeout halfway through a retry reports less than the transfer error that
+# caused it. A retry is assumed to take MAVEN_RETRY_DURATION seconds, or as
+# long as the failed attempt when that took longer. A transfer error usually
+# stops the build within its first minute, so the failed attempt alone says
+# little about how long a full run takes: set MAVEN_RETRY_DURATION to a
+# generous estimate of a full run, plus whatever else in the job still has
+# to run after it before the deadline.
 #
 # Maven is detached so that a JVM it forks and leaves behind (an application
 # server, a Quarkus or Spring Boot application) cannot pin the step open by
@@ -64,8 +69,10 @@ while true; do
   fi
   delay=$((attempt * 30))
   now=$(date +%s)
+  duration=$((now - started))
+  [ "${MAVEN_RETRY_DURATION:-0}" -gt "$duration" ] && duration=$MAVEN_RETRY_DURATION
   if [ -n "${MAVEN_RETRY_DEADLINE:-}" ] \
-      && [ $((now + delay + now - started)) -gt "$MAVEN_RETRY_DEADLINE" ]; then
+      && [ $((now + delay + duration)) -gt "$MAVEN_RETRY_DEADLINE" ]; then
     echo "::warning::Maven could not download from a repository," \
       "not enough time left to retry"
     exit $status
