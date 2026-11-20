@@ -58,6 +58,7 @@ import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
 import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -853,9 +854,52 @@ class TaskGenerateJsDefinitionsTest {
                 JacksonUtils.getMapper().readTree(list).valueStream()
                         .map(JsonNode::asString).toList());
         assertTrue(
-                fallbackTask.getFileContent().contains(
-                        JsCall.functionId("document.title = $0", 1, false)),
+                fallbackTask.getFileContent()
+                        .contains(JsCall.functionId(TitleFallbacks.class
+                                .getMethod("setTitle", Object.class))),
                 "a fallback is a definition, so its function is in the bundle");
+    }
+
+    @JsDefinition
+    public interface PlainFocusJs {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
+    @Test
+    void stringFallbackCall_seesTheElementAfterTheArgumentsLikeTheString()
+            throws Exception {
+        String content = TaskGenerateJsDefinitions.renderFileContent(
+                List.of(FocusFallbacks.class, TitleFallbacks.class), true);
+
+        // Element.executeJs(String) runs the string with the element as `this`
+        // and as $<argument count>, so a string with no arguments can use $0
+        assertTrue(
+                content.contains("  return (async function ($0) {"
+                        + System.lineSeparator() + "this.focus()"
+                        + System.lineSeparator() + "  }).call(this, this);"),
+                content);
+        assertTrue(
+                content.contains("  return (async function ($1) {"
+                        + System.lineSeparator() + "document.title = $0"
+                        + System.lineSeparator() + "  }).call(this, this);"),
+                content);
+    }
+
+    @Test
+    void stringFallbackCall_hasAFunctionOfItsOwn() throws Exception {
+        String fallback = JsCall
+                .functionId(FocusFallbacks.class.getMethod("focus"));
+        String plain = JsCall.functionId(PlainFocusJs.class.getMethod("focus"));
+
+        assertNotEquals(plain, fallback,
+                "the fallback is generated differently, so it must not replace"
+                        + " the function of a definition with the same JavaScript");
+        String content = TaskGenerateJsDefinitions.renderFileContent(
+                List.of(FocusFallbacks.class, PlainFocusJs.class), true);
+        assertTrue(content.contains("[\"" + plain + "\"] = async function () {"
+                + System.lineSeparator() + "this.focus()"), content);
+        assertTrue(content.contains("[\"" + fallback + "\"]"), content);
     }
 
     @Test

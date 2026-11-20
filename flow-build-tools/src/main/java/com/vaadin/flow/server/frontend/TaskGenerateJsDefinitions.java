@@ -733,7 +733,14 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                                 ? (parameters.isEmpty() ? EXECUTION_CONTEXT
                                         : EXECUTION_CONTEXT + ", " + parameters)
                                 : parameters));
-                function.add(expression);
+                if (JsStringFallbacks.isStringFallbackCall(method)) {
+                    // Sees the element as the parameter after the arguments,
+                    // as the string it stands in for does
+                    function.addAll(JsStringFallbacks.stringFallbackBody(
+                            expression, method.getParameterCount()));
+                } else {
+                    function.add(expression);
+                }
                 function.add("};");
             }
             if (withNames) {

@@ -37,6 +37,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
@@ -215,6 +216,16 @@ public record JsCall(Class<?> definitionType, String methodName,
             return StringUtil
                     .getHash(
                             "executionContext," + parameterCount
+                                    + (variadic ? "*" : "") + ":" + expression,
+                            StandardCharsets.UTF_8);
+        }
+        if (JsStringFallbacks.isStringFallbackCall(method)) {
+            // Generated to also see the element as the parameter after the
+            // arguments, like the string it stands in for, so told apart from
+            // a call declaring the same JavaScript
+            return StringUtil
+                    .getHash(
+                            "stringFallback," + parameterCount
                                     + (variadic ? "*" : "") + ":" + expression,
                             StandardCharsets.UTF_8);
         }

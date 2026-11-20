@@ -41,6 +41,7 @@ import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.server.Constants;
@@ -119,8 +120,15 @@ public final class JsStringFallbacks {
             boolean snippets = checkFallbackDefinition(definitionType);
             Map<String, Method> byFunctionId = snippets ? functions : calls;
             for (Method method : collectDeclaredMethods(definitionType)) {
-                Method previous = byFunctionId
-                        .putIfAbsent(JsCall.functionId(method), method);
+                // A call is found by what the string call sends: its text and
+                // its argument count. The function the bundle runs for it has
+                // an identifier of its own, see isStringFallbackCall
+                String key = snippets ? JsCall.functionId(method)
+                        : JsCall.functionId(
+                                method.getAnnotation(JsExpression.class)
+                                        .value(),
+                                method.getParameterCount(), method.isVarArgs());
+                Method previous = byFunctionId.putIfAbsent(key, method);
                 if (previous != null && !previous.equals(method)) {
                     throw new IllegalArgumentException("Methods "
                             + describe(previous) + " and " + describe(method)
@@ -375,6 +383,51 @@ public final class JsStringFallbacks {
         return Arrays.stream(definitionType.getMethods()).filter(
                 method -> method.isAnnotationPresent(JsExpression.class))
                 .toList();
+    }
+
+    /**
+     * Checks whether the given method runs JavaScript in place of an
+     * <code>executeJs</code> string, which is the case for a method that does
+     * not return a snippet and is declared by a {@link JsStringFallback}
+     * interface.
+     * <p>
+     * Such a method is generated so that its JavaScript sees what the string
+     * would see: <code>Element.executeJs(String, Object...)</code> gives the
+     * element to the string as one more parameter after the arguments, so a
+     * string can use <code>$0</code> as the element when it has no arguments.
+     * Since it is generated differently, its function has an identifier of its
+     * own, so it never replaces the function of another definition that
+     * declares the same JavaScript.
+     *
+     * @param method
+     *            a method annotated with {@link JsExpression}, not
+     *            <code>null</code>
+     * @return <code>true</code> if the method stands in for a string call
+     */
+    public static boolean isStringFallbackCall(Method method) {
+        return method.getDeclaringClass()
+                .isAnnotationPresent(JsStringFallback.class)
+                && !JsSnippet.class.isAssignableFrom(method.getReturnType());
+    }
+
+    /**
+     * Gets the body of the generated function for a method that
+     * {@link #isStringFallbackCall(Method) stands in for a string call}. It
+     * runs the declared JavaScript the way
+     * <code>Element.executeJs(String, Object...)</code> runs the string: in a
+     * function whose <code>this</code> is the element and which sees the
+     * element as the parameter after the arguments.
+     *
+     * @param expression
+     *            the declared JavaScript, not <code>null</code>
+     * @param parameterCount
+     *            the number of parameters of the method
+     * @return the lines of the function body, not <code>null</code>
+     */
+    public static List<String> stringFallbackBody(String expression,
+            int parameterCount) {
+        return List.of("  return (async function ($" + parameterCount + ") {",
+                expression, "  }).call(this, this);");
     }
 
     private static String describe(Method method) {
