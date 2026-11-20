@@ -44,6 +44,8 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
 import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
+import com.vaadin.flow.data.provider.DataChangeEvent.ItemsAddedEvent;
+import com.vaadin.flow.data.provider.DataChangeEvent.ItemsRemovedEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.function.SerializableComparator;
@@ -423,10 +425,21 @@ public class DataCommunicator<T> implements Serializable {
      * It effectively resends all available data.
      */
     public void reset() {
+        dataGenerator.destroyAllData();
+        reloadViewport();
+    }
+
+    /**
+     * Fetches the item count and the items of the viewport again, without
+     * destroying the generated data of the items. Data of an item that is no
+     * longer in the viewport is destroyed only after the client has confirmed
+     * the update, like when scrolling.
+     */
+    private void reloadViewport() {
         skipCountIncreaseUntilReset = false;
         sizeReset = true;
         reloadViewportRange = true;
-        dataGenerator.destroyAllData();
+        // The reload resends every item of the viewport
         updatedData.clear();
         requestFlush();
     }
@@ -1165,6 +1178,9 @@ public class DataCommunicator<T> implements Serializable {
                 .addDataProviderListener(event -> {
                     if (event instanceof DataRefreshEvent) {
                         handleDataRefreshEvent((DataRefreshEvent<T>) event);
+                    } else if (event instanceof ItemsAddedEvent
+                            || event instanceof ItemsRemovedEvent) {
+                        handleItemsAddedOrRemovedEvent(event);
                     } else {
                         reset();
                     }
@@ -1176,6 +1192,19 @@ public class DataCommunicator<T> implements Serializable {
 
     protected void handleDataRefreshEvent(DataRefreshEvent<T> event) {
         refresh(event.getItem());
+    }
+
+    /**
+     * Handles an {@link ItemsAddedEvent} or an {@link ItemsRemovedEvent} from
+     * the data provider. Unlike {@link #reset()}, this keeps the generated data
+     * of the items that stay in the viewport, such as components rendered for
+     * them, and only fetches the item count and the viewport again.
+     *
+     * @param event
+     *            the event, not {@code null}
+     */
+    protected void handleItemsAddedOrRemovedEvent(DataChangeEvent<T> event) {
+        reloadViewport();
     }
 
     private void handleDetach() {

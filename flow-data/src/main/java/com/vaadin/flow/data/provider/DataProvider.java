@@ -139,6 +139,51 @@ public interface DataProvider<T, F> extends Serializable {
     void refreshAll();
 
     /**
+     * Notifies listeners that the given items have been added to the data, or
+     * moved to a new position in it, and that all other items are unchanged.
+     * Call it after the items are in the backing data store.
+     * <p>
+     * Compared to {@link #refreshAll()}, a listing component keeps the state it
+     * holds for the unchanged items, such as components rendered for them, and
+     * only updates the item count and the visible items. Where the new items
+     * show up still depends on the sorting and filtering of the component.
+     * <p>
+     * The default implementation calls {@link #refreshAll()}, so a data
+     * provider that does not fire events of its own keeps working.
+     * {@link AbstractDataProvider} fires a
+     * {@link DataChangeEvent.ItemsAddedEvent}.
+     *
+     * @param items
+     *            the added items, not {@code null}
+     */
+    default void notifyItemsAdded(Collection<T> items) {
+        Objects.requireNonNull(items, "Added items cannot be null.");
+        refreshAll();
+    }
+
+    /**
+     * Notifies listeners that the given items have been removed from the data,
+     * and that all other items are unchanged. Call it after the items are gone
+     * from the backing data store.
+     * <p>
+     * Compared to {@link #refreshAll()}, a listing component keeps the state it
+     * holds for the remaining items, such as components rendered for them, and
+     * only updates the item count and the visible items.
+     * <p>
+     * The default implementation calls {@link #refreshAll()}, so a data
+     * provider that does not fire events of its own keeps working.
+     * {@link AbstractDataProvider} fires a
+     * {@link DataChangeEvent.ItemsRemovedEvent}.
+     *
+     * @param items
+     *            the removed items, not {@code null}
+     */
+    default void notifyItemsRemoved(Collection<T> items) {
+        Objects.requireNonNull(items, "Removed items cannot be null.");
+        refreshAll();
+    }
+
+    /**
      * Gets an identifier for the given item. This identifier is used by the
      * framework to determine equality between two items.
      * <p>

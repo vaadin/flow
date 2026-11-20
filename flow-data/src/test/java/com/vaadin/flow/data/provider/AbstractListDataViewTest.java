@@ -399,6 +399,36 @@ class AbstractListDataViewTest {
     }
 
     @Test
+    void addItem_itemHiddenByFilter_notAddedTwice() {
+        dataView.setFilter(item -> !item.equals("middle"));
+        dataView.addItem("middle");
+
+        assertEquals(List.of("first", "middle", "last"), items);
+    }
+
+    @Test
+    void addAndRemoveItems_dataProviderNotifiedOfChangedItemsOnly() {
+        List<DataChangeEvent<String>> events = new ArrayList<>();
+        dataProvider.addDataProviderListener(events::add);
+
+        dataView.addItem("new");
+        dataView.addItems(List.of("first", "other"));
+        dataView.removeItem("middle");
+
+        assertEquals(3, events.size());
+        assertEquals(List.of("new"),
+                ((DataChangeEvent.ItemsAddedEvent<String>) events.get(0))
+                        .getItems());
+        assertEquals(List.of("first", "other"),
+                ((DataChangeEvent.ItemsAddedEvent<String>) events.get(1))
+                        .getItems());
+        assertEquals(List.of("middle"),
+                ((DataChangeEvent.ItemsRemovedEvent<String>) events.get(2))
+                        .getItems());
+        assertEquals(List.of("last", "new", "first", "other"), items);
+    }
+
+    @Test
     void removeItem_notInList_dataSetNotChanged() {
         dataView.removeItem("not present");
         assertEquals(3, dataView.getItemCount());
