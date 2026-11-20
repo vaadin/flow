@@ -31,7 +31,7 @@ unexpected=$(
   {
     grep -oE '^\[ERROR\] dependency: [^ ]+' "$log" | awk '{ print $3 }'
     grep 'following artifacts could not be resolved' "$log" \
-      | grep -oE '[^ ,:]+(:[^ ,:]+){3,4} \((absent|present)\)' | awk '{ print $1 }'
+      | grep -oE '[^ ,:]+(:[^ ,:]+){3,4} \((absent|present[^)]*)\)' | awk '{ print $1 }'
     grep -oE 'Could not (transfer|find) artifact [^ ]+' "$log" | awk '{ print $5 }'
     grep -oE 'Plugin [^ ]+ or one of its dependencies could not be resolved' "$log" \
       | awk '{ print "plugin " $2 }'
