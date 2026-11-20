@@ -193,7 +193,7 @@ public class InstallDevCliMojo extends AbstractMojo {
      *            {@code groupId:artifactId:extension:version}
      * @return the resolved file, or empty when it could not be resolved
      */
-    private Optional<Path> resolveArtifact(String coordinates) {
+    Optional<Path> resolveArtifact(String coordinates) {
         ArtifactRequest request = new ArtifactRequest(
                 new DefaultArtifact(coordinates),
                 project.getRemoteProjectRepositories(), null);

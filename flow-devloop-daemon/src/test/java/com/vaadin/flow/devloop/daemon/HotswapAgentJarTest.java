@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;
@@ -34,6 +35,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -113,11 +115,17 @@ class HotswapAgentJarTest {
                 + HotswapAgentJar.VERSION), asked);
     }
 
-    @Test
-    void provision_resolvedCopyDoesNotVerify_downloadsRetryingARateLimit(
-            @TempDir Path dir) throws IOException {
-        Path resolved = Files.writeString(dir.resolve("from-m2.jar"),
+    @ParameterizedTest
+    @ValueSource(strings = { "tampered", "missing", "throws" })
+    void provision_resolverHasNoUsableCopy_downloadsRetryingARateLimit(
+            String resolverAnswer, @TempDir Path dir) throws IOException {
+        Path tampered = Files.writeString(dir.resolve("from-m2.jar"),
                 "tampered");
+        Function<String, Path> resolver = coordinates -> switch (resolverAnswer) {
+        case "tampered" -> tampered;
+        case "missing" -> dir.resolve("absent.jar");
+        default -> throw new IllegalStateException("no repository");
+        };
         Path cached = dir.resolve("cache").resolve("ha.jar");
         AtomicInteger requests = new AtomicInteger();
         HttpServer server = HttpServer
@@ -138,9 +146,8 @@ class HotswapAgentJarTest {
         });
         server.start();
         try {
-            HotswapAgentJar.provision(progress::add, coordinates -> resolved,
-                    cached, sha256("agent bytes 7f3a"),
-                    URI.create("http://127.0.0.1:"
+            HotswapAgentJar.provision(progress::add, resolver, cached,
+                    sha256("agent bytes 7f3a"), URI.create("http://127.0.0.1:"
                             + server.getAddress().getPort() + "/ha.jar"));
         } finally {
             server.stop(0);

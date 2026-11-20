@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.jar.JarOutputStream;
 
@@ -26,13 +28,22 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.ReflectionUtils;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.ArtifactResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -103,6 +114,48 @@ class InstallDevCliMojoTest {
         mojo(false).execute();
 
         verifyWarned("older than this plugin");
+    }
+
+    @Test
+    void resolveArtifact_resolvesFromTheProjectRepositories() throws Exception {
+        RemoteRepository mirror = new RemoteRepository.Builder("mirror",
+                "default", "https://repo.example.org/maven").build();
+        when(project.getRemoteProjectRepositories())
+                .thenReturn(List.of(mirror));
+        Path jar = projectBase.toPath().resolve("agent-3.1.jar");
+        RepositorySystem system = mock(RepositorySystem.class);
+        RepositorySystemSession session = mock(RepositorySystemSession.class);
+        when(system.resolveArtifact(same(session),
+                argThat((ArtifactRequest request) -> request.getRepositories()
+                        .equals(List.of(mirror))
+                        && "org.example:agent:jar:3.1"
+                                .equals(request.getArtifact().toString()))))
+                .thenAnswer(invocation -> new ArtifactResult(
+                        invocation.getArgument(1, ArtifactRequest.class))
+                        .setArtifact(
+                                new DefaultArtifact("org.example:agent:jar:3.1")
+                                        .setFile(jar.toFile())));
+        InstallDevCliMojo mojo = mojo(false);
+        mojo.setRepositorySystem(system);
+        ReflectionUtils.setVariableValueInObject(mojo, "repositorySession",
+                session);
+
+        assertEquals(Optional.of(jar),
+                mojo.resolveArtifact("org.example:agent:jar:3.1"));
+    }
+
+    @Test
+    void resolveArtifact_unresolvable_warnsAndLeavesItToTheDownload()
+            throws Exception {
+        RepositorySystem system = mock(RepositorySystem.class);
+        when(system.resolveArtifact(any(), any())).thenThrow(
+                new ArtifactResolutionException(List.of(), "offline"));
+        InstallDevCliMojo mojo = mojo(false);
+        mojo.setRepositorySystem(system);
+
+        assertEquals(Optional.empty(),
+                mojo.resolveArtifact("org.example:agent:jar:3.1"));
+        verifyWarned("org.example:agent:jar:3.1");
     }
 
     private InstallDevCliMojo mojo(boolean skipHotswapAgent) throws Exception {
