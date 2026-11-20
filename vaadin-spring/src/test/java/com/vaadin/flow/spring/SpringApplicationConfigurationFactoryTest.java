@@ -22,9 +22,13 @@ import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.context.properties.source.ConfigurationPropertySources;
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.MapPropertySource;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.spring.SpringLookupInitializer.SpringApplicationContextInit;
@@ -101,5 +105,21 @@ class SpringApplicationConfigurationFactoryTest {
         new SpringApplicationContextInit().setApplicationContext(webAppContext);
 
         doCreate_vaadinApplicationConfigurationHasSpringPropertiesPrefixedByVaadin();
+    }
+
+    @Test
+    void doCreate_camelCaseParameterSetInDashSeparatedForm_parameterIsAvailable() {
+        StandardEnvironment springEnv = new StandardEnvironment();
+        springEnv.getPropertySources().addFirst(new MapPropertySource("app", Map
+                .of("vaadin.devmode.session-serialization.enabled", "true")));
+        ConfigurationPropertySources.attach(springEnv);
+        when(webAppContext.getBean(Environment.class)).thenReturn(springEnv);
+
+        ApplicationConfiguration config = factory.doCreate(context,
+                new HashMap<>());
+
+        assertEquals("true", config.getStringProperty(
+                InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION,
+                null));
     }
 }
