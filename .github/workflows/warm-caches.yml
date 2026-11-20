@@ -88,18 +88,15 @@ jobs:
         with:
           path: ~/.m2/repository
           # Deliberately not the key validation.yml computes, even though this
-          # entry is meant for it. actions/cache skips its save when the primary
-          # key was an exact hit, so claiming that key here would stop the test
-          # jobs saving theirs, and theirs is the richer one: this build leaves
-          # flow-tests out, and with it the roughly ninety artifacts only the
-          # integration tests pull. Their restore keys still reach this entry by
-          # prefix, so they start warm.
+          # entry is meant for it: its build job tells this entry apart by the
+          # key it restored, to skip resolving the integration test
+          # dependencies again when the poms match. Its restore keys reach this
+          # entry by prefix, so it starts warm.
           #
-          # They do not, however, keep saving what they add to it, as this note
-          # used to claim. The build job of their own run saves that key before
-          # them, so their restore is an exact hit and actions/cache skips their
-          # save. Nothing an integration test job downloads is ever cached,
-          # which is what the step below exists to work around.
+          # The integration test jobs cannot add to what they restore: the
+          # build job of their own run saves that key before them, so their
+          # restore is an exact hit and their save is skipped. What they need
+          # is resolved here, and by that build job when its poms differ.
           key: ${{ runner.os }}-maven-warm-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-warm-
       - name: Populate the local repository
@@ -133,8 +130,8 @@ jobs:
         # auto-clean executions, so it forces the plugins bound that early to
         # resolve without compiling a line or running npm - six seconds on a
         # warm repository, and around 450 artifacts the install above leaves
-        # out, mostly the poms needed to read these models. Plugins bound later
-        # than initialize are still only cached by the job that runs them.
+        # out, mostly the poms needed to read these models. The step after
+        # this resolves the plugins bound later and the dependency jars.
         #
         # Deliberately no -DskipTests: the it-test-modules profile, which holds
         # most of those modules, activates on the property being absent.
