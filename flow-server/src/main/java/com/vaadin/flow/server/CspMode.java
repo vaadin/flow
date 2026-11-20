@@ -42,8 +42,10 @@ public enum CspMode {
     OFF,
     /**
      * The application runs unchanged, but every call that would not work under
-     * a strict Content Security Policy is logged as a warning, once per call
-     * site, with a stack trace that leads from the API to its caller.
+     * a strict Content Security Policy is logged as a warning, with a stack
+     * trace that leads from the API to its caller. A warning is logged once per
+     * call site, or, when a component reports what the JavaScript belongs to,
+     * once per call site and reported part, such as a chart option.
      */
     WARN,
     /**

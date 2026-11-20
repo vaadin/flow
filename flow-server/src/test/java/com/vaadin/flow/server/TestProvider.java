@@ -24,7 +24,7 @@ import com.vaadin.flow.i18n.I18NProvider;
 /**
  * Translation provider test class.
  */
-public class TestProvider implements I18NProvider {
+class TestProvider implements I18NProvider {
 
     @Override
     public List<Locale> getProvidedLocales() {

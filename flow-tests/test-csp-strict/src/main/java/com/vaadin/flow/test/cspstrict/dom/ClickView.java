@@ -28,8 +28,8 @@ import com.vaadin.flow.router.Route;
  * The most ordinary thing an application does: a click listener on a component,
  * whose event carries data read from the DOM event, a DOM event listener with
  * an event data path on a plain element, and a component event whose event data
- * is an expression that the build puts into the bundle, also for a component
- * that the expression returns.
+ * and filter are expressions that the build puts into the bundle, also for a
+ * component that the expression returns.
  */
 @Route("click")
 public class ClickView extends Div {
@@ -67,9 +67,10 @@ public class ClickView extends Div {
     /**
      * A click whose event data is computed by an expression rather than read
      * from a property path, and a component found by an expression, which the
-     * client maps from the DOM node that the expression returns.
+     * client maps from the DOM node that the expression returns. The filter is
+     * an expression too, and also decides whether the default is prevented.
      */
-    @DomEvent("click")
+    @DomEvent(value = "click", filter = "event.button === 0", preventDefault = true)
     public static class OffsetClickEvent extends ComponentEvent<Div> {
         private final int offset;
         private final Span marker;

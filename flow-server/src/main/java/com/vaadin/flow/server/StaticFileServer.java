@@ -76,8 +76,8 @@ public class StaticFileServer implements StaticFileHandler {
 
     private final ResponseWriter responseWriter;
     private final VaadinService vaadinService;
-    private DeploymentConfiguration deploymentConfiguration;
-    private DevModeHandler devModeHandler;
+    private final DeploymentConfiguration deploymentConfiguration;
+    private final DevModeHandler devModeHandler;
 
     // Matches paths to theme files referenced from link tags (e.g. styles
     // .css or document.css)
@@ -253,10 +253,17 @@ public class StaticFileServer implements StaticFileHandler {
             HttpServletResponse response) throws IOException {
 
         String filenameWithPath = getRequestFilename(request);
-        if (filenameWithPath.endsWith("/")) {
+        boolean directory = filenameWithPath.endsWith("/");
+        String vaadinFolder = "/" + VAADIN_MAPPING;
+        boolean belowVaadinFolder = filenameWithPath.startsWith(vaadinFolder)
+                && !filenameWithPath.equals(vaadinFolder);
+        boolean devServerMayServeDirectory = devModeHandler != null
+                && belowVaadinFolder;
+        if (directory && !devServerMayServeDirectory) {
             // Directories are not static resources although
             // servletContext.getResource will return a URL for them, at
-            // least with Jetty
+            // least with Jetty. Only the dev server may serve a page for a
+            // directory below /VAADIN/.
             return false;
         } else if (HandlerHelper.getPublicInternalFolderPaths().stream()
                 .anyMatch(path -> filenameWithPath.equals(path))) {
@@ -301,6 +308,11 @@ public class StaticFileServer implements StaticFileHandler {
                         ee);
             }
             return true;
+        }
+        if (directory) {
+            // Only the dev server serves pages addressed by a directory, such
+            // as the type checker diagnostics page at /VAADIN/__checker/
+            return false;
         }
 
         URL resourceUrl = null;
