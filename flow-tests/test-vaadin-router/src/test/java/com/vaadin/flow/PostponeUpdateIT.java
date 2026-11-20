@@ -71,4 +71,46 @@ public class PostponeUpdateIT extends ChromeBrowserTest {
                 getDriver().getCurrentUrl(), updatedUrl);
     }
 
+    @Test
+    public void postpone_backKeepsUrlWhilePostponed() {
+        open();
+
+        findElement(By.id("link")).click();
+        $(NativeButtonElement.class).id("proceedButton").click();
+        waitUntil(driver -> driver.getCurrentUrl().endsWith("/1"));
+
+        String postponingUrl = getDriver().getCurrentUrl();
+
+        getDriver().navigate().back();
+        waitUntil(driver -> isElementPresent(By.id("proceedButton")));
+
+        Assert.assertEquals(
+                "While the navigation is postponed, the URL should stay",
+                postponingUrl, getDriver().getCurrentUrl());
+    }
+
+    @Test
+    public void postpone_proceedAfterBackKeepsForwardHistory() {
+        open();
+        String initialUrl = getDriver().getCurrentUrl();
+
+        findElement(By.id("link")).click();
+        $(NativeButtonElement.class).id("proceedButton").click();
+        waitUntil(driver -> driver.getCurrentUrl().endsWith("/1"));
+
+        String postponingUrl = getDriver().getCurrentUrl();
+
+        getDriver().navigate().back();
+        waitUntil(driver -> isElementPresent(By.id("proceedButton")));
+        $(NativeButtonElement.class).id("proceedButton").click();
+        waitUntil(driver -> !isElementPresent(By.id("proceedButton")));
+        Assert.assertEquals("Proceeding should complete the back navigation",
+                initialUrl, getDriver().getCurrentUrl());
+
+        getDriver().navigate().forward();
+        waitUntil(driver -> isElementPresent(By.id("proceedButton")));
+        $(NativeButtonElement.class).id("proceedButton").click();
+        waitUntil(driver -> driver.getCurrentUrl().equals(postponingUrl), 5);
+    }
+
 }
