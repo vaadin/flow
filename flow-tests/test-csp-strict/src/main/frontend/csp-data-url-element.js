@@ -11,7 +11,7 @@ customElements.define(
         const svg = await response.text();
         this.textContent = svg.startsWith('<svg') ? 'Fetched' : 'Unexpected content';
       } catch (e) {
-        this.textContent = 'Failed';
+        this.textContent = `Failed: ${e.message}`;
       }
     }
   }

@@ -15,8 +15,9 @@
  */
 package com.vaadin.flow.test.cspstrict.csp;
 
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
-import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.test.cspstrict.AbstractCspStrictIT;
 import com.vaadin.testbench.BrowserTest;
@@ -36,7 +37,9 @@ public class DataUrlFetchIT extends AbstractCspStrictIT {
     public void dataUrl_isFetched() {
         open();
 
-        waitUntil(ExpectedConditions.textToBe(By.id("fetcher"), "Fetched"));
+        WebElement fetcher = findElement(By.id("fetcher"));
+        waitUntil(driver -> !fetcher.getText().isEmpty());
         assertNoCspViolations();
+        Assertions.assertEquals("Fetched", fetcher.getText());
     }
 }
