@@ -42,10 +42,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  */
 class SpringConfigurationMetadataTest {
 
-    // Parameters that are not read from the Spring environment at runtime, so
-    // they must not be suggested. See
-    // https://github.com/vaadin/flow/issues/26161
-    private static final Set<String> NOT_RUNTIME_PARAMETERS = Set.of(
+    private static final Set<String> UNDOCUMENTED_PARAMETERS = Set.of(
+            // Not read from the Spring environment at runtime, see
+            // https://github.com/vaadin/flow/issues/26161
             InitParameters.UI_PARAMETER, InitParameters.CI_BUILD,
             InitParameters.SKIP_DEV_BUNDLE_REBUILD,
             InitParameters.FORCE_PRODUCTION_BUILD,
@@ -53,7 +52,15 @@ class SpringConfigurationMetadataTest {
             InitParameters.COMMERCIAL_WITH_BANNER,
             InitParameters.CLEAN_BUILD_FRONTEND_FILES,
             InitParameters.SERVLET_PARAMETER_JSBUNDLE,
-            InitParameters.SERVLET_PARAMETER_STATISTICS_JSON);
+            InitParameters.SERVLET_PARAMETER_STATISTICS_JSON,
+            // Set by test tooling, not by applications
+            InitParameters.BROWSERLESS,
+            // Have to match the build plugin configuration, so setting them
+            // only in the application properties gives inconsistent results
+            InitParameters.BUILD_FOLDER,
+            InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+            // Only read by the legacy bootstrap page
+            InitParameters.SERVLET_PARAMETER_POLYFILLS);
 
     @Test
     void additionalMetadata_eachPropertyIsReadAsOneRuntimeParameter()
@@ -65,9 +72,9 @@ class SpringConfigurationMetadataTest {
                     + "' must be read as exactly one Vaadin parameter, but is read as "
                     + parameters);
             String parameter = parameters.iterator().next();
-            assertFalse(NOT_RUNTIME_PARAMETERS.contains(parameter),
+            assertFalse(UNDOCUMENTED_PARAMETERS.contains(parameter),
                     "'" + property + "' is read as '" + parameter
-                            + "', which is not a runtime parameter");
+                            + "', which is intentionally not documented");
         }
     }
 
@@ -80,7 +87,7 @@ class SpringConfigurationMetadataTest {
         }
 
         Set<String> undocumented = new TreeSet<>(SpringServlet.PROPERTY_NAMES);
-        undocumented.removeAll(NOT_RUNTIME_PARAMETERS);
+        undocumented.removeAll(UNDOCUMENTED_PARAMETERS);
         undocumented.removeAll(documented);
         assertEquals(Set.of(), undocumented,
                 "Add the parameters to additional-spring-configuration-metadata.json");

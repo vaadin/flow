@@ -12,18 +12,6 @@
       "defaultValue": true
     },
     {
-      "name": "vaadin.browserless",
-      "type": "java.lang.Boolean",
-      "description": "Whether the application runs without a browser, for example in UI unit tests. Suppresses warnings related to the frontend development server.",
-      "defaultValue": false
-    },
-    {
-      "name": "vaadin.build.folder",
-      "type": "java.lang.String",
-      "description": "Name of the build folder of the project.",
-      "defaultValue": "target"
-    },
-    {
       "name": "vaadin.close-idle-sessions",
       "type": "java.lang.Boolean",
       "description": "Whether a session is eventually closed when its open UIs have no user interaction. When disabled, heartbeat requests keep the session open as long as there are open UIs.",
@@ -72,12 +60,6 @@
       "type": "java.lang.Boolean",
       "description": "Whether the browser reloads automatically when the application changes in development mode. Has no effect when the development tools are disabled.",
       "defaultValue": true
-    },
-    {
-      "name": "vaadin.devmode.optimize-bundle",
-      "type": "java.lang.Boolean",
-      "description": "Whether only the classes reachable from the entry points are scanned for frontend resources in development mode. When disabled, every class on the classpath is scanned.",
-      "defaultValue": false
     },
     {
       "name": "vaadin.devmode.output.pattern.timeout",
@@ -152,11 +134,6 @@
       "name": "vaadin.menu.access.control",
       "type": "java.lang.String",
       "description": "Fully qualified class name of the MenuAccessControl implementation to use."
-    },
-    {
-      "name": "vaadin.module.polyfills",
-      "type": "java.lang.String",
-      "description": "Comma-separated list of polyfill scripts to load with the application."
     },
     {
       "name": "vaadin.node.download.root",
