@@ -55,6 +55,7 @@ public class PostponeUpdateIT extends ChromeBrowserTest {
     @Test
     public void postpone_cancelResetsUrlOnBack() {
         open();
+        String initialUrl = getDriver().getCurrentUrl();
 
         findElement(By.id("link")).click();
         $(NativeButtonElement.class).id("proceedButton").click();
@@ -69,6 +70,12 @@ public class PostponeUpdateIT extends ChromeBrowserTest {
 
         Assert.assertEquals("Canceling should revert to " + updatedUrl,
                 getDriver().getCurrentUrl(), updatedUrl);
+
+        // The history entry of the cancelled navigation is still there
+        getDriver().navigate().back();
+        waitUntil(driver -> isElementPresent(By.id("proceedButton")));
+        $(NativeButtonElement.class).id("proceedButton").click();
+        waitUntil(driver -> driver.getCurrentUrl().equals(initialUrl), 5);
     }
 
     @Test

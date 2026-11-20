@@ -27,7 +27,7 @@ interface HTMLRouterContainer extends HTMLElement {
   onBeforeEnter?: (ctx: NavigationParameters, cmd: PreventAndRedirectCommands, router: Router) => void | Promise<any>;
   onBeforeLeave?: (ctx: NavigationParameters, cmd: PreventCommands, router: Router) => void | Promise<any>;
   serverConnected?: (cancel: boolean, url?: NavigationParameters) => void;
-  serverPaused?: () => void;
+  serverPaused?: (activeLocation?: string | null) => void;
 }
 
 interface FlowRoute {
@@ -102,6 +102,13 @@ export class Flow {
 
   private navigation: string = '';
 
+  // true when the browser changed the URL with back/forward before the
+  // server was asked whether the view can be left
+  private popstateNavigation = false;
+
+  // resolves the history step Flow takes itself, see restoreUrl()
+  private ownHistoryStep?: () => void;
+
   constructor(config?: FlowConfig) {
     // Set window.name early so @PreserveOnRefresh can use it to identify the browser tab
     // Only set if not already set to preserve any existing value
@@ -131,6 +138,10 @@ export class Flow {
       }`
     );
     this.appShellTitle = document.title;
+
+    // Capture phase, so that Flow sees the event before the router does
+    window.addEventListener('popstate', (event) => this.onPopstate(event), { capture: true });
+
     // Put a vaadin-connection-indicator in the dom
     this.addConnectionIndicator();
   }
@@ -255,10 +266,18 @@ export class Flow {
   // route specified by the context
   private async flowNavigate(ctx: NavigationParameters, cmd?: PreventAndRedirectCommands): Promise<HTMLElement> {
     if (this.response) {
+      const fromPopstate = this.popstateNavigation;
+      this.popstateNavigation = false;
+      let urlRestored = false;
       return new Promise((resolve) => {
         this.loadingStarted();
         // The callback to run from server side once the view is ready
-        this.container.serverConnected = (cancel, redirectContext?: NavigationParameters) => {
+        this.container.serverConnected = async (cancel, redirectContext?: NavigationParameters) => {
+          if (urlRestored && !cancel) {
+            // Undo the restoring history entry, so that the browser is back
+            // on the entry the user navigated to, with its forward history
+            await this.historyBackSilently();
+          }
           if (cmd && cancel) {
             resolve(cmd.prevent());
           } else if (cmd && cmd.redirect && redirectContext) {
@@ -271,7 +290,11 @@ export class Flow {
           this.loadingFinished();
         };
 
-        this.container.serverPaused = () => {
+        // The callback to run from server side when the navigation is postponed
+        this.container.serverPaused = (activeLocation) => {
+          if (fromPopstate && activeLocation != null) {
+            urlRestored = this.restoreUrl(activeLocation);
+          }
           this.loadingFinished();
         };
 
@@ -291,6 +314,37 @@ export class Flow {
       // No server response => offline or erroneous connection
       return Promise.resolve(this.container);
     }
+  }
+
+  private onPopstate(event: PopStateEvent) {
+    if (this.ownHistoryStep) {
+      // Hide the step from the router, it must not start a new navigation
+      event.stopImmediatePropagation();
+      const done = this.ownHistoryStep;
+      this.ownHistoryStep = undefined;
+      done();
+    } else if (event.state !== 'vaadin-router-ignore') {
+      this.popstateNavigation = true;
+    }
+  }
+
+  // The browser has already changed the URL on back/forward navigation, which
+  // cannot be cancelled. While the navigation is postponed, show the URL of
+  // the view that is still active by pushing it on top of the target entry.
+  private restoreUrl(activeLocation: string): boolean {
+    const url = new URL(activeLocation, document.baseURI);
+    if (url.pathname === window.location.pathname && url.search === window.location.search) {
+      return false;
+    }
+    window.history.pushState(null, '', url.pathname + url.search);
+    return true;
+  }
+
+  private historyBackSilently(): Promise<void> {
+    return new Promise((resolve) => {
+      this.ownHistoryStep = resolve;
+      window.history.back();
+    });
   }
 
   private getFlowRoutePath(context: NavigationParameters | Location): string {
