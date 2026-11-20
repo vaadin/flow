@@ -42,7 +42,10 @@ interface FlowRoot {
 
 interface PostponedHistoryEntry {
   state: unknown;
+  // own URL of the entry the browser moved to
   url: string;
+  // URL of the active view, shown in the entry while the navigation is postponed
+  activeUrl: string;
 }
 
 export interface NavigationParameters {
@@ -110,6 +113,10 @@ export class Flow {
   // URL the browser moved to with back/forward, before the server was asked
   // whether the active view can be left
   private popstateUrl?: string;
+
+  // history entry that shows the active view's URL while a back/forward
+  // navigation is postponed
+  private postponedEntry?: PostponedHistoryEntry;
 
   constructor(config?: FlowConfig) {
     // Set window.name early so @PreserveOnRefresh can use it to identify the browser tab
@@ -250,6 +257,7 @@ export class Flow {
     if (this.pathname === ctx.pathname || !this.isFlowClientLoaded() || connectionState.offline) {
       return Promise.resolve({});
     }
+    this.abandonPostponedEntry();
     // 'server -> client'
     return new Promise((resolve) => {
       this.loadingStarted();
@@ -268,14 +276,16 @@ export class Flow {
   // route specified by the context
   private async flowNavigate(ctx: NavigationParameters, cmd?: PreventAndRedirectCommands): Promise<HTMLElement> {
     if (this.response) {
-      const fromPopstate = this.popstateUrl !== undefined && this.popstateUrl === ctx.pathname + (ctx.search ?? '');
+      const targetUrl = ctx.pathname + (ctx.search ?? '');
+      const fromPopstate = this.popstateUrl === targetUrl;
       this.popstateUrl = undefined;
+      this.abandonPostponedEntry();
       let postponedEntry: PostponedHistoryEntry | undefined;
       return new Promise((resolve) => {
         this.loadingStarted();
         // The callback to run from server side once the view is ready
         this.container.serverConnected = (cancel, redirectContext?: NavigationParameters) => {
-          if (postponedEntry) {
+          if (postponedEntry && postponedEntry === this.postponedEntry) {
             this.restorePostponedEntry(postponedEntry, cancel);
           }
           if (cmd && cancel) {
@@ -293,7 +303,8 @@ export class Flow {
         // The callback to run from server side when the navigation is postponed
         this.container.serverPaused = (activeLocation) => {
           if (fromPopstate) {
-            postponedEntry = this.showActiveUrl(activeLocation);
+            postponedEntry = this.showActiveUrl(activeLocation, targetUrl);
+            this.postponedEntry = postponedEntry;
           }
           this.loadingFinished();
         };
@@ -319,6 +330,8 @@ export class Flow {
   private onPopstate(event: PopStateEvent) {
     if (event.state !== 'vaadin-router-ignore') {
       this.popstateUrl = window.location.pathname + window.location.search;
+      // The browser left the entry, it can no longer be changed
+      this.postponedEntry = undefined;
     }
   }
 
@@ -326,25 +339,40 @@ export class Flow {
   // ask the server, and it cannot be cancelled. While the navigation is
   // postponed, show the URL of the view that is still active in the entry the
   // browser moved to.
-  private showActiveUrl(activeLocation: string): PostponedHistoryEntry | undefined {
-    const url = new URL(activeLocation, document.baseURI);
+  // The router may have restored the URL already, e.g. React Router does.
+  private showActiveUrl(activeLocation: string, targetUrl: string): PostponedHistoryEntry | undefined {
     const { pathname, search, hash } = window.location;
-    if (url.pathname === pathname && url.search === search) {
+    if (pathname + search !== targetUrl) {
       return undefined;
     }
-    const entry = { state: window.history.state, url: pathname + search + hash };
-    window.history.replaceState(entry.state, '', url.pathname + url.search);
+    const url = new URL(activeLocation, document.baseURI);
+    const entry = {
+      state: window.history.state,
+      url: pathname + search + hash,
+      activeUrl: url.pathname + url.search
+    };
+    window.history.replaceState(entry.state, '', entry.activeUrl);
     return entry;
+  }
+
+  // A new navigation replaces a postponed one, which is then treated as
+  // cancelled, so that its target can still be reached with back.
+  private abandonPostponedEntry() {
+    const entry = this.postponedEntry;
+    this.postponedEntry = undefined;
+    if (entry && window.location.pathname + window.location.search === entry.activeUrl) {
+      this.restorePostponedEntry(entry, true);
+    }
   }
 
   // Give the entry the browser moved to its URL back. When the navigation is
   // cancelled, the active view gets an entry of its own on top of it, so that
   // the user can still go back to the cancelled target.
   private restorePostponedEntry(entry: PostponedHistoryEntry, cancel: boolean) {
-    const { pathname, search, hash } = window.location;
+    this.postponedEntry = undefined;
     window.history.replaceState(entry.state, '', entry.url);
     if (cancel) {
-      window.history.pushState(null, '', pathname + search + hash);
+      window.history.pushState(null, '', entry.activeUrl);
     }
   }
 
