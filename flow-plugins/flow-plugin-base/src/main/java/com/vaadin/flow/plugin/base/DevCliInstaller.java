@@ -238,7 +238,8 @@ public final class DevCliInstaller {
      *         reported and the first {@code start} downloads as before
      * @throws IOException
      *             if provisioning was attempted and the jar could neither be
-     *             found in the cache nor downloaded
+     *             found in the cache, resolved from the build's repositories,
+     *             nor downloaded
      */
     public static Optional<Path> provisionHotswapAgent(Path daemonJar,
             Function<String, Optional<Path>> resolver, Consumer<String> info,

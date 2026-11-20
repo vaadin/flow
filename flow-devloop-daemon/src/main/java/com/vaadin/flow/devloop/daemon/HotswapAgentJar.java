@@ -182,7 +182,7 @@ public final class HotswapAgentJar {
      * local repository it has already cached, its mirrors and proxies, and the
      * retries it applies - instead of a direct download. What it answers is
      * verified against the pinned checksum and copied into the cache. When it
-     * answers {@code null}, fails, or answers bytes that are not the pinned
+     * answers {@code null}, throws, or answers bytes that are not the pinned
      * ones, the jar is downloaded from {@link #URL} as before.
      *
      * @param progress

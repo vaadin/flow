@@ -32,8 +32,11 @@ import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -145,6 +148,40 @@ class HotswapAgentJarTest {
 
         assertEquals("agent bytes 7f3a", Files.readString(cached));
         assertEquals(2, requests.get());
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "404, 1", "503, 4" })
+    void provision_downloadKeepsFailing_givesUpWithTheStatus(int status,
+            int expectedRequests, @TempDir Path dir) throws IOException {
+        Path cached = dir.resolve("cache").resolve("ha.jar");
+        AtomicInteger requests = new AtomicInteger();
+        HttpServer server = HttpServer
+                .create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/ha.jar", exchange -> {
+            requests.incrementAndGet();
+            exchange.getResponseHeaders().add("Retry-After", "0");
+            exchange.sendResponseHeaders(status, -1);
+            exchange.close();
+        });
+        server.start();
+        IOException e;
+        try {
+            e = assertThrows(IOException.class,
+                    () -> HotswapAgentJar.provision(progress::add,
+                            coordinates -> null, cached, sha256("unused"),
+                            URI.create("http://127.0.0.1:"
+                                    + server.getAddress().getPort()
+                                    + "/ha.jar")));
+        } finally {
+            server.stop(0);
+        }
+
+        // A missing artifact is not worth asking for again; a busy server is,
+        // but only a few times.
+        assertTrue(e.getMessage().contains("HTTP " + status), e.getMessage());
+        assertEquals(expectedRequests, requests.get());
+        assertFalse(Files.exists(cached));
     }
 
     private static String sha256(String content) {
