@@ -64,7 +64,7 @@
     {
       "name": "vaadin.devmode.optimize-bundle",
       "type": "java.lang.Boolean",
-      "description": "Whether only the classes reachable from the entry points are scanned for frontend resources when the development bundle is built. When disabled, every class on the classpath is scanned. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the production build and development mode use different values.",
+      "description": "Whether only the classes reachable from the entry points are scanned for frontend resources when the development bundle is built in development mode. When disabled, every class on the classpath is scanned. The production build has its own optimizeBundle plugin setting, which is enabled by default.",
       "defaultValue": false
     },
     {
