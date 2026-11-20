@@ -157,6 +157,26 @@ jobs:
         run: |
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
+      - name: Resolve what only the integration test modules pull
+        # The it-tests jobs restore the cache this job saves, and cannot add to
+        # it: their primary key is an exact hit, so actions/cache skips their
+        # save. Whatever only flow-tests needs therefore has to enter the entry
+        # here. Otherwise a pom change, such as a dependency bump, has every
+        # it-tests job download the same new artifacts from Maven Central at
+        # once, and Central answers that burst with HTTP 429.
+        #
+        # dependency:resolve rather than a build, which would cost the build
+        # time the it-tests jobs already spend. The modules of flow-tests are
+        # not packaged here, so their own artifacts cannot resolve and the goal
+        # fails for the modules that depend on them, but everything else
+        # those modules need is downloaded first. That failure is expected,
+        # hence the || true: the it-tests jobs still fail on anything that is
+        # really missing. Without -DskipTests, as that is what activates the
+        # it-test-modules profile.
+        run: |
+          mvn -B -ntp -q -fae dependency:resolve dependency:resolve-plugins \
+            -Pit-shared-modules,it-shared-spring-modules -pl flow-tests -amd \
+            || true
       - name: Save workspace
         run: |
           tar cf workspace.tar -C ~/ $(cd ~/ && echo .m2/repository/com/vaadin/*/999.99-SNAPSHOT)
