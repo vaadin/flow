@@ -57,6 +57,9 @@ class SpringConfigurationMetadataTest {
             InitParameters.BROWSERLESS,
             // Decided by the build, which writes it to the token file
             InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
+            // Spring always provides a MenuAccessControl bean, which is used
+            // instead
+            InitParameters.MENU_ACCESS_CONTROL,
             // Only read by the legacy bootstrap page, or not read at all
             InitParameters.SERVLET_PARAMETER_POLYFILLS,
             InitParameters.COMPILED_WEB_COMPONENTS_PATH);

@@ -122,7 +122,7 @@
     {
       "name": "vaadin.i18n.provider",
       "type": "java.lang.String",
-      "description": "Fully qualified class name of the I18NProvider implementation to use."
+      "description": "Fully qualified class name of the I18NProvider implementation to use. An I18NProvider bean takes precedence."
     },
     {
       "name": "vaadin.max-message-suspend-timeout",
@@ -135,11 +135,6 @@
       "type": "java.lang.Long",
       "description": "Maximum size, in characters, of a client-to-server request body before the request is rejected with HTTP 413. -1 disables the limit. File uploads are not affected.",
       "defaultValue": 10485760
-    },
-    {
-      "name": "vaadin.menu.access.control",
-      "type": "java.lang.String",
-      "description": "Fully qualified class name of the MenuAccessControl implementation to use."
     },
     {
       "name": "vaadin.node.download.root",
@@ -180,7 +175,7 @@
     {
       "name": "vaadin.page-title.generator",
       "type": "java.lang.String",
-      "description": "Fully qualified class name of the PageTitleGenerator implementation to use by default for the whole application."
+      "description": "Fully qualified class name of the PageTitleGenerator implementation to use by default for the whole application. A PageTitleGenerator bean takes precedence."
     },
     {
       "name": "vaadin.pnpm.global",
@@ -277,17 +272,6 @@
           "name": "class-reference",
           "parameters": {
             "target": "com.vaadin.flow.i18n.I18NProvider"
-          }
-        }
-      ]
-    },
-    {
-      "name": "vaadin.menu.access.control",
-      "providers": [
-        {
-          "name": "class-reference",
-          "parameters": {
-            "target": "com.vaadin.flow.server.auth.MenuAccessControl"
           }
         }
       ]
