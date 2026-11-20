@@ -113,7 +113,11 @@ public abstract class AsynchronousSignalTree extends SignalTree {
                 failure = e;
             }
 
-            if (submitQueued) {
+            /*
+             * A listener notified by applyConfirmed may have applied a change
+             * that was already submitted as a new batch
+             */
+            if (submitQueued && inFlightCommandIds.isEmpty()) {
                 try {
                     submitQueuedCommands();
                 } catch (RuntimeException e) {

@@ -202,6 +202,26 @@ public class AsynchronousSignalTreeTest extends SignalsUnitTest {
     }
 
     @Test
+    void confirm_resultHandlerCommits_onlyOneBatchSubmitted() {
+        AsyncTestTree tree = new AsyncTestTree();
+        SignalCommand second = TestUtil.writeRootValueCommand("second");
+        SignalCommand third = TestUtil.writeRootValueCommand("third");
+
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand("first"),
+                result -> {
+                    tree.commitSingleCommand(second);
+                    tree.commitSingleCommand(third);
+                });
+        tree.confirmSubmitted();
+
+        assertEquals(List.of(List.of(second)), tree.submitted);
+
+        tree.confirmSubmitted();
+
+        assertEquals(List.of(List.of(third)), tree.submitted);
+    }
+
+    @Test
     void submit_throws_batchSubmittedWithNextChange() {
         AsyncTestTree tree = new AsyncTestTree();
         SignalCommand first = TestUtil.writeRootValueCommand("first");
