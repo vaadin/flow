@@ -176,7 +176,35 @@ public final class CspViolationReporter {
      */
     public static void reportStringFunction(String body, int captureCount) {
         Objects.requireNonNull(body, "The body must not be null");
-        report(null, new FunctionBody(body, captureCount, false));
+        report(null, new FunctionBody(body, captureCount, List.of(), false));
+    }
+
+    /**
+     * Reports a function created from a string body that is then given the
+     * names of its runtime arguments with
+     * <code>JsFunction.withArguments</code>. Called by the API itself, which is
+     * where the stack trace of the report starts.
+     * <p>
+     * Like {@link #reportStringFunction(String, int)}, the message adds the
+     * declared method for the body, here with the names in
+     * <code>@JsFunctionParameterNames</code>.
+     *
+     * @param body
+     *            the body of the function, not <code>null</code>
+     * @param captureCount
+     *            the number of values the function captures
+     * @param argumentNames
+     *            the names of the runtime arguments, not <code>null</code>
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} mode
+     */
+    public static void reportStringFunction(String body, int captureCount,
+            List<String> argumentNames) {
+        Objects.requireNonNull(body, "The body must not be null");
+        Objects.requireNonNull(argumentNames,
+                "The argument names must not be null");
+        report(null, new FunctionBody(body, captureCount,
+                List.copyOf(argumentNames), false));
     }
 
     /**
@@ -194,7 +222,7 @@ public final class CspViolationReporter {
      */
     public static void reportStringDynamicImport(String expression) {
         Objects.requireNonNull(expression, "The expression must not be null");
-        report(null, new FunctionBody(expression, 0, true));
+        report(null, new FunctionBody(expression, 0, List.of(), true));
     }
 
     /**
@@ -332,11 +360,12 @@ public final class CspViolationReporter {
     }
 
     private record FunctionBody(String body, int captureCount,
+            List<String> argumentNames,
             boolean dynamicImport) implements StringJavaScript {
 
         @Override
         public String key() {
-            return "function " + captureCount + ":" + body;
+            return "function " + captureCount + argumentNames + ":" + body;
         }
 
         @Override
@@ -358,7 +387,7 @@ public final class CspViolationReporter {
                         @JsDefinition
                         public interface YourFunctions {
                             @JsExpression("%s")
-                            JsFunction %s(%s);
+                    %s        JsFunction %s(%s);
                         }
 
                     If this call is in your own code, create the function from \
@@ -367,9 +396,27 @@ public final class CspViolationReporter {
                     @JsStringFallback to the interface, next to @JsDefinition. \
                     Keep that interface for functions only: methods that run \
                     JavaScript go into another one. Then the string runs the \
-                    function from the bundle.
-                    """.formatted(escapeJavaString(body), name,
-                    declareParameters(captureCount), use);
+                    function from the bundle.%s
+                    """.formatted(escapeJavaString(body), declareNames(), name,
+                    declareParameters(captureCount), use, namesHint());
+        }
+
+        private String declareNames() {
+            if (argumentNames.isEmpty()) {
+                return "";
+            }
+            return "        @JsFunctionParameterNames({ " + argumentNames
+                    .stream().map(argument -> "\"" + argument + "\"")
+                    .collect(Collectors.joining(", ")) + " })\n";
+        }
+
+        private String namesHint() {
+            if (dynamicImport || !argumentNames.isEmpty()) {
+                return "";
+            }
+            return " If the code then calls withArguments on the function, "
+                    + "add @JsFunctionParameterNames with the same names to "
+                    + "the method.";
         }
     }
 

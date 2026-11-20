@@ -43,10 +43,11 @@ import java.lang.annotation.Target;
  * {@code Element.addJsInitializer(String, Object...)}, and
  * {@code Page.addDynamicImport(String)}: a method that returns a
  * {@code JsFunction}, whose {@link JsExpression} value is the function body,
- * with as many parameters as there are captures and no
- * {@link JsFunctionParameterNames}. Methods that return snippets can not be in
- * the same interface as methods that run JavaScript, so these go into an
- * interface of their own.
+ * with as many parameters as there are captures. When the code then calls
+ * {@code withArguments} on the function, the method declares the same names
+ * with {@link JsFunctionParameterNames}; other names send the string again.
+ * Methods that return snippets can not be in the same interface as methods that
+ * run JavaScript, so these go into an interface of their own.
  * <li>{@code DomListenerRegistration.setFilter(String)} and
  * {@code DomListenerRegistration.addEventData(String)}: the strings listed in
  * {@link #filters()} and {@link #eventData()}.
@@ -92,10 +93,10 @@ import java.lang.annotation.Target;
  * The build finds the marked interfaces together with the other
  * {@link JsDefinition} interfaces, and fails if one of them can not stand in
  * for a string: a variadic method, a snippet method that does not return a
- * {@code JsFunction} or declares parameter names, two methods that declare the
- * same JavaScript with the same parameter count, two methods of one interface
- * with the same name and parameter count, or a filter or event data value that
- * is a property path, which the browser reads without compiling it.
+ * {@code JsFunction}, two methods that declare the same JavaScript with the
+ * same parameter count, two methods of one interface with the same name and
+ * parameter count, or a filter or event data value that is a property path,
+ * which the browser reads without compiling it.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

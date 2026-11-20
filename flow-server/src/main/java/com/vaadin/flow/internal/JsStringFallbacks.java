@@ -120,13 +120,17 @@ public final class JsStringFallbacks {
             boolean snippets = checkFallbackDefinition(definitionType);
             Map<String, Method> byFunctionId = snippets ? functions : calls;
             for (Method method : collectDeclaredMethods(definitionType)) {
-                // A call is found by what the string call sends: its text and
-                // its argument count. The function the bundle runs for it has
-                // an identifier of its own, see isStringFallbackCall
-                String key = snippets ? JsCall.functionId(method)
-                        : JsCall.functionId(
-                                method.getAnnotation(JsExpression.class)
-                                        .value(),
+                // A string is found by what it sends: its text and its argument
+                // or capture count. The names of a function are only known
+                // later, from withArguments, so they are not part of it. The
+                // function the bundle runs for a call has an identifier of its
+                // own, see isStringFallbackCall
+                String expression = method.getAnnotation(JsExpression.class)
+                        .value();
+                String key = snippets
+                        ? JsCall.snippetFunctionId(expression, List.of(),
+                                method.getParameterCount(), false)
+                        : JsCall.functionId(expression,
                                 method.getParameterCount(), method.isVarArgs());
                 Method previous = byFunctionId.putIfAbsent(key, method);
                 if (previous != null && !previous.equals(method)) {
@@ -193,7 +197,7 @@ public final class JsStringFallbacks {
     public static @Nullable JsCall findDeclaredFunction(String body,
             @Nullable Object[] captures) {
         Fallbacks current = getFallbacks();
-        // A function from a string has no parameter names
+        // Found without names, which withArguments adds after this
         Method method = (current == null) ? null
                 : current.functions().get(JsCall.snippetFunctionId(body,
                         List.of(), captures.length, false));
@@ -346,12 +350,6 @@ public final class JsStringFallbacks {
                         + ". Only a JsFunction can stand in for a function"
                         + " made from a string; list filters and event data"
                         + " in @JsStringFallback instead");
-            }
-            if (snippets
-                    && !JsCall.getFunctionParameterNames(method).isEmpty()) {
-                throw new IllegalArgumentException(name
-                        + " declares parameter names, which a function made"
-                        + " from a string does not have");
             }
         }
         JsStringFallback annotation = definitionType

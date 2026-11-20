@@ -132,7 +132,8 @@ class JsStringFallbacksTest {
         setup = new MockServletServiceSessionSetup();
         ui = new MockUI(setup.getSession());
         listFallbacks("[\"" + AddonFallbacks.class.getName() + "\", \""
-                + FunctionFallbacks.class.getName() + "\"]");
+                + FunctionFallbacks.class.getName() + "\", \""
+                + NamedFunctionFallbacks.class.getName() + "\"]");
     }
 
     @AfterEach
@@ -252,13 +253,47 @@ class JsStringFallbacksTest {
     }
 
     @Test
-    void collectFallbacks_functionWithParameterNamesOrPathFilter_throws() {
-        IllegalArgumentException named = assertThrows(
-                IllegalArgumentException.class,
-                () -> JsStringFallbacks.collectFallbacks(
-                        List.of(NamedFunctionFallbacks.class)));
-        assertTrue(named.getMessage().contains("twice"), named.getMessage());
+    void strict_functionWithDeclaredNames_withTheSameArguments_usesDeclaredFunction() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
 
+        JsFunction function = JsFunction.of("return value * 2")
+                .withArguments("value");
+
+        assertEquals(NamedFunctionFallbacks.class,
+                function.getDeclaredCall().definitionType());
+        assertEquals("twice", function.getDeclaredCall().methodName());
+    }
+
+    @Test
+    void strict_functionWithoutDeclaredNames_withArguments_isRefusedWithTheNames() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        JsFunction function = JsFunction.of("this.title = $0", "tip");
+
+        CspViolationException exception = assertThrows(
+                CspViolationException.class,
+                () -> function.withArguments("event"));
+
+        assertTrue(
+                exception.getMessage()
+                        .contains("@JsFunctionParameterNames({ \"event\" })"),
+                exception.getMessage());
+    }
+
+    @Test
+    @SuppressWarnings("removal")
+    void warn_functionWithOtherNames_withArguments_sendsTheString() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.WARN);
+
+        JsFunction function = JsFunction.of("return value * 2")
+                .withArguments("other");
+
+        assertNull(function.getDeclaredCall());
+        assertEquals("return value * 2", function.getBody());
+        assertEquals(List.of("other"), function.getArgumentNames());
+    }
+
+    @Test
+    void collectFallbacks_pathFilter_throws() {
         IllegalArgumentException path = assertThrows(
                 IllegalArgumentException.class, () -> JsStringFallbacks
                         .collectFallbacks(List.of(PathFilterFallbacks.class)));
