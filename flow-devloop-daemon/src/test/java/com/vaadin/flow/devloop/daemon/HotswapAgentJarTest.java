@@ -155,6 +155,9 @@ class HotswapAgentJarTest {
 
         assertEquals("agent bytes 7f3a", Files.readString(cached));
         assertEquals(2, requests.get());
+        // The wait the server asked for, not the default backoff.
+        assertTrue(progress.contains("download got HTTP 429, retrying in 0s"),
+                progress.toString());
     }
 
     @ParameterizedTest
