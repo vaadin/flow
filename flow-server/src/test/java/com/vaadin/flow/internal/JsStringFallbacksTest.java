@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
@@ -28,11 +29,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.internal.change.MapPutChange;
+import com.vaadin.flow.internal.change.NodeChange;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
@@ -42,6 +49,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.CspMode;
 import com.vaadin.flow.server.CspViolationException;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -250,10 +258,29 @@ class JsStringFallbacksTest {
         registration.addEventData(EVENT_DATA);
 
         assertEquals(FILTER, registration.getFilter());
+        // The client runs the function of the bundle instead of the string
+        JsonNode eventData = eventSettings(ui.getElement(), "keydown")
+                .get(EVENT_DATA);
+        assertEquals(BundledEventData.getFunctionId(EVENT_DATA), eventData
+                .get(JsonConstants.EVENT_SETTINGS_FUNCTION).asString());
         assertThrows(CspViolationException.class,
                 () -> registration.setFilter("event.key === 'Enter'"));
         assertThrows(CspViolationException.class, () -> registration
                 .addEventData("event.target.value.length + 1"));
+    }
+
+    private static JsonNode eventSettings(Element element, String eventType) {
+        List<NodeChange> changes = new ArrayList<>();
+        element.getNode().getFeature(ElementListenerMap.class)
+                .collectChanges(changes::add);
+        ConstantPoolKey key = (ConstantPoolKey) changes.stream()
+                .filter(MapPutChange.class::isInstance)
+                .map(MapPutChange.class::cast)
+                .filter(change -> eventType.equals(change.getKey())).findFirst()
+                .orElseThrow().getValue();
+        ObjectNode constants = JacksonUtils.createObjectNode();
+        key.export(constants);
+        return constants.get(key.getId());
     }
 
     @Test

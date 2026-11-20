@@ -26,6 +26,7 @@ mvn verify -pl flow-tests/test-csp-strict \
 | The policy header, a nonce on every script, a new nonce per response, a view rendered under the policy | `csp.PolicyView` | `PolicyIT` |
 | JavaScript run through a `@JsDefinition` | `js.DeclaredJsView` | `DeclaredJsIT` |
 | `executeJs(String)` throws in Java, trace leads to the caller | `js.StringJsView` | `StringJsIT` |
+| String JavaScript declared with `@JsStringFallback` runs from the bundle: `executeJs` with parameters and a return value, a JS initializer, a listener filter and event data | `js.StringFallbackView` | `StringFallbackIT` |
 | Framework JavaScript: focus, page title | `dom.FocusView` | `FocusIT` |
 | Navigation through a router link | `routing.NavigationView` | `NavigationIT` |
 | Click listener with event data, element listener with an event data property path | `dom.ClickView` | `ClickIT` |
