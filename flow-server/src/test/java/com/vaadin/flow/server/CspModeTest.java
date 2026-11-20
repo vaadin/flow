@@ -68,7 +68,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
@@ -346,10 +345,12 @@ class CspModeTest {
         }
 
         assertEquals(3, ui.dumpPendingJsInvocations().size());
+        ArgumentCaptor<String> messages = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<Throwable> warnings = ArgumentCaptor
                 .forClass(Throwable.class);
-        verify(logger, times(expectedWarnings)).warn(anyString(),
+        verify(logger, times(expectedWarnings)).warn(messages.capture(),
                 warnings.capture());
+        messages.getAllValues().forEach(CspModeTest::assertTellsHowToFix);
         for (Throwable warning : warnings.getAllValues()) {
             assertTraceLeadsFromApiToTest(warning, Element.class, "executeJs");
         }
@@ -363,11 +364,12 @@ class CspModeTest {
                 CspViolationException.class,
                 () -> reportFromComponent("series[2].formatter"));
 
-        assertTrue(
-                exception.getMessage().contains(
-                        " The JavaScript is in \"series[2].formatter\"."),
-                exception.getMessage());
-        assertTellsHowToFix(exception.getMessage());
+        String message = exception.getMessage();
+        int detailIndex = message
+                .indexOf(" The JavaScript is in \"series[2].formatter\".");
+        assertTrue(detailIndex >= 0, message);
+        assertTrue(detailIndex < message.indexOf("@JsDefinition"), message);
+        assertTellsHowToFix(message);
         assertTraceLeadsFromApiToTest(exception, CspModeTest.class,
                 "reportFromComponent");
     }
@@ -400,6 +402,7 @@ class CspModeTest {
                 messages.getAllValues().get(1).contains("series[2].formatter"));
         assertTrue(
                 messages.getAllValues().get(2).contains("tooltip.formatter"));
+        messages.getAllValues().forEach(CspModeTest::assertTellsHowToFix);
         assertTraceLeadsFromApiToTest(warnings.getAllValues().get(0),
                 CspModeTest.class, "reportFromComponent");
         assertTraceLeadsFromApiToTest(warnings.getAllValues().get(1),
@@ -438,7 +441,10 @@ class CspModeTest {
     }
 
     private static void assertTellsHowToFix(String message) {
+        assertTrue(message.contains("The stack trace leads from the API"),
+                message);
         assertTrue(message.contains("@JsDefinition"), message);
+        assertTrue(message.contains("executeJs(Class)"), message);
         assertTrue(message.contains(
                 "https://vaadin.com/docs/latest/flow/component-internals/element-api/calling-javascript"),
                 message);

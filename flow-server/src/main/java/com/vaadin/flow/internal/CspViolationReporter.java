@@ -50,13 +50,13 @@ import com.vaadin.flow.server.VaadinService;
  */
 public final class CspViolationReporter {
 
-    private static final String MESSAGE = "JavaScript is sent to the browser as a string, which the browser has to compile and a Content Security Policy without 'unsafe-eval' blocks.";
+    private static final String MESSAGE = "JavaScript is sent to the browser as a string, which the browser has to compile and a Content Security Policy without 'unsafe-eval' blocks. The stack trace leads from the API to the code that called it.";
 
-    // A report alone does not tell how to get rid of it, and the replacement
-    // differs per API, so point to the API and to the guide
-    private static final String FIX_HINT = " The stack trace leads from the API to the code that called it."
-            + " To fix the call, declare the JavaScript in a @JsDefinition interface and pass it to the API instead of the string,"
-            + " e.g. executeJs(Class) instead of executeJs(String, Object...). The Javadoc of the API names its replacement."
+    // The replacement differs per API, so name the mechanism they share and
+    // point to the guide
+    private static final String FIX_HINT = " To avoid the string, declare the JavaScript in a @JsDefinition interface and pass that instead,"
+            + " e.g. executeJs(Class) instead of executeJs(String, Object...)."
+            + " The Javadoc of the string-based API names its replacement."
             + " See https://vaadin.com/docs/latest/flow/component-internals/element-api/calling-javascript#declaring-javascript";
 
     // Bounded by the number of call sites in the code, and of the details
