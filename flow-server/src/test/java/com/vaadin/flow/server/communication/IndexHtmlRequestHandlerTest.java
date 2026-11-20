@@ -293,7 +293,7 @@ public class IndexHtmlRequestHandlerTest {
         assertEquals("default-src 'self'; script-src 'nonce-" + nonce
                 + "' 'strict-dynamic'; style-src 'self' 'unsafe-inline'; "
                 + "img-src 'self' data:; font-src 'self' data:; "
-                + "connect-src 'self' https://api.example.com; "
+                + "connect-src 'self' data: https://api.example.com; "
                 + "worker-src 'self'; object-src 'none'; base-uri 'self'",
                 header);
 
