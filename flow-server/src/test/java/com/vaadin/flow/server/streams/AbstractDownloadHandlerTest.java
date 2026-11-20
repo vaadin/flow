@@ -38,7 +38,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
-import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
@@ -75,11 +74,9 @@ class AbstractDownloadHandlerTest {
 
         ui = Mockito.mock(UI.class);
         // run the command immediately
-        Mockito.doAnswer(invocation -> {
-            Command command = invocation.getArgument(0);
-            command.execute();
-            return null;
-        }).when(ui).access(Mockito.any(Command.class));
+        Mockito.when(ui.accessLater(Mockito.any(SerializableRunnable.class),
+                Mockito.any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         owner = Mockito.mock(Element.class);
         Component componentOwner = Mockito.mock(Component.class);
@@ -162,6 +159,27 @@ class AbstractDownloadHandlerTest {
         });
         Mockito.verify(completeHandler).accept(true);
         Mockito.verify(completeHandler).accept(false);
+    }
+
+    @Test
+    void uiDetachedFromSession_listenersSkippedWithoutException() {
+        // a UI without a session, as after the browser tab has been closed
+        Mockito.when(mockContext.getUI()).thenReturn(new UI());
+        List<String> invoked = new ArrayList<>();
+        handler.whenStart(() -> invoked.add("whenStart"));
+        handler.onProgress((transferred, total) -> invoked.add("onProgress"));
+        handler.whenComplete(success -> invoked.add("whenComplete"));
+        handler.addTransferProgressListener(listener);
+
+        handler.getListeners().forEach(l -> {
+            l.onStart(mockContext);
+            l.onProgress(mockContext, TRANSFERRED_BYTES, TOTAL_BYTES);
+            l.onComplete(mockContext, TRANSFERRED_BYTES);
+            l.onError(mockContext, EXCEPTION);
+        });
+
+        assertEquals(List.of(), invoked);
+        Mockito.verifyNoInteractions(listener);
     }
 
     @Test

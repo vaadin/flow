@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -111,10 +113,7 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
         addTransferProgressListenerInternal(new TransferProgressListener() {
             @Override
             public void onStart(TransferContext context) {
-                if (ui == null) {
-                    setTransferUI(context.getUI());
-                }
-                ui.access(startHandler::run);
+                uiAccess(context, startHandler::run);
             }
         });
         return (R) this;
@@ -412,7 +411,23 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
         if (ui == null) {
             setTransferUI(context.getUI());
         }
-        ui.access(command);
+        notifyThroughUI(ui, command);
+    }
+
+    /**
+     * Runs the given notification through the given UI, skipping it if the UI
+     * has been detached from its session.
+     * <p>
+     * The UI can be detached while a transfer is still running, for example
+     * when the browser tab is reloaded or closed during a long download. The
+     * transfer itself is not affected by that, so a listener that can no longer
+     * update the UI must not fail the request.
+     */
+    private static void notifyThroughUI(UI ui, Command command) {
+        ui.accessLater(command::execute, () -> LoggerFactory
+                .getLogger(TransferProgressAwareHandler.class)
+                .debug("Skipped a transfer progress notification since the UI has been detached from its session"))
+                .run();
     }
 
     /**
@@ -467,7 +482,7 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
             if (ui == null) {
                 setTransferUI(context.getUI());
             }
-            ui.access(command);
+            notifyThroughUI(ui, command);
         }
     }
 }
