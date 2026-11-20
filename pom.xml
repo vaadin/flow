@@ -112,7 +112,7 @@
     <processAllModules>true</processAllModules>
 
     <!-- Dependencies -->
-    <spring.boot.version>4.2.0-RC2</spring.boot.version>
+    <spring.boot.version>4.2.0</spring.boot.version>
     <jakarta.ee.version>11.0.0</jakarta.ee.version>
     <hibernate.validator.version>9.1.6.Final</hibernate.validator.version>
     <slf4j.version>2.0.20</slf4j.version>
@@ -684,7 +684,7 @@
         <plugin>
           <groupId>org.sonarsource.scanner.maven</groupId>
           <artifactId>sonar-maven-plugin</artifactId>
-          <version>5.8.0.7211</version>
+          <version>5.9.0.7382</version>
         </plugin>
       </plugins>
     </pluginManagement>
