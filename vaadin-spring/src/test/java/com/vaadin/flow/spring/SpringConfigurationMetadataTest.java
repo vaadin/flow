@@ -34,6 +34,7 @@ import com.vaadin.flow.server.InitParameters;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Checks that the Spring Boot configuration metadata, which IDEs use to
@@ -81,6 +82,17 @@ class SpringConfigurationMetadataTest {
     }
 
     @Test
+    void additionalMetadata_eachHintIsForDocumentedProperty()
+            throws IOException {
+        String resource = "META-INF/additional-spring-configuration-metadata.json";
+        List<String> properties = readPropertyNames(resource);
+        for (String hint : readNames(resource, "hints")) {
+            assertTrue(properties.contains(hint),
+                    "Hint '" + hint + "' is for a property that is not listed");
+        }
+    }
+
+    @Test
     void metadata_documentsEveryRuntimeParameter() throws IOException {
         Set<String> documented = new HashSet<>();
         for (String property : readPropertyNames(
@@ -110,12 +122,17 @@ class SpringConfigurationMetadataTest {
 
     private static List<String> readPropertyNames(String resource)
             throws IOException {
+        return readNames(resource, "properties");
+    }
+
+    private static List<String> readNames(String resource, String section)
+            throws IOException {
         try (InputStream stream = SpringConfigurationMetadataTest.class
                 .getClassLoader().getResourceAsStream(resource)) {
             assertNotNull(stream, resource + " not found");
             JsonNode metadata = JsonMapper.builder().build().readTree(stream);
-            return metadata.get("properties").valueStream()
-                    .map(property -> property.get("name").asString()).toList();
+            return metadata.get(section).valueStream()
+                    .map(item -> item.get("name").asString()).toList();
         }
     }
 }
