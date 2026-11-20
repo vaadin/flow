@@ -55,7 +55,7 @@ On every build, `TaskUpdatePackages`:
 | `META-INF/VAADIN/versions/*.json` | Versions files. Any jar may ship them. Each entry has an `npmName`, an `npmVersion` (or `jsVersion`), and optionally a `mode` (`react`, `lit`, `all`). A file may also list `exclusions`. The platform's files also carry a `platform` version. |
 | `PinnedNpmVersions` | Reads and merges all versions files on the classpath. On a conflict the newer version wins, with a warning. Answers the Vaadin version, but only from the platform's own files. |
 | `VersionsJsonConverter` | Turns one versions file into `name → version`, for the current mode (React or Lit), dropping excluded packages and, with `npmExcludeWebComponents`, the web components. |
-| `VersionsJsonFilter` | Drops SNAPSHOT and unparsable versions, keeps URL versions, and warns when the developer pinned an older version in `package.json`. `NodeUpdater` then drops exotic versions unless `npm.allowExoticVersions` is on. |
+| `VersionsJsonFilter` | Drops SNAPSHOT and unparsable versions, and warns when the developer pinned an older version in `package.json`. Drops exotic versions with a warning, unless `npm.allowExoticVersions` is on; then it keeps URL versions as they are. Each file is filtered before the files are merged. |
 | `NodeUpdater` | Base of the package tasks. Reads the default dependency sets from `flow-server/src/main/resources/com/vaadin/flow/server/frontend/dependencies/*/package.json`, and keeps the `vaadin` section of `package.json`. |
 | `TaskUpdatePackages` | Adds the dependencies, computes and writes the overrides, warns about version mismatches, and writes the hash. |
 | `PnpmWorkspaceFile` | Reads and writes the `overrides` map of `pnpm-workspace.yaml`, where pnpm 10 and later read them. |

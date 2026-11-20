@@ -290,7 +290,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         final VersionsJsonFilter versionsJsonFilter = new VersionsJsonFilter(
                 JacksonUtils.readTree(packageJsonContent),
-                NodeUpdater.DEPENDENCIES);
+                NodeUpdater.DEPENDENCIES, false);
         // The versions file defines a pinned version
         TaskRunNpmInstall task = createTask(versionsJsonFilter
                 .getFilteredVersions(

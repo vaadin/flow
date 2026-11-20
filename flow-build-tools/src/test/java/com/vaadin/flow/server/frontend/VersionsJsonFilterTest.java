@@ -25,6 +25,8 @@ import java.util.Objects;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,13 +35,17 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.server.InitParameters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -110,7 +116,7 @@ class VersionsJsonFilterTest {
                 StandardCharsets.UTF_8);
         ObjectNode packageJson = JacksonUtils.readTree(pkgJson);
         VersionsJsonFilter filter = new VersionsJsonFilter(packageJson,
-                NodeUpdater.DEPENDENCIES);
+                NodeUpdater.DEPENDENCIES, false);
         String versionOrigin = "dummy-origin.json";
 
         Logger logger = spy(Logger.class);
@@ -144,6 +150,50 @@ class VersionsJsonFilterTest {
         }
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void getFilteredVersions_exoticVersion_keptOnlyWhenAllowed(
+            boolean allowExoticVersions) {
+        final String overlayUrl = "https://pkg.pr.new/vaadin/web-components/@vaadin/overlay@275762d";
+        final String buttonRepo = "github:vaadin/web-components";
+        final ObjectNode versions = JacksonUtils.createObjectNode();
+        versions.put("@vaadin/dialog", "25.1.0");
+        versions.put("@vaadin/overlay", overlayUrl);
+        versions.put("@vaadin/button", buttonRepo);
+        final VersionsJsonFilter filter = new VersionsJsonFilter(
+                JacksonUtils.createObjectNode(), NodeUpdater.DEPENDENCIES,
+                allowExoticVersions);
+
+        final Logger logger = mock(Logger.class);
+        final JsonNode filteredJson;
+        try (MockedStatic<LoggerFactory> loggerFactoryMocked = mockStatic(
+                LoggerFactory.class, CALLS_REAL_METHODS)) {
+            loggerFactoryMocked.when(
+                    () -> LoggerFactory.getLogger(VersionsJsonFilter.class))
+                    .thenReturn(logger);
+            filteredJson = filter.getFilteredVersions(versions,
+                    "versions.json");
+        }
+
+        assertEquals("25.1.0", filteredJson.get("@vaadin/dialog").asString());
+        if (allowExoticVersions) {
+            assertEquals(overlayUrl,
+                    filteredJson.get("@vaadin/overlay").asString());
+            verify(logger, never()).warn(anyString(), eq(overlayUrl),
+                    eq("@vaadin/overlay"), eq("versions.json"),
+                    eq(InitParameters.NPM_ALLOW_EXOTIC_VERSIONS));
+        } else {
+            assertFalse(filteredJson.has("@vaadin/overlay"));
+            assertFalse(filteredJson.has("@vaadin/button"));
+            verify(logger).warn(anyString(), eq(overlayUrl),
+                    eq("@vaadin/overlay"), eq("versions.json"),
+                    eq(InitParameters.NPM_ALLOW_EXOTIC_VERSIONS));
+            verify(logger).warn(anyString(), eq(buttonRepo),
+                    eq("@vaadin/button"), eq("versions.json"),
+                    eq(InitParameters.NPM_ALLOW_EXOTIC_VERSIONS));
+        }
+    }
+
     private ObjectNode getMockedJsonNode() {
         ObjectNode jsonObject = mock(ObjectNode.class);
         when(jsonObject.propertyNames())
@@ -161,7 +211,7 @@ class VersionsJsonFilterTest {
                 StandardCharsets.UTF_8);
 
         VersionsJsonFilter filter = new VersionsJsonFilter(
-                JacksonUtils.readTree(pkgJson), depKey);
+                JacksonUtils.readTree(pkgJson), depKey, false);
         JsonNode filteredJson = filter.getFilteredVersions(TEST_VERSION_JSON,
                 "versions/versions.json");
         assertTrue(filteredJson.has("@vaadin/vaadin-progress-bar"));
@@ -184,7 +234,7 @@ class VersionsJsonFilterTest {
                 StandardCharsets.UTF_8);
 
         VersionsJsonFilter filter = new VersionsJsonFilter(
-                JacksonUtils.readTree(pkgJson), depKey);
+                JacksonUtils.readTree(pkgJson), depKey, false);
         JsonNode filteredJson = filter.getFilteredVersions(
                 JacksonUtils.readTree(versions), "versions/user_versions.json");
         List<String> expectedKeys = Arrays.asList("@vaadin/vaadin-notification",
@@ -224,7 +274,7 @@ class VersionsJsonFilterTest {
                 StandardCharsets.UTF_8);
 
         VersionsJsonFilter filter = new VersionsJsonFilter(
-                JacksonUtils.readTree(pkgJson), depKey);
+                JacksonUtils.readTree(pkgJson), depKey, false);
         JsonNode filteredJson = filter.getFilteredVersions(TEST_VERSION_JSON,
                 "versions/versions.json");
         assertTrue(filteredJson.has("@vaadin/vaadin-progress-bar"));
