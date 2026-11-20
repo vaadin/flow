@@ -52,4 +52,24 @@ public class StringFallbackIT extends AbstractCspStrictIT {
                 "click from the bundle"));
         assertNoCspViolations();
     }
+
+    @BrowserTest
+    public void declaredCallWithoutParameters_getsTheElementAsFirstParameter() {
+        open();
+
+        waitUntil(ExpectedConditions.textToBe(By.id("element"),
+                "the element as $0"));
+        assertNoCspViolations();
+    }
+
+    @BrowserTest
+    public void declaredFunction_getsTheArgumentNamedByWithArguments() {
+        open();
+
+        $(SpanElement.class).id("reported").click();
+
+        waitUntil(ExpectedConditions.textToBe(By.id("reported"),
+                "clicked: click"));
+        assertNoCspViolations();
+    }
 }

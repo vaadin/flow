@@ -22,6 +22,7 @@ import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.router.Route;
 
@@ -42,11 +43,24 @@ public class StringFallbackView extends Div {
 
     static final String SET_TITLE = "this.title = $0";
 
+    static final String SHOW_ELEMENT = "$0.textContent = 'the element as $0'";
+
+    static final String CALL_ON_CLICK = "this.addEventListener('click', e => $0(e.type))";
+
+    static final String REPORT = "$0.textContent = $1 + type";
+
     @JsDefinition
     @JsStringFallback(filters = FILTER, eventData = EVENT_DATA)
     public interface AddonFallbacks {
         @JsExpression(SET_STATUS)
         PendingJavaScriptResult setStatus(String first, String second);
+
+        // Sent with no parameters: the string gets the element as $0
+        @JsExpression(SHOW_ELEMENT)
+        void showElement();
+
+        @JsExpression(CALL_ON_CLICK)
+        void callOnClick(Object handler);
     }
 
     @JsDefinition
@@ -54,6 +68,11 @@ public class StringFallbackView extends Div {
     public interface AddonFunctionFallbacks {
         @JsExpression(SET_TITLE)
         JsFunction setTitle(Object title);
+
+        // The names that the string function gets with withArguments
+        @JsExpression(REPORT)
+        @JsFunctionParameterNames("type")
+        JsFunction report(Object element, Object prefix);
     }
 
     // The string APIs are what an add-on calls
@@ -77,6 +96,17 @@ public class StringFallbackView extends Div {
                         event.getEventData().get(EVENT_DATA).asString()))
                 .setFilter(FILTER).addEventData(EVENT_DATA);
 
-        add(status, returned, button, clicked);
+        Span element = new Span();
+        element.setId("element");
+        element.getElement().executeJs(SHOW_ELEMENT);
+
+        Span reported = new Span("click here");
+        reported.setId("reported");
+        JsFunction report = JsFunction
+                .of(REPORT, reported.getElement(), "clicked: ")
+                .withArguments("type");
+        reported.getElement().executeJs(CALL_ON_CLICK, report);
+
+        add(status, returned, button, clicked, element, reported);
     }
 }
