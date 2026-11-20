@@ -22,7 +22,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -35,7 +34,6 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
  * Spring application context aware Vaadin servlet implementation.
@@ -150,30 +148,11 @@ public class SpringServlet extends VaadinServlet {
     }
 
     private void setProperty(String property, Properties properties) {
-        setProperty("vaadin." + property, property, properties);
-    }
-
-    private void setProperty(String envProperty, String initParam,
-            Properties properties) {
         Environment env = context.getBean(Environment.class);
-        String value = env.getProperty(upperCaseToDashSeparated(envProperty));
-        if (value == null) {
-            value = env.getProperty(envProperty);
-        }
+        String value = SpringUtil.getVaadinProperty(env, property);
         if (value != null) {
-            properties.put(initParam, value);
+            properties.put(property, value);
         }
-    }
-
-    private String upperCaseToDashSeparated(String value) {
-        String result = value;
-        if (result == null) {
-            return null;
-        }
-        while (!result.equals(result.toLowerCase(Locale.ENGLISH))) {
-            result = SharedUtil.camelCaseToDashSeparated(result);
-        }
-        return result;
     }
 
 }
