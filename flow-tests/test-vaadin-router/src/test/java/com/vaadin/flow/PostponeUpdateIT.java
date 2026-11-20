@@ -79,25 +79,7 @@ public class PostponeUpdateIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void postpone_backKeepsUrlWhilePostponed() {
-        open();
-
-        findElement(By.id("link")).click();
-        $(NativeButtonElement.class).id("proceedButton").click();
-        waitUntil(driver -> driver.getCurrentUrl().endsWith("/1"));
-
-        String postponingUrl = getDriver().getCurrentUrl();
-
-        getDriver().navigate().back();
-        waitUntil(driver -> isElementPresent(By.id("proceedButton")));
-
-        Assert.assertEquals(
-                "While the navigation is postponed, the URL should stay",
-                postponingUrl, getDriver().getCurrentUrl());
-    }
-
-    @Test
-    public void postpone_proceedAfterBackKeepsForwardHistory() {
+    public void postpone_backKeepsUrlUntilProceedAndKeepsForwardHistory() {
         open();
         String initialUrl = getDriver().getCurrentUrl();
 
@@ -109,13 +91,19 @@ public class PostponeUpdateIT extends ChromeBrowserTest {
 
         getDriver().navigate().back();
         waitUntil(driver -> isElementPresent(By.id("proceedButton")));
+        Assert.assertEquals(
+                "While the navigation is postponed, the URL should stay",
+                postponingUrl, getDriver().getCurrentUrl());
+
         $(NativeButtonElement.class).id("proceedButton").click();
-        waitUntil(driver -> !isElementPresent(By.id("proceedButton")));
-        Assert.assertEquals("Proceeding should complete the back navigation",
-                initialUrl, getDriver().getCurrentUrl());
+        waitUntil(driver -> driver.getCurrentUrl().equals(initialUrl), 5);
 
         getDriver().navigate().forward();
         waitUntil(driver -> isElementPresent(By.id("proceedButton")));
+        Assert.assertEquals(
+                "While the forward navigation is postponed, the URL should stay",
+                initialUrl, getDriver().getCurrentUrl());
+
         $(NativeButtonElement.class).id("proceedButton").click();
         waitUntil(driver -> driver.getCurrentUrl().equals(postponingUrl), 5);
     }

@@ -2337,10 +2337,9 @@ public class UI extends Component
     private void serverPaused() {
         // The client restores this URL if the browser already moved to the
         // postponed location, e.g. on back/forward navigation
-        Location activeLocation = getInternals().getActiveViewLocation();
         internals.getWrapperElement().callJsFunction("serverPaused",
-                activeLocation == null ? null
-                        : activeLocation.getPathWithQueryParameters());
+                getInternals().getActiveViewLocation()
+                        .getPathWithQueryParameters());
     }
 
     private void serverConnected(boolean cancel) {
