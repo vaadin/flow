@@ -429,8 +429,11 @@ public class ElementListenerMap extends NodeMap {
                     .filter(value -> isCompiledByClient(value)
                             && JsStringFallbacks.isDeclaredEventData(value))
                     .toList();
-            List<String> compiled = eventData.stream()
-                    .filter(value -> !declared.contains(value)).toList();
+            // Keeps the given list, which appendEventData stores as it is
+            List<String> compiled = declared.isEmpty() ? eventData
+                    : eventData.stream()
+                            .filter(value -> !declared.contains(value))
+                            .toList();
             List<String> reported = compiled.stream()
                     .filter(ElementListenerMap::isCompiledByClient).toList();
             if (!reported.isEmpty()) {
