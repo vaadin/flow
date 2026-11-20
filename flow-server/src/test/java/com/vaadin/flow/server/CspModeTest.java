@@ -441,8 +441,9 @@ class CspModeTest {
                 exception.getMessage());
         assertTraceLeadsFromApiToTest(exception, Element.class, "executeJs");
 
+        Page page = ui.getPage();
         CspViolationException onPage = assertThrows(CspViolationException.class,
-                () -> ui.getPage().executeJs("return 1"));
+                () -> page.executeJs("return 1"));
         assertTrue(
                 onPage.getMessage().contains("page.executeJs(YourJs.class)."),
                 onPage.getMessage());
@@ -454,11 +455,13 @@ class CspModeTest {
 
         String plain = assertThrows(CspViolationException.class,
                 () -> JsFunction.of("this.title = $0", "tip")).getMessage();
-        String initializer = assertThrows(CspViolationException.class, () -> ui
-                .getElement().addJsInitializer("this.title = $0", "tip"))
+        Element element = ui.getElement();
+        String initializer = assertThrows(CspViolationException.class,
+                () -> element.addJsInitializer("this.title = $0", "tip"))
                 .getMessage();
+        Page page = ui.getPage();
         String dynamicImport = assertThrows(CspViolationException.class,
-                () -> ui.getPage().addDynamicImport("return Promise.resolve()"))
+                () -> page.addDynamicImport("return Promise.resolve()"))
                 .getMessage();
 
         assertTrue(

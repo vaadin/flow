@@ -31,6 +31,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.DomListenerRegistration;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
@@ -171,10 +172,11 @@ class JsStringFallbacksTest {
     void strict_otherTextOrParameterCount_isRefused() {
         setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
 
+        Element element = ui.getElement();
         assertThrows(CspViolationException.class,
-                () -> ui.getElement().executeJs("return  this.scrollTop"));
+                () -> element.executeJs("return  this.scrollTop"));
         assertThrows(CspViolationException.class,
-                () -> ui.getElement().executeJs("return this.scrollTop", 1));
+                () -> element.executeJs("return this.scrollTop", 1));
     }
 
     @Test
@@ -191,9 +193,10 @@ class JsStringFallbacksTest {
         setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
         listFallbacks("[\"com.example.RemovedFallbacks\"]");
 
+        Element element = ui.getElement();
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
-                () -> ui.getElement().executeJs("return this.scrollTop"));
+                () -> element.executeJs("return this.scrollTop"));
 
         assertTrue(
                 exception.getMessage().contains("com.example.RemovedFallbacks"),
@@ -212,8 +215,9 @@ class JsStringFallbacksTest {
         ui.getElement().executeJs("this.focus()");
         assertEquals(FocusFallbacks.class,
                 ui.onlyScheduledJsCall().definitionType());
+        Element element = ui.getElement();
         assertThrows(CspViolationException.class,
-                () -> ui.getElement().executeJs("return this.scrollTop"));
+                () -> element.executeJs("return this.scrollTop"));
     }
 
     @Test
@@ -294,18 +298,20 @@ class JsStringFallbacksTest {
 
     @Test
     void collectFallbacks_pathFilter_throws() {
+        List<Class<?>> types = List.of(PathFilterFallbacks.class);
         IllegalArgumentException path = assertThrows(
-                IllegalArgumentException.class, () -> JsStringFallbacks
-                        .collectFallbacks(List.of(PathFilterFallbacks.class)));
+                IllegalArgumentException.class,
+                () -> JsStringFallbacks.collectFallbacks(types));
         assertTrue(path.getMessage().contains("event.detail"),
                 path.getMessage());
     }
 
     @Test
     void collectFallbacks_sameNameAndParameterCount_throws() {
+        List<Class<?>> types = List.of(OverloadedFallbacks.class);
         IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class, () -> JsStringFallbacks
-                        .collectFallbacks(List.of(OverloadedFallbacks.class)));
+                IllegalArgumentException.class,
+                () -> JsStringFallbacks.collectFallbacks(types));
 
         assertTrue(exception.getMessage().contains("same name"),
                 exception.getMessage());
@@ -315,9 +321,10 @@ class JsStringFallbacksTest {
 
     @Test
     void collectFallbacks_variadicMethod_throws() {
+        List<Class<?>> types = List.of(VariadicFallbacks.class);
         IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class, () -> JsStringFallbacks
-                        .collectFallbacks(List.of(VariadicFallbacks.class)));
+                IllegalArgumentException.class,
+                () -> JsStringFallbacks.collectFallbacks(types));
 
         assertTrue(exception.getMessage().contains("log"),
                 exception.getMessage());
@@ -327,10 +334,11 @@ class JsStringFallbacksTest {
 
     @Test
     void collectFallbacks_sameJavaScriptTwice_throws() {
+        List<Class<?>> types = List.of(AddonFallbacks.class,
+                DuplicateFallbacks.class);
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> JsStringFallbacks.collectFallbacks(List
-                        .of(AddonFallbacks.class, DuplicateFallbacks.class)));
+                () -> JsStringFallbacks.collectFallbacks(types));
 
         assertTrue(exception.getMessage().contains("scrollTop"),
                 exception.getMessage());

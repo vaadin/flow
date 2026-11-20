@@ -418,6 +418,25 @@ public final class CspViolationReporter {
                     + "add @JsFunctionParameterNames with the same names to "
                     + "the method.";
         }
+
+        /**
+         * Whether the given method of the given class is between the API and
+         * the application code, such as the string initializer of an element
+         * that creates its function with <code>JsFunction.of</code>.
+         */
+        private static boolean isCalledBy(StackTraceElement[] stack,
+                Class<?> type, String method) {
+            for (StackTraceElement frame : stack) {
+                if (frame.getClassName().equals(type.getName())
+                        && frame.getMethodName().equals(method)) {
+                    return true;
+                }
+                if (StackTraceUtil.isApplicationClass(frame.getClassName())) {
+                    return false;
+                }
+            }
+            return false;
+        }
     }
 
     private record Filter(String filter) implements StringJavaScript {
@@ -467,7 +486,7 @@ public final class CspViolationReporter {
             StringBuilder methods = new StringBuilder();
             List<String> names = new ArrayList<>();
             for (int index = 0; index < values.size(); index++) {
-                String methodName = (index == 0) ? name : name + (index + 1);
+                String methodName = index == 0 ? name : (name + (index + 1));
                 names.add(methodName);
                 methods.append(index == 0 ? "" : "\n").append("""
                                 @JsExpression("return (%s);")
@@ -568,25 +587,6 @@ public final class CspViolationReporter {
                 .collect(Collectors.joining(", "));
     }
 
-    /**
-     * Whether the given method of the given class is between the API and the
-     * application code, such as the string initializer of an element that
-     * creates its function with <code>JsFunction.of</code>.
-     */
-    private static boolean isCalledBy(StackTraceElement[] stack, Class<?> type,
-            String method) {
-        for (StackTraceElement frame : stack) {
-            if (frame.getClassName().equals(type.getName())
-                    && frame.getMethodName().equals(method)) {
-                return true;
-            }
-            if (StackTraceUtil.isApplicationClass(frame.getClassName())) {
-                return false;
-            }
-        }
-        return false;
-    }
-
     private static String suggestMethodName(StackTraceElement[] stack) {
         for (StackTraceElement frame : stack) {
             if (!StackTraceUtil.isApplicationClass(frame.getClassName())) {
@@ -610,11 +610,11 @@ public final class CspViolationReporter {
                 // A constructor or static initializer adds nothing to the name
                 method = "";
             }
+            String capitalizedMethod = method.isEmpty() ? ""
+                    : (Character.toUpperCase(method.charAt(0))
+                            + method.substring(1));
             String name = Character.toLowerCase(simpleName.charAt(0))
-                    + simpleName.substring(1)
-                    + (method.isEmpty() ? ""
-                            : Character.toUpperCase(method.charAt(0))
-                                    + method.substring(1));
+                    + simpleName.substring(1) + capitalizedMethod;
             return isJavaIdentifier(name) ? name : "call";
         }
         return "call";

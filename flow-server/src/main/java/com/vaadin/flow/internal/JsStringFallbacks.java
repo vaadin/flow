@@ -328,8 +328,6 @@ public final class JsStringFallbacks {
                         + " call that stands in for a string could not tell"
                         + " them apart. Rename one of them");
             }
-        }
-        for (Method method : collectDeclaredMethods(definitionType)) {
             String name = "Method " + method.getName() + " of "
                     + definitionType.getName();
             // A string passes a fixed list of values: matching a rest
