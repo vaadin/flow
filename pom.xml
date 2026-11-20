@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>flow-project</artifactId>
-  <version>25.4-SNAPSHOT</version>
+  <version>25.5-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Flow</name>
   <url>https://vaadin.com/flow</url>
@@ -138,7 +138,7 @@
     <!-- Maven 3.8 still binds install:2.4 by default, which corrupts local
          repository metadata when modules install in parallel (-T). -->
     <maven.install.plugin.version>3.2.0</maven.install.plugin.version>
-    <testbench.version>25.4.0-beta2</testbench.version>
+    <testbench.version>25.5-SNAPSHOT</testbench.version>
     <jetty.version>12.1.15</jetty.version>
     <properties-maven-plugin.version>1.4.0</properties-maven-plugin.version>
     <build-helper-maven-plugin.version>3.8.0</build-helper-maven-plugin.version>
