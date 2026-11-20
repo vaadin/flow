@@ -63,7 +63,10 @@ import com.vaadin.flow.server.HandlerHelper;
  * <p>
  * A bean of this type is provided by
  * {@link com.vaadin.flow.spring.SpringSecurityAutoConfiguration}, which only
- * applies when Spring Security is on the classpath.
+ * applies when Spring Security is on the classpath. An application that does
+ * not use Spring Boot auto-configuration has to import that class, e.g. with
+ * {@code @Import(SpringSecurityAutoConfiguration.class)}, or define the bean
+ * itself.
  * 
  * @since 17.0
  */

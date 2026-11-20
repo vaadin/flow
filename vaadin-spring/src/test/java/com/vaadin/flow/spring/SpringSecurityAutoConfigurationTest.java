@@ -28,7 +28,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
-import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.context.assertj.AssertableWebApplicationContext;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
@@ -65,6 +64,7 @@ import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
 import com.vaadin.flow.spring.security.SpringAccessPathChecker;
 import com.vaadin.flow.spring.security.SpringNavigationAccessControl;
 import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategy;
+import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;
 import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -120,12 +120,11 @@ class SpringSecurityAutoConfigurationTest {
     }
 
     @Test
-    void componentScanOfSecurityPackage_withoutSpringSecurity_contextStarts() {
+    void componentScanOfSecurityPackage_registersNoRequestCache() {
         new WebApplicationContextRunner()
-                .withClassLoader(
-                        new FilteredClassLoader("org.springframework.security"))
                 .withUserConfiguration(ScanSecurityPackage.class)
-                .run(context -> assertThat(context).hasNotFailed());
+                .run(context -> assertThat(context).hasNotFailed()
+                        .doesNotHaveBean(VaadinDefaultRequestCache.class));
     }
 
     @Test
