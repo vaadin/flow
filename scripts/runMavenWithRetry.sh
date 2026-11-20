@@ -14,8 +14,9 @@
 # long as the failed attempt when that took longer. A transfer error usually
 # stops the build within its first minute, so the failed attempt alone says
 # little about how long a full run takes: set MAVEN_RETRY_DURATION to a
-# generous estimate of a full run, plus whatever else in the job still has
-# to run after it before the deadline.
+# generous estimate of a full run, plus any later build in the job that
+# still has to run before the deadline. Steps that only collect reports
+# afterwards belong in the margin between the deadline and the timeout.
 #
 # Maven is detached so that a JVM it forks and leaves behind (an application
 # server, a Quarkus or Spring Boot application) cannot pin the step open by
