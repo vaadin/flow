@@ -259,21 +259,7 @@ public final class DevCliInstaller {
                 return Optional.empty();
             }
             String version = (String) provisioner.getField("VERSION").get(null);
-            // Parameter and return types all come from java.base, so the two
-            // class loaders agree on them with nothing to adapt between them.
-            Path jar;
-            try {
-                Function<String, Path> nullableResolver = coordinates -> resolver
-                        .apply(coordinates).orElse(null);
-                jar = (Path) provisioner
-                        .getMethod("provision", Consumer.class, Function.class)
-                        .invoke(null, info, nullableResolver);
-            } catch (NoSuchMethodException e) {
-                LOGGER.debug("{} in {} cannot take a resolver", PROVISIONER,
-                        daemonJar, e);
-                jar = (Path) provisioner.getMethod("provision", Consumer.class)
-                        .invoke(null, info);
-            }
+            Path jar = invokeProvision(provisioner, daemonJar, resolver, info);
             info.accept("HotswapAgent " + version + " is ready at " + jar
                     + " - the dev loop needs no network for it");
             return Optional.of(jar);
@@ -291,6 +277,29 @@ public final class DevCliInstaller {
             throw new IOException("the dev-loop daemon in " + daemonJar
                     + " does not expose the provisioning API this plugin "
                     + "expects", e);
+        }
+    }
+
+    /**
+     * Calls the provisioning overload that takes a resolver, or the one that
+     * only downloads when the daemon predates it.
+     */
+    private static Path invokeProvision(Class<?> provisioner, Path daemonJar,
+            Function<String, Optional<Path>> resolver, Consumer<String> info)
+            throws ReflectiveOperationException {
+        // Parameter and return types all come from java.base, so the two
+        // class loaders agree on them with nothing to adapt between them.
+        Function<String, Path> nullableResolver = coordinates -> resolver
+                .apply(coordinates).orElse(null);
+        try {
+            return (Path) provisioner
+                    .getMethod("provision", Consumer.class, Function.class)
+                    .invoke(null, info, nullableResolver);
+        } catch (NoSuchMethodException e) {
+            LOGGER.debug("{} in {} cannot take a resolver", PROVISIONER,
+                    daemonJar, e);
+            return (Path) provisioner.getMethod("provision", Consumer.class)
+                    .invoke(null, info);
         }
     }
 

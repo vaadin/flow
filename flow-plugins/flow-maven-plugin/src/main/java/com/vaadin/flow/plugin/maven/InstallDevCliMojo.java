@@ -95,11 +95,6 @@ public class InstallDevCliMojo extends AbstractMojo {
 
     private RepositorySystem repositorySystem;
 
-    @Inject
-    void setRepositorySystem(RepositorySystem repositorySystem) {
-        this.repositorySystem = repositorySystem;
-    }
-
     /**
      * Where to install. Defaults to the module the goal runs on, which is what
      * puts the two skill trees beside each other so the Claude adapter's
@@ -126,6 +121,11 @@ public class InstallDevCliMojo extends AbstractMojo {
      */
     @Parameter(property = "vaadin.skip", defaultValue = "false")
     private boolean skip;
+
+    @Inject
+    void setRepositorySystem(RepositorySystem repositorySystem) {
+        this.repositorySystem = repositorySystem;
+    }
 
     @Override
     public void execute() throws MojoFailureException {

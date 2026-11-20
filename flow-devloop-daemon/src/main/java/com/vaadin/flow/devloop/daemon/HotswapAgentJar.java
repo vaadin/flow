@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 /**
  * The HotswapAgent jar the application JVM is launched with: where it is
@@ -103,6 +104,10 @@ public final class HotswapAgentJar {
      * for a longer one.
      */
     private static final Duration MAX_RETRY_DELAY = Duration.ofSeconds(30);
+
+    /** A {@code Retry-After} value given in seconds. */
+    private static final Pattern RETRY_AFTER_SECONDS = Pattern
+            .compile("\\d{1,9}");
 
     /**
      * Answers that mean "not now" rather than "not there": a rate limit, which
@@ -340,7 +345,7 @@ public final class HotswapAgentJar {
      */
     private static Optional<Duration> retryAfter(HttpResponse<?> response) {
         return response.headers().firstValue("Retry-After").map(String::trim)
-                .filter(value -> value.matches("\\d{1,9}"))
+                .filter(value -> RETRY_AFTER_SECONDS.matcher(value).matches())
                 .map(value -> Duration.ofSeconds(Long.parseLong(value)));
     }
 
