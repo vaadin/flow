@@ -55,7 +55,7 @@ On every build, `TaskUpdatePackages`:
 | `META-INF/VAADIN/versions/*.json` | Versions files. Any jar may ship them. Each entry has an `npmName`, an `npmVersion` (or `jsVersion`), and optionally a `mode` (`react`, `lit`, `all`). A file may also list `exclusions`. The platform's files also carry a `platform` version. |
 | `PinnedNpmVersions` | Reads and merges all versions files on the classpath. On a conflict the newer version wins, with a warning. Answers the Vaadin version, but only from the platform's own files. |
 | `VersionsJsonConverter` | Turns one versions file into `name → version`, for the current mode (React or Lit), dropping excluded packages and, with `npmExcludeWebComponents`, the web components. |
-| `VersionsJsonFilter` | Drops SNAPSHOT and unparsable versions, keeps URL versions, and warns when the developer pinned an older version in `package.json`. |
+| `VersionsJsonFilter` | Drops SNAPSHOT and unparsable versions, keeps URL versions, and warns when the developer pinned an older version in `package.json`. `NodeUpdater` then drops exotic versions unless `npm.allowExoticVersions` is on. |
 | `NodeUpdater` | Base of the package tasks. Reads the default dependency sets from `flow-server/src/main/resources/com/vaadin/flow/server/frontend/dependencies/*/package.json`, and keeps the `vaadin` section of `package.json`. |
 | `TaskUpdatePackages` | Adds the dependencies, computes and writes the overrides, warns about version mismatches, and writes the hash. |
 | `PnpmWorkspaceFile` | Reads and writes the `overrides` map of `pnpm-workspace.yaml`, where pnpm 10 and later read them. |
@@ -89,8 +89,9 @@ of the versions files (and, where there are no versions files, of
   direct dependency disagree (#24213), and it is how a developer opts out of
   the pinned version (#24123).
 - **SNAPSHOT and unparsable versions, and packages linked to a folder**, are
-  not pinned. URL versions, such as the tarball of a preview build, are
-  pinned as they are (#26319).
+  not pinned. Exotic versions, such as the tarball URL of a preview build,
+  are skipped with a warning by default. With `npm.allowExoticVersions` on,
+  they are pinned as they are (#26319).
 - **Default overrides** come on top, from the `overrides` of the default
   dependency sets: at the moment, workbox's transitive dependencies when
   offline `@PWA` is enabled (#24008).
@@ -99,7 +100,9 @@ of the versions files (and, where there are no versions files, of
 between nested keys, the format pnpm uses. It removes every key Vaadin
 manages and every `$` reference to a package that is no longer a dependency,
 adds the computed ones, and saves. Overrides of packages Vaadin doesn't
-manage are kept as they are. The managed keys are recomputed on every build,
+manage are kept as they are. Every package of the versions files counts as managed,
+including one skipped for an exotic version, so turning
+`npm.allowExoticVersions` off again removes the URL override it wrote. The managed keys are recomputed on every build,
 rather than remembered in `package.json`, so a leftover from an older Vaadin
 version can't block an upgrade (#24137, #24718).
 
@@ -120,6 +123,15 @@ version can't block an upgrade (#24137, #24718).
   `package.json` (#24918). Overrides left in `package.json` by an older Flow
   (`pnpm.overrides`) are moved there, and the obsolete `vaadin.overrides`
   section is removed.
+- **Exotic versions need an opt-in.** Only registry versions (numbers,
+  ranges, tags, `npm:` aliases) and local paths (`file:`, `link:`,
+  `workspace:`, relative or absolute paths) are allowed by default
+  (`FrontendBuildUtils.isExoticVersion`). Tarball and git URLs, `github:` and
+  `user/repo` shorthands need `npm.allowExoticVersions`. Without it, an
+  `@NpmPackage` with such a version fails the build, and a versions file
+  entry is skipped with a warning. It matches what pnpm's
+  `blockExoticSubdeps` blocks for transitive dependencies, and lets a
+  preview build of the web components be tried out on purpose.
 - **A broken versions file doesn't stop the build.** A file that can't be
   read is skipped with a warning, and the packages of the other files are
   still pinned. A folder that can't be listed is skipped as a whole, because

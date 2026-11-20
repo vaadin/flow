@@ -766,6 +766,43 @@ class TaskUpdatePackagesNpmTest {
         verifyVersionPinningWithNpmOverrides(true, true, false);
     }
 
+    @Test
+    void npmIsInUse_transitiveUrlVersionPinned_exoticVersionsNoLongerAllowed_overrideRemoved()
+            throws IOException {
+        // A React-mode package is only pinned through overrides in a Lit
+        // build, so its override holds the URL itself, not a $ reference
+        final String reactComponentsUrl = "https://pkg.pr.new/vaadin/web-components/@vaadin/react-components@275762d";
+        FileUtils.write(versionJsonFile, """
+                {
+                  "core": {
+                    "vaadin-dialog": {
+                      "jsVersion": "%s",
+                      "npmName": "%s"
+                    }
+                  },
+                  "react": {
+                    "react-components": {
+                      "jsVersion": "%s",
+                      "npmName": "@vaadin/react-components",
+                      "mode": "react"
+                    }
+                  }
+                }
+                """.formatted(PINNED_DIALOG_VERSION, VAADIN_DIALOG,
+                reactComponentsUrl), StandardCharsets.UTF_8);
+
+        createTask(createApplicationDependencies(), false, true).execute();
+        assertEquals(reactComponentsUrl, getOrCreatePackageJson().get(OVERRIDES)
+                .get("@vaadin/react-components").asString());
+
+        createTask(createApplicationDependencies()).execute();
+        final JsonNode overrides = getOrCreatePackageJson().get(OVERRIDES);
+        assertFalse(overrides.has("@vaadin/react-components"),
+                "Override of an exotic version left behind");
+        assertEquals("$" + VAADIN_DIALOG,
+                overrides.get(VAADIN_DIALOG).asString());
+    }
+
     @ParameterizedTest
     @ValueSource(booleans = { false, true })
     void npmIsInUse_packageJsonHasUserUrlVersion_exoticVersionsNotAllowed_urlVersionReferencedInOverrides(
