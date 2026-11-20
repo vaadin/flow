@@ -165,6 +165,21 @@ class JsStringFallbacksTest {
     }
 
     @Test
+    void strict_nullParameterArray_matchesDeclaredCallWithoutParameters() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+
+        ui.getElement().executeJs("return this.scrollTop", (Object[]) null);
+        JsCall elementCall = ui.onlyScheduledJsCall();
+        ui.getPage().executeJs("return this.scrollTop", (Object[]) null);
+        JsCall pageCall = ui.onlyScheduledJsCall();
+
+        for (JsCall call : List.of(elementCall, pageCall)) {
+            assertEquals("scrollTop", call.methodName());
+            assertEquals(List.of(), call.arguments());
+        }
+    }
+
+    @Test
     void strict_matchingPageCall_sendsDeclaredCallWithParameters() {
         setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
 
