@@ -21,10 +21,14 @@ mvn -B -ntp -fn dependency:resolve dependency:resolve-plugins \
   -Pit-shared-modules,it-shared-spring-modules -pl flow-tests -amd >"$log" 2>&1
 status=$?
 
-# The snapshots of this reactor are the only artifacts expected to be missing.
-unexpected=$(grep -E '^\[ERROR\]' "$log" \
-  | grep -E 'Could not transfer|Could not find artifact|could not be resolved|status code' \
-  | grep -vE 'com\.vaadin:[^ ]*-SNAPSHOT' | sort -u)
+# The snapshots of this reactor are the only artifacts expected to be missing,
+# so the coordinates are taken out of each error before filtering: the summary
+# line of a failed module names that module, which is one of those snapshots,
+# whatever artifact it failed on.
+unexpected=$(grep -oE 'Could not (transfer|find) artifact [^ ]+|Plugin [^ ]+ or one of its dependencies could not be resolved' "$log" \
+  | grep -vE 'artifact com\.vaadin:[^ ]*-SNAPSHOT' | sort -u)
+# --fail-never exits with 0 whatever failed, so a non-zero status means Maven
+# could not run at all.
 if [ "$status" -ne 0 ] || [ -n "$unexpected" ]; then
   echo "::warning::Resolving the integration test dependencies failed, so the cache may miss some of them"
   printf '%s\n' "$unexpected"
