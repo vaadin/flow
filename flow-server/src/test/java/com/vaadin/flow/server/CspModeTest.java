@@ -214,6 +214,7 @@ class CspModeTest {
 
         assertFalse(exception.getMessage().contains("The JavaScript is in"),
                 exception.getMessage());
+        assertTellsHowToFix(exception.getMessage());
         assertTraceLeadsFromApiToTest(exception, api, method);
     }
 
@@ -363,9 +364,10 @@ class CspModeTest {
                 () -> reportFromComponent("series[2].formatter"));
 
         assertTrue(
-                exception.getMessage().endsWith(
+                exception.getMessage().contains(
                         " The JavaScript is in \"series[2].formatter\"."),
                 exception.getMessage());
+        assertTellsHowToFix(exception.getMessage());
         assertTraceLeadsFromApiToTest(exception, CspModeTest.class,
                 "reportFromComponent");
     }
@@ -433,6 +435,13 @@ class CspModeTest {
 
     private void executeJsOnUi() {
         ui.getElement().executeJs("return 1");
+    }
+
+    private static void assertTellsHowToFix(String message) {
+        assertTrue(message.contains("@JsDefinition"), message);
+        assertTrue(message.contains(
+                "https://vaadin.com/docs/latest/flow/component-internals/element-api/calling-javascript"),
+                message);
     }
 
     private static void assertTraceLeadsFromApiToTest(Throwable violation,

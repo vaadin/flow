@@ -40,7 +40,9 @@ import com.vaadin.flow.server.VaadinService;
  * {@link CspMode#WARN}, and a {@link CspViolationException} in
  * {@link CspMode#STRICT}. Every string-based call is reported, including the
  * ones that Vaadin itself makes. Both the warning and the exception carry a
- * stack trace that starts at the API and leads to the code that called it.
+ * stack trace that starts at the API and leads to the code that called it, and
+ * a message that tells how to replace the string with a
+ * {@link com.vaadin.flow.js.JsDefinition} interface.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  * 
@@ -48,7 +50,14 @@ import com.vaadin.flow.server.VaadinService;
  */
 public final class CspViolationReporter {
 
-    private static final String MESSAGE = "JavaScript is sent to the browser as a string, which the browser has to compile and a Content Security Policy without 'unsafe-eval' blocks. The stack trace leads from the API to the code that called it.";
+    private static final String MESSAGE = "JavaScript is sent to the browser as a string, which the browser has to compile and a Content Security Policy without 'unsafe-eval' blocks.";
+
+    // A report alone does not tell how to get rid of it, and the replacement
+    // differs per API, so point to the API and to the guide
+    private static final String FIX_HINT = " The stack trace leads from the API to the code that called it."
+            + " To fix the call, declare the JavaScript in a @JsDefinition interface and pass it to the API instead of the string,"
+            + " e.g. executeJs(Class) instead of executeJs(String, Object...). The Javadoc of the API names its replacement."
+            + " See https://vaadin.com/docs/latest/flow/component-internals/element-api/calling-javascript#declaring-javascript";
 
     // Bounded by the number of call sites in the code, and of the details
     // reported from them, for each service
@@ -136,8 +145,10 @@ public final class CspViolationReporter {
             return;
         }
 
-        String message = (detail == null) ? MESSAGE
-                : (MESSAGE + " The JavaScript is in \"" + detail + "\".");
+        String message = MESSAGE
+                + ((detail == null) ? ""
+                        : (" The JavaScript is in \"" + detail + "\"."))
+                + FIX_HINT;
         CspViolationException violation = new CspViolationException(message);
         StackTraceElement[] stack = violation.getStackTrace();
         // Start the trace at the API rather than at the two methods of this
