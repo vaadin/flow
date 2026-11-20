@@ -608,7 +608,8 @@ public class Page implements Serializable {
      * @param expression
      *            the JavaScript expression to invoke
      * @param parameters
-     *            parameters to pass to the expression
+     *            parameters to pass to the expression, or <code>null</code> for
+     *            no parameters
      * @return a pending result that can be used to get a value returned from
      *         the expression
      * @see #executeJs(Class)
@@ -620,15 +621,16 @@ public class Page implements Serializable {
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
+        Object[] arguments = parameters == null ? new Object[0] : parameters;
         JsCall fallback = JsStringFallbacks.findDeclaredCall(expression,
-                parameters);
+                arguments);
         if (fallback != null) {
             return ui.getInternals().addJavaScriptInvocation(fallback);
         }
         CspViolationReporter.reportStringExecuteJs(expression,
-                parameters.length);
+                arguments.length);
         return ui.getInternals().addJavaScriptInvocation(
-                new JavaScriptInvocation(expression, parameters));
+                new JavaScriptInvocation(expression, arguments));
     }
 
     /**
@@ -639,7 +641,8 @@ public class Page implements Serializable {
      * @param expression
      *            the JavaScript expression to execute
      * @param parameters
-     *            parameters to pass to the expression
+     *            parameters to pass to the expression, or <code>null</code> for
+     *            no parameters
      * @return a pending result that can be used to get a value returned from
      *         the expression
      * @since 2.0
