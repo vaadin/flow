@@ -57,7 +57,7 @@ class SpringConfigurationMetadataTest {
             InitParameters.BROWSERLESS,
             // Decided by the build, which writes it to the token file
             InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
-            // Only affects the production build
+            // Meant for the production build, set it in the build plugin
             InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
             // Only read by the legacy bootstrap page, or not read at all
             InitParameters.SERVLET_PARAMETER_POLYFILLS,
