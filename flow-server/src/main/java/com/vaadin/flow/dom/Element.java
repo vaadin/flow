@@ -375,6 +375,9 @@ public class Element extends Node<Element> {
      * @see #bindAttribute(String, Signal)
      * @since 25.4
      */
+    // The signal value may be null, as in bindVisible and bindEnabled. Left
+    // unmarked like them, so all Element signal bindings read the same way
+    @NullUnmarked
     public SignalBinding<Boolean> bindAttributeBoolean(String attribute,
             Signal<Boolean> signal) {
         String validAttribute = validateAttribute(attribute);
