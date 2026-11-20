@@ -134,6 +134,12 @@ jobs:
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
+      - name: Hash the poms
+        id: pom-hash
+        # Once, before anything is built: the build below unpacks a war that
+        # carries a pom.xml of its own, so hashFiles evaluated after it no
+        # longer matches the key the entry was restored and saved under.
+        run: echo "hash=${{ hashFiles('**/pom.xml') }}" >> "$GITHUB_OUTPUT"
       - id: maven-cache
         # Restore and save are separate steps so that the step resolving the
         # integration test dependencies below can tell which entry was
@@ -141,7 +147,7 @@ jobs:
         uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          key: ${{ runner.os }}-maven-${{ steps.pom-hash.outputs.hash }}
           restore-keys: ${{ runner.os }}-maven-
       - name: Generate matrices
         id: set-matrix
@@ -178,20 +184,10 @@ jobs:
         # read it, so the warmed entry is the common case.
         #
         # dependency:resolve rather than a build, which would cost this job the
-        # time the it-tests jobs spend on it anyway. The flow-tests modules are
-        # not packaged here, so the ones that depend on another of them fail to
-        # resolve it. --fail-never keeps going past those, including into the
-        # modules that depend on them, which --fail-at-end would skip. Without
-        # -DskipTests, as that is what activates the it-test-modules profile.
-        #
-        # The markers Maven leaves for what it could not download are removed,
-        # so that the it-tests jobs try again rather than trusting a cached
-        # failure.
-        if: ${{ steps.maven-cache.outputs.cache-hit != 'true' && steps.maven-cache.outputs.cache-matched-key != format('{0}-maven-warm-{1}', runner.os, hashFiles('**/pom.xml')) }}
-        run: |
-          mvn -B -ntp -q -fn dependency:resolve dependency:resolve-plugins \
-            -pl flow-tests -amd
-          find ~/.m2/repository -name '*.lastUpdated' -delete
+        # time the it-tests jobs spend on it anyway; see the script for how it
+        # handles the test modules that are not packaged here.
+        if: ${{ steps.maven-cache.outputs.cache-hit != 'true' && steps.maven-cache.outputs.cache-matched-key != format('{0}-maven-warm-v2-{1}', runner.os, steps.pom-hash.outputs.hash) }}
+        run: ./scripts/resolveItDependencies.sh
       - uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         if: ${{ steps.maven-cache.outputs.cache-hit != 'true' }}
         with:
