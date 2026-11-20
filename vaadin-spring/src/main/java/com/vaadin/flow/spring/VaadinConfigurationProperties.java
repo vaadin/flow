@@ -183,9 +183,7 @@ public class VaadinConfigurationProperties {
 
         /**
          * Whether a frontend development server (Vite) is used in development
-         * mode or not. Also set it in the Vaadin Maven or Gradle plugin
-         * configuration, otherwise the build and development mode use different
-         * values.
+         * mode or not.
          */
         private boolean hotdeploy = false;
 
@@ -226,7 +224,8 @@ public class VaadinConfigurationProperties {
         /**
          * Whether pnpm is used instead of npm to install frontend packages.
          * Also set it in the Vaadin Maven or Gradle plugin configuration,
-         * otherwise the build and development mode use different values.
+         * otherwise the production build and development mode use different
+         * values.
          */
         private boolean enable;
 
@@ -270,7 +269,7 @@ public class VaadinConfigurationProperties {
         /**
          * Whether bun is used instead of npm to install frontend packages. Also
          * set it in the Vaadin Maven or Gradle plugin configuration, otherwise
-         * the build and development mode use different values.
+         * the production build and development mode use different values.
          */
         private boolean enable;
 
@@ -313,8 +312,8 @@ public class VaadinConfigurationProperties {
 
         /**
          * Whether React support is enabled. Also set it in the Vaadin Maven or
-         * Gradle plugin configuration, otherwise the build and development mode
-         * use different values.
+         * Gradle plugin configuration, otherwise the production build and
+         * development mode use different values.
          */
         private boolean enable = true;
 

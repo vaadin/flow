@@ -14,7 +14,7 @@
     {
       "name": "vaadin.build.folder",
       "type": "java.lang.String",
-      "description": "Name of the build folder of the project. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the build and development mode use different values.",
+      "description": "Name of the build folder of the project. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the production build and development mode use different values.",
       "defaultValue": "target"
     },
     {
@@ -53,7 +53,7 @@
     {
       "name": "vaadin.devmode.frontend-extra-file-extensions",
       "type": "java.lang.String",
-      "description": "Comma-separated list of extra file extensions of frontend files to compute hashes for when checking whether the development bundle is up to date. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the build and development mode use different values."
+      "description": "Comma-separated list of extra file extensions of frontend files to compute hashes for when checking whether the development bundle is up to date. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the production build and development mode use different values."
     },
     {
       "name": "vaadin.devmode.live-reload.enabled",
@@ -64,7 +64,7 @@
     {
       "name": "vaadin.devmode.optimize-bundle",
       "type": "java.lang.Boolean",
-      "description": "Whether only the classes reachable from the entry points are scanned for frontend resources when the development bundle is built. When disabled, every class on the classpath is scanned. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the build and development mode use different values.",
+      "description": "Whether only the classes reachable from the entry points are scanned for frontend resources when the development bundle is built. When disabled, every class on the classpath is scanned. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the production build and development mode use different values.",
       "defaultValue": false
     },
     {
@@ -144,38 +144,38 @@
     {
       "name": "vaadin.node.download.root",
       "type": "java.lang.String",
-      "description": "URL to download Node.js from when it has to be installed. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the build and development mode use different values."
+      "description": "URL to download Node.js from when it has to be installed. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the production build and development mode use different values."
     },
     {
       "name": "vaadin.node.folder",
       "type": "java.lang.String",
-      "description": "Folder that contains the Node.js executable. When set, only this installation is used. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the build and development mode use different values."
+      "description": "Folder that contains the Node.js executable. When set, only this installation is used. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the production build and development mode use different values."
     },
     {
       "name": "vaadin.node.version",
       "type": "java.lang.String",
-      "description": "Node.js version to install when no suitable installation is found. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the build and development mode use different values."
+      "description": "Node.js version to install when no suitable installation is found. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the production build and development mode use different values."
     },
     {
       "name": "vaadin.npm.exclude-postinstall-packages",
       "type": "java.lang.String",
-      "description": "Comma-separated list of npm packages whose postinstall scripts are not run, including built-in ones. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the build and development mode use different values."
+      "description": "Comma-separated list of npm packages whose postinstall scripts are not run, including built-in ones. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the production build and development mode use different values."
     },
     {
       "name": "vaadin.npm.exclude-web-components",
       "type": "java.lang.Boolean",
-      "description": "Whether the npm packages of web components are excluded from the frontend build. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the build and development mode use different values.",
+      "description": "Whether the npm packages of web components are excluded from the frontend build. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the production build and development mode use different values.",
       "defaultValue": false
     },
     {
       "name": "vaadin.npm.minimum-frontend-package-age-days",
       "type": "java.lang.Integer",
-      "description": "Minimum age, in days, of a frontend package version before npm, pnpm or bun may install it. 0 disables the check. When not set, the npm or pnpm configuration is used, or 1 day if there is none. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the build and development mode use different values."
+      "description": "Minimum age, in days, of a frontend package version before npm, pnpm or bun may install it. 0 disables the check. When not set, the npm or pnpm configuration is used, or 1 day if there is none. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the production build and development mode use different values."
     },
     {
       "name": "vaadin.npm.postinstall-packages",
       "type": "java.lang.String",
-      "description": "Comma-separated list of npm packages to run postinstall scripts for, in addition to the built-in ones. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the build and development mode use different values."
+      "description": "Comma-separated list of npm packages to run postinstall scripts for, in addition to the built-in ones. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the production build and development mode use different values."
     },
     {
       "name": "vaadin.page-title.generator",
@@ -185,7 +185,7 @@
     {
       "name": "vaadin.pnpm.global",
       "type": "java.lang.Boolean",
-      "description": "Whether a globally installed pnpm is used instead of the version Vaadin installs. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the build and development mode use different values.",
+      "description": "Whether a globally installed pnpm is used instead of the version Vaadin installs. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the production build and development mode use different values.",
       "defaultValue": false
     },
     {
@@ -213,7 +213,7 @@
     {
       "name": "vaadin.require.home.node",
       "type": "java.lang.Boolean",
-      "description": "Whether the Node.js executable installed in the user home directory is required. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the build and development mode use different values.",
+      "description": "Whether the Node.js executable installed in the user home directory is required. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the production build and development mode use different values.",
       "defaultValue": false
     },
     {
