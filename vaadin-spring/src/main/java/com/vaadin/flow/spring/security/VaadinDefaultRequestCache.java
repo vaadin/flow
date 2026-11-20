@@ -35,7 +35,6 @@ import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.springframework.stereotype.Component;
 import org.springframework.web.accept.ContentNegotiationStrategy;
 import org.springframework.web.accept.HeaderContentNegotiationStrategy;
 
@@ -61,10 +60,13 @@ import com.vaadin.flow.server.HandlerHelper;
  * addition to the default exclusions. This is useful for ignoring
  * application-specific paths that should never be used as redirect targets
  * after authentication.
+ * <p>
+ * A bean of this type is provided by
+ * {@link com.vaadin.flow.spring.SpringSecurityAutoConfiguration}, which only
+ * applies when Spring Security is on the classpath.
  * 
  * @since 17.0
  */
-@Component
 public class VaadinDefaultRequestCache implements RequestCache {
 
     @Autowired

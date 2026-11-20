@@ -28,10 +28,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.context.assertj.AssertableWebApplicationContext;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -113,6 +117,15 @@ class SpringSecurityAutoConfigurationTest {
             assertThat(context).getBean(NavigationAccessControl.class)
                     .isInstanceOf(SpringNavigationAccessControl.class);
         });
+    }
+
+    @Test
+    void componentScanOfSecurityPackage_withoutSpringSecurity_contextStarts() {
+        new WebApplicationContextRunner()
+                .withClassLoader(
+                        new FilteredClassLoader("org.springframework.security"))
+                .withUserConfiguration(ScanSecurityPackage.class)
+                .run(context -> assertThat(context).hasNotFailed());
     }
 
     @Test
@@ -353,6 +366,12 @@ class SpringSecurityAutoConfigurationTest {
             }
         });
         assertNotNull(deserialized, "Deserialized object is null");
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    // Skip test classes of the package, they need Spring Security
+    @ComponentScan(basePackages = "com.vaadin.flow.spring.security", excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*Test(\\$.*)?"))
+    static class ScanSecurityPackage {
     }
 
     @TestConfiguration(proxyBeanMethods = false)
