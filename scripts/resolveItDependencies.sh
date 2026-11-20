@@ -21,12 +21,22 @@ mvn -B -ntp -fn dependency:resolve dependency:resolve-plugins \
   -Pit-shared-modules,it-shared-spring-modules -pl flow-tests -amd >"$log" 2>&1
 status=$?
 
-# The snapshots of this reactor are the only artifacts expected to be missing,
-# so the coordinates are taken out of each error before filtering: the summary
-# line of a failed module names that module, which is one of those snapshots,
-# whatever artifact it failed on.
-unexpected=$(grep -oE 'Could not (transfer|find) artifact [^ ]+|Plugin [^ ]+ or one of its dependencies could not be resolved' "$log" \
-  | grep -vE 'artifact com\.vaadin:[^ ]*-SNAPSHOT' | sort -u)
+# The snapshots of this reactor are the only artifacts expected to be missing.
+# A module that fails can miss several artifacts at once, so every one of them
+# is listed before filtering: each `dependency:` line Maven prints, the entries
+# of a `following artifacts could not be resolved:` list, and any artifact
+# named alone. Filtering whole messages instead would let a missing snapshot
+# hide an external artifact that failed beside it.
+unexpected=$(
+  {
+    grep -oE '^\[ERROR\] dependency: [^ ]+' "$log" | awk '{ print $3 }'
+    grep 'following artifacts could not be resolved' "$log" \
+      | grep -oE '[^ ,:]+(:[^ ,:]+){3,4} \((absent|present)\)' | awk '{ print $1 }'
+    grep -oE 'Could not (transfer|find) artifact [^ ]+' "$log" | awk '{ print $5 }'
+    grep -oE 'Plugin [^ ]+ or one of its dependencies could not be resolved' "$log" \
+      | awk '{ print "plugin " $2 }'
+  } | grep -vE '^com\.vaadin:[^ ]*-SNAPSHOT$' | sort -u
+)
 # --fail-never exits with 0 whatever failed, so a non-zero status means Maven
 # could not run at all.
 if [ "$status" -ne 0 ] || [ -n "$unexpected" ]; then
