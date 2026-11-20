@@ -284,14 +284,15 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // 'strict-dynamic' trusts the scripts that nonced scripts load, such
         // as the chunks of the bundle. connect-src also covers push. Workers
         // need their own directive since script-src only allows nonced
-        // scripts.
+        // scripts. connect-src allows data: because vaadin-icon fetches the
+        // src of SvgIcon, which can be a data: URL.
         return new ContentSecurityPolicy().setDirective("default-src", CSP_SELF)
                 .setDirective("script-src", "'nonce-" + nonce + "'",
                         "'strict-dynamic'")
                 .setDirective("style-src", CSP_SELF, "'unsafe-inline'")
                 .setDirective("img-src", CSP_SELF, "data:")
                 .setDirective("font-src", CSP_SELF, "data:")
-                .setDirective("connect-src", CSP_SELF)
+                .setDirective("connect-src", CSP_SELF, "data:")
                 .setDirective("worker-src", CSP_SELF)
                 .setDirective("object-src", "'none'")
                 .setDirective("base-uri", CSP_SELF);
