@@ -201,7 +201,17 @@ public class BuildFrontendUtil {
                 FrontendUtils.JAR_RESOURCES_FOLDER);
     }
 
-    private static FrontendToolsSettings getFrontendToolsSettings(
+    /**
+     * Creates the settings for locating Node.js and npm the same way as the
+     * frontend build does.
+     *
+     * @param adapter
+     *            - the PluginAdapterBase.
+     * @return the frontend tools settings
+     * @throws URISyntaxException
+     *             - Could not build an URI from nodeDownloadRoot().
+     */
+    public static FrontendToolsSettings getFrontendToolsSettings(
             PluginAdapterBase adapter) throws URISyntaxException {
         FrontendToolsSettings settings = new FrontendToolsSettings(
                 adapter.npmFolder().getAbsolutePath(),
@@ -409,6 +419,8 @@ public class BuildFrontendUtil {
      *             - a ExecutionFailedException.
      * @throws URISyntaxException
      *             - - Could not build an URI from nodeDownloadRoot().
+     * @throws IOException
+     *             if reading or writing the build files fails
      */
     public static void runDevBuildNodeUpdater(PluginAdapterBuild adapter)
             throws ExecutionFailedException, URISyntaxException, IOException {
@@ -548,7 +560,11 @@ public class BuildFrontendUtil {
     }
 
     /**
-     * Runs the Vite build
+     * Runs the Vite build.
+     * <p>
+     * Removes the bundle files of an earlier build from the frontend output
+     * directory first, so that only the files of this build end up in the
+     * application archive and in the compressed production bundle.
      *
      * @param adapter
      *            - the PluginAdapterBase.
@@ -557,8 +573,26 @@ public class BuildFrontendUtil {
      */
     public static void runVite(PluginAdapterBase adapter,
             FrontendTools frontendTools) {
+        deletePreviousBundleFiles(adapter);
         runFrontendBuildTool(adapter, frontendTools, "Vite", "vite", "vite",
                 Collections.emptyMap(), "build");
+    }
+
+    /**
+     * Vite does not empty its output directory in a production build, because
+     * other tasks write theme and static resources there before Vite runs. As
+     * the bundle file names contain a content hash, the files of earlier builds
+     * would otherwise accumulate next to the new ones. Only the Vite assets
+     * directory is cleared, as nothing else writes to it.
+     */
+    private static void deletePreviousBundleFiles(PluginAdapterBase adapter) {
+        File buildFolder = new File(adapter.frontendOutputDirectory(),
+                Constants.VAADIN_BUILD_FILES_PATH);
+        try {
+            FileIOUtils.delete(buildFolder);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     private static void runFrontendBuildTool(PluginAdapterBase adapter,
@@ -1101,6 +1135,8 @@ public class BuildFrontendUtil {
      *
      * @param adapter
      *            used plugin adapter implementation
+     * @throws IOException
+     *             if deleting the token file fails
      */
     public static void removeBuildFile(PluginAdapterBuild adapter)
             throws IOException {

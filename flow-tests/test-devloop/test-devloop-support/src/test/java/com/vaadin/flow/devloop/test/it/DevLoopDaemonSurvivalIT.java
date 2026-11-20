@@ -62,8 +62,15 @@ class DevLoopDaemonSurvivalIT {
                 "no setsid and no perl, so this platform has nothing to detach with");
 
         VaadinDevCli cli = VaadinDevCli.of(AbstractDevLoopIT.APP);
-        // ping rather than start: the session is decided when the daemon is
-        // spawned, and an application is not needed to read it.
+        // Any daemon will do: the session is decided when the daemon is
+        // spawned, and an application is not needed to read it. ping only
+        // reports and never spawns one, so with none running a stop does -
+        // and with no daemon there is no app for it to stop.
+        if (!cli.run("ping").isLive()) {
+            cli.run("stop").assertExitCode(0);
+        }
+        // Answered by the daemon now, which a ping that only reports must not
+        // mistake for there being none.
         cli.run("ping").assertExitCode(0);
 
         long daemon = daemonPid();

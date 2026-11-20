@@ -29,6 +29,7 @@ import type { DependencyLoader } from './DependencyLoader';
 import type { SystemErrorHandler } from './SystemErrorHandler';
 import type { UILifecycle } from './UILifecycle';
 import type { RequestResponseTracker } from './communication/RequestResponseTracker';
+import type { ClientEvents } from './ClientEvents';
 import type { ReconnectConfiguration } from './communication/ReconnectConfiguration';
 import type { ExecuteJavaScriptProcessor } from './flow/ExecuteJavaScriptProcessor';
 import type { ServerConnector } from './communication/ServerConnector';
@@ -38,6 +39,7 @@ import type { ExistingElementMap } from './ExistingElementMap';
 import type { InitialPropertiesHandler } from './InitialPropertiesHandler';
 import type { Poller } from './communication/Poller';
 import type { LoadingIndicatorStateHandler } from './communication/LoadingIndicatorStateHandler';
+import type { EventRemover } from '../EventRemover';
 import { assert } from '../assert';
 
 // TypeScript port of the container mechanism of com.vaadin.client.Registry.
@@ -82,6 +84,7 @@ export const TOKEN = {
   SystemErrorHandler: 'SystemErrorHandler',
   UILifecycle: 'UILifecycle',
   RequestResponseTracker: 'RequestResponseTracker',
+  ClientEvents: 'ClientEvents',
   ReconnectConfiguration: 'ReconnectConfiguration',
   ExecuteJavaScriptProcessor: 'ExecuteJavaScriptProcessor',
   ServerConnector: 'ServerConnector',
@@ -105,6 +108,8 @@ export class Registry {
   readonly #lookupTable = new Map<ServiceKey, unknown>();
 
   readonly #resettable = new Map<ServiceKey, () => unknown>();
+
+  readonly #resetListeners: Array<() => void> = [];
 
   /**
    * Stores an instance of the given type.
@@ -276,6 +281,15 @@ export class Registry {
   }
 
   /**
+   * Gets the {@link ClientEvents} singleton.
+   *
+   * @returns the {@link ClientEvents} singleton
+   */
+  getClientEvents(): ClientEvents {
+    return this.get(TOKEN.ClientEvents);
+  }
+
+  /**
    * Gets the {@link ReconnectConfiguration} singleton.
    *
    * @returns the {@link ReconnectConfiguration} singleton
@@ -364,5 +378,25 @@ export class Registry {
       this.#lookupTable.delete(key);
       this.#lookupTable.set(key, supplier());
     });
+    this.#resetListeners.forEach((listener) => listener());
+  }
+
+  /**
+   * Adds a listener called after {@link reset} has recreated the resettable
+   * instances, so a service holding on to one can move to its replacement.
+   *
+   * @param listener - the listener to add
+   * @returns a registration object which can be used to remove the listener
+   */
+  addResetListener(listener: () => void): EventRemover {
+    this.#resetListeners.push(listener);
+    return {
+      remove: () => {
+        const index = this.#resetListeners.indexOf(listener);
+        if (index >= 0) {
+          this.#resetListeners.splice(index, 1);
+        }
+      }
+    };
   }
 }

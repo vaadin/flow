@@ -21,7 +21,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.util.stream.Collectors;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -160,7 +159,7 @@ public class SecurityConfig {
                             userInfo.getRoles().stream()
                                     .map(role -> new SimpleGrantedAuthority(
                                             "ROLE_" + role))
-                                    .collect(Collectors.toList()));
+                                    .toList());
                 }
             }
         };

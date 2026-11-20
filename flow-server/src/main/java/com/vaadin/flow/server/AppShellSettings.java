@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
@@ -32,6 +31,7 @@ import org.jsoup.parser.Parser;
 import org.jsoup.parser.Tag;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Inline.Position;
 import com.vaadin.flow.component.page.Inline.Wrapping;
@@ -340,6 +340,30 @@ public class AppShellSettings {
     }
 
     /**
+     * Add a script element loading the given URL to initial page head.
+     *
+     * @param position
+     *            prepend or append
+     * @param src
+     *            location of the script
+     * @param type
+     *            whether to load the script as a classic script or a module
+     * @param defer
+     *            whether to defer running a classic script until the page has
+     *            been parsed
+     */
+    void addScript(Position position, String src, JavaScript.Type type,
+            boolean defer) {
+        Element script = createElement("script", null, "src", src);
+        if (type == JavaScript.Type.MODULE) {
+            script.attr("type", "module");
+        } else if (defer) {
+            script.attr("defer", true);
+        }
+        getHeadElements(position).add(script);
+    }
+
+    /**
      * Append a link to initial page head.
      *
      * @param rel
@@ -452,8 +476,7 @@ public class AppShellSettings {
         return inlines.stream()
                 .filter(inline -> inline.target == target
                         && inline.position == position)
-                .map(inline -> inline.element(service))
-                .collect(Collectors.toList());
+                .map(inline -> inline.element(service)).toList();
     }
 
     private static Element createElement(String tag, String content,

@@ -113,7 +113,8 @@
     </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
-      <artifactId>vaadin-testbench-core-junit5</artifactId>
+      <artifactId>flow-test-util-junit6</artifactId>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <!-- DevLoopPomEditIT adds a dependency below this line and reverts it. The
@@ -175,7 +176,7 @@
       <plugin>
         <groupId>org.codehaus.cargo</groupId>
         <artifactId>cargo-maven3-plugin</artifactId>
-        <version>1.10.29</version>
+        <version>1.10.30</version>
         <configuration>
           <container>
             <containerId>tomcat11x</containerId>

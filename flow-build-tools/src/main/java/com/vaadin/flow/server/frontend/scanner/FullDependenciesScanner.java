@@ -41,6 +41,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.server.FrontendDependencyUrlResolver;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -401,6 +402,21 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                                     return;
                                 }
 
+                                if (FrontendDependencyUrlResolver
+                                        .isRuntimeDependencyUrl(value)
+                                        && (hasTypeAttribute
+                                                || loadsRuntimeDependencies(
+                                                        clazz))) {
+                                    // Values with a runtime prefix or any
+                                    // other scheme are loaded at runtime as
+                                    // <script> or <script type="module"> and
+                                    // must not enter the bundle. Nothing
+                                    // loads @JsModule values of other classes
+                                    // than components and the app shell at
+                                    // runtime, so those are left to the bundle
+                                    return;
+                                }
+
                                 if (developmentOnly) {
                                     targetDevOnly.add(value);
                                 } else {
@@ -588,7 +604,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             Class<?> hopefullyAppShellClass = annotatedClasses.iterator()
                     .next();
             if (!Arrays.stream(hopefullyAppShellClass.getInterfaces())
-                    .map(Class::getName).collect(Collectors.toList())
+                    .map(Class::getName).toList()
                     .contains(AppShellConfigurator.class.getName())) {
                 throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION
                         + " " + hopefullyAppShellClass.getName()

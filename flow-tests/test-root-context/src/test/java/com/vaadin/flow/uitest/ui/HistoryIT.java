@@ -19,7 +19,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -111,7 +110,6 @@ public class HistoryIT extends ChromeBrowserTest {
     private void waitForStatusMessages(String... expectedMessages) {
         List<String> expected = Arrays.asList(expectedMessages);
         waitUntil(arg -> expected.equals(findElements(By.className("status"))
-                .stream().map(WebElement::getText)
-                .collect(Collectors.toList())));
+                .stream().map(WebElement::getText).toList()));
     }
 }

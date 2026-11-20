@@ -20,16 +20,20 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Properties;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.MockedStatic;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.flow.shared.communication.PushMode;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -327,6 +331,75 @@ class DefaultDeploymentConfigurationTest {
 
         assertEquals(SessionLockCheckStrategy.THROW,
                 config.getSessionLockCheckStrategy());
+    }
+
+    @Test
+    void checkLockStrategy_unrecognizedValue_fallsBackToAssert() {
+        Properties init = new Properties();
+        init.put(InitParameters.SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY,
+                "sometimes");
+        DefaultDeploymentConfiguration config = createDeploymentConfig(init);
+
+        assertEquals(SessionLockCheckStrategy.ASSERT,
+                config.getSessionLockCheckStrategy());
+    }
+
+    @Test
+    void pushMode_unrecognizedValue_fallsBackToDisabled() {
+        Properties init = new Properties();
+        init.put(InitParameters.SERVLET_PARAMETER_PUSH_MODE, "sometimes");
+        DefaultDeploymentConfiguration config = createDeploymentConfig(init);
+
+        assertEquals(PushMode.DISABLED, config.getPushMode());
+    }
+
+    @Test
+    void pushMode_parsedIndependentlyOfDefaultLocale() {
+        Locale defaultLocale = Locale.getDefault();
+        try {
+            Locale.setDefault(Locale.of("tr", "TR"));
+            Properties init = new Properties();
+            init.put(InitParameters.SERVLET_PARAMETER_PUSH_MODE, "automatic");
+            DefaultDeploymentConfiguration config = createDeploymentConfig(
+                    init);
+
+            assertEquals(PushMode.AUTOMATIC, config.getPushMode());
+        } finally {
+            Locale.setDefault(defaultLocale);
+        }
+    }
+
+    @Test
+    void cspMode_defaultsToOff() {
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                new Properties());
+
+        assertEquals(CspMode.OFF, config.getCspMode());
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "off, OFF", "warn, WARN", "strict, STRICT", "Strict, STRICT" })
+    void cspMode_configurableViaPropertyParameter(String value,
+            CspMode expected) {
+        Properties init = new Properties();
+        init.put(InitParameters.CSP, value);
+        DefaultDeploymentConfiguration config = createDeploymentConfig(init);
+
+        assertEquals(expected, config.getCspMode());
+    }
+
+    @Test
+    void cspMode_unrecognizedValue_throws() {
+        Properties init = new Properties();
+        init.put(InitParameters.CSP, "stirct");
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> createDeploymentConfig(init));
+        assertTrue(exception.getMessage().contains("'stirct'"),
+                exception.getMessage());
+        assertTrue(exception.getMessage().contains("'off', 'warn', 'strict'"),
+                exception.getMessage());
     }
 
     @Test

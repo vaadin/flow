@@ -443,7 +443,7 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
                         .filter(Objects::nonNull).collect(Collectors.toSet()));
     }
 
-    private boolean isComponentInUse(UI ui, Class<?> componentClass) {
+    static boolean isComponentInUse(UI ui, Class<?> componentClass) {
         // Check if any component in the UI tree is an instance of the given
         // class
         return ui.getChildren()
@@ -451,7 +451,8 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
                         || hasChildOfType(component, componentClass));
     }
 
-    private boolean hasChildOfType(Component component, Class<?> targetClass) {
+    private static boolean hasChildOfType(Component component,
+            Class<?> targetClass) {
         if (targetClass.isInstance(component)) {
             return true;
         }

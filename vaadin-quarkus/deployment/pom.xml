@@ -12,6 +12,10 @@
   <name>Vaadin Quarkus - Deployment</name>
   <description>Build time part of the Quarkus integration for Vaadin applications.</description>
 
+  <properties>
+    <jpms.module.name>com.vaadin.quarkus.deployment</jpms.module.name>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>io.quarkus</groupId>

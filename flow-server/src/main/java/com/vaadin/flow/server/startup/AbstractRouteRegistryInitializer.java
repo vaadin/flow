@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.HasDynamicTitle;
+import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
@@ -155,6 +156,17 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
         });
 
         validateRouteParentLayout(route);
+        validateMenuParent(route);
+    }
+
+    private void validateMenuParent(Class<?> route) {
+        Menu menu = route.getAnnotation(Menu.class);
+        if (menu != null && route.equals(menu.parent())) {
+            throw new InvalidRouteConfigurationException(String.format(
+                    "'%s' declares itself as its '@%s' parent. "
+                            + "The menu parent has to be another route.",
+                    route.getCanonicalName(), Menu.class.getSimpleName()));
+        }
     }
 
     private Stream<Class<?>> getValidationAnnotations() {
