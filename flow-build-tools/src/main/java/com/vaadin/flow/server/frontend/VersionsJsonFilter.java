@@ -76,12 +76,15 @@ class VersionsJsonFilter {
 
     /**
      * Gets the versions that can be pinned, warning about the packages the user
-     * has pinned to an older version in package.json.
+     * has pinned to an older version in package.json. An exotic version is left
+     * out with a warning unless exotic versions are allowed, and then only a
+     * URL version is kept.
      *
      * @param versions
      *            to be filtered for user managed ones
      * @param versionOrigin
-     *            origin of the version (like a file), used in error message
+     *            origin of the version (like a file), used in warnings and
+     *            error messages
      * @return filtered versions json
      */
     ObjectNode getFilteredVersions(ObjectNode versions, String versionOrigin) {

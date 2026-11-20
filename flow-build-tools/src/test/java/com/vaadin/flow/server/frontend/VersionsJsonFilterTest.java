@@ -45,10 +45,10 @@ import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class VersionsJsonFilterTest {
@@ -179,9 +179,9 @@ class VersionsJsonFilterTest {
         if (allowExoticVersions) {
             assertEquals(overlayUrl,
                     filteredJson.get("@vaadin/overlay").asString());
-            verify(logger, never()).warn(anyString(), eq(overlayUrl),
-                    eq("@vaadin/overlay"), eq("versions.json"),
-                    eq(InitParameters.NPM_ALLOW_EXOTIC_VERSIONS));
+            // only URL versions can be pinned as they are
+            assertFalse(filteredJson.has("@vaadin/button"));
+            verifyNoInteractions(logger);
         } else {
             assertFalse(filteredJson.has("@vaadin/overlay"));
             assertFalse(filteredJson.has("@vaadin/button"));
