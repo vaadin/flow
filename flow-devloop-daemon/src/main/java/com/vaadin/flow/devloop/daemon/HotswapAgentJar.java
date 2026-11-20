@@ -25,7 +25,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
+import java.time.Duration;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * The HotswapAgent jar the application JVM is launched with: where it is
@@ -45,11 +49,17 @@ import java.util.function.Consumer;
  * run. So this class name, the {@link #VERSION} field and the signature of
  * {@link #provision(Consumer)} are a contract with
  * {@code DevCliInstaller.provisionHotswapAgent} that no compiler checks -
- * renaming any of them turns the install goal into a no-op that only warns.
+ * renaming any of them turns the install goal into a no-op that only warns. The
+ * same holds for {@link #provision(Consumer, Function)}, which the build
+ * prefers when the daemon has it, and for {@link #COORDINATES}, which is what
+ * that overload hands the build to resolve.
  * <p>
  * This is the only asset the loop downloads. Everything else it needs - the
  * daemon jar, which is also the javaagent - travels in as a project dependency
- * and is resolved from the local Maven repository.
+ * and is resolved from the local Maven repository. When the build provisions,
+ * it resolves the agent the same way, so the mirrors, proxies and local
+ * repository of the build apply to it too; only the daemon on its own, and a
+ * build that cannot resolve it, download it directly.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -74,6 +84,33 @@ public final class HotswapAgentJar {
     /** Where the pinned {@link #VERSION} of the agent is downloaded from. */
     public static final String URL = "https://repo1.maven.org/maven2/org/hotswapagent/hotswap-agent/"
             + VERSION + "/hotswap-agent-" + VERSION + ".jar";
+
+    /**
+     * The Maven coordinates of the artifact at {@link #URL}, as
+     * {@code groupId:artifactId:extension:version}, for a build that resolves
+     * it from its own repositories instead.
+     */
+    public static final String COORDINATES = "org.hotswapagent:hotswap-agent:jar:"
+            + VERSION;
+
+    /**
+     * How many times a download is attempted before giving up.
+     */
+    private static final int DOWNLOAD_ATTEMPTS = 4;
+
+    /**
+     * The longest wait between two download attempts, also when the server asks
+     * for a longer one.
+     */
+    private static final Duration MAX_RETRY_DELAY = Duration.ofSeconds(30);
+
+    /**
+     * Answers that mean "not now" rather than "not there": a rate limit, which
+     * Maven Central hands out to busy shared addresses such as CI runners, and
+     * the server errors a proxy in front of it produces.
+     */
+    private static final Set<Integer> RETRIED_STATUSES = Set.of(429, 500, 502,
+            503, 504);
 
     /**
      * Names a jar that is already on the machine, which is how an air-gapped
@@ -117,6 +154,9 @@ public final class HotswapAgentJar {
      * already-cached copy whose bytes still verify. So a machine provisioned
      * once needs no network again - not for the next application, and not after
      * a {@code mvn clean}.
+     * <p>
+     * The same as {@link #provision(Consumer, Function)} with nothing to
+     * resolve the jar from, so a missing jar is downloaded from {@link #URL}.
      *
      * @param progress
      *            where to report a download, since it is the one step here that
@@ -127,6 +167,37 @@ public final class HotswapAgentJar {
      *             not the pinned ones
      */
     public static Path provision(Consumer<String> progress) throws IOException {
+        return provision(progress, coordinates -> null);
+    }
+
+    /**
+     * Ensures the HotswapAgent jar is present and matches the pinned checksum,
+     * taking it from a repository of the caller's when it has to be fetched,
+     * and answers where it is.
+     * <p>
+     * An explicit override wins, then an already-cached copy whose bytes still
+     * verify, exactly as for {@link #provision(Consumer)}. Only when neither is
+     * there is {@code resolver} asked for the jar at {@link #COORDINATES},
+     * which is how a build provisions it through its own repository setup - the
+     * local repository it has already cached, its mirrors and proxies, and the
+     * retries it applies - instead of a direct download. What it answers is
+     * verified against the pinned checksum and copied into the cache. When it
+     * answers {@code null}, fails, or answers bytes that are not the pinned
+     * ones, the jar is downloaded from {@link #URL} as before.
+     *
+     * @param progress
+     *            where to report a download, since it is the one step here that
+     *            takes long enough to need saying out loud
+     * @param resolver
+     *            answers a local copy of the artifact with the given
+     *            coordinates, or {@code null} when it has none
+     * @return the jar to load into the application JVM
+     * @throws IOException
+     *             if the jar can neither be resolved nor downloaded, or if the
+     *             bytes in hand are not the pinned ones
+     */
+    public static Path provision(Consumer<String> progress,
+            Function<String, Path> resolver) throws IOException {
         String override = System.getProperty(OVERRIDE_PROPERTY);
         if (override != null && !override.isBlank()) {
             Path path = Path.of(override);
@@ -136,21 +207,28 @@ public final class HotswapAgentJar {
             }
             return path;
         }
+        return provision(progress, resolver, cachedJar(), SHA256,
+                URI.create(URL));
+    }
 
-        Path jar = cachedJar();
+    /**
+     * {@link #provision(Consumer, Function)} past the override, against a given
+     * cache location, checksum and download address.
+     */
+    static Path provision(Consumer<String> progress,
+            Function<String, Path> resolver, Path jar, String sha256, URI url)
+            throws IOException {
         if (Files.isRegularFile(jar)) {
             String actual = sha256(jar);
-            if (!SHA256.equalsIgnoreCase(actual)) {
+            if (!sha256.equalsIgnoreCase(actual)) {
                 throw new IOException("cached HotswapAgent checksum mismatch: "
-                        + jar + " (expected " + SHA256 + ", got " + actual
+                        + jar + " (expected " + sha256 + ", got " + actual
                         + "). Delete it to re-download.");
             }
             return jar;
         }
 
         Files.createDirectories(jar.getParent());
-        progress.accept(
-                "provisioning HotswapAgent " + VERSION + " from " + URL);
         // A unique temp name rather than a fixed sibling: the daemon of one
         // application, the daemon of another and a build running the install
         // goal can all reach this at once, and two of them writing one shared
@@ -158,30 +236,29 @@ public final class HotswapAgentJar {
         Path temp = Files.createTempFile(jar.getParent(),
                 "hotswap-agent-" + VERSION + "-", ".part");
         try {
-            try {
-                HttpClient client = HttpClient.newBuilder()
-                        .followRedirects(HttpClient.Redirect.NORMAL).build();
-                HttpRequest request = HttpRequest.newBuilder(URI.create(URL))
-                        .GET().build();
-                HttpResponse<InputStream> response = client.send(request,
-                        HttpResponse.BodyHandlers.ofInputStream());
-                if (response.statusCode() != 200) {
-                    throw new IOException("download failed with HTTP "
-                            + response.statusCode() + " from " + URL);
+            Optional<Path> resolved = resolve(progress, resolver);
+            if (resolved.isPresent()) {
+                Files.copy(resolved.get(), temp,
+                        StandardCopyOption.REPLACE_EXISTING);
+                String actual = sha256(temp);
+                if (!sha256.equalsIgnoreCase(actual)) {
+                    progress.accept("resolved HotswapAgent " + resolved.get()
+                            + " does not match the pinned checksum (expected "
+                            + sha256 + ", got " + actual
+                            + "), downloading it instead");
+                    resolved = Optional.empty();
                 }
-                try (InputStream in = response.body()) {
-                    Files.copy(in, temp, StandardCopyOption.REPLACE_EXISTING);
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new IOException("download interrupted", e);
             }
-
-            String actual = sha256(temp);
-            if (!SHA256.equalsIgnoreCase(actual)) {
-                throw new IOException(
-                        "downloaded HotswapAgent checksum mismatch (expected "
-                                + SHA256 + ", got " + actual + ")");
+            if (resolved.isEmpty()) {
+                progress.accept("provisioning HotswapAgent " + VERSION
+                        + " from " + url);
+                download(url, temp, progress);
+                String actual = sha256(temp);
+                if (!sha256.equalsIgnoreCase(actual)) {
+                    throw new IOException(
+                            "downloaded HotswapAgent checksum mismatch (expected "
+                                    + sha256 + ", got " + actual + ")");
+                }
             }
             // Not ATOMIC_MOVE: a file system is free to refuse that, and the
             // bytes are verified either way, so a concurrent provision can only
@@ -192,6 +269,79 @@ public final class HotswapAgentJar {
         }
         progress.accept("provisioned " + jar + " (verified sha256)");
         return jar;
+    }
+
+    /**
+     * Asks the resolver for the jar, treating a failure of its own as having
+     * nothing to offer: the download is still there to fall back on.
+     */
+    private static Optional<Path> resolve(Consumer<String> progress,
+            Function<String, Path> resolver) {
+        Path resolved;
+        try {
+            resolved = resolver.apply(COORDINATES);
+        } catch (RuntimeException e) {
+            progress.accept("could not resolve " + COORDINATES + ": " + e);
+            return Optional.empty();
+        }
+        if (resolved == null || !Files.isRegularFile(resolved)) {
+            return Optional.empty();
+        }
+        progress.accept(
+                "provisioning HotswapAgent " + VERSION + " from " + resolved);
+        return Optional.of(resolved);
+    }
+
+    /**
+     * Downloads {@code url} into {@code target}, retrying the answers that only
+     * mean "not now" with a growing delay, or the one the server asks for.
+     */
+    private static void download(URI url, Path target,
+            Consumer<String> progress) throws IOException {
+        HttpClient client = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NORMAL).build();
+        HttpRequest request = HttpRequest.newBuilder(url).GET().build();
+        Duration backoff = Duration.ofSeconds(1);
+        try {
+            for (int attempt = 1;; attempt++) {
+                HttpResponse<InputStream> response = client.send(request,
+                        HttpResponse.BodyHandlers.ofInputStream());
+                try (InputStream in = response.body()) {
+                    int status = response.statusCode();
+                    if (status == 200) {
+                        Files.copy(in, target,
+                                StandardCopyOption.REPLACE_EXISTING);
+                        return;
+                    }
+                    if (attempt >= DOWNLOAD_ATTEMPTS
+                            || !RETRIED_STATUSES.contains(status)) {
+                        throw new IOException("download failed with HTTP "
+                                + status + " from " + url);
+                    }
+                }
+                Duration delay = retryAfter(response).orElse(backoff);
+                if (delay.compareTo(MAX_RETRY_DELAY) > 0) {
+                    delay = MAX_RETRY_DELAY;
+                }
+                progress.accept("download got HTTP " + response.statusCode()
+                        + ", retrying in " + delay.toSeconds() + "s");
+                Thread.sleep(delay.toMillis());
+                backoff = backoff.multipliedBy(2);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("download interrupted", e);
+        }
+    }
+
+    /**
+     * The delay a {@code Retry-After} header asks for, when it gives one in
+     * seconds; the HTTP-date form is left to the regular backoff.
+     */
+    private static Optional<Duration> retryAfter(HttpResponse<?> response) {
+        return response.headers().firstValue("Retry-After").map(String::trim)
+                .filter(value -> value.matches("\\d{1,9}"))
+                .map(value -> Duration.ofSeconds(Long.parseLong(value)));
     }
 
     private static String sha256(Path file) throws IOException {

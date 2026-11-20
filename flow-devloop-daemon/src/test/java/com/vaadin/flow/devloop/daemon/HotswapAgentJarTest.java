@@ -16,11 +16,19 @@
 package com.vaadin.flow.devloop.daemon;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.HexFormat;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -79,5 +87,72 @@ class HotswapAgentJarTest {
         IOException e = assertThrows(IOException.class,
                 () -> HotswapAgentJar.provision(progress::add));
         assertTrue(e.getMessage().contains(absent.toString()), e.getMessage());
+    }
+
+    @Test
+    void provision_resolvedCopy_isVerifiedAndCachedWithoutDownloading(
+            @TempDir Path dir) throws IOException {
+        Path resolved = Files.writeString(dir.resolve("from-m2.jar"),
+                "agent bytes 7f3a");
+        Path cached = dir.resolve("cache").resolve("ha.jar");
+        List<String> asked = new ArrayList<>();
+
+        // Port 1 refuses connections, so reaching the download fails the case.
+        Path jar = HotswapAgentJar.provision(progress::add, coordinates -> {
+            asked.add(coordinates);
+            return resolved;
+        }, cached, sha256("agent bytes 7f3a"),
+                URI.create("http://127.0.0.1:1/ha.jar"));
+
+        assertEquals(cached, jar);
+        assertEquals("agent bytes 7f3a", Files.readString(cached));
+        assertEquals(List.of("org.hotswapagent:hotswap-agent:jar:"
+                + HotswapAgentJar.VERSION), asked);
+    }
+
+    @Test
+    void provision_resolvedCopyDoesNotVerify_downloadsRetryingARateLimit(
+            @TempDir Path dir) throws IOException {
+        Path resolved = Files.writeString(dir.resolve("from-m2.jar"),
+                "tampered");
+        Path cached = dir.resolve("cache").resolve("ha.jar");
+        AtomicInteger requests = new AtomicInteger();
+        HttpServer server = HttpServer
+                .create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/ha.jar", exchange -> {
+            if (requests.incrementAndGet() == 1) {
+                exchange.getResponseHeaders().add("Retry-After", "0");
+                exchange.sendResponseHeaders(429, -1);
+            } else {
+                byte[] body = "agent bytes 7f3a"
+                        .getBytes(StandardCharsets.UTF_8);
+                exchange.sendResponseHeaders(200, body.length);
+                try (OutputStream out = exchange.getResponseBody()) {
+                    out.write(body);
+                }
+            }
+            exchange.close();
+        });
+        server.start();
+        try {
+            HotswapAgentJar.provision(progress::add, coordinates -> resolved,
+                    cached, sha256("agent bytes 7f3a"),
+                    URI.create("http://127.0.0.1:"
+                            + server.getAddress().getPort() + "/ha.jar"));
+        } finally {
+            server.stop(0);
+        }
+
+        assertEquals("agent bytes 7f3a", Files.readString(cached));
+        assertEquals(2, requests.get());
+    }
+
+    private static String sha256(String content) {
+        try {
+            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                    .digest(content.getBytes(StandardCharsets.UTF_8)));
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new AssertionError(e);
+        }
     }
 }

@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.plugin.maven;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -28,6 +30,11 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
 
 import com.vaadin.flow.plugin.base.DevCliInstaller;
 
@@ -42,13 +49,16 @@ import com.vaadin.flow.plugin.base.DevCliInstaller;
  * from the project's own dependencies at first use.
  * <p>
  * It also provisions HotswapAgent into {@code ~/.vaadin/devloop}, which is the
- * only asset the loop downloads rather than resolving from a Maven repository.
- * That is deliberately the goal's job and not the first {@code vaadin-dev
- * start}: an image built with network access and developed in without it - a
- * container, a sandboxed agent environment - would otherwise install fine and
- * then fail to start the loop at all. Once the goal has succeeded, nothing in
- * the loop needs the network again. Machine-level, so nothing lands in the
- * project and one download serves every application on the machine.
+ * only asset the loop itself downloads rather than resolving from a Maven
+ * repository. This goal resolves it through the build's repositories - its
+ * local repository, mirrors and proxies - and downloads it directly only when
+ * that fails. Provisioning is deliberately the goal's job and not the first
+ * {@code vaadin-dev start}: an image built with network access and developed in
+ * without it - a container, a sandboxed agent environment - would otherwise
+ * install fine and then fail to start the loop at all. Once the goal has
+ * succeeded, nothing in the loop needs the network again. Machine-level, so
+ * nothing lands in the project and one download serves every application on the
+ * machine.
  * <p>
  * The provisioning runs out of the daemon jar the project itself resolves - the
  * same one the CLI will run - so the pinned agent version is the version the
@@ -79,6 +89,16 @@ public class InstallDevCliMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;
+
+    @Parameter(defaultValue = "${repositorySystemSession}", readonly = true)
+    private RepositorySystemSession repositorySession;
+
+    private RepositorySystem repositorySystem;
+
+    @Inject
+    void setRepositorySystem(RepositorySystem repositorySystem) {
+        this.repositorySystem = repositorySystem;
+    }
 
     /**
      * Where to install. Defaults to the module the goal runs on, which is what
@@ -143,21 +163,50 @@ public class InstallDevCliMojo extends AbstractMojo {
             return;
         }
         try {
-            DevCliInstaller.provisionHotswapAgent(daemon.get(), getLog()::info,
-                    getLog()::warn);
+            DevCliInstaller.provisionHotswapAgent(daemon.get(),
+                    this::resolveArtifact, getLog()::info, getLog()::warn);
         } catch (IOException e) {
             throw new MojoFailureException(
                     "Could not provision HotswapAgent, so the dev loop would "
                             + "have to download it the first time it runs: "
                             + e.getMessage()
                             + ". It is fetched once per machine into "
-                            + "~/.vaadin/devloop from the URL logged above, "
-                            + "so run this goal somewhere that can reach it, "
-                            + "or put the jar there by hand - it is "
-                            + "verified against a pinned checksum either way. "
+                            + "~/.vaadin/devloop, from the build's Maven "
+                            + "repositories or else from the URL logged "
+                            + "above, so run this goal somewhere that can "
+                            + "reach either, or put the jar there by hand - it "
+                            + "is verified against a pinned checksum either "
+                            + "way. "
                             + "Pass -Dvaadin.devcli.skipHotswapAgent=true to "
                             + "install the CLI without it.",
                     e);
+        }
+    }
+
+    /**
+     * Resolves an artifact the way the build resolves its dependencies, so the
+     * local repository, mirrors, proxies and retries of the build apply.
+     * <p>
+     * A failure is only logged: the caller falls back to downloading.
+     *
+     * @param coordinates
+     *            {@code groupId:artifactId:extension:version}
+     * @return the resolved file, or empty when it could not be resolved
+     */
+    private Optional<Path> resolveArtifact(String coordinates) {
+        ArtifactRequest request = new ArtifactRequest(
+                new DefaultArtifact(coordinates),
+                project.getRemoteProjectRepositories(), null);
+        try {
+            return Optional.of(
+                    repositorySystem.resolveArtifact(repositorySession, request)
+                            .getArtifact().getFile().toPath());
+        } catch (ArtifactResolutionException e) {
+            getLog().warn("Could not resolve " + coordinates
+                    + " from the build's repositories, downloading it "
+                    + "directly instead: " + e.getMessage());
+            getLog().debug(e);
+            return Optional.empty();
         }
     }
 

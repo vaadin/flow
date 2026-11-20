@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -215,9 +216,19 @@ public final class DevCliInstaller {
      * enforcer rule in its own module: the platform class loader is a
      * sufficient parent, and using that rather than this module loader also
      * means nothing already in the plugin realm can shadow what is loaded.
+     * <p>
+     * The build tool's own repositories are offered first, through
+     * {@code resolver}: what the build has already cached needs no download,
+     * and its mirrors, proxies and retries apply where it has not. The daemon
+     * names the coordinates, so the version stays the one it pins. A daemon
+     * that cannot take a resolver yet downloads directly, as it did before.
      *
      * @param daemonJar
      *            the {@code flow-devloop-daemon} jar the project resolves
+     * @param resolver
+     *            resolves the artifact with the given
+     *            {@code groupId:artifactId:extension:version} coordinates from
+     *            the build's repositories, empty when it cannot
      * @param info
      *            where progress and the outcome are reported
      * @param warn
@@ -230,7 +241,8 @@ public final class DevCliInstaller {
      *             found in the cache nor downloaded
      */
     public static Optional<Path> provisionHotswapAgent(Path daemonJar,
-            Consumer<String> info, Consumer<String> warn) throws IOException {
+            Function<String, Optional<Path>> resolver, Consumer<String> info,
+            Consumer<String> warn) throws IOException {
         try (URLClassLoader loader = new URLClassLoader(
                 new URL[] { daemonJar.toUri().toURL() },
                 ClassLoader.getPlatformClassLoader())) {
@@ -246,10 +258,21 @@ public final class DevCliInstaller {
                 return Optional.empty();
             }
             String version = (String) provisioner.getField("VERSION").get(null);
-            // Parameter and return type both come from java.base, so the two
+            // Parameter and return types all come from java.base, so the two
             // class loaders agree on them with nothing to adapt between them.
-            Path jar = (Path) provisioner.getMethod("provision", Consumer.class)
-                    .invoke(null, info);
+            Path jar;
+            try {
+                Function<String, Path> nullableResolver = coordinates -> resolver
+                        .apply(coordinates).orElse(null);
+                jar = (Path) provisioner
+                        .getMethod("provision", Consumer.class, Function.class)
+                        .invoke(null, info, nullableResolver);
+            } catch (NoSuchMethodException e) {
+                LOGGER.debug("{} in {} cannot take a resolver", PROVISIONER,
+                        daemonJar, e);
+                jar = (Path) provisioner.getMethod("provision", Consumer.class)
+                        .invoke(null, info);
+            }
             info.accept("HotswapAgent " + version + " is ready at " + jar
                     + " - the dev loop needs no network for it");
             return Optional.of(jar);
