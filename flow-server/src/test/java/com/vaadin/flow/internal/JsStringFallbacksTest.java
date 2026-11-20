@@ -258,11 +258,14 @@ class JsStringFallbacksTest {
         registration.addEventData(EVENT_DATA);
 
         assertEquals(FILTER, registration.getFilter());
-        // The client runs the function of the bundle instead of the string
-        JsonNode eventData = eventSettings(ui.getElement(), "keydown")
-                .get(EVENT_DATA);
-        assertEquals(BundledEventData.getFunctionId(EVENT_DATA), eventData
-                .get(JsonConstants.EVENT_SETTINGS_FUNCTION).asString());
+        // The client runs the functions of the bundle instead of the strings
+        JsonNode settings = eventSettings(ui.getElement(), "keydown");
+        for (String expression : List.of(FILTER, EVENT_DATA)) {
+            assertEquals(BundledEventData.getFunctionId(expression),
+                    settings.get(expression)
+                            .get(JsonConstants.EVENT_SETTINGS_FUNCTION)
+                            .asString());
+        }
         assertThrows(CspViolationException.class,
                 () -> registration.setFilter("event.key === 'Enter'"));
         assertThrows(CspViolationException.class, () -> registration
