@@ -27,7 +27,9 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.TextNode;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
@@ -1539,6 +1541,14 @@ public class Element extends Node<Element> {
      * any immediate child text nodes, but ignores text inside child elements.
      * Use {@link #getTextRecursively()} to get the full text that recursively
      * includes the text content of the entire element tree.
+     * <p>
+     * HTML set through the "innerHTML" property counts as children, so only its
+     * top-level text is included:
+     *
+     * <pre>{@code
+     * new Html("<span>Hi <b>there</b></span>").getElement().getText(); // =>
+     *                                                                  // "Hi "
+     * }</pre>
      *
      * @see #getTextRecursively()
      * @see #setText(String)
@@ -1546,49 +1556,59 @@ public class Element extends Node<Element> {
      * @return the text content of this element
      */
     public String getText() {
-        return getTextContent(Element::isTextNode);
+        if (isTextNode()) {
+            return getStateProvider().getTextContent(getNode());
+        }
+        StringBuilder builder = new StringBuilder();
+        parseInnerHtml().ifPresent(html -> html.textNodes()
+                .forEach(text -> builder.append(text.getWholeText())));
+        getChildren().filter(Element::isTextNode)
+                .forEach(child -> builder.append(child.getText()));
+        return builder.toString();
     }
 
     /**
      * Gets the text content of this element tree. This includes the text
-     * content of all child nodes recursively. Use {@link #getText()} to only
-     * get the text from text nodes that are immediate children of this element.
+     * content of all child nodes recursively, and the text of any HTML set
+     * through the "innerHTML" property. Use {@link #getText()} to only get the
+     * text from text nodes that are immediate children of this element.
+     *
+     * <pre>{@code
+     * new Html("<span>Hi <b>there</b></span>").getElement()
+     *         .getTextRecursively(); // => "Hi there"
+     * }</pre>
      *
      * @see #getText()
      *
      * @return the text content of this element and all child elements
      */
     public String getTextRecursively() {
-        return getTextContent(e -> true);
+        StringBuilder builder = new StringBuilder();
+        appendTextRecursively(builder);
+        return builder.toString();
     }
 
-    /**
-     * Returns the text content for this element by including children matching
-     * the given filter.
-     *
-     * @param childFilter
-     *            the filter used to decide whether to include a child or not
-     * @return the text content for this element and any matching child nodes
-     *         recursively, never {@code null}
-     */
-    private String getTextContent(Predicate<? super Element> childFilter) {
-        if (isTextNode()) {
-            return getStateProvider().getTextContent(getNode());
-        } else {
-            StringBuilder builder = new StringBuilder();
-            appendTextContent(builder, childFilter);
-            return builder.toString();
-        }
-    }
-
-    private void appendTextContent(StringBuilder builder,
-            Predicate<? super Element> childFilter) {
+    private void appendTextRecursively(StringBuilder builder) {
         if (isTextNode()) {
             builder.append(getText());
-        } else {
-            getChildren().filter(childFilter)
-                    .forEach(e -> e.appendTextContent(builder, childFilter));
+            return;
         }
+        // Match the browser's textContent: <br> adds nothing, while the
+        // contents of <script> and <style> are included
+        parseInnerHtml().ifPresent(html -> html.nodeStream().forEach(node -> {
+            if (node instanceof TextNode text) {
+                builder.append(text.getWholeText());
+            } else if (node instanceof DataNode data) {
+                builder.append(data.getWholeData());
+            }
+        }));
+        getChildren().forEach(child -> child.appendTextRecursively(builder));
+    }
+
+    private Optional<org.jsoup.nodes.Element> parseInnerHtml() {
+        // Parsed in the context of this tag, as the browser does
+        return Optional.ofNullable(getProperty("innerHTML"))
+                .map(html -> new org.jsoup.nodes.Element(getTag()).html(html));
     }
 
     /**

@@ -1562,6 +1562,34 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
+    void getText_innerHtml_includesItsText() {
+        Element child = ElementFactory.createSpan();
+        child.setProperty("innerHTML", "Hi <b>there</b>");
+        Element element = ElementFactory.createDiv();
+        element.appendChild(child, Element.createText("!"));
+
+        assertEquals("Hi there!", element.getTextRecursively());
+        assertEquals("Hi ", child.getText());
+    }
+
+    @Test
+    void getTextRecursively_innerHtmlWithBr_brAddsNoText() {
+        Element element = ElementFactory.createParagraph();
+        element.setProperty("innerHTML", "a<br>b");
+
+        assertEquals("ab", element.getTextRecursively());
+    }
+
+    @Test
+    void getTextRecursively_innerHtmlWithStyleAndScript_includesTheirContent() {
+        Element element = ElementFactory.createDiv();
+        element.setProperty("innerHTML",
+                "a<style>.x{}</style><script>var y;</script>b");
+
+        assertEquals("a.x{}var y;b", element.getTextRecursively());
+    }
+
+    @Test
     void setResourceAttribute_elementIsNotAttached_elementHasAttribute() {
         UI.setCurrent(createUI());
         Element element = ElementFactory.createDiv();
