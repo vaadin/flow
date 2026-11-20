@@ -141,6 +141,17 @@ jobs:
         run: |
           cmd="mvn initialize -B -ntp -Pit-shared-modules,it-shared-spring-modules -pl flow-tests -amd"
           eval $cmd || eval $cmd
+      - name: Resolve the dependencies and plugins of the integration tests
+        if: ${{ steps.probe.outputs.cache-hit != 'true' }}
+        # The initialize above resolves the plugins bound that early, but no
+        # dependency jars. The build job of validation.yml resolves the same
+        # graph when the poms of a run differ from this entry, and skips it
+        # when they match, so this entry has to hold it. See the note on that
+        # step for why it is dependency:resolve and --fail-never.
+        run: |
+          mvn -B -ntp -q -fn dependency:resolve dependency:resolve-plugins \
+            -pl flow-tests -amd
+          find ~/.m2/repository -name '*.lastUpdated' -delete
       - name: Drop the Flow artifacts before the cache is saved
         if: ${{ steps.probe.outputs.cache-hit != 'true' }}
         # The step that saves the cache runs after every regular step, so

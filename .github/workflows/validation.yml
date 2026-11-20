@@ -140,6 +140,15 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
+      - name: Look for a warmed entry with the same poms
+        id: warm-cache
+        # warm-caches.yml saves one per merge to main, holding what the step
+        # that resolves the integration test dependencies below would add.
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-warm-${{ hashFiles('**/pom.xml') }}
+          lookup-only: true
       - name: Generate matrices
         id: set-matrix
         run: |
@@ -168,8 +177,12 @@ jobs:
         # What plugins fetch only while they run, and the reactors of the CDI
         # and Quarkus jobs, are not covered.
         #
-        # Only on a miss: on an exact hit the entry is not saved again, and it
-        # already holds what this step added when it was first saved.
+        # Only when the poms differ from those of the last warmed main: that
+        # entry, which the cache step above restores by prefix, already holds
+        # all of this. A run's own primary key almost never hits, since no
+        # run but a re-run or a later push to the same pull request can read
+        # it, so it is not enough on its own. On an exact hit the entry is not
+        # saved again either.
         #
         # dependency:resolve rather than a build, which would cost this job the
         # time the it-tests jobs spend on it anyway. The flow-tests modules are
@@ -181,7 +194,7 @@ jobs:
         # The markers Maven leaves for what it could not download are removed,
         # so that the it-tests jobs try again rather than trusting a cached
         # failure.
-        if: ${{ steps.maven-cache.outputs.cache-hit != 'true' }}
+        if: ${{ steps.maven-cache.outputs.cache-hit != 'true' && steps.warm-cache.outputs.cache-hit != 'true' }}
         run: |
           mvn -B -ntp -q -fn dependency:resolve dependency:resolve-plugins \
             -pl flow-tests -amd
