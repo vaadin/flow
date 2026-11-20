@@ -2018,7 +2018,9 @@ public class Element extends Node<Element> {
      * @see #executeJs(Class)
      * @since 25.0
      * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode
+     *             in the {@link CspMode#STRICT} Content Security Policy mode,
+     *             unless the string is declared in an interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
@@ -2200,7 +2202,9 @@ public class Element extends Node<Element> {
      *         on the client
      * @since 25.2
      * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode
+     *             in the {@link CspMode#STRICT} Content Security Policy mode,
+     *             unless the string is declared in an interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
     public Registration addJsInitializer(String expression,
             Object... parameters) {

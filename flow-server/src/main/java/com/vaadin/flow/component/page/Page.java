@@ -439,7 +439,9 @@ public class Page implements Serializable {
      *            the JavaScript expression which return a Promise
      * @since 2.1
      * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode
+     *             in the {@link CspMode#STRICT} Content Security Policy mode,
+     *             unless the string is declared in an interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
     public void addDynamicImport(String expression) {
         JsCall fallback = JsStringFallbacks.findDeclaredFunction(expression,
@@ -612,7 +614,9 @@ public class Page implements Serializable {
      * @see #executeJs(Class)
      * @since 25.0
      * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode
+     *             in the {@link CspMode#STRICT} Content Security Policy mode,
+     *             unless the string is declared in an interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {

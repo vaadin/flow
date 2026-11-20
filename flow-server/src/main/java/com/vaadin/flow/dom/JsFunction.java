@@ -129,7 +129,9 @@ public final class JsFunction implements JsSnippet {
      * @throws IllegalArgumentException
      *             if any capture has a type that cannot be sent to the client
      * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode
+     *             in the {@link CspMode#STRICT} Content Security Policy mode,
+     *             unless the string is declared in an interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
     public static JsFunction of(String body, @Nullable Object... captures) {
         Objects.requireNonNull(body, "body");
