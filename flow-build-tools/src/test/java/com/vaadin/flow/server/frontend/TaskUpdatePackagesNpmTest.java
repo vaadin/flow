@@ -756,14 +756,18 @@ class TaskUpdatePackagesNpmTest {
     @Test
     void npmIsInUse_versionsJsonHasUrlVersion_exoticVersionsNotAllowed_urlVersionIgnored()
             throws IOException {
+        final String overlayUrl = "https://pkg.pr.new/vaadin/web-components/@vaadin/overlay@275762d";
         createVaadinVersionsJson(PINNED_DIALOG_VERSION,
-                PINNED_ELEMENT_MIXIN_VERSION,
-                "https://pkg.pr.new/vaadin/web-components/@vaadin/overlay@275762d");
-        createTask(createApplicationDependencies()).execute();
+                PINNED_ELEMENT_MIXIN_VERSION, overlayUrl);
+        final Logger logger = Mockito.mock(Logger.class);
+        createTaskWithLogger(logger).execute();
 
         verifyVersions(PINNED_DIALOG_VERSION, PINNED_ELEMENT_MIXIN_VERSION,
                 null);
         verifyVersionPinningWithNpmOverrides(true, true, false);
+        Mockito.verify(logger).warn(Mockito.anyString(), Mockito.eq(overlayUrl),
+                Mockito.eq(VAADIN_OVERLAY),
+                Mockito.eq(InitParameters.NPM_ALLOW_EXOTIC_VERSIONS));
     }
 
     @Test
