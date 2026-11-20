@@ -27,7 +27,9 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.TextNode;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.NullUnmarked;
 import org.jspecify.annotations.Nullable;
@@ -322,6 +324,67 @@ public class Element extends Node<Element> {
             return getStateProvider().bindAttributeSignal(this, validAttribute,
                     signal);
         }
+    }
+
+    /**
+     * Binds a {@link Signal}'s value to the presence of a given attribute. A
+     * {@code true} signal value sets the attribute to <code>""</code>, which is
+     * rendered as {@literal <div name>}, and a {@code false} value removes the
+     * attribute. This is the signal counterpart of
+     * {@link #setAttribute(String, boolean)}, meant for the boolean attributes
+     * that web components and CSS attribute selectors interpret by presence
+     * alone. A {@code null} signal value is treated the same as {@code false}.
+     * <p>
+     * The attribute is updated immediately with the current signal value when
+     * the binding is created, and is kept synchronized with any subsequent
+     * signal value changes while the element is in attached state. When the
+     * element is in detached state, signal value changes have no effect.
+     * <p>
+     * Same rules apply for the attribute name as in
+     * {@link #setAttribute(String, String)}.
+     * <p>
+     * While a Signal is bound to an attribute, any attempt to set or remove the
+     * attribute value manually throws
+     * {@link com.vaadin.flow.signals.BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Binding style or class attribute to a Signal is not supported. Use
+     * {@link ClassList#bind(String, Signal)} and
+     * {@link ThemeList#bind(String, Signal)} to bind the presence of an
+     * individual class or theme name.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ValueSignal&lt;Boolean&gt; signal = new ValueSignal&lt;&gt;(false);
+     * Element element = new Element("span");
+     * getElement().appendChild(element);
+     * element.bindAttributeBoolean("noborder", signal);
+     * signal.set(true); // The element now has attribute noborder
+     * </pre>
+     *
+     * @param attribute
+     *            the name of the attribute
+     * @param signal
+     *            the signal to bind, not <code>null</code>
+     * @return a {@link SignalBinding} that can be used to register change
+     *         callbacks
+     * @throws com.vaadin.flow.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setAttribute(String, boolean)
+     * @see #bindAttribute(String, Signal)
+     * @since 25.4
+     */
+    public SignalBinding<Boolean> bindAttributeBoolean(String attribute,
+            Signal<Boolean> signal) {
+        String validAttribute = validateAttribute(attribute);
+
+        if (CustomAttribute.get(validAttribute).isPresent()) {
+            throw new UnsupportedOperationException(
+                    "Binding style or class attribute to a Signal is not supported.");
+        }
+        return getStateProvider().bindAttributeBooleanSignal(this,
+                validAttribute, signal);
     }
 
     /**
@@ -1492,6 +1555,14 @@ public class Element extends Node<Element> {
      * any immediate child text nodes, but ignores text inside child elements.
      * Use {@link #getTextRecursively()} to get the full text that recursively
      * includes the text content of the entire element tree.
+     * <p>
+     * HTML set through the "innerHTML" property counts as children, so only its
+     * top-level text is included:
+     *
+     * <pre>{@code
+     * new Html("<span>Hi <b>there</b></span>").getElement().getText(); // =>
+     *                                                                  // "Hi "
+     * }</pre>
      *
      * @see #getTextRecursively()
      * @see #setText(String)
@@ -1499,49 +1570,59 @@ public class Element extends Node<Element> {
      * @return the text content of this element
      */
     public String getText() {
-        return getTextContent(Element::isTextNode);
+        if (isTextNode()) {
+            return getStateProvider().getTextContent(getNode());
+        }
+        StringBuilder builder = new StringBuilder();
+        parseInnerHtml().ifPresent(html -> html.textNodes()
+                .forEach(text -> builder.append(text.getWholeText())));
+        getChildren().filter(Element::isTextNode)
+                .forEach(child -> builder.append(child.getText()));
+        return builder.toString();
     }
 
     /**
      * Gets the text content of this element tree. This includes the text
-     * content of all child nodes recursively. Use {@link #getText()} to only
-     * get the text from text nodes that are immediate children of this element.
+     * content of all child nodes recursively, and the text of any HTML set
+     * through the "innerHTML" property. Use {@link #getText()} to only get the
+     * text from text nodes that are immediate children of this element.
+     *
+     * <pre>{@code
+     * new Html("<span>Hi <b>there</b></span>").getElement()
+     *         .getTextRecursively(); // => "Hi there"
+     * }</pre>
      *
      * @see #getText()
      *
      * @return the text content of this element and all child elements
      */
     public String getTextRecursively() {
-        return getTextContent(e -> true);
+        StringBuilder builder = new StringBuilder();
+        appendTextRecursively(builder);
+        return builder.toString();
     }
 
-    /**
-     * Returns the text content for this element by including children matching
-     * the given filter.
-     *
-     * @param childFilter
-     *            the filter used to decide whether to include a child or not
-     * @return the text content for this element and any matching child nodes
-     *         recursively, never {@code null}
-     */
-    private String getTextContent(Predicate<? super Element> childFilter) {
-        if (isTextNode()) {
-            return getStateProvider().getTextContent(getNode());
-        } else {
-            StringBuilder builder = new StringBuilder();
-            appendTextContent(builder, childFilter);
-            return builder.toString();
-        }
-    }
-
-    private void appendTextContent(StringBuilder builder,
-            Predicate<? super Element> childFilter) {
+    private void appendTextRecursively(StringBuilder builder) {
         if (isTextNode()) {
             builder.append(getText());
-        } else {
-            getChildren().filter(childFilter)
-                    .forEach(e -> e.appendTextContent(builder, childFilter));
+            return;
         }
+        // Match the browser's textContent: <br> adds nothing, while the
+        // contents of <script> and <style> are included
+        parseInnerHtml().ifPresent(html -> html.nodeStream().forEach(node -> {
+            if (node instanceof TextNode text) {
+                builder.append(text.getWholeText());
+            } else if (node instanceof DataNode data) {
+                builder.append(data.getWholeData());
+            }
+        }));
+        getChildren().forEach(child -> child.appendTextRecursively(builder));
+    }
+
+    private Optional<org.jsoup.nodes.Element> parseInnerHtml() {
+        // Parsed in the context of this tag, as the browser does
+        return Optional.ofNullable(getProperty("innerHTML"))
+                .map(html -> new org.jsoup.nodes.Element(getTag()).html(html));
     }
 
     /**
