@@ -90,8 +90,9 @@ of the versions files (and, where there are no versions files, of
   the pinned version (#24123).
 - **SNAPSHOT and unparsable versions, and packages linked to a folder**, are
   not pinned. Exotic versions, such as the tarball URL of a preview build,
-  are skipped with a warning by default. With `npm.allowExoticVersions` on,
-  they are pinned as they are (#26319).
+  are skipped by default, with a warning for the packages of the current
+  mode. With `npm.allowExoticVersions` on, they are pinned as they are
+  (#26319).
 - **Default overrides** come on top, from the `overrides` of the default
   dependency sets: at the moment, workbox's transitive dependencies when
   offline `@PWA` is enabled (#24008).
@@ -100,11 +101,12 @@ of the versions files (and, where there are no versions files, of
 between nested keys, the format pnpm uses. It removes every key Vaadin
 manages and every `$` reference to a package that is no longer a dependency,
 adds the computed ones, and saves. Overrides of packages Vaadin doesn't
-manage are kept as they are. Every package of the versions files counts as managed,
-including one skipped for an exotic version, so turning
-`npm.allowExoticVersions` off again removes the URL override it wrote. The managed keys are recomputed on every build,
-rather than remembered in `package.json`, so a leftover from an older Vaadin
-version can't block an upgrade (#24137, #24718).
+manage are kept as they are. Every package of the versions files counts as
+managed, including one skipped for an exotic version, so turning
+`npm.allowExoticVersions` off again removes the URL override it wrote. The
+managed keys are recomputed on every build, rather than remembered in
+`package.json`, so a leftover from an older Vaadin version can't block an
+upgrade (#24137, #24718).
 
 ### Decisions and gotchas
 
@@ -129,9 +131,10 @@ version can't block an upgrade (#24137, #24718).
   (`FrontendBuildUtils.isExoticVersion`). Tarball and git URLs, `github:` and
   `user/repo` shorthands need `npm.allowExoticVersions`. Without it, an
   `@NpmPackage` with such a version fails the build, and a versions file
-  entry is skipped with a warning. It matches what pnpm's
-  `blockExoticSubdeps` blocks for transitive dependencies, and lets a
-  preview build of the web components be tried out on purpose.
+  entry is skipped, with a warning when it is in the current mode. It
+  matches what pnpm's `blockExoticSubdeps` blocks for transitive
+  dependencies, and lets a preview build of the web components be tried out
+  on purpose.
 - **A broken versions file doesn't stop the build.** A file that can't be
   read is skipped with a warning, and the packages of the other files are
   still pinned. A folder that can't be listed is skipped as a whole, because
