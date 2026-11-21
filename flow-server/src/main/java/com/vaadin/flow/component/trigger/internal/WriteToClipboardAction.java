@@ -269,8 +269,8 @@ public class WriteToClipboardAction extends PromiseAction<String> {
          *            the <code>image/png</code> payload
          * @return the action function, which returns the promise of the write
          */
-        @JsExpression("return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event), $2(event))")
-        @JsFunctionParameterNames("event")
+        @JsExpression("return window.Vaadin.Flow.clipboard.writePayload($0(event, context), $1(event, context), $2(event, context))")
+        @JsFunctionParameterNames({ "event", "context" })
         JsFunction writeToClipboard(JsFunction text, JsFunction html,
                 JsFunction image);
     }

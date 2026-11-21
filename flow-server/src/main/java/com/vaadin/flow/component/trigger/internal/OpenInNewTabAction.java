@@ -254,8 +254,8 @@ public class OpenInNewTabAction extends Action {
          * @return the action function
          */
         @JsExpression("((u) => /^[\\x00-\\x20]*javascript:/i.test(String(u))"
-                + " || window.open(u, \"_blank\", $1(event)))($0(event))")
-        @JsFunctionParameterNames("event")
+                + " || window.open(u, \"_blank\", $1(event, context)))($0(event, context))")
+        @JsFunctionParameterNames({ "event", "context" })
         JsFunction openInNewTab(JsFunction url, JsFunction features);
     }
 }

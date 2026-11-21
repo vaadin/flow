@@ -33,7 +33,7 @@ class OpenInNewTabActionTest {
 
     private static final String GUARDED_WINDOW_OPEN = "((u) =>"
             + " /^[\\x00-\\x20]*javascript:/i.test(String(u))"
-            + " || window.open(u, \"_blank\", $1(event)))($0(event))";
+            + " || window.open(u, \"_blank\", $1(event, context)))($0(event, context))";
 
     @Test
     void urlString_emitsWindowOpenWithBlankTargetAndDefaultFeatures() {

@@ -28,9 +28,10 @@ import com.vaadin.flow.js.JsSnippets;
  * The JavaScript of the built-in trigger inputs, as snippets for
  * {@link JsSnippets#of(Class)}: what {@link Action.Input#toJs(Trigger)}
  * returns. An input is a function that produces a value when it is called: a
- * fixed one, a property of an element, or the event or a property of the event
- * it is called with as <code>event</code>. It is passed to an action, which
- * calls it for the value it works on.
+ * fixed one, a property of an element, the event or a property of the event it
+ * is called with as <code>event</code>, or a value of the trigger context it is
+ * called with as <code>context</code>. It is passed to an action, which calls
+ * it for the value it works on.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -87,4 +88,19 @@ public interface TriggerInputJs extends Serializable {
     @JsExpression("return event")
     @JsFunctionParameterNames("event")
     JsFunction returnEvent();
+
+    /**
+     * An input that reads a property of a member of the trigger context, such
+     * as an argument a template called the action with, or <code>null</code>
+     * when the trigger supplies no context or the value is missing.
+     *
+     * @param member
+     *            the name of the context member to read from
+     * @param property
+     *            the name of the property of that member
+     * @return the input function
+     */
+    @JsExpression("return context?.[$0]?.[$1] ?? null")
+    @JsFunctionParameterNames({ "event", "context" })
+    JsFunction readContextValue(String member, String property);
 }

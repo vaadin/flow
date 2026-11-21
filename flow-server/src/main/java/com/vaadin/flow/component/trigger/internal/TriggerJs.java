@@ -34,8 +34,11 @@ import com.vaadin.flow.js.JsSnippets;
  * are in {@link TriggerInputJs}.
  * <p>
  * An action is a function that does its work, called with the event of the
- * trigger as <code>event</code>. An installer is applied to the host element of
- * the trigger and returns the function that uninstalls it, as an initializer of
+ * trigger as <code>event</code> and with what the trigger fired for as
+ * <code>context</code>, which is <code>undefined</code> for triggers that have
+ * no such notion. An action passes both on to the inputs it calls. An installer
+ * is applied to the host element of the trigger and returns the function that
+ * uninstalls it, as an initializer of
  * {@link Element#addJsInitializer(JsFunction)} does. Functions are composed by
  * passing one snippet as an argument of another, which calls it.
  * <p>
@@ -63,8 +66,8 @@ public interface TriggerJs extends Serializable {
      *            the input that produces the value
      * @return the action function
      */
-    @JsExpression("$0($1(event));")
-    @JsFunctionParameterNames("event")
+    @JsExpression("$0($1(event, context));")
+    @JsFunctionParameterNames({ "event", "context" })
     JsFunction sendToChannel(ReturnChannelRegistration channel,
             JsFunction source);
 
@@ -79,8 +82,8 @@ public interface TriggerJs extends Serializable {
      *            the input that produces the value
      * @return the action function
      */
-    @JsExpression("$0[$1] = $2(event)")
-    @JsFunctionParameterNames("event")
+    @JsExpression("$0[$1] = $2(event, context)")
+    @JsFunctionParameterNames({ "event", "context" })
     JsFunction setProperty(Element target, String propertyName,
             JsFunction source);
 
@@ -96,11 +99,11 @@ public interface TriggerJs extends Serializable {
      * @return the action function
      */
     @JsExpression("""
-            $0(event).then(value => $1({ok: true, value: value}))\
+            $0(event, context).then(value => $1({ok: true, value: value}))\
             .catch(e => $1({ok: false, error: {\
             name: (e && e.name) ? e.name : '',\
             message: (e && e.message) ? e.message : String(e)}}));""")
-    @JsFunctionParameterNames("event")
+    @JsFunctionParameterNames({ "event", "context" })
     JsFunction reportOutcome(JsFunction promise,
             ReturnChannelRegistration channel);
 

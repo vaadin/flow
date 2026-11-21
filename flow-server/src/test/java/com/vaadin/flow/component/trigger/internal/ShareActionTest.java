@@ -77,9 +77,9 @@ class ShareActionTest {
         assertEquals("share", snippetOf(ShareAction.ShareJs.class, action));
         String expression = Objects.requireNonNull(action.getDeclaredCall())
                 .getExpression();
-        for (String guard : List.of("if ($0) data.title = $0(event);",
-                "if ($1) data.text = $1(event);",
-                "if ($2) data.url = $2(event);")) {
+        for (String guard : List.of("if ($0) data.title = $0(event, context);",
+                "if ($1) data.text = $1(event, context);",
+                "if ($2) data.url = $2(event, context);")) {
             assertTrue(expression.contains(guard),
                     "each field must only be set when its input is present: "
                             + guard);
