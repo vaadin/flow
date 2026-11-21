@@ -18,8 +18,13 @@ package com.vaadin.flow.server;
 import javax.imageio.ImageIO;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -29,9 +34,13 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Element;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of icons used in PWA resources.
@@ -56,6 +65,14 @@ public class PwaIcon implements Serializable {
     public enum Domain {
         HEADER, MANIFEST
     }
+
+    private static final int DEFAULT_BASE_IMAGE_SIZE = 512;
+    private static final Color DEFAULT_INITIALS_BACKGROUND = new Color(
+            0x0d72f8);
+    private static final Pattern WORD_SEPARATOR = Pattern
+            .compile("[^\\p{L}\\p{N}]+");
+    private static final Pattern HEX_COLOR = Pattern
+            .compile("#(\\p{XDigit}{3}|\\p{XDigit}{6})");
 
     private final boolean shouldBeCached;
     private final int width;
@@ -351,6 +368,145 @@ public class PwaIcon implements Serializable {
             graphics.dispose();
         }
         return bimage;
+    }
+
+    /**
+     * Draws the base image for the PWA icons of an application that has no icon
+     * of its own: the initials of the application name on a square filled with
+     * the theme color.
+     * <p>
+     * The initials are the first letters of the first two words of the name.
+     * For a single word, they are its first two capital letters when it has at
+     * least two (<code>StarPass</code> gives <code>SP</code>), otherwise its
+     * first two letters. The square uses a default blue when the theme color is
+     * the {@link PwaConfiguration#DEFAULT_THEME_COLOR default} white or not a
+     * hex color.
+     * <p>
+     * Falls back to the bundled Vaadin logo when no initials can be drawn, for
+     * example when the name has no letters or digits, or no font that can
+     * display them is installed.
+     *
+     * @param appName
+     *            the application name to take the initials from
+     * @param themeColor
+     *            the theme color of the application, as a CSS hex color
+     * @return a new {@link BufferedImage} to generate the icons from
+     * @throws IOException
+     *             if the bundled logo is needed and can not be read
+     */
+    public static BufferedImage drawDefaultBaseImage(String appName,
+            String themeColor) throws IOException {
+        String initials = getInitials(appName);
+        if (!initials.isEmpty()) {
+            try {
+                BufferedImage image = drawInitialsImage(initials,
+                        getInitialsBackground(themeColor));
+                if (image != null) {
+                    return image;
+                }
+            } catch (RuntimeException | Error e) { // NOSONAR
+                // Text rendering fails with an error rather than an exception
+                // when the JVM finds no fonts at all, as in minimal containers
+                LoggerFactory.getLogger(PwaIcon.class).debug(
+                        "Cannot draw the default PWA icon from the application name",
+                        e);
+            }
+        }
+        LoggerFactory.getLogger(PwaIcon.class).warn(
+                "Cannot draw the initials of '{}' for the default PWA icon, using the Vaadin logo instead. Add an image at the @PWA icon path to use your own icon.",
+                appName);
+        try (InputStream logo = BootstrapHandler.class
+                .getResourceAsStream("default-logo.png")) {
+            return ImageIO.read(logo);
+        }
+    }
+
+    static String getInitials(String appName) {
+        List<String> words = Arrays.stream(WORD_SEPARATOR.split(appName))
+                .filter(word -> !word.isEmpty()).toList();
+        int[] initials;
+        if (words.isEmpty()) {
+            return "";
+        } else if (words.size() > 1) {
+            initials = new int[] { words.get(0).codePointAt(0),
+                    words.get(1).codePointAt(0) };
+        } else {
+            String word = words.get(0);
+            int[] capitals = word.codePoints().filter(Character::isUpperCase)
+                    .toArray();
+            initials = capitals.length > 1 ? capitals
+                    : word.codePoints().toArray();
+            initials = Arrays.copyOf(initials, Math.min(2, initials.length));
+        }
+        return new String(initials, 0, initials.length)
+                .toUpperCase(Locale.ROOT);
+    }
+
+    static Color getInitialsBackground(String themeColor) {
+        String hex = themeColor.trim();
+        if (!HEX_COLOR.matcher(hex).matches()
+                || hex.equalsIgnoreCase(PwaConfiguration.DEFAULT_THEME_COLOR)
+                || hex.equalsIgnoreCase("#fff")) {
+            return DEFAULT_INITIALS_BACKGROUND;
+        }
+        if (hex.length() == 4) {
+            hex = "#" + hex.charAt(1) + hex.charAt(1) + hex.charAt(2)
+                    + hex.charAt(2) + hex.charAt(3) + hex.charAt(3);
+        }
+        return Color.decode(hex);
+    }
+
+    private static BufferedImage drawInitialsImage(String initials,
+            Color background) {
+        int size = DEFAULT_BASE_IMAGE_SIZE;
+        Font font = new Font(Font.SANS_SERIF, Font.BOLD, size);
+        if (font.canDisplayUpTo(initials) != -1) {
+            return null;
+        }
+        BufferedImage image = new BufferedImage(size, size,
+                BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graphics = image.createGraphics();
+        try {
+            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+            graphics.setRenderingHint(RenderingHints.KEY_RENDERING,
+                    RenderingHints.VALUE_RENDER_QUALITY);
+            graphics.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
+                    RenderingHints.VALUE_STROKE_PURE);
+
+            // A flat fill, since the top-left pixel also fills the rest of
+            // the larger splash screen images
+            graphics.setColor(background);
+            graphics.fillRect(0, 0, size, size);
+
+            // Scale the outline of the text to a fixed share of the icon, so
+            // the result does not depend on the metrics of the installed font
+            Shape text = font.createGlyphVector(graphics.getFontRenderContext(),
+                    initials).getOutline();
+            Rectangle2D bounds = text.getBounds2D();
+            if (bounds.isEmpty()) {
+                return null;
+            }
+            double scale = Math.min(size * 0.32 / bounds.getHeight(),
+                    size * 0.62 / bounds.getWidth());
+            AffineTransform transform = AffineTransform
+                    .getTranslateInstance(size / 2.0, size / 2.0);
+            transform.scale(scale, scale);
+            transform.translate(-bounds.getCenterX(), -bounds.getCenterY());
+
+            graphics.setColor(
+                    getLuminance(background) > 0.6 ? new Color(0x1a1a1a)
+                            : Color.WHITE);
+            graphics.fill(transform.createTransformedShape(text));
+        } finally {
+            graphics.dispose();
+        }
+        return image;
+    }
+
+    private static double getLuminance(Color color) {
+        return (0.2126 * color.getRed() + 0.7152 * color.getGreen()
+                + 0.0722 * color.getBlue()) / 255;
     }
 
 }

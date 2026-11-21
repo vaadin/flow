@@ -35,7 +35,6 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.PwaIcon;
@@ -78,12 +77,6 @@ public class TaskGeneratePWAIcons implements FallibleCommand {
             return;
         }
         URL iconURL = findIcon(pwaConfiguration);
-        if (iconURL == null) {
-            LOGGER.warn(
-                    "Skipping PWA icons generation because icon '{}' cannot be found in classpath",
-                    pwaConfiguration.getIconPath());
-            return;
-        }
 
         String headless = System.getProperty(HEADLESS_PROPERTY);
         if (headless == null) {
@@ -95,7 +88,11 @@ public class TaskGeneratePWAIcons implements FallibleCommand {
         // which image the shipped icons were actually scaled from.
         // The fluent SLF4J 2 API is off limits here: this code runs inside
         // Maven, which exports its own slf4j-api 1.7 to plugin class loaders.
-        if (PwaConfiguration.DEFAULT_ICON
+        if (iconURL == null) {
+            LOGGER.debug(
+                    "Generating PWA icons from the application name because icon '{}' cannot be found in classpath",
+                    pwaConfiguration.getIconPath());
+        } else if (PwaConfiguration.DEFAULT_ICON
                 .equals(pwaConfiguration.getIconPath())) {
             LOGGER.debug("Generating PWA icons from '{}'",
                     pwaConfiguration.getIconPath());
@@ -105,7 +102,8 @@ public class TaskGeneratePWAIcons implements FallibleCommand {
         }
 
         try {
-            BufferedImage baseImage = loadBaseImage(iconURL);
+            BufferedImage baseImage = iconURL != null ? loadBaseImage(iconURL)
+                    : drawDefaultBaseImage();
             createGeneratedIconsFolder();
 
             ExecutorService executor = Executors.newFixedThreadPool(4);
@@ -179,15 +177,18 @@ public class TaskGeneratePWAIcons implements FallibleCommand {
             iconURL = classFinder.getResource(
                     "META-INF/resources/" + pwaConfiguration.getIconPath());
         }
-        if (iconURL == null) {
-            iconURL = BootstrapHandler.class.getResource("default-logo.png");
-            if (iconURL == null) {
-                LOGGER.warn(
-                        "PWA icon '{}' cannot be found in classpath, fallback to default icon.",
-                        pwaConfiguration.getIconPath());
-            }
-        }
         return iconURL;
+    }
+
+    private BufferedImage drawDefaultBaseImage()
+            throws ExecutionFailedException {
+        try {
+            return PwaIcon.drawDefaultBaseImage(pwaConfiguration.getAppName(),
+                    pwaConfiguration.getThemeColor());
+        } catch (IOException e) {
+            throw new ExecutionFailedException(
+                    "Cannot draw the default PWA icon", e);
+        }
     }
 
     private Runnable generateIconTask(PwaIcon icon, BufferedImage baseImage) {
