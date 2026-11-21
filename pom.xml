@@ -167,7 +167,7 @@
     <!-- Used in OSGi manifests -->
     <jsoup.version>1.24.1</jsoup.version>
     <!-- Note that this should be kept in sync with the class Constants -->
-    <atmosphere.runtime.version>3.0.5.slf4jvaadin1</atmosphere.runtime.version>
+    <atmosphere.runtime.version>3.0.5.slf4jvaadin2</atmosphere.runtime.version>
     <atmosphere.client.version>4.0.3</atmosphere.client.version>
 
     <!-- JPMS: stable module name, written as Automatic-Module-Name by the
@@ -180,8 +180,9 @@
     <!-- Note: the parserVersion value is set by build-helper-maven-plugin -->
     <osgi.bundle.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</osgi.bundle.version>
     <bnd.version>7.5.0</bnd.version>
-    <osgi.core.version>7.0.0</osgi.core.version>
+    <osgi.core.version>8.0.0</osgi.core.version>
     <osgi.compendium.version>7.0.0</osgi.compendium.version>
+    <osgi.component.annotations.version>1.5.1</osgi.component.annotations.version>
     <osgi.annotation.version>8.1.0</osgi.annotation.version>
 
     <maven.test.skip>false</maven.test.skip>
@@ -282,7 +283,7 @@
       <dependency>
         <groupId>com.vaadin</groupId>
         <artifactId>license-checker</artifactId>
-        <version>3.1.4</version>
+        <version>3.1.5</version>
       </dependency>
 
       <!-- Test dependencies -->
@@ -547,6 +548,11 @@
             </excludes>
             <argLine>@{jacoco.agent.argLine} ${surefire.argLine}</argLine>
             <enableAssertions>true</enableAssertions>
+            <!-- Unit tests of a module with a module descriptor run on the
+                 class path: in the module, test service registrations under
+                 META-INF/services would be ignored. Module behavior is
+                 covered by flow-tests/test-jpms. -->
+            <useModulePath>false</useModulePath>
             <classpathDependencyExcludes>
               <classpathDependencyExclude>org.osgi:org.osgi.core</classpathDependencyExclude>
             </classpathDependencyExcludes>
@@ -792,6 +798,18 @@
                finding. -->
           <testCompilerArgument>-Xlint:-removal</testCompilerArgument>
         </configuration>
+        <executions>
+          <execution>
+            <!-- Tests are compiled on the class path also in modules with a
+                 module descriptor, the same way they are run. In the module,
+                 classes that a test-jar of another module has in that
+                 module's packages would not be visible. -->
+            <id>default-testCompile</id>
+            <configuration>
+              <useModulePath>false</useModulePath>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
 
       <plugin>
