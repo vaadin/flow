@@ -95,6 +95,7 @@ for (const [name, failure] of [
     'a test timeout',
     '[ERROR] Failed to execute goal org.apache.maven.plugins:maven-failsafe-plugin:3.5.3:verify (default) on project bar: There was a timeout in the fork'
   ],
+  ['a compile error', OTHER_FAILURE],
   ['Javadoc errors', JAVADOC_ERROR]
 ]) {
   test(`does not retry a build with ${name} next to a transfer error`, () => {
