@@ -15,9 +15,14 @@
  */
 package com.vaadin.flow.signals.shared.impl;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalTestBase;
@@ -91,5 +96,32 @@ class LocalAsynchronousSignalTreeTest extends SignalTestBase {
         dispatcher.runPendingTasks();
 
         assertNotNull(TestUtil.readConfirmedRootValue(tree));
+    }
+
+    @Test
+    void submit_concurrentDispatcher_lastWriteWins() throws Exception {
+        ExecutorService executor = Executors
+                .newThreadPerTaskExecutor(Thread.ofVirtual().factory());
+        useEffectDispatcher(executor);
+        LocalAsynchronousSignalTree tree = new LocalAsynchronousSignalTree();
+
+        try {
+            for (int i = 0; i < 1000; i++) {
+                CompletableFuture<CommandResult> first = new CompletableFuture<>();
+                CompletableFuture<CommandResult> second = new CompletableFuture<>();
+                tree.commitSingleCommand(TestUtil.writeRootValueCommand("old"),
+                        first::complete);
+                tree.commitSingleCommand(
+                        TestUtil.writeRootValueCommand("new" + i),
+                        second::complete);
+
+                assertTrue(first.get(10, TimeUnit.SECONDS).accepted());
+                assertTrue(second.get(10, TimeUnit.SECONDS).accepted());
+                assertEquals(new StringNode("new" + i),
+                        TestUtil.readConfirmedRootValue(tree));
+            }
+        } finally {
+            executor.shutdownNow();
+        }
     }
 }
