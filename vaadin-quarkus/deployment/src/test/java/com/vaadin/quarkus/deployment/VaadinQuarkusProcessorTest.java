@@ -35,6 +35,7 @@ import io.quarkus.undertow.deployment.ServletContainerInitializerBuildItem;
 import org.atmosphere.cpr.ApplicationConfig;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
+import org.jboss.jandex.IndexView;
 import org.jboss.jandex.Indexer;
 import org.junit.jupiter.api.Test;
 
@@ -45,6 +46,8 @@ import com.vaadin.quarkus.graal.QuarkusJSR356AsyncSupport;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.AdditionalAnswers.delegatesTo;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -91,7 +94,8 @@ class VaadinQuarkusProcessorTest {
         for (Class<?> type : List.of(Listener.class, JsInvokers.class,
                 GreeterJs.class, Greeter.class, Base.class, Child.class,
                 GrandChild.class, Marked.class, AnnotatedType.class,
-                AnnotatedMethod.class, AnnotatedField.class)) {
+                AnnotatedMethod.class, AnnotatedField.class,
+                AnnotatedParameter.class)) {
             indexer.indexClass(type);
         }
         Index index = indexer.complete();
@@ -103,7 +107,41 @@ class VaadinQuarkusProcessorTest {
         assertEquals(Set.of(GreeterJs.class.getName(), Greeter.class.getName(),
                 Child.class.getName(), GrandChild.class.getName(),
                 AnnotatedType.class.getName(), AnnotatedMethod.class.getName(),
-                AnnotatedField.class.getName()), handled);
+                AnnotatedField.class.getName(),
+                AnnotatedParameter.class.getName()), handled);
+    }
+
+    @Test
+    void registerDevModeStartupListener_devServerPresent_replacesUndertowsRegistration()
+            throws IOException {
+        Indexer indexer = new Indexer();
+        indexer.indexClass(Listener.class);
+        indexer.indexClass(JsInvokers.class);
+        indexer.indexClass(GreeterJs.class);
+        Index index = indexer.complete();
+        // The dev server is not on the test class path, so a fixture stands in
+        // for the listener under its name
+        String listenerName = "com.vaadin.base.devserver.startup.DevModeStartupListener";
+        IndexView view = mock(IndexView.class, delegatesTo(index));
+        doReturn(index.getClassByName(Listener.class)).when(view)
+                .getClassByName(DotName.createSimple(listenerName));
+        List<IgnoredServletContainerInitializerBuildItem> ignored = new ArrayList<>();
+        List<ServletContainerInitializerBuildItem> initializers = new ArrayList<>();
+        List<AdditionalBeanBuildItem> beans = new ArrayList<>();
+
+        new VaadinQuarkusProcessor().registerDevModeStartupListener(
+                new CombinedIndexBuildItem(view, view), ignored::add,
+                initializers::add, beans::add);
+
+        assertEquals(List.of(listenerName), ignored.stream()
+                .map(IgnoredServletContainerInitializerBuildItem::getSciClass)
+                .toList());
+        assertEquals(1, initializers.size());
+        assertEquals(listenerName, initializers.get(0).getSciClass());
+        assertEquals(Set.of(GreeterJs.class.getName()),
+                initializers.get(0).getHandlesTypes());
+        assertEquals(List.of(List.of(listenerName)), beans.stream()
+                .map(AdditionalBeanBuildItem::getBeanClasses).toList());
     }
 
     @Test
@@ -151,6 +189,12 @@ class VaadinQuarkusProcessorTest {
         @Marked
         void method() {
             // Only the annotation on the method is looked at
+        }
+    }
+
+    static class AnnotatedParameter {
+        void method(@Marked String parameter) {
+            // Only the annotation on the parameter is looked at
         }
     }
 
