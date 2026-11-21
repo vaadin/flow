@@ -51,6 +51,7 @@ import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.ParameterizedConstantPoolKey;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.MapPutChange;
@@ -423,12 +424,26 @@ public class ElementListenerMap extends NodeMap {
 
         private DomListenerRegistration addEventData(List<String> eventData) {
             requireEventData(eventData);
-            if (eventData.stream()
-                    .anyMatch(ElementListenerMap::isCompiledByClient)) {
-                CspViolationReporter.reportStringJavaScript();
+            // What the application declared as a fallback is in the bundle
+            List<String> declared = eventData.stream()
+                    .filter(value -> isCompiledByClient(value)
+                            && JsStringFallbacks.isDeclaredEventData(value))
+                    .toList();
+            // Keeps the given list, which appendEventData stores as it is
+            List<String> compiled = declared.isEmpty() ? eventData
+                    : eventData.stream()
+                            .filter(value -> !declared.contains(value))
+                            .toList();
+            List<String> reported = compiled.stream()
+                    .filter(ElementListenerMap::isCompiledByClient).toList();
+            if (!reported.isEmpty()) {
+                CspViolationReporter.reportStringEventData(reported);
             }
 
-            appendEventData(eventData);
+            if (!declared.isEmpty()) {
+                addBundledEventData(declared);
+            }
+            appendEventData(compiled);
 
             listenerMap.updateEventSettings(type);
 
@@ -516,7 +531,12 @@ public class ElementListenerMap extends NodeMap {
         @Override
         public DomListenerRegistration setFilter(String filter) {
             if (filter != null && !isPropertyPath(filter)) {
-                CspViolationReporter.reportStringJavaScript();
+                if (JsStringFallbacks.isDeclaredFilter(filter)) {
+                    // What the application declared as a fallback is in the
+                    // bundle
+                    return updateFilter(new BundledExpressionEntry(filter));
+                }
+                CspViolationReporter.reportStringFilter(filter);
             }
             return updateFilter(
                     filter == null ? null : new ExpressionEntry(filter));

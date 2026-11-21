@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
@@ -40,12 +41,15 @@ import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -54,6 +58,7 @@ import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
 import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -805,5 +810,221 @@ class TaskGenerateJsDefinitionsTest {
                 new File(new File(frontendFolder, GENERATED),
                         JS_DEFINITIONS_FILE_NAME).exists(),
                 "the generated file should be where the bootstrap imports it from");
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    public interface TitleFallbacks {
+        @JsExpression("document.title = $0")
+        void setTitle(Object title);
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    public interface FocusFallbacks {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    public interface VariadicFallbacks {
+        @JsExpression("console.log(...$0)")
+        void log(Object... values);
+    }
+
+    @Test
+    void stringFallbacks_areListedByNameForTheServer() throws Exception {
+        File resources = new File(temporaryFolder, "resources");
+        Options withFallbacks = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(TitleFallbacks.class,
+                        FocusFallbacks.class, GreeterJs.class)),
+                null).withFrontendDirectory(frontendFolder)
+                .withBuildResultFolders(new File(temporaryFolder, "webapp"),
+                        resources);
+        TaskGenerateJsDefinitions fallbackTask = new TaskGenerateJsDefinitions(
+                withFallbacks);
+
+        fallbackTask.execute();
+
+        File list = new File(resources, Constants.JS_STRING_FALLBACKS_FILE);
+        assertEquals(
+                List.of(FocusFallbacks.class.getName(),
+                        TitleFallbacks.class.getName()),
+                JacksonUtils.getMapper().readTree(list).valueStream()
+                        .map(JsonNode::asString).toList());
+        assertTrue(
+                fallbackTask.getFileContent()
+                        .contains(JsCall.functionId(TitleFallbacks.class
+                                .getMethod("setTitle", Object.class))),
+                "a fallback is a definition, so its function is in the bundle");
+    }
+
+    @JsDefinition
+    public interface PlainFocusJs {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
+    @Test
+    void stringFallbackCall_seesTheElementAfterTheArgumentsLikeTheString()
+            throws Exception {
+        String content = TaskGenerateJsDefinitions.renderFileContent(
+                List.of(FocusFallbacks.class, TitleFallbacks.class), true);
+
+        // Element.executeJs(String) runs the string with the element as `this`
+        // and as $<argument count>, so a string with no arguments can use $0
+        assertTrue(
+                content.contains("  return (async function ($0) {"
+                        + System.lineSeparator() + "this.focus()"
+                        + System.lineSeparator() + "  }).call(this, this);"),
+                content);
+        assertTrue(
+                content.contains("  return (async function ($1) {"
+                        + System.lineSeparator() + "document.title = $0"
+                        + System.lineSeparator() + "  }).call(this, this);"),
+                content);
+    }
+
+    @Test
+    void stringFallbackCall_hasAFunctionOfItsOwn() throws Exception {
+        String fallback = JsCall
+                .functionId(FocusFallbacks.class.getMethod("focus"));
+        String plain = JsCall.functionId(PlainFocusJs.class.getMethod("focus"));
+
+        assertNotEquals(plain, fallback,
+                "the fallback is generated differently, so it must not replace"
+                        + " the function of a definition with the same JavaScript");
+        String content = TaskGenerateJsDefinitions.renderFileContent(
+                List.of(FocusFallbacks.class, PlainFocusJs.class), true);
+        assertTrue(content.contains("[\"" + plain + "\"] = async function () {"
+                + System.lineSeparator() + "this.focus()"), content);
+        assertTrue(content.contains("[\"" + fallback + "\"]"), content);
+    }
+
+    @Test
+    void noStringFallbacks_removesAListLeftBehind() throws Exception {
+        File resources = new File(temporaryFolder, "resources");
+        File list = new File(resources, Constants.JS_STRING_FALLBACKS_FILE);
+        list.getParentFile().mkdirs();
+        Files.writeString(list.toPath(), "[\"com.example.Removed\"]");
+        options.withBuildResultFolders(new File(temporaryFolder, "webapp"),
+                resources);
+
+        task.execute();
+
+        assertFalse(list.exists());
+    }
+
+    @Test
+    void stringFallback_thatCanNotMatchAStringCall_failsTheBuild() {
+        File resources = new File(temporaryFolder, "resources");
+        Options withVariadic = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(VariadicFallbacks.class)), null)
+                .withFrontendDirectory(frontendFolder).withBuildResultFolders(
+                        new File(temporaryFolder, "webapp"), resources);
+
+        ExecutionFailedException exception = assertThrows(
+                ExecutionFailedException.class,
+                () -> new TaskGenerateJsDefinitions(withVariadic).execute());
+
+        assertTrue(exception.getMessage().contains("log"),
+                exception.getMessage());
+        assertTrue(exception.getMessage().contains("variadic"),
+                exception.getMessage());
+    }
+
+    @Test
+    void updateStringFallbacks_listsNewlyMarkedAndDropsNoLongerMarked()
+            throws Exception {
+        File resources = new File(temporaryFolder, "resources");
+        File list = new File(resources, Constants.JS_STRING_FALLBACKS_FILE);
+        list.getParentFile().mkdirs();
+        // GreeterJs stands for an interface whose annotation was removed
+        Files.writeString(list.toPath(), "[\"" + GreeterJs.class.getName()
+                + "\", \"" + TitleFallbacks.class.getName() + "\"]");
+
+        boolean affected = TaskGenerateJsDefinitions.updateStringFallbacks(
+                resources, Set.of(GreeterJs.class, FocusFallbacks.class));
+
+        assertTrue(affected);
+        assertEquals(
+                List.of(FocusFallbacks.class.getName(),
+                        TitleFallbacks.class.getName()),
+                JacksonUtils.getMapper().readTree(list).valueStream()
+                        .map(JsonNode::asString).toList());
+    }
+
+    @Test
+    void updateStringFallbacks_unrelatedClass_listLeftAlone() throws Exception {
+        File resources = new File(temporaryFolder, "resources");
+
+        boolean affected = TaskGenerateJsDefinitions
+                .updateStringFallbacks(resources, Set.of(NothingJs.class));
+
+        assertFalse(affected);
+        assertFalse(new File(resources, Constants.JS_STRING_FALLBACKS_FILE)
+                .exists());
+    }
+
+    @JsDefinition
+    @JsStringFallback(filters = "event.key === 'Escape'", eventData = "event.target.value.trim().length")
+    public interface EventFallbacks {
+    }
+
+    @Test
+    void stringFallbackFiltersAndEventData_areBundledLikeEventAnnotations() {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(EventFallbacks.class), true);
+
+        for (String expression : List.of("event.key === 'Escape'",
+                "event.target.value.trim().length")) {
+            assertTrue(content.contains("window.Vaadin.Flow.jsSnippets[\""
+                    + BundledEventData.getFunctionId(expression)
+                    + "\"] = function () {"), content);
+            assertTrue(content.contains(expression), content);
+        }
+    }
+
+    @Test
+    void updateJsDefinitions_stringFallbackListingNewEventData_addsTheirFunctions()
+            throws IOException {
+        // A class change that lists other filters and event data, with no
+        // method that changed
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+        generated.getParentFile().mkdirs();
+        Files.writeString(generated.toPath(), TaskGenerateJsDefinitions
+                .renderFileContent(List.of(GreeterJs.class), true));
+        assertEquals(List.of(EventFallbacks.class),
+                TaskGenerateJsDefinitions.findMissingFromGeneratedFile(options,
+                        List.of(EventFallbacks.class)),
+                "the file has no function for what the interface lists");
+
+        List<Class<?>> missing = TaskGenerateJsDefinitions
+                .updateJsDefinitions(options, List.of(EventFallbacks.class));
+
+        assertTrue(missing.isEmpty());
+        String written = Files.readString(generated.toPath());
+        for (String expression : List.of("event.key === 'Escape'",
+                "event.target.value.trim().length")) {
+            String functionId = BundledEventData.getFunctionId(expression);
+            assertTrue(written.contains("window.Vaadin.Flow.jsSnippets[\""
+                    + functionId + "\"] = function () {"), written);
+            assertTrue(
+                    written.contains("window.Vaadin.Flow.jsDefinitionNames[\""
+                            + functionId + "\"]"),
+                    written);
+        }
+        assertTrue(
+                TaskGenerateJsDefinitions.findMissingFromGeneratedFile(options,
+                        List.of(EventFallbacks.class)).isEmpty(),
+                "the file now has a function for everything listed");
+
+        TaskGenerateJsDefinitions.updateJsDefinitions(options,
+                List.of(EventFallbacks.class));
+        assertEquals(written, Files.readString(generated.toPath()),
+                "a second update should add nothing");
     }
 }

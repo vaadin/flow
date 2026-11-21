@@ -24,6 +24,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsFunctionParameterNames;
@@ -128,12 +129,23 @@ public final class JsFunction implements JsSnippet {
      * @throws IllegalArgumentException
      *             if any capture has a type that cannot be sent to the client
      * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode
+     *             in the {@link CspMode#STRICT} Content Security Policy mode,
+     *             unless the string is declared in an interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
     public static JsFunction of(String body, @Nullable Object... captures) {
         Objects.requireNonNull(body, "body");
         Objects.requireNonNull(captures, "captures");
-        CspViolationReporter.reportStringJavaScript();
+        JsCall fallback = JsStringFallbacks.findDeclaredFunction(body,
+                captures);
+        if (fallback != null) {
+            // Keeps the body, which withArguments falls back to when the names
+            // it is given are not the declared ones
+            JsFunction declared = ofDeclaredCall(fallback);
+            return new JsFunction(body, fallback, declared.captures,
+                    declared.argumentNames);
+        }
+        CspViolationReporter.reportStringFunction(body, captures.length);
         @Nullable
         Object[] copy = captures.clone();
         // Dry-run encode each capture so unsupported types fail fast. Mirrors
@@ -213,8 +225,25 @@ public final class JsFunction implements JsSnippet {
      *             if this function is declared by a {@link JsDefinition}
      *             interface, which declares its arguments with
      *             {@link JsFunctionParameterNames}
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode,
+     *             if {@link #of(String, Object...)} used a function declared in
+     *             an interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback} that does not
+     *             declare the same names with {@link JsFunctionParameterNames}
      */
     public JsFunction withArguments(String... argumentNames) {
+        if (declaredCall != null && body != null) {
+            // Created by of from a string that a @JsStringFallback interface
+            // declares, which declares the names the function is called with
+            List<String> names = List.of(argumentNames);
+            if (names.equals(this.argumentNames)) {
+                return this;
+            }
+            CspViolationReporter.reportStringFunction(body, captures.size(),
+                    names);
+            return new JsFunction(body, null, captures, names);
+        }
         if (declaredCall != null) {
             throw new IllegalStateException(
                     "The arguments of a function declared by a @JsDefinition"
@@ -235,7 +264,8 @@ public final class JsFunction implements JsSnippet {
      * @throws IllegalStateException
      *             if this function is declared by a {@link JsDefinition}
      *             interface, whose JavaScript is in the bundle rather than in
-     *             the function
+     *             the function, and was not created with
+     *             {@link #of(String, Object...)}
      * @deprecated The body is what the client compiles the function from, and a
      *             function declared by a {@link JsDefinition} interface, which
      *             is not compiled from a string, has none. The body of a

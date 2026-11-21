@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -25,31 +26,41 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.internal.BundledEventData;
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsDefinitionProxy.Kind;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
@@ -135,6 +146,114 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     }
 
     @Override
+    public void execute() throws ExecutionFailedException {
+        super.execute();
+        writeStringFallbacks();
+    }
+
+    /**
+     * Lists the {@link JsStringFallback} interfaces for the server, which reads
+     * the list instead of scanning for them, after checking that each of them
+     * can stand in for a string call. The interfaces are also definitions, so
+     * the file generated above already carries their functions.
+     */
+    private void writeStringFallbacks() throws ExecutionFailedException {
+        // Only a build that writes the stats file and the token file has a
+        // folder for what the server reads
+        File resourceOutputDirectory = options.getResourceOutputDirectory();
+        if (resourceOutputDirectory == null) {
+            return;
+        }
+        List<Class<?>> fallbacks = options.getClassFinder()
+                .getAnnotatedClasses(JsStringFallback.class).stream()
+                .sorted(Comparator.comparing(Class::getName)).toList();
+        try {
+            JsStringFallbacks.collectFallbacks(fallbacks);
+        } catch (IllegalArgumentException e) {
+            throw new ExecutionFailedException(e.getMessage(), e);
+        }
+        try {
+            writeStringFallbackNames(resourceOutputDirectory,
+                    fallbacks.stream().map(Class::getName).toList());
+        } catch (UncheckedIOException e) {
+            throw new ExecutionFailedException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Brings the list of {@link JsStringFallback} interfaces up to date after
+     * classes changed while the application runs, without scanning: a changed
+     * class is listed when it carries the annotation and left out when it does
+     * not any longer.
+     * <p>
+     * The list is not checked here, since no build is running that could fail;
+     * the server checks it when it reads it.
+     *
+     * @param resourceOutputDirectory
+     *            the folder the list is in, as the build writes it, not
+     *            <code>null</code>
+     * @param changedClasses
+     *            the classes that changed, not <code>null</code>
+     * @return whether one of the classes is or was listed, so that the server
+     *         has to read the list again, even when only the methods of a
+     *         listed interface changed
+     * @throws UncheckedIOException
+     *             if the list can not be read or written
+     */
+    public static boolean updateStringFallbacks(File resourceOutputDirectory,
+            Collection<Class<?>> changedClasses) {
+        Set<String> names = new TreeSet<>(
+                readStringFallbackNames(resourceOutputDirectory));
+        boolean affected = false;
+        for (Class<?> changed : changedClasses) {
+            boolean listed = names.remove(changed.getName());
+            if (changed.isAnnotationPresent(JsStringFallback.class)) {
+                names.add(changed.getName());
+                listed = true;
+            }
+            affected |= listed;
+        }
+        if (affected) {
+            writeStringFallbackNames(resourceOutputDirectory,
+                    List.copyOf(names));
+        }
+        return affected;
+    }
+
+    private static List<String> readStringFallbackNames(
+            File resourceOutputDirectory) {
+        File file = new File(resourceOutputDirectory,
+                Constants.JS_STRING_FALLBACKS_FILE);
+        if (!file.exists()) {
+            return List.of();
+        }
+        try {
+            return JacksonUtils.getMapper().readTree(file).valueStream()
+                    .map(JsonNode::asString).toList();
+        } catch (JacksonException e) {
+            throw new UncheckedIOException(
+                    new IOException("Could not read " + file, e));
+        }
+    }
+
+    private static void writeStringFallbackNames(File resourceOutputDirectory,
+            List<String> names) {
+        File file = new File(resourceOutputDirectory,
+                Constants.JS_STRING_FALLBACKS_FILE);
+        try {
+            if (names.isEmpty()) {
+                Files.deleteIfExists(file.toPath());
+                return;
+            }
+            ArrayNode list = JacksonUtils.createArrayNode();
+            names.forEach(list::add);
+            FileIOUtils.writeIfChanged(file, list.toPrettyString());
+        } catch (IOException e) {
+            throw new UncheckedIOException("Error writing " + file, e);
+        }
+    }
+
+    @Override
     protected String getFileContent() {
         // Generating the file is scanning for what goes into it, which a
         // caller that writes it again while the application runs does not do:
@@ -188,7 +307,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         definitions.stream().sorted(Comparator.comparing(Class::getName))
                 .forEach(definition -> lines
                         .addAll(renderDefinitionLines(definition, withNames)));
-        lines.addAll(renderEventDataLines(eventTypes, withNames));
+        lines.addAll(renderEventDataLines(eventTypes, definitions, withNames));
         lines.addAll(FOOTER);
         return String.join(System.lineSeparator(), lines);
     }
@@ -202,7 +321,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * client compiles such a value with.
      */
     private static List<String> renderEventDataLines(
-            Collection<Class<?>> eventTypes, boolean withNames) {
+            Collection<Class<?>> eventTypes, Collection<Class<?>> definitions,
+            boolean withNames) {
         // By identifier, for an output that does not depend on the order of
         // the scan, each with the first event type that declares it
         Map<String, String> expressions = new TreeMap<>();
@@ -233,29 +353,90 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                                 + " @DomEvent(filter = \"" + filter + "\")");
                     }
                 });
+        // The filters and event data an application declares for an add-on
+        // that sets them as strings are the same functions
+        definitions.stream()
+                .filter(definition -> definition
+                        .isAnnotationPresent(JsStringFallback.class))
+                .sorted(Comparator.comparing(Class::getName))
+                .flatMap(definition -> findFallbackEventData(definition)
+                        .stream())
+                .forEach(data -> {
+                    expressions.putIfAbsent(data.functionId(),
+                            data.expression());
+                    declaredBy.putIfAbsent(data.functionId(),
+                            data.declaredBy());
+                });
 
         List<String> lines = new ArrayList<>();
         expressions.forEach((functionId, expression) -> {
-            String id = quote(functionId);
-            lines.add(String.format(
-                    "window.Vaadin.Flow.jsSnippets[%s] = function () {", id));
-            lines.add("  return function (event, element) {");
-            // On lines of their own, so that a value ending with a comment
-            // does not comment out what closes it
-            lines.add("    return (");
-            lines.add(expression);
-            lines.add("    );");
-            lines.add("  };");
-            lines.add("};");
+            lines.add(renderEventDataFunction(functionId, expression));
             if (withNames) {
-                lines.add(String.format(
-                        "window.Vaadin.Flow.jsDefinitionNames[%s] = %s;", id,
-                        quote(declaredBy.get(functionId))));
+                lines.add(renderEventDataName(functionId,
+                        declaredBy.get(functionId)));
             }
         });
         return lines.stream().flatMap(
                 line -> Arrays.stream(line.split(System.lineSeparator())))
                 .toList();
+    }
+
+    /**
+     * A filter or event data value that an interface marked with
+     * {@link JsStringFallback} lists, which the bundle has a function for.
+     */
+    private record FallbackEventData(String functionId, String expression,
+            String declaredBy) {
+    }
+
+    /**
+     * The filters and event data that the given definition lists in
+     * {@link JsStringFallback}, empty when it is not marked with it.
+     */
+    private static List<FallbackEventData> findFallbackEventData(
+            Class<?> definition) {
+        JsStringFallback fallback = definition
+                .getAnnotation(JsStringFallback.class);
+        if (fallback == null) {
+            return List.of();
+        }
+        List<FallbackEventData> found = new ArrayList<>();
+        for (String filter : fallback.filters()) {
+            found.add(new FallbackEventData(
+                    BundledEventData.getFunctionId(filter), filter,
+                    definition.getName() + " @JsStringFallback(filters = \""
+                            + filter + "\")"));
+        }
+        for (String eventData : fallback.eventData()) {
+            found.add(new FallbackEventData(
+                    BundledEventData.getFunctionId(eventData), eventData,
+                    definition.getName() + " @JsStringFallback(eventData = \""
+                            + eventData + "\")"));
+        }
+        return found;
+    }
+
+    /**
+     * Renders the function of an event data value or a filter, which captures
+     * nothing and evaluates to a function called with the event and the
+     * element.
+     */
+    private static String renderEventDataFunction(String functionId,
+            String expression) {
+        return String.join(System.lineSeparator(),
+                String.format(
+                        "window.Vaadin.Flow.jsSnippets[%s] = function () {",
+                        quote(functionId)),
+                "  return function (event, element) {",
+                // On lines of their own, so that a value ending with a comment
+                // does not comment out what closes it
+                "    return (", expression, "    );", "  };", "};");
+    }
+
+    private static String renderEventDataName(String functionId,
+            String declaredBy) {
+        return String.format("window.Vaadin.Flow.jsDefinitionNames[%s] = %s;",
+                quote(functionId), quote(declaredBy));
     }
 
     /**
@@ -398,12 +579,18 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         if (generated == null) {
             return false;
         }
+        // The functions of the filters and event data are found on their
+        // own: the file has them after every definition, and names each by
+        // the first class that declares it
+        boolean eventDataInFile = findFallbackEventData(definition).stream()
+                .allMatch(data -> generated.contains(renderEventDataFunction(
+                        data.functionId(), data.expression())));
         List<String> declared = renderDefinitionLines(definition, true);
         if (declared.isEmpty()) {
-            // Declares no JavaScript, so there is nothing to carry
-            return true;
+            // Declares no JavaScript of its own to carry
+            return eventDataInFile;
         }
-        return generated
+        return eventDataInFile && generated
                 .contains(String.join(System.lineSeparator(), declared));
     }
 
@@ -423,14 +610,31 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         if (generated == null || generated.isBlank()) {
             return renderFileContent(definitions, true);
         }
-        List<String> missing = definitions.stream()
+        List<String> missing = new ArrayList<>(definitions.stream()
                 .sorted(Comparator.comparing(Class::getName))
                 .flatMap(definition -> renderFunctions(definition, true)
                         .stream())
                 .filter(function -> !generated.contains(function))
                 .flatMap(function -> Arrays
                         .stream(function.split(System.lineSeparator())))
-                .toList();
+                .toList());
+        // A filter or event data value listed in @JsStringFallback, as a
+        // class change can list another one without changing any method
+        Set<String> addedEventData = new HashSet<>();
+        definitions.stream().sorted(Comparator.comparing(Class::getName))
+                .flatMap(definition -> findFallbackEventData(definition)
+                        .stream())
+                .forEach(data -> {
+                    String function = renderEventDataFunction(data.functionId(),
+                            data.expression());
+                    if (!generated.contains(function)
+                            && addedEventData.add(data.functionId())) {
+                        missing.addAll(Arrays.asList(
+                                function.split(System.lineSeparator())));
+                        missing.add(renderEventDataName(data.functionId(),
+                                data.declaredBy()));
+                    }
+                });
         if (missing.isEmpty()) {
             return generated;
         }
@@ -586,7 +790,14 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                                 ? (parameters.isEmpty() ? EXECUTION_CONTEXT
                                         : EXECUTION_CONTEXT + ", " + parameters)
                                 : parameters));
-                function.add(expression);
+                if (JsStringFallbacks.isStringFallbackCall(method)) {
+                    // Sees the element as the parameter after the arguments,
+                    // as the string it stands in for does
+                    function.addAll(JsStringFallbacks.stringFallbackBody(
+                            expression, method.getParameterCount()));
+                } else {
+                    function.add(expression);
+                }
                 function.add("};");
             }
             if (withNames) {

@@ -37,6 +37,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
@@ -218,10 +219,44 @@ public record JsCall(Class<?> definitionType, String methodName,
                                     + (variadic ? "*" : "") + ":" + expression,
                             StandardCharsets.UTF_8);
         }
+        if (JsStringFallbacks.isStringFallbackCall(method)) {
+            // Generated to also see the element as the parameter after the
+            // arguments, like the string it stands in for, so told apart from
+            // a call declaring the same JavaScript
+            return StringUtil
+                    .getHash(
+                            "stringFallback," + parameterCount
+                                    + (variadic ? "*" : "") + ":" + expression,
+                            StandardCharsets.UTF_8);
+        }
         if (!JsSnippet.class.isAssignableFrom(method.getReturnType())) {
             return functionId(expression, parameterCount, variadic);
         }
-        List<String> parameterNames = getFunctionParameterNames(method);
+        return snippetFunctionId(expression, getFunctionParameterNames(method),
+                parameterCount, variadic);
+    }
+
+    /**
+     * Gets the identifier of the function that a method declaring a
+     * {@link JsSnippet} registers in the generated bundle, from what the method
+     * declares.
+     *
+     * @param expression
+     *            the declared JavaScript, not <code>null</code>
+     * @param parameterNames
+     *            the names of the parameters of the snippet function, as
+     *            {@link JsFunctionParameterNames} declares them, not
+     *            <code>null</code>
+     * @param parameterCount
+     *            the number of parameters of the declaring method, which are
+     *            the captures of the snippet
+     * @param variadic
+     *            whether its last parameter collects a variable number of
+     *            arguments
+     * @return the function identifier, not <code>null</code>
+     */
+    public static String snippetFunctionId(String expression,
+            List<String> parameterNames, int parameterCount, boolean variadic) {
         // A call is hashed from what starts with the parameter count, so a
         // snippet starting with anything else never shares its hash input
         String kind = "(" + String.join(",", parameterNames) + ")=>";

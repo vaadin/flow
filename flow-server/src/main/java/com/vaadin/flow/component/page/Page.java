@@ -41,7 +41,9 @@ import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.CssBundler;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
@@ -437,10 +439,18 @@ public class Page implements Serializable {
      *            the JavaScript expression which return a Promise
      * @since 2.1
      * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode
+     *             in the {@link CspMode#STRICT} Content Security Policy mode,
+     *             unless the string is declared in an interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
     public void addDynamicImport(String expression) {
-        CspViolationReporter.reportStringJavaScript();
+        JsCall fallback = JsStringFallbacks.findDeclaredFunction(expression,
+                new Object[0]);
+        if (fallback != null) {
+            addDynamicImport(JsFunction.ofDeclaredCall(fallback));
+            return;
+        }
+        CspViolationReporter.reportStringDynamicImport(expression);
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
     }
 
@@ -605,14 +615,22 @@ public class Page implements Serializable {
      * @see #executeJs(Class)
      * @since 25.0
      * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode
+     *             in the {@link CspMode#STRICT} Content Security Policy mode,
+     *             unless the string is declared in an interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
-        CspViolationReporter.reportStringJavaScript();
-        return ui.getInternals()
-                .addJavaScriptInvocation(new JavaScriptInvocation(expression,
-                        parameters == null ? new Object[0] : parameters));
+        Object[] arguments = parameters == null ? new Object[0] : parameters;
+        JsCall fallback = JsStringFallbacks.findDeclaredCall(expression,
+                arguments);
+        if (fallback != null) {
+            return ui.getInternals().addJavaScriptInvocation(fallback);
+        }
+        CspViolationReporter.reportStringExecuteJs(expression,
+                arguments.length);
+        return ui.getInternals().addJavaScriptInvocation(
+                new JavaScriptInvocation(expression, arguments));
     }
 
     /**

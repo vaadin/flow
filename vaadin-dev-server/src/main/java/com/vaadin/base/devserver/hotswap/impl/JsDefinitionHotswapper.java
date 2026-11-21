@@ -15,6 +15,7 @@
  */
 package com.vaadin.base.devserver.hotswap.impl;
 
+import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,8 +28,10 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
+import com.vaadin.base.devserver.startup.DevModeInitializer;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
@@ -82,6 +85,10 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
     @Override
     public void onClassesChange(HotswapClassEvent event) {
         Set<Class<?>> changed = event.getChangedClasses();
+        // Before anything returns early: a class that is no longer a
+        // definition at all may still be listed as a fallback
+        updateStringFallbacks(event.getVaadinService(), changed);
+
         List<Class<?>> definitions = new ArrayList<>(changed.stream()
                 .filter(type -> type.isAnnotationPresent(JsDefinition.class))
                 .toList());
@@ -124,6 +131,28 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
 
         if (!missing.isEmpty()) {
             warnAboutMissingDefinitions(missing);
+        }
+    }
+
+    /**
+     * Keeps the @JsStringFallback interfaces the server matches string
+     * JavaScript against in step with the changed classes: the list the build
+     * wrote, which a service started later reads, and what the running service
+     * already read from it.
+     */
+    private static void updateStringFallbacks(VaadinService service,
+            Set<Class<?>> changed) {
+        try {
+            if (TaskGenerateJsDefinitions.updateStringFallbacks(
+                    DevModeInitializer.getServletResourceOutputDirectory(
+                            service.getDeploymentConfiguration()),
+                    changed)) {
+                JsStringFallbacks.reloadFallbacks(service);
+            }
+        } catch (UncheckedIOException e) {
+            getLogger().warn(
+                    "Could not update the @JsStringFallback list for the changed classes",
+                    e);
         }
     }
 

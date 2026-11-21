@@ -48,6 +48,7 @@ import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.theme.Theme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -264,6 +265,40 @@ class DevLoopRedefinerTest {
                 .frontendDependencies(RenamedParameterLoggerJs.class));
         assertNotEquals(imports,
                 DevLoopRedefiner.frontendDependencies(UnwrappedLoggerJs.class));
+    }
+
+    @JsDefinition
+    @JsStringFallback(filters = "event.key === 'Escape'")
+    interface EscapeFallbacks {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
+    @JsDefinition
+    @JsStringFallback(filters = "event.key === 'Enter'")
+    interface EnterFallbacks {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
+    @JsDefinition
+    interface UnmarkedFallbacks {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
+    @Test
+    void frontendDependencies_seesWhatAStringFallbackLists() {
+        // The listed filters are functions of the bundle, and a marked
+        // interface generates its calls apart from other calls, while no
+        // method changes in either case
+        String imports = DevLoopRedefiner
+                .frontendDependencies(EscapeFallbacks.class);
+
+        assertNotEquals(imports,
+                DevLoopRedefiner.frontendDependencies(EnterFallbacks.class));
+        assertNotEquals(imports,
+                DevLoopRedefiner.frontendDependencies(UnmarkedFallbacks.class));
     }
 
     @JsFunctionParameterNames({ "html", "item" })
