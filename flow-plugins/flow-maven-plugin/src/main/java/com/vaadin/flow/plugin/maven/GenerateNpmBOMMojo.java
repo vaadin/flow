@@ -147,11 +147,6 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
     @Override
     protected void executeInternal()
             throws MojoExecutionException, MojoFailureException {
-        InvocationRequestBuilder requestBuilder = new InvocationRequestBuilder();
-        InvocationRequest request = requestBuilder.groupId(GROUP)
-                .artifactId(ARTIFACT).version(VERSION).goal(GOAL)
-                .createInvocationRequest();
-
         Invoker invoker = new DefaultInvoker();
         try {
             // Use the same Node.js and npm as the rest of the frontend build,
@@ -160,7 +155,8 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
             // installed it.
             FrontendTools tools = new FrontendTools(
                     BuildFrontendUtil.getFrontendToolsSettings(this));
-            request.setProperties(getProperties(tools.getNpxExecutable()));
+            InvocationRequest request = createInvocationRequest(
+                    tools.getNpxExecutable());
             addNodeToPath(request, tools.getNodeExecutable());
 
             // the execution will fail if the directory does not exist
@@ -239,6 +235,13 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
     // resolved Node.js installation.
     private static String quote(String arg) {
         return arg.contains(" ") ? ("\"" + arg + "\"") : arg;
+    }
+
+    InvocationRequest createInvocationRequest(List<String> npxCommand) {
+        return new InvocationRequestBuilder().groupId(GROUP)
+                .artifactId(ARTIFACT).version(VERSION).goal(GOAL)
+                .session(session).properties(getProperties(npxCommand))
+                .createInvocationRequest();
     }
 
     Properties getProperties(List<String> npxCommand) {

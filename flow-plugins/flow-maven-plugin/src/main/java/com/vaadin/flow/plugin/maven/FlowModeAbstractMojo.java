@@ -188,7 +188,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     MojoExecution mojoExecution;
 
     @Parameter(defaultValue = "${session}", readonly = true)
-    private MavenSession session;
+    MavenSession session;
 
     /**
      * The folder where `package.json` file is located. Default is project root

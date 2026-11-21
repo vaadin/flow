@@ -25,6 +25,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.InvocationRequest;
@@ -180,6 +181,21 @@ class GenerateNpmBOMMojoTest {
                 properties.getProperty("exec.args").startsWith(
                         "--yes " + GenerateNpmBOMMojo.CYCLONEDX_NPM + " "),
                 properties.getProperty("exec.args"));
+    }
+
+    @Test
+    void createInvocationRequest_inheritsSessionConfiguration() {
+        mojo.session = InvocationRequestBuilderTest.session(
+                new DefaultMavenExecutionRequest().setOffline(true),
+                new Properties());
+
+        String npx = new File("npx").getAbsolutePath();
+
+        InvocationRequest request = mojo.createInvocationRequest(List.of(npx));
+
+        assertTrue(request.isOffline());
+        assertEquals(npx,
+                request.getProperties().getProperty("exec.executable"));
     }
 
     @Test
