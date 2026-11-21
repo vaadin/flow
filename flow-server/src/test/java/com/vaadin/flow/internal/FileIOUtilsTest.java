@@ -25,6 +25,9 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -180,6 +183,41 @@ class FileIOUtilsTest {
                             java.nio.file.attribute.BasicFileAttributes.class)
                             .fileKey());
         }
+    }
+
+    @Test
+    void writeIfChanged_newFileGetsDefaultPermissions(@TempDir File dir)
+            throws Exception {
+        assumeFalse(FrontendUtils.isWindows());
+        // A file created the usual way gets the permissions the process umask
+        // allows, and a generated file must not be more restrictive than that
+        Path reference = Files.createFile(dir.toPath().resolve("reference"));
+        assumeFalse(
+                Files.getPosixFilePermissions(reference)
+                        .equals(PosixFilePermissions.fromString("rw-------")),
+                "umask leaves no permissions for group or others");
+        File file = new File(dir, "generated.ts");
+
+        assertTrue(FileIOUtils.writeIfChanged(file, "content"));
+
+        assertEquals(Files.getPosixFilePermissions(reference),
+                Files.getPosixFilePermissions(file.toPath()));
+    }
+
+    @Test
+    void writeIfChanged_existingFileKeepsPermissions(@TempDir File dir)
+            throws Exception {
+        assumeFalse(FrontendUtils.isWindows());
+        File file = new File(dir, "generated.ts");
+        assertTrue(FileIOUtils.writeIfChanged(file, "first"));
+        Set<PosixFilePermission> permissions = PosixFilePermissions
+                .fromString("rw----r--");
+        Files.setPosixFilePermissions(file.toPath(), permissions);
+
+        assertTrue(FileIOUtils.writeIfChanged(file, "second"));
+
+        assertEquals("second", Files.readString(file.toPath()));
+        assertEquals(permissions, Files.getPosixFilePermissions(file.toPath()));
     }
 
     @Test
