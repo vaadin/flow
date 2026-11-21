@@ -100,6 +100,27 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
         I create(Id childId);
     }
 
+    /*
+     * Subclasses that override createUsage(Transaction) keep having their
+     * override called from get() so that it doesn't silently stop working.
+     */
+    private static final ClassValue<Boolean> OVERRIDES_LEGACY_CREATE_USAGE = new ClassValue<>() {
+        @Override
+        protected Boolean computeValue(Class<?> type) {
+            for (Class<?> current = type; current != null
+                    && current != AbstractSharedSignal.class; current = current
+                            .getSuperclass()) {
+                try {
+                    current.getDeclaredMethod("createUsage", Transaction.class);
+                    return true;
+                } catch (NoSuchMethodException e) { // NOSONAR
+                    // not declared on this level
+                }
+            }
+            return false;
+        }
+    };
+
     private final SignalTree tree;
     private final Id id;
     private final CommandValidator validator;
@@ -192,7 +213,14 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
          */
         T value = extractValue(data);
         if (UsageTracker.isActive()) {
-            UsageTracker.registerUsage(createUsage(transaction));
+            Usage usage;
+            if (OVERRIDES_LEGACY_CREATE_USAGE.get(getClass()).booleanValue()) {
+                // Deprecated method still called while subclasses override it
+                usage = createUsage(transaction); // NOSONAR
+            } else {
+                usage = createUsage(transaction, data);
+            }
+            UsageTracker.registerUsage(usage);
         }
         return value;
     }
@@ -440,14 +468,47 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
 
     /**
      * Creates a usage instance based on the current state of this signal.
+     * <p>
+     * This reads the data of this signal from the transaction and then
+     * delegates to {@link #createUsage(Transaction, Data)}. {@link #get()}
+     * calls {@link #createUsage(Transaction, Data)} directly with the data the
+     * returned value was extracted from, so that a concurrent change between
+     * reading the value and creating the usage is detected. For compatibility,
+     * {@link #get()} still calls this method instead if a subclass overrides
+     * it, but such a subclass doesn't get that concurrent change detected.
      *
      * @param transaction
      *            the transaction for which the usage occurs, not
      *            <code>null</code>
      * @return a usage instance, not <code>null</code>
+     * @deprecated override {@link #createUsage(Transaction, Data)} instead,
+     *             since that is the method used by {@link #get()}
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     protected Usage createUsage(Transaction transaction) {
-        Data data = data(transaction);
+        return createUsage(transaction, data(transaction));
+    }
+
+    /**
+     * Creates a usage instance that detects changes compared to the given data
+     * of this signal.
+     * <p>
+     * Unlike {@link #createUsage(Transaction)}, which reads the current data
+     * itself, this method uses the provided data as the baseline for change
+     * detection. {@link #get()} passes the same data that its return value was
+     * extracted from, so that a change that is applied concurrently by another
+     * thread after reading the value is reported as a change by the usage.
+     *
+     * @param transaction
+     *            the transaction for which the usage occurs, not
+     *            <code>null</code>
+     * @param data
+     *            the data of this signal to use as the baseline for change
+     *            detection, or <code>null</code> if there is no node for this
+     *            signal
+     * @return a usage instance, not <code>null</code>
+     */
+    protected Usage createUsage(Transaction transaction, @Nullable Data data) {
         if (data == null) {
             // Node is removed so no usage to track
             return UsageTracker.NO_USAGE;

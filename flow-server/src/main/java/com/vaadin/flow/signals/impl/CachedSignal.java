@@ -228,10 +228,15 @@ public class CachedSignal<T extends @Nullable Object>
      * become inactive either by returning <code>false</code> or through
      * explicit unregistering, so both those sources are wrapped to accurately
      * keep track of when the listener is no longer active.
+     * <p>
+     * The provided data is ignored and the data is instead read again from the
+     * transaction. Extracting the value may have stored a recomputed state in
+     * this signal, and the usage must use that state rather than the state that
+     * was current before extracting the value as its baseline.
      */
     @Override
-    protected Usage createUsage(Transaction transaction) {
-        Usage superUsage = super.createUsage(transaction);
+    protected Usage createUsage(Transaction transaction, @Nullable Data data) {
+        Usage superUsage = super.createUsage(transaction, data(transaction));
 
         return new Usage() {
             @Override
