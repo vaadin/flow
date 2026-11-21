@@ -10,6 +10,11 @@ import '../../main/frontend/FlowClient';
 // Mock XMLHttpRequest so as we don't need flow-server running for tests.
 import { type MockXhrServer, newServer } from 'mock-xmlhttprequest';
 import sinon from 'sinon';
+import {
+  getLoadedAtmosphere,
+  loadAtmosphere,
+  setAtmosphereModule
+} from '../../main/frontend/internal/client/communication/AtmosphereLoader';
 
 const $wnd = window as any;
 const flowRoot = window.document.body as any;
@@ -132,6 +137,7 @@ describe('Flow', () => {
     // restore covers them all and keeps a case that throws mid-way from
     // leaking a replaced function (e.g. console.error) into later cases.
     sinon.restore();
+    setAtmosphereModule(null);
     server.remove();
     delete $wnd.Vaadin;
     delete flowRoot.$;
@@ -201,7 +207,7 @@ describe('Flow', () => {
     sinon.spy(flow, 'loadingStarted');
     sinon.spy(flow, 'loadingFinished');
 
-    return route.action({ pathname: 'Foo/Bar.baz', search: '' }).then(() => {
+    return route.action({ pathname: 'Foo/Bar.baz', search: '' }).then(async () => {
       // Check that flowInit() was called
       if (!flow.response) {
         expect.fail('Response should be defined');
@@ -215,8 +221,10 @@ describe('Flow', () => {
       expect($wnd.Vaadin.Flow.clients.foobar.resolveUri).not.to.be.undefined;
       expect($wnd.Vaadin.Flow.clients.foobar.isActive()).to.be.false;
 
-      // Check that pushScript is not initialized
-      expect($wnd.vaadinPush).to.be.undefined;
+      // Check that pushScript is not initialized, and that a push connection
+      // turned on later can still load it
+      expect(getLoadedAtmosphere()).to.equal(null);
+      expect(await loadAtmosphere(stubVaadinPushSrc)).to.have.property('isStub', true);
 
       // Assert that element was created amd put in flowRoot so as server can find it
       expect(flowRoot.$).not.to.be.undefined;
@@ -482,12 +490,15 @@ describe('Flow', () => {
     mockInitResponse('foobar-1111111', undefined, stubVaadinPushSrc);
 
     const flow = new Flow();
+    const flowInitClient = sinon.spy(flow as any, 'flowInitClient');
 
     const route = flow.serverSideRoutes[0];
     await route.action({ pathname: 'Foo/Bar.baz' });
 
-    expect($wnd.vaadinPush).not.to.be.undefined;
-    expect($wnd.vaadinPush.isStub).to.be.true;
+    expect(getLoadedAtmosphere()).to.have.property('isStub', true);
+    // The load is handed to the client engine, which has its own copy of the
+    // loader when Vite pre-bundles it in dev mode
+    expect(await flowInitClient.firstCall.args[1]).to.have.property('isStub', true);
   });
 
   it('should load pushScript on route action', async () => {
@@ -499,8 +510,7 @@ describe('Flow', () => {
     const route = flow.serverSideRoutes[0];
     await route.action({ pathname: 'Foo/Bar.baz', search: '' });
 
-    expect($wnd.vaadinPush).not.to.be.undefined;
-    expect($wnd.vaadinPush.isStub).to.be.true;
+    expect(getLoadedAtmosphere()).to.have.property('isStub', true);
   });
 
   it('should not throw error when response header content type has charset', async () => {

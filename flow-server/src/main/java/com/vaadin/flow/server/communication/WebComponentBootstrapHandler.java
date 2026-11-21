@@ -160,11 +160,6 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
                 head.prependChild(getBootstrapScript(initialUIDL, context));
 
-                if (context.getPushMode().isEnabled()) {
-                    head.prependChild(createJavaScriptModuleElement(
-                            getPushScript(context), true));
-                }
-
                 setupCss(head, context);
 
                 addCommercialBanner(deploymentConfiguration, document);

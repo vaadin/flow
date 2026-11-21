@@ -1,6 +1,7 @@
 import { ConnectionIndicator } from './ConnectionIndicator';
 import { ConnectionState, type ConnectionStateChangeListener, type ConnectionStateStore } from './ConnectionState';
 import { collectBrowserDetails } from './BrowserHelpers';
+import { loadAtmosphere } from './internal/client/communication/AtmosphereLoader';
 
 export interface FlowConfig {
   imports?: () => Promise<any>;
@@ -317,8 +318,12 @@ export class Flow {
 
       const { pushScript, appConfig } = this.response;
 
+      let atmosphere: Promise<unknown> | undefined;
       if (typeof pushScript === 'string') {
-        await this.loadScript(pushScript);
+        // Handed to the client engine, which in dev mode is pre-bundled with
+        // its own copy of the loader
+        atmosphere = loadAtmosphere(pushScript);
+        await atmosphere;
       }
       const { appId } = appConfig;
 
@@ -351,7 +356,7 @@ export class Flow {
       // pre-bundled dependency. Importing './FlowClient' relatively would make
       // the dev server serve the ~90 modules of the client engine one by one.
       const clientMod = await import('vaadin-flow-client');
-      await this.flowInitClient(clientMod);
+      await this.flowInitClient(clientMod, atmosphere);
 
       // hide flow progress indicator
       this.loadingFinished();
@@ -365,20 +370,6 @@ export class Flow {
       document.body.appendChild(this.container);
     }
     return this.response!;
-  }
-
-  private async loadScript(url: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.onload = () => resolve();
-      script.onerror = reject;
-      script.src = url;
-      const { nonce } = $wnd.Vaadin.Flow;
-      if (nonce !== undefined) {
-        script.setAttribute('nonce', nonce);
-      }
-      document.body.appendChild(script);
-    });
   }
 
   private findNonce(): string | undefined {
@@ -407,8 +398,8 @@ export class Flow {
 
   // After the flow-client javascript module has been loaded, this initializes flow UI
   // in the browser.
-  private async flowInitClient(clientMod: any): Promise<void> {
-    clientMod.init();
+  private async flowInitClient(clientMod: any, atmosphere?: Promise<unknown>): Promise<void> {
+    clientMod.init(atmosphere);
     // client init is async, we need to loop until initialized
     return new Promise((resolve) => {
       const intervalId = setInterval(() => {

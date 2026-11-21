@@ -24,8 +24,8 @@ import org.atmosphere.cache.UUIDBroadcasterCache;
 import org.atmosphere.client.TrackMessageSizeInterceptor;
 import org.atmosphere.cpr.ApplicationConfig;
 import org.atmosphere.cpr.AtmosphereFramework;
-import org.atmosphere.cpr.AtmosphereFramework.AtmosphereHandlerWrapper;
 import org.atmosphere.cpr.AtmosphereHandler;
+import org.atmosphere.cpr.AtmosphereHandlerWrapper;
 import org.atmosphere.cpr.AtmosphereInterceptor;
 import org.atmosphere.cpr.AtmosphereRequestImpl;
 import org.atmosphere.cpr.AtmosphereResponseImpl;
@@ -64,7 +64,7 @@ public class PushRequestHandler
         implements RequestHandler, SessionExpiredHandler {
 
     private AtmosphereFramework atmosphere;
-    private PushHandler pushHandler;
+    private final PushHandler pushHandler;
 
     /**
      * Creates an instance connected to the given service.
@@ -111,13 +111,13 @@ public class PushRequestHandler
         pushHandler.setLongPollingSuspendTimeout(Integer.parseInt(timeout));
         for (AtmosphereHandlerWrapper handlerWrapper : atmosphere
                 .getAtmosphereHandlers().values()) {
-            AtmosphereHandler handler = handlerWrapper.atmosphereHandler;
+            AtmosphereHandler handler = handlerWrapper.atmosphereHandler();
             if (handler instanceof PushAtmosphereHandler) {
                 // Map the (possibly pre-initialized) handler to the actual push
                 // handler
                 ((PushAtmosphereHandler) handler).setPushHandler(pushHandler);
-                BroadcasterConfig broadcasterConfig = handlerWrapper.broadcaster
-                        .getBroadcasterConfig();
+                BroadcasterConfig broadcasterConfig = handlerWrapper
+                        .broadcaster().getBroadcasterConfig();
                 broadcasterConfig.addFilter(new LongPollingCacheFilter());
                 broadcasterConfig.addFilter(
                         new AtmospherePushConnection.PushMessageUnwrapFilter());
@@ -241,7 +241,7 @@ public class PushRequestHandler
         }
 
         atmosphere.addInitParameter(
-                ApplicationConfig.JSR356_PATH_MAPPING_LENGTH, "0");
+                ApplicationConfig.JSR356_PATH_MAPPING_LENGTH, "1");
 
         try {
             atmosphere.init(vaadinServletConfig);

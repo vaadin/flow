@@ -459,7 +459,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * The URI resolver used in the bootstrap process.
      */
     public static class BootstrapUriResolver extends VaadinUriResolver {
-        private String servletPathToContextRoot;
+        private final String servletPathToContextRoot;
 
         /**
          * Creates a new bootstrap resolver based on the given ui.
@@ -894,11 +894,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 appendNpmBundle(head, service, context);
             } catch (IOException e) {
                 throw new BootstrapException("Unable to append bundle", e);
-            }
-
-            if (context.getPushMode().isEnabled()) {
-                head.appendChild(
-                        createJavaScriptElement(getPushScript(context)));
             }
 
             head.appendChild(getBootstrapScript(initialUIDL, context));
