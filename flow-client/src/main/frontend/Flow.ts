@@ -97,6 +97,14 @@ export class Flow {
   // flag used to inform Testbench whether a server route is in progress
   private isActive = false;
 
+  // Set when the UI has stopped, e.g. after an "Internal error": the server
+  // answers no more navigations.
+  private uiTerminated = false;
+
+  // Settles the server round trip in progress when the UI stops, as no answer
+  // will come for it.
+  private settleRoundTrip?: () => void;
+
   private baseRegex = /^\//;
   private appShellTitle: string;
 
@@ -234,17 +242,21 @@ export class Flow {
   private async flowLeave(ctx: NavigationParameters, cmd?: PreventCommands): Promise<any> {
     // server -> server, viewing offline stub, or browser is offline
     const { connectionState } = $wnd.Vaadin;
-    if (this.pathname === ctx.pathname || !this.isFlowClientLoaded() || connectionState.offline) {
+    if (this.pathname === ctx.pathname || !this.isFlowClientLoaded() || connectionState.offline || this.uiTerminated) {
       return Promise.resolve({});
     }
     // 'server -> client'
     return new Promise((resolve) => {
       this.loadingStarted();
       // The callback to run from server side to cancel navigation
-      this.container.serverConnected = (cancel) => {
+      const serverConnected = (cancel: boolean) => {
+        this.settleRoundTrip = undefined;
         resolve(cmd && cancel ? cmd.prevent() : cmd?.continue?.());
         this.loadingFinished();
       };
+      this.container.serverConnected = serverConnected;
+      // A stopped UI cannot keep the view, so let the navigation leave it
+      this.settleRoundTrip = () => serverConnected(false);
 
       // Call server side to check whether we can leave the view
       sendEvent('ui-leave-navigation', { route: this.getFlowRoutePath(ctx), query: this.getFlowRouteQuery(ctx) });
@@ -258,7 +270,8 @@ export class Flow {
       return new Promise((resolve) => {
         this.loadingStarted();
         // The callback to run from server side once the view is ready
-        this.container.serverConnected = (cancel, redirectContext?: NavigationParameters) => {
+        const serverConnected = (cancel: boolean, redirectContext?: NavigationParameters) => {
+          this.settleRoundTrip = undefined;
           if (cmd && cancel) {
             resolve(cmd.prevent());
           } else if (cmd && cmd.redirect && redirectContext) {
@@ -270,10 +283,19 @@ export class Flow {
           }
           this.loadingFinished();
         };
+        this.container.serverConnected = serverConnected;
 
         this.container.serverPaused = () => {
           this.loadingFinished();
         };
+
+        if (this.uiTerminated) {
+          // A stopped UI cannot show the route
+          serverConnected(true);
+          return;
+        }
+        // Cancel the navigation if the UI stops before the server answers
+        this.settleRoundTrip = () => serverConnected(true);
 
         // Call server side to navigate to the given route
         sendEvent('ui-navigate', {
@@ -416,6 +438,12 @@ export class Flow {
         const initializing = getClients().reduce((prev, client) => prev || client.isActive(), false);
         if (!initializing) {
           clearInterval(intervalId);
+          getClients().forEach((client) =>
+            client.events?.addEventListener('vaadin-ui-terminated', () => {
+              this.uiTerminated = true;
+              this.settleRoundTrip?.();
+            })
+          );
           resolve();
         }
       }, 5);

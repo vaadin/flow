@@ -114,7 +114,10 @@ export class MessageSender {
     this.#uiLifecycleRegistration?.remove();
     this.#uiLifecycleRegistration = this.#registry.getUILifecycle().addHandler((event) => {
       if (event.getUiLifecycle().isTerminated()) {
-        // Nothing is sent after the application stops.
+        // Nothing is sent after the application stops. A reply that stops it,
+        // like an "Internal error", carries no client id to stop the resend
+        // timer, which would otherwise send the payload again.
+        this.#resetTimer();
         this.discardSentRequests();
         if (this.#openRequest !== null) {
           dispatchRequestEnd(this.#openRequest, 'discarded');

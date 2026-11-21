@@ -16,6 +16,8 @@ const flowRoot = window.document.body as any;
 
 const stubVaadinPushSrc = '/src/test/frontend/stubVaadinPush.js';
 let server: MockXhrServer;
+// The event that stubServerRemoteFunction fails with an "Internal error", which stops the UI
+let failingEvent: string | undefined;
 // A `changes` array that adds a div with 'Foo' text to body
 const changesResponse = `[
   {
@@ -133,6 +135,7 @@ describe('Flow', () => {
     // leaking a replaced function (e.g. console.error) into later cases.
     sinon.restore();
     server.remove();
+    failingEvent = undefined;
     delete $wnd.Vaadin;
     delete flowRoot.$;
     if (flowRoot.timers) {
@@ -412,6 +415,39 @@ describe('Flow', () => {
     });
   });
 
+  it('should cancel a server navigation when the UI stops before the server answers it', async () => {
+    failingEvent = 'ui-navigate';
+    stubServerRemoteFunction('foobar-12345');
+    mockInitResponse('foobar-12345');
+    const elem: any = await new Flow().serverSideRoutes[0].action({ pathname: 'Foo' });
+    const cmd = { prevent: () => 'prevented' };
+
+    expect(await settledSoon(elem.onBeforeEnter({ pathname: 'Foo' }, cmd))).to.equal('prevented');
+    expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
+
+    // A later navigation is cancelled without waiting for the stopped UI
+    expect(await settledSoon(elem.onBeforeEnter({ pathname: 'Bar' }, cmd))).to.equal('prevented');
+    expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
+    document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
+  });
+
+  it('should let a `server->client` navigation leave when the UI stops before the server answers it', async () => {
+    failingEvent = 'ui-leave-navigation';
+    stubServerRemoteFunction('foobar-12345');
+    mockInitResponse('foobar-12345');
+    const elem: any = await new Flow().serverSideRoutes[0].action({ pathname: 'Foo' });
+    await elem.onBeforeEnter({ pathname: 'Foo' }, {});
+    const cmd = { prevent: () => 'prevented', continue: () => 'continued' };
+
+    expect(await settledSoon(elem.onBeforeLeave({ pathname: 'Lorem' }, cmd))).to.equal('continued');
+    expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
+
+    // A later navigation leaves without waiting for the stopped UI
+    expect(await settledSoon(elem.onBeforeLeave({ pathname: 'Ipsum' }, cmd))).to.deep.equal({});
+    expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
+    document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
+  });
+
   it('onBeforeEnter should handle forwardTo `server->client` navigation', () => {
     // true to prevent navigation from server
     stubServerRemoteFunction('foobar-12345', false, undefined, { pathname: 'Lorem', search: '' });
@@ -683,6 +719,11 @@ describe('Flow', () => {
   });
 });
 
+// What the promise resolves to, or 'pending' if it does not settle soon
+function settledSoon<T>(promise: Promise<T>): Promise<T | 'pending'> {
+  return Promise.race([promise, new Promise<'pending'>((resolve) => setTimeout(() => resolve('pending'), 500))]);
+}
+
 function stubServerRemoteFunction(
   id: string,
   cancel: boolean = false,
@@ -730,7 +771,15 @@ function stubServerRemoteFunction(
     const payload = JSON.parse(req.body);
     if (payload.rpc && payload.rpc[0].type === 'event') {
       const rpc = payload.rpc[0];
-      if (rpc.event === 'ui-navigate') {
+      if (rpc.event === failingEvent) {
+        // Like VaadinService.handleExceptionDuringRequest: no client id
+        req.respond(
+          200,
+          { 'content-type': 'application/json' },
+          '{"changes":{},"resources":{},"locales":{},"meta":{"appError":{"caption":"Internal error","url":null,"message":"Please notify the administrator.","details":null,"querySelector":null}},"syncId":-1}'
+        );
+        return;
+      } else if (rpc.event === 'ui-navigate') {
         handlers.connectClient(rpc.data.route);
       } else if (rpc.event === 'ui-leave-navigation') {
         handlers.leaveNavigation();

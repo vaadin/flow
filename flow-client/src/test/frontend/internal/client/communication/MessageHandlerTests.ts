@@ -301,6 +301,23 @@ describe('MessageHandler', () => {
       expect(registry.log.endRequests).to.equal(endRequestsBefore + 1);
     });
 
+    it('ends the request of a response ignored because the application has stopped', () => {
+      const registry = makeRegistry();
+      const handler = new MessageHandler(registry.registry);
+      handler.handleMessage({ syncId: 0 });
+      registry.registry.getUILifecycle().setState(UIState.TERMINATED);
+
+      // A push message arriving after the stop answers no request.
+      registry.startRequest();
+      handler.handleMessage({ syncId: 1, meta: { async: true } });
+      expect(registry.log.endRequests).to.equal(1);
+
+      // A reply to a request sent before the stop ends that request.
+      handler.handleMessage({ syncId: 2 });
+      expect(registry.log.endRequests).to.equal(2);
+      expect(registry.log.stopLoadings).to.equal(2);
+    });
+
     it('ignores a duplicate response arriving with no active request instead of throwing', () => {
       // Beyond the Java suite: No Java case covers a re-sent response.
       const registry = makeRegistry();
