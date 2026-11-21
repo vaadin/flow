@@ -30,13 +30,12 @@ import com.vaadin.flow.component.Tag;
  * Audio audio = new Audio();
  * audio.addSource("/chime.ogg", "audio/ogg");
  * audio.addSource("/chime.mp3", "audio/mpeg");
- * audio.setControlsVisible(true);
  * </pre>
  *
- * Nothing of the element is rendered until {@link #setControlsVisible(boolean)}
- * is called, so a player that the visitor is meant to start needs that call. A
- * sound that is only played by the application, and that the visitor should not
- * see a player for, is the one case where leaving the controls off is right.
+ * The browser's playback controls are shown by default, and they are all of the
+ * element that is rendered. A sound that is only played by the application, and
+ * that the visitor should not see a player for, is the one case where hiding
+ * them with {@link #setControlsVisible(boolean)} is right.
  *
  * @see <a href=
  *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/audio">MDN:
@@ -49,7 +48,8 @@ import com.vaadin.flow.component.Tag;
 public class Audio extends Media {
 
     /**
-     * Creates an audio player without any source.
+     * Creates an audio player without any source. The browser's playback
+     * controls are shown.
      */
     public Audio() {
         super();
@@ -57,7 +57,7 @@ public class Audio extends Media {
 
     /**
      * Creates an audio player that plays the first of the given sources the
-     * browser can decode.
+     * browser can decode. The browser's playback controls are shown.
      *
      * @param sources
      *            the same recording in one or more file formats

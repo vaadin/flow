@@ -94,7 +94,7 @@ public class EmbeddedHostPage implements Filter {
                         + "' 'strict-dynamic'; "
                         + "style-src 'self' 'unsafe-inline'; "
                         + "img-src 'self' data:; font-src 'self' data:; "
-                        + "connect-src 'self'; worker-src 'self'; "
+                        + "connect-src 'self' data:; worker-src 'self'; "
                         + "object-src 'none'; base-uri 'self'");
         httpResponse.setContentType("text/html");
         httpResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
