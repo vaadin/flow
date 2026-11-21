@@ -49,6 +49,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -115,6 +116,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -149,6 +151,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             def jettyVersion = "11.0.12"
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
                 implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
 
@@ -201,6 +204,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
                 implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
 
@@ -320,6 +324,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
             dependencies {
                 implementation('com.vaadin:flow:$flowVersion')
+                implementation('com.vaadin:flow-client:$flowVersion')
                 implementation('com.vaadin:vaadin-spring:$flowVersion')
                 implementation('org.springframework.boot:spring-boot-starter-webmvc:$springBootVersion')
                 developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -408,6 +413,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -463,6 +469,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
             }
         """
         )
@@ -484,6 +491,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -510,6 +518,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -538,6 +547,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -571,6 +581,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -689,6 +700,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -723,6 +735,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
             }
             vaadin {
                 filterClasspath {
@@ -790,6 +803,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
             dependencies {
                 uiImplementation('com.vaadin:flow:$flowVersion')
+                uiImplementation('com.vaadin:flow-client:$flowVersion')
                 implementation('org.springframework.boot:spring-boot-starter-webmvc')
             }
             
@@ -856,6 +870,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
             }
             tasks.whenTaskAdded {} // reproduces #17665
@@ -889,6 +904,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                         println("!!!effective2.productionMode=" + vaadin.effective.productionMode.get() + "!!!")
                     }
                 }
+                implementation("com.vaadin:flow-client:$flowVersion")
             }
         """.trimIndent()
         )
@@ -942,6 +958,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -998,6 +1015,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
 //                Uncomment for faster test.
 //                implementation("com.vaadin:vaadin-prod-bundle:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
@@ -1031,6 +1049,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -1095,6 +1114,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             def jettyVersion = "11.0.12"
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
                 implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
@@ -1158,6 +1178,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             def jettyVersion = "11.0.12"
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
                 implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
@@ -1226,6 +1247,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             def jettyVersion = "11.0.12"
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
                 implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
@@ -1269,6 +1291,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             def jettyVersion = "11.0.12"
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
                 implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
@@ -1314,6 +1337,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             def jettyVersion = "11.0.12"
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
                 implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
@@ -1369,6 +1393,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -1414,6 +1439,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -1440,6 +1466,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -1469,6 +1496,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
