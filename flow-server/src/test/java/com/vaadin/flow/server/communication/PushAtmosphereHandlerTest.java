@@ -133,11 +133,12 @@ class PushAtmosphereHandlerTest {
     }
 
     @ParameterizedTest
-    @CsvSource({ "IllegalStateException, WEBSOCKET, false",
-            "IllegalStateException, LONG_POLLING, true",
-            "UnsupportedOperationException, WEBSOCKET, true" })
-    void onThrowable_writeRejectedOnWebsocket_loggedAsLostConnection(
-            String exceptionType, TRANSPORT transport, boolean loggedAsError)
+    @CsvSource({ "TEXT_FULL_WRITING, WEBSOCKET, false",
+            "BINARY_FULL_WRITING, WEBSOCKET, false",
+            "TEXT_FULL_WRITING, LONG_POLLING, true",
+            "TEXT_PARTIAL_WRITING, WEBSOCKET, true" })
+    void onThrowable_writeRejectedAfterFailedWrite_loggedAsLostConnection(
+            String endpointState, TRANSPORT transport, boolean loggedAsError)
             throws IOException {
         PushHandler pushHandler = mock(PushHandler.class);
         atmosphereHandler.setPushHandler(pushHandler);
@@ -147,11 +148,10 @@ class PushAtmosphereHandlerTest {
                 .forClass(AtmosphereResourceEventListener.class);
         verify(resource).addEventListener(listener.capture());
 
-        RuntimeException throwable = "IllegalStateException"
-                .equals(exceptionType)
-                        ? new IllegalStateException(
-                                "The remote endpoint was in state [TEXT_FULL_WRITING]")
-                        : new UnsupportedOperationException();
+        // The message Tomcat uses when it rejects a write
+        IllegalStateException throwable = new IllegalStateException(
+                "The remote endpoint was in state [" + endpointState
+                        + "] which is an invalid state for called method");
         when(resource.transport()).thenReturn(transport);
         AtmosphereResourceEvent event = mock(AtmosphereResourceEvent.class);
         when(event.getResource()).thenReturn(resource);
