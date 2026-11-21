@@ -71,6 +71,8 @@ public final class BundleValidationUtil {
 
     private static final String FRONTEND_HASHES_STATS_KEY = "frontendHashes";
 
+    private static final String JS_DEFINITION_FUNCTION_IDS_STATS_KEY = "jsDefinitionFunctionIds";
+
     private static final String PWA_OFFLINE_PATH_STATS_KEY = "pwaOfflinePath";
 
     private static final String PWA_OFFLINE_ENABLED_STATS_KEY = "pwaOfflineEnabled";
@@ -1079,6 +1081,29 @@ public final class BundleValidationUtil {
         String content = new TaskGenerateJsDefinitions(options)
                 .getFileContent();
 
+        JsonNode bundledIds = statsJson
+                .get(JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
+        if (bundledIds != null && bundledIds.isArray()) {
+            // A bundle that registers a function under every identifier the
+            // application needs carries its JavaScript, as the identifier is a
+            // hash of it. One built with more definitions than the application
+            // has, such as the pre-compiled bundle, still serves it.
+            Set<String> bundled = new HashSet<>(
+                    JacksonUtils.stream((ArrayNode) bundledIds)
+                            .map(JsonNode::asString).toList());
+            List<String> missing = TaskGenerateJsDefinitions
+                    .collectFunctionIds(content).stream()
+                    .filter(id -> !bundled.contains(id)).toList();
+            if (!missing.isEmpty()) {
+                getLogger().info(
+                        "Detected JavaScript declared by the JavaScript definitions, event data or event filters that the bundle does not carry");
+                return true;
+            }
+            return false;
+        }
+
+        // A bundle built before its stats listed the functions it registers
+        // is compared by the whole file
         List<String> faultyContent = new ArrayList<>();
         compareFrontendHashes(frontendHashes, faultyContent, jsDefinitionsPath,
                 content);

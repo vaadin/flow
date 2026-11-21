@@ -348,11 +348,21 @@ function statsExtracterPlugin(): PluginOption {
         const fileBuffer = readFileSync(commercialBannerComponent, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
         frontendFiles[settings.generatedFolder + '/commercial-banner.js'] = createHash('sha256').update(fileBuffer, 'utf8').digest('hex');
       }
+      // The identifier of a function is a hash of its JavaScript, so listing
+      // them lets a build tell whether the bundle carries every function it
+      // needs, even when the bundle carries more. The pattern is the one
+      // TaskGenerateJsDefinitions reads the generated file with.
+      const jsDefinitionFunctionIds: string[] = [];
       if (hasJsDefinitions) {
         const fileBuffer = readFileSync(jsDefinitionsFile, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
         frontendFiles[settings.generatedFolder + '/vaadin-js-definitions.js'] = createHash('sha256')
           .update(fileBuffer, 'utf8')
           .digest('hex');
+        const functionId =
+          /^window\.Vaadin\.Flow\.(?:jsDefinitions|jsDefinitionsWithExecutionContext|jsSnippets)\["([^"]*)"\] = /gm;
+        for (const match of fileBuffer.matchAll(functionId)) {
+          jsDefinitionFunctionIds.push(match[1]);
+        }
       }
 
       const themeJsonContents: Record<string, string> = {};
@@ -381,6 +391,7 @@ function statsExtracterPlugin(): PluginOption {
         npmModules: npmModuleAndVersion,
         bundleImports: generatedImports,
         frontendHashes: frontendFiles,
+        jsDefinitionFunctionIds,
         themeJsonContents: themeJsonContents,
         pwaOfflinePath: settings.offlinePath,
         pwaOfflineEnabled: settings.offlineEnabled,

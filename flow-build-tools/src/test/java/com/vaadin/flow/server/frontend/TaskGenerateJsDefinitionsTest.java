@@ -17,13 +17,16 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,6 +57,7 @@ import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
 import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -469,6 +473,39 @@ class TaskGenerateJsDefinitionsTest {
         assertTrue(content.contains("window.Vaadin.Flow.jsSnippets[\""
                 + BundledEventData.getFunctionId(INHERITING_EXPRESSION)
                 + "\"]"), content);
+    }
+
+    @Test
+    void viteConfig_listsFunctionIdsWithTheSamePattern() throws IOException {
+        // The stats of a bundle list its functions with this pattern, and the
+        // bundle check reads the generated file with the Java one
+        try (InputStream config = getClass().getClassLoader()
+                .getResourceAsStream("vite.generated.ts")) {
+            assertNotNull(config, "vite.generated.ts is on the class path");
+            String content = new String(config.readAllBytes(),
+                    StandardCharsets.UTF_8);
+            assertTrue(content.contains("/"
+                    + TaskGenerateJsDefinitions.FUNCTION_ID.pattern() + "/gm"),
+                    "vite.generated.ts should use the pattern "
+                            + TaskGenerateJsDefinitions.FUNCTION_ID.pattern());
+        }
+    }
+
+    @Test
+    void collectFunctionIds_everyFunctionRegistry() {
+        String content = TaskGenerateJsDefinitions.renderFileContent(
+                List.of(GreeterJs.class, StopperJs.class, TemplateJs.class),
+                List.of(OffsetEvent.class), true);
+
+        Set<String> expected = Stream
+                .of(GreeterJs.class, StopperJs.class, TemplateJs.class)
+                .flatMap(definition -> Stream.of(definition.getMethods()))
+                .map(JsCall::functionId).collect(Collectors.toSet());
+        BundledEventData.getBundledEventData(OffsetEvent.class).stream()
+                .map(BundledEventData::getFunctionId).forEach(expected::add);
+
+        assertEquals(expected,
+                TaskGenerateJsDefinitions.collectFunctionIds(content));
     }
 
     @Test

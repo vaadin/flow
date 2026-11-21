@@ -119,6 +119,14 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             "^window\\.Vaadin\\.Flow\\.jsDefinitionNames\\[\"[^\"]*\"\\] = \"([^\"/]+)\\.[^.\"/]+/\\d+\";$",
             Pattern.MULTILINE);
 
+    // A function as the file registers it, with its identifier in the group.
+    // The registry of names is left out: it says what declared a function,
+    // not what a browser can run. vite.generated.ts lists the functions of a
+    // bundle in its stats with the same pattern, and the two have to match.
+    static final Pattern FUNCTION_ID = Pattern.compile(
+            "^window\\.Vaadin\\.Flow\\.(?:jsDefinitions|jsDefinitionsWithExecutionContext|jsSnippets)\\[\"([^\"]*)\"\\] = ",
+            Pattern.MULTILINE);
+
     // Writing this file again while the application runs replaces it in the
     // browser that has it: everything above only writes into the registry, so
     // the module can accept its own update and nothing else has to be reloaded
@@ -340,6 +348,25 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             }
         }
         return names;
+    }
+
+    /**
+     * The identifiers of the functions that the given content of the generated
+     * file registers, which is what a browser that has the file can run. An
+     * identifier is a hash of the JavaScript of its function, so a bundle that
+     * registers every identifier of a file carries what that file declares.
+     *
+     * @param content
+     *            the content of the generated file, not <code>null</code>
+     * @return the identifiers of the functions, empty when it registers none
+     */
+    static Set<String> collectFunctionIds(String content) {
+        Set<String> ids = new LinkedHashSet<>();
+        Matcher matcher = FUNCTION_ID.matcher(content);
+        while (matcher.find()) {
+            ids.add(matcher.group(1));
+        }
+        return ids;
     }
 
     /**
