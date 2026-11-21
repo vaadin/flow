@@ -42,8 +42,10 @@ public enum CspMode {
     OFF,
     /**
      * The application runs unchanged, but every call that would not work under
-     * a strict Content Security Policy is logged as a warning, once per call
-     * site, with a stack trace that leads from the API to its caller.
+     * a strict Content Security Policy is logged as a warning, with a stack
+     * trace that leads from the API to its caller. A warning is logged once per
+     * call site, or, when a component reports what the JavaScript belongs to,
+     * once per call site and reported part, such as a chart option.
      */
     WARN,
     /**
@@ -61,10 +63,10 @@ public enum CspMode {
      * the development tools need {@code eval}.
      * <p>
      * <strong>Note:</strong> Vaadin itself still uses APIs that need
-     * {@code eval}, not only for its own components but also for the event data
-     * and filter expressions of DOM event listeners, such as those of a click
-     * listener. Until that is changed, those calls throw, so the mode is not
-     * yet usable for applications.
+     * {@code eval} in some places, such as the event filters of double and
+     * single click listeners and of keyboard shortcuts. Until those are
+     * changed, they throw in this mode. Event data that is a property path,
+     * such as that of a click listener, does not need {@code eval}.
      */
     STRICT
 }

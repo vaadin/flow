@@ -2863,6 +2863,93 @@ class BundleValidationTest {
                 "Without offline support the bundle's service worker is unused, so it cannot be stale");
     }
 
+    @ParameterizedTest
+    @MethodSource("modes")
+    void customServiceWorkerAdded_compilationRequired(Mode mode)
+            throws IOException {
+        setupMode(mode);
+        when(depScanner.getPwaConfiguration())
+                .thenReturn(pwaWithOfflinePath(""));
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        writeFrontendFile(FrontendUtils.SERVICE_WORKER_SRC,
+                "self.skipWaiting();");
+        setupFrontendUtilsMock(getBasicStats());
+
+        assertTrue(BundleValidationUtil.needsBuild(options, depScanner, mode),
+                "A custom service worker not in the bundle should require bundling");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void customServiceWorkerChanged_compilationRequired(Mode mode)
+            throws IOException {
+        setupMode(mode);
+        when(depScanner.getPwaConfiguration())
+                .thenReturn(pwaWithOfflinePath(""));
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        File serviceWorker = writeFrontendFile(
+                FrontendUtils.SERVICE_WORKER_SRC_JS, "self.skipWaiting();");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
+                FrontendUtils.SERVICE_WORKER_SRC_JS,
+                BundleValidationUtil.calculateHash("self.skipWaiting();"));
+        setupFrontendUtilsMock(stats);
+
+        assertFalse(BundleValidationUtil.needsBuild(options, depScanner, mode),
+                "An unchanged custom service worker should not require bundling");
+
+        FileUtils.write(serviceWorker, "self.clients.claim();",
+                StandardCharsets.UTF_8);
+
+        assertTrue(BundleValidationUtil.needsBuild(options, depScanner, mode),
+                "A changed custom service worker should require bundling");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void customServiceWorkerDeleted_compilationRequired(Mode mode)
+            throws IOException {
+        setupMode(mode);
+        when(depScanner.getPwaConfiguration())
+                .thenReturn(pwaWithOfflinePath(""));
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
+                FrontendUtils.SERVICE_WORKER_SRC,
+                BundleValidationUtil.calculateHash("self.skipWaiting();"));
+        setupFrontendUtilsMock(stats);
+
+        assertTrue(BundleValidationUtil.needsBuild(options, depScanner, mode),
+                "Removing the custom service worker should require bundling the default one");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void offlineDisabled_customServiceWorkerChanged_noCompilationRequired(
+            Mode mode) throws IOException {
+        setupMode(mode);
+        when(depScanner.getPwaConfiguration())
+                .thenReturn(pwaConfiguration("", false));
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        writeFrontendFile(FrontendUtils.SERVICE_WORKER_SRC,
+                "self.clients.claim();");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
+                FrontendUtils.SERVICE_WORKER_SRC,
+                BundleValidationUtil.calculateHash("self.skipWaiting();"));
+        setupFrontendUtilsMock(stats);
+
+        assertFalse(BundleValidationUtil.needsBuild(options, depScanner, mode),
+                "Without offline support no service worker is built, so its source cannot make the bundle stale");
+    }
+
+    private File writeFrontendFile(String name, String content)
+            throws IOException {
+        File file = new File(options.getFrontendDirectory(), name);
+        FileUtils.write(file, content, StandardCharsets.UTF_8);
+        return file;
+    }
+
     private static PwaConfiguration pwaWithOfflinePath(String offlinePath) {
         return pwaConfiguration(offlinePath, true);
     }

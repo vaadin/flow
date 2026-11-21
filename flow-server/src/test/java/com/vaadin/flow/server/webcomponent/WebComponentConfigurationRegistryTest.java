@@ -27,7 +27,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -223,7 +222,7 @@ class WebComponentConfigurationRegistryTest {
                                         MyComponentExporter.class)));
                     };
                     return callable;
-                }).collect(Collectors.toList());
+                }).toList();
 
         List<Future<AtomicBoolean>> futures = executorService
                 .invokeAll(callables);

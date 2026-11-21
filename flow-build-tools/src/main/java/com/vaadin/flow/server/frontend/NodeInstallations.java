@@ -121,10 +121,11 @@ final class NodeInstallations {
      * {@value NodeInstallation#DIRECTORY_PREFIX} naming of an auto-installed
      * Node.js are touched; anything else in the directory is left alone.
      * <p>
-     * The installation currently in use is never removed, and neither is the
-     * last remaining installation, so the directory always keeps at least one
-     * Node.js version. An installation whose last use is unknown is not removed
-     * either: it gets a marker so that its retention period starts from now.
+     * The installation currently in use is never removed, nor one that another
+     * build is installing right now, nor the last remaining installation, so
+     * the directory always keeps at least one Node.js version. An installation
+     * whose last use is unknown is not removed either: it gets a marker so that
+     * its retention period starts from now.
      *
      * @param installDirectory
      *            the directory holding the installations, typically
@@ -176,7 +177,35 @@ final class NodeInstallations {
             unused.remove(unused.size() - 1);
         }
 
-        unused.forEach(NodeInstallation::remove);
+        unused.forEach(installation -> removeUnlessInstalling(installation,
+                threshold));
+    }
+
+    /**
+     * Removes the installation unless another build is installing that version
+     * again right now, as installs of different versions run concurrently.
+     * Holding the install lock of the version while removing keeps a build from
+     * starting to install it in the middle of the removal.
+     */
+    private static void removeUnlessInstalling(NodeInstallation installation,
+            Instant threshold) {
+        LockFile lock = new LockFile(installation.getInstallLockFile().toPath(),
+                "Node installation cleanup");
+        if (!lock.tryAcquire()) {
+            getLogger().debug(
+                    "Not removing Node.js installation {} as it is being installed",
+                    installation);
+            return;
+        }
+        try {
+            // Taken into use again before the lock was taken
+            if (installation.getLastUsed().map(threshold::isAfter)
+                    .orElse(false)) {
+                installation.remove();
+            }
+        } finally {
+            lock.release();
+        }
     }
 
     /**
