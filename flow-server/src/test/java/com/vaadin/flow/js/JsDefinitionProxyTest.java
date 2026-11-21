@@ -47,6 +47,7 @@ import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -226,6 +227,14 @@ class JsDefinitionProxyTest {
         @JsExpression("console.log(value);")
         @JsFunctionParameterNames("not-a-name")
         JsFunction createLogger();
+    }
+
+    interface SnippetAmongCallsJs extends JsInvokers {
+        @JsExpression("console.log(value);")
+        JsFunction createLogger();
+    }
+
+    static class GreeterDouble implements JsInvokers {
     }
 
     interface BothKindsJs extends JsInvokers, JsSnippets {
@@ -474,6 +483,32 @@ class JsDefinitionProxyTest {
 
         assertTrue(exception.getMessage().contains("neither"),
                 exception.getMessage());
+        assertTrue(exception.getMessage().contains("JsInvokers"),
+                exception.getMessage());
+        assertTrue(exception.getMessage().contains("JsSnippets"),
+                exception.getMessage());
+    }
+
+    @Test
+    void checkDefinition_snippetAmongJavaScriptToRun_throws() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> JsDefinitionProxy
+                        .checkDefinition(SnippetAmongCallsJs.class));
+
+        assertTrue(exception.getMessage().contains("createLogger"),
+                exception.getMessage());
+        assertTrue(exception.getMessage().contains("JsInvokers"),
+                exception.getMessage());
+    }
+
+    @Test
+    void isDefinition_onlyInterfacesExtendingAMarker() {
+        assertTrue(JsDefinitionProxy.isDefinition(GreeterJs.class));
+        assertTrue(JsDefinitionProxy.isDefinition(LoggerJs.class));
+        assertFalse(JsDefinitionProxy.isDefinition(JsInvokers.class));
+        assertFalse(JsDefinitionProxy.isDefinition(JsSnippets.class));
+        assertFalse(JsDefinitionProxy.isDefinition(GreeterDouble.class));
+        assertFalse(JsDefinitionProxy.isDefinition(Serializable.class));
     }
 
     @Test

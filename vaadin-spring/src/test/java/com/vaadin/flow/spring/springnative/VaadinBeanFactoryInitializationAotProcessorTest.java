@@ -60,6 +60,7 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -817,6 +818,17 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     }
 
     @Test
+    void getJsDefinitionTypes_leavesOutTheMarkerInterfaces() {
+        VaadinBeanFactoryInitializationAotProcessor processor = new VaadinBeanFactoryInitializationAotProcessor();
+
+        Collection<Class<?>> definitions = processor
+                .getJsDefinitionTypes(JsInvokers.class.getPackageName());
+
+        assertThat(definitions).doesNotContain(JsInvokers.class,
+                JsSnippets.class);
+    }
+
+    @Test
     void getAnnotatedClasses_findsClassesWithSpecificAnnotation() {
         VaadinBeanFactoryInitializationAotProcessor processor = new VaadinBeanFactoryInitializationAotProcessor();
 
@@ -1241,7 +1253,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
         TestItemTemplate status(String label);
     }
 
-    public interface TestSnippetJs extends JsInvokers, TestBaseSnippetJs {
+    public interface TestSnippetJs extends JsSnippets, TestBaseSnippetJs {
     }
 
     public interface TestValueJs<T> {
