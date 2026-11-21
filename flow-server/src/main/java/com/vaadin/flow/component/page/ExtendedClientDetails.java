@@ -691,6 +691,8 @@ public class ExtendedClientDetails implements Serializable {
                 // unknown value; leave the current availability alone
             }
         }
+        ui.getInternals().setWebNotificationPermissionFromClient(
+                getStringElseNull.apply("v-wnp"));
         String ws = getStringElseNull.apply("v-ws");
         if (ws != null) {
             ui.getInternals().setWebShareSupport(
