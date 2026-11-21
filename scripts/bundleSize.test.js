@@ -71,9 +71,9 @@ test('reports files that only one side has', () => {
     inputs: { 'Flow.ts': 30000, 'Lazy.ts': 500 }
   };
 
-  assert.strictEqual(compare(BASE, head).changed, true);
-  // A new file alone is a change too
+  // A new or a removed file alone is a change
   assert.strictEqual(compare(BASE, { ...BASE, chunks: [...BASE.chunks, head.chunks[1]] }).changed, true);
+  assert.strictEqual(compare(BASE, { ...BASE, chunks: BASE.chunks.slice(0, 2) }).changed, true);
   const body = comment(BASE, head, 'abc1234');
   assert.match(body, /\| `VAADIN\/build\/Lazy.js` \| 500 B \| new \| 300 B \| new \|/);
   assert.match(body, /\| `VAADIN\/build\/FlowClient.js` \| — \| removed \| — \| removed \|/);
