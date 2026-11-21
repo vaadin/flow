@@ -134,10 +134,20 @@ jobs:
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
-      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      - name: Hash the poms
+        id: pom-hash
+        # Once, before anything is built: the build below unpacks a war that
+        # carries a pom.xml of its own, so hashFiles evaluated after it no
+        # longer matches the key the entry was restored and saved under.
+        run: echo "hash=${{ hashFiles('**/pom.xml') }}" >> "$GITHUB_OUTPUT"
+      - id: maven-cache
+        # Restore and save are separate steps so that the step resolving the
+        # integration test dependencies below can tell which entry was
+        # restored, which actions/cache does not report.
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          key: ${{ runner.os }}-maven-${{ steps.pom-hash.outputs.hash }}
           restore-keys: ${{ runner.os }}-maven-
       - name: Generate matrices
         id: set-matrix
@@ -157,6 +167,32 @@ jobs:
         run: |
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
+      - name: Resolve what only the integration test modules pull
+        # The it-tests jobs restore the cache this job saves, and cannot add to
+        # it: their primary key is an exact hit, so actions/cache skips their
+        # save. So the dependencies and plugins only flow-tests declares have to
+        # enter the entry here. Otherwise a pom change, such as a dependency
+        # bump, has every it-tests job download the same new artifacts from
+        # Maven Central at once, and Central answers that burst with HTTP 429.
+        # What plugins fetch only while they run, and the reactors of the CDI
+        # and Quarkus jobs, are not covered.
+        #
+        # Skipped when what was restored already holds it: an exact hit, or
+        # the entry warm-caches.yml saved for main with these same poms, which
+        # resolves the same graph. A run's own primary key almost never hits,
+        # since only a re-run or a later push to the same pull request can
+        # read it, so the warmed entry is the common case.
+        #
+        # dependency:resolve rather than a build, which would cost this job the
+        # time the it-tests jobs spend on it anyway; see the script for how it
+        # handles the test modules that are not packaged here.
+        if: ${{ steps.maven-cache.outputs.cache-hit != 'true' && steps.maven-cache.outputs.cache-matched-key != format('{0}-maven-warm-v2-{1}', runner.os, steps.pom-hash.outputs.hash) }}
+        run: ./scripts/resolveItDependencies.sh
+      - uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        if: ${{ steps.maven-cache.outputs.cache-hit != 'true' }}
+        with:
+          path: ~/.m2/repository
+          key: ${{ steps.maven-cache.outputs.cache-primary-key }}
       - name: Save workspace
         run: |
           tar cf workspace.tar -C ~/ $(cd ~/ && echo .m2/repository/com/vaadin/*/999.99-SNAPSHOT)
