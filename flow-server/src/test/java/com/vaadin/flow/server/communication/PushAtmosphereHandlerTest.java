@@ -39,8 +39,6 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinServletService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
@@ -133,12 +131,14 @@ class PushAtmosphereHandlerTest {
     }
 
     @ParameterizedTest
-    @CsvSource({ "TEXT_FULL_WRITING, WEBSOCKET, false",
-            "BINARY_FULL_WRITING, WEBSOCKET, false",
-            "TEXT_FULL_WRITING, LONG_POLLING, true",
-            "TEXT_PARTIAL_WRITING, WEBSOCKET, true" })
+    @CsvSource({ "IllegalStateException, TEXT_FULL_WRITING, WEBSOCKET, false",
+            "IllegalStateException, BINARY_FULL_WRITING, WEBSOCKET, false",
+            "IllegalStateException, TEXT_FULL_WRITING, LONG_POLLING, true",
+            "IllegalStateException, TEXT_PARTIAL_WRITING, WEBSOCKET, true",
+            "RuntimeException, TEXT_FULL_WRITING, WEBSOCKET, true" })
     void onThrowable_writeRejectedAfterFailedWrite_loggedAsLostConnection(
-            String endpointState, TRANSPORT transport, boolean loggedAsError) {
+            String exceptionType, String endpointState, TRANSPORT transport,
+            boolean loggedAsError) {
         PushHandler pushHandler = mock(PushHandler.class);
         atmosphereHandler.setPushHandler(pushHandler);
         when(request.getMethod()).thenReturn("GET");
@@ -148,9 +148,11 @@ class PushAtmosphereHandlerTest {
         verify(resource).addEventListener(listener.capture());
 
         // The message Tomcat uses when it rejects a write
-        IllegalStateException throwable = new IllegalStateException(
-                "The remote endpoint was in state [" + endpointState
-                        + "] which is an invalid state for called method");
+        String message = "The remote endpoint was in state [" + endpointState
+                + "] which is an invalid state for called method";
+        RuntimeException throwable = "IllegalStateException"
+                .equals(exceptionType) ? new IllegalStateException(message)
+                        : new RuntimeException(message);
         when(resource.transport()).thenReturn(transport);
         AtmosphereResourceEvent event = mock(AtmosphereResourceEvent.class);
         when(event.getResource()).thenReturn(resource);
@@ -168,8 +170,9 @@ class PushAtmosphereHandlerTest {
 
         verify(logger, times(loggedAsError ? 1 : 0))
                 .error("Exception in push connection", throwable);
-        verify(logger, times(loggedAsError ? 0 : 1)).debug(anyString(),
-                any(Throwable.class));
+        verify(logger, times(loggedAsError ? 0 : 1)).debug(
+                "Push connection lost while a message was being written",
+                throwable);
         verify(pushHandler).connectionLost(event);
     }
 
