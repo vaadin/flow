@@ -112,6 +112,9 @@ export class Flow {
     flowRoot.$ = flowRoot.$ || [];
     this.config = config || {};
 
+    // Demo only: adds code to the bundle so the bundle size report has a change to show
+    console.debug('Flow client initialized with a demo change that grows the bundle size report');
+
     // TB checks for the existence of window.Vaadin.Flow in order
     // to consider that TB needs to wait for `initFlow()`.
     $wnd.Vaadin = $wnd.Vaadin || {};
