@@ -65,6 +65,7 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -211,6 +212,8 @@ class CspModeTest {
         CspViolationException exception = assertThrows(
                 CspViolationException.class, () -> call.accept(ui));
 
+        assertFalse(exception.getMessage().contains("The JavaScript is in"),
+                exception.getMessage());
         assertTraceLeadsFromApiToTest(exception, api, method);
     }
 
@@ -312,6 +315,15 @@ class CspModeTest {
             new Element("div").executeJs("return 1");
             JsFunction.of("return 1");
         });
+        assertFalse(CspViolationReporter.isEnabled());
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "OFF, false", "WARN, true", "STRICT, true" })
+    void isEnabled_onlyInModesThatReport(CspMode mode, boolean enabled) {
+        setup.getDeploymentConfiguration().setCspMode(mode);
+
+        assertEquals(enabled, CspViolationReporter.isEnabled());
     }
 
     @ParameterizedTest
@@ -340,6 +352,74 @@ class CspModeTest {
         for (Throwable warning : warnings.getAllValues()) {
             assertTraceLeadsFromApiToTest(warning, Element.class, "executeJs");
         }
+    }
+
+    @Test
+    void strict_stringJavaScriptWithDetail_throwsWithDetailAndTraceFromApi() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+
+        CspViolationException exception = assertThrows(
+                CspViolationException.class,
+                () -> reportFromComponent("series[2].formatter"));
+
+        assertTrue(
+                exception.getMessage().endsWith(
+                        " The JavaScript is in \"series[2].formatter\"."),
+                exception.getMessage());
+        assertTraceLeadsFromApiToTest(exception, CspModeTest.class,
+                "reportFromComponent");
+    }
+
+    @Test
+    void warn_stringJavaScriptWithDetail_logsOncePerCallSiteAndDetail() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.WARN);
+        Logger logger = mock(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            loggerFactory.when(
+                    () -> LoggerFactory.getLogger(CspViolationReporter.class))
+                    .thenReturn(logger);
+
+            // One call site, as for a component that reports before the
+            // client response
+            reportFromComponent("tooltip.formatter");
+            reportFromComponent("tooltip.formatter");
+            reportFromComponent("series[2].formatter");
+            reportFromOtherComponent("tooltip.formatter");
+        }
+
+        ArgumentCaptor<String> messages = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Throwable> warnings = ArgumentCaptor
+                .forClass(Throwable.class);
+        verify(logger, times(3)).warn(messages.capture(), warnings.capture());
+        assertTrue(
+                messages.getAllValues().get(0).contains("tooltip.formatter"));
+        assertTrue(
+                messages.getAllValues().get(1).contains("series[2].formatter"));
+        assertTrue(
+                messages.getAllValues().get(2).contains("tooltip.formatter"));
+        assertTraceLeadsFromApiToTest(warnings.getAllValues().get(0),
+                CspModeTest.class, "reportFromComponent");
+        assertTraceLeadsFromApiToTest(warnings.getAllValues().get(1),
+                CspModeTest.class, "reportFromComponent");
+        assertTraceLeadsFromApiToTest(warnings.getAllValues().get(2),
+                CspModeTest.class, "reportFromOtherComponent");
+    }
+
+    @Test
+    void stringJavaScriptWithNullDetail_throws() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.WARN);
+
+        assertThrows(NullPointerException.class,
+                () -> CspViolationReporter.reportStringJavaScript(null));
+    }
+
+    private static void reportFromComponent(String detail) {
+        CspViolationReporter.reportStringJavaScript(detail);
+    }
+
+    private static void reportFromOtherComponent(String detail) {
+        CspViolationReporter.reportStringJavaScript(detail);
     }
 
     @SuppressWarnings("removal")

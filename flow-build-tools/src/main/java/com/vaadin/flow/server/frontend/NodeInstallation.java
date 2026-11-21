@@ -65,6 +65,13 @@ final class NodeInstallation {
      */
     static final String LAST_USED_FILE = "last-used";
 
+    /**
+     * Name of the marker file that exists while the installation is being
+     * copied, so that one left behind by an install that died is known to be
+     * incomplete.
+     */
+    static final String INSTALLING_FILE = "installing";
+
     private final File directory;
 
     /**
@@ -116,6 +123,18 @@ final class NodeInstallation {
      */
     File getDirectory() {
         return directory;
+    }
+
+    /**
+     * Gets the file that lets only one build at a time install this version.
+     * Different versions install into separate directories, so they can be
+     * installed at the same time.
+     *
+     * @return the lock file, next to the installation directory
+     */
+    File getInstallLockFile() {
+        return new File(directory.getParentFile(),
+                ".vaadin-" + directory.getName() + "-install.lock");
     }
 
     /**
@@ -171,6 +190,39 @@ final class NodeInstallation {
     FrontendVersion getInstalledVersion() throws UnknownVersionException {
         return FrontendUtils.getVersion("node",
                 List.of(getNodeExecutable().getAbsolutePath(), "--version"));
+    }
+
+    /**
+     * Marks the installation as being installed, until {@link #markInstalled()}
+     * is called. Creates the installation directory if needed.
+     *
+     * @throws IOException
+     *             if the marker cannot be written
+     */
+    void markInstalling() throws IOException {
+        Files.createDirectories(directory.toPath());
+        Files.writeString(new File(directory, INSTALLING_FILE).toPath(),
+                Instant.now().toString(), StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Marks the installation as completely installed.
+     *
+     * @throws IOException
+     *             if the marker cannot be removed
+     */
+    void markInstalled() throws IOException {
+        Files.deleteIfExists(new File(directory, INSTALLING_FILE).toPath());
+    }
+
+    /**
+     * Checks whether an install of this installation was started but never
+     * completed, such as when the build installing it died.
+     *
+     * @return {@code true} if the installation is incomplete
+     */
+    boolean isIncomplete() {
+        return new File(directory, INSTALLING_FILE).exists();
     }
 
     /**
