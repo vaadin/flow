@@ -15,6 +15,9 @@
  */
 package com.vaadin.quarkus.deployment;
 
+import jakarta.servlet.annotation.HandlesTypes;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -23,10 +26,12 @@ import io.quarkus.arc.deployment.BeanArchiveIndexBuildItem;
 import io.quarkus.deployment.pkg.NativeConfig;
 import io.quarkus.undertow.deployment.ServletBuildItem;
 import org.atmosphere.cpr.ApplicationConfig;
+import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.quarkus.QuarkusVaadinServlet;
 import com.vaadin.quarkus.graal.QuarkusJSR356AsyncSupport;
 
@@ -69,6 +74,34 @@ class VaadinQuarkusProcessorTest {
                 .containsKey(ApplicationConfig.PROPERTY_COMET_SUPPORT));
         assertEquals(1, servlet.getLoadOnStartup());
         assertTrue(vaadinServlets.isEmpty());
+    }
+
+    @Test
+    void collectHandledTypes_includesInterfacesExtendingAHandledInterface()
+            throws IOException {
+        Indexer indexer = new Indexer();
+        indexer.indexClass(Listener.class);
+        indexer.indexClass(JsInvokers.class);
+        indexer.indexClass(GreeterJs.class);
+        indexer.indexClass(Greeter.class);
+        Index index = indexer.complete();
+
+        Set<String> handled = VaadinQuarkusProcessor.collectHandledTypes(index,
+                index.getClassByName(Listener.class).declaredAnnotation(
+                        DotName.createSimple(HandlesTypes.class)));
+
+        assertEquals(Set.of(GreeterJs.class.getName(), Greeter.class.getName()),
+                handled);
+    }
+
+    @HandlesTypes(JsInvokers.class)
+    static class Listener {
+    }
+
+    interface GreeterJs extends JsInvokers {
+    }
+
+    static class Greeter implements GreeterJs {
     }
 
     private void mapVaadinServletPaths(boolean nativeBuild) {
