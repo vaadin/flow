@@ -71,6 +71,9 @@ test('reports files that only one side has', () => {
     inputs: { 'Flow.ts': 30000, 'Lazy.ts': 500 }
   };
 
+  assert.strictEqual(compare(BASE, head).changed, true);
+  // A new file alone is a change too
+  assert.strictEqual(compare(BASE, { ...BASE, chunks: [...BASE.chunks, head.chunks[1]] }).changed, true);
   const body = comment(BASE, head, 'abc1234');
   assert.match(body, /\| `VAADIN\/build\/Lazy.js` \| 500 B \| new \| 300 B \| new \|/);
   assert.match(body, /\| `VAADIN\/build\/FlowClient.js` \| — \| removed \| — \| removed \|/);
@@ -118,6 +121,8 @@ function writeBundle(dir, flowHash, frontendHash, revision) {
   write(`webapp/VAADIN/build/index-${flowHash}.js`, 'export const a = 1;');
   write(`webapp/VAADIN/build/index-${frontendHash}.js`, 'export const bb = 2;');
   write('webapp/sw-precache-helper.js', 'export {};');
+  // Named like a chunk with a hash, but only files in VAADIN/build have one
+  write('webapp/sw-precache.js', 'self.precache = 1;');
   write('webapp/sw.js', `[{url:\`VAADIN/build/FlowClient-${flowHash}.js\`,revision:\`${revision}\`}]`);
   write('webapp/index.html', '<html></html>');
   const data = {
@@ -142,6 +147,7 @@ test('measures the files of the bundle, without their content hashes', () => {
       report.chunks.map((chunk) => chunk.name),
       [
         'sw-precache-helper.js',
+        'sw-precache.js',
         'sw.js',
         'VAADIN/build/FlowClient.js',
         'VAADIN/build/frontend.css',
