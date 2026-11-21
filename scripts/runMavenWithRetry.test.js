@@ -28,9 +28,10 @@ const OTHER_FAILURE =
  * retry duration.
  * When clock is given, date is stubbed to return that time and then 100
  * seconds more on each call, so every attempt takes 100 seconds and the
- * next one starts 100 seconds after it ended.
+ * next one starts 100 seconds after it ended. Returns the exit status, the
+ * number of attempts and what the script printed.
  */
-function run(attempts, env = {}, clock) {
+function runScript(attempts, env = {}, clock) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mvn-retry-'));
   try {
     fs.writeFileSync(path.join(dir, 'attempts.json'), JSON.stringify(attempts));
@@ -61,11 +62,32 @@ echo $((${clock} + calls * 100))`
       env: { ...inherited, ...env, PATH: `${dir}:${process.env.PATH}` },
       encoding: 'utf8'
     });
-    return { status: result.status, runs: +fs.readFileSync(path.join(dir, 'count'), 'utf8') };
+    return {
+      status: result.status,
+      runs: +fs.readFileSync(path.join(dir, 'count'), 'utf8'),
+      stdout: result.stdout
+    };
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
 }
+
+/** Like runScript, without the output. */
+function run(attempts, env, clock) {
+  const { status, runs } = runScript(attempts, env, clock);
+  return { status, runs };
+}
+
+test('prints the output of every attempt once', () => {
+  const { stdout } = runScript([
+    { log: `attempt 1\n${TRANSFER_ERROR}`, status: 1 },
+    { log: 'attempt 2\nBUILD SUCCESS', status: 0 }
+  ]);
+  assert.deepStrictEqual(
+    stdout.split('\n').filter((line) => !line.startsWith('::')),
+    ['attempt 1', TRANSFER_ERROR, 'attempt 2', 'BUILD SUCCESS', '']
+  );
+});
 
 test('retries a build that a transfer error stopped', () => {
   assert.deepStrictEqual(
