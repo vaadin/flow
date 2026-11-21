@@ -28,9 +28,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -91,6 +93,12 @@ class JsCallTest {
         }
     }
 
+    interface ContextJs extends Serializable {
+        @JsExpression("this.run($0)")
+        @JsWithExecutionContext
+        void run(String name);
+    }
+
     interface LoggerJs extends Serializable {
         @JsExpression("console.log($0, value)")
         void log(String prefix);
@@ -99,35 +107,44 @@ class JsCallTest {
         JsFunction createWithoutParameters(String prefix);
 
         @JsExpression("console.log($0, value)")
-        @JsCalledWith("value")
+        @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
 
         @JsExpression("console.log($0, value)")
-        @JsCalledWith("other")
+        @JsFunctionParameterNames("other")
         JsFunction createOtherLogger(String prefix);
     }
 
-    interface EmptyCalledWithJs extends Serializable {
+    interface EmptyFunctionParameterNamesJs extends Serializable {
         @JsExpression("console.log($0, value)")
-        @JsCalledWith({})
+        @JsFunctionParameterNames({})
         JsFunction createWithoutParameters(String prefix);
+    }
+
+    interface EventJs extends Serializable {
+        @JsExpression("return event.key === $0;")
+        DomEventFilter isKey(String key);
+
+        @JsExpression("return e.key === $0;")
+        @JsFunctionParameterNames("e")
+        DomEventFilter isKeyOf(String key);
     }
 
     interface InvalidNamesJs extends Serializable {
         @JsExpression("value")
-        @JsCalledWith("not-a-name")
+        @JsFunctionParameterNames("not-a-name")
         JsFunction notAnIdentifier();
 
         @JsExpression("value")
-        @JsCalledWith("class")
+        @JsFunctionParameterNames("class")
         JsFunction reservedWord();
 
         @JsExpression("value")
-        @JsCalledWith("$0")
+        @JsFunctionParameterNames("$0")
         JsFunction captureName(String value);
 
         @JsExpression("value")
-        @JsCalledWith({ "value", "value" })
+        @JsFunctionParameterNames({ "value", "value" })
         JsFunction duplicate();
     }
 
@@ -275,39 +292,60 @@ class JsCallTest {
     }
 
     @Test
-    void functionId_snippetWithoutCalledWith_isTheFunctionOfAnEmptyList()
+    void functionId_withExecutionContext_isAnotherFunction() throws Exception {
+        // The generated function takes the context as a leading parameter, so
+        // it may not be registered under the identifier of the same
+        // JavaScript generated without it
+        assertNotEquals(JsCall.functionId("this.run($0)", 1, false), JsCall
+                .functionId(ContextJs.class.getMethod("run", String.class)));
+    }
+
+    @Test
+    void functionId_snippetWithoutParameterNames_isTheFunctionOfAnEmptyList()
             throws Exception {
         // Both declare a function without parameters around the expression
         assertEquals(
                 JsCall.functionId(LoggerJs.class
                         .getMethod("createWithoutParameters", String.class)),
-                JsCall.functionId(EmptyCalledWithJs.class
+                JsCall.functionId(EmptyFunctionParameterNamesJs.class
                         .getMethod("createWithoutParameters", String.class)));
     }
 
     @Test
-    void getCalledWithNames_answersWhatTheMethodDeclares() throws Exception {
-        assertEquals(List.of("value"), JsCall.getCalledWithNames(
+    void getFunctionParameterNames_answersWhatTheMethodDeclares()
+            throws Exception {
+        assertEquals(List.of("value"), JsCall.getFunctionParameterNames(
                 LoggerJs.class.getMethod("createLogger", String.class)));
         assertEquals(List.of(),
-                JsCall.getCalledWithNames(LoggerJs.class
+                JsCall.getFunctionParameterNames(LoggerJs.class
                         .getMethod("createWithoutParameters", String.class)),
                 "a method without the annotation calls its function without parameters");
         // A call reads them off the method it calls, and only a snippet has
         // a function around its expression to name parameters of
         assertEquals(List.of("value"),
                 new JsCall(LoggerJs.class, "createLogger", List.of("a"))
-                        .getCalledWithNames());
-        assertEquals(List.of(), new JsCall(LoggerJs.class,
-                "createWithoutParameters", List.of("a")).getCalledWithNames());
+                        .getFunctionParameterNames());
+        assertEquals(List.of(),
+                new JsCall(LoggerJs.class, "createWithoutParameters",
+                        List.of("a")).getFunctionParameterNames());
         assertEquals(List.of(), new JsCall(LoggerJs.class, "log", List.of("a"))
-                .getCalledWithNames());
+                .getFunctionParameterNames());
+    }
+
+    @Test
+    void getFunctionParameterNames_snippetTypeDeclaresNames_methodTakesPrecedence()
+            throws Exception {
+        assertEquals(List.of("event", "element"),
+                JsCall.getFunctionParameterNames(
+                        EventJs.class.getMethod("isKey", String.class)));
+        assertEquals(List.of("e"), JsCall.getFunctionParameterNames(
+                EventJs.class.getMethod("isKeyOf", String.class)));
     }
 
     @ParameterizedTest
     @ValueSource(strings = { "notAnIdentifier", "reservedWord", "captureName",
             "duplicate" })
-    void getCalledWithNames_nameAFunctionCanNotDeclare_throws(
+    void getFunctionParameterNames_nameAFunctionCanNotDeclare_throws(
             String methodName) {
         // The names go into the generated module, where one of these is a
         // syntax error that would break every function in it
@@ -317,7 +355,7 @@ class JsCallTest {
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> JsCall.getCalledWithNames(method));
+                () -> JsCall.getFunctionParameterNames(method));
         assertTrue(exception.getMessage().contains(methodName),
                 "the message should name the method: "
                         + exception.getMessage());

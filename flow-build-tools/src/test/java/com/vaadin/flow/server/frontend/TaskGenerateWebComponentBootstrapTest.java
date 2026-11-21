@@ -20,6 +20,8 @@ import java.io.File;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
@@ -75,12 +77,14 @@ class TaskGenerateWebComponentBootstrapTest {
                         + "FlowClient.js';\n" + "init()"));
     }
 
-    @Test
-    void should_importBrowserHelpers() throws ExecutionFailedException {
+    @ParameterizedTest
+    @ValueSource(strings = { "BrowserHelpers.js", "ConnectionIndicator.js" })
+    void should_importFlowTsModules(String module)
+            throws ExecutionFailedException {
         taskGenerateWebComponentBootstrap.execute();
         String content = taskGenerateWebComponentBootstrap.getFileContent();
         assertTrue(content.contains("import '"
-                + FrontendUtils.JAR_RESOURCES_IMPORT + "BrowserHelpers.js';"));
+                + FrontendUtils.JAR_RESOURCES_IMPORT + module + "';"));
     }
 
     @Test

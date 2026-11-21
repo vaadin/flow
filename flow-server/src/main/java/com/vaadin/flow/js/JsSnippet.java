@@ -17,6 +17,8 @@ package com.vaadin.flow.js;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.dom.DomEventData;
+import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 
@@ -33,9 +35,9 @@ import com.vaadin.flow.dom.JsFunction;
  * a definition obtained from {@link Element#executeJs(Class)}. When the client
  * decodes the argument, it gets a function with those arguments bound, and the
  * expression runs when the invoker calls that function, as described for
- * {@link JsCalledWith}. Nothing is compiled from a string in the browser, so a
- * snippet passed that way works under a content security policy that does not
- * allow <code>unsafe-eval</code>. Passed to
+ * {@link JsFunctionParameterNames}. Nothing is compiled from a string in the
+ * browser, so a snippet passed that way works under a content security policy
+ * that does not allow <code>unsafe-eval</code>. Passed to
  * {@link Element#executeJs(String, Object...)} it works as well, but the
  * expression of that call is itself compiled from a string.
  * <p>
@@ -45,10 +47,36 @@ import com.vaadin.flow.dom.JsFunction;
  * nothing to release.
  * <p>
  * {@link JsFunction} is the snippet type for a function that whoever it is
- * passed to calls with arguments of its own, which {@link JsCalledWith} names.
+ * passed to calls with arguments of its own, which
+ * {@link JsFunctionParameterNames} names. {@link DomEventFilter} and
+ * {@link DomEventData} are snippet types that a DOM event listener runs for
+ * every event.
+ * <p>
+ * A component or an application can declare a snippet type of its own for what
+ * it invokes on the client, as an interface that extends this one and declares
+ * no instance methods. It names what the snippet is for, so an API can accept
+ * only snippets of that kind, and it can declare the parameters every snippet
+ * of it is called with by annotating the type with
+ * {@link JsFunctionParameterNames}:
+ *
+ * <pre>
+ * &#64;JsFunctionParameterNames({ "html", "item" })
+ * public interface ItemTemplate extends JsSnippet {
+ * }
+ *
+ * &#64;JsDefinition
+ * public interface OrderTemplates extends Serializable {
+ *     &#64;JsExpression("return html`&lt;b&gt;${$0}: ${item.status}&lt;/b&gt;`;")
+ *     ItemTemplate status(String label);
+ * }
+ * </pre>
+ *
+ * {@link JsSnippets#of(Class)} implements the type, and a snippet of it is sent
+ * to the client like a {@link JsFunction} that a {@link JsDefinition} interface
+ * declares: as the function the client calls with those parameters.
  *
  * @see JsSnippets#of(Class)
- * @see JsCalledWith
+ * @see JsFunctionParameterNames
  * @since 25.4
  */
 public interface JsSnippet extends Serializable {

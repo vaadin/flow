@@ -761,6 +761,7 @@ public class NodeInstaller {
      * 
      * @param platform
      *            platform to get download root for
+     * @return the download root URL for the platform
      * @since 25.1
      */
     public static String getDownloadRoot(Platform platform) {

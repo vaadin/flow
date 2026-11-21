@@ -43,6 +43,7 @@ import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Location;
@@ -263,6 +264,33 @@ class SpringSecurityAutoConfigurationTest {
         }
     }
 
+    @ParameterizedTest
+    @ValueSource(classes = { GuestAnonymousAuthorities.class,
+            GuestAnonymousAuthoritiesDebug.class })
+    void accessPathChecker_nullPrincipal_usesAnonymousAuthoritiesOfFilterChain(
+            Class<?> securityConfiguration) {
+        this.contextRunner.withUserConfiguration(securityConfiguration)
+                .run(context -> {
+                    SecurityContextHolderStrategy strategy = context
+                            .getBean(SecurityContextHolderStrategy.class);
+                    SecurityContext securityContext = strategy
+                            .createEmptyContext();
+                    securityContext.setAuthentication(
+                            new UsernamePasswordAuthenticationToken("user",
+                                    "n/a", AuthorityUtils
+                                            .createAuthorityList("ROLE_USER")));
+                    strategy.setContext(securityContext);
+                    try {
+                        assertThat(context.getBean(AccessPathChecker.class)
+                                .hasAccess("guest", null, role -> false))
+                                .as("Guest only path should be allowed for a null principal with the configured anonymous authorities, even if a user is logged in")
+                                .isTrue();
+                    } finally {
+                        strategy.clearContext();
+                    }
+                });
+    }
+
     @Test
     void securityBeansAreSerializable() {
         this.contextRunner.run((context) -> {
@@ -395,6 +423,48 @@ class SpringSecurityAutoConfigurationTest {
         @Override
         public SecurityContext createEmptyContext() {
             return new SecurityContextImpl();
+        }
+    }
+
+    @TestConfiguration(proxyBeanMethods = false)
+    @EnableWebSecurity
+    static class GuestAnonymousAuthorities {
+
+        @Bean
+        public SecurityFilterChain guestSecurityFilterChain(
+                HttpSecurity httpSecurity) {
+            return httpSecurity
+                    .with(VaadinSecurityConfigurer.vaadin(),
+                            Customizer.withDefaults())
+                    .anonymous(anonymous -> anonymous.authorities("ROLE_GUEST"))
+                    .authorizeHttpRequests(cfg -> cfg
+                            .requestMatchers(PathPatternRequestMatcher
+                                    .withDefaults().matcher("/guest/**"))
+                            .hasRole("GUEST"))
+                    .build();
+        }
+    }
+
+    /**
+     * Same as {@link GuestAnonymousAuthorities}, with the filter chain proxy
+     * wrapped in a debug filter.
+     */
+    @TestConfiguration(proxyBeanMethods = false)
+    @EnableWebSecurity(debug = true)
+    static class GuestAnonymousAuthoritiesDebug {
+
+        @Bean
+        public SecurityFilterChain guestSecurityFilterChain(
+                HttpSecurity httpSecurity) {
+            return httpSecurity
+                    .with(VaadinSecurityConfigurer.vaadin(),
+                            Customizer.withDefaults())
+                    .anonymous(anonymous -> anonymous.authorities("ROLE_GUEST"))
+                    .authorizeHttpRequests(cfg -> cfg
+                            .requestMatchers(PathPatternRequestMatcher
+                                    .withDefaults().matcher("/guest/**"))
+                            .hasRole("GUEST"))
+                    .build();
         }
     }
 

@@ -284,16 +284,15 @@ public class IndexHtmlRequestHandlerTest {
         });
 
         String header = serveIndexHtmlAndCaptureCspHeader();
-        Matcher matcher = Pattern
-                .compile(
-                        "script-src 'nonce-([A-Za-z0-9+/=]+)' 'strict-dynamic'")
+        Matcher matcher = Pattern.compile(
+                "script-src 'nonce-([A-Za-z0-9+/]{22})' 'strict-dynamic'")
                 .matcher(header);
         assertTrue(matcher.find(), header);
         String nonce = matcher.group(1);
         assertEquals("default-src 'self'; script-src 'nonce-" + nonce
                 + "' 'strict-dynamic'; style-src 'self' 'unsafe-inline'; "
                 + "img-src 'self' data:; font-src 'self' data:; "
-                + "connect-src 'self' https://api.example.com; "
+                + "connect-src 'self' data: https://api.example.com; "
                 + "worker-src 'self'; object-src 'none'; base-uri 'self'",
                 header);
 

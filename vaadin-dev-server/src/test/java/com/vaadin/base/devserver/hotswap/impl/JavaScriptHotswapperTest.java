@@ -266,6 +266,16 @@ class JavaScriptHotswapperTest {
     }
 
     @Test
+    void usesInterfaceRuntimeScriptChanged_componentInUse_reloadsWithNewValue()
+            throws Exception {
+        assertEquals(Optional.of(UIUpdateStrategy.RELOAD),
+                hotswapInPlace(HelperJs.class, HelperJsChanged.class, null,
+                        UsesHelperJs.class));
+        assertEquals(Set.of("/changed.js"),
+                javaScriptValues(UsesHelperJs.class));
+    }
+
+    @Test
     void runtimeScriptChanged_componentNotInUse_noReload() throws Exception {
         assertEquals(Optional.empty(), hotswap(RuntimeScript.class,
                 RuntimeScriptChanged.class, false));
@@ -500,5 +510,18 @@ class JavaScriptHotswapperTest {
     @Tag("div")
     @Uses(Helper.class)
     public static class UsesHelper extends Component {
+    }
+
+    @JavaScript("/script.js")
+    public interface HelperJs {
+    }
+
+    @JavaScript("/changed.js")
+    public interface HelperJsChanged {
+    }
+
+    @Tag("div")
+    @Uses(HelperJs.class)
+    public static class UsesHelperJs extends Component {
     }
 }

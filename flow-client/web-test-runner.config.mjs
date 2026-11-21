@@ -65,6 +65,11 @@ export default {
     },
     esbuildPlugin({
       ts: true,
+      // esbuild does not read the target from tsconfig and defaults to
+      // esnext, which leaves the standard decorators and accessor fields of
+      // the ConnectionIndicator Lit element untransformed, and the browser
+      // can not parse those. Match the tsconfig target so they are lowered.
+      target: 'es2023',
       tsconfig: fileURLToPath(new URL('./tsconfig.json', import.meta.url))
     })
   ],

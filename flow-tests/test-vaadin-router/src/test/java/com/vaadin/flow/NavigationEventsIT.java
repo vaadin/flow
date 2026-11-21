@@ -16,7 +16,6 @@
 package com.vaadin.flow;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -60,6 +59,6 @@ public class NavigationEventsIT extends ChromeBrowserTest {
     private List<String> getMessages() {
         return findElement(By.id("messages"))
                 .findElements(By.cssSelector("div")).stream()
-                .map(WebElement::getText).collect(Collectors.toList());
+                .map(WebElement::getText).toList();
     }
 }
