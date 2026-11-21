@@ -21,19 +21,28 @@ import java.io.PrintWriter;
 import org.atmosphere.cpr.ApplicationConfig;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
+import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
+import org.atmosphere.cpr.AtmosphereResourceEventListener;
 import org.atmosphere.cpr.AtmosphereResourceImpl;
 import org.atmosphere.cpr.AtmosphereResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinServletService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -121,6 +130,48 @@ class PushAtmosphereHandlerTest {
         verify(printWriter, times(connected ? 1 : 0))
                 .write("pending push message");
         verify(pushHandler, times(cancelled ? 1 : 0)).connectionLost(event);
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "IllegalStateException, WEBSOCKET, false",
+            "IllegalStateException, LONG_POLLING, true",
+            "UnsupportedOperationException, WEBSOCKET, true" })
+    void onThrowable_writeRejectedOnWebsocket_loggedAsLostConnection(
+            String exceptionType, TRANSPORT transport, boolean loggedAsError)
+            throws IOException {
+        PushHandler pushHandler = mock(PushHandler.class);
+        atmosphereHandler.setPushHandler(pushHandler);
+        when(request.getMethod()).thenReturn("GET");
+        atmosphereHandler.onRequest(resource);
+        ArgumentCaptor<AtmosphereResourceEventListener> listener = ArgumentCaptor
+                .forClass(AtmosphereResourceEventListener.class);
+        verify(resource).addEventListener(listener.capture());
+
+        RuntimeException throwable = "IllegalStateException"
+                .equals(exceptionType)
+                        ? new IllegalStateException(
+                                "The remote endpoint was in state [TEXT_FULL_WRITING]")
+                        : new UnsupportedOperationException();
+        when(resource.transport()).thenReturn(transport);
+        AtmosphereResourceEvent event = mock(AtmosphereResourceEvent.class);
+        when(event.getResource()).thenReturn(resource);
+        when(event.throwable()).thenReturn(throwable);
+
+        Logger logger = mock(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            loggerFactory
+                    .when(() -> LoggerFactory
+                            .getLogger(PushAtmosphereHandler.class.getName()))
+                    .thenReturn(logger);
+            listener.getValue().onThrowable(event);
+        }
+
+        verify(logger, times(loggedAsError ? 1 : 0))
+                .error("Exception in push connection", throwable);
+        verify(logger, times(loggedAsError ? 0 : 1)).debug(anyString(),
+                any(Throwable.class));
+        verify(pushHandler).connectionLost(event);
     }
 
 }

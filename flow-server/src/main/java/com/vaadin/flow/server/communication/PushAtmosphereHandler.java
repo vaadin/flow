@@ -126,10 +126,29 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
                     && throwable.getMessage() != null && throwable.getMessage()
                             .contains("Connection remotely closed")) {
                 getLogger().debug("Push connection remotely closed", throwable);
+            } else if (isWriteRejectedAfterFailedWrite(event, throwable)) {
+                getLogger().debug(
+                        "Push connection lost while a message was being written",
+                        throwable);
             } else {
                 getLogger().error("Exception in push connection", throwable);
             }
             pushHandler.connectionLost(event);
+        }
+
+        /**
+         * Checks whether the websocket container rejected a write because an
+         * earlier write has not completed. Atmosphere writes one message at a
+         * time, so this only happens once an earlier write has failed because
+         * the client went away. Tomcat, for example, then leaves the endpoint
+         * in the "TEXT_FULL_WRITING" state and rejects every further write on
+         * that connection.
+         */
+        private boolean isWriteRejectedAfterFailedWrite(
+                AtmosphereResourceEvent event, Throwable throwable) {
+            return throwable instanceof IllegalStateException
+                    && event.getResource() != null && event.getResource()
+                            .transport() == AtmosphereResource.TRANSPORT.WEBSOCKET;
         }
     }
 }
