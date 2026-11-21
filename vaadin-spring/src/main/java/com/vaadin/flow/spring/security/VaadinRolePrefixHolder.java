@@ -45,13 +45,13 @@ import com.vaadin.flow.server.VaadinServletRequest;
 public class VaadinRolePrefixHolder implements Serializable {
 
     /** The role prefix in use, or {@code null} if none is set. */
-    private String rolePrefix;
+    private volatile String rolePrefix;
 
     /**
      * Whether the prefix has been resolved, so that it is not looked up again
      * when it resolves to {@code null}.
      */
-    private boolean rolePrefixSet;
+    private volatile boolean rolePrefixSet;
 
     /**
      * Construct {@link VaadinRolePrefixHolder} with a role prefix.
@@ -135,31 +135,50 @@ public class VaadinRolePrefixHolder implements Serializable {
                 field.setAccessible(true);
                 rolePrefix = (String) field.get(source);
             } catch (IllegalAccessException e) {
-                getLogger().warn(
-                        String.format("Could not read %s#rolePrefix field.",
-                                type.getSimpleName()),
-                        e);
+                getLogger().warn("Could not read {}#rolePrefix field.",
+                        type.getSimpleName(), e);
             }
         }
         this.rolePrefixSet = true;
     }
 
+    /**
+     * Reset role prefix from the given servlet request, if it is or wraps a
+     * {@link SecurityContextHolderAwareRequestWrapper}. Method doesn't do
+     * anything if role prefix is not found.
+     *
+     * @param request
+     *            servlet request used to find active role prefix
+     */
+    void resetRolePrefixFromServletRequest(ServletRequest request) {
+        SecurityContextHolderAwareRequestWrapper requestWrapper = findSecurityContextHolderAwareRequestWrapper(
+                request);
+        if (requestWrapper != null) {
+            resetRolePrefix(requestWrapper);
+        }
+    }
+
     private SecurityContextHolderAwareRequestWrapper findSecurityContextHolderAwareRequestWrapper(
             VaadinRequest request) {
         if (request instanceof VaadinServletRequest) {
-            ServletRequest servletRequest = ((VaadinServletRequest) request)
-                    .getRequest();
-            Set<Object> checkedWrappers = new HashSet<>();
-            while (servletRequest instanceof ServletRequestWrapper
-                    && !checkedWrappers.contains(servletRequest)) {
-                checkedWrappers.add(servletRequest);
-                if (SecurityContextHolderAwareRequestWrapper.class
-                        .isAssignableFrom(servletRequest.getClass())) {
-                    return (SecurityContextHolderAwareRequestWrapper) servletRequest;
-                }
-                servletRequest = ((ServletRequestWrapper) servletRequest)
-                        .getRequest();
+            return findSecurityContextHolderAwareRequestWrapper(
+                    ((VaadinServletRequest) request).getRequest());
+        }
+        return null;
+    }
+
+    private SecurityContextHolderAwareRequestWrapper findSecurityContextHolderAwareRequestWrapper(
+            ServletRequest servletRequest) {
+        Set<Object> checkedWrappers = new HashSet<>();
+        while (servletRequest instanceof ServletRequestWrapper
+                && !checkedWrappers.contains(servletRequest)) {
+            checkedWrappers.add(servletRequest);
+            if (SecurityContextHolderAwareRequestWrapper.class
+                    .isAssignableFrom(servletRequest.getClass())) {
+                return (SecurityContextHolderAwareRequestWrapper) servletRequest;
             }
+            servletRequest = ((ServletRequestWrapper) servletRequest)
+                    .getRequest();
         }
         return null;
     }
