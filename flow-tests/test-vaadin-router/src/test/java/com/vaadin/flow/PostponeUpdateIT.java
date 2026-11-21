@@ -55,6 +55,7 @@ public class PostponeUpdateIT extends ChromeBrowserTest {
     @Test
     public void postpone_cancelResetsUrlOnBack() {
         open();
+        String initialUrl = getDriver().getCurrentUrl();
 
         findElement(By.id("link")).click();
         $(NativeButtonElement.class).id("proceedButton").click();
@@ -69,6 +70,93 @@ public class PostponeUpdateIT extends ChromeBrowserTest {
 
         Assert.assertEquals("Canceling should revert to " + updatedUrl,
                 getDriver().getCurrentUrl(), updatedUrl);
+
+        // The history entry of the cancelled navigation is still there
+        getDriver().navigate().back();
+        waitUntil(driver -> isElementPresent(By.id("proceedButton")));
+        $(NativeButtonElement.class).id("proceedButton").click();
+        waitUntil(driver -> driver.getCurrentUrl().equals(initialUrl), 5);
+    }
+
+    @Test
+    public void postpone_backKeepsUrlUntilProceedAndKeepsForwardHistory() {
+        open();
+        String initialUrl = getDriver().getCurrentUrl();
+
+        findElement(By.id("link")).click();
+        $(NativeButtonElement.class).id("proceedButton").click();
+        waitUntil(driver -> driver.getCurrentUrl().endsWith("/1"));
+
+        String postponingUrl = getDriver().getCurrentUrl();
+
+        getDriver().navigate().back();
+        waitUntil(driver -> isElementPresent(By.id("proceedButton")));
+        Assert.assertEquals(
+                "While the navigation is postponed, the URL should stay",
+                postponingUrl, getDriver().getCurrentUrl());
+
+        $(NativeButtonElement.class).id("proceedButton").click();
+        waitUntil(driver -> driver.getCurrentUrl().equals(initialUrl), 5);
+
+        getDriver().navigate().forward();
+        waitUntil(driver -> isElementPresent(By.id("proceedButton")));
+        Assert.assertEquals(
+                "While the forward navigation is postponed, the URL should stay",
+                initialUrl, getDriver().getCurrentUrl());
+
+        $(NativeButtonElement.class).id("proceedButton").click();
+        waitUntil(driver -> driver.getCurrentUrl().equals(postponingUrl), 5);
+    }
+
+    @Test
+    public void postpone_linkWhileBackPostponed_backStillReachesTarget() {
+        open();
+        String initialUrl = getDriver().getCurrentUrl();
+
+        findElement(By.id("link")).click();
+        $(NativeButtonElement.class).id("proceedButton").click();
+        waitUntil(driver -> driver.getCurrentUrl().endsWith("/1"));
+
+        getDriver().navigate().back();
+        waitUntil(driver -> isElementPresent(By.id("cancelButton")));
+
+        // A new navigation replaces the postponed back navigation
+        findElement(By.id("link")).click();
+        $(NativeButtonElement.class).id("cancelButton").click();
+        waitUntil(driver -> !isElementPresent(By.id("cancelButton")));
+
+        // The entry of the replaced back navigation leads to its target
+        getDriver().navigate().back();
+        waitUntil(driver -> isElementPresent(By.id("proceedButton")));
+        $(NativeButtonElement.class).id("proceedButton").click();
+        waitUntil(driver -> driver.getCurrentUrl().equals(initialUrl), 5);
+    }
+
+    @Test
+    public void postpone_forwardWhileBackPostponed_keepsHistory() {
+        open();
+        String initialUrl = getDriver().getCurrentUrl();
+
+        findElement(By.id("link")).click();
+        $(NativeButtonElement.class).id("proceedButton").click();
+        waitUntil(driver -> driver.getCurrentUrl().endsWith("/1"));
+        String postponingUrl = getDriver().getCurrentUrl();
+
+        getDriver().navigate().back();
+        waitUntil(driver -> isElementPresent(By.id("cancelButton")));
+
+        // Back to the entry of the active view
+        getDriver().navigate().forward();
+        waitUntil(driver -> driver.getCurrentUrl().equals(postponingUrl), 5);
+        $(NativeButtonElement.class).id("cancelButton").click();
+        waitUntil(driver -> !isElementPresent(By.id("cancelButton")));
+        Assert.assertEquals(postponingUrl, getDriver().getCurrentUrl());
+
+        // No entry was added or changed: one back reaches the initial view
+        getDriver().navigate().back();
+        waitUntil(driver -> isElementPresent(By.id("proceedButton")));
+        $(NativeButtonElement.class).id("proceedButton").click();
+        waitUntil(driver -> driver.getCurrentUrl().equals(initialUrl), 5);
     }
 
 }
