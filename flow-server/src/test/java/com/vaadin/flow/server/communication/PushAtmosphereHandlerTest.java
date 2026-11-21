@@ -138,8 +138,7 @@ class PushAtmosphereHandlerTest {
             "TEXT_FULL_WRITING, LONG_POLLING, true",
             "TEXT_PARTIAL_WRITING, WEBSOCKET, true" })
     void onThrowable_writeRejectedAfterFailedWrite_loggedAsLostConnection(
-            String endpointState, TRANSPORT transport, boolean loggedAsError)
-            throws IOException {
+            String endpointState, TRANSPORT transport, boolean loggedAsError) {
         PushHandler pushHandler = mock(PushHandler.class);
         atmosphereHandler.setPushHandler(pushHandler);
         when(request.getMethod()).thenReturn("GET");
