@@ -125,9 +125,15 @@ reflectively, over a class loader of its own: the plugin must not carry the
 daemon into every build it runs in, and the version worth pre-downloading is the
 one the daemon that will actually run has pinned. So a project whose daemon
 predates this only gets a warning, and the goal and the `start` can never
-disagree about the version. The daemon still provisions on demand through the
-same code and into the same cache, so a project that never ran the goal is
-unaffected and one that did never downloads twice.
+disagree about the version. The goal hands `HotswapAgentJar` a resolver over
+the build's own repositories, and it is asked for the pinned coordinates before
+anything is downloaded: the jar is an ordinary Maven Central artifact, so the
+build's local repository, mirrors, proxies and retries apply to it like to any
+dependency, and the copy is checksum-verified like a download. Only when that
+fails does it fall back to the direct download, which retries a rate limit or
+a server error a few times before giving up. The daemon still provisions on
+demand through the same code and into the same cache, so a project that never
+ran the goal is unaffected and one that did never downloads twice.
 `-Dvaadin.devcli.skipHotswapAgent=true` installs the CLI without it; dropping
 the pinned jar into `~/.vaadin/devloop/` by hand works too, since what is
 there is checksum-verified either way.
