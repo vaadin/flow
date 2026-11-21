@@ -15,7 +15,9 @@ const TEST_FAILURE =
   '[ERROR] Failed to execute goal org.apache.maven.plugins:maven-failsafe-plugin:3.5.3:verify (default) on project bar: There are test failures.';
 const FLAKY_CLASS = '[ERROR] Tests run: 3, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 2 s <<< FAILURE! -- in FooIT';
 const JAVADOC_ERROR = '[ERROR] /home/runner/work/flow/flow-server/src/main/java/Foo.java:12: error: unknown tag: foo';
-const OTHER_FAILURE = '[ERROR] Failed to execute goal on project foo: Compilation failure';
+const COMPILE_ERROR = '[ERROR] Failed to execute goal on project foo: Compilation failure';
+const OTHER_FAILURE =
+  '[ERROR] Failed to execute goal org.apache.maven.plugins:maven-enforcer-plugin:3.5.0:enforce (enforce) on project foo: Some Enforcer rules have failed.';
 
 /**
  * Runs the script with a fake mvn that prints the given log and exits with
@@ -75,15 +77,20 @@ test('retries a build that a transfer error stopped', () => {
   );
 });
 
-test('retries a transfer error next to a test that passed on a rerun', () => {
-  assert.deepStrictEqual(
-    run([
-      { log: `${FLAKY_CLASS}\n${TRANSFER_ERROR}`, status: 1 },
-      { log: 'BUILD SUCCESS', status: 0 }
-    ]),
-    { status: 0, runs: 2 }
-  );
-});
+for (const [name, other] of [
+  ['a test that passed on a rerun', FLAKY_CLASS],
+  ['another failure', OTHER_FAILURE]
+]) {
+  test(`retries a transfer error next to ${name}`, () => {
+    assert.deepStrictEqual(
+      run([
+        { log: `${other}\n${TRANSFER_ERROR}`, status: 1 },
+        { log: 'BUILD SUCCESS', status: 0 }
+      ]),
+      { status: 0, runs: 2 }
+    );
+  });
+}
 
 test('stops after the last attempt when the transfer error persists', () => {
   assert.deepStrictEqual(run([{ log: TRANSFER_ERROR, status: 1 }]), { status: 1, runs: 3 });
@@ -95,7 +102,7 @@ for (const [name, failure] of [
     'a test timeout',
     '[ERROR] Failed to execute goal org.apache.maven.plugins:maven-failsafe-plugin:3.5.3:verify (default) on project bar: There was a timeout in the fork'
   ],
-  ['a compile error', OTHER_FAILURE],
+  ['a compile error', COMPILE_ERROR],
   ['Javadoc errors', JAVADOC_ERROR]
 ]) {
   test(`does not retry a build with ${name} next to a transfer error`, () => {
