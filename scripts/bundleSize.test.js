@@ -37,6 +37,11 @@ test('reports the files and modules that changed', () => {
   assert.ok(body.includes('| `VAADIN/build/FlowClient.js` | 4,000 B | no change | 1,400 B | no change |'));
   assert.ok(
     body.includes(
+      '| `sw.js` | 7,900 B | $\\color{green}\\textbf{−100 B}$ (−1.3%) | 3,650 B | $\\color{green}\\textbf{−50 B}$ (−1.4%) |'
+    )
+  );
+  assert.ok(
+    body.includes(
       '| **Total** | 42,400 B | $\\color{red}\\textbf{+400 B}$ (+1.0%) | 15,150 B | $\\color{red}\\textbf{+50 B}$ (+0.3%) |'
     )
   );
@@ -98,6 +103,7 @@ test('reports the head alone when the base has nothing to compare with', () => {
   const body = comment(undefined, BASE, 'abc1234');
   assert.match(body, /The base commit abc1234 has no bundle to compare with/);
   assert.match(body, /\| `VAADIN\/build\/frontend.js` \| 30,000 B \| — \| 10,000 B \| — \|/);
+  assert.match(body, /\| \*\*Total\*\* \| 42,000 B \| — \| 15,100 B \| — \|/);
   assert.doesNotMatch(body, /Size by module/);
 });
 
@@ -128,7 +134,8 @@ test('measures the files of the bundle, without their content hashes', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'bundle-size-'));
   try {
     writeBundle(path.join(root, 'a'), 'CLdr9-o5', '0t8eFnqu', 'fa3a7c534add2c23216aa9b03072c637');
-    writeBundle(path.join(root, 'b'), 'Zz_9-AbC', '1u9fGovv', '8ae2962cf316013f6ddea757e12d20cb');
+    // Hashes that compress better than the ones above, so that a hash left unmasked changes the Brotli size
+    writeBundle(path.join(root, 'b'), 'aaaaaaaa', 'bbbbbbbb', '8ae2962cf316013f6ddea757e12d20cb');
 
     const report = measure(path.join(root, 'a'));
     assert.deepStrictEqual(
