@@ -173,6 +173,58 @@ public sealed interface Foo permits FooA, FooB, FooC {}
   and NullAway infers it for the constructor, so `new ValueSignal<>(null)`
   and `Signal.cached(...)` need no repeated type argument or type witness.
 
+#### Annotating existing API
+
+The rules above are written for new code. Retrofitting JSpecify annotations
+onto a class that already ships has traps of its own, and the fix for one of
+them tends to break something else. The rules are in `CONVENTIONS.md`; this is
+the reasoning behind them.
+
+- **It can be a Kotlin source break.** Kotlin reads JSpecify annotations as
+  strict (the default since Kotlin 2.1), so marking an existing getter such as
+  `Element.getParent()` `@Nullable` makes `el.parent.tag` a compile error.
+  Making a parameter `@Nullable` relaxes the contract for callers, but a Kotlin
+  subclass whose override still declares that parameter non-null stops
+  compiling. Null-marking a class has the same effects for every unannotated
+  type in it, which become non-null for Kotlin. Java callers are unaffected
+  unless they run NullAway, which is why the change looks safe from the Java
+  side. Treat it as a breaking change in a minor release: say so in the pull
+  request risks and the release notes.
+- **Wildcards clash with overrides.** Changing a parameter of a non-final
+  method from `SerializableFunction<UI, Registration>` to
+  `SerializableFunction<UI, ? extends @Nullable Registration>` keeps the
+  erasure but changes the signature, so an existing override with the old
+  parameter type fails with "name clash: … have the same erasure, yet neither
+  overrides the other". `SerializableFunction<UI, @Nullable Registration>`
+  avoids the clash and accepts lambdas, the usual argument, unchanged. It is
+  not equivalent, though: type arguments are invariant, so a caller passing a
+  variable declared as `SerializableFunction<UI, Registration>` gets a type
+  mismatch in Kotlin and under NullAway. If neither form fits, keep the
+  signature and document in the Javadoc that `null` is allowed.
+- **Overloads keep their delegation.** If `getProperty(String)` delegates to
+  `getProperty(String, String)`, a subclass may override either one and rely
+  on the other going through it. Splitting the two to give them different
+  nullness changes which override takes effect. Check how callers actually use
+  an overload before tightening it, too: `getProperty(name, null)` is a common
+  idiom, so a non-null `defaultValue` contract would not hold.
+- **`@NullUnmarked` is coarse.** On a method it turns off checking for every
+  parameter and the return type, not just the one generic argument that could
+  not be expressed. Annotating the type argument (`Signal<@Nullable String>`)
+  keeps the rest checked. When `@NullUnmarked` is the only way out, point to a
+  single tracking issue so the reason is written down once.
+- **Siblings agree.** Methods that take the same parameter — `executeJs`,
+  `callJsFunction` and `addJsInitializer` all take a varargs array of
+  arguments — give it the same nullness. A caller should not find that `null`
+  is accepted by one and throws a `NullPointerException` in another.
+- **Package-level `@NullMarked` covers every class.** With NullAway's
+  `OnlyNullMarked`, `@NullMarked` in `package-info.java` makes every class in
+  the package checked, and for Kotlin every unannotated type in it becomes
+  non-null without anyone having audited it. While a package is annotated
+  class by class (as the `Table*` and media classes in
+  `com.vaadin.flow.component.html` are), mark each audited class with
+  `@NullMarked`, and move the annotation to the package — adding a
+  `package-info.java` if there is none — once all of them are done.
+
 ### Lifecycle and cleanup
 
 Resources that outlive a single request — watches, DOM listeners, timers,
