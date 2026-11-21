@@ -51,7 +51,13 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
     @Override
     public void onStateChange(AtmosphereResourceEvent event)
             throws IOException {
-        super.onStateChange(event);
+        // Flow never sets a message to write on close, so any message on a
+        // closing event is a broadcast that is being written concurrently to
+        // the same socket. Writing it again collides with that write (Tomcat:
+        // "TEXT_FULL_WRITING") and the client is gone anyway.
+        if (!event.isCancelled() && !event.isClosedByClient()) {
+            super.onStateChange(event);
+        }
         if (pushHandler == null) {
             getLogger().warn(
                     "AtmosphereHandler.onStateChange called before PushHandler has been set. This should really not happen");
@@ -120,10 +126,31 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
                     && throwable.getMessage() != null && throwable.getMessage()
                             .contains("Connection remotely closed")) {
                 getLogger().debug("Push connection remotely closed", throwable);
+            } else if (isWriteRejectedAfterFailedWrite(event, throwable)) {
+                getLogger().debug(
+                        "Push connection lost while a message was being written",
+                        throwable);
             } else {
                 getLogger().error("Exception in push connection", throwable);
             }
             pushHandler.connectionLost(event);
+        }
+
+        /**
+         * Checks whether the websocket container rejected a write because an
+         * earlier complete message write on the connection never finished.
+         * Tomcat keeps the endpoint in the {@code TEXT_FULL_WRITING} (or
+         * {@code BINARY_FULL_WRITING}) state after a write fails, for instance
+         * because the client went away, and rejects every further write on that
+         * connection with this {@link IllegalStateException}.
+         */
+        private boolean isWriteRejectedAfterFailedWrite(
+                AtmosphereResourceEvent event, Throwable throwable) {
+            return throwable instanceof IllegalStateException
+                    && throwable.getMessage() != null
+                    && throwable.getMessage().contains("_FULL_WRITING]")
+                    && event.getResource() != null && event.getResource()
+                            .transport() == AtmosphereResource.TRANSPORT.WEBSOCKET;
         }
     }
 }
