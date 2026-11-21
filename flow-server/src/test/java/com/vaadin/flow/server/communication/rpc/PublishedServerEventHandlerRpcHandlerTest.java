@@ -21,6 +21,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -115,6 +117,58 @@ class PublishedServerEventHandlerRpcHandlerTest {
             isInvoked = true;
         }
 
+    }
+
+    public interface SuperInterfaceWithClientCallable {
+        @ClientCallable
+        default void defaultMethod() {
+            ((ComponentWithDefaultClientCallable) this).isInvoked = true;
+        }
+    }
+
+    public interface InterfaceWithClientCallable
+            extends SuperInterfaceWithClientCallable {
+        @ClientCallable
+        default void inertMethod() {
+            ((ComponentWithDefaultClientCallable) this).isInvoked = true;
+        }
+
+        @ClientCallable
+        void abstractMethod();
+    }
+
+    public interface InertInterfaceWithClientCallable
+            extends InterfaceWithClientCallable {
+        @Override
+        @ClientCallable
+        @AllowInert
+        default void inertMethod() {
+            ((ComponentWithDefaultClientCallable) this).isInvoked = true;
+        }
+    }
+
+    @Tag(Tag.DIV)
+    public static class ComponentWithDefaultClientCallable extends Component
+            implements InterfaceWithClientCallable {
+
+        private boolean isInvoked;
+
+        @Override
+        public void abstractMethod() {
+            isInvoked = true;
+        }
+    }
+
+    @Tag(Tag.DIV)
+    public static class SubComponentWithDefaultClientCallable
+            extends ComponentWithDefaultClientCallable
+            implements InertInterfaceWithClientCallable {
+    }
+
+    @Tag(Tag.DIV)
+    public static class SubSubComponentWithDefaultClientCallable
+            extends SubComponentWithDefaultClientCallable
+            implements InterfaceWithClientCallable {
     }
 
     enum Title {
@@ -246,6 +300,49 @@ class PublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method", JacksonUtils.createArrayNode(),
                 -1);
+
+        assertTrue(component.isInvoked);
+    }
+
+    @Test
+    void interfaceDefaultMethodIsInvoked() {
+        // Declared on a superinterface of the implemented interface
+        ComponentWithDefaultClientCallable component = new ComponentWithDefaultClientCallable();
+        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                component.getClass(), "defaultMethod",
+                JacksonUtils.createArrayNode(), -1);
+
+        assertTrue(component.isInvoked);
+    }
+
+    @Test
+    void abstractInterfaceMethod_notInvoked() {
+        // Only the interface declaration is annotated, so the implementation
+        // is not published
+        ComponentWithDefaultClientCallable component = new ComponentWithDefaultClientCallable();
+        ArrayNode args = JacksonUtils.createArrayNode();
+        assertThrows(IllegalStateException.class,
+                () -> PublishedServerEventHandlerRpcHandler.invokeMethod(
+                        component, ComponentWithDefaultClientCallable.class,
+                        "abstractMethod", args, -1));
+
+        assertFalse(component.isInvoked);
+    }
+
+    // The declaration without @AllowInert is reached first for the sub
+    // component and last for the sub-sub component, but the more specific
+    // override with @AllowInert must win either way
+    @ParameterizedTest
+    @ValueSource(classes = { SubComponentWithDefaultClientCallable.class,
+            SubSubComponentWithDefaultClientCallable.class })
+    void interfaceOverride_mostSpecificDeclarationUsed(
+            Class<? extends ComponentWithDefaultClientCallable> componentClass)
+            throws ReflectiveOperationException {
+        ComponentWithDefaultClientCallable component = componentClass
+                .getDeclaredConstructor().newInstance();
+        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                component.getClass(), "inertMethod",
+                JacksonUtils.createArrayNode(), -1, true);
 
         assertTrue(component.isInvoked);
     }

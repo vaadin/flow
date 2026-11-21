@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.RuntimeHints;
@@ -163,13 +162,23 @@ class ClientCallableAotProcessorTest {
     }
 
     @Test
-    @Disabled("@ClientCallable on interfaces are currently not supported")
     void processAheadOfTime_clientCallableOnInterface_typesDetected() {
         RuntimeHints hints = processAotForComponents(
                 InterfaceBasedComponent.class);
 
         assertThat(RuntimeHintsPredicates.reflection().onType(ComplexDto.class))
                 .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection().onMethodInvocation(
+                InterfaceWithClientCallable.class, "processData"))
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(ParentInterfaceDto.class))
+                .as("Default methods of parent interfaces are published")
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(AbstractMethodDto.class))
+                .as("Abstract interface methods are not published")
+                .rejects(hints);
     }
 
     @Test
@@ -471,16 +480,33 @@ class ClientCallableAotProcessorTest {
         }
     }
 
-    public interface InterfaceWithClientCallable {
+    public interface ParentInterfaceWithClientCallable {
+
+        @ClientCallable
+        default void processParentData(ParentInterfaceDto data) {
+
+        }
+    }
+
+    public interface InterfaceWithClientCallable
+            extends ParentInterfaceWithClientCallable {
 
         @ClientCallable
         default void processData(ComplexDto data) {
 
         }
+
+        @ClientCallable
+        void processAbstract(AbstractMethodDto data);
     }
 
     public static class InterfaceBasedComponent extends Component
             implements InterfaceWithClientCallable {
+
+        @Override
+        public void processAbstract(AbstractMethodDto data) {
+            // Not published, as only the interface method is annotated
+        }
     }
 
     // Non-Component class with ClientCallable (should be filtered out)
@@ -557,6 +583,12 @@ class ClientCallableAotProcessorTest {
     }
 
     public record RecordId(int id) {
+    }
+
+    public record ParentInterfaceDto(String value) {
+    }
+
+    public record AbstractMethodDto(String value) {
     }
 
     public record RecordDto(String value) {
