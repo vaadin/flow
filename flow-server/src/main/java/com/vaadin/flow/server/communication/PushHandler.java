@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
@@ -76,13 +75,6 @@ import com.vaadin.flow.shared.communication.PushMode;
 public class PushHandler {
 
     private int longPollingSuspendTimeout = -1;
-
-    /**
-     * Buffer for disconnected resource UUIDs. Key is UUID and value is a
-     * timestamp in milliseconds. UUIDs in this map are only needed for short
-     * time for handling session expiration.
-     */
-    private final Map<String, Long> disconnectedUuidBuffer = new ConcurrentHashMap<>();
 
     /**
      * The connections that are being held until the service has been
@@ -349,13 +341,10 @@ public class PushHandler {
                 getLogger().debug("Session expired for push request", e);
             }
             if (session == null) {
-                if (!isResourceDisconnected(resource)) {
-                    sendNotificationAndDisconnect(resource,
-                            VaadinService.createSessionExpiredJSON(true));
-                }
+                sendNotificationAndDisconnect(resource,
+                        VaadinService.createSessionExpiredJSON(true));
                 return;
             }
-            cleanDisconnectedUuidBuffer(resource);
 
             UI ui = null;
             session.lock();
@@ -414,21 +403,6 @@ public class PushHandler {
                 // can't call ErrorHandler, we don't have a lock
             }
         }
-    }
-
-    private void cleanDisconnectedUuidBuffer(AtmosphereResource resource) {
-        // remove given resource uuid and also all uuid's that were disconnected
-        // more than ten seconds ago.
-        disconnectedUuidBuffer.remove(resource.uuid());
-        Long now = System.currentTimeMillis();
-        disconnectedUuidBuffer.entrySet().stream()
-                .filter(entry -> (now - entry.getValue()) > 10000)
-                .map(Map.Entry::getKey).toList()
-                .forEach(disconnectedUuidBuffer::remove);
-    }
-
-    private boolean isResourceDisconnected(AtmosphereResource resource) {
-        return disconnectedUuidBuffer.containsKey(resource.uuid());
     }
 
     /**
@@ -500,8 +474,6 @@ public class PushHandler {
             liveReload.get().onDisconnect(resource);
             return null;
         }
-
-        disconnectedUuidBuffer.put(resource.uuid(), System.currentTimeMillis());
 
         VaadinServletRequest vaadinRequest = new VaadinServletRequest(
                 resource.getRequest(), service);
