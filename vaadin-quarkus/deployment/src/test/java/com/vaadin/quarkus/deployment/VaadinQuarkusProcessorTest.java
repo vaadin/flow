@@ -18,13 +18,20 @@ package com.vaadin.quarkus.deployment;
 import jakarta.servlet.annotation.HandlesTypes;
 
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.BeanArchiveIndexBuildItem;
+import io.quarkus.deployment.annotations.BuildProducer;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.pkg.NativeConfig;
+import io.quarkus.undertow.deployment.IgnoredServletContainerInitializerBuildItem;
 import io.quarkus.undertow.deployment.ServletBuildItem;
+import io.quarkus.undertow.deployment.ServletContainerInitializerBuildItem;
 import org.atmosphere.cpr.ApplicationConfig;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
@@ -39,6 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class VaadinQuarkusProcessorTest {
@@ -77,24 +85,46 @@ class VaadinQuarkusProcessorTest {
     }
 
     @Test
-    void collectHandledTypes_includesInterfacesExtendingAHandledInterface()
+    void collectHandledTypes_findsWhatUndertowDoesAndSubInterfaces()
             throws IOException {
         Indexer indexer = new Indexer();
-        indexer.indexClass(Listener.class);
-        indexer.indexClass(JsInvokers.class);
-        indexer.indexClass(GreeterJs.class);
-        indexer.indexClass(Greeter.class);
+        for (Class<?> type : List.of(Listener.class, JsInvokers.class,
+                GreeterJs.class, Greeter.class, Base.class, Child.class,
+                GrandChild.class, Marked.class, AnnotatedType.class,
+                AnnotatedMethod.class, AnnotatedField.class)) {
+            indexer.indexClass(type);
+        }
         Index index = indexer.complete();
 
         Set<String> handled = VaadinQuarkusProcessor.collectHandledTypes(index,
                 index.getClassByName(Listener.class).declaredAnnotation(
                         DotName.createSimple(HandlesTypes.class)));
 
-        assertEquals(Set.of(GreeterJs.class.getName(), Greeter.class.getName()),
-                handled);
+        assertEquals(Set.of(GreeterJs.class.getName(), Greeter.class.getName(),
+                Child.class.getName(), GrandChild.class.getName(),
+                AnnotatedType.class.getName(), AnnotatedMethod.class.getName(),
+                AnnotatedField.class.getName()), handled);
     }
 
-    @HandlesTypes(JsInvokers.class)
+    @Test
+    void registerDevModeStartupListener_noDevServer_registersNothing() {
+        Index emptyIndex = new Indexer().complete();
+        BuildProducer<IgnoredServletContainerInitializerBuildItem> ignored = mock();
+        BuildProducer<ServletContainerInitializerBuildItem> initializers = mock();
+        BuildProducer<AdditionalBeanBuildItem> beans = mock();
+
+        new VaadinQuarkusProcessor().registerDevModeStartupListener(
+                new CombinedIndexBuildItem(emptyIndex, emptyIndex), ignored,
+                initializers, beans);
+
+        verifyNoInteractions(ignored, initializers, beans);
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface Marked {
+    }
+
+    @HandlesTypes({ JsInvokers.class, Base.class, Marked.class })
     static class Listener {
     }
 
@@ -102,6 +132,30 @@ class VaadinQuarkusProcessorTest {
     }
 
     static class Greeter implements GreeterJs {
+    }
+
+    static class Base {
+    }
+
+    static class Child extends Base {
+    }
+
+    static class GrandChild extends Child {
+    }
+
+    @Marked
+    static class AnnotatedType {
+    }
+
+    static class AnnotatedMethod {
+        @Marked
+        void method() {
+        }
+    }
+
+    static class AnnotatedField {
+        @Marked
+        String field;
     }
 
     private void mapVaadinServletPaths(boolean nativeBuild) {
