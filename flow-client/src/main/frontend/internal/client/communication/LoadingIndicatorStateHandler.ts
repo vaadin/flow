@@ -33,11 +33,9 @@ import {
 import { JsonConstants } from '../../flow/shared/JsonConstants';
 
 // High-frequency events whose RPC requests should not trigger loading
-// indication.
+// indication. Key events are deliberately absent: keyboard shortcuts reach the
+// server as keydown events and must show the indicator like a click does.
 const SILENT_EVENT_TYPES = new Set<string>([
-  'keydown',
-  'keypress',
-  'keyup',
   'mousemove',
   'pointermove',
   'pointerrawupdate',

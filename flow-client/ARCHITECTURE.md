@@ -249,9 +249,10 @@ connection lost once it gives up.
   so a finishing endpoint call doesn't hide the bar while a UIDL request is
   still running.
 - **No noise from high-frequency events.** A request triggered only by
-  `mousemove`, `keydown`, `input`, `scroll` and similar events does not show
-  loading. These requests are frequent and short, and a flickering bar would
-  only distract.
+  `mousemove`, `input`, `scroll` and similar events does not show loading.
+  These requests are frequent and short, and a flickering bar would only
+  distract. Key events are not muted: keyboard shortcuts reach the server as
+  `keydown` events and should show loading like a click does.
 - **Configurable from Java**, without custom client code: the delays and the
   default theme (`UI.getLoadingIndicatorConfiguration()`), and the reconnect
   texts, attempts and interval (`UI.getReconnectDialogConfiguration()`).
