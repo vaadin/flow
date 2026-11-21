@@ -50,6 +50,43 @@ describe('BrowserTabIdentifier', () => {
     return answers;
   }
 
+  // Runs the code under test in a same-origin frame, which shares
+  // sessionStorage with this page, and returns the frame's resolved name
+  async function initInFrame(frameName: string): Promise<string> {
+    const moduleUrl = new URL('../../main/frontend/BrowserTabIdentifier.ts', import.meta.url).href;
+    const frame = document.createElement('iframe');
+    frame.name = frameName;
+    frame.srcdoc = `<script>window.result = import('${moduleUrl}')
+      .then((module) => module.initBrowserTabIdentifier())
+      .then(() => window.name);</script>`;
+    const loaded = new Promise((resolve) => {
+      frame.onload = resolve;
+    });
+    document.body.appendChild(frame);
+    try {
+      await loaded;
+      return await (frame.contentWindow as unknown as { result: Promise<string> }).result;
+    } finally {
+      frame.remove();
+    }
+  }
+
+  it('does not take the stored name in a frame', async () => {
+    sessionStorage.setItem(STORAGE_KEY, 'top-tab');
+
+    const frameName = await initInFrame('');
+
+    expect(frameName).to.match(/^v-0\.\d+/);
+    expect(sessionStorage.getItem(STORAGE_KEY)).to.equal('top-tab');
+  });
+
+  it('does not store the name of a frame', async () => {
+    sessionStorage.setItem(STORAGE_KEY, 'top-tab');
+
+    expect(await initInFrame('named-frame')).to.equal('named-frame');
+    expect(sessionStorage.getItem(STORAGE_KEY)).to.equal('top-tab');
+  });
+
   it('keeps a window name that is already set and stores it', async () => {
     window.name = 'named-tab';
     sessionStorage.setItem(STORAGE_KEY, 'copied-from-opener');
