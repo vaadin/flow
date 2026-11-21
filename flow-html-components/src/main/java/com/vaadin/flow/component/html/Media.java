@@ -42,7 +42,6 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * Video video = new Video();
  * video.addSource("/intro.webm", "video/webm");
  * video.addSource("/intro.mp4", "video/mp4");
- * video.setControlsVisible(true);
  * </pre>
  *
  * Besides the sources, the elements accept <code>&lt;track&gt;</code> elements
@@ -126,21 +125,23 @@ public abstract class Media extends HtmlComponent
     }
 
     /**
-     * Creates a media component without any source.
+     * Creates a media component without any source. The browser's playback
+     * controls are shown.
      */
     protected Media() {
         super();
+        getElement().setAttribute(CONTROLS_ATTRIBUTE, true);
     }
 
     /**
      * Creates a media component that plays the first of the given sources the
-     * browser can decode.
+     * browser can decode. The browser's playback controls are shown.
      *
      * @param sources
      *            the same recording in one or more file formats
      */
     protected Media(Source... sources) {
-        super();
+        this();
         add(sources);
     }
 
@@ -197,9 +198,10 @@ public abstract class Media extends HtmlComponent
 
     /**
      * Sets whether the browser shows its own playback controls — a play button,
-     * a timeline, a volume slider. Without them, nothing on the page starts the
-     * playback, so turn them on unless the application drives the player
-     * itself.
+     * a timeline, a volume slider. The controls are shown by default. Without
+     * them, nothing on the page starts the playback, so hide them only when the
+     * application drives the player itself, such as for a background video or a
+     * sound the application plays on its own.
      * <p>
      * The controls are the browser's, so they do not look the same everywhere
      * and cannot be styled through the application theme.

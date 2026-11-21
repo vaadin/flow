@@ -30,13 +30,19 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -57,6 +63,12 @@ class ErrorViewHotswapperTest {
         ui.doInit(null, 42, "test");
         session.addUI(ui);
         hotswapper = new ErrorViewHotswapper();
+        // Hotswap runs without a current session or UI
+        CurrentInstance.clearAll();
+    }
+
+    private RouteRegistry applicationRegistry() {
+        return ApplicationRouteRegistry.getInstance(service.getContext());
     }
 
     private Location createMockLocation(String path) {
@@ -106,6 +118,77 @@ class ErrorViewHotswapperTest {
         // Verify refresh was not triggered
         assertFalse(event.getUIUpdateStrategy(ui).isPresent(),
                 "Should not trigger refresh for normal view");
+    }
+
+    @Test
+    void onClassesChange_noRoutesPageShown_reloadsOnlyForNewRoute() {
+        RouteNotFoundError noRoutesPage = new RouteNotFoundError();
+        RouteUtil.setNoRoutesPage(noRoutesPage, true);
+        ui.getInternals().showRouteTarget(createMockLocation(""), noRoutesPage,
+                Collections.emptyList());
+
+        var notARoute = new HotswapClassSessionEvent(service, session,
+                Set.of(TestNormalView.class), false);
+        hotswapper.onClassesChange(notARoute);
+        assertFalse(notARoute.getUIUpdateStrategy(ui).isPresent(),
+                "A newly loaded class that is not a route should not update the UI");
+
+        var stillNoRoutes = new HotswapClassSessionEvent(service, session,
+                Set.of(TestNormalView.class), true);
+        hotswapper.onClassesChange(stillNoRoutes);
+        assertEquals(UIUpdateStrategy.REFRESH,
+                stillNoRoutes.getUIUpdateStrategy(ui).orElse(null),
+                "Should not reload while the project still has no routes");
+
+        applicationRegistry().setRoute("", TestNormalView.class,
+                Collections.emptyList());
+        var newRoute = new HotswapClassSessionEvent(service, session,
+                Set.of(TestNormalView.class), false);
+        hotswapper.onClassesChange(newRoute);
+        assertEquals(UIUpdateStrategy.RELOAD,
+                newRoute.getUIUpdateStrategy(ui).orElse(null));
+    }
+
+    @Test
+    void onClassesChange_routeNotFoundShown_projectHasRoutes_triggersRefresh() {
+        applicationRegistry().setRoute("existing", TestNormalView.class,
+                Collections.emptyList());
+        ui.getInternals().showRouteTarget(createMockLocation("missing"),
+                new RouteNotFoundError(), Collections.emptyList());
+
+        var routeRedefined = new HotswapClassSessionEvent(service, session,
+                Set.of(TestNormalView.class), true);
+        hotswapper.onClassesChange(routeRedefined);
+        assertEquals(UIUpdateStrategy.REFRESH,
+                routeRedefined.getUIUpdateStrategy(ui).orElse(null),
+                "Changing the only route should refresh in place");
+
+        applicationRegistry().setRoute("missing", TestErrorView.class,
+                Collections.emptyList());
+        var newRoute = new HotswapClassSessionEvent(service, session,
+                Set.of(TestErrorView.class), false);
+        hotswapper.onClassesChange(newRoute);
+        assertEquals(UIUpdateStrategy.REFRESH,
+                newRoute.getUIUpdateStrategy(ui).orElse(null),
+                "Adding a route to a project that has routes should refresh in place");
+        assertNull(session.getAttribute(SessionRouteRegistry.class),
+                "Hotswap should not create a session route registry");
+    }
+
+    @Test
+    void onClassesChange_noRoutesPageShown_sessionRouteAdded_triggersReload() {
+        RouteNotFoundError noRoutesPage = new RouteNotFoundError();
+        RouteUtil.setNoRoutesPage(noRoutesPage, true);
+        ui.getInternals().showRouteTarget(createMockLocation(""), noRoutesPage,
+                Collections.emptyList());
+
+        SessionRouteRegistry.getSessionRegistry(session).setRoute("",
+                TestNormalView.class, Collections.emptyList());
+        var event = new HotswapClassSessionEvent(service, session,
+                Set.of(TestNormalView.class), false);
+        hotswapper.onClassesChange(event);
+        assertEquals(UIUpdateStrategy.RELOAD,
+                event.getUIUpdateStrategy(ui).orElse(null));
     }
 
     // Test classes

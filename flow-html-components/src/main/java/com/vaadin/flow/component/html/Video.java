@@ -33,13 +33,12 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * Video video = new Video();
  * video.addSource("/intro.webm", "video/webm");
  * video.addSource("/intro.mp4", "video/mp4");
- * video.setControlsVisible(true);
  * video.setPoster("/intro-poster.jpg");
  * </pre>
  *
- * The element has no controls of its own until
- * {@link #setControlsVisible(boolean)} is called, so a player that the visitor
- * is meant to start needs that call. Give the player a size through
+ * The browser's playback controls are shown by default; hide them with
+ * {@link #setControlsVisible(boolean)} for a video that the application drives
+ * itself, such as a muted background video. Give the player a size through
  * {@link #setWidth(String)} and {@link #setHeight(String)}; without one, the
  * page reflows once the video dimensions are known, unless a
  * {@link #setPoster(String) poster} fixes the size earlier.
@@ -57,7 +56,8 @@ public class Video extends Media {
     private static final String POSTER_ATTRIBUTE = "poster";
 
     /**
-     * Creates a video player without any source.
+     * Creates a video player without any source. The browser's playback
+     * controls are shown.
      */
     public Video() {
         super();
@@ -65,7 +65,7 @@ public class Video extends Media {
 
     /**
      * Creates a video player that plays the first of the given sources the
-     * browser can decode.
+     * browser can decode. The browser's playback controls are shown.
      *
      * @param sources
      *            the same recording in one or more file formats
