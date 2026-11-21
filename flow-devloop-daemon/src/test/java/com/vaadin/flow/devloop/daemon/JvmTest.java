@@ -37,6 +37,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class JvmTest {
 
+    /**
+     * The machine the tests pretend to run on, spelled as a JVM reports it so
+     * that a {@code release} file's spelling has to be normalized to match.
+     */
+    private static final Jvm.Platform HOST = Jvm.Platform.of("Linux", "amd64");
+
     @TempDir
     private Path jdks;
 
@@ -71,7 +77,7 @@ class JvmTest {
         jdk("corretto-8", "1.8.0_442", "Amazon.com Inc.");
         Path usable = jdk("temurin-21", "21.0.10", "Eclipse Adoptium");
 
-        List<Jvm.Jdk> candidates = Jvm.candidates(homes());
+        List<Jvm.Jdk> candidates = Jvm.candidates(homes(), HOST, logged::add);
 
         // A JBR that cannot load a class Flow compiled is worse than no JBR.
         assertEquals(List.of(usable),
@@ -118,11 +124,72 @@ class JvmTest {
     }
 
     @Test
+    void aJdkBuiltForAnotherPlatformIsSkippedAndSaidSo() throws IOException {
+        // From a macOS host or an x64 machine sharing its home directory.
+        Path otherOs = jdk("jbrsdk-21.0.8-osx-x64", "21.0.8",
+                "JetBrains s.r.o.", "Darwin", "x86_64");
+        Path otherArch = jdk("jbrsdk-21.0.9-linux-aarch64", "21.0.9",
+                "JetBrains s.r.o.", "Linux", "aarch64");
+        // Spelled as the release file has it, not as the JVM reports it.
+        Path linux = jdk("jbrsdk-25.0.1-linux-x64", "25.0.1",
+                "JetBrains s.r.o.", "Linux", "x86_64");
+        // A release file that does not say is no reason to drop a JDK.
+        Path unknown = jdk("temurin-23", "23.0.2", "Eclipse Adoptium");
+
+        List<Jvm.Jdk> candidates = Jvm.candidates(homes(), HOST, logged::add);
+
+        assertEquals(List.of(linux, unknown).stream().sorted().toList(),
+                candidates.stream().map(Jvm.Jdk::home).sorted().toList());
+        for (String skipped : List.of(otherOs + ": built for macos x86_64",
+                otherArch + ": built for linux aarch64")) {
+            assertTrue(logged.stream().anyMatch(line -> line.contains(skipped)),
+                    () -> "expected " + skipped + " in " + logged);
+        }
+    }
+
+    @Test
+    void anArchitectureTheOsEmulatesStillRuns() {
+        // Rosetta 2 on Apple silicon, both ways round, since a daemon that is
+        // itself emulated reports the emulated architecture.
+        assertTrue(Jvm.Platform.of("Darwin", "x86_64")
+                .runsOn(Jvm.Platform.of("Mac OS X", "aarch64")));
+        assertTrue(Jvm.Platform.of("Darwin", "aarch64")
+                .runsOn(Jvm.Platform.of("Mac OS X", "x86_64")));
+        // x64 emulation on Windows on Arm.
+        assertTrue(Jvm.Platform.of("Windows", "x86_64")
+                .runsOn(Jvm.Platform.of("Windows 11", "aarch64")));
+    }
+
+    @Test
+    void anOverriddenHomeForAnotherPlatformIsKeptButWarnedAbout()
+            throws IOException {
+        Path home = jdk("jbr-sparc", "21.0.4", "JetBrains s.r.o.", "SunOS",
+                "sparcv9");
+        String original = System.getProperty("vaadin.dev.javaHome");
+        System.setProperty("vaadin.dev.javaHome", home.toString());
+        try {
+            // The developer asked for it, so it is launched regardless.
+            assertEquals(home, chosen(21).home());
+        } finally {
+            if (original == null) {
+                System.clearProperty("vaadin.dev.javaHome");
+            } else {
+                System.setProperty("vaadin.dev.javaHome", original);
+            }
+        }
+        assertTrue(
+                logged.stream()
+                        .anyMatch(line -> line.startsWith("WARNING")
+                                && line.contains("sunos sparcv9")),
+                () -> "expected a platform warning: " + logged);
+    }
+
+    @Test
     void aJdkInstalledAsAMacOsBundleIsFoundThroughItsHome() throws IOException {
         Path home = jdk("jbrsdk-21.0.11.jdk/Contents/Home", "21.0.11",
                 "JetBrains s.r.o.");
 
-        List<Jvm.Jdk> candidates = Jvm.candidates(homes());
+        List<Jvm.Jdk> candidates = Jvm.candidates(homes(), HOST, logged::add);
 
         // homes() lists the bundle root, which has neither the launcher nor the
         // release file - so the JBR a JetBrains IDE downloaded is only a
@@ -188,7 +255,8 @@ class JvmTest {
     private Jvm.Jdk chosen(int required) throws IOException {
         Optional<Jvm.Requirement> requirement = required == 0 ? Optional.empty()
                 : Optional.of(new Jvm.Requirement(required, "a test"));
-        return Jvm.select(requirement, Jvm.candidates(homes()), logged::add);
+        return Jvm.select(requirement,
+                Jvm.candidates(homes(), HOST, logged::add), logged::add);
     }
 
     private List<Path> homes() throws IOException {
@@ -207,12 +275,26 @@ class JvmTest {
      */
     private Path jdk(String name, String version, String implementor)
             throws IOException {
+        return jdk(name, version, implementor, null, null);
+    }
+
+    /**
+     * As {@link #jdk(String, String, String)}, with the platform the release
+     * file names, which a {@code null} leaves out.
+     */
+    private Path jdk(String name, String version, String implementor,
+            String osName, String osArch) throws IOException {
         Path home = jdks.resolve(name);
         Files.createDirectories(home.resolve("bin"));
         Files.writeString(home.resolve("bin").resolve("java"), "");
         Files.writeString(home.resolve("bin").resolve("java.exe"), "");
-        Files.writeString(home.resolve("release"), "JAVA_VERSION=\"" + version
-                + "\"\nIMPLEMENTOR=\"" + implementor + "\"\n");
+        String release = "JAVA_VERSION=\"" + version + "\"\nIMPLEMENTOR=\""
+                + implementor + "\"\n";
+        if (osName != null) {
+            release += "OS_NAME=\"" + osName + "\"\nOS_ARCH=\"" + osArch
+                    + "\"\n";
+        }
+        Files.writeString(home.resolve("release"), release);
         return Reactor.real(home);
     }
 }
