@@ -28,4 +28,4 @@ to their code and are listed at the top of [Architecture](architecture.md).
 | [Frontend Hotswap](frontend-hotswap.md)     | Keeping generated frontend files in sync with Java classes in development mode. |
 | [Dev Loop](dev-loop.md)                     | The `vaadin-dev` daemon and CLI: what they promise and the decisions behind them. |
 | [Documenting](documenting.md)               | Javadoc expectations, documenting wrapped browser APIs.                        |
-| [Testing](testing.md)                       | Unit tests, integration tests, debugging failures.                             |
+| [Testing](testing.md)                       | Where tests live, testing a browser-API wrapper.                             |

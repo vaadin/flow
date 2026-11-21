@@ -19,12 +19,8 @@ read the W3C spec or the `.ts` source.
   examples consistent with the real platform APIs (e.g. if you show
   `map.setCenter(...)`, use the real Vaadin Map `Coordinate(longitude,
   latitude)` shape).
-- A new overload opens with the same sentence as its siblings and then says
-  what is different about it. Javadoc that starts with the difference — or that
-  only walks through the parameters and the return value — leaves out the
-  sentence that says what the method does.
-- Javadoc describes the code today, not what changed. Change history
-  belongs in commit messages.
 
-The mechanical Javadoc rules — such as not adding `@since` tags — are listed
-in [`CONVENTIONS.md`](../CONVENTIONS.md).
+The rules for the Javadoc of overloads, for describing the code as it is today
+rather than what changed, and for `@since` tags are in
+[`CONVENTIONS.md`](../CONVENTIONS.md), in the Naming, Code Style and Javadoc
+sections.
