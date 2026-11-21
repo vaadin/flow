@@ -51,39 +51,36 @@ describe('BrowserTabIdentifier', () => {
   }
 
   // Runs the code under test in a same-origin frame, which shares
-  // sessionStorage with this page, and returns the frame's resolved name
-  async function initInFrame(frameName: string): Promise<string> {
+  // sessionStorage with this page. Returns the name stored before the code ran,
+  // as seen by the frame, and the frame's resolved name.
+  async function initInFrame(): Promise<{ storedName: string | null; name: string }> {
     const moduleUrl = new URL('../../main/frontend/BrowserTabIdentifier.ts', import.meta.url).href;
     const frame = document.createElement('iframe');
-    frame.name = frameName;
-    frame.srcdoc = `<script>window.result = import('${moduleUrl}')
-      .then((module) => module.initBrowserTabIdentifier())
-      .then(() => window.name);</script>`;
+    frame.srcdoc = `<script>
+      const storedName = sessionStorage.getItem('${STORAGE_KEY}');
+      window.result = import('${moduleUrl}')
+        .then((module) => module.initBrowserTabIdentifier())
+        .then(() => ({ storedName, name: window.name }));</script>`;
     const loaded = new Promise((resolve) => {
       frame.onload = resolve;
     });
     document.body.appendChild(frame);
     try {
       await loaded;
-      return await (frame.contentWindow as unknown as { result: Promise<string> }).result;
+      return await (frame.contentWindow as unknown as { result: Promise<{ storedName: string | null; name: string }> })
+        .result;
     } finally {
       frame.remove();
     }
   }
 
-  it('does not take the stored name in a frame', async () => {
+  it('neither takes back nor stores a name in a frame', async () => {
     sessionStorage.setItem(STORAGE_KEY, 'top-tab');
 
-    const frameName = await initInFrame('');
+    const frame = await initInFrame();
 
-    expect(frameName).to.match(/^v-0\.\d+/);
-    expect(sessionStorage.getItem(STORAGE_KEY)).to.equal('top-tab');
-  });
-
-  it('does not store the name of a frame', async () => {
-    sessionStorage.setItem(STORAGE_KEY, 'top-tab');
-
-    expect(await initInFrame('named-frame')).to.equal('named-frame');
+    expect(frame.storedName).to.equal('top-tab');
+    expect(frame.name).to.match(/^v-0\.\d+/);
     expect(sessionStorage.getItem(STORAGE_KEY)).to.equal('top-tab');
   });
 
