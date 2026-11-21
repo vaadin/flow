@@ -17,7 +17,6 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Arrays;
@@ -43,8 +42,8 @@ import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.HttpStatusCode;
@@ -404,8 +403,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
      * 
      * @since 25.4
      */
-    @JsDefinition
-    public interface MprPushStateJs extends Serializable {
+    public interface MprPushStateJs extends JsInvokers {
 
         /**
          * Pushes the given location, which the v7 UIDL gave in full.

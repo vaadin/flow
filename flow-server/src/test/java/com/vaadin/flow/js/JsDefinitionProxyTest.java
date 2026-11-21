@@ -47,6 +47,7 @@ import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -56,8 +57,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JsDefinitionProxyTest {
 
-    @JsDefinition
-    interface GreeterJs extends Serializable {
+    interface GreeterJs extends JsInvokers {
         @JsExpression("window.alert($0)")
         void showGreeting(String greeting);
 
@@ -68,8 +68,7 @@ class JsDefinitionProxyTest {
     public record Person(String name, int age) implements Serializable {
     }
 
-    @JsDefinition
-    interface TypedJs extends Serializable {
+    interface TypedJs extends JsInvokers {
         @JsExpression("return 42;")
         JavaScriptResult<Integer> readAnswer();
 
@@ -91,37 +90,30 @@ class JsDefinitionProxyTest {
     interface ArrayJs<T> extends ValueJs<T[]> {
     }
 
-    @JsDefinition
-    interface CounterJs extends ValueJs<Integer> {
+    interface CounterJs extends JsInvokers, ValueJs<Integer> {
     }
 
-    @JsDefinition
-    interface NumbersJs extends ListJs<Integer> {
+    interface NumbersJs extends JsInvokers, ListJs<Integer> {
     }
 
-    @JsDefinition
-    interface IntsJs extends ArrayJs<Integer> {
+    interface IntsJs extends JsInvokers, ArrayJs<Integer> {
     }
 
-    @JsDefinition
     @SuppressWarnings("rawtypes")
-    interface RawValueJs extends ValueJs {
+    interface RawValueJs extends JsInvokers, ValueJs {
     }
 
-    @JsDefinition
-    interface StillGenericJs<T> extends ValueJs<T> {
+    interface StillGenericJs<T> extends JsInvokers, ValueJs<T> {
     }
 
     interface UnusedVariableJs<U> extends ValueJs<Integer> {
     }
 
-    @JsDefinition
     @SuppressWarnings("rawtypes")
-    interface RawUnusedVariableJs extends UnusedVariableJs {
+    interface RawUnusedVariableJs extends JsInvokers, UnusedVariableJs {
     }
 
-    @JsDefinition
-    interface UntypedJs<T> extends Serializable {
+    interface UntypedJs<T> extends JsInvokers {
         @SuppressWarnings("rawtypes")
         @JsExpression("return 1;")
         JavaScriptResult readRaw();
@@ -133,19 +125,16 @@ class JsDefinitionProxyTest {
         JavaScriptResult<List<T>> readVariable();
     }
 
-    @JsDefinition
-    interface UndeclaredJs extends Serializable {
+    interface UndeclaredJs extends JsInvokers {
         void undeclared();
     }
 
-    @JsDefinition
-    interface UnsupportedJs extends Serializable {
+    interface UnsupportedJs extends JsInvokers {
         @JsExpression("return this.value;")
         String readValue();
     }
 
-    @JsDefinition
-    interface ComposingJs extends Serializable {
+    interface ComposingJs extends JsInvokers {
         @JsExpression("this.method()")
         void method();
 
@@ -155,8 +144,7 @@ class JsDefinitionProxyTest {
         }
     }
 
-    @JsDefinition
-    interface HelpingJs extends Serializable {
+    interface HelpingJs extends JsInvokers {
         @JsExpression("this.method()")
         void method();
 
@@ -165,8 +153,7 @@ class JsDefinitionProxyTest {
         }
     }
 
-    @JsDefinition
-    interface LoggerJs extends Serializable {
+    interface LoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value);")
         @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
@@ -183,8 +170,7 @@ class JsDefinitionProxyTest {
         }
     }
 
-    @JsDefinition
-    interface TemplateJs extends Serializable {
+    interface TemplateJs extends JsSnippets {
         @JsExpression("return html`<b>${$0}: ${item.name}</b>`;")
         TemplateSnippet label(String prefix);
 
@@ -195,8 +181,7 @@ class JsDefinitionProxyTest {
         TemplateSnippet join(String... parts);
     }
 
-    @JsDefinition
-    interface OtherTemplateJs extends Serializable {
+    interface OtherTemplateJs extends JsSnippets {
         @JsExpression("return html`<i>${$0}: ${item.name}</i>`;")
         TemplateSnippet label(String prefix);
     }
@@ -210,14 +195,12 @@ class JsDefinitionProxyTest {
         }
     }
 
-    @JsDefinition
-    interface ActionJs extends Serializable {
+    interface ActionJs extends JsSnippets {
         @JsExpression("console.log('run');")
         ActionSnippet createAction();
     }
 
-    @JsDefinition
-    interface EventJs extends Serializable {
+    interface EventJs extends JsSnippets {
         @JsExpression("return event.key === $0;")
         DomEventFilter isKey(String key);
 
@@ -240,26 +223,32 @@ class JsDefinitionProxyTest {
         }
     }
 
-    @JsDefinition
-    interface FunctionParameterNamesInvalidNameJs extends Serializable {
+    interface FunctionParameterNamesInvalidNameJs extends JsSnippets {
         @JsExpression("console.log(value);")
         @JsFunctionParameterNames("not-a-name")
         JsFunction createLogger();
     }
 
-    @JsDefinition
-    interface EmptyJs extends Serializable {
-    }
-
-    @JsDefinition
-    @JsFunctionParameterNames("value")
-    interface FunctionParameterNamesOnDefinitionJs extends Serializable {
+    interface SnippetAmongCallsJs extends JsInvokers {
         @JsExpression("console.log(value);")
         JsFunction createLogger();
     }
 
-    @JsDefinition
-    interface MixedJs extends Serializable {
+    static class GreeterDouble implements JsInvokers {
+    }
+
+    interface BothKindsJs extends JsInvokers, JsSnippets {
+        @JsExpression("console.log($0);")
+        void log(String message);
+    }
+
+    @JsFunctionParameterNames("value")
+    interface FunctionParameterNamesOnDefinitionJs extends JsSnippets {
+        @JsExpression("console.log(value);")
+        JsFunction createLogger();
+    }
+
+    interface MixedJs extends JsSnippets {
         @JsExpression("console.log($0, value);")
         @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
@@ -268,15 +257,13 @@ class JsDefinitionProxyTest {
         void log(String message);
     }
 
-    @JsDefinition
-    interface FunctionParameterNamesWhenRunJs extends Serializable {
+    interface FunctionParameterNamesWhenRunJs extends JsInvokers {
         @JsExpression("console.log(value);")
         @JsFunctionParameterNames("value")
         void log();
     }
 
-    @JsDefinition
-    interface SnippetWithExecutionContextJs extends Serializable {
+    interface SnippetWithExecutionContextJs extends JsSnippets {
         @JsExpression("console.log($executionContext);")
         @JsWithExecutionContext
         JsFunction createLogger();
@@ -320,8 +307,10 @@ class JsDefinitionProxyTest {
         }
     }
 
+    // Raw, so that a type the signature refuses can still reach the check
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private <T> T proxy(Class<T> definitionType) {
-        return JsDefinitionProxy.create(definitionType, call -> {
+        return (T) JsDefinitionProxy.create((Class) definitionType, call -> {
             calls.add(call);
             return result;
         });
@@ -487,10 +476,51 @@ class JsDefinitionProxyTest {
     }
 
     @Test
-    void create_interfaceWithoutAnnotation_throws() {
-        assertThrows(IllegalArgumentException.class,
-                () -> proxy(Serializable.class),
+    void create_interfaceExtendingNeitherMarker_throws() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> proxy(Serializable.class),
                 "an interface the build does not collect should be refused");
+
+        assertTrue(exception.getMessage().contains("neither"),
+                exception.getMessage());
+        assertTrue(exception.getMessage().contains("JsInvokers"),
+                exception.getMessage());
+        assertTrue(exception.getMessage().contains("JsSnippets"),
+                exception.getMessage());
+    }
+
+    @Test
+    void checkDefinition_snippetAmongJavaScriptToRun_throws() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> JsDefinitionProxy
+                        .checkDefinition(SnippetAmongCallsJs.class));
+
+        assertTrue(exception.getMessage().contains("createLogger"),
+                exception.getMessage());
+        assertTrue(exception.getMessage().contains("JsInvokers"),
+                exception.getMessage());
+    }
+
+    @Test
+    void isDefinition_onlyInterfacesExtendingAMarker() {
+        assertTrue(JsDefinitionProxy.isDefinition(GreeterJs.class));
+        assertTrue(JsDefinitionProxy.isDefinition(LoggerJs.class));
+        assertFalse(JsDefinitionProxy.isDefinition(JsInvokers.class));
+        assertFalse(JsDefinitionProxy.isDefinition(JsSnippets.class));
+        assertFalse(JsDefinitionProxy.isDefinition(GreeterDouble.class));
+        assertFalse(JsDefinitionProxy.isDefinition(Serializable.class));
+    }
+
+    @Test
+    void checkDefinition_interfaceExtendingBothMarkers_throws() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> JsDefinitionProxy.checkDefinition(BothKindsJs.class));
+
+        assertTrue(exception.getMessage().contains("BothKindsJs"),
+                exception.getMessage());
+        assertTrue(exception.getMessage().contains("both"),
+                exception.getMessage());
     }
 
     @Test
@@ -677,24 +707,16 @@ class JsDefinitionProxyTest {
     }
 
     @Test
-    void createSnippets_methodRunningJavaScript_throws() {
-        // Nothing to run it on, since a snippet is not bound to an element
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    void createSnippets_rawInvokersType_throws() {
+        // The signature refuses it, so only a raw class gets this far
         IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> JsDefinitionProxy.createSnippets(GreeterJs.class));
+                IllegalArgumentException.class, () -> JsDefinitionProxy
+                        .createSnippets((Class) GreeterJs.class));
 
-        assertTrue(exception.getMessage().contains("showGreeting"),
-                "the message should name the method: "
-                        + exception.getMessage());
-    }
-
-    @Test
-    void createSnippets_noMethods_saysThereAreNoSnippets() {
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> JsDefinitionProxy.createSnippets(EmptyJs.class));
-
-        assertTrue(exception.getMessage().endsWith("declares no snippets"),
+        assertTrue(exception.getMessage().contains("GreeterJs"),
+                exception.getMessage());
+        assertTrue(exception.getMessage().contains("JsSnippets"),
                 exception.getMessage());
     }
 
@@ -720,8 +742,7 @@ class JsDefinitionProxyTest {
     }
 
     @Test
-    void checkDefinition_snippetsBesideJavaScriptToRun_throwsForEitherUse() {
-        // Whichever way it is used, half of it can not work
+    void checkDefinition_javaScriptToRunAmongSnippets_throws() {
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
                 () -> JsDefinitionProxy.checkDefinition(MixedJs.class));
@@ -731,18 +752,17 @@ class JsDefinitionProxyTest {
                         + exception.getMessage());
         assertThrows(IllegalArgumentException.class,
                 () -> JsDefinitionProxy.createSnippets(MixedJs.class));
-        assertThrows(IllegalArgumentException.class,
-                () -> proxy(MixedJs.class));
     }
 
     @Test
-    void create_methodReturningASnippet_throws() {
+    void create_rawSnippetsType_throws() {
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class, () -> proxy(LoggerJs.class));
 
-        assertTrue(exception.getMessage().contains("JsSnippets.of"),
-                "the message should say where a snippet is obtained from: "
-                        + exception.getMessage());
+        assertTrue(exception.getMessage().contains("LoggerJs"),
+                exception.getMessage());
+        assertTrue(exception.getMessage().contains("JsInvokers"),
+                exception.getMessage());
     }
 
     @Test

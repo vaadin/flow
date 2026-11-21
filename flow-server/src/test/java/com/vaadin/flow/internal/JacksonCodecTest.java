@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.internal;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -42,7 +41,6 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
@@ -219,8 +217,7 @@ class JacksonCodecTest {
         assertJsonEquals(expected, json);
     }
 
-    @JsDefinition
-    interface LoggerJs extends Serializable {
+    interface LoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value);")
         @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
@@ -248,8 +245,7 @@ class JacksonCodecTest {
     interface TemplateSnippet extends JsSnippet {
     }
 
-    @JsDefinition
-    interface TemplateJs extends Serializable {
+    interface TemplateJs extends JsSnippets {
         @JsExpression("return html`<b>${$0}: ${item.name}</b>`;")
         TemplateSnippet label(String prefix);
 

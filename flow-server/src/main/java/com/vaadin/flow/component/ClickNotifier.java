@@ -18,7 +18,6 @@ package com.vaadin.flow.component;
 import java.io.Serializable;
 
 import com.vaadin.flow.dom.DomEventFilter;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.shared.Registration;
@@ -169,8 +168,7 @@ public interface ClickNotifier<T extends Component> extends Serializable {
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      */
-    @JsDefinition
-    interface ClickFiltersJs extends Serializable {
+    interface ClickFiltersJs extends JsSnippets {
 
         /**
          * Accepts a click whose click count, the <code>detail</code> of the

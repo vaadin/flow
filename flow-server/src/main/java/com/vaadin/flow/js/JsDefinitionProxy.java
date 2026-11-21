@@ -56,9 +56,9 @@ import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 /**
- * Hands out implementations of {@link JsDefinition} interfaces, which turn a
- * call of a declared method into a {@link JsCall} and give it to whoever runs
- * it.
+ * Hands out implementations of JavaScript definitions, the interfaces that
+ * extend {@link JsInvokers} or {@link JsSnippets}, which turn a call of a
+ * declared method into a {@link JsCall} and give it to whoever runs it.
  * <p>
  * The interface is checked here rather than when a method is called, so one
  * that can not work says so when the implementation is handed out.
@@ -95,8 +95,8 @@ public final class JsDefinitionProxy {
      * implementation of it is handed out. A definition that fails the check is
      * not kept, so it fails again on the next attempt. Cleared before a
      * redefined class is hotswapped, so a changed interface is checked again.
-     * Keyed by any class, since a JavaScript definition is marked by an
-     * annotation rather than by a common supertype.
+     * Keyed by any class, since a JavaScript definition extends one of two
+     * marker interfaces rather than a common supertype.
      */
     private static final ReflectionCache<Object, Kind> checkedDefinitions = ReflectionCache
             .clearedBeforeHotswap(JsDefinitionProxy::checkDefinition);
@@ -110,12 +110,12 @@ public final class JsDefinitionProxy {
     private static final ReflectionCache<Object, Map<Method, JavaType>> resultTypes = ReflectionCache
             .clearedBeforeHotswap(JsDefinitionProxy::collectResultTypes);
 
-    private static final String RETURN_TYPES = "An interface declares either"
-            + " JavaScript to run, with methods returning void,"
-            + " JavaScriptResult or PendingJavaScriptResult, or snippets, with"
-            + " methods returning JsFunction, JsSnippet, DomEventFilter,"
-            + " DomEventData or an interface that extends JsSnippet, but not"
-            + " both";
+    private static final String RETURN_TYPES = "An interface that extends"
+            + " JsInvokers declares JavaScript to run, with methods returning"
+            + " void, JavaScriptResult or PendingJavaScriptResult, and one that"
+            + " extends JsSnippets declares snippets, with methods returning"
+            + " JsFunction, JsSnippet, DomEventFilter, DomEventData or an"
+            + " interface that extends JsSnippet";
 
     private JsDefinitionProxy() {
         // Only static members
@@ -134,20 +134,19 @@ public final class JsDefinitionProxy {
      *            what runs a call of the interface, not <code>null</code>
      * @return an implementation of the interface, not <code>null</code>
      * @throws IllegalArgumentException
-     *             if the type is not an interface, is not annotated with
-     *             {@link JsDefinition}, or has a method that can not be
-     *             answered
+     *             if the type is not an interface, also extends
+     *             {@link JsSnippets}, or has a method that can not be answered
      */
     @SuppressWarnings("unchecked")
-    public static <T> T create(Class<T> definitionType,
+    public static <T extends JsInvokers> T create(Class<T> definitionType,
             SerializableFunction<JsCall, PendingJavaScriptResult> runner) {
         Objects.requireNonNull(definitionType,
                 "Definition type cannot be null");
         Objects.requireNonNull(runner, "Runner cannot be null");
+        // Checked again here for a caller that passes a raw class
         if (checkedDefinitions.get(definitionType) != Kind.CALLS) {
             throw new IllegalArgumentException(definitionType.getName()
-                    + " declares snippets, which are not run on an element."
-                    + " Get its implementation from JsSnippets.of");
+                    + " does not extend " + JsInvokers.class.getSimpleName());
         }
         return (T) Proxy.newProxyInstance(definitionType.getClassLoader(),
                 new Class<?>[] { definitionType },
@@ -165,23 +164,19 @@ public final class JsDefinitionProxy {
      *            the JavaScript definition, not <code>null</code>
      * @return an implementation of the interface, not <code>null</code>
      * @throws IllegalArgumentException
-     *             if the type is not an interface, is not annotated with
-     *             {@link JsDefinition}, or has a method that does not declare a
+     *             if the type is not an interface, also extends
+     *             {@link JsInvokers}, or has a method that does not declare a
      *             snippet
      */
     @SuppressWarnings("unchecked")
-    public static <T> T createSnippets(Class<T> definitionType) {
+    public static <T extends JsSnippets> T createSnippets(
+            Class<T> definitionType) {
         Objects.requireNonNull(definitionType,
                 "Definition type cannot be null");
+        // Checked again here for a caller that passes a raw class
         if (checkedDefinitions.get(definitionType) != Kind.SNIPPETS) {
-            List<String> names = collectDeclaredNames(definitionType);
-            String reason = names.isEmpty() ? " declares no snippets"
-                    : (" declares JavaScript that runs when "
-                            + String.join(", ", names)
-                            + " is called, not snippets. Get its implementation"
-                            + " from Element.executeJs(Class)");
-            throw new IllegalArgumentException(
-                    definitionType.getName() + reason);
+            throw new IllegalArgumentException(definitionType.getName()
+                    + " does not extend " + JsSnippets.class.getSimpleName());
         }
         return (T) Proxy.newProxyInstance(definitionType.getClassLoader(),
                 new Class<?>[] { definitionType },
@@ -203,8 +198,8 @@ public final class JsDefinitionProxy {
      *            the type to check, not <code>null</code>
      * @return what the definition declares, not <code>null</code>
      * @throws IllegalArgumentException
-     *             if the type is not an interface, is not annotated with
-     *             {@link JsDefinition}, is annotated with
+     *             if the type is not an interface, extends neither or both of
+     *             {@link JsInvokers} and {@link JsSnippets}, is annotated with
      *             {@link JsFunctionParameterNames}, or has a method that does
      *             not fit what the definition declares
      */
@@ -213,10 +208,15 @@ public final class JsDefinitionProxy {
             throw new IllegalArgumentException(
                     definitionType.getName() + " is not an interface");
         }
-        if (!definitionType.isAnnotationPresent(JsDefinition.class)) {
+        boolean invokers = JsInvokers.class.isAssignableFrom(definitionType);
+        boolean snippets = JsSnippets.class.isAssignableFrom(definitionType);
+        if (invokers == snippets) {
             throw new IllegalArgumentException(definitionType.getName()
-                    + " is not annotated with @JsDefinition, so the build does not"
-                    + " collect its JavaScript into the bundle");
+                    + (invokers ? " extends both JsInvokers and JsSnippets"
+                            : " extends neither JsInvokers nor JsSnippets")
+                    + ". Extend JsInvokers for"
+                    + " JavaScript that runs when a method is called, or"
+                    + " JsSnippets for methods that return snippets");
         }
         if (definitionType
                 .isAnnotationPresent(JsFunctionParameterNames.class)) {
@@ -227,19 +227,28 @@ public final class JsDefinitionProxy {
                     + " not to a JavaScript definition. Annotate each method"
                     + " instead");
         }
-        // One snippet makes it a definition of snippets, so that a method
-        // running JavaScript beside it is reported as the odd one out
-        boolean snippets = Stream.of(definitionType.getMethods()).anyMatch(
-                method -> method.isAnnotationPresent(JsExpression.class)
-                        && JsSnippet.class
-                                .isAssignableFrom(method.getReturnType()));
         checkMethods(definitionType, snippets);
         return snippets ? Kind.SNIPPETS : Kind.CALLS;
     }
 
-    private static List<String> collectDeclaredNames(Class<?> definitionType) {
-        return Stream.of(definitionType.getMethods()).map(Method::getName)
-                .sorted().toList();
+    /**
+     * Checks whether the given type is a JavaScript definition, an interface
+     * that extends {@link JsInvokers} or {@link JsSnippets}, which the build
+     * collects the JavaScript of. The marker interfaces themselves are not.
+     * Whether the definition can work is up to {@link #checkDefinition(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param type
+     *            the type to check, not <code>null</code>
+     * @return <code>true</code> if the type is a JavaScript definition,
+     *         <code>false</code> otherwise
+     */
+    public static boolean isDefinition(Class<?> type) {
+        return type.isInterface() && type != JsInvokers.class
+                && type != JsSnippets.class
+                && (JsInvokers.class.isAssignableFrom(type)
+                        || JsSnippets.class.isAssignableFrom(type));
     }
 
     /**

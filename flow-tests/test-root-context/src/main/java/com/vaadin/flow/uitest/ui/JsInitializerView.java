@@ -15,14 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.Route;
@@ -32,8 +29,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.JsInitializerView", layout = ViewTestLayout.class)
 public class JsInitializerView extends AbstractDivView {
 
-    @JsDefinition
-    public interface CounterJs extends Serializable {
+    public interface CounterJs extends JsSnippets {
         @JsExpression("""
                 $0.textContent = String(parseInt($0.textContent, 10) + 1);
                 return () => {

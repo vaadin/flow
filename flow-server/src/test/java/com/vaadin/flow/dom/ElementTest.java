@@ -81,9 +81,9 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -2794,14 +2794,12 @@ class ElementTest extends AbstractNodeTest {
                 "a trailing argument should reach the client on its own, so that the generated function collects it into its rest parameter");
     }
 
-    @JsDefinition
-    interface ResultJs extends Serializable {
+    interface ResultJs extends JsInvokers {
         @JsExpression("return this.value;")
         PendingJavaScriptResult readValue();
     }
 
-    @JsDefinition
-    interface TestJs extends Serializable {
+    interface TestJs extends JsInvokers {
         @JsExpression("this.method($0)")
         void method(String value);
 
@@ -2887,8 +2885,7 @@ class ElementTest extends AbstractNodeTest {
                         + exception.getMessage());
     }
 
-    @JsDefinition
-    interface InitializerSnippetsJs extends Serializable {
+    interface InitializerSnippetsJs extends JsSnippets {
         @JsExpression("""
                 this.classList.add($0);
                 return () => this.classList.remove($0);""")

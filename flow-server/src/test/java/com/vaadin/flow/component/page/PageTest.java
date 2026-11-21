@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.page;
 
-import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,9 +36,9 @@ import com.vaadin.flow.dom.Element.ElementJs;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -59,8 +58,7 @@ import static org.mockito.Mockito.when;
 
 class PageTest {
 
-    @JsDefinition
-    interface TestPageJs extends Serializable {
+    interface TestPageJs extends JsInvokers {
         @JsExpression("window.alert($0)")
         void showGreeting(String greeting);
 
@@ -164,7 +162,7 @@ class PageTest {
         final MockUI mockUI = new MockUI();
         final Page page = new Page(mockUI) {
             @Override
-            public <T> T executeJs(Class<T> definitionType) {
+            public <T extends JsInvokers> T executeJs(Class<T> definitionType) {
                 // The details are asked for through declared JavaScript, so
                 // the stub has to answer that call rather than an expression
                 return JsDefinitionProxy.create(definitionType, call -> {

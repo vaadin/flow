@@ -15,15 +15,14 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.io.Serializable;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.signals.Signal;
 
@@ -126,8 +125,7 @@ public class SignalInput<T> extends Action.Input<T> {
      * 
      * @since 25.4
      */
-    @JsDefinition
-    public interface MirrorJs extends Serializable {
+    public interface MirrorJs extends JsInvokers {
 
         /**
          * Writes the value of the signal to the property the trigger reads.

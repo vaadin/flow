@@ -17,7 +17,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.nio.file.Files;
 import java.util.List;
@@ -41,10 +40,11 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.shared.JsonConstants;
@@ -81,8 +81,7 @@ class TaskGenerateJsDefinitionsTest {
 
     private static final String NAMES_REGISTRY = "window.Vaadin.Flow.jsDefinitionNames = window.Vaadin.Flow.jsDefinitionNames || {};";
 
-    @JsDefinition
-    public interface GreeterJs extends Serializable {
+    public interface GreeterJs extends JsInvokers {
         @JsExpression(GREETING_EXPRESSION)
         void showGreeting(String greeting);
 
@@ -90,8 +89,7 @@ class TaskGenerateJsDefinitionsTest {
         void showGreeting();
     }
 
-    @JsDefinition
-    public interface LoggerJs extends Serializable {
+    public interface LoggerJs extends JsSnippets {
         @JsExpression(LOG_EXPRESSION)
         @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
@@ -104,44 +102,37 @@ class TaskGenerateJsDefinitionsTest {
     public interface TemplateSnippet extends JsSnippet {
     }
 
-    @JsDefinition
-    public interface TemplateJs extends Serializable {
+    public interface TemplateJs extends JsSnippets {
         @JsExpression(TEMPLATE_EXPRESSION)
         TemplateSnippet label(String prefix);
     }
 
-    @JsDefinition
-    public interface EventJs extends Serializable {
+    public interface EventJs extends JsSnippets {
         @JsExpression(KEY_EXPRESSION)
         DomEventFilter isKey(String key);
     }
 
-    @JsDefinition
-    public interface InvalidNameJs extends Serializable {
+    public interface InvalidNameJs extends JsSnippets {
         @JsExpression(LOG_EXPRESSION)
         @JsFunctionParameterNames("class")
         JsFunction createLogger(String prefix);
     }
 
-    @JsDefinition
-    public interface CounterJs extends Serializable {
+    public interface CounterJs extends JsInvokers {
         @JsExpression(COUNT_EXPRESSION)
         void count(Integer from);
     }
 
-    @JsDefinition
-    public interface NothingJs extends Serializable {
+    public interface NothingJs extends JsInvokers {
         void notDeclared();
     }
 
-    @JsDefinition
-    public interface ShouterJs extends Serializable {
+    public interface ShouterJs extends JsInvokers {
         @JsExpression(SHOUT_EXPRESSION)
         void shout(String greeting, Object... names);
     }
 
-    @JsDefinition
-    public interface StopperJs extends Serializable {
+    public interface StopperJs extends JsInvokers {
         @JsExpression(GREETING_EXPRESSION)
         @JsWithExecutionContext
         void stop(String greeting);
@@ -769,6 +760,22 @@ class TaskGenerateJsDefinitionsTest {
 
     private static int countOf(String content, String value) {
         return content.split(Pattern.quote(value), -1).length - 1;
+    }
+
+    @Test
+    void getFileContent_scansDefinitionsOfBothKinds() {
+        Options scanning = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(GreeterJs.class, LoggerJs.class)),
+                null).withFrontendDirectory(frontendFolder)
+                .withProductionMode(true);
+
+        String content = new TaskGenerateJsDefinitions(scanning)
+                .getFileContent();
+
+        assertEquals(
+                TaskGenerateJsDefinitions.renderFileContent(
+                        List.of(GreeterJs.class, LoggerJs.class), false),
+                content);
     }
 
     @Test

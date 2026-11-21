@@ -108,8 +108,9 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.AccessDeniedException;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -154,8 +155,11 @@ public class VaadinQuarkusNativeProcessor {
 
     private static final String SERVICES_FOLDER = "META-INF/services";
 
-    private static final DotName JS_DEFINITION = DotName
-            .createSimple(JsDefinition.class);
+    private static final DotName JS_INVOKERS = DotName
+            .createSimple(JsInvokers.class);
+
+    private static final DotName JS_SNIPPETS = DotName
+            .createSimple(JsSnippets.class);
 
     private static final DotName JS_SNIPPET = DotName
             .createSimple(JsSnippet.class);
@@ -523,8 +527,10 @@ public class VaadinQuarkusNativeProcessor {
 
     // Visible for testing
     Set<ClassInfo> getJsDefinitions(IndexView index) {
-        return getAnnotatedClasses(index, JS_DEFINITION).stream()
-                .filter(ClassInfo::isInterface).collect(Collectors.toSet());
+        Set<ClassInfo> definitions = new HashSet<>(
+                index.getAllKnownSubinterfaces(JS_INVOKERS));
+        definitions.addAll(index.getAllKnownSubinterfaces(JS_SNIPPETS));
+        return definitions;
     }
 
     @BuildStep(onlyIf = IsNativeBuild.class)

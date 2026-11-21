@@ -41,8 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JsCallTest {
 
-    @JsDefinition
-    interface GreeterJs extends Serializable {
+    interface GreeterJs extends JsInvokers {
         @JsExpression("window.alert($0)")
         void showGreeting(String greeting);
 

@@ -15,16 +15,14 @@
  */
 package com.vaadin.flow.component.dnd.internal;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.dnd.DragSource;
 import com.vaadin.flow.component.dnd.DropTarget;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.shared.Registration;
 
@@ -179,8 +177,7 @@ public class DndUtil {
      * 
      * @since 25.4
      */
-    @JsDefinition
-    public interface DndJs extends Serializable {
+    public interface DndJs extends JsInvokers {
 
         /**
          * Activates the element as a drag source, or deactivates it when it is

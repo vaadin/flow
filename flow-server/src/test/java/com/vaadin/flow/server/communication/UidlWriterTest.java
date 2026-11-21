@@ -17,7 +17,6 @@ package com.vaadin.flow.server.communication;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -57,8 +56,8 @@ import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -423,8 +422,7 @@ class UidlWriterTest {
                         + encoded);
     }
 
-    @JsDefinition
-    interface TestJs extends Serializable {
+    interface TestJs extends JsInvokers {
         @JsExpression("this.method($0)")
         void method(String value);
 

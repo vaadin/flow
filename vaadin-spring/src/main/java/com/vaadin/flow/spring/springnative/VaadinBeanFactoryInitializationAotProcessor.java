@@ -56,8 +56,9 @@ import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
+import com.vaadin.flow.js.JsInvokers;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Layout;
@@ -585,9 +586,13 @@ public class VaadinBeanFactoryInitializationAotProcessor
                         && beanDefinition.getMetadata().isIndependent();
             }
         };
-        scanner.addIncludeFilter(new AnnotationTypeFilter(JsDefinition.class));
+        scanner.addIncludeFilter(new AssignableTypeFilter(JsInvokers.class));
+        scanner.addIncludeFilter(new AssignableTypeFilter(JsSnippets.class));
 
-        return loadCandidates(scanner, basePackage);
+        Set<Class<?>> result = loadCandidates(scanner, basePackage);
+        result.remove(JsInvokers.class);
+        result.remove(JsSnippets.class);
+        return result;
     }
 
     // Visible for testing

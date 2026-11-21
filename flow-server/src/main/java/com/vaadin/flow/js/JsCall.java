@@ -111,8 +111,8 @@ public record JsCall(Class<?> definitionType, String methodName,
      * since a call is resolved several times when it is sent, and resolving it
      * otherwise copies the methods of the interface, hashes the declared
      * JavaScript and checks the declared names every time. Keyed by any class,
-     * since a JavaScript definition is marked by an annotation rather than by a
-     * common supertype.
+     * since a JavaScript definition extends one of two marker interfaces rather
+     * than a common supertype.
      */
     private static final ReflectionCache<Object, List<DeclaredMethod>> declaredMethods = new ReflectionCache<>(
             JsCall::collectDeclaredMethods);

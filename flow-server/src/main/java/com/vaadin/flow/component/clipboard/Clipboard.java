@@ -27,7 +27,6 @@ import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.streams.UploadHandler;
@@ -366,8 +365,7 @@ public final class Clipboard implements Serializable {
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      */
-    @JsDefinition
-    public interface PasteJs extends Serializable {
+    public interface PasteJs extends JsSnippets {
 
         /**
          * Event data that reads the pasted data of a MIME type. Optional

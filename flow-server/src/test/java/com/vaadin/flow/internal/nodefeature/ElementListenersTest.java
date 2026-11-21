@@ -57,7 +57,6 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.shared.JsonConstants;
@@ -376,8 +375,7 @@ public class ElementListenersTest
         assertEquals("true", capturedJson.get("baz").toString());
     }
 
-    @JsDefinition
-    public interface EventJs extends Serializable {
+    public interface EventJs extends JsSnippets {
         @JsExpression("return element.closest($0).tagName;")
         DomEventData<String> closestTag(String selector);
 

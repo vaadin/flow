@@ -49,8 +49,8 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.ReflectionCache;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
@@ -822,8 +822,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
      * 
      * @since 25.4
      */
-    @JsDefinition
-    public interface RefreshUiJs extends Serializable {
+    public interface RefreshUiJs extends JsInvokers {
 
         /**
          * Asks the dev tools to refresh the UI.
