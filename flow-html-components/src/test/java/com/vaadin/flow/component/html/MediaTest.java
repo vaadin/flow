@@ -27,6 +27,7 @@ import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -51,8 +52,9 @@ abstract class MediaTest extends ComponentTest {
 
     @Override
     protected void addProperties() {
-        addProperty("controlsVisible", boolean.class, false, true, false, true,
-                "controls");
+        // shown by default, and the generic cases expect the attribute only
+        // for the non-default value; covered by its own test below
+        whitelistProperty("controlsVisible");
         addProperty("autoplay", boolean.class, false, true, false, true);
         addProperty("loop", boolean.class, false, true, false, true);
         addProperty("muted", boolean.class, false, true, false, true);
@@ -107,6 +109,25 @@ abstract class MediaTest extends ComponentTest {
         Media media = createMedia(source);
 
         assertEquals(List.of(source), media.getSources());
+    }
+
+    @Test
+    void controlsVisible_shownByDefault_canBeHiddenAndShownAgain() {
+        // checked through both constructors, since a player without controls
+        // gives the visitor no way to start it
+        for (Media media : List.of((Media) getComponent(),
+                createMedia(new Source("/intro.mp4", "video/mp4")))) {
+            assertTrue(media.isControlsVisible());
+            assertTrue(media.getElement().hasAttribute("controls"));
+
+            media.setControlsVisible(false);
+            assertFalse(media.isControlsVisible());
+            assertFalse(media.getElement().hasAttribute("controls"));
+
+            media.setControlsVisible(true);
+            assertTrue(media.isControlsVisible());
+            assertTrue(media.getElement().hasAttribute("controls"));
+        }
     }
 
     @Test
