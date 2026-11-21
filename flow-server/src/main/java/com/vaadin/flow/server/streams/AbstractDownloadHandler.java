@@ -158,7 +158,19 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * 'Content-Disposition' attribute is 'inline', if this method is called.
      *
      * @return this instance for method chaining
+     * @deprecated whether content is shown or saved depends on where the
+     *             handler is used, not on the handler, and this changes the
+     *             handler for every place that uses it. The components that
+     *             show content, such as {@code Image} and {@code IFrame}, and
+     *             {@code Download.onClick} with a new tab already serve it
+     *             inline. For an {@code Anchor}, use {@code setDownload(false)}
+     *             or {@code AttachmentType.INLINE}. Elsewhere, register the
+     *             handler with {@link DownloadDisposition#INLINE} on its
+     *             {@code ElementStreamResource} instead. Once this method is
+     *             removed, an {@code Anchor} without such a choice serves a
+     *             built-in handler as a download.
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public R inline() {
         inline = true;
         return (R) this;
@@ -170,9 +182,38 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      *
      * @return true if the content is to be displayed inline, false if it is to
      *         be downloaded as a file
+     * @deprecated {@link #inline()} is deprecated, since the place where the
+     *             handler is used decides how the content is served. A custom
+     *             handler names its content with
+     *             {@link DownloadEvent#setFileName(String)}, and the place of
+     *             use serves it inline or as an attachment with a
+     *             {@link DownloadDisposition} on the registered resource.
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public boolean isInline() {
         return inline;
+    }
+
+    /**
+     * Writes the Content-Disposition header with the given file name, as
+     * {@code inline} if {@link #isInline()} returns {@code true} and as
+     * {@code attachment} otherwise. The place where the handler is used can
+     * still override the type, see {@link DownloadDisposition}.
+     *
+     * @param downloadEvent
+     *            the download event
+     * @param fileName
+     *            the file name to put in the header
+     */
+    // isInline() is called rather than the field read, so that subclasses
+    // overriding it keep working until it is removed
+    @SuppressWarnings({ "removal", "java:S5738" })
+    void writeContentDisposition(DownloadEvent downloadEvent, String fileName) {
+        if (isInline()) {
+            downloadEvent.inline(fileName);
+        } else {
+            downloadEvent.setFileName(fileName);
+        }
     }
 
     /**

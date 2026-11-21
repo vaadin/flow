@@ -407,6 +407,7 @@ public class Anchor extends HtmlContainer
         assignDownloadHandler(downloadHandler, getLinkMode(downloadHandler));
     }
 
+    @SuppressWarnings("removal")
     private AttachmentType getLinkMode(DownloadHandler downloadHandler) {
         if (downloadHandler instanceof AbstractDownloadHandler<?> abstractDownloadHandler) {
             if (abstractDownloadHandler.isInline()) {
