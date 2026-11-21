@@ -57,6 +57,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.ServerRpcHandler.ClientResentPayloadException;
 import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
 import com.vaadin.flow.server.communication.ServerRpcHandler.MessageIdSyncException;
+import com.vaadin.flow.server.communication.ServerRpcHandler.ResynchronizationRequiredException;
 import com.vaadin.flow.server.dau.DAUUtils;
 import com.vaadin.flow.server.dau.DauEnforcementException;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -220,6 +221,9 @@ public class PushHandler {
                     "Client re-sent an already handled message, re-sending the previous response",
                     e);
             connection.resendLastResponse();
+        } catch (ResynchronizationRequiredException e) { // NOSONAR
+            // Resync on the client side, as the XHR path does
+            connection.pushResync();
         } catch (RequestBodyTooLargeException e) {
             getLogger().warn(
                     "Rejected a push message with a body larger than the "
