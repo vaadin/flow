@@ -27,7 +27,8 @@ import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.server.streams.AbstractDownloadHandler;
+import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.signals.Signal;
 
@@ -153,10 +154,9 @@ public class HtmlObject extends HtmlContainer implements
      * {@link DownloadHandler} callback for providing an object data and type
      * value.
      *
-     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods in
-     * {@link DownloadHandler}, as well as for other
-     * {@link AbstractDownloadHandler} implementations.
+     * The content is served with a <code>Content-Disposition: inline</code>
+     * header, so that the browser shows it. The given handler is not changed,
+     * see {@link DownloadDisposition#INLINE}.
      *
      * @see #setData(DownloadHandler)
      * @see #setType(String)
@@ -176,10 +176,9 @@ public class HtmlObject extends HtmlContainer implements
      * Creates a new <code>&lt;object&gt;</code> component with given data
      * resource, type value and "param" components.
      *
-     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods in
-     * {@link DownloadHandler}, as well as for other
-     * {@link AbstractDownloadHandler} implementations.
+     * The content is served with a <code>Content-Disposition: inline</code>
+     * header, so that the browser shows it. The given handler is not changed,
+     * see {@link DownloadDisposition#INLINE}.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -204,10 +203,9 @@ public class HtmlObject extends HtmlContainer implements
      * Creates a new <code>&lt;object&gt;</code> component with given data
      * resource, type value and "param" components.
      *
-     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods in
-     * {@link DownloadHandler}, as well as for other
-     * {@link AbstractDownloadHandler} implementations.
+     * The content is served with a <code>Content-Disposition: inline</code>
+     * header, so that the browser shows it. The given handler is not changed,
+     * see {@link DownloadDisposition#INLINE}.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -230,10 +228,9 @@ public class HtmlObject extends HtmlContainer implements
      * Creates a new <code>&lt;object&gt;</code> component with given data
      * resource, type value and "param" components.
      *
-     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods in
-     * {@link DownloadHandler}, as well as for other
-     * {@link AbstractDownloadHandler} implementations.
+     * The content is served with a <code>Content-Disposition: inline</code>
+     * header, so that the browser shows it. The given handler is not changed,
+     * see {@link DownloadDisposition#INLINE}.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -327,22 +324,18 @@ public class HtmlObject extends HtmlContainer implements
      * Sets the URL for {@link DownloadHandler} callback as "data" attribute
      * value.
      *
-     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods in
-     * {@link DownloadHandler}, as well as for other
-     * {@link AbstractDownloadHandler} implementations.
+     * The content is served with a <code>Content-Disposition: inline</code>
+     * header, so that the browser shows it. The given handler is not changed,
+     * see {@link DownloadDisposition#INLINE}.
      *
      * @param data
      *            a "data" attribute value, not {@code null}
      * @since 24.8
      */
     public void setData(DownloadHandler data) {
-        if (data instanceof AbstractDownloadHandler<?> handler) {
-            // change disposition to inline in pre-defined handlers,
-            // where it is 'attachment' by default
-            handler.inline();
-        }
-        getElement().setAttribute("data", data);
+        getElement().setAttribute("data",
+                new StreamResourceRegistry.ElementStreamResource(data,
+                        getElement(), DownloadDisposition.INLINE));
     }
 
     /**

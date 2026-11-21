@@ -28,7 +28,8 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.server.streams.AbstractDownloadHandler;
+import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 
@@ -106,10 +107,9 @@ public class Image extends HtmlComponent
      * The alternative text given to constructor is always set even if it is the
      * default empty string which is not retained with {@link #setAlt(String)}.
      *
-     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods in
-     * {@link DownloadHandler}, as well as for other
-     * {@link AbstractDownloadHandler} implementations.
+     * The content is served with a <code>Content-Disposition: inline</code>
+     * header, so that the browser shows it. The given handler is not changed,
+     * see {@link DownloadDisposition#INLINE}.
      *
      * @param downloadHandler
      *            the download handler callback that provides an image data, not
@@ -192,7 +192,7 @@ public class Image extends HtmlComponent
         this(DownloadHandler.fromInputStream(event -> {
             return new DownloadResponse(new ByteArrayInputStream(imageContent),
                     imageName, mimeType, imageContent.length);
-        }).inline(), imageName);
+        }), imageName);
     }
 
     /**
@@ -234,10 +234,9 @@ public class Image extends HtmlComponent
      * Sets the image URL with the URL of the given {@link DownloadHandler}
      * callback.
      *
-     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods in
-     * {@link DownloadHandler}, as well as for other
-     * {@link AbstractDownloadHandler} implementations.
+     * The content is served with a <code>Content-Disposition: inline</code>
+     * header, so that the browser shows it. The given handler is not changed,
+     * see {@link DownloadDisposition#INLINE}.
      *
      * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
      * that the image is still served when the component, or one of its
@@ -250,12 +249,10 @@ public class Image extends HtmlComponent
      * @since 24.8
      */
     public void setSrc(DownloadHandler downloadHandler) {
-        if (downloadHandler instanceof AbstractDownloadHandler<?> handler) {
-            // change disposition to inline in pre-defined handlers,
-            // where it is 'attachment' by default
-            handler.inline();
-        }
-        getElement().setAttribute("src", downloadHandler.allowDisabled());
+        getElement().setAttribute("src",
+                new StreamResourceRegistry.ElementStreamResource(
+                        downloadHandler.allowDisabled(), getElement(),
+                        DownloadDisposition.INLINE));
     }
 
     /**

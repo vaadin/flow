@@ -32,7 +32,8 @@ import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.server.streams.AbstractDownloadHandler;
+import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
@@ -206,10 +207,9 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * Creates a new iframe with download handler callback that provides a
      * resource from server.
      *
-     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods in
-     * {@link DownloadHandler}, as well as for other
-     * {@link AbstractDownloadHandler} implementations.
+     * The content is served with a <code>Content-Disposition: inline</code>
+     * header, so that the browser shows it. The given handler is not changed,
+     * see {@link DownloadDisposition#INLINE}.
      *
      * @param downloadHandler
      *            the download handler callback that provides a resource from
@@ -286,10 +286,9 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * Sets the source of the iframe with a source URL with the URL of the given
      * {@link DownloadHandler} callback.
      *
-     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods in
-     * {@link DownloadHandler}, as well as for other
-     * {@link AbstractDownloadHandler} implementations.
+     * The content is served with a <code>Content-Disposition: inline</code>
+     * header, so that the browser shows it. The given handler is not changed,
+     * see {@link DownloadDisposition#INLINE}.
      *
      * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
      * that the iframe content is still served when the component, or one of its
@@ -305,12 +304,10 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      */
     public void setSrc(DownloadHandler downloadHandler) {
         UrlUtil.cancelUrlValidation(this, SRC);
-        if (downloadHandler instanceof AbstractDownloadHandler<?> handler) {
-            // change disposition to inline in pre-defined handlers,
-            // where it is 'attachment' by default
-            handler.inline();
-        }
-        getElement().setAttribute(SRC, downloadHandler.allowDisabled());
+        getElement().setAttribute(SRC,
+                new StreamResourceRegistry.ElementStreamResource(
+                        downloadHandler.allowDisabled(), getElement(),
+                        DownloadDisposition.INLINE));
     }
 
     /**

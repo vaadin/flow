@@ -20,6 +20,9 @@ import org.mockito.ArgumentCaptor;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry.ElementStreamResource;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
@@ -27,7 +30,6 @@ import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -62,7 +64,8 @@ class VideoTest extends MediaTest {
     }
 
     @Test
-    void setPoster_downloadHandler_isInlineAndServedWhileDisabled() {
+    void setPoster_downloadHandler_isInlineAndServedWhileDisabled()
+            throws Exception {
         Element element = mock(Element.class);
         class TestVideo extends Video {
             @Override
@@ -70,19 +73,22 @@ class VideoTest extends MediaTest {
                 return element;
             }
         }
-        InputStreamDownloadHandler handler = DownloadHandler
-                .fromInputStream(event -> DownloadResponse.error(500));
-        assertFalse(handler.isInline());
-
+        InputStreamDownloadHandler handler = DownloadHandler.fromInputStream(
+                event -> DownloadResponse.error(500), "poster.jpg");
         new TestVideo().setPoster(handler);
 
-        assertTrue(handler.isInline(),
-                "The poster is rendered in the page, so it must be served inline rather than as a download");
-        ArgumentCaptor<DownloadHandler> captor = ArgumentCaptor
-                .forClass(DownloadHandler.class);
+        ArgumentCaptor<AbstractStreamResource> captor = ArgumentCaptor
+                .forClass(AbstractStreamResource.class);
         verify(element).setAttribute(eq("poster"), captor.capture());
         assertEquals(DisabledUpdateMode.ALWAYS,
-                captor.getValue().getDisabledUpdateMode(),
+                ((ElementStreamResource) captor.getValue())
+                        .getElementRequestHandler().getDisabledUpdateMode(),
                 "The browser fetches the poster while rendering, so it must be served even when the video is disabled");
+        assertEquals(DownloadDisposition.INLINE,
+                ((ElementStreamResource) captor.getValue()).getDisposition(),
+                "The poster is rendered in the page, so it must be served inline rather than as a download");
+        assertEquals("attachment; filename=\"poster.jpg\"",
+                AssertUtils.servedContentDisposition(handler),
+                "The given handler must not be changed");
     }
 }

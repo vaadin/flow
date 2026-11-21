@@ -19,7 +19,8 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.server.streams.AbstractDownloadHandler;
+import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
@@ -97,10 +98,9 @@ public class Video extends Media {
      * callback serves. This is the version to use for an image the application
      * produces itself, rather than one that is served from a URL of its own.
      * <p>
-     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods in
-     * {@link DownloadHandler}, as well as for other
-     * {@link AbstractDownloadHandler} implementations.
+     * The content is served with a <code>Content-Disposition: inline</code>
+     * header, so that the browser shows it. The given handler is not changed,
+     * see {@link DownloadDisposition#INLINE}.
      * <p>
      * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
      * that the poster is still served when the video, or one of its ancestors,
@@ -114,13 +114,10 @@ public class Video extends Media {
      * @see #setPoster(String)
      */
     public void setPoster(DownloadHandler downloadHandler) {
-        if (downloadHandler instanceof AbstractDownloadHandler<?> handler) {
-            // change disposition to inline in pre-defined handlers,
-            // where it is 'attachment' by default
-            handler.inline();
-        }
         getElement().setAttribute(POSTER_ATTRIBUTE,
-                downloadHandler.allowDisabled());
+                new StreamResourceRegistry.ElementStreamResource(
+                        downloadHandler.allowDisabled(), getElement(),
+                        DownloadDisposition.INLINE));
     }
 
     /**

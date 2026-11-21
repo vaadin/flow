@@ -24,10 +24,13 @@ import org.mockito.ArgumentCaptor;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry.ElementStreamResource;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadEvent;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
@@ -82,15 +85,16 @@ class ImageTest extends ComponentTest {
 
         new TestImage().setSrc(lambda);
 
-        ArgumentCaptor<DownloadHandler> captor = ArgumentCaptor
-                .forClass(DownloadHandler.class);
+        ArgumentCaptor<AbstractStreamResource> captor = ArgumentCaptor
+                .forClass(AbstractStreamResource.class);
         verify(element).setAttribute(eq("src"), captor.capture());
         assertEquals(DisabledUpdateMode.ALWAYS,
-                captor.getValue().getDisabledUpdateMode());
+                ((ElementStreamResource) captor.getValue())
+                        .getElementRequestHandler().getDisabledUpdateMode());
     }
 
     @Test
-    void downloadHandler_isSetToInline() {
+    void downloadHandler_servedInline() throws Exception {
         Element element = mock(Element.class);
         class TestImage extends Image {
             public TestImage(DownloadHandler downloadHandler, String alt) {
@@ -102,12 +106,18 @@ class ImageTest extends ComponentTest {
                 return element;
             }
         }
-        // dummy handler
-        InputStreamDownloadHandler handler = DownloadHandler
-                .fromInputStream(event -> DownloadResponse.error(500));
-        assertFalse(handler.isInline());
-        new TestImage(handler, "test.png");
-        assertTrue(handler.isInline());
+        InputStreamDownloadHandler handler = DownloadHandler.fromInputStream(
+                event -> DownloadResponse.error(500), "photo.png");
+        new TestImage(handler, "photo");
+
+        ArgumentCaptor<AbstractStreamResource> captor = ArgumentCaptor
+                .forClass(AbstractStreamResource.class);
+        verify(element).setAttribute(eq("src"), captor.capture());
+        assertEquals(DownloadDisposition.INLINE,
+                ((ElementStreamResource) captor.getValue()).getDisposition());
+        assertEquals("attachment; filename=\"photo.png\"",
+                AssertUtils.servedContentDisposition(handler),
+                "The given handler must not be changed");
     }
 
     /**
@@ -116,11 +126,12 @@ class ImageTest extends ComponentTest {
      */
     private String captureAndInvokeDownloadHandler(Element element)
             throws Exception {
-        ArgumentCaptor<DownloadHandler> handlerCaptor = ArgumentCaptor
-                .forClass(DownloadHandler.class);
+        ArgumentCaptor<AbstractStreamResource> handlerCaptor = ArgumentCaptor
+                .forClass(AbstractStreamResource.class);
         verify(element).setAttribute(eq("src"), handlerCaptor.capture());
 
-        DownloadHandler handler = handlerCaptor.getValue();
+        DownloadHandler handler = (DownloadHandler) ((ElementStreamResource) handlerCaptor
+                .getValue()).getElementRequestHandler();
         assertEquals(DisabledUpdateMode.ALWAYS, handler.getDisabledUpdateMode(),
                 "Handler set on the image must allow disabled, so the browser can still load the image when the component is disabled");
 
