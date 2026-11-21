@@ -32,6 +32,7 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.signals.Signal;
 
@@ -67,6 +68,21 @@ public class Anchor extends HtmlContainer
      * enabled again.
      */
     private Serializable href;
+
+    /**
+     * The resource that serves the handler of the href, or {@code null} if the
+     * href is not bound to a handler. Kept so that the way it is served can be
+     * changed without registering the handler again.
+     */
+    private StreamResourceRegistry.ElementStreamResource downloadResource;
+
+    /**
+     * The choice made with {@link #setDownload(boolean)} or an
+     * {@link AttachmentType}, or {@code null} if none has been made. Once made,
+     * it decides both the {@code download} attribute and how the content of a
+     * handler is served, whatever the handler asks for.
+     */
+    private AttachmentType attachmentType;
 
     /**
      * Creates a new empty anchor component.
@@ -183,7 +199,7 @@ public class Anchor extends HtmlContainer
         AttachmentType att = downloadHandler instanceof AbstractDownloadHandler
                 ? getLinkMode(downloadHandler)
                 : AttachmentType.DOWNLOAD;
-        setHref(downloadHandler, att);
+        assignDownloadHandler(downloadHandler, att);
         setText(text);
     }
 
@@ -218,7 +234,7 @@ public class Anchor extends HtmlContainer
         AttachmentType att = downloadHandler instanceof AbstractDownloadHandler
                 ? getLinkMode(downloadHandler)
                 : AttachmentType.DOWNLOAD;
-        setHref(downloadHandler, att);
+        assignDownloadHandler(downloadHandler, att);
         Objects.requireNonNull(textSignal, "textSignal must not be null");
         bindText(textSignal);
     }
@@ -232,8 +248,11 @@ public class Anchor extends HtmlContainer
      * implementing AbstractDownloadHandler.
      *
      * LinkMode determines if the attribute `download` should be set or not.
-     * {@link AttachmentType#DOWNLOAD} will set the download attribute, where as
-     * {@link AttachmentType#INLINE} will remove it.
+     * {@link AttachmentType#DOWNLOAD} will set the download attribute and serve
+     * the content as an attachment, where as {@link AttachmentType#INLINE} will
+     * remove it and serve the content inline, whatever the handler asks for.
+     * The choice is kept for handlers set later with
+     * {@link #setHref(DownloadHandler)}.
      *
      * @see #setHref(DownloadHandler, AttachmentType)
      * @see #setText(String)
@@ -303,6 +322,7 @@ public class Anchor extends HtmlContainer
         UrlUtil.validateUrl(this, HREF, href, "setUnsafeHref(String)",
                 this::clearHref);
         this.href = href;
+        downloadResource = null;
         assignHrefAttribute();
     }
 
@@ -328,6 +348,7 @@ public class Anchor extends HtmlContainer
         }
         UrlUtil.cancelUrlValidation(this, HREF);
         this.href = href;
+        downloadResource = null;
         assignHrefAttribute();
     }
 
@@ -342,6 +363,7 @@ public class Anchor extends HtmlContainer
         UrlUtil.cancelUrlValidation(this, HREF);
         getElement().removeAttribute(HREF);
         href = null;
+        downloadResource = null;
     }
 
     private void clearHref() {
@@ -361,6 +383,7 @@ public class Anchor extends HtmlContainer
     public void setHref(AbstractStreamResource href) {
         UrlUtil.cancelUrlValidation(this, HREF);
         this.href = href;
+        downloadResource = null;
         setRouterIgnore(true);
         assignHrefAttribute();
     }
@@ -370,15 +393,18 @@ public class Anchor extends HtmlContainer
      * {@link DownloadHandler} callback on the server for handling data download
      * from the server to the client when clicking an anchor.
      *
-     * Sets the 'download' attribute for link when given a non-inline handler
-     * implementing AbstractDownloadHandler.
+     * If {@link #setDownload(boolean)} or an {@link AttachmentType} has been
+     * used on this anchor, that choice is kept and decides how the content is
+     * served. Otherwise this sets the 'download' attribute for link when given
+     * a non-inline handler implementing AbstractDownloadHandler, and the
+     * handler decides how the content is served.
      *
      * @param downloadHandler
      *            the callback that handles data download, not null
      * @since 24.8
      */
     public void setHref(DownloadHandler downloadHandler) {
-        setHref(downloadHandler, getLinkMode(downloadHandler));
+        assignDownloadHandler(downloadHandler, getLinkMode(downloadHandler));
     }
 
     private AttachmentType getLinkMode(DownloadHandler downloadHandler) {
@@ -400,8 +426,11 @@ public class Anchor extends HtmlContainer
      * from the server to the client when clicking an anchor.
      *
      * LinkMode determines if the attribute `download` should be set or not.
-     * {@link AttachmentType#DOWNLOAD} will set the download attribute, where as
-     * {@link AttachmentType#INLINE} will remove it.
+     * {@link AttachmentType#DOWNLOAD} will set the download attribute and serve
+     * the content as an attachment, where as {@link AttachmentType#INLINE} will
+     * remove it and serve the content inline. This is the same choice as
+     * {@link #setDownload(boolean)}: it is kept for handlers set later with
+     * {@link #setHref(DownloadHandler)}.
      *
      * @param downloadHandler
      *            the callback that handles data download, not null
@@ -413,13 +442,27 @@ public class Anchor extends HtmlContainer
      */
     public void setHref(DownloadHandler downloadHandler,
             AttachmentType attachmentType) {
+        this.attachmentType = attachmentType == null ? AttachmentType.DOWNLOAD
+                : attachmentType;
+        assignDownloadHandler(downloadHandler, this.attachmentType);
+    }
+
+    /**
+     * Binds the href to the given handler. The choice made for this anchor, if
+     * any, decides the download attribute and how the content is served;
+     * otherwise the given type sets the attribute and the handler decides how
+     * its content is served.
+     */
+    private void assignDownloadHandler(DownloadHandler handler,
+            AttachmentType defaultType) {
         UrlUtil.cancelUrlValidation(this, HREF);
-        this.href = new StreamResourceRegistry.ElementStreamResource(
-                downloadHandler, this.getElement());
+        downloadResource = new StreamResourceRegistry.ElementStreamResource(
+                handler, this.getElement(), toDisposition(attachmentType));
+        this.href = downloadResource;
         setRouterIgnore(true);
         assignHrefAttribute();
-        setDownload(attachmentType == null
-                || attachmentType.equals(AttachmentType.DOWNLOAD));
+        setDownloadAttribute((attachmentType == null ? defaultType
+                : attachmentType) == AttachmentType.DOWNLOAD);
     }
 
     /**
@@ -429,6 +472,13 @@ public class Anchor extends HtmlContainer
      * be downloaded on click.
      *
      * {@code false} will remove the download attribute.
+     * <p>
+     * When the anchor links to a {@link DownloadHandler}, the content is served
+     * accordingly: as an attachment for {@code true} and inline, so that the
+     * browser shows it, for {@code false}, whatever the handler asks for. The
+     * choice is kept when the handler is replaced with
+     * {@link #setHref(DownloadHandler)}, whether it is made before or after the
+     * handler is set.
      *
      * @param download
      *            {@code true} to add the 'download' attribute and {@code false}
@@ -436,6 +486,23 @@ public class Anchor extends HtmlContainer
      * @since 24.8
      */
     public void setDownload(boolean download) {
+        attachmentType = download ? AttachmentType.DOWNLOAD
+                : AttachmentType.INLINE;
+        if (downloadResource != null) {
+            downloadResource.setDisposition(toDisposition(attachmentType));
+        }
+        setDownloadAttribute(download);
+    }
+
+    private static DownloadDisposition toDisposition(AttachmentType type) {
+        if (type == null) {
+            return null;
+        }
+        return type == AttachmentType.INLINE ? DownloadDisposition.INLINE
+                : DownloadDisposition.ATTACHMENT;
+    }
+
+    private void setDownloadAttribute(boolean download) {
         if (download) {
             getElement().setAttribute("download", true);
         } else {
