@@ -42,9 +42,9 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.CssBundler;
 import com.vaadin.flow.internal.UrlUtil;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.server.CspMode;
@@ -431,7 +431,7 @@ public class Page implements Serializable {
      * The browser compiles the expression from a string, which a Content
      * Security Policy without {@code unsafe-eval} blocks. Use
      * {@link #addDynamicImport(JsFunction)} with a function declared by a
-     * {@link JsDefinition} interface to keep the JavaScript in the bundle.
+     * {@link JsSnippets} interface to keep the JavaScript in the bundle.
      *
      * @param expression
      *            the JavaScript expression which return a Promise
@@ -452,13 +452,12 @@ public class Page implements Serializable {
      * {@code Promise} is completed, as with {@link #addDynamicImport(String)}.
      * Unlike that method, which sends an expression that the browser compiles,
      * this one sends a function value, so a function declared by a
-     * {@link JsDefinition} interface and obtained from
+     * {@link JsSnippets} interface and obtained from
      * {@link JsSnippets#of(Class)} loads without anything being compiled in the
      * browser:
      *
      * <pre>
-     * &#64;JsDefinition
-     * public interface ReportEditorJs extends Serializable {
+     * public interface ReportEditorJs extends JsSnippets {
      *     &#64;JsExpression("return import('Frontend/report-editor/report-editor.js');")
      *     JsFunction loadEditor();
      * }
@@ -499,12 +498,11 @@ public class Page implements Serializable {
      * that the method declares, with the arguments of the call as its
      * parameters.
      * <p>
-     * The interface is annotated with {@link JsDefinition}, and each of its
-     * methods declares the JavaScript it runs with {@link JsExpression}:
+     * The interface extends {@link JsInvokers}, and each of its methods
+     * declares the JavaScript it runs with {@link JsExpression}:
      *
      * <pre>
-     * &#64;JsDefinition
-     * public interface ClipboardJs extends Serializable {
+     * public interface ClipboardJs extends JsInvokers {
      *     &#64;JsExpression("return navigator.clipboard.readText()")
      *     PendingJavaScriptResult readText();
      * }
@@ -539,12 +537,11 @@ public class Page implements Serializable {
      * @return an implementation of the interface, to call the declared
      *         JavaScript through, not <code>null</code>
      * @throws IllegalArgumentException
-     *             if the type is not an interface, is not annotated with
-     *             {@link JsDefinition}, or has a method that can not be
-     *             answered
+     *             if the type is not an interface, also extends
+     *             {@link JsSnippets}, or has a method that can not be answered
      * @since 25.4
      */
-    public <T> T executeJs(Class<T> definitionType) {
+    public <T extends JsInvokers> T executeJs(Class<T> definitionType) {
         // Queued the way an expression given to the page is, so that the two
         // reach the client in the order they were made
         return JsDefinitionProxy.create(definitionType,
@@ -1058,8 +1055,7 @@ public class Page implements Serializable {
      * 
      * @since 25.4
      */
-    @JsDefinition
-    public interface PageJs extends Serializable {
+    public interface PageJs extends JsInvokers {
 
         /**
          * The address the browser is at.
@@ -1118,8 +1114,7 @@ public class Page implements Serializable {
      * 
      * @since 25.4
      */
-    @JsDefinition
-    public interface NavigationJs extends Serializable {
+    public interface NavigationJs extends JsInvokers {
 
         /**
          * Opens a URL in the window with the given name, after telling the

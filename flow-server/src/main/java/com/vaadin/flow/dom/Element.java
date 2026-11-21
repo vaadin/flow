@@ -70,9 +70,10 @@ import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.CspMode;
@@ -2073,12 +2074,11 @@ public class Element extends Node<Element> {
      * implementation runs the JavaScript that the method declares, with the
      * arguments of the call as its parameters.
      * <p>
-     * The interface is annotated with {@link JsDefinition}, and each of its
-     * methods declares the JavaScript it runs with {@link JsExpression}:
+     * The interface extends {@link JsInvokers}, and each of its methods
+     * declares the JavaScript it runs with {@link JsExpression}:
      *
      * <pre>
-     * &#64;JsDefinition
-     * public interface GreeterJs extends Serializable {
+     * public interface GreeterJs extends JsInvokers {
      *     &#64;JsExpression("window.alert($0)")
      *     void showGreeting(String greeting);
      * }
@@ -2133,12 +2133,11 @@ public class Element extends Node<Element> {
      * @return an implementation of the interface, to call the declared
      *         JavaScript through, not <code>null</code>
      * @throws IllegalArgumentException
-     *             if the type is not an interface, is not annotated with
-     *             {@link JsDefinition}, or has a method that can not be
-     *             answered
+     *             if the type is not an interface, also extends
+     *             {@link JsSnippets}, or has a method that can not be answered
      * @since 25.4
      */
-    public <T> T executeJs(Class<T> definitionType) {
+    public <T extends JsInvokers> T executeJs(Class<T> definitionType) {
         return JsDefinitionProxy.create(definitionType, this::scheduleJsCall);
     }
 
@@ -2254,14 +2253,13 @@ public class Element extends Node<Element> {
      * <p>
      * This works like {@link #addJsInitializer(String, Object...)}, but takes
      * the initializer as a function rather than as an expression. Declared as a
-     * snippet by a {@link JsDefinition} interface, the function is in the
+     * snippet by a {@link JsSnippets} interface, the function is in the
      * frontend bundle, so nothing is compiled from a string in the browser and
      * the initializer works under a Content Security Policy that does not allow
      * <code>unsafe-eval</code>:
      *
      * <pre>
-     * &#64;JsDefinition
-     * public interface ListenJs extends Serializable {
+     * public interface ListenJs extends JsSnippets {
      *
      *     &#64;JsExpression("""
      *             const listener = () =&gt; this.classList.toggle($0);
@@ -2662,8 +2660,7 @@ public class Element extends Node<Element> {
      * 
      * @since 25.4
      */
-    @JsDefinition
-    public interface CallFunctionJs extends Serializable {
+    public interface CallFunctionJs extends JsInvokers {
 
         /**
          * Calls the named function on the element, with the element as
@@ -2698,8 +2695,7 @@ public class Element extends Node<Element> {
      * 
      * @since 25.4
      */
-    @JsDefinition
-    public interface ScrollIntoViewJs extends Serializable {
+    public interface ScrollIntoViewJs extends JsInvokers {
 
         /**
          * Scrolls the element into view the way the browser does by default,
@@ -2728,8 +2724,7 @@ public class Element extends Node<Element> {
      * 
      * @since 25.4
      */
-    @JsDefinition
-    public interface ElementJs extends Serializable {
+    public interface ElementJs extends JsInvokers {
 
         /**
          * Adds the CSS class to the element and removes it again when the

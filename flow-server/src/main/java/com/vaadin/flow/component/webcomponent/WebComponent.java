@@ -27,8 +27,8 @@ import tools.jackson.databind.node.ValueNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
@@ -226,8 +226,7 @@ public final class WebComponent<C extends Component> implements Serializable {
      * 
      * @since 25.4
      */
-    @JsDefinition
-    public interface CustomEventJs extends Serializable {
+    public interface CustomEventJs extends JsInvokers {
 
         /**
          * Fires an event on the host of the web component.

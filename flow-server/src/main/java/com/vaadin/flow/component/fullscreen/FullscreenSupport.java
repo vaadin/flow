@@ -21,8 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
@@ -75,8 +75,7 @@ final class FullscreenSupport implements Serializable {
      * definition for
      * {@link com.vaadin.flow.component.page.Page#executeJs(Class)}.
      */
-    @JsDefinition
-    public interface FullscreenJs extends Serializable {
+    public interface FullscreenJs extends JsInvokers {
 
         /**
          * Takes the document out of fullscreen.

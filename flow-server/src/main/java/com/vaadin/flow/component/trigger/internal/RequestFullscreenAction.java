@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.io.Serializable;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
@@ -26,7 +25,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippets;
 
@@ -187,8 +185,7 @@ public class RequestFullscreenAction extends PromiseAction<Void> {
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      */
-    @JsDefinition
-    public interface RequestFullscreenJs extends Serializable {
+    public interface RequestFullscreenJs extends JsSnippets {
 
         /**
          * An action that requests fullscreen for the whole page.

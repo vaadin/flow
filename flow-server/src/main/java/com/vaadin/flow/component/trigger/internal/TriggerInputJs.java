@@ -15,11 +15,8 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippets;
@@ -34,8 +31,7 @@ import com.vaadin.flow.js.JsSnippets;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-@JsDefinition
-public interface TriggerInputJs extends Serializable {
+public interface TriggerInputJs extends JsSnippets {
 
     /**
      * An input that returns the given value.

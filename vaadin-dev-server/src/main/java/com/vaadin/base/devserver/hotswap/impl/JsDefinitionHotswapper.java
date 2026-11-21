@@ -30,7 +30,6 @@ import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.ReflectionCache;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
@@ -43,7 +42,9 @@ import com.vaadin.flow.server.frontend.TaskGenerateJsDefinitions;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
- * Reports a {@link JsDefinition} interface whose JavaScript the frontend bundle
+ * Reports a JavaScript definition, an interface that extends
+ * {@link com.vaadin.flow.js.JsInvokers} or
+ * {@link com.vaadin.flow.js.JsSnippets}, whose JavaScript the frontend bundle
  * does not carry.
  * <p>
  * The JavaScript a definition method declares with {@link JsExpression} is
@@ -83,8 +84,7 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
     public void onClassesChange(HotswapClassEvent event) {
         Set<Class<?>> changed = event.getChangedClasses();
         List<Class<?>> definitions = new ArrayList<>(changed.stream()
-                .filter(type -> type.isAnnotationPresent(JsDefinition.class))
-                .toList());
+                .filter(JsDefinitionProxy::isDefinition).toList());
         List<Class<?>> snippetTypes = changed.stream()
                 .filter(JsDefinitionProxy::isApplicationSnippetType).toList();
         if (definitions.isEmpty() && snippetTypes.isEmpty()) {

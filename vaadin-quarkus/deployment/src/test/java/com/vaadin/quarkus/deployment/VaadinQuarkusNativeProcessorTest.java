@@ -58,8 +58,9 @@ import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
-import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -359,7 +360,7 @@ class VaadinQuarkusNativeProcessorTest {
     }
 
     @Test
-    void testRegisterJsDefinitionProxies_registersTheAnnotatedInterfaces()
+    void testRegisterJsDefinitionProxies_registersTheDefinitionInterfaces()
             throws IOException {
         Indexer indexer = new Indexer();
         indexer.indexClass(GreeterJs.class);
@@ -373,17 +374,19 @@ class VaadinQuarkusNativeProcessorTest {
                 reflective::add);
 
         // Only an interface can be implemented by a JDK proxy, so the
-        // annotated class has to be left out of both registrations.
+        // implementing class has to be left out of both registrations.
         assertEquals(List.of(List.of(GreeterJs.class.getName())),
                 proxies.stream()
                         .map(NativeImageProxyDefinitionBuildItem::getClasses)
                         .toList(),
-                "Should register the annotated interface as a proxy definition");
-        assertEquals(Set.of(GreeterJs.class.getName()),
+                "Should register the definition interface as a proxy definition");
+        assertEquals(
+                Set.of(GreeterJs.class.getName(), JsInvokers.class.getName()),
                 reflective.stream()
                         .flatMap(item -> item.getClassNames().stream())
                         .collect(Collectors.toSet()),
-                "Should register the annotated interface for reflection");
+                "Should register the definition interface and the interfaces it"
+                        + " extends for reflection");
         assertTrue(
                 reflective.stream()
                         .allMatch(ReflectiveClassBuildItem::isMethods),
@@ -404,7 +407,8 @@ class VaadinQuarkusNativeProcessorTest {
                 }, reflective::add);
 
         assertEquals(
-                Set.of(SimpleDtoJs.class.getName(), ValueJs.class.getName()),
+                Set.of(SimpleDtoJs.class.getName(), ValueJs.class.getName(),
+                        JsInvokers.class.getName()),
                 reflective.stream()
                         .flatMap(item -> item.getClassNames().stream())
                         .collect(Collectors.toSet()),
@@ -504,22 +508,19 @@ class VaadinQuarkusNativeProcessorTest {
     }
 
     // Only an interface can be implemented by the JDK proxy the definitions
-    // are used through, so an annotated class is not one of them
-    @JsDefinition
-    public interface GreeterJs {
+    // are used through, so a class implementing a marker is not one of them
+    public interface GreeterJs extends JsInvokers {
         void greet(String name);
     }
 
-    @JsDefinition
-    public static class Greeter {
+    public static class Greeter implements JsInvokers {
     }
 
     public interface ValueJs<T> {
         JavaScriptResult<T> readValue();
     }
 
-    @JsDefinition
-    public interface SimpleDtoJs extends ValueJs<SimpleDto> {
+    public interface SimpleDtoJs extends JsInvokers, ValueJs<SimpleDto> {
         JavaScriptResult<List<OtherDto>> readOthers();
 
         JavaScriptResult<ObjectNode> readNode();
@@ -538,8 +539,7 @@ class VaadinQuarkusNativeProcessorTest {
         ItemTemplate status(String label);
     }
 
-    @JsDefinition
-    public interface TemplatesJs extends BaseTemplatesJs {
+    public interface TemplatesJs extends JsSnippets, BaseTemplatesJs {
         JsFunction format(String pattern);
     }
 

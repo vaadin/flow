@@ -137,8 +137,8 @@ const themeOptions = {
 const hasExportedWebComponents = existsSync(path.resolve(frontendFolder, 'web-component.html'));
 const commercialBannerComponent = path.resolve(frontendFolder, settings.generatedFolder, 'commercial-banner.js');
 const hasCommercialBanner = existsSync(commercialBannerComponent);
-// The JavaScript declared by the @JsDefinition interfaces, generated before the
-// build. Hashed into the stats like the banner above, so that a bundle whose
+// The JavaScript declared by the JsInvokers and JsSnippets interfaces,
+// generated before the build. Hashed into the stats like the banner above, so that a bundle whose
 // definitions changed is rebuilt instead of running with the functions it was
 // built with.
 const jsDefinitionsFile = path.resolve(frontendFolder, settings.generatedFolder, 'vaadin-js-definitions.js');

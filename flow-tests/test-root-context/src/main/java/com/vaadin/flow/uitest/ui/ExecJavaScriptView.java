@@ -29,8 +29,8 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -358,8 +358,7 @@ public class ExecJavaScriptView extends AbstractDivView {
      * Joins what it is called with, so that what the browser received of a call
      * is what the server reads back.
      */
-    @JsDefinition
-    public interface JoinJs extends Serializable {
+    public interface JoinJs extends JsInvokers {
 
         @JsExpression("return [$0, ...$1].join('-')")
         PendingJavaScriptResult join(String first, Object... rest);

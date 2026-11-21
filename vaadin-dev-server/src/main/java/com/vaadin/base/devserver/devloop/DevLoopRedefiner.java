@@ -67,7 +67,6 @@ import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ThemeUtils;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
@@ -1464,7 +1463,7 @@ final class DevLoopRedefiner {
         // bundle. What identifies a function is what it runs, so that is what
         // the fingerprint is made of: renaming a method changes nothing the
         // browser has, and editing what it declares changes everything.
-        if (type.isAnnotationPresent(JsDefinition.class)) {
+        if (JsDefinitionProxy.isDefinition(type)) {
             for (Method method : type.getMethods()) {
                 if (method.isAnnotationPresent(JsExpression.class)) {
                     imports.add("jsdefinition:" + fingerprintOf(method));

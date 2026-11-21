@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.test.components;
 
-import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.flow.component.Key;
@@ -26,7 +25,6 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.JsFunction;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.Route;
@@ -67,8 +65,7 @@ public class NestedPopoverShortcutView extends Div {
     /**
      * Locates the browser-only overlay element the shortcut listens on.
      */
-    @JsDefinition
-    public interface OverlayLocatorJs extends Serializable {
+    public interface OverlayLocatorJs extends JsSnippets {
 
         @JsExpression("return document.getElementById($0);")
         JsFunction locateById(String id);

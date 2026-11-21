@@ -44,8 +44,8 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
@@ -836,9 +836,8 @@ class FrontendDependenciesTest {
         }
     }
 
-    @JsDefinition
     @JsModule("used-by-definition.js")
-    public interface UsedDefinition {
+    public interface UsedDefinition extends JsInvokers {
         @JsExpression("this.focus()")
         void focus();
     }

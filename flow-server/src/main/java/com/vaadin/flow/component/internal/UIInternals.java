@@ -83,8 +83,8 @@ import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.internal.streams.ActiveTransfer;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
@@ -2467,8 +2467,7 @@ public class UIInternals implements Serializable {
      * 
      * @since 25.4
      */
-    @JsDefinition
-    public interface TitleJs extends Serializable {
+    public interface TitleJs extends JsInvokers {
 
         /**
          * What setting the title does, shared by the plain call and the one
@@ -2517,8 +2516,7 @@ public class UIInternals implements Serializable {
      * 
      * @since 25.4
      */
-    @JsDefinition
-    public interface ChunkJs extends Serializable {
+    public interface ChunkJs extends JsSnippets {
 
         /**
          * Declares the function that loads a chunk, for

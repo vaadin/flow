@@ -15,14 +15,12 @@
  */
 package com.vaadin.flow.component;
 
-import java.io.Serializable;
-
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 
 /**
  * Represents a component that can gain and lose focus.
@@ -221,8 +219,7 @@ public interface Focusable<T extends Component>
      * client side that implements this interface instead of running the scripts
      * is responsible for the same.
      */
-    @JsDefinition
-    interface FocusJs extends Serializable {
+    interface FocusJs extends JsInvokers {
 
         /**
          * Focuses the element.

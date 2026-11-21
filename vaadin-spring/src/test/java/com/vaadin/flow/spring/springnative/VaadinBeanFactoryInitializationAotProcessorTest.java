@@ -57,8 +57,8 @@ import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
@@ -804,14 +804,14 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     }
 
     @Test
-    void getJsDefinitionTypes_findsAnnotatedInterfaces() {
+    void getJsDefinitionTypes_findsDefinitionInterfaces() {
         VaadinBeanFactoryInitializationAotProcessor processor = new VaadinBeanFactoryInitializationAotProcessor();
 
         Collection<Class<?>> definitions = processor
                 .getJsDefinitionTypes(getClass().getPackageName());
 
         assertThat(definitions)
-                .as("Should find @JsDefinition annotated interfaces")
+                .as("Should find interfaces extending JsInvokers or JsSnippets")
                 .containsExactlyInAnyOrder(TestJsDefinition.class,
                         TestSnippetJs.class);
     }
@@ -1215,8 +1215,8 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
         }
     }
 
-    @JsDefinition
-    public interface TestJsDefinition extends TestValueJs<TestJsValue> {
+    public interface TestJsDefinition
+            extends JsInvokers, TestValueJs<TestJsValue> {
         @JsExpression("this.classList.add($0)")
         void addClass(String className);
 
@@ -1241,8 +1241,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
         TestItemTemplate status(String label);
     }
 
-    @JsDefinition
-    public interface TestSnippetJs extends TestBaseSnippetJs {
+    public interface TestSnippetJs extends JsInvokers, TestBaseSnippetJs {
     }
 
     public interface TestValueJs<T> {

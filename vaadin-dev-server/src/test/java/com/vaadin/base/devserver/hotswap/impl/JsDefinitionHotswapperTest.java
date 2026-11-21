@@ -17,7 +17,6 @@ package com.vaadin.base.devserver.hotswap.impl;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -33,10 +32,11 @@ import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.ReflectionCache;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.Options;
@@ -54,14 +54,12 @@ import static org.mockito.Mockito.when;
 
 class JsDefinitionHotswapperTest {
 
-    @JsDefinition
-    interface GreeterJs extends Serializable {
+    interface GreeterJs extends JsInvokers {
         @JsExpression("window.alert($0); this.focus()")
         void showGreeting(String greeting);
     }
 
-    @JsDefinition
-    interface CounterJs extends Serializable {
+    interface CounterJs extends JsInvokers {
         @JsExpression("this.count = ($0 || 0) + 1")
         void count(Integer from);
     }
@@ -70,8 +68,7 @@ class JsDefinitionHotswapperTest {
     interface TemplateSnippet extends JsSnippet {
     }
 
-    @JsDefinition
-    interface TemplateJs extends Serializable {
+    interface TemplateJs extends JsSnippets {
         @JsExpression("return item.name + $0;")
         TemplateSnippet label(String suffix);
     }

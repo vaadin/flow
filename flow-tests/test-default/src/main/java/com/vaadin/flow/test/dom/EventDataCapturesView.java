@@ -15,13 +15,10 @@
  */
 package com.vaadin.flow.test.dom;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.DomEventData;
 import com.vaadin.flow.dom.DomEventFilter;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.Route;
@@ -29,8 +26,7 @@ import com.vaadin.flow.router.Route;
 @Route("event-data-captures")
 public class EventDataCapturesView extends Div {
 
-    @JsDefinition
-    public interface EventJs extends Serializable {
+    public interface EventJs extends JsSnippets {
         @JsExpression("return element.getAttribute($0);")
         DomEventData<String> attribute(String name);
 

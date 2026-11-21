@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.dom.impl;
 
-import java.io.Serializable;
 import java.util.Optional;
 
 import com.vaadin.flow.component.internal.ComponentTracker;
@@ -31,8 +30,8 @@ import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.ShadowRootHost;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 /**
@@ -238,8 +237,7 @@ public abstract class AbstractNodeStateProvider
      * 
      * @since 25.4
      */
-    @JsDefinition
-    public interface AttachExistingElementJs extends Serializable {
+    public interface AttachExistingElementJs extends JsInvokers {
 
         /**
          * Looks for an element with the given tag name among the children of
