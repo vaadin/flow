@@ -23,6 +23,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -138,6 +139,21 @@ public class ElementData extends NodeMap {
     public BaseJsonNode getPayload() {
         Serializable value = get(NodeProperties.PAYLOAD);
         return value == null ? null : (BaseJsonNode) value;
+    }
+
+    @Override
+    protected Serializable put(String key, Serializable value,
+            boolean emitChange) {
+        if (!NodeProperties.VISIBLE.equals(key)) {
+            return super.put(key, value, emitChange);
+        }
+        boolean visibleBefore = isVisible();
+        Serializable oldValue = super.put(key, value, emitChange);
+        if (isVisible() != visibleBefore
+                && getNode().getOwner() instanceof StateTree tree) {
+            tree.fireVisibilityChangeListeners();
+        }
+        return oldValue;
     }
 
     @Override

@@ -64,6 +64,14 @@ import com.vaadin.flow.shared.communication.PushMode;
  * communication implementations. It uses data generators ({@link BiFunction}s)
  * to write {@link ObjectNode}s representing each data object to be sent to the
  * client-side.
+ * <p>
+ * Changes are sent to the client before a response is written for a state node
+ * that is visible. While the node or one of its ancestors is hidden, no items
+ * are fetched from the data provider or sent, and the changes made in the
+ * meantime are sent in one update before the first response after the node has
+ * become visible again. The item count is still updated, and item count change
+ * events fired, while the node is hidden. With an undefined size, the count is
+ * then the estimate, since the actual count is only found by fetching items.
  *
  * @param <T>
  *            the bean type
@@ -123,6 +131,9 @@ public class DataCommunicator<T> implements Serializable {
     private FlushRequest flushUpdatedDataRequest;
     private boolean flushInProgress = false;
     private boolean flushUpdatedDataInProgress = false;
+    private boolean flushWaitsForVisibility = false;
+    private boolean clientSideInitializationPending = false;
+    private boolean flushUpdatedDataWaitsForVisibility = false;
 
     private CallbackDataProvider.CountCallback<T, ?> countCallback;
     private int itemCountEstimate = -1;
@@ -324,6 +335,7 @@ public class DataCommunicator<T> implements Serializable {
 
         stateNode.addAttachListener(this::handleAttach);
         stateNode.addDetachListener(this::handleDetach);
+        stateNode.addVisibilityChangeListener(this::handleVisibilityChange);
 
         requestFlush();
     }
@@ -1199,9 +1211,19 @@ public class DataCommunicator<T> implements Serializable {
             return;
         }
         flushRequest = FlushRequest.register(stateNode, context -> {
+            if (!stateNode.isVisible()) {
+                // The client side counts as initialized once the hidden node
+                // has been sent, but nothing has initialized it for data yet
+                clientSideInitializationPending |= !context
+                        .isClientSideInitialized();
+                waitForVisibility();
+                return;
+            }
             flushInProgress = true;
             try {
-                if (!context.isClientSideInitialized()) {
+                if (!context.isClientSideInitialized()
+                        || clientSideInitializationPending) {
+                    clientSideInitializationPending = false;
                     reset();
                     arrayUpdater.initialize();
                 }
@@ -1211,6 +1233,34 @@ public class DataCommunicator<T> implements Serializable {
                 flushInProgress = false;
             }
         });
+    }
+
+    /**
+     * Postpones the flush of a hidden component until it becomes visible, since
+     * nothing sent to the client for it is delivered before that. The item
+     * count is still updated, since applications rely on its change events
+     * regardless of visibility, for example to show the component again once
+     * there are items.
+     */
+    private void waitForVisibility() {
+        flushRequest = null;
+        flushWaitsForVisibility = true;
+        updateAssumedSize();
+        fireItemCountEvent(assumedSize);
+    }
+
+    private void handleVisibilityChange() {
+        if (!stateNode.isVisible()) {
+            return;
+        }
+        if (flushWaitsForVisibility) {
+            flushWaitsForVisibility = false;
+            requestFlush();
+        }
+        if (flushUpdatedDataWaitsForVisibility) {
+            flushUpdatedDataWaitsForVisibility = false;
+            requestFlushUpdatedData();
+        }
     }
 
     private boolean shouldRequestFlush(boolean forced) {
@@ -1232,6 +1282,11 @@ public class DataCommunicator<T> implements Serializable {
             return;
         }
         flushUpdatedDataRequest = FlushRequest.register(stateNode, context -> {
+            if (!stateNode.isVisible()) {
+                flushUpdatedDataRequest = null;
+                flushUpdatedDataWaitsForVisibility = true;
+                return;
+            }
             flushUpdatedDataInProgress = true;
             try {
                 flushUpdatedData();
@@ -1257,15 +1312,7 @@ public class DataCommunicator<T> implements Serializable {
                 activeKeyOrder.size());
 
         // Phase 1: Find all items that the client should have
-
-        // With defined size the backend is only queried when necessary
-        if (definedSize && (reloadViewportRange || sizeReset)) {
-            assumedSize = getDataProviderSize();
-        } else if (!definedSize
-                && (!skipCountIncreaseUntilReset || sizeReset)) {
-            // with undefined size, size estimate is checked when scrolling down
-            updateUndefinedSize();
-        }
+        updateAssumedSize();
         effectiveRequested = viewportRange
                 .restrictTo(Range.withLength(0, assumedSize));
 
@@ -1302,6 +1349,17 @@ public class DataCommunicator<T> implements Serializable {
 
             performUpdate(oldActive, effectiveRequested, previousActive,
                     activation);
+        }
+    }
+
+    private void updateAssumedSize() {
+        // With defined size the backend is only queried when necessary
+        if (definedSize && (reloadViewportRange || sizeReset)) {
+            assumedSize = getDataProviderSize();
+        } else if (!definedSize
+                && (!skipCountIncreaseUntilReset || sizeReset)) {
+            // with undefined size, size estimate is checked when scrolling down
+            updateUndefinedSize();
         }
     }
 

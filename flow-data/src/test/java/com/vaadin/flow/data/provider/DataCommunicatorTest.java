@@ -24,6 +24,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
@@ -56,6 +57,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -2009,6 +2014,83 @@ public class DataCommunicatorTest {
 
     private int getPageSizeIncrease() {
         return dataCommunicator.getPageSize() * 4;
+    }
+
+    @Test
+    void nodeHidden_itemsSentOnceVisible_itemCountUpdatedWhileHidden() {
+        AtomicInteger size = new AtomicInteger(100);
+        AtomicInteger fetches = new AtomicInteger();
+        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            fetches.incrementAndGet();
+            return IntStream
+                    .range(query.getOffset(),
+                            query.getOffset() + query.getLimit())
+                    .mapToObj(Item::new);
+        }, query -> size.get()), null);
+        AtomicInteger lastItemCount = new AtomicInteger(-1);
+        new TestComponent(element).addItemChangeListener(
+                event -> lastItemCount.set(event.getItemCount()));
+        dataCommunicator.setViewportRange(0, 30);
+        fakeClientCommunication();
+        fetches.set(0);
+        clearInvocations(arrayUpdater, dataGenerator);
+        lastSet = null;
+
+        element.setVisible(false);
+        size.set(40);
+        dataCommunicator.reset();
+        fakeClientCommunication();
+        dataCommunicator.refresh(new Item(1));
+        fakeClientCommunication();
+
+        assertEquals(40, lastItemCount.get(),
+                "item count events should be fired while hidden");
+        assertEquals(0, fetches.get());
+        verify(arrayUpdater, never()).startUpdate(anyInt());
+        verify(dataGenerator, never()).generateData(any(), any());
+        assertNull(lastSet);
+
+        element.setVisible(true);
+        fakeClientCommunication();
+
+        assertEquals(1, fetches.get());
+        verify(arrayUpdater).startUpdate(40);
+        assertEquals(Range.withLength(0, 30), lastSet);
+    }
+
+    @Test
+    void refresh_nodeHidden_itemSentOnceVisible() {
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        dataCommunicator.setViewportRange(0, 30);
+        fakeClientCommunication();
+        clearInvocations(dataGenerator);
+        Item item = new Item(1);
+
+        element.setVisible(false);
+        dataCommunicator.refresh(item);
+        fakeClientCommunication();
+        verify(dataGenerator, never()).generateData(any(), any());
+
+        element.setVisible(true);
+        fakeClientCommunication();
+        verify(dataGenerator).generateData(eq(item), any());
+    }
+
+    @Test
+    void attachedWhileHidden_clientSideInitializedOnceVisible() {
+        Element hidden = new Element("div");
+        hidden.setVisible(false);
+        ui.getElement().appendChild(hidden);
+        ArrayUpdater hiddenUpdater = mock(ArrayUpdater.class);
+        when(hiddenUpdater.startUpdate(anyInt())).thenReturn(update);
+        new DataCommunicator<>(dataGenerator, hiddenUpdater, data -> {
+        }, hidden.getNode());
+        fakeClientCommunication();
+        verify(hiddenUpdater, never()).initialize();
+
+        hidden.setVisible(true);
+        fakeClientCommunication();
+        verify(hiddenUpdater).initialize();
     }
 
     private void fakeClientCommunication() {
