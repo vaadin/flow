@@ -822,10 +822,10 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
         VaadinBeanFactoryInitializationAotProcessor processor = new VaadinBeanFactoryInitializationAotProcessor();
 
         Collection<Class<?>> definitions = processor
-                .getJsDefinitionTypes(JsInvokers.class.getPackageName());
+                .getJsDefinitionTypes("com.vaadin.flow");
 
-        assertThat(definitions).doesNotContain(JsInvokers.class,
-                JsSnippets.class);
+        assertThat(definitions).contains(Element.CallFunctionJs.class)
+                .doesNotContain(JsInvokers.class, JsSnippets.class);
     }
 
     @Test

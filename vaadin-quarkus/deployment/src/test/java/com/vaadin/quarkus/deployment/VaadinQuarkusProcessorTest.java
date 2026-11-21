@@ -150,6 +150,7 @@ class VaadinQuarkusProcessorTest {
     static class AnnotatedMethod {
         @Marked
         void method() {
+            // Only the annotation on the method is looked at
         }
     }
 
