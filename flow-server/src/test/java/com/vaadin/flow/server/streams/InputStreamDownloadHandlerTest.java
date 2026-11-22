@@ -43,6 +43,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.StreamRequestHandler;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -491,8 +492,34 @@ class InputStreamDownloadHandlerTest {
     }
 
     @Test
+    void callbackAsksForAttachment_inlineDisposition_attachmentWithCallbackName()
+            throws IOException {
+        InputStream stream = mock(InputStream.class);
+        when(stream.read(any(), anyInt(), anyInt())).thenReturn(-1);
+        DownloadHandler handler = DownloadHandler.fromInputStream(event -> {
+            event.attachment("x.pdf");
+            return new DownloadResponse(stream, "report.pdf", "application/pdf",
+                    0);
+        });
+        when(request.getAttribute(
+                StreamRequestHandler.DISPOSITION_REQUEST_ATTRIBUTE))
+                .thenReturn(DownloadDisposition.INLINE);
+
+        DownloadEvent event = new DownloadEvent(request, response, session,
+                new Element("t"));
+        when(response.getOutputStream()).thenReturn(outputStream);
+        when(response.getService()).thenReturn(service);
+        handler.handleDownloadRequest(event);
+
+        verify(response).setHeader("Content-Disposition",
+                "attachment; filename=\"x.pdf\"");
+        verify(response, never()).setHeader(eq("Content-Disposition"),
+                startsWith("inline"));
+    }
+
+    @Test
     @SuppressWarnings("removal")
-    void isInlineOverridden_responseFileNameServedInline() throws IOException {
+    void isInlineOverridden_servedInline() throws IOException {
         InputStream stream = mock(InputStream.class);
         when(stream.read(any(), anyInt(), anyInt())).thenReturn(-1);
         DownloadHandler handler = new InputStreamDownloadHandler(
@@ -512,7 +539,7 @@ class InputStreamDownloadHandlerTest {
         handler.handleDownloadRequest(event);
 
         verify(response).setHeader("Content-Disposition",
-                "inline; filename=\"report.pdf\"");
+                "inline; filename=\"q3.pdf\"");
         verify(response, never()).setHeader(eq("Content-Disposition"),
                 startsWith("attachment"));
     }

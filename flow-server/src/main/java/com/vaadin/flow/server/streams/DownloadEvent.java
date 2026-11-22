@@ -153,8 +153,8 @@ public class DownloadEvent {
      * Content-Disposition header won't be set. Control characters, such as line
      * breaks, are removed from the file name.
      * <p>
-     * If the Content-Disposition header has already been set directly on the
-     * response, this method will not override it.
+     * If the Content-Disposition header was set directly on the response before
+     * any of these methods wrote it, this method will not override it.
      * <p>
      * The header is always {@code attachment}, even when the place where the
      * handler is used asks for the content to be shown inline, for example an
@@ -190,8 +190,8 @@ public class DownloadEvent {
      * does nothing. Control characters, such as line breaks, are removed from
      * the file name.
      * <p>
-     * If the Content-Disposition header has already been set directly on the
-     * response, this method will not override it.
+     * If the Content-Disposition header was set directly on the response before
+     * any of these methods wrote it, this method will not override it.
      *
      * @param fileName
      *            the name of the file
@@ -232,8 +232,8 @@ public class DownloadEvent {
      * given earlier, if any, is kept. Control characters, such as line breaks,
      * are removed from the file name.
      * <p>
-     * If the Content-Disposition header has already been set directly on the
-     * response, this method will not override it.
+     * If the Content-Disposition header was set directly on the response before
+     * any of these methods wrote it, this method will not override it.
      *
      * @param fileName
      *            the name of the saved file
@@ -256,8 +256,8 @@ public class DownloadEvent {
      * <p>
      * To be called before the response is committed.
      * <p>
-     * If the Content-Disposition header has already been set directly on the
-     * response, this method will not override it.
+     * If the Content-Disposition header was set directly on the response before
+     * any of these methods wrote it, this method will not override it.
      *
      * @since 25.0
      */
@@ -281,8 +281,8 @@ public class DownloadEvent {
      * the same as calling {@link #inline()}. Control characters, such as line
      * breaks, are removed from the file name.
      * <p>
-     * If the Content-Disposition header has already been set directly on the
-     * response, this method will not override it.
+     * If the Content-Disposition header was set directly on the response before
+     * any of these methods wrote it, this method will not override it.
      *
      * @param fileName
      *            the suggested name for the file if saved by the user
