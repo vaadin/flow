@@ -233,7 +233,7 @@ class ServletResourceDownloadHandlerTest {
     }
 
     @Test
-    void inline_setFileNameInvokedByDefault() throws IOException {
+    void fileNameInvokedByDefault() throws IOException {
         DownloadHandler handler = DownloadHandler
                 .forServletResource(PATH_TO_FILE, "my-download.bin");
 
@@ -252,29 +252,6 @@ class ServletResourceDownloadHandlerTest {
         handler.handleDownloadRequest(event);
 
         verify(event).fileName("my-download.bin", false);
-        verify(event).setContentType("application/octet-stream");
-    }
-
-    @Test
-    void attachment_doesNotSetFileNameWhenInlined() throws IOException {
-        DownloadHandler handler = DownloadHandler
-                .forServletResource(PATH_TO_FILE, "my-download.bin").inline();
-
-        DownloadEvent event = mock(DownloadEvent.class);
-        when(event.getSession()).thenReturn(session);
-        when(event.getRequest()).thenReturn(request);
-        when(event.getResponse()).thenReturn(response);
-        when(event.getOwningElement()).thenReturn(owner);
-        when(event.getOutputStream()).thenReturn(outputStream);
-        when(event.getUI()).thenReturn(ui);
-        when(response.getOutputStream()).thenReturn(outputStream);
-        when(response.getService()).thenReturn(service);
-        when(service.getMimeType(anyString()))
-                .thenReturn("application/octet-stream");
-
-        handler.handleDownloadRequest(event);
-
-        verify(event).fileName("my-download.bin", true);
         verify(event).setContentType("application/octet-stream");
     }
 

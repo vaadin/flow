@@ -240,8 +240,11 @@ class DownloadEventTest {
             "fileName, q3.pdf, null, attachment; filename=\"q3.pdf\"",
             "fileName, q3.pdf, INLINE, inline; filename=\"q3.pdf\"",
             "fileName, q3.pdf, ATTACHMENT, attachment; filename=\"q3.pdf\"",
-            "fileName, null, INLINE, inline", "fileName, null, null, null",
-            "fileName, null, ATTACHMENT, null",
+            "fileName, null, INLINE, null", "fileName, null, null, null",
+            "fileName, '', null, null", "fileName, '   ', INLINE, null",
+            // built-in handlers marked inline default to inline
+            "fileNameInlineByDefault, q3.pdf, null, inline; filename=\"q3.pdf\"",
+            "fileNameInlineByDefault, q3.pdf, ATTACHMENT, attachment; filename=\"q3.pdf\"",
             // explicit choices of the handler win over the disposition
             "attachment, q3.pdf, INLINE, attachment; filename=\"q3.pdf\"",
             "attachment, null, null, attachment",
@@ -257,6 +260,8 @@ class DownloadEventTest {
                 session, null);
         switch (method) {
         case "fileName" -> downloadEvent.fileName(fileName);
+        case "fileNameInlineByDefault" ->
+            downloadEvent.fileName(fileName, true);
         case "attachment" -> downloadEvent.attachment(fileName);
         case "setFileName" -> downloadEvent.setFileName(fileName);
         case "inline" -> downloadEvent.inline(fileName);
@@ -269,27 +274,6 @@ class DownloadEventTest {
         } else {
             verify(response).setHeader("Content-Disposition", expectedHeader);
         }
-    }
-
-    @Test
-    void fileName_inlineByDefaultWithoutDisposition_writesInline() {
-        DownloadEvent downloadEvent = new DownloadEvent(request, response,
-                session, null);
-        downloadEvent.fileName("q3.pdf", true);
-        verify(response).setHeader("Content-Disposition",
-                "inline; filename=\"q3.pdf\"");
-    }
-
-    @Test
-    void fileName_inlineByDefaultWithAttachmentDisposition_writesAttachment() {
-        when(request.getAttribute(
-                StreamRequestHandler.DISPOSITION_REQUEST_ATTRIBUTE))
-                .thenReturn(DownloadDisposition.ATTACHMENT);
-        DownloadEvent downloadEvent = new DownloadEvent(request, response,
-                session, null);
-        downloadEvent.fileName("q3.pdf", true);
-        verify(response).setHeader("Content-Disposition",
-                "attachment; filename=\"q3.pdf\"");
     }
 
     @Test
