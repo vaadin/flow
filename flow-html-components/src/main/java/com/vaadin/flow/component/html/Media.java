@@ -533,14 +533,17 @@ public abstract class Media extends HtmlComponent
     }
 
     private static PlaybackError toPlaybackError(PlayResult result) {
-        PlaybackErrorCode code = switch (Objects
-                .requireNonNullElse(result.name(), "")) {
-        case "NotAllowedError" -> PlaybackErrorCode.NOT_ALLOWED;
-        case "NotSupportedError" -> PlaybackErrorCode.NOT_SUPPORTED;
-        default -> PlaybackErrorCode.UNKNOWN;
-        };
-        return new PlaybackError(code,
-                Objects.requireNonNullElse(result.message(), ""));
+        String name = result.name();
+        PlaybackErrorCode code;
+        if ("NotAllowedError".equals(name)) {
+            code = PlaybackErrorCode.NOT_ALLOWED;
+        } else if ("NotSupportedError".equals(name)) {
+            code = PlaybackErrorCode.NOT_SUPPORTED;
+        } else {
+            code = PlaybackErrorCode.UNKNOWN;
+        }
+        String message = result.message();
+        return new PlaybackError(code, message == null ? "" : message);
     }
 
     /**

@@ -170,8 +170,9 @@ abstract class MediaTest extends ComponentTest {
         assertEquals(new JsCall(Media.PlaybackJs.class, "seek", List.of(90.5)),
                 ui.onlyScheduledJsCall());
 
+        Duration negative = Duration.ofMillis(-1);
         assertThrows(IllegalArgumentException.class,
-                () -> media.seek(Duration.ofMillis(-1)));
+                () -> media.seek(negative));
     }
 
     @Test
