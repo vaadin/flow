@@ -40,7 +40,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("deprecation")
+@SuppressWarnings("removal")
 class DownloadEventTest {
     private VaadinRequest request;
     private VaadinResponse response;
@@ -287,5 +287,25 @@ class DownloadEventTest {
         downloadEvent.fileName("q3.pdf");
         verify(response, times(0)).setHeader(eq("Content-Disposition"),
                 anyString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void fileNameAndInline_combineInEitherOrder(boolean inlineFirst) {
+        when(request.getAttribute(
+                StreamRequestHandler.DISPOSITION_REQUEST_ATTRIBUTE))
+                .thenReturn(DownloadDisposition.ATTACHMENT);
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        if (inlineFirst) {
+            downloadEvent.inline();
+            downloadEvent.fileName("q3.pdf");
+        } else {
+            downloadEvent.fileName("q3.pdf");
+            downloadEvent.inline();
+        }
+        verify(response).setHeader("Content-Disposition",
+                "inline; filename=\"q3.pdf\"");
+        assertEquals("q3.pdf", downloadEvent.getFileName());
     }
 }
