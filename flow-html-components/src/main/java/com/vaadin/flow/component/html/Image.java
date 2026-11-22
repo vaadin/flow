@@ -108,11 +108,11 @@ public class Image extends HtmlComponent
      * default empty string which is not retained with {@link #setAlt(String)}.
      *
      * The content is served inline, so that the browser shows it: a file name
-     * the handler sets with
-     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
-     * is sent with a <code>Content-Disposition: inline</code> header instead of
-     * <code>attachment</code>. A header the handler sets directly on the
-     * response is left as is.
+     * the handler gives with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#fileName(String)}, as
+     * the built-in handlers do, is sent with a
+     * <code>Content-Disposition: inline</code> header. A handler that asks for
+     * <code>attachment</code> itself keeps that choice.
      *
      * @param downloadHandler
      *            the download handler callback that provides an image data, not
@@ -238,11 +238,11 @@ public class Image extends HtmlComponent
      * callback.
      *
      * The content is served inline, so that the browser shows it: a file name
-     * the handler sets with
-     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
-     * is sent with a <code>Content-Disposition: inline</code> header instead of
-     * <code>attachment</code>. A header the handler sets directly on the
-     * response is left as is.
+     * the handler gives with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#fileName(String)}, as
+     * the built-in handlers do, is sent with a
+     * <code>Content-Disposition: inline</code> header. A handler that asks for
+     * <code>attachment</code> itself keeps that choice.
      *
      * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
      * that the image is still served when the component, or one of its

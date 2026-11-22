@@ -372,7 +372,7 @@ class InputStreamDownloadHandlerTest {
     void inline_setFileNameInvokedByDefault() throws IOException {
         DownloadEvent event = mock(DownloadEvent.class);
         DownloadHandler handler = DownloadHandler.fromInputStream(request -> {
-            verify(event, times(0)).setFileName("my-download.bin");
+            verify(event, times(0)).fileName("my-download.bin", false);
             verify(event, times(0)).setContentType("application/octet-stream");
             byte[] data = getBytes();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
@@ -393,7 +393,7 @@ class InputStreamDownloadHandlerTest {
 
         handler.handleDownloadRequest(event);
 
-        verify(event).setFileName("my-download.bin");
+        verify(event).fileName("my-download.bin", false);
         verify(event).setContentType("application/octet-stream");
     }
 
@@ -420,7 +420,7 @@ class InputStreamDownloadHandlerTest {
 
         handler.handleDownloadRequest(event);
 
-        verify(event, times(0)).setFileName("my-download.bin");
+        verify(event).fileName("download", true);
         verify(event).setContentType("application/octet-stream");
     }
 

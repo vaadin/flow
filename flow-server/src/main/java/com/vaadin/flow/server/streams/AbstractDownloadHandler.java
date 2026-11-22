@@ -185,8 +185,8 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * @deprecated {@link #inline()} is deprecated, since the place where the
      *             handler is used decides how the content is served. A custom
      *             handler names its content with
-     *             {@link DownloadEvent#setFileName(String)}, and the place of
-     *             use serves it inline or as an attachment with a
+     *             {@link DownloadEvent#fileName(String)}, and the place of use
+     *             serves it inline or as an attachment with a
      *             {@link DownloadDisposition} on the registered resource.
      */
     @Deprecated(since = "25.4", forRemoval = true)
@@ -209,11 +209,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
     // overriding it keep working until it is removed
     @SuppressWarnings({ "removal", "java:S5738" })
     void writeContentDisposition(DownloadEvent downloadEvent, String fileName) {
-        if (isInline()) {
-            downloadEvent.inline(fileName);
-        } else {
-            downloadEvent.setFileName(fileName);
-        }
+        downloadEvent.fileName(fileName, isInline());
     }
 
     /**

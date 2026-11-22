@@ -56,7 +56,7 @@ final class DownloadHandlerInput extends Action.Input<String> {
 
     /**
      * Creates an input that serves the content of the given handler with the
-     * given disposition, whatever the handler asks for.
+     * given disposition when the handler gives only a file name.
      */
     DownloadHandlerInput(DownloadHandler handler,
             DownloadDisposition disposition) {

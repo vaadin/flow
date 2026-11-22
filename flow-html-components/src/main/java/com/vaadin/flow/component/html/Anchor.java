@@ -80,7 +80,7 @@ public class Anchor extends HtmlContainer
      * The choice made with {@link #setDownload(boolean)} or an
      * {@link AttachmentType}, or {@code null} if none has been made. Once made,
      * it decides both the {@code download} attribute and how the content of a
-     * handler is served, whatever the handler asks for.
+     * handler is served when the handler gives only a file name.
      */
     private AttachmentType attachmentType;
 
@@ -250,9 +250,10 @@ public class Anchor extends HtmlContainer
      * LinkMode determines if the attribute `download` should be set or not.
      * {@link AttachmentType#DOWNLOAD} will set the download attribute and serve
      * the content as an attachment, where as {@link AttachmentType#INLINE} will
-     * remove it and serve the content inline, whatever the handler asks for.
-     * The choice is kept for handlers set later with
-     * {@link #setHref(DownloadHandler)}.
+     * remove it and serve the content inline. This applies when the handler
+     * gives only a file name, as the built-in handlers do; a handler that asks
+     * for inline or attachment itself keeps its choice. The choice is kept for
+     * handlers set later with {@link #setHref(DownloadHandler)}.
      * <p>
      * Content served inline is rendered by the browser on the application's
      * origin. Do not serve untrusted content, such as user uploaded HTML or SVG
@@ -484,10 +485,13 @@ public class Anchor extends HtmlContainer
      * <p>
      * When the anchor links to a {@link DownloadHandler}, the content is served
      * accordingly: as an attachment for {@code true} and inline, so that the
-     * browser shows it, for {@code false}, whatever the handler asks for. The
-     * choice is kept when the handler is replaced with
-     * {@link #setHref(DownloadHandler)}, whether it is made before or after the
-     * handler is set.
+     * browser shows it, for {@code false}. This applies when the handler gives
+     * only a file name with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#fileName(String)}, as
+     * the built-in handlers do; a handler that asks for inline or attachment
+     * itself keeps its choice. The choice is kept when the handler is replaced
+     * with {@link #setHref(DownloadHandler)}, whether it is made before or
+     * after the handler is set.
      * <p>
      * Content served inline is rendered by the browser on the application's
      * origin. Do not serve untrusted content, such as user uploaded HTML or SVG

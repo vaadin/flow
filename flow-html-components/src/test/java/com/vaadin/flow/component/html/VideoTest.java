@@ -41,6 +41,8 @@ class VideoTest extends MediaTest {
     @Override
     protected void addProperties() {
         super.addProperties();
+        addProperty("playsInline", boolean.class, false, true, false, true,
+                "playsinline");
         // null means not set, which the generic String property cases reject
         whitelistProperty("poster");
     }

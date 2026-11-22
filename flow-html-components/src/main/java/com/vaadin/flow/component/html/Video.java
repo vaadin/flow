@@ -54,6 +54,7 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 @Tag(Tag.VIDEO)
 public class Video extends Media {
 
+    private static final String PLAYS_INLINE_ATTRIBUTE = "playsinline";
     private static final String POSTER_ATTRIBUTE = "poster";
 
     /**
@@ -99,11 +100,11 @@ public class Video extends Media {
      * produces itself, rather than one that is served from a URL of its own.
      * <p>
      * The content is served inline, so that the browser shows it: a file name
-     * the handler sets with
-     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
-     * is sent with a <code>Content-Disposition: inline</code> header instead of
-     * <code>attachment</code>. A header the handler sets directly on the
-     * response is left as is.
+     * the handler gives with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#fileName(String)}, as
+     * the built-in handlers do, is sent with a
+     * <code>Content-Disposition: inline</code> header. A handler that asks for
+     * <code>attachment</code> itself keeps that choice.
      * <p>
      * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
      * that the poster is still served when the video, or one of its ancestors,
@@ -132,5 +133,30 @@ public class Video extends Media {
      */
     public @Nullable String getPoster() {
         return getElement().getAttribute(POSTER_ATTRIBUTE);
+    }
+
+    /**
+     * Sets whether the video plays inside the page rather than in full screen.
+     * Desktop browsers always play inline, but Safari on iPhone opens the video
+     * in full screen when playback starts, and does not
+     * {@link #setAutoplay(boolean) autoplay} it at all, unless this is set. A
+     * background video or any other player that is meant to stay part of the
+     * page needs it.
+     *
+     * @param playsInline
+     *            <code>true</code> to play the video inside the page
+     */
+    public void setPlaysInline(boolean playsInline) {
+        getElement().setAttribute(PLAYS_INLINE_ATTRIBUTE, playsInline);
+    }
+
+    /**
+     * Gets whether the video plays inside the page rather than in full screen.
+     *
+     * @return <code>true</code> if the video plays inside the page
+     * @see #setPlaysInline(boolean)
+     */
+    public boolean isPlaysInline() {
+        return getElement().hasAttribute(PLAYS_INLINE_ATTRIBUTE);
     }
 }
