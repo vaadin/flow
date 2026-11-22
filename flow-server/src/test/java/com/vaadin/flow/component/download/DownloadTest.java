@@ -21,6 +21,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -93,13 +95,15 @@ class DownloadTest {
                 "A saved file should be served as an attachment");
     }
 
-    @Test
-    void startHandlerInNewTab_clickOpensRegisteredResourceInline()
-            throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void startHandlerInNewTab_clickOpensRegisteredResourceInline(
+            boolean allowDisabled) throws Exception {
         InputStreamDownloadHandler handler = DownloadHandler.fromInputStream(
                 event -> DownloadResponse.error(500), "invoice.pdf");
 
-        Download.onClick(button, handler.allowDisabled(),
+        Download.onClick(button,
+                allowDisabled ? handler.allowDisabled() : handler,
                 DownloadTarget.NEW_TAB);
 
         JsFunction action = actionOf(singleInstallFn());
@@ -110,10 +114,12 @@ class DownloadTest {
         assertEquals("attachment; filename=\"invoice.pdf\"",
                 servedContentDisposition(handler, button.getElement()),
                 "The handler should keep serving an attachment elsewhere");
-        assertEquals(DisabledUpdateMode.ALWAYS,
-                registeredResource(action).getElementRequestHandler()
-                        .getDisabledUpdateMode(),
-                "The content should still be served when the button is disabled");
+        if (allowDisabled) {
+            assertEquals(DisabledUpdateMode.ALWAYS,
+                    registeredResource(action).getElementRequestHandler()
+                            .getDisabledUpdateMode(),
+                    "The content should still be served when the button is disabled");
+        }
     }
 
     @Test
