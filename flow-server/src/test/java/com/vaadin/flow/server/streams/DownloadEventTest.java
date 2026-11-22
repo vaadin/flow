@@ -16,6 +16,8 @@
 package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +27,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 
 import com.vaadin.flow.internal.EncodeUtil;
 import com.vaadin.flow.server.VaadinRequest;
@@ -34,6 +37,8 @@ import com.vaadin.flow.server.communication.StreamRequestHandler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -289,23 +294,76 @@ class DownloadEventTest {
                 anyString());
     }
 
-    @ParameterizedTest
-    @ValueSource(booleans = { true, false })
-    void fileNameAndInline_combineInEitherOrder(boolean inlineFirst) {
-        when(request.getAttribute(
-                StreamRequestHandler.DISPOSITION_REQUEST_ATTRIBUTE))
-                .thenReturn(DownloadDisposition.ATTACHMENT);
+    static Stream<Arguments> callSequences() {
+        return Stream.of(Arguments.of("inline then fileName",
+                (Consumer<DownloadEvent>) e -> {
+                    e.inline();
+                    e.fileName("q3.pdf");
+                }, "inline; filename=\"q3.pdf\""), Arguments.of(
+                        "fileName then inline", (Consumer<DownloadEvent>) e -> {
+                            e.fileName("q3.pdf");
+                            e.inline();
+                        }, "inline; filename=\"q3.pdf\""),
+                Arguments.of("attachment without name keeps name",
+                        (Consumer<DownloadEvent>) e -> {
+                            e.fileName("q3.pdf");
+                            e.attachment(null);
+                        }, "attachment; filename=\"q3.pdf\""),
+                Arguments.of("inline with blank name keeps name",
+                        (Consumer<DownloadEvent>) e -> {
+                            e.fileName("q3.pdf");
+                            e.inline("  ");
+                        }, "inline; filename=\"q3.pdf\""),
+                Arguments.of("built-in default keeps handler name",
+                        (Consumer<DownloadEvent>) e -> {
+                            e.fileName("custom.pdf");
+                            e.fileName("default.bin", true);
+                        }, "inline; filename=\"custom.pdf\""),
+                Arguments.of("built-in default keeps handler type",
+                        (Consumer<DownloadEvent>) e -> {
+                            e.attachment("x.pdf");
+                            e.fileName("default.bin", true);
+                        }, "attachment; filename=\"x.pdf\""),
+                Arguments.of("built-in name with handler inline",
+                        (Consumer<DownloadEvent>) e -> {
+                            e.inline();
+                            e.fileName("default.bin", false);
+                        }, "inline; filename=\"default.bin\""));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("callSequences")
+    void callSequence_lastHeaderCombinesNameAndType(String description,
+            Consumer<DownloadEvent> calls, String expectedHeader) {
+        trackHeaderOnResponse();
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
-        if (inlineFirst) {
-            downloadEvent.inline();
-            downloadEvent.fileName("q3.pdf");
-        } else {
-            downloadEvent.fileName("q3.pdf");
-            downloadEvent.inline();
-        }
-        verify(response).setHeader("Content-Disposition",
-                "inline; filename=\"q3.pdf\"");
-        assertEquals("q3.pdf", downloadEvent.getFileName());
+        calls.accept(downloadEvent);
+        ArgumentCaptor<String> header = ArgumentCaptor.forClass(String.class);
+        verify(response, atLeastOnce()).setHeader(eq("Content-Disposition"),
+                header.capture());
+        assertEquals(expectedHeader, header.getValue());
+    }
+
+    @Test
+    void fileName_sameNameTwice_headerWrittenOnce() {
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.fileName("q3.pdf");
+        downloadEvent.fileName("q3.pdf");
+        verify(response, times(1)).setHeader(eq("Content-Disposition"),
+                anyString());
+    }
+
+    // makes containsHeader report a header once it has been set, like a real
+    // response
+    private void trackHeaderOnResponse() {
+        AtomicBoolean set = new AtomicBoolean();
+        doAnswer(invocation -> {
+            set.set(true);
+            return null;
+        }).when(response).setHeader(eq("Content-Disposition"), anyString());
+        when(response.containsHeader("Content-Disposition"))
+                .thenAnswer(invocation -> set.get());
     }
 }
