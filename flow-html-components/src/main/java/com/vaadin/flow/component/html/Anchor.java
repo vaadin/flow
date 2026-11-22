@@ -253,6 +253,10 @@ public class Anchor extends HtmlContainer
      * remove it and serve the content inline, whatever the handler asks for.
      * The choice is kept for handlers set later with
      * {@link #setHref(DownloadHandler)}.
+     * <p>
+     * Content served inline is rendered by the browser on the application's
+     * origin. Do not serve untrusted content, such as user uploaded HTML or SVG
+     * files, inline.
      *
      * @see #setHref(DownloadHandler, AttachmentType)
      * @see #setText(String)
