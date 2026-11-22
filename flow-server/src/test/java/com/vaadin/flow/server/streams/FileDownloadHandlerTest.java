@@ -324,7 +324,7 @@ class FileDownloadHandlerTest {
 
         handler.handleDownloadRequest(event);
 
-        verify(event).setFileName("my-download.bin");
+        verify(event).fileName("my-download.bin", false);
         verify(event).setContentType("application/octet-stream");
         verify(event).setContentLength(165000);
     }
@@ -371,7 +371,7 @@ class FileDownloadHandlerTest {
 
         handler.handleDownloadRequest(event);
 
-        verify(event, times(0)).setFileName("my-download.bin");
+        verify(event).fileName("my-download.bin", true);
         verify(event).setContentType("application/octet-stream");
         verify(event).setContentLength(165000);
     }

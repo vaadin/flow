@@ -22,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -39,6 +40,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("deprecation")
 class DownloadEventTest {
     private VaadinRequest request;
     private VaadinResponse response;
@@ -232,27 +234,62 @@ class DownloadEventTest {
         verify(response, times(0)).setContentLengthLong(contentLength);
     }
 
+    @ParameterizedTest
+    @CsvSource(nullValues = "null", value = {
+            // fileName follows the disposition, attachment without one
+            "fileName, q3.pdf, null, attachment; filename=\"q3.pdf\"",
+            "fileName, q3.pdf, INLINE, inline; filename=\"q3.pdf\"",
+            "fileName, q3.pdf, ATTACHMENT, attachment; filename=\"q3.pdf\"",
+            "fileName, null, INLINE, inline", "fileName, null, null, null",
+            "fileName, null, ATTACHMENT, null",
+            // explicit choices of the handler win over the disposition
+            "attachment, q3.pdf, INLINE, attachment; filename=\"q3.pdf\"",
+            "attachment, null, null, attachment",
+            "setFileName, q3.pdf, INLINE, attachment; filename=\"q3.pdf\"",
+            "inline, q3.pdf, ATTACHMENT, inline; filename=\"q3.pdf\"",
+            "inlineNoName, null, ATTACHMENT, inline" })
+    void dispositionInRequest_headerType(String method, String fileName,
+            DownloadDisposition disposition, String expectedHeader) {
+        when(request.getAttribute(
+                StreamRequestHandler.DISPOSITION_REQUEST_ATTRIBUTE))
+                .thenReturn(disposition);
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        switch (method) {
+        case "fileName" -> downloadEvent.fileName(fileName);
+        case "attachment" -> downloadEvent.attachment(fileName);
+        case "setFileName" -> downloadEvent.setFileName(fileName);
+        case "inline" -> downloadEvent.inline(fileName);
+        case "inlineNoName" -> downloadEvent.inline();
+        default -> throw new IllegalArgumentException(method);
+        }
+        if (expectedHeader == null) {
+            verify(response, times(0)).setHeader(eq("Content-Disposition"),
+                    anyString());
+        } else {
+            verify(response).setHeader("Content-Disposition", expectedHeader);
+        }
+    }
+
     @Test
-    void dispositionInRequest_inlineWithoutFileName_writesDisposition() {
+    void fileName_inlineByDefaultWithoutDisposition_writesInline() {
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.fileName("q3.pdf", true);
+        verify(response).setHeader("Content-Disposition",
+                "inline; filename=\"q3.pdf\"");
+    }
+
+    @Test
+    void fileName_inlineByDefaultWithAttachmentDisposition_writesAttachment() {
         when(request.getAttribute(
                 StreamRequestHandler.DISPOSITION_REQUEST_ATTRIBUTE))
                 .thenReturn(DownloadDisposition.ATTACHMENT);
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
-        downloadEvent.inline();
-        verify(response).setHeader("Content-Disposition", "attachment");
-    }
-
-    @Test
-    void dispositionInRequest_setFileName_keepsFileName() {
-        when(request.getAttribute(
-                StreamRequestHandler.DISPOSITION_REQUEST_ATTRIBUTE))
-                .thenReturn(DownloadDisposition.INLINE);
-        DownloadEvent downloadEvent = new DownloadEvent(request, response,
-                session, null);
-        downloadEvent.setFileName("q3.pdf");
+        downloadEvent.fileName("q3.pdf", true);
         verify(response).setHeader("Content-Disposition",
-                "inline; filename=\"q3.pdf\"");
+                "attachment; filename=\"q3.pdf\"");
     }
 
     @Test
@@ -263,7 +300,7 @@ class DownloadEventTest {
         when(response.containsHeader("Content-Disposition")).thenReturn(true);
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
-        downloadEvent.setFileName("q3.pdf");
+        downloadEvent.fileName("q3.pdf");
         verify(response, times(0)).setHeader(eq("Content-Disposition"),
                 anyString());
     }
