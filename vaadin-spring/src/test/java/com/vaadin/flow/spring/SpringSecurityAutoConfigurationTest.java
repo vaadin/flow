@@ -28,6 +28,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.context.assertj.AssertableWebApplicationContext;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
@@ -120,8 +121,11 @@ class SpringSecurityAutoConfigurationTest {
     }
 
     @Test
-    void componentScanOfSecurityPackage_registersNoRequestCache() {
+    void componentScanOfSecurityPackage_withoutSpringSecurity_startsWithoutRequestCache() {
         new WebApplicationContextRunner()
+                .withClassLoader(new FilteredClassLoader(name -> name
+                        .startsWith("org.springframework.security.")
+                        || name.startsWith("org/springframework/security/")))
                 .withUserConfiguration(ScanSecurityPackage.class)
                 .run(context -> assertThat(context).hasNotFailed()
                         .doesNotHaveBean(VaadinDefaultRequestCache.class));
