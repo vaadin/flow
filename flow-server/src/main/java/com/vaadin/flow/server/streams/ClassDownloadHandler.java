@@ -48,7 +48,7 @@ public class ClassDownloadHandler
 
     private final Class<?> clazz;
     private final String resourceName;
-    private String fileName;
+    private final String fileName;
     private boolean rangeRequestsEnabled;
 
     /**
