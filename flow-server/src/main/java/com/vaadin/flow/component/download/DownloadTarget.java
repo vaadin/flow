@@ -23,10 +23,11 @@ public enum DownloadTarget {
     /**
      * Saves the content as a file, as the browser does for any download.
      * Content from a handler is served as an attachment, unless the handler
-     * asks for inline itself. Content from another URL of the same origin is
-     * saved even if it is served inline. For a URL of another origin, the
-     * server of that URL decides: content it serves inline may be shown instead
-     * of saved.
+     * calls {@link com.vaadin.flow.server.streams.DownloadEvent#inline()} or
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#inline(String)}
+     * itself. Content from another URL of the same origin is saved even if it
+     * is served inline. For a URL of another origin, the server of that URL
+     * decides: content it serves inline may be shown instead of saved.
      */
     SAVE_AS_FILE,
 
@@ -36,10 +37,11 @@ public enum DownloadTarget {
      * file otherwise.
      * <p>
      * Content from a handler is served inline for this use only, unless the
-     * handler asks for an attachment itself, see
-     * {@link com.vaadin.flow.server.streams.DownloadDisposition}. The handler
-     * itself is not changed, so the same instance can also be used where the
-     * content is downloaded.
+     * handler calls
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#attachment(String)}
+     * itself, see {@link com.vaadin.flow.server.streams.DownloadDisposition}.
+     * The handler itself is not changed, so the same instance can also be used
+     * where the content is downloaded.
      * <p>
      * The new tab is opened without access to the opening page
      * ({@code noopener}) and without a {@code Referer} header
