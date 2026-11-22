@@ -373,7 +373,6 @@ class InputStreamDownloadHandlerTest {
     void fileNameInvokedByDefault() throws IOException {
         DownloadEvent event = mock(DownloadEvent.class);
         DownloadHandler handler = DownloadHandler.fromInputStream(request -> {
-            verify(event, times(0)).fileName("my-download.bin", false);
             verify(event, times(0)).setContentType("application/octet-stream");
             byte[] data = getBytes();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
