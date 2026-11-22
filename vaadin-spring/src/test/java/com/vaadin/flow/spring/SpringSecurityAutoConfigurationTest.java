@@ -117,6 +117,8 @@ class SpringSecurityAutoConfigurationTest {
             assertThat(context).hasSingleBean(NavigationAccessControl.class);
             assertThat(context).getBean(NavigationAccessControl.class)
                     .isInstanceOf(SpringNavigationAccessControl.class);
+
+            assertThat(context).hasSingleBean(VaadinDefaultRequestCache.class);
         });
     }
 
