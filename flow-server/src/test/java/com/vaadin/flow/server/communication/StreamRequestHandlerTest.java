@@ -28,12 +28,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 
 import com.vaadin.flow.component.Component;
@@ -55,6 +59,7 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WrappedSession;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.server.streams.ElementRequestHandler;
@@ -69,9 +74,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -253,6 +260,64 @@ class StreamRequestHandlerTest {
             throws IOException {
         stateNodeStatesTestInternal(true, true);
         verify(response, never()).sendError(anyInt(), anyString());
+    }
+
+    @ParameterizedTest
+    @EnumSource(DownloadDisposition.class)
+    void resourceWithDisposition_overridesTypeAskedForByHandler(
+            DownloadDisposition disposition) throws IOException {
+        // the handler asks for the opposite of the disposition of the resource
+        DownloadHandler downloadHandler = disposition == DownloadDisposition.INLINE
+                ? event -> event.setFileName("q3.pdf")
+                : event -> event.inline("q3.pdf");
+        registerDownloadResource(downloadHandler, disposition);
+
+        handler.handleRequest(session, request, response);
+
+        verify(response).setHeader("Content-Disposition",
+                (disposition == DownloadDisposition.INLINE ? "inline"
+                        : "attachment") + "; filename=\"q3.pdf\"");
+    }
+
+    @Test
+    void dispositionChangedAfterRegistration_appliesToLaterRequests()
+            throws IOException {
+        StreamResourceRegistry.ElementStreamResource res = registerDownloadResource(
+                event -> event.inline("q3.pdf"), null);
+
+        // without a disposition the handler decides
+        handler.handleRequest(session, request, response);
+        verify(response).setHeader("Content-Disposition",
+                "inline; filename=\"q3.pdf\"");
+
+        res.setDisposition(DownloadDisposition.ATTACHMENT);
+        handler.handleRequest(session, request, response);
+        verify(response).setHeader("Content-Disposition",
+                "attachment; filename=\"q3.pdf\"");
+    }
+
+    private StreamResourceRegistry.ElementStreamResource registerDownloadResource(
+            DownloadHandler downloadHandler, DownloadDisposition disposition) {
+        Map<String, Object> attributes = new HashMap<>();
+        doAnswer(invocation -> attributes.put(invocation.getArgument(0),
+                invocation.getArgument(1))).when(request)
+                .setAttribute(anyString(), any());
+        when(request.getAttribute(anyString())).thenAnswer(
+                invocation -> attributes.get(invocation.getArgument(0)));
+
+        Element owner = mock(Element.class);
+        StateNode stateNode = mock(StateNode.class);
+        when(owner.getNode()).thenReturn(stateNode);
+        when(stateNode.isEnabled()).thenReturn(true);
+        when(stateNode.isAttached()).thenReturn(true);
+        when(stateNode.isVisible()).thenReturn(true);
+        StreamResourceRegistry.ElementStreamResource res = new StreamResourceRegistry.ElementStreamResource(
+                downloadHandler, owner, disposition);
+        streamResourceRegistry.registerResource(res);
+        when(request.getPathInfo()).thenReturn(String.format("/%s%s/%s/%s",
+                DYN_RES_PREFIX, ui.getId().orElse("-1"), res.getId(),
+                StreamRequestHandler.sanitizeNameForUrl(res.getName())));
+        return res;
     }
 
     private VaadinResponse stateNodeStatesTestInternal(boolean enabled,
