@@ -159,6 +159,8 @@ public class OpenInNewTabAction extends Action {
      * The content is served inline, so that the browser shows it when it can,
      * unless the handler calls
      * {@link com.vaadin.flow.server.streams.DownloadEvent#attachment(String)}
+     * or the deprecated
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
      * itself. The handler itself is not changed.
      *
      * @param handler
