@@ -22,10 +22,11 @@ public enum DownloadTarget {
 
     /**
      * Saves the content as a file, as the browser does for any download.
-     * Content from a handler is served as an attachment. Content from another
-     * URL of the same origin is saved even if it is served inline. For a URL of
-     * another origin, the server of that URL decides: content it serves inline
-     * may be shown instead of saved.
+     * Content from a handler is served as an attachment, unless the handler
+     * asks for inline itself. Content from another URL of the same origin is
+     * saved even if it is served inline. For a URL of another origin, the
+     * server of that URL decides: content it serves inline may be shown instead
+     * of saved.
      */
     SAVE_AS_FILE,
 
@@ -34,7 +35,8 @@ public enum DownloadTarget {
      * when it can, for example a PDF, an image or plain text, and saves it as a
      * file otherwise.
      * <p>
-     * Content from a handler is served inline for this use only, see
+     * Content from a handler is served inline for this use only, unless the
+     * handler asks for an attachment itself, see
      * {@link com.vaadin.flow.server.streams.DownloadDisposition}. The handler
      * itself is not changed, so the same instance can also be used where the
      * content is downloaded.
