@@ -283,16 +283,17 @@ class StreamRequestHandlerTest {
     void dispositionChangedAfterRegistration_appliesToLaterRequests()
             throws IOException {
         StreamResourceRegistry.ElementStreamResource res = registerDownloadResource(
-                event -> event.setFileName("q3.pdf"), null);
+                event -> event.inline("q3.pdf"), null);
 
-        handler.handleRequest(session, request, response);
-        verify(response).setHeader("Content-Disposition",
-                "attachment; filename=\"q3.pdf\"");
-
-        res.setDisposition(DownloadDisposition.INLINE);
+        // without a disposition the handler decides
         handler.handleRequest(session, request, response);
         verify(response).setHeader("Content-Disposition",
                 "inline; filename=\"q3.pdf\"");
+
+        res.setDisposition(DownloadDisposition.ATTACHMENT);
+        handler.handleRequest(session, request, response);
+        verify(response).setHeader("Content-Disposition",
+                "attachment; filename=\"q3.pdf\"");
     }
 
     private StreamResourceRegistry.ElementStreamResource registerDownloadResource(
