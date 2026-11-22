@@ -197,7 +197,6 @@ public class DownloadEvent {
      *            the name of the file
      * @see #attachment(String)
      * @see #inline(String)
-     * @since 25.4
      */
     public void fileName(String fileName) {
         if (setName(fileName)) {
@@ -237,7 +236,6 @@ public class DownloadEvent {
      *
      * @param fileName
      *            the name of the saved file
-     * @since 25.4
      */
     public void attachment(String fileName) {
         requestedType = ATTACHMENT;
