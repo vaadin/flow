@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.html.testbench;
 
-import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.testbench.elementsbase.Element;
 
 /**
@@ -24,6 +23,6 @@ import com.vaadin.testbench.elementsbase.Element;
  * @since 25.4
  */
 @Element("audio")
-public class AudioElement extends TestBenchElement {
+public class AudioElement extends MediaElement {
 
 }

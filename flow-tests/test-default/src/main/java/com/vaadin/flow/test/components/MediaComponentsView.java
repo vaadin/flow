@@ -19,10 +19,13 @@ import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 import com.vaadin.flow.component.html.Audio;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Media.Preload;
+import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.html.Video;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.streams.DownloadHandler;
@@ -32,7 +35,8 @@ import com.vaadin.flow.server.streams.DownloadResponse;
 public class MediaComponentsView extends Div {
 
     static final int SAMPLE_RATE = 8000;
-    static final int SAMPLE_COUNT = SAMPLE_RATE / 2;
+    // long enough to see the player playing and to pause it before it ends
+    static final int SAMPLE_COUNT = SAMPLE_RATE * 3;
 
     static final String POSTER_PAYLOAD = """
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">\
@@ -48,6 +52,25 @@ public class MediaComponentsView extends Div {
                     "silence.wav", "audio/wav", wav.length);
         }), "audio/wav");
 
+        Span audioState = new Span(audio.playbackStateSignal().map(Enum::name));
+        audioState.setId("audio-state");
+        Span audioError = new Span();
+        audioError.setId("audio-error");
+        // Started as soon as the view opens, before the visitor has interacted
+        // with the page, so the browser refuses to play the sound
+        audio.play(error -> audioError.setText(error.code().name()));
+
+        NativeButton play = new NativeButton("Play",
+                event -> audio.play(error -> audioError
+                        .setText("from click: " + error.code().name())));
+        play.setId("play-audio");
+        NativeButton pause = new NativeButton("Pause", event -> audio.pause());
+        pause.setId("pause-audio");
+        NativeButton seekToEnd = new NativeButton("Seek to end",
+                event -> audio.seek(Duration
+                        .ofMillis(SAMPLE_COUNT * 1000L / SAMPLE_RATE - 200)));
+        seekToEnd.setId("seek-audio-to-end");
+
         // None of the sources can be played, so the browser has to end up
         // reporting that it found nothing to play
         Video video = new Video();
@@ -62,11 +85,11 @@ public class MediaComponentsView extends Div {
         video.addSource("there-is-no-such-file.webm", "video/webm");
         video.addSource("there-is-no-such-file.mp4", "video/mp4");
 
-        add(audio, video);
+        add(audio, audioState, audioError, play, pause, seekToEnd, video);
     }
 
     /**
-     * Builds half a second of silence as an 8-bit mono PCM WAVE file, so that
+     * Builds three seconds of silence as an 8-bit mono PCM WAVE file, so that
      * the view has a media file the browser really can decode without one being
      * committed to the repository.
      */
