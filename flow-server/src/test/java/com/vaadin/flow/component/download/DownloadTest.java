@@ -81,7 +81,8 @@ class DownloadTest {
 
     @Test
     void startHandler_clickStartsDownloadOfRegisteredResource() {
-        Download.onClick(button, event -> event.inline("report.pdf"));
+        Download.onClick(button, event -> {
+        });
 
         JsFunction installFn = singleInstallFn();
         assertTrue(installFn.getCaptures().contains("click"),
