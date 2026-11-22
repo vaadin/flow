@@ -154,8 +154,13 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * Sets this download content to be displayed inside the Web page, or as the
      * Web page, e.g. as an image or inside an iframe.
      * <p>
-     * Implementations of this class should ensure that the
-     * 'Content-Disposition' attribute is 'inline', if this method is called.
+     * The built-in handlers then serve the content inline unless the place
+     * where the handler is used asks for an attachment with a
+     * {@link DownloadDisposition}, for example {@code Download.onClick} with
+     * {@code DownloadTarget.SAVE_AS_FILE}. Other implementations should serve
+     * the content inline when this method is called, for example with
+     * {@link DownloadEvent#inline(String)}; that call always sends
+     * {@code inline}, also where an attachment is asked for.
      *
      * @return this instance for method chaining
      * @deprecated whether content is shown or saved depends on where the

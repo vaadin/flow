@@ -162,9 +162,11 @@ public class DownloadEvent {
      *
      * @param fileName
      *            the name to be assigned to the file
-     * @deprecated use {@link #attachment(String)}, which behaves the same, or
-     *             {@link #fileName(String)} to let the place where the handler
-     *             is used decide whether the content is saved or shown
+     * @deprecated use {@link #attachment(String)}, which behaves the same for a
+     *             non-null name (for a {@code null} name it still sends
+     *             {@code attachment}), or {@link #fileName(String)} to let the
+     *             place where the handler is used decide whether the content is
+     *             saved or shown
      */
     @Deprecated(since = "25.4", forRemoval = true)
     public void setFileName(String fileName) {
