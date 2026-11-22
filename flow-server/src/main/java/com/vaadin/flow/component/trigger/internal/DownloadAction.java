@@ -122,7 +122,7 @@ public class DownloadAction extends Action {
      * stream resource scoped to the trigger host element the first time this
      * action is wired to each trigger; re-attaching the host re-registers the
      * resource with the same URL. The content is served as an attachment,
-     * whatever the handler asks for.
+     * unless the handler asks for inline itself.
      *
      * @param handler
      *            produces the response when the URL is fetched, not

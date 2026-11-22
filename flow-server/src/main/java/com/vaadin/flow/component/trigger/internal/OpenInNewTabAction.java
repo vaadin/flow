@@ -157,7 +157,8 @@ public class OpenInNewTabAction extends Action {
      * as a stream resource scoped to the trigger host element, with the same
      * lifecycle as in {@link DownloadAction#DownloadAction(DownloadHandler)}.
      * The content is served inline, so that the browser shows it when it can,
-     * whatever the handler asks for. The handler itself is not changed.
+     * unless the handler asks for an attachment itself. The handler itself is
+     * not changed.
      *
      * @param handler
      *            produces the response when the URL is fetched, not
