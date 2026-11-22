@@ -158,14 +158,18 @@ abstract class MediaTest extends ComponentTest {
     }
 
     @Test
-    void seek_sendsThePositionInSeconds() {
+    void pauseAndSeek_sendTheCommandsToThePlayer() {
         Media media = createMedia();
         ui.add(media);
 
-        media.seek(Duration.ofSeconds(90, 500_000_000));
+        media.pause();
+        assertEquals(new JsCall(Media.PlaybackJs.class, "pause", List.of()),
+                ui.onlyScheduledJsCall());
 
+        media.seek(Duration.ofSeconds(90, 500_000_000));
         assertEquals(new JsCall(Media.PlaybackJs.class, "seek", List.of(90.5)),
                 ui.onlyScheduledJsCall());
+
         assertThrows(IllegalArgumentException.class,
                 () -> media.seek(Duration.ofMillis(-1)));
     }
@@ -176,9 +180,9 @@ abstract class MediaTest extends ComponentTest {
         ui.add(media);
         List<Media.PlaybackError> errors = new ArrayList<>();
 
-        media.play(errors::add);
-        media.play(errors::add);
-        media.play(errors::add);
+        for (int i = 0; i < 5; i++) {
+            media.play(errors::add);
+        }
         List<PendingJavaScriptInvocation> plays = ui.dumpPendingJsInvocations();
         // the browser answers null for a playback that started or that pause()
         // interrupted
@@ -187,13 +191,22 @@ abstract class MediaTest extends ComponentTest {
                 {"name": "NotAllowedError", "message": "needs a gesture"}"""));
         plays.get(2).complete(JacksonUtils.readTree("""
                 {"name": "NotSupportedError", "message": "no source"}"""));
+        plays.get(3).complete(JacksonUtils.readTree("""
+                {"name": "SecurityError"}"""));
+        plays.get(4).completeExceptionally(
+                JacksonUtils.createNode("bridge failed"));
 
+        assertEquals(4, errors.size(), "Errors were: " + errors);
         assertEquals(List.of(
                 new Media.PlaybackError(Media.PlaybackErrorCode.NOT_ALLOWED,
                         "needs a gesture"),
                 new Media.PlaybackError(Media.PlaybackErrorCode.NOT_SUPPORTED,
-                        "no source")),
-                errors);
+                        "no source"),
+                new Media.PlaybackError(Media.PlaybackErrorCode.UNKNOWN, "")),
+                errors.subList(0, 3));
+        assertEquals(Media.PlaybackErrorCode.UNKNOWN, errors.get(3).code());
+        assertTrue(errors.get(3).message().contains("bridge failed"),
+                errors.get(3).message());
     }
 
     @Test
@@ -210,10 +223,35 @@ abstract class MediaTest extends ComponentTest {
                 .complete(JacksonUtils.createNode("PLAYING"));
         assertEquals(Media.PlaybackState.PLAYING, state.peek());
 
-        fireWithPlaybackState(media, "ended", "ENDED");
-        assertEquals(Media.PlaybackState.ENDED, state.peek());
+        String reported = "ENDED";
+        for (String eventType : List.of("play", "pause", "ended", "emptied",
+                "seeked")) {
+            reported = reported.equals("ENDED") ? "PAUSED" : "ENDED";
+            fireWithPlaybackState(media, eventType, reported);
+            assertEquals(Media.PlaybackState.valueOf(reported), state.peek(),
+                    "after " + eventType);
+        }
 
         ui.remove(media);
+        assertEquals(Media.PlaybackState.UNKNOWN, state.peek());
+    }
+
+    @Test
+    void playbackStateSignal_askedForWhileAttached_readsTheState_ignoresAnAnswerAfterDetach() {
+        Media media = createMedia();
+        ui.add(media);
+        ui.dumpPendingJsInvocations();
+
+        Signal<Media.PlaybackState> state = media.playbackStateSignal();
+        ui.dumpPendingJsInvocations().get(0)
+                .complete(JacksonUtils.createNode("PAUSED"));
+        assertEquals(Media.PlaybackState.PAUSED, state.peek());
+
+        ui.remove(media);
+        ui.add(media);
+        PendingJavaScriptInvocation read = ui.dumpPendingJsInvocations().get(0);
+        ui.remove(media);
+        read.complete(JacksonUtils.createNode("PLAYING"));
         assertEquals(Media.PlaybackState.UNKNOWN, state.peek());
     }
 

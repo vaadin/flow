@@ -109,19 +109,13 @@ public class MediaComponentsIT extends AbstractStreamResourceIT {
     }
 
     @BrowserTest
-    public void audioPlayWithoutInteraction_isRefusedByTheAutoplayPolicy() {
-        open();
-
-        waitForText("audio-error", "NOT_ALLOWED");
-        Assertions.assertEquals("PAUSED",
-                $("span").id("audio-state").getText());
-    }
-
-    @BrowserTest
     public void audioPlayPauseAndSeekFromClickListeners_driveThePlayer() {
         open();
-        AudioElement audio = $(AudioElement.class).id("audio-player");
+        AudioElement audio = $(AudioElement.class).id("playback-audio");
+        // the view starts the sound before any interaction, which the
+        // browser's autoplay policy refuses
         waitForText("audio-error", "NOT_ALLOWED");
+        waitForText("audio-state", "PAUSED");
 
         // a server round trip after the click still counts as the visitor
         // starting the sound; click(x, y) is a real click, unlike click(),
@@ -135,6 +129,9 @@ public class MediaComponentsIT extends AbstractStreamResourceIT {
         Assertions.assertFalse(audio.isPlaying());
 
         $("button").id("seek-audio-to-end").click();
+        waitUntil(driver -> audio.getPropertyDouble("currentTime") > 2.5);
+        Assertions.assertEquals("PAUSED", $("span").id("audio-state").getText(),
+                "A paused player should stay paused when moved");
         $("button").id("play-audio").click(5, 5);
         waitForText("audio-state", "ENDED");
         Assertions.assertEquals("NOT_ALLOWED",
@@ -145,7 +142,7 @@ public class MediaComponentsIT extends AbstractStreamResourceIT {
     @BrowserTest
     public void audioStartedInTheBrowser_isReportedToTheServer() {
         open();
-        AudioElement audio = $(AudioElement.class).id("audio-player");
+        AudioElement audio = $(AudioElement.class).id("playback-audio");
         waitForText("audio-error", "NOT_ALLOWED");
         // any real click lets the page play sound, as a click on the
         // browser's own play button would

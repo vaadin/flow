@@ -20,6 +20,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Base64;
 
 import com.vaadin.flow.component.html.Audio;
 import com.vaadin.flow.component.html.Div;
@@ -52,22 +53,35 @@ public class MediaComponentsView extends Div {
                     "silence.wav", "audio/wav", wav.length);
         }), "audio/wav");
 
-        Span audioState = new Span(audio.playbackStateSignal().map(Enum::name));
+        // A data URL rather than the download handler, because the browser
+        // only seeks in a file it can fetch any part of, and the download
+        // handler does not serve ranges
+        Audio playback = new Audio();
+        playback.setId("playback-audio");
+        playback.setPreload(Preload.AUTO);
+        playback.addSource(
+                "data:audio/wav;base64,"
+                        + Base64.getEncoder().encodeToString(createSilentWav()),
+                "audio/wav");
+
+        Span audioState = new Span(
+                playback.playbackStateSignal().map(Enum::name));
         audioState.setId("audio-state");
         Span audioError = new Span();
         audioError.setId("audio-error");
         // Started as soon as the view opens, before the visitor has interacted
         // with the page, so the browser refuses to play the sound
-        audio.play(error -> audioError.setText(error.code().name()));
+        playback.play(error -> audioError.setText(error.code().name()));
 
         NativeButton play = new NativeButton("Play",
-                event -> audio.play(error -> audioError
+                event -> playback.play(error -> audioError
                         .setText("from click: " + error.code().name())));
         play.setId("play-audio");
-        NativeButton pause = new NativeButton("Pause", event -> audio.pause());
+        NativeButton pause = new NativeButton("Pause",
+                event -> playback.pause());
         pause.setId("pause-audio");
         NativeButton seekToEnd = new NativeButton("Seek to end",
-                event -> audio.seek(Duration
+                event -> playback.seek(Duration
                         .ofMillis(SAMPLE_COUNT * 1000L / SAMPLE_RATE - 200)));
         seekToEnd.setId("seek-audio-to-end");
 
@@ -85,7 +99,8 @@ public class MediaComponentsView extends Div {
         video.addSource("there-is-no-such-file.webm", "video/webm");
         video.addSource("there-is-no-such-file.mp4", "video/mp4");
 
-        add(audio, audioState, audioError, play, pause, seekToEnd, video);
+        add(audio, playback, audioState, audioError, play, pause, seekToEnd,
+                video);
     }
 
     /**

@@ -185,6 +185,11 @@ public abstract class Media extends HtmlComponent
         /**
          * Playback has been started and not paused since. The player may still
          * be waiting for data before the picture or the sound actually moves.
+         * <p>
+         * This is what the browser reports, also for a player that was told to
+         * play but none of whose sources can be loaded: such a player stays in
+         * this state without ever moving, and Chrome does not report the play
+         * request as failed either.
          */
         PLAYING,
 
