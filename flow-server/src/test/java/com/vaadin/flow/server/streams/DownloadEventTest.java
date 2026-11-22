@@ -29,6 +29,7 @@ import com.vaadin.flow.internal.EncodeUtil;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.StreamRequestHandler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.anyString;
@@ -229,5 +230,41 @@ class DownloadEventTest {
         int contentLength = -1;
         downloadEvent.setContentLength(contentLength);
         verify(response, times(0)).setContentLengthLong(contentLength);
+    }
+
+    @Test
+    void dispositionInRequest_inlineWithoutFileName_writesDisposition() {
+        when(request.getAttribute(
+                StreamRequestHandler.DISPOSITION_REQUEST_ATTRIBUTE))
+                .thenReturn(DownloadDisposition.ATTACHMENT);
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.inline();
+        verify(response).setHeader("Content-Disposition", "attachment");
+    }
+
+    @Test
+    void dispositionInRequest_setFileName_keepsFileName() {
+        when(request.getAttribute(
+                StreamRequestHandler.DISPOSITION_REQUEST_ATTRIBUTE))
+                .thenReturn(DownloadDisposition.INLINE);
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.setFileName("q3.pdf");
+        verify(response).setHeader("Content-Disposition",
+                "inline; filename=\"q3.pdf\"");
+    }
+
+    @Test
+    void dispositionInRequest_headerAlreadySet_doesNotOverrideHeader() {
+        when(request.getAttribute(
+                StreamRequestHandler.DISPOSITION_REQUEST_ATTRIBUTE))
+                .thenReturn(DownloadDisposition.INLINE);
+        when(response.containsHeader("Content-Disposition")).thenReturn(true);
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.setFileName("q3.pdf");
+        verify(response, times(0)).setHeader(eq("Content-Disposition"),
+                anyString());
     }
 }
