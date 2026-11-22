@@ -76,8 +76,12 @@ public class Source extends HtmlComponent {
      * Creates a new source for the media file that the given download handler
      * serves.
      * <p>
-     * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it.
+     * The content is served inline, so that the browser shows it: a file name
+     * the handler sets with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
+     * is sent with a <code>Content-Disposition: inline</code> header instead of
+     * <code>attachment</code>. A header the handler sets directly on the
+     * response is left as is.
      *
      * @param downloadHandler
      *            the download handler that serves the media file, not
@@ -113,8 +117,12 @@ public class Source extends HtmlComponent {
      * Sets the URL of the media file to the URL of the given
      * {@link DownloadHandler} callback.
      * <p>
-     * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it.
+     * The content is served inline, so that the browser shows it: a file name
+     * the handler sets with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
+     * is sent with a <code>Content-Disposition: inline</code> header instead of
+     * <code>attachment</code>. A header the handler sets directly on the
+     * response is left as is.
      * <p>
      * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
      * that the media file is still served when the media component, or one of
