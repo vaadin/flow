@@ -152,10 +152,11 @@ public class DownloadEvent {
      * If the Content-Disposition header has already been set, this method will
      * not override it.
      * <p>
-     * The place where the handler is used can ask for the content to be shown
-     * in the browser instead, for example the {@code src} of an image or a new
-     * browser tab, by setting a {@link DownloadDisposition} on the registered
-     * resource. The header is then {@code inline} with the same file name.
+     * The file name does not decide whether the content is saved or shown. When
+     * the resource the handler is registered with has a
+     * {@link DownloadDisposition}, that disposition is honored and the header
+     * is {@code inline} or {@code attachment} accordingly, with this file name.
+     * Without a disposition, the header is {@code attachment}.
      *
      * @param fileName
      *            the name to be assigned to the file
@@ -176,9 +177,9 @@ public class DownloadEvent {
      * If the Content-Disposition header has already been set, this method will
      * not override it.
      * <p>
-     * The place where the handler is used can ask for the content to be saved
-     * as a file instead, for example a download link. The header is then
-     * {@code attachment}.
+     * When the resource the handler is registered with has a
+     * {@link DownloadDisposition}, that disposition is honored instead, so the
+     * header may be {@code attachment}.
      *
      * @see DownloadDisposition
      * @since 25.0
@@ -203,9 +204,9 @@ public class DownloadEvent {
      * If the Content-Disposition header has already been set, this method will
      * not override it.
      * <p>
-     * The place where the handler is used can ask for the content to be saved
-     * as a file instead, for example a download link. The header is then
-     * {@code attachment} with the same file name.
+     * When the resource the handler is registered with has a
+     * {@link DownloadDisposition}, that disposition is honored instead, so the
+     * header may be {@code attachment} with the same file name.
      *
      * @param fileName
      *            the suggested name for the file if saved by the user
