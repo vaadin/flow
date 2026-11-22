@@ -254,4 +254,17 @@ class DownloadEventTest {
         verify(response).setHeader("Content-Disposition",
                 "inline; filename=\"q3.pdf\"");
     }
+
+    @Test
+    void dispositionInRequest_headerAlreadySet_doesNotOverrideHeader() {
+        when(request.getAttribute(
+                StreamRequestHandler.DISPOSITION_REQUEST_ATTRIBUTE))
+                .thenReturn(DownloadDisposition.INLINE);
+        when(response.containsHeader("Content-Disposition")).thenReturn(true);
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.setFileName("q3.pdf");
+        verify(response, times(0)).setHeader(eq("Content-Disposition"),
+                anyString());
+    }
 }
