@@ -155,11 +155,11 @@ public class HtmlObject extends HtmlContainer implements
      * value.
      *
      * The content is served inline, so that the browser shows it: a file name
-     * the handler sets with
-     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
-     * is sent with a <code>Content-Disposition: inline</code> header instead of
-     * <code>attachment</code>. A header the handler sets directly on the
-     * response is left as is.
+     * the handler gives with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#fileName(String)}, as
+     * the built-in handlers do, is sent with a
+     * <code>Content-Disposition: inline</code> header. A handler that asks for
+     * <code>attachment</code> itself keeps that choice.
      *
      * @see #setData(DownloadHandler)
      * @see #setType(String)
@@ -180,11 +180,11 @@ public class HtmlObject extends HtmlContainer implements
      * resource, type value and "param" components.
      *
      * The content is served inline, so that the browser shows it: a file name
-     * the handler sets with
-     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
-     * is sent with a <code>Content-Disposition: inline</code> header instead of
-     * <code>attachment</code>. A header the handler sets directly on the
-     * response is left as is.
+     * the handler gives with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#fileName(String)}, as
+     * the built-in handlers do, is sent with a
+     * <code>Content-Disposition: inline</code> header. A handler that asks for
+     * <code>attachment</code> itself keeps that choice.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -210,11 +210,11 @@ public class HtmlObject extends HtmlContainer implements
      * resource, type value and "param" components.
      *
      * The content is served inline, so that the browser shows it: a file name
-     * the handler sets with
-     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
-     * is sent with a <code>Content-Disposition: inline</code> header instead of
-     * <code>attachment</code>. A header the handler sets directly on the
-     * response is left as is.
+     * the handler gives with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#fileName(String)}, as
+     * the built-in handlers do, is sent with a
+     * <code>Content-Disposition: inline</code> header. A handler that asks for
+     * <code>attachment</code> itself keeps that choice.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -238,11 +238,11 @@ public class HtmlObject extends HtmlContainer implements
      * resource, type value and "param" components.
      *
      * The content is served inline, so that the browser shows it: a file name
-     * the handler sets with
-     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
-     * is sent with a <code>Content-Disposition: inline</code> header instead of
-     * <code>attachment</code>. A header the handler sets directly on the
-     * response is left as is.
+     * the handler gives with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#fileName(String)}, as
+     * the built-in handlers do, is sent with a
+     * <code>Content-Disposition: inline</code> header. A handler that asks for
+     * <code>attachment</code> itself keeps that choice.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -337,11 +337,11 @@ public class HtmlObject extends HtmlContainer implements
      * value.
      *
      * The content is served inline, so that the browser shows it: a file name
-     * the handler sets with
-     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
-     * is sent with a <code>Content-Disposition: inline</code> header instead of
-     * <code>attachment</code>. A header the handler sets directly on the
-     * response is left as is.
+     * the handler gives with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#fileName(String)}, as
+     * the built-in handlers do, is sent with a
+     * <code>Content-Disposition: inline</code> header. A handler that asks for
+     * <code>attachment</code> itself keeps that choice.
      *
      * @param data
      *            a "data" attribute value, not {@code null}
