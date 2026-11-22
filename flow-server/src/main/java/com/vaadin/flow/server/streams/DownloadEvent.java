@@ -157,8 +157,8 @@ public class DownloadEvent {
      * any of these methods wrote it, this method will not override it.
      * <p>
      * The header is always {@code attachment}, even when the place where the
-     * handler is used asks for the content to be shown inline, for example an
-     * {@code IFrame} or a link opened in a new tab.
+     * handler is used asks for the content to be shown inline, for example
+     * {@code Download.onClick} with a new tab.
      *
      * @param fileName
      *            the name to be assigned to the file
@@ -179,9 +179,9 @@ public class DownloadEvent {
      * is decided by {@link #inline()} or {@link #attachment(String)} if the
      * handler calls them, before or after this method, and otherwise by the
      * place where the handler is used, through the {@link DownloadDisposition}
-     * of the resource the handler is registered with. For example, an
-     * {@code Image} or a link opened in a new tab shows the content. Without
-     * any of these, the content is saved as an attachment.
+     * of the resource the handler is registered with. For example,
+     * {@code Download.onClick} with a new tab shows the content. Without any of
+     * these, the content is saved as an attachment.
      * <p>
      * This method utilizes the HTTP Content-Disposition header. To be called
      * before the response is committed.
