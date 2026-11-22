@@ -158,9 +158,9 @@ public class DownloadEvent {
      *
      * @param fileName
      *            the name to be assigned to the file
-     * @deprecated use {@link #fileName(String)} to let the place where the
-     *             handler is used decide whether the content is saved or shown,
-     *             or {@link #attachment(String)} to always save it
+     * @deprecated use {@link #attachment(String)}, which behaves the same, or
+     *             {@link #fileName(String)} to let the place where the handler
+     *             is used decide whether the content is saved or shown
      */
     @Deprecated(since = "25.4")
     public void setFileName(String fileName) {
@@ -182,8 +182,8 @@ public class DownloadEvent {
      * To be called before the response is committed.
      * <p>
      * If the <code>fileName</code> is <code>null</code> or blank, the header is
-     * only set when the content is to be shown inline. Control characters, such
-     * as line breaks, are removed from the file name.
+     * not set. Control characters, such as line breaks, are removed from the
+     * file name.
      * <p>
      * If the Content-Disposition header has already been set, this method will
      * not override it.
@@ -204,15 +204,14 @@ public class DownloadEvent {
      * {@code true}.
      */
     void fileName(String fileName, boolean inlineByDefault) {
+        if (fileName == null || fileName.isBlank()) {
+            return;
+        }
         String type;
         if (disposition != null) {
             type = disposition.getHeaderValue();
         } else {
             type = inlineByDefault ? INLINE : ATTACHMENT;
-        }
-        if (ATTACHMENT.equals(type)
-                && (fileName == null || fileName.isBlank())) {
-            return;
         }
         setContentDisposition(type, fileName);
     }
