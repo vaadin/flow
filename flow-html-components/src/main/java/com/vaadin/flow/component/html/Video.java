@@ -98,8 +98,12 @@ public class Video extends Media {
      * callback serves. This is the version to use for an image the application
      * produces itself, rather than one that is served from a URL of its own.
      * <p>
-     * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it.
+     * The content is served inline, so that the browser shows it: a file name
+     * the handler sets with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
+     * is sent with a <code>Content-Disposition: inline</code> header instead of
+     * <code>attachment</code>. A header the handler sets directly on the
+     * response is left as is.
      * <p>
      * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
      * that the poster is still served when the video, or one of its ancestors,
