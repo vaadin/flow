@@ -207,8 +207,12 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * Creates a new iframe with download handler callback that provides a
      * resource from server.
      *
-     * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it.
+     * The content is served inline, so that the browser shows it: a file name
+     * the handler sets with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
+     * is sent with a <code>Content-Disposition: inline</code> header instead of
+     * <code>attachment</code>. A header the handler sets directly on the
+     * response is left as is.
      *
      * @param downloadHandler
      *            the download handler callback that provides a resource from
@@ -285,8 +289,12 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * Sets the source of the iframe with a source URL with the URL of the given
      * {@link DownloadHandler} callback.
      *
-     * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it.
+     * The content is served inline, so that the browser shows it: a file name
+     * the handler sets with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
+     * is sent with a <code>Content-Disposition: inline</code> header instead of
+     * <code>attachment</code>. A header the handler sets directly on the
+     * response is left as is.
      *
      * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
      * that the iframe content is still served when the component, or one of its
