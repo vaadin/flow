@@ -61,7 +61,7 @@ public abstract class Media extends HtmlComponent
     private static final String AUTOPLAY_ATTRIBUTE = "autoplay";
     private static final String CONTROLS_ATTRIBUTE = "controls";
     private static final String LOOP_ATTRIBUTE = "loop";
-    private static final String MUTED_ATTRIBUTE = "muted";
+    private static final String MUTED_PROPERTY = "muted";
     private static final String PRELOAD_ATTRIBUTE = "preload";
 
     /**
@@ -287,11 +287,10 @@ public abstract class Media extends HtmlComponent
      *            <code>true</code> to mute the player
      */
     public void setMuted(boolean muted) {
-        // The attribute only sets the default muted state, which the browser
-        // applies when it parses HTML, not to an element created by script as
-        // Flow does. The property mutes the player itself.
-        getElement().setAttribute(MUTED_ATTRIBUTE, muted);
-        getElement().setProperty(MUTED_ATTRIBUTE, muted);
+        // Not the muted attribute: it only sets the default muted state, which
+        // the browser applies when it parses HTML, not to an element created
+        // by script as Flow does
+        getElement().setProperty(MUTED_PROPERTY, muted);
     }
 
     /**
@@ -301,7 +300,7 @@ public abstract class Media extends HtmlComponent
      * @see #setMuted(boolean)
      */
     public boolean isMuted() {
-        return getElement().hasAttribute(MUTED_ATTRIBUTE);
+        return getElement().getProperty(MUTED_PROPERTY, false);
     }
 
     /**
