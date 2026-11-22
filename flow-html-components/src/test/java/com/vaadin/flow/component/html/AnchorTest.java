@@ -484,7 +484,7 @@ class AnchorTest extends ComponentTest {
     void setHrefWithAttachmentType_newHandler_typeIsKept() throws Exception {
         UI attachTo = createUiWithDefaultSafeUrlSchemes();
         UI.setCurrent(attachTo);
-        Anchor anchor = new Anchor(event -> event.setFileName("a.pdf"),
+        Anchor anchor = new Anchor(event -> event.fileName("a.pdf"),
                 AttachmentType.INLINE, "bar");
         attachTo.add(anchor);
 
