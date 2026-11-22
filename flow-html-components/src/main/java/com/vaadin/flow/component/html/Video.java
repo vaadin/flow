@@ -54,6 +54,7 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 @Tag(Tag.VIDEO)
 public class Video extends Media {
 
+    private static final String PLAYS_INLINE_ATTRIBUTE = "playsinline";
     private static final String POSTER_ATTRIBUTE = "poster";
 
     /**
@@ -132,5 +133,30 @@ public class Video extends Media {
      */
     public @Nullable String getPoster() {
         return getElement().getAttribute(POSTER_ATTRIBUTE);
+    }
+
+    /**
+     * Sets whether the video plays inside the page rather than in full screen.
+     * Desktop browsers always play inline, but Safari on iPhone opens the video
+     * in full screen when playback starts, and does not
+     * {@link #setAutoplay(boolean) autoplay} it at all, unless this is set. A
+     * background video or any other player that is meant to stay part of the
+     * page needs it.
+     *
+     * @param playsInline
+     *            <code>true</code> to play the video inside the page
+     */
+    public void setPlaysInline(boolean playsInline) {
+        getElement().setAttribute(PLAYS_INLINE_ATTRIBUTE, playsInline);
+    }
+
+    /**
+     * Gets whether the video plays inside the page rather than in full screen.
+     *
+     * @return <code>true</code> if the video plays inside the page
+     * @see #setPlaysInline(boolean)
+     */
+    public boolean isPlaysInline() {
+        return getElement().hasAttribute(PLAYS_INLINE_ATTRIBUTE);
     }
 }
