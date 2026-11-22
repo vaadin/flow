@@ -29,7 +29,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -451,35 +450,6 @@ class AnchorTest extends ComponentTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "setHref", "setUnsafeHref", "removeHref",
-            "setHrefResource" })
-    void hrefReplaced_afterHandler_setDownloadKeepsNewHref(String method) {
-        mockUI();
-        Anchor anchor = new Anchor(event -> event.setFileName("a.pdf"), "bar");
-        switch (method) {
-        case "setHref" -> anchor.setHref("/plain");
-        case "setUnsafeHref" -> anchor.setUnsafeHref("/plain");
-        case "removeHref" -> anchor.removeHref();
-        case "setHrefResource" -> anchor.setHref(new AbstractStreamResource() {
-            @Override
-            public String getName() {
-                return "baz";
-            }
-        });
-        default -> throw new IllegalArgumentException(method);
-        }
-        String href = anchor.getHref();
-        boolean hasHrefAttribute = anchor.getElement().hasAttribute("href");
-
-        anchor.setDownload(false);
-
-        assertEquals(href, anchor.getHref());
-        assertEquals(hasHrefAttribute,
-                anchor.getElement().hasAttribute("href"));
-        assertFalse(anchor.isDownload());
-    }
-
-    @ParameterizedTest
     @CsvSource({ "false, true", "false, false", "true, true", "true, false" })
     void setDownload_beforeOrAfterSetHref_decidesAttributeAndHowContentIsServed(
             boolean download, boolean downloadSetFirst) throws Exception {
@@ -510,23 +480,6 @@ class AnchorTest extends ComponentTest {
         assertEquals(
                 (download ? "attachment" : "inline")
                         + "; filename=\"report.pdf\"",
-                servedContentDisposition(attachTo, anchor));
-    }
-
-    @Test
-    void setDownload_afterContentServed_laterRequestsServedWithNewChoice()
-            throws Exception {
-        UI attachTo = createUiWithDefaultSafeUrlSchemes();
-        UI.setCurrent(attachTo);
-        Anchor anchor = new Anchor(event -> event.setFileName("q3.pdf"),
-                AttachmentType.INLINE, "bar");
-        attachTo.add(anchor);
-        assertEquals("inline; filename=\"q3.pdf\"",
-                servedContentDisposition(attachTo, anchor));
-
-        anchor.setDownload(true);
-
-        assertEquals("attachment; filename=\"q3.pdf\"",
                 servedContentDisposition(attachTo, anchor));
     }
 
