@@ -247,6 +247,8 @@ class DownloadEventTest {
             "fileName, q3.pdf, ATTACHMENT, attachment; filename=\"q3.pdf\"",
             "fileName, null, INLINE, null", "fileName, null, null, null",
             "fileName, '', null, null", "fileName, '   ', INLINE, null",
+            "fileName, '\u0000\r\n', null, null",
+            "fileName, 'a\r\n.txt', INLINE, inline; filename=\"a.txt\"",
             // built-in handlers marked inline default to inline
             "fileNameInlineByDefault, q3.pdf, null, inline; filename=\"q3.pdf\"",
             "fileNameInlineByDefault, q3.pdf, ATTACHMENT, attachment; filename=\"q3.pdf\"",
