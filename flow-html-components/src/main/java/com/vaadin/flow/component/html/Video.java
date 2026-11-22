@@ -99,8 +99,7 @@ public class Video extends Media {
      * produces itself, rather than one that is served from a URL of its own.
      * <p>
      * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadDisposition#INLINE}.
+     * header, so that the browser shows it.
      * <p>
      * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
      * that the poster is still served when the video, or one of its ancestors,
