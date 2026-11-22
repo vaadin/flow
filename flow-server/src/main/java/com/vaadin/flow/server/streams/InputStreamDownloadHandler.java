@@ -87,11 +87,7 @@ public class InputStreamDownloadHandler
         DownloadResponse download;
         try {
             String resourceName = getUrlPostfix();
-            if (isInline()) {
-                downloadEvent.inline(resourceName);
-            } else {
-                downloadEvent.setFileName(resourceName);
-            }
+            downloadEvent.fileName(resourceName, isInline());
             download = callback.complete(downloadEvent);
         } catch (IOException | RuntimeException e) {
             // Set status before output is closed (see #8740)
@@ -130,11 +126,7 @@ public class InputStreamDownloadHandler
                 : download.getContentType();
         downloadEvent.setContentType(contentType);
 
-        if (isInline()) {
-            downloadEvent.inline(downloadName);
-        } else {
-            downloadEvent.setFileName(downloadName);
-        }
+        downloadEvent.fileName(downloadName, isInline());
 
         try (OutputStream outputStream = downloadEvent.getOutputStream();
                 InputStream inputStream = download.getInputStream()) {

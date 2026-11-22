@@ -68,7 +68,6 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -252,7 +251,7 @@ class ServletResourceDownloadHandlerTest {
 
         handler.handleDownloadRequest(event);
 
-        verify(event).setFileName("my-download.bin");
+        verify(event).fileName("my-download.bin", false);
         verify(event).setContentType("application/octet-stream");
     }
 
@@ -275,7 +274,7 @@ class ServletResourceDownloadHandlerTest {
 
         handler.handleDownloadRequest(event);
 
-        verify(event, times(0)).setFileName("my-download.bin");
+        verify(event).fileName("my-download.bin", true);
         verify(event).setContentType("application/octet-stream");
     }
 

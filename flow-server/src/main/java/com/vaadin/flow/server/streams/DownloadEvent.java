@@ -152,48 +152,123 @@ public class DownloadEvent {
      * If the Content-Disposition header has already been set, this method will
      * not override it.
      * <p>
-     * The file name does not decide whether the content is saved or shown. When
-     * the resource the handler is registered with has a
-     * {@link DownloadDisposition}, that disposition is honored and the header
-     * is {@code inline} or {@code attachment} accordingly, with this file name.
-     * Without a disposition, the header is {@code attachment}.
+     * The header is always {@code attachment}, even when the place where the
+     * handler is used asks for the content to be shown inline, for example an
+     * {@code IFrame} or a link opened in a new tab.
      *
      * @param fileName
      *            the name to be assigned to the file
-     * @see DownloadDisposition
+     * @deprecated use {@link #fileName(String)} to let the place where the
+     *             handler is used decide whether the content is saved or shown,
+     *             or {@link #attachment(String)} to always save it
      */
+    @Deprecated(since = "25.4")
     public void setFileName(String fileName) {
         if (fileName != null) {
-            setContentDisposition(ATTACHMENT, fileName);
+            attachment(fileName);
         }
+    }
+
+    /**
+     * Sets the name of the file and lets the place where the handler is used
+     * decide whether the content is saved or shown in the browser.
+     * <p>
+     * The Content-Disposition header is {@code inline} or {@code attachment}
+     * according to the {@link DownloadDisposition} of the resource the handler
+     * is registered with, for example {@code inline} for an {@code Image} or a
+     * link opened in a new tab. Without a disposition, the header is
+     * {@code attachment}.
+     * <p>
+     * To be called before the response is committed.
+     * <p>
+     * If the <code>fileName</code> is <code>null</code> or blank, the header is
+     * only set when the content is to be shown inline. Control characters, such
+     * as line breaks, are removed from the file name.
+     * <p>
+     * If the Content-Disposition header has already been set, this method will
+     * not override it.
+     *
+     * @param fileName
+     *            the name of the file, or {@code null} to not suggest a name
+     * @see #attachment(String)
+     * @see #inline(String)
+     * @since 25.4
+     */
+    public void fileName(String fileName) {
+        fileName(fileName, false);
+    }
+
+    /**
+     * Like {@link #fileName(String)}, but with {@code inline} as the type when
+     * no disposition is set on the resource and {@code inlineByDefault} is
+     * {@code true}.
+     */
+    void fileName(String fileName, boolean inlineByDefault) {
+        String type;
+        if (disposition != null) {
+            type = disposition.getHeaderValue();
+        } else {
+            type = inlineByDefault ? INLINE : ATTACHMENT;
+        }
+        if (ATTACHMENT.equals(type)
+                && (fileName == null || fileName.isBlank())) {
+            return;
+        }
+        setContentDisposition(type, fileName);
+    }
+
+    /**
+     * Sets the Content-Disposition header to attachment with a filename, so
+     * that the browser saves the content as a file instead of showing it.
+     * <p>
+     * The header is {@code attachment} even when the place where the handler is
+     * used asks for the content to be shown inline. Use
+     * {@link #fileName(String)} to let that place decide.
+     * <p>
+     * To be called before the response is committed.
+     * <p>
+     * If the <code>fileName</code> is <code>null</code> or blank, the header is
+     * {@code attachment} without a file name. Control characters, such as line
+     * breaks, are removed from the file name.
+     * <p>
+     * If the Content-Disposition header has already been set, this method will
+     * not override it.
+     *
+     * @param fileName
+     *            the name of the saved file
+     * @since 25.4
+     */
+    public void attachment(String fileName) {
+        setContentDisposition(ATTACHMENT, fileName);
     }
 
     /**
      * Sets the Content-Disposition header to inline, allowing the content to be
      * displayed directly in the browser instead of being downloaded.
      * <p>
+     * The header is {@code inline} even when the place where the handler is
+     * used asks for the content to be saved as a file. Use
+     * {@link #fileName(String)} to let that place decide.
+     * <p>
      * To be called before the response is committed.
      * <p>
      * If the Content-Disposition header has already been set, this method will
      * not override it.
-     * <p>
-     * When the resource the handler is registered with has a
-     * {@link DownloadDisposition}, that disposition is honored instead, so the
-     * header may be {@code attachment}.
      *
-     * @see DownloadDisposition
      * @since 25.0
      */
     public void inline() {
-        if (!response.containsHeader(CONTENT_DISPOSITION)) {
-            response.setHeader(CONTENT_DISPOSITION, resolveType(INLINE));
-        }
+        setContentDisposition(INLINE, null);
     }
 
     /**
      * Sets the Content-Disposition header to inline with a filename, allowing
      * the content to be displayed directly in the browser with a suggested
      * filename if the user chooses to save it.
+     * <p>
+     * The header is {@code inline} even when the place where the handler is
+     * used asks for the content to be saved as a file. Use
+     * {@link #fileName(String)} to let that place decide.
      * <p>
      * To be called before the response is committed.
      * <p>
@@ -203,14 +278,9 @@ public class DownloadEvent {
      * <p>
      * If the Content-Disposition header has already been set, this method will
      * not override it.
-     * <p>
-     * When the resource the handler is registered with has a
-     * {@link DownloadDisposition}, that disposition is honored instead, so the
-     * header may be {@code attachment} with the same file name.
      *
      * @param fileName
      *            the suggested name for the file if saved by the user
-     * @see DownloadDisposition
      * @since 25.0
      */
     public void inline(String fileName) {
@@ -224,12 +294,8 @@ public class DownloadEvent {
         String cleanedFileName = fileName == null ? null
                 : EncodeUtil.removeControlCharacters(fileName);
         response.setHeader(CONTENT_DISPOSITION,
-                buildContentDisposition(resolveType(type), cleanedFileName));
+                buildContentDisposition(type, cleanedFileName));
         this.fileName = cleanedFileName;
-    }
-
-    private String resolveType(String type) {
-        return disposition == null ? type : disposition.getHeaderValue();
     }
 
     private static String buildContentDisposition(String type,

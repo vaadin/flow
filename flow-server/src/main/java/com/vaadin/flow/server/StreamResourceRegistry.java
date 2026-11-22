@@ -219,13 +219,15 @@ public class StreamResourceRegistry implements Serializable {
          * resource: shown in the browser or saved as a file. Whether content is
          * shown or saved depends on where it is used, so the code that
          * registers the handler decides, and the handler itself is not changed.
-         * The type of the {@code Content-Disposition} header that the handler
-         * writes through
-         * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
+         * The disposition decides the type of the {@code Content-Disposition}
+         * header when the handler gives only a file name, with
+         * {@link com.vaadin.flow.server.streams.DownloadEvent#fileName(String)},
+         * which the built-in handlers do. A handler that asks for a type
+         * itself, for example with
+         * {@link com.vaadin.flow.server.streams.DownloadEvent#attachment(String)}
          * or
-         * {@link com.vaadin.flow.server.streams.DownloadEvent#inline(String)}
-         * is replaced, and the file name is kept. A header that the handler
-         * sets directly on the response is left as it is.
+         * {@link com.vaadin.flow.server.streams.DownloadEvent#inline(String)},
+         * or sets the header directly on the response, keeps its own choice.
          * <p>
          * The value can be changed while the resource is registered, and
          * applies to the requests that arrive after that. The URL of the

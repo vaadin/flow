@@ -159,7 +159,7 @@ class ImageTest extends ComponentTest {
     @Test
     void byteArrayConstructor_typicalUseCase() throws Exception {
         Element element = mock(Element.class);
-        byte[] imageData = new byte[] { 1, 2, 3, 4, 5 };
+        byte[] imageData = { 1, 2, 3, 4, 5 };
 
         class TestImage extends Image {
             public TestImage(byte[] content, String name) {
@@ -182,7 +182,7 @@ class ImageTest extends ComponentTest {
     @Test
     void byteArrayConstructor_withExplicitMimeType() throws Exception {
         Element element = mock(Element.class);
-        byte[] imageData = new byte[] { 1, 2, 3, 4, 5 };
+        byte[] imageData = { 1, 2, 3, 4, 5 };
 
         class TestImage extends Image {
             public TestImage(byte[] content, String name, String mimeType) {
@@ -205,7 +205,7 @@ class ImageTest extends ComponentTest {
     @Test
     void byteArrayConstructor_withNullMimeType() throws Exception {
         Element element = mock(Element.class);
-        byte[] imageData = new byte[] { 1, 2, 3, 4, 5 };
+        byte[] imageData = { 1, 2, 3, 4, 5 };
 
         class TestImage extends Image {
             public TestImage(byte[] content, String name, String mimeType) {

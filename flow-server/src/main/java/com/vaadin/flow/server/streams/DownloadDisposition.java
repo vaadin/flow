@@ -22,9 +22,12 @@ package com.vaadin.flow.server.streams;
  * Whether content is shown or saved depends on where it is used, not on what it
  * is: the same PDF can be shown in a new browser tab and saved from a download
  * link. The place that registers a {@link DownloadHandler}, such as a component
- * that shows an image, sets the disposition on the registered resource. The
- * handler then keeps the file name it gives and the type is taken from the
- * disposition.
+ * that shows an image, sets the disposition on the registered resource. A
+ * handler that gives only a file name, with
+ * {@link DownloadEvent#fileName(String)} as the built-in handlers do, is then
+ * served with that type. A handler that asks for a type itself, with
+ * {@link DownloadEvent#attachment(String)} or
+ * {@link DownloadEvent#inline(String)}, keeps its choice.
  *
  * @see com.vaadin.flow.server.StreamResourceRegistry.ElementStreamResource
  */
