@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.CookieManager;
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
@@ -33,7 +34,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Checks which Content Security Policy a response carries when both Vaadin, in
- * the {@code strict} mode, and Spring Security are set to send one.
+ * the {@code strict} mode, and Spring Security are set to send one, and that
+ * the other headers of Spring Security reach the bootstrap page.
  */
 public class SpringSecurityPolicyIT {
 
@@ -73,6 +75,21 @@ public class SpringSecurityPolicyIT {
                     + PolicyAdjuster.SOURCE;
             assertTrue(List.of(policy.split("; ")).contains(directive),
                     "No " + directive + " in the policy: " + policy);
+        }
+    }
+
+    @Test
+    public void bootstrapPage_carriesTheOtherHeadersOfSpringSecurity()
+            throws Exception {
+        try (HttpClient client = HttpClient.newHttpClient()) {
+            HttpHeaders headers = fetch(client, "/").headers();
+
+            // Spring Security writes these only when the response is
+            // committed, which the forward to the Vaadin servlet must let it
+            // see
+            assertEquals(List.of("nosniff"),
+                    headers.allValues("X-Content-Type-Options"));
+            assertEquals(List.of("DENY"), headers.allValues("X-Frame-Options"));
         }
     }
 

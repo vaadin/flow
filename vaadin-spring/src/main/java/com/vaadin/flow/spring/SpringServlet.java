@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring;
 
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -109,6 +110,29 @@ public class SpringServlet extends VaadinServlet {
     protected void service(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
         super.service(wrapRequest(request), response);
+        if (request.getDispatcherType() == DispatcherType.FORWARD
+                && !request.isAsyncStarted()) {
+            closeResponse(response);
+        }
+    }
+
+    /**
+     * Closes a response after a forward through the response the servlet was
+     * given, as the container ends the response once the forward returns
+     * anyway. Wrappers of filters earlier in the chain, such as the one Spring
+     * Security writes its headers with, only see the response being committed
+     * when it happens through them. Tomcat 11 by default ends a forwarded
+     * response on the innermost response, past those wrappers, so their headers
+     * would be dropped.
+     */
+    private static void closeResponse(HttpServletResponse response)
+            throws IOException {
+        try {
+            response.getOutputStream().close();
+        } catch (IllegalStateException e) {
+            // The response was written through the writer
+            response.getWriter().close();
+        }
     }
 
     @Override
