@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.mvc.ServletForwardingController;
@@ -138,15 +140,26 @@ public class SpringServlet extends VaadinServlet {
         try {
             response.getOutputStream().close();
         } catch (IllegalStateException e) {
-            // The response was written through the writer
+            getLogger().trace(
+                    "The forwarded response was written through the writer", e);
             try {
                 response.getWriter().close();
-            } catch (IOException | IllegalStateException ignore) {
-                // Ignored like the container does when it closes the response
+            } catch (IOException | IllegalStateException closeException) {
+                logIgnoredCloseFailure(closeException);
             }
-        } catch (IOException ignore) {
-            // The client went away; the container ignores this too
+        } catch (IOException e) {
+            logIgnoredCloseFailure(e);
         }
+    }
+
+    private static void logIgnoredCloseFailure(Exception e) {
+        // The container ignores a failed close too, typically a client that
+        // went away
+        getLogger().debug("Unable to close the forwarded response", e);
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(SpringServlet.class);
     }
 
     @Override
