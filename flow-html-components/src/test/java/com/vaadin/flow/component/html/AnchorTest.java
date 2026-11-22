@@ -403,6 +403,7 @@ class AnchorTest extends ComponentTest {
                 "Inline download handlers should not add download attribute");
     }
 
+    @SuppressWarnings("removal")
     @Test
     void anchorWithLinkModeDownload_downloadAttributeIsSet() throws Exception {
         UI attachTo = createUiWithDefaultSafeUrlSchemes();
@@ -477,6 +478,7 @@ class AnchorTest extends ComponentTest {
         assertFalse(anchor.isDownload());
     }
 
+    @SuppressWarnings("removal")
     @ParameterizedTest
     @CsvSource({ "false, true", "false, false", "true, true", "true, false" })
     void setDownload_beforeOrAfterSetHref_decidesAttributeAndHowContentIsServed(
@@ -564,6 +566,7 @@ class AnchorTest extends ComponentTest {
                 "Custom download handlers should by default add download attribute");
     }
 
+    @SuppressWarnings("removal")
     @Test
     void customDownloadHandler_nullType_constructorSetsDownloadMode()
             throws Exception {
