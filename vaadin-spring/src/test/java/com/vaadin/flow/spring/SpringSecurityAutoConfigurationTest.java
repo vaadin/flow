@@ -121,14 +121,22 @@ class SpringSecurityAutoConfigurationTest {
     }
 
     @Test
-    void componentScanOfSecurityPackage_withoutSpringSecurity_startsWithoutRequestCache() {
+    void componentScanOfSecurityPackage_registersNoRequestCache() {
+        new WebApplicationContextRunner()
+                .withUserConfiguration(ScanSecurityPackage.class)
+                .run(context -> assertThat(context).hasNotFailed()
+                        .doesNotHaveBean(VaadinDefaultRequestCache.class));
+    }
+
+    @Test
+    void componentScanOfSecurityPackage_withoutSpringSecurity_startsContext() {
+        // Hides both the classes and the class files that the scan reads
         new WebApplicationContextRunner()
                 .withClassLoader(new FilteredClassLoader(name -> name
                         .startsWith("org.springframework.security.")
                         || name.startsWith("org/springframework/security/")))
                 .withUserConfiguration(ScanSecurityPackage.class)
-                .run(context -> assertThat(context).hasNotFailed()
-                        .doesNotHaveBean(VaadinDefaultRequestCache.class));
+                .run(context -> assertThat(context).hasNotFailed());
     }
 
     @Test
