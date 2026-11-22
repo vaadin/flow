@@ -154,8 +154,12 @@ public class HtmlObject extends HtmlContainer implements
      * {@link DownloadHandler} callback for providing an object data and type
      * value.
      *
-     * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it.
+     * The content is served inline, so that the browser shows it: a file name
+     * the handler sets with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
+     * is sent with a <code>Content-Disposition: inline</code> header instead of
+     * <code>attachment</code>. A header the handler sets directly on the
+     * response is left as is.
      *
      * @see #setData(DownloadHandler)
      * @see #setType(String)
@@ -175,8 +179,12 @@ public class HtmlObject extends HtmlContainer implements
      * Creates a new <code>&lt;object&gt;</code> component with given data
      * resource, type value and "param" components.
      *
-     * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it.
+     * The content is served inline, so that the browser shows it: a file name
+     * the handler sets with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
+     * is sent with a <code>Content-Disposition: inline</code> header instead of
+     * <code>attachment</code>. A header the handler sets directly on the
+     * response is left as is.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -201,8 +209,12 @@ public class HtmlObject extends HtmlContainer implements
      * Creates a new <code>&lt;object&gt;</code> component with given data
      * resource, type value and "param" components.
      *
-     * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it.
+     * The content is served inline, so that the browser shows it: a file name
+     * the handler sets with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
+     * is sent with a <code>Content-Disposition: inline</code> header instead of
+     * <code>attachment</code>. A header the handler sets directly on the
+     * response is left as is.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -225,8 +237,12 @@ public class HtmlObject extends HtmlContainer implements
      * Creates a new <code>&lt;object&gt;</code> component with given data
      * resource, type value and "param" components.
      *
-     * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it.
+     * The content is served inline, so that the browser shows it: a file name
+     * the handler sets with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
+     * is sent with a <code>Content-Disposition: inline</code> header instead of
+     * <code>attachment</code>. A header the handler sets directly on the
+     * response is left as is.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -320,8 +336,12 @@ public class HtmlObject extends HtmlContainer implements
      * Sets the URL for {@link DownloadHandler} callback as "data" attribute
      * value.
      *
-     * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it.
+     * The content is served inline, so that the browser shows it: a file name
+     * the handler sets with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
+     * is sent with a <code>Content-Disposition: inline</code> header instead of
+     * <code>attachment</code>. A header the handler sets directly on the
+     * response is left as is.
      *
      * @param data
      *            a "data" attribute value, not {@code null}
