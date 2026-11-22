@@ -250,6 +250,8 @@ class DownloadEventTest {
             // built-in handlers marked inline default to inline
             "fileNameInlineByDefault, q3.pdf, null, inline; filename=\"q3.pdf\"",
             "fileNameInlineByDefault, q3.pdf, ATTACHMENT, attachment; filename=\"q3.pdf\"",
+            "fileNameAttachmentByDefault, q3.pdf, null, attachment; filename=\"q3.pdf\"",
+            "fileNameAttachmentByDefault, q3.pdf, INLINE, inline; filename=\"q3.pdf\"",
             // explicit choices of the handler win over the disposition
             "attachment, q3.pdf, INLINE, attachment; filename=\"q3.pdf\"",
             "attachment, null, null, attachment",
@@ -267,6 +269,8 @@ class DownloadEventTest {
         case "fileName" -> downloadEvent.fileName(fileName);
         case "fileNameInlineByDefault" ->
             downloadEvent.fileName(fileName, true);
+        case "fileNameAttachmentByDefault" ->
+            downloadEvent.fileName(fileName, false);
         case "attachment" -> downloadEvent.attachment(fileName);
         case "setFileName" -> downloadEvent.setFileName(fileName);
         case "inline" -> downloadEvent.inline(fileName);
