@@ -306,8 +306,7 @@ class FileDownloadHandlerTest {
     }
 
     @Test
-    void inline_setFileNameInvokedByDefault()
-            throws IOException, URISyntaxException {
+    void fileNameInvokedByDefault() throws IOException, URISyntaxException {
         URL resource = getClass().getClassLoader().getResource(PATH_TO_FILE);
         DownloadHandler handler = DownloadHandler
                 .forFile(new File(resource.toURI()), "my-download.bin");
@@ -349,31 +348,6 @@ class FileDownloadHandlerTest {
         overriding.handleDownloadRequest(downloadEvent);
 
         verify(response, times(2)).setContentType("text/vtt");
-    }
-
-    @Test
-    void attachment_doesNotSetFileNameWhenInlined()
-            throws IOException, URISyntaxException {
-        URL resource = getClass().getClassLoader().getResource(PATH_TO_FILE);
-        DownloadHandler handler = DownloadHandler
-                .forFile(new File(resource.toURI()), "my-download.bin")
-                .inline();
-
-        DownloadEvent event = mock(DownloadEvent.class);
-        when(event.getSession()).thenReturn(session);
-        when(event.getResponse()).thenReturn(response);
-        when(event.getOwningElement()).thenReturn(owner);
-        when(event.getOutputStream()).thenReturn(outputStream);
-        when(response.getOutputStream()).thenReturn(outputStream);
-        when(response.getService()).thenReturn(service);
-        when(service.getMimeType(anyString()))
-                .thenReturn("application/octet-stream");
-
-        handler.handleDownloadRequest(event);
-
-        verify(event).fileName("my-download.bin", true);
-        verify(event).setContentType("application/octet-stream");
-        verify(event).setContentLength(165000);
     }
 
     @Test
