@@ -1,0 +1,45 @@
+# Keeps one comment on the current pull request up to date: the comment that
+# starts with the marker is replaced with the body, or, when there is none
+# yet, a new comment is posted, but only when the change is worth reporting.
+# The report keeps being updated afterwards, also when the change goes away
+# again, so that the comment never shows a stale difference.
+#
+# Needs a token that can write pull requests, which GitHub does not hand to
+# pull requests from forks or to runs that Dependabot triggers.
+name: Update the sticky pull request comment
+description: Replaces the pull request comment that starts with a marker, or posts it when there is a change
+inputs:
+  marker:
+    description: The HTML comment the body starts with, which identifies the comment
+    required: true
+  body-file:
+    description: The file holding the comment body
+    required: true
+  changed:
+    description: Whether to post a new comment when there is none to update yet
+    required: true
+  token:
+    description: The token to comment with
+    default: ${{ github.token }}
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        MARKER: ${{ inputs.marker }}
+        BODY_FILE: ${{ inputs.body-file }}
+        CHANGED: ${{ inputs.changed }}
+        REPO: ${{ github.repository }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: |
+        existing=$(gh api "repos/$REPO/issues/$PR_NUMBER/comments" --paginate \
+          --jq "[.[] | select(.body | startswith(\"$MARKER\")) | .id] | first // empty")
+        existing=${existing%%$'\n'*}
+        if [ -n "$existing" ]; then
+          gh api --method PATCH "repos/$REPO/issues/comments/$existing" -F "body=@$BODY_FILE"
+        elif [ "$CHANGED" = "true" ]; then
+          gh api "repos/$REPO/issues/$PR_NUMBER/comments" -F "body=@$BODY_FILE"
+        else
+          echo "No change to report, and no earlier comment to update"
+        fi
