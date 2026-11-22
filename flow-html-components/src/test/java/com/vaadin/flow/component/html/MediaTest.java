@@ -57,7 +57,8 @@ abstract class MediaTest extends ComponentTest {
         whitelistProperty("controlsVisible");
         addProperty("autoplay", boolean.class, false, true, false, true);
         addProperty("loop", boolean.class, false, true, false, true);
-        addProperty("muted", boolean.class, false, true, false, true);
+        // sets both the attribute and the property; covered by its own test
+        whitelistProperty("muted");
         addProperty("preload", Media.Preload.class, null,
                 Media.Preload.METADATA, false, true);
     }
@@ -128,6 +129,23 @@ abstract class MediaTest extends ComponentTest {
             assertTrue(media.isControlsVisible());
             assertTrue(media.getElement().hasAttribute("controls"));
         }
+    }
+
+    @Test
+    void setMuted_setsThePropertyAsWellAsTheAttribute() {
+        Media media = (Media) getComponent();
+        assertFalse(media.isMuted());
+
+        // the attribute alone does not mute an element created by script
+        media.setMuted(true);
+        assertTrue(media.isMuted());
+        assertTrue(media.getElement().hasAttribute("muted"));
+        assertTrue(media.getElement().getProperty("muted", false));
+
+        media.setMuted(false);
+        assertFalse(media.isMuted());
+        assertFalse(media.getElement().hasAttribute("muted"));
+        assertFalse(media.getElement().getProperty("muted", true));
     }
 
     @Test

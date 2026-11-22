@@ -271,23 +271,31 @@ public abstract class Media extends HtmlComponent
     }
 
     /**
-     * Sets whether the recording is silent when the player is first shown.
+     * Sets whether the player is muted. The change takes effect right away,
+     * also on a player that is already playing, so this is what makes a player
+     * {@link #setAutoplay(boolean) autoplay}: browsers only start playback on
+     * their own when the player is muted.
      * <p>
-     * This is the initial state only. Once the visitor has unmuted the player
-     * through the browser's controls, the browser stops reading this attribute,
-     * and setting it again does not mute the player a second time.
+     * The visitor can still mute and unmute the player through the browser's
+     * controls. That change is not sent to the server, so {@link #isMuted()}
+     * keeps returning the value set here, and setting the same value again does
+     * not undo what the visitor chose.
      *
      * @param muted
-     *            <code>true</code> to start the player muted
+     *            <code>true</code> to mute the player
      */
     public void setMuted(boolean muted) {
+        // The attribute only sets the default muted state, which the browser
+        // applies when it parses HTML, not to an element created by script as
+        // Flow does. The property mutes the player itself.
         getElement().setAttribute(MUTED_ATTRIBUTE, muted);
+        getElement().setProperty(MUTED_ATTRIBUTE, muted);
     }
 
     /**
-     * Gets whether the player starts muted.
+     * Gets whether the player has been muted from the server.
      *
-     * @return <code>true</code> if the player starts muted
+     * @return <code>true</code> if the player has been muted
      * @see #setMuted(boolean)
      */
     public boolean isMuted() {
