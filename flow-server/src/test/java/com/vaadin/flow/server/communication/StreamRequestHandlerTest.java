@@ -270,6 +270,33 @@ class StreamRequestHandlerTest {
         DownloadHandler downloadHandler = disposition == DownloadDisposition.INLINE
                 ? event -> event.setFileName("q3.pdf")
                 : event -> event.inline("q3.pdf");
+        registerDownloadResource(downloadHandler, disposition);
+
+        handler.handleRequest(session, request, response);
+
+        verify(response).setHeader("Content-Disposition",
+                (disposition == DownloadDisposition.INLINE ? "inline"
+                        : "attachment") + "; filename=\"q3.pdf\"");
+    }
+
+    @Test
+    void dispositionChangedAfterRegistration_appliesToLaterRequests()
+            throws IOException {
+        StreamResourceRegistry.ElementStreamResource res = registerDownloadResource(
+                event -> event.setFileName("q3.pdf"), null);
+
+        handler.handleRequest(session, request, response);
+        verify(response).setHeader("Content-Disposition",
+                "attachment; filename=\"q3.pdf\"");
+
+        res.setDisposition(DownloadDisposition.INLINE);
+        handler.handleRequest(session, request, response);
+        verify(response).setHeader("Content-Disposition",
+                "inline; filename=\"q3.pdf\"");
+    }
+
+    private StreamResourceRegistry.ElementStreamResource registerDownloadResource(
+            DownloadHandler downloadHandler, DownloadDisposition disposition) {
         Map<String, Object> attributes = new HashMap<>();
         doAnswer(invocation -> attributes.put(invocation.getArgument(0),
                 invocation.getArgument(1))).when(request)
@@ -289,12 +316,7 @@ class StreamRequestHandlerTest {
         when(request.getPathInfo()).thenReturn(String.format("/%s%s/%s/%s",
                 DYN_RES_PREFIX, ui.getId().orElse("-1"), res.getId(),
                 StreamRequestHandler.sanitizeNameForUrl(res.getName())));
-
-        handler.handleRequest(session, request, response);
-
-        verify(response).setHeader("Content-Disposition",
-                (disposition == DownloadDisposition.INLINE ? "inline"
-                        : "attachment") + "; filename=\"q3.pdf\"");
+        return res;
     }
 
     private VaadinResponse stateNodeStatesTestInternal(boolean enabled,
