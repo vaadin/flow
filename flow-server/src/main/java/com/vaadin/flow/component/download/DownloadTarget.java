@@ -39,6 +39,8 @@ public enum DownloadTarget {
      * Content from a handler is served inline for this use only, unless the
      * handler calls
      * {@link com.vaadin.flow.server.streams.DownloadEvent#attachment(String)}
+     * or the deprecated
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
      * itself, see {@link com.vaadin.flow.server.streams.DownloadDisposition}.
      * The handler itself is not changed, so the same instance can also be used
      * where the content is downloaded.
