@@ -185,7 +185,9 @@ public class StreamResourceRegistry implements Serializable {
 
         /**
          * Creates a resource that serves the content of a download handler with
-         * the given disposition, whatever disposition the handler asks for.
+         * the given disposition. The disposition applies when the handler gives
+         * only a file name; a handler that asks for inline or attachment itself
+         * keeps its choice, see {@link #setDisposition(DownloadDisposition)}.
          *
          * @param elementRequestHandler
          *            the handler to serve, not {@code null}
