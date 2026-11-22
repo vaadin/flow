@@ -77,8 +77,7 @@ public class Source extends HtmlComponent {
      * serves.
      * <p>
      * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadDisposition#INLINE}.
+     * header, so that the browser shows it.
      *
      * @param downloadHandler
      *            the download handler that serves the media file, not
@@ -115,8 +114,7 @@ public class Source extends HtmlComponent {
      * {@link DownloadHandler} callback.
      * <p>
      * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadDisposition#INLINE}.
+     * header, so that the browser shows it.
      * <p>
      * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
      * that the media file is still served when the media component, or one of

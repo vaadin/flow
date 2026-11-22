@@ -108,8 +108,7 @@ public class Image extends HtmlComponent
      * default empty string which is not retained with {@link #setAlt(String)}.
      *
      * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadDisposition#INLINE}.
+     * header, so that the browser shows it.
      *
      * @param downloadHandler
      *            the download handler callback that provides an image data, not
@@ -235,8 +234,7 @@ public class Image extends HtmlComponent
      * callback.
      *
      * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadDisposition#INLINE}.
+     * header, so that the browser shows it.
      *
      * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
      * that the image is still served when the component, or one of its

@@ -155,8 +155,7 @@ public class HtmlObject extends HtmlContainer implements
      * value.
      *
      * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadDisposition#INLINE}.
+     * header, so that the browser shows it.
      *
      * @see #setData(DownloadHandler)
      * @see #setType(String)
@@ -177,8 +176,7 @@ public class HtmlObject extends HtmlContainer implements
      * resource, type value and "param" components.
      *
      * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadDisposition#INLINE}.
+     * header, so that the browser shows it.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -204,8 +202,7 @@ public class HtmlObject extends HtmlContainer implements
      * resource, type value and "param" components.
      *
      * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadDisposition#INLINE}.
+     * header, so that the browser shows it.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -229,8 +226,7 @@ public class HtmlObject extends HtmlContainer implements
      * resource, type value and "param" components.
      *
      * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadDisposition#INLINE}.
+     * header, so that the browser shows it.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -325,8 +321,7 @@ public class HtmlObject extends HtmlContainer implements
      * value.
      *
      * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadDisposition#INLINE}.
+     * header, so that the browser shows it.
      *
      * @param data
      *            a "data" attribute value, not {@code null}

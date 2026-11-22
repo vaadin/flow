@@ -208,8 +208,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * resource from server.
      *
      * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadDisposition#INLINE}.
+     * header, so that the browser shows it.
      *
      * @param downloadHandler
      *            the download handler callback that provides a resource from
@@ -287,8 +286,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * {@link DownloadHandler} callback.
      *
      * The content is served with a <code>Content-Disposition: inline</code>
-     * header, so that the browser shows it. The given handler is not changed,
-     * see {@link DownloadDisposition#INLINE}.
+     * header, so that the browser shows it.
      *
      * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
      * that the iframe content is still served when the component, or one of its
