@@ -272,14 +272,16 @@ public abstract class Media extends HtmlComponent
 
     /**
      * Sets whether the player is muted. The change takes effect right away,
-     * also on a player that is already playing, so this is what makes a player
-     * {@link #setAutoplay(boolean) autoplay}: browsers only start playback on
-     * their own when the player is muted.
+     * also on a player that is already playing. A player that should
+     * {@link #setAutoplay(boolean) autoplay} usually has to be muted, because
+     * most browsers block autoplay with sound.
      * <p>
      * The visitor can still mute and unmute the player through the browser's
      * controls. That change is not sent to the server, so {@link #isMuted()}
-     * keeps returning the value set here, and setting the same value again does
-     * not undo what the visitor chose.
+     * keeps returning the value set here. Setting the same value again does not
+     * undo what the visitor chose, but the value set here is applied again
+     * whenever the browser creates the element anew, such as when the component
+     * is removed and added back.
      *
      * @param muted
      *            <code>true</code> to mute the player
