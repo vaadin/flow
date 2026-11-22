@@ -431,6 +431,10 @@ public class Anchor extends HtmlContainer
      * remove it and serve the content inline. This is the same choice as
      * {@link #setDownload(boolean)}: it is kept for handlers set later with
      * {@link #setHref(DownloadHandler)}.
+     * <p>
+     * Content served inline is rendered by the browser on the application's
+     * origin. Do not serve untrusted content, such as user uploaded HTML or SVG
+     * files, inline.
      *
      * @param downloadHandler
      *            the callback that handles data download, not null
@@ -479,6 +483,10 @@ public class Anchor extends HtmlContainer
      * choice is kept when the handler is replaced with
      * {@link #setHref(DownloadHandler)}, whether it is made before or after the
      * handler is set.
+     * <p>
+     * Content served inline is rendered by the browser on the application's
+     * origin. Do not serve untrusted content, such as user uploaded HTML or SVG
+     * files, inline.
      *
      * @param download
      *            {@code true} to add the 'download' attribute and {@code false}
