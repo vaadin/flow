@@ -507,6 +507,57 @@ class ElementEffectTest {
     }
 
     @Test
+    void effect_sharedSignalUpdatedOutsideSessionTransactionBeforeAttach_reRunsBeforeResponse() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+        var ui = new MockUI(session);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> observed = new ArrayList<>();
+        TestComponent component = new TestComponent();
+        Signal.effect(component, () -> observed.add(signal.get()));
+
+        // Another thread changes the signal while the session transaction
+        // still caches "initial", and the component is attached afterwards
+        Signal.runWithoutTransaction(() -> signal.set("changed"));
+        ui.add(component);
+
+        // Run the access tasks the way the UIDL writer does before writing
+        // the response, with the session still locked
+        service.runPendingAccessTasks(session);
+
+        assertEquals(List.of("initial", "changed"), observed);
+    }
+
+    @Test
+    void effect_createdAfterSharedSignalUpdatedOutsideSessionTransaction_reRunsBeforeResponse() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+        var ui = new MockUI(session);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        // Primes the session transaction's repeatable read with "initial"
+        signal.peek();
+        Signal.runWithoutTransaction(() -> signal.set("changed"));
+
+        List<String> observed = new ArrayList<>();
+        Signal.effect(ui, () -> observed.add(signal.get()));
+        assertEquals(List.of("initial"), observed);
+
+        service.runPendingAccessTasks(session);
+
+        assertEquals(List.of("initial", "changed"), observed);
+    }
+
+    @Test
     void effect_throwExceptionWhenRunningDirectly_delegatedToErrorHandler() {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);

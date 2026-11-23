@@ -22,8 +22,10 @@ import java.util.function.Consumer;
 
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.function.SerializableExecutor;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.signals.SignalCommand;
+import com.vaadin.flow.signals.SignalEnvironment;
 import com.vaadin.flow.signals.function.TransactionTask;
 import com.vaadin.flow.signals.function.ValueSupplier;
 import com.vaadin.flow.signals.operations.SignalOperation;
@@ -90,10 +92,13 @@ public abstract class Transaction implements Serializable {
 
         private final Map<SignalTree, MutableTreeRevision> trees = new HashMap<>();
         private final Transaction outer;
+        private final @Nullable SerializableExecutor freshReadExecutor;
 
-        public RepeatableReadTransaction(Transaction outer) {
+        public RepeatableReadTransaction(Transaction outer,
+                @Nullable SerializableExecutor freshReadExecutor) {
             assert outer != null;
             this.outer = outer;
+            this.freshReadExecutor = freshReadExecutor;
         }
 
         private MutableTreeRevision getOrCreateReadRevision(SignalTree tree) {
@@ -118,6 +123,15 @@ public abstract class Transaction implements Serializable {
         @Override
         public TreeRevision read(SignalTree tree) {
             return getOrCreateReadRevision(tree);
+        }
+
+        @Override
+        public void runWithFreshReads(Runnable task) {
+            if (freshReadExecutor != null) {
+                freshReadExecutor.execute(task);
+            } else {
+                super.runWithFreshReads(task);
+            }
         }
     }
 
@@ -173,7 +187,7 @@ public abstract class Transaction implements Serializable {
         WRITE_THROUGH {
             @Override
             Transaction create(Transaction outer) {
-                return new RepeatableReadTransaction(outer);
+                return new RepeatableReadTransaction(outer, null);
             }
         };
 
@@ -437,6 +451,24 @@ public abstract class Transaction implements Serializable {
     }
 
     /**
+     * Creates a new write-through transaction that provides repeatable reads
+     * while applying commands immediately to the underlying tree, and that uses
+     * the given executor for {@link #runWithFreshReads(Runnable)}. This is
+     * intended for use as a session-scoped fallback transaction that is
+     * discarded before the executor runs its tasks.
+     *
+     * @param freshReadExecutor
+     *            the executor that runs tasks in a context where this
+     *            transaction no longer applies, not <code>null</code>
+     * @return a new write-through transaction, not <code>null</code>
+     */
+    public static Transaction createWriteThrough(
+            SerializableExecutor freshReadExecutor) {
+        assert freshReadExecutor != null;
+        return new RepeatableReadTransaction(ROOT, freshReadExecutor);
+    }
+
+    /**
      * Includes the given command to the given tree in the context of this
      * transaction and optionally also sets the command to be applied to the
      * underlying signal tree. Depending on the transaction type, an applied
@@ -489,6 +521,24 @@ public abstract class Transaction implements Serializable {
      * @return a tree revision to read from, not <code>null</code>
      */
     public abstract TreeRevision read(SignalTree tree);
+
+    /**
+     * Runs the given task in a context where this transaction doesn't hide
+     * changes that were submitted to a signal tree after this transaction
+     * started reading from it. A transaction with repeatable reads keeps
+     * returning the values it first read, so a change made by someone else in
+     * the meantime only becomes visible once the transaction no longer applies.
+     * <p>
+     * The default implementation runs the task through the
+     * {@link SignalEnvironment#getDefaultEffectDispatcher() default effect
+     * dispatcher}.
+     *
+     * @param task
+     *            the task to run, not <code>null</code>
+     */
+    public void runWithFreshReads(Runnable task) {
+        SignalEnvironment.getDefaultEffectDispatcher().execute(task);
+    }
 
     /**
      * Commits any staged commands in this transaction.

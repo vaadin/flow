@@ -18,6 +18,7 @@ package com.vaadin.flow.signals.shared;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.concurrent.Executor;
+import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
 import tools.jackson.core.JacksonException;
@@ -467,7 +468,13 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
 
             @Override
             public Registration onNextChange(TransientListener listener) {
+                return listen(listener, true);
+            }
+
+            private Registration listen(TransientListener listener,
+                    boolean deliverHiddenChange) {
                 SignalTree tree = tree();
+                Transaction transaction = Transaction.getCurrent();
 
                 /*
                  * Lock the tree to eliminate the risk that it processes a
@@ -492,6 +499,9 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
                             return () -> {
                             };
                         }
+                    } else if (deliverHiddenChange
+                            && isChangeHidden(transaction, tree)) {
+                        return listenWithFreshReads(transaction, listener);
                     }
 
                     // avoid lambda to allow proper deserialization
@@ -522,6 +532,35 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
                     tree.getLock().unlock();
                 }
 
+            }
+
+            /*
+             * A repeatable-read transaction, such as the one used while a
+             * session is locked, keeps returning the value it first read even
+             * after someone else has changed the tree. The tree only notifies
+             * about later changes, so a listener added now would never learn
+             * about that change.
+             */
+            private boolean isChangeHidden(Transaction transaction,
+                    SignalTree tree) {
+                Data latestData = data(tree.submitted());
+                return data(transaction) != null && latestData != null
+                        && !Objects.equals(originalValue,
+                                usageChangeValue(latestData));
+            }
+
+            /*
+             * Listens again from a context where the hidden change is visible
+             * so that the listener runs there. Listening again from that
+             * context doesn't defer a second time, since a context that still
+             * can't see the change would otherwise defer forever.
+             */
+            private Registration listenWithFreshReads(Transaction transaction,
+                    TransientListener listener) {
+                DeferredRegistration registration = new DeferredRegistration();
+                transaction.runWithFreshReads(() -> registration
+                        .resolve(() -> listen(listener, false)));
+                return registration;
             }
         };
     }
@@ -722,5 +761,47 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
         assert node instanceof Data;
 
         return fromJson(((Data) node).value(), valueType);
+    }
+
+    /**
+     * A registration for a listener that is added later, from another context.
+     * Removing it before the listener has been added prevents adding it.
+     */
+    private static class DeferredRegistration implements Registration {
+        private @Nullable Registration registration;
+        private boolean removed = false;
+
+        void resolve(Supplier<Registration> listen) {
+            synchronized (this) {
+                if (removed) {
+                    return;
+                }
+            }
+            // Listen without holding the monitor since it locks the tree
+            Registration newRegistration = listen.get();
+            boolean removeNow;
+            synchronized (this) {
+                removeNow = removed;
+                if (!removeNow) {
+                    registration = newRegistration;
+                }
+            }
+            if (removeNow) {
+                newRegistration.remove();
+            }
+        }
+
+        @Override
+        public void remove() {
+            Registration toRemove;
+            synchronized (this) {
+                removed = true;
+                toRemove = registration;
+                registration = null;
+            }
+            if (toRemove != null) {
+                toRemove.remove();
+            }
+        }
     }
 }

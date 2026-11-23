@@ -748,9 +748,26 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     Transaction getOrCreateSessionScopedTransaction() {
         assert hasLock();
         if (sessionScopedTransaction == null) {
-            sessionScopedTransaction = Transaction.createWriteThrough();
+            sessionScopedTransaction = Transaction
+                    .createWriteThrough(this::runInNextAccess);
         }
         return sessionScopedTransaction;
+    }
+
+    /*
+     * Runs a task once the session-scoped transaction has been cleared, which
+     * happens before each pending access task. Queued through the current UI
+     * when there is one: an effect of that UI that the task triggers then runs
+     * right away in the same access instead of being queued once more, so its
+     * changes are included in the response that is being prepared.
+     */
+    private void runInNextAccess(Runnable task) {
+        UI ui = UI.getCurrent();
+        if (ui != null && ui.getSession() == this) {
+            ui.access(task::run);
+        } else {
+            access(task::run);
+        }
     }
 
     /**
