@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-tests</artifactId>
-    <version>25.4-SNAPSHOT</version>
+    <version>25.5-SNAPSHOT</version>
   </parent>
   <artifactId>flow-test-csp-strict-spring-security</artifactId>
   <packaging>jar</packaging>
@@ -111,6 +111,14 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>${spring.boot.version}</version>
+        <!-- A fixed value instead of the ${vaadin.contentSecurityPolicy} that the flow-tests
+             parent passes, so that -Dvaadin.contentSecurityPolicy=... for the whole suite does not
+             change the one setting this module is about -->
+        <configuration>
+          <systemPropertyVariables>
+            <vaadin.contentSecurityPolicy>strict</vaadin.contentSecurityPolicy>
+          </systemPropertyVariables>
+        </configuration>
         <executions>
           <execution>
             <id>pre-integration-test</id>

@@ -28,10 +28,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.context.assertj.AssertableWebApplicationContext;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -61,6 +65,7 @@ import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
 import com.vaadin.flow.spring.security.SpringAccessPathChecker;
 import com.vaadin.flow.spring.security.SpringNavigationAccessControl;
 import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategy;
+import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;
 import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -112,7 +117,28 @@ class SpringSecurityAutoConfigurationTest {
             assertThat(context).hasSingleBean(NavigationAccessControl.class);
             assertThat(context).getBean(NavigationAccessControl.class)
                     .isInstanceOf(SpringNavigationAccessControl.class);
+
+            assertThat(context).hasSingleBean(VaadinDefaultRequestCache.class);
         });
+    }
+
+    @Test
+    void componentScanOfSecurityPackage_registersNoRequestCache() {
+        new WebApplicationContextRunner()
+                .withUserConfiguration(ScanSecurityPackage.class)
+                .run(context -> assertThat(context).hasNotFailed()
+                        .doesNotHaveBean(VaadinDefaultRequestCache.class));
+    }
+
+    @Test
+    void componentScanOfSecurityPackage_withoutSpringSecurity_startsContext() {
+        // Hides both the classes and the class files that the scan reads
+        new WebApplicationContextRunner()
+                .withClassLoader(new FilteredClassLoader(name -> name
+                        .startsWith("org.springframework.security.")
+                        || name.startsWith("org/springframework/security/")))
+                .withUserConfiguration(ScanSecurityPackage.class)
+                .run(context -> assertThat(context).hasNotFailed());
     }
 
     @Test
@@ -353,6 +379,12 @@ class SpringSecurityAutoConfigurationTest {
             }
         });
         assertNotNull(deserialized, "Deserialized object is null");
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    // Skip test classes of the package, they need Spring Security
+    @ComponentScan(basePackages = "com.vaadin.flow.spring.security", excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*Test(\\$.*)?"))
+    static class ScanSecurityPackage {
     }
 
     @TestConfiguration(proxyBeanMethods = false)

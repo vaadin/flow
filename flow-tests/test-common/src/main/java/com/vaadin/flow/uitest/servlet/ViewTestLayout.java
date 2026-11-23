@@ -88,10 +88,10 @@ public class ViewTestLayout extends Div
 
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
-        // Defer value setting until all option elements have been attached
-        UI.getCurrent().getPage().executeJs(
-                "setTimeout(function() {$0.value = $1}, 0)", viewSelect,
-                event.getLocation().getPath());
+        // Set on the server rather than with JavaScript: a JavaScript
+        // definition in this shared module would make every module that
+        // depends on it build its own frontend bundle
+        viewSelect.setProperty("value", event.getLocation().getPath());
     }
 
 }
