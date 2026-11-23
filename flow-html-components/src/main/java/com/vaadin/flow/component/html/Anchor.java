@@ -184,11 +184,10 @@ public class Anchor extends HtmlContainer
      * Sets the 'download' attribute for link when given a non-inline handler
      * implementing AbstractDownloadHandler.
      *
-     * For custom handlers the 'download' attribute is set. This does not count
-     * as a choice made with {@link #setDownload(boolean)} or an
-     * {@link AttachmentType}, so a handler set later with
-     * {@link #setHref(DownloadHandler)} sets the attribute again in the same
-     * way.
+     * For custom handlers the 'download' attribute is set. Because no choice is
+     * recorded, a handler set later with {@link #setHref(DownloadHandler)}
+     * decides the attribute itself, as if no {@link #setDownload(boolean)} or
+     * {@link AttachmentType} had been used.
      *
      * @see #setHref(DownloadHandler)
      * @see #setText(String)
@@ -223,10 +222,10 @@ public class Anchor extends HtmlContainer
      * <p>
      * Sets the {@code download} attribute for the link when given a non-inline
      * handler implementing {@link AbstractDownloadHandler}. For custom handlers
-     * the {@code download} attribute is set. This does not count as a choice
-     * made with {@link #setDownload(boolean)} or an {@link AttachmentType}, so
-     * a handler set later with {@link #setHref(DownloadHandler)} sets the
-     * attribute again in the same way.
+     * the {@code download} attribute is set. Because no choice is recorded, a
+     * handler set later with {@link #setHref(DownloadHandler)} decides the
+     * attribute itself, as if no {@link #setDownload(boolean)} or
+     * {@link AttachmentType} had been used.
      *
      * @see #setHref(DownloadHandler)
      * @see #bindText(Signal)
@@ -407,9 +406,12 @@ public class Anchor extends HtmlContainer
      *
      * If {@link #setDownload(boolean)} or an {@link AttachmentType} has been
      * used on this anchor, that choice is kept and decides how the content is
-     * served. Otherwise this sets the 'download' attribute for link when given
-     * a non-inline handler implementing AbstractDownloadHandler, and the
-     * handler decides how the content is served.
+     * served when the handler gives only a file name, as the built-in handlers
+     * do; a handler that calls {@code DownloadEvent.attachment}, {@code inline}
+     * or the deprecated {@code setFileName} keeps its choice. Otherwise this
+     * sets the 'download' attribute for link when given a non-inline handler
+     * implementing AbstractDownloadHandler, and the handler decides how the
+     * content is served.
      *
      * @param downloadHandler
      *            the callback that handles data download, not null
@@ -441,7 +443,10 @@ public class Anchor extends HtmlContainer
      * LinkMode determines if the attribute `download` should be set or not.
      * {@link AttachmentType#DOWNLOAD} will set the download attribute and serve
      * the content as an attachment, where as {@link AttachmentType#INLINE} will
-     * remove it and serve the content inline. This is the same choice as
+     * remove it and serve the content inline. This applies when the handler
+     * gives only a file name, as the built-in handlers do; a handler that calls
+     * {@code DownloadEvent.attachment}, {@code inline} or the deprecated
+     * {@code setFileName} keeps its choice. This is the same choice as
      * {@link #setDownload(boolean)}: it is kept for handlers set later with
      * {@link #setHref(DownloadHandler)}.
      * <p>
