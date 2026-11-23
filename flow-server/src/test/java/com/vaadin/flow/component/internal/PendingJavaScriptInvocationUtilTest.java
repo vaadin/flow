@@ -57,9 +57,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -242,12 +244,54 @@ class PendingJavaScriptInvocationUtilTest {
     }
 
     @Test
-    void checkUndeliveredInvocations_uiWithoutSession_doesNotThrow() {
-        MockUI ui = new MockUI();
-        ui.getInternals().setSession(null);
+    void sessionUnlock_failingCheck_otherUIsStillCheckedAndLockReleased() {
+        AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
+                new MockVaadinServletService());
+        MockUI failing = new MockUI(session) {
+            @Override
+            public int getPollInterval() {
+                throw new IllegalStateException("Simulated failure");
+            }
+        };
+        MockUI other = new MockUI(session);
+        TestComponent failingComponent = initInSession(failing, 1);
+        TestComponent otherComponent = initInSession(other, 2);
 
-        assertDoesNotThrow(
-                ui.getInternals()::checkUndeliveredJavaScriptInvocations);
+        for (int hold = 0; hold < 2; hold++) {
+            executeJs(failingComponent, WARNING_THRESHOLD);
+            executeJs(otherComponent, WARNING_THRESHOLD);
+            assertDoesNotThrow(session::unlock);
+            assertFalse(session.hasLock(), "the lock should be released");
+            session.lock();
+        }
+
+        assertTrue(isLogged(other, PileUp.NO_DELIVERY));
+        assertFalse(isLogged(failing, PileUp.NO_DELIVERY));
+    }
+
+    @Test
+    void sessionUnlock_automaticPush_checkedAfterThePush() {
+        AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
+                new MockVaadinServletService());
+        MockUI ui = new MockUI(session);
+        TestComponent component = initInSession(ui, 1);
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+        PushConnection pushConnection = mock(PushConnection.class);
+        when(pushConnection.isConnected()).thenReturn(true);
+        doAnswer(invocation -> {
+            sendQueue(ui);
+            return null;
+        }).when(pushConnection).push();
+        ui.getInternals().setPushConnection(pushConnection);
+
+        for (int hold = 0; hold < 2; hold++) {
+            executeJs(component, WARNING_THRESHOLD);
+            session.unlock();
+            session.lock();
+        }
+
+        verify(pushConnection, times(2)).push();
+        assertNothingLogged(ui);
     }
 
     @Test
@@ -711,6 +755,14 @@ class PendingJavaScriptInvocationUtilTest {
         ArgumentCaptor<String> messages = ArgumentCaptor.forClass(String.class);
         verify(logger, atLeast(0)).warn(messages.capture());
         return messages.getAllValues();
+    }
+
+    private static TestComponent initInSession(MockUI ui, int uiId) {
+        ui.doInit(null, uiId, "foo");
+        ui.getSession().addUI(ui);
+        TestComponent component = new TestComponent();
+        ui.add(component);
+        return component;
     }
 
     private static void sendQueue(MockUI ui) {

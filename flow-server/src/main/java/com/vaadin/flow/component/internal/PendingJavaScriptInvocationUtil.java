@@ -163,7 +163,7 @@ final class PendingJavaScriptInvocationUtil {
                 retained.size(), top.getValue(), top.getKey().describe(),
                 newest.getOwner().describe(),
                 describeExpression(newest.getInvocation().getExpression()),
-                ADVICE, onceNote());
+                ADVICE, onceNote(false));
     }
 
     // Non-private for testing purposes
@@ -176,7 +176,7 @@ final class PendingJavaScriptInvocationUtil {
                         + "%s A background task can compare UI.getLastUpdateSentTimestamp() against the current time to stop scheduling updates while the client is not receiving them. "
                         + "%s",
                 waiting, ui.getPushConfiguration().getPushMode(),
-                describeNewest(newest), ADVICE, onceNote());
+                describeNewest(newest), ADVICE, onceNote(true));
     }
 
     // Non-private for testing purposes
@@ -188,7 +188,7 @@ final class PendingJavaScriptInvocationUtil {
                         + "%s A background task can compare UI.getLastUpdateSentTimestamp() against the current time to stop scheduling updates while the client is not receiving them. "
                         + "%s",
                 waiting, lockHolds, describeDelivery(ui, delivery),
-                describeNewest(newest), ADVICE, onceNote());
+                describeNewest(newest), ADVICE, onceNote(true));
     }
 
     private static String describeDelivery(UI ui, Delivery delivery) {
@@ -219,7 +219,12 @@ final class PendingJavaScriptInvocationUtil {
                 describeExpression(newest.getInvocation().getExpression()));
     }
 
-    private static String onceNote() {
+    private static String onceNote(boolean callSiteLogged) {
+        if (!callSiteLogged) {
+            return String.format(
+                    "This is logged once per UI. Turn the %s logger off to silence the warning.",
+                    PendingJavaScriptInvocationUtil.class.getName());
+        }
         return String.format(
                 "This is logged once per UI. Enable debug logging for %s to also log where the newest invocation was scheduled from, or turn that logger off to silence the warning.",
                 PendingJavaScriptInvocationUtil.class.getName());
