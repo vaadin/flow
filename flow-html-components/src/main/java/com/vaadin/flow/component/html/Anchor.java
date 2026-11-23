@@ -184,7 +184,11 @@ public class Anchor extends HtmlContainer
      * Sets the 'download' attribute for link when given a non-inline handler
      * implementing AbstractDownloadHandler.
      *
-     * For custom handlers the mode {@link AttachmentType#DOWNLOAD} will be set.
+     * For custom handlers the 'download' attribute is set. This does not count
+     * as a choice made with {@link #setDownload(boolean)} or an
+     * {@link AttachmentType}, so a handler set later with
+     * {@link #setHref(DownloadHandler)} sets the attribute again in the same
+     * way.
      *
      * @see #setHref(DownloadHandler)
      * @see #setText(String)
@@ -219,7 +223,10 @@ public class Anchor extends HtmlContainer
      * <p>
      * Sets the {@code download} attribute for the link when given a non-inline
      * handler implementing {@link AbstractDownloadHandler}. For custom handlers
-     * the mode {@link AttachmentType#DOWNLOAD} will be set.
+     * the {@code download} attribute is set. This does not count as a choice
+     * made with {@link #setDownload(boolean)} or an {@link AttachmentType}, so
+     * a handler set later with {@link #setHref(DownloadHandler)} sets the
+     * attribute again in the same way.
      *
      * @see #setHref(DownloadHandler)
      * @see #bindText(Signal)
