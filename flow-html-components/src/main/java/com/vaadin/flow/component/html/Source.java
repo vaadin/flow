@@ -20,7 +20,8 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.server.streams.AbstractDownloadHandler;
+import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
@@ -75,10 +76,12 @@ public class Source extends HtmlComponent {
      * Creates a new source for the media file that the given download handler
      * serves.
      * <p>
-     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods in
-     * {@link DownloadHandler}, as well as for other
-     * {@link AbstractDownloadHandler} implementations.
+     * The content is served inline, so that the browser shows it: a file name
+     * the handler gives with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#fileName(String)}, as
+     * the built-in handlers do, is sent with a
+     * <code>Content-Disposition: inline</code> header. A handler that asks for
+     * <code>attachment</code> itself keeps that choice.
      *
      * @param downloadHandler
      *            the download handler that serves the media file, not
@@ -114,10 +117,12 @@ public class Source extends HtmlComponent {
      * Sets the URL of the media file to the URL of the given
      * {@link DownloadHandler} callback.
      * <p>
-     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods in
-     * {@link DownloadHandler}, as well as for other
-     * {@link AbstractDownloadHandler} implementations.
+     * The content is served inline, so that the browser shows it: a file name
+     * the handler gives with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#fileName(String)}, as
+     * the built-in handlers do, is sent with a
+     * <code>Content-Disposition: inline</code> header. A handler that asks for
+     * <code>attachment</code> itself keeps that choice.
      * <p>
      * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
      * that the media file is still served when the media component, or one of
@@ -131,13 +136,10 @@ public class Source extends HtmlComponent {
      * @see #setSrc(String)
      */
     public void setSrc(DownloadHandler downloadHandler) {
-        if (downloadHandler instanceof AbstractDownloadHandler<?> handler) {
-            // change disposition to inline in pre-defined handlers,
-            // where it is 'attachment' by default
-            handler.inline();
-        }
         getElement().setAttribute(SRC_ATTRIBUTE,
-                downloadHandler.allowDisabled());
+                new StreamResourceRegistry.ElementStreamResource(
+                        downloadHandler.allowDisabled(), getElement(),
+                        DownloadDisposition.INLINE));
     }
 
     /**
