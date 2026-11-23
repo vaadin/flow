@@ -51,8 +51,10 @@ class SynchronizedRequestHandlerTest {
             boolean readAndWriteOutsideSessionLock) throws Exception {
         MockVaadinSession session = new MockVaadinSession();
         UI ui = session.runWithLock(() -> new MockUI(session));
+        UI previousUI = session.runWithLock(() -> new MockUI(session));
         CurrentInstance.clearAll();
         VaadinSession.setCurrent(session);
+        UI.setCurrent(previousUI);
         VaadinRequest request = mock(VaadinRequest.class);
         when(request.getService()).thenReturn(session.getService());
         when(request.getReader())
@@ -74,7 +76,7 @@ class SynchronizedRequestHandlerTest {
                 UI.setCurrent(ui);
                 return Optional.of(() -> {
                     assertFalse(session.hasLock());
-                    assertNull(UI.getCurrent());
+                    assertSame(previousUI, UI.getCurrent());
                     written.set(true);
                 });
             }
@@ -89,6 +91,34 @@ class SynchronizedRequestHandlerTest {
                 mock(VaadinResponse.class)));
 
         assertEquals(readAndWriteOutsideSessionLock, written.get());
+        assertFalse(session.hasLock());
+        assertSame(previousUI, UI.getCurrent());
+        assertSame(session, VaadinSession.getCurrent());
+    }
+
+    @Test
+    void handleRequest_handlerSetsCurrentUIAndThrows_previousInstancesRestoredAfterUnlock()
+            throws Exception {
+        MockVaadinSession session = new MockVaadinSession();
+        UI ui = session.runWithLock(() -> new MockUI(session));
+        CurrentInstance.clearAll();
+        VaadinSession.setCurrent(session);
+        IllegalStateException failure = new IllegalStateException("BOOM");
+
+        SynchronizedRequestHandler handler = new SynchronizedRequestHandler() {
+            @Override
+            public boolean synchronizedHandleRequest(VaadinSession session,
+                    VaadinRequest request, VaadinResponse response) {
+                UI.setCurrent(ui);
+                throw failure;
+            }
+        };
+
+        assertSame(failure,
+                assertThrows(IllegalStateException.class,
+                        () -> handler.handleRequest(session,
+                                mock(VaadinRequest.class),
+                                mock(VaadinResponse.class))));
         assertFalse(session.hasLock());
         assertNull(UI.getCurrent());
         assertSame(session, VaadinSession.getCurrent());

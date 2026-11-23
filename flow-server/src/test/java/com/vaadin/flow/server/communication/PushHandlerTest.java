@@ -655,6 +655,8 @@ class PushHandlerTest {
         try {
             mockConnectionLost(new MockVaadinSession(), true);
             assertNotNull(VaadinSession.getCurrent());
+            // The UI found under the lock is not current after the unlock
+            assertNull(UI.getCurrent());
         } finally {
             VaadinSession.setCurrent(null);
         }
@@ -881,7 +883,8 @@ class PushHandlerTest {
 
             @Override
             public UI findUI(VaadinRequest request) {
-                return null;
+                // Sets the UI as current, like the real findUI
+                return new MockUI(session);
             }
         };
         setProductionMode(service, false);

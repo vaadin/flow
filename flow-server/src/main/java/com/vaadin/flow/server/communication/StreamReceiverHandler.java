@@ -171,6 +171,16 @@ public class StreamReceiverHandler implements Serializable {
         return instances;
     }
 
+    private static Map<Class<?>, CurrentInstance> lockWithUI(
+            VaadinSession session, StateNode node) {
+        Map<Class<?>, CurrentInstance> instances = CurrentInstance
+                .getInstances();
+        session.lock();
+        // The owner of the node is read with the lock held
+        UI.setCurrent(getUI(node));
+        return instances;
+    }
+
     private static UI getUI(StateNode node) {
         if (node != null && node.getOwner() instanceof StateTree tree) {
             return tree.getUI();
@@ -178,13 +188,13 @@ public class StreamReceiverHandler implements Serializable {
         return null;
     }
 
-    private static void unlockAndRestore(VaadinSession session,
-            Map<Class<?>, CurrentInstance> instances) {
+    private static void callErrorHandler(VaadinSession session, StateNode node,
+            Exception exception) {
+        Map<Class<?>, CurrentInstance> instances = lockWithUI(session, node);
         try {
-            session.unlock();
+            session.getErrorHandler().error(new ErrorEvent(exception));
         } finally {
-            CurrentInstance.clearAll();
-            CurrentInstance.restoreInstances(instances);
+            CurrentInstance.unlockAndRestoreInstances(session, instances);
         }
     }
 
@@ -222,12 +232,11 @@ public class StreamReceiverHandler implements Serializable {
                     exception);
         } catch (Exception exception) {
             Map<Class<?>, CurrentInstance> instances = lockWithUI(session,
-                    null);
+                    owner);
             try {
-                UI.setCurrent(getUI(owner));
                 session.getErrorHandler().error(new ErrorEvent(exception));
             } finally {
-                unlockAndRestore(session, instances);
+                CurrentInstance.unlockAndRestoreInstances(session, instances);
             }
         }
         sendUploadResponse(response, success);
@@ -291,7 +300,7 @@ public class StreamReceiverHandler implements Serializable {
                     streamReceiver, name, part.getContentType(), part.getSize(),
                     owner);
         } catch (UploadException e) {
-            session.getErrorHandler().error(new ErrorEvent(e));
+            callErrorHandler(session, owner, e);
         }
         return false;
     }
@@ -335,7 +344,7 @@ public class StreamReceiverHandler implements Serializable {
             success = handleFileUploadValidationAndData(session, stream,
                     streamReceiver, filename, mimeType, contentLength, owner);
         } catch (UploadException e) {
-            session.getErrorHandler().error(new ErrorEvent(e));
+            callErrorHandler(session, owner, e);
         }
         sendUploadResponse(response, success);
     }
@@ -402,7 +411,8 @@ public class StreamReceiverHandler implements Serializable {
             try {
                 session.getErrorHandler().error(new ErrorEvent(e));
             } finally {
-                unlockAndRestore(session, errorInstances);
+                CurrentInstance.unlockAndRestoreInstances(session,
+                        errorInstances);
             }
         }
         return false;
@@ -469,7 +479,7 @@ public class StreamReceiverHandler implements Serializable {
         try {
             session.getResourceRegistry().unregisterResource(streamReceiver);
         } finally {
-            unlockAndRestore(session, instances);
+            CurrentInstance.unlockAndRestoreInstances(session, instances);
         }
     }
 
@@ -496,7 +506,7 @@ public class StreamReceiverHandler implements Serializable {
                 out = streamVariable.getOutputStream();
                 listenProgress = streamVariable.listenProgress();
             } finally {
-                unlockAndRestore(session, instances);
+                CurrentInstance.unlockAndRestoreInstances(session, instances);
             }
 
             // Gets the output target stream
@@ -540,7 +550,8 @@ public class StreamReceiverHandler implements Serializable {
             try {
                 streamVariable.streamingFinished(event);
             } finally {
-                unlockAndRestore(session, endInstances);
+                CurrentInstance.unlockAndRestoreInstances(session,
+                        endInstances);
             }
             success = true;
         } catch (UploadInterruptedException | IOException e) {
@@ -573,7 +584,7 @@ public class StreamReceiverHandler implements Serializable {
             streamVariable.streamingFailed(new StreamingErrorEventImpl(filename,
                     type, contentLength, totalBytes, exception));
         } finally {
-            unlockAndRestore(session, instances);
+            CurrentInstance.unlockAndRestoreInstances(session, instances);
         }
     }
 
@@ -590,7 +601,7 @@ public class StreamReceiverHandler implements Serializable {
             try {
                 streamVariable.onProgress(progressEvent);
             } finally {
-                unlockAndRestore(session, instances);
+                CurrentInstance.unlockAndRestoreInstances(session, instances);
             }
             return now;
         }

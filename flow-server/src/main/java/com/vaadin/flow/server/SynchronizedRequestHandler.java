@@ -86,7 +86,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
                 responseWriter = synchronizedHandleRequest(session, request,
                         response, requestBody);
             } finally {
-                unlockAndRestore(session, instances);
+                CurrentInstance.unlockAndRestoreInstances(session, instances);
             }
             if (responseWriter.isPresent()) {
                 responseWriter.get().writeResponse();
@@ -99,24 +99,8 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
             try {
                 return synchronizedHandleRequest(session, request, response);
             } finally {
-                unlockAndRestore(session, instances);
+                CurrentInstance.unlockAndRestoreInstances(session, instances);
             }
-        }
-    }
-
-    /*
-     * The handler may set the current UI while it holds the lock (e.g.
-     * VaadinService.findUI). Code that runs after the unlock, such as the
-     * response writer and the request end callbacks, must not see a current UI
-     * without holding its session lock.
-     */
-    private static void unlockAndRestore(VaadinSession session,
-            Map<Class<?>, CurrentInstance> instances) {
-        try {
-            session.unlock();
-        } finally {
-            CurrentInstance.clearAll();
-            CurrentInstance.restoreInstances(instances);
         }
     }
 

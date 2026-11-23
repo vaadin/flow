@@ -190,6 +190,33 @@ public class CurrentInstance implements Serializable {
     }
 
     /**
+     * Unlocks the session and then makes the given instances the only current
+     * instances, also when unlocking fails.
+     * <p>
+     * Code that sets the current UI for work it does with the session lock held
+     * uses this to unlock, with the instances it got from
+     * {@link #getInstances()} before locking, so that no code runs with a
+     * current UI without holding the lock of its session. The session stays
+     * current until it is unlocked, as the access tasks that unlocking runs
+     * rely on it.
+     *
+     * @param session
+     *            the session to unlock, not <code>null</code>
+     * @param instances
+     *            the current instances to restore, as returned by
+     *            {@link #getInstances()}
+     */
+    public static void unlockAndRestoreInstances(VaadinSession session,
+            Map<Class<?>, CurrentInstance> instances) {
+        try {
+            session.unlock();
+        } finally {
+            clearAll();
+            restoreInstances(instances);
+        }
+    }
+
+    /**
      * Restores the given instances to the given values. Note that this should
      * only be used internally to restore Vaadin classes.
      *

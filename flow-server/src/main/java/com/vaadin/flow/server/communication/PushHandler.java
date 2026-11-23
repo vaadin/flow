@@ -611,13 +611,10 @@ public class PushHandler {
     private static void unlockAndRestore(VaadinSession session,
             Map<Class<?>, CurrentInstance> instances) {
         try {
-            session.unlock();
+            CurrentInstance.unlockAndRestoreInstances(session, instances);
         } catch (Exception e) {
             getLogger().warn("Error while unlocking session", e);
             // can't call ErrorHandler, we (hopefully) don't have a lock
-        } finally {
-            CurrentInstance.clearAll();
-            CurrentInstance.restoreInstances(instances);
         }
     }
 

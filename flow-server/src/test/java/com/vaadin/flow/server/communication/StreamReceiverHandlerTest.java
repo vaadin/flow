@@ -296,12 +296,53 @@ class StreamReceiverHandlerTest {
 
         doThrow(RuntimeException.class).when(outputStream).write(any(),
                 anyInt(), anyInt());
+        when(stateNode.getOwner()).thenReturn(stateTree);
+        when(stateTree.getUI()).thenReturn(ui);
+        List<UI> inFailed = new ArrayList<>();
+        doAnswer(i -> inFailed.add(UI.getCurrent())).when(streamVariable)
+                .streamingFailed(any());
 
-        handler.doHandleXhrFilePost(session, request, response, streamReceiver,
-                stateNode, 1);
+        try {
+            handler.doHandleXhrFilePost(session, request, response,
+                    streamReceiver, stateNode, 1);
 
-        verify(response)
-                .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+            verify(response)
+                    .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+            assertEquals(List.of(ui), inFailed);
+            assertNull(UI.getCurrent());
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    @Test
+    void doHandleXhrFilePost_nodeDetached_errorHandlerCalledWithLockAndUI()
+            throws IOException {
+        when(stateNode.isAttached()).thenReturn(false);
+        when(stateNode.getOwner()).thenReturn(stateTree);
+        when(stateTree.getUI()).thenReturn(ui);
+        when(session.hasLock()).thenReturn(false);
+        doAnswer(i -> when(session.hasLock()).thenReturn(true)).when(session)
+                .lock();
+        doAnswer(i -> when(session.hasLock()).thenReturn(false)).when(session)
+                .unlock();
+        List<UI> inErrorHandler = new ArrayList<>();
+        when(session.getErrorHandler()).thenAnswer(i -> {
+            assertTrue(session.hasLock());
+            inErrorHandler.add(UI.getCurrent());
+            return errorHandler;
+        });
+
+        try {
+            handler.doHandleXhrFilePost(session, request, response,
+                    streamReceiver, stateNode, 1);
+
+            verify(errorHandler).error(any());
+            assertEquals(List.of(ui), inErrorHandler);
+            assertNull(UI.getCurrent());
+        } finally {
+            CurrentInstance.clearAll();
+        }
     }
 
     @Test
