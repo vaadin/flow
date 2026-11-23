@@ -40,6 +40,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsInvokers;
@@ -81,6 +82,7 @@ class TaskGenerateJsDefinitionsTest {
 
     private static final String NAMES_REGISTRY = "window.Vaadin.Flow.jsDefinitionNames = window.Vaadin.Flow.jsDefinitionNames || {};";
 
+    @JsDefinition
     public interface GreeterJs extends JsInvokers {
         @JsExpression(GREETING_EXPRESSION)
         void showGreeting(String greeting);
@@ -89,6 +91,7 @@ class TaskGenerateJsDefinitionsTest {
         void showGreeting();
     }
 
+    @JsDefinition
     public interface LoggerJs extends JsSnippets {
         @JsExpression(LOG_EXPRESSION)
         @JsFunctionParameterNames("value")
@@ -102,36 +105,43 @@ class TaskGenerateJsDefinitionsTest {
     public interface TemplateSnippet extends JsSnippet {
     }
 
+    @JsDefinition
     public interface TemplateJs extends JsSnippets {
         @JsExpression(TEMPLATE_EXPRESSION)
         TemplateSnippet label(String prefix);
     }
 
+    @JsDefinition
     public interface EventJs extends JsSnippets {
         @JsExpression(KEY_EXPRESSION)
         DomEventFilter isKey(String key);
     }
 
+    @JsDefinition
     public interface InvalidNameJs extends JsSnippets {
         @JsExpression(LOG_EXPRESSION)
         @JsFunctionParameterNames("class")
         JsFunction createLogger(String prefix);
     }
 
+    @JsDefinition
     public interface CounterJs extends JsInvokers {
         @JsExpression(COUNT_EXPRESSION)
         void count(Integer from);
     }
 
+    @JsDefinition
     public interface NothingJs extends JsInvokers {
         void notDeclared();
     }
 
+    @JsDefinition
     public interface ShouterJs extends JsInvokers {
         @JsExpression(SHOUT_EXPRESSION)
         void shout(String greeting, Object... names);
     }
 
+    @JsDefinition
     public interface StopperJs extends JsInvokers {
         @JsExpression(GREETING_EXPRESSION)
         @JsWithExecutionContext

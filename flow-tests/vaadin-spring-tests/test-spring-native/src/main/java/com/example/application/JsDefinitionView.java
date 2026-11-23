@@ -19,6 +19,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsInvokers;
@@ -43,6 +44,7 @@ public class JsDefinitionView extends Div {
     public static final String CHECK_INHERITED_METHOD_ID = "check-inherited-method";
     public static final String INHERITED_METHOD_RESULT_ID = "inherited-method-result";
 
+    @JsDefinition
     public interface JoinJs extends JsInvokers {
 
         @JsExpression("return [$0, ...$1].join('-')")
@@ -77,18 +79,21 @@ public class JsDefinitionView extends Div {
     public interface LabeledGreeting extends Labeled {
     }
 
+    @JsDefinition
     public interface LabeledGreetingJs extends JsSnippets {
 
         @JsExpression("return $0;")
         LabeledGreeting createGreeting(String greeting);
     }
 
+    @JsDefinition
     public interface GreetingJs extends JsSnippets {
 
         @JsExpression("return $0 + ', ' + name;")
         Greeting createGreeting(String greeting);
     }
 
+    @JsDefinition
     public interface ShowGreetingJs extends JsInvokers {
 
         @JsExpression("this.textContent = $0('native image');")

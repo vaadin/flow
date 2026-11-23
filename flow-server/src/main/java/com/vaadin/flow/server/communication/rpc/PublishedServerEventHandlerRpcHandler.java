@@ -47,6 +47,7 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ClientCallableHandlers;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.VaadinContext;
@@ -444,6 +445,7 @@ public class PublishedServerEventHandlerRpcHandler
      * 
      * @since 25.4
      */
+    @JsDefinition
     public interface PromiseJs extends JsInvokers {
 
         /**

@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippets;
@@ -125,6 +126,7 @@ public class SignalInput<T> extends Action.Input<T> {
      * 
      * @since 25.4
      */
+    @JsDefinition
     public interface MirrorJs extends JsInvokers {
 
         /**

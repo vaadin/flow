@@ -65,6 +65,7 @@ import com.vaadin.flow.server.CspViolationException;
  * identifier of the function and the captures rather than a body:
  *
  * <pre>
+ * &#64;JsDefinition
  * public interface LoggerJs extends JsSnippets {
  *
  *     &#64;JsExpression("console.log($0, value);")
@@ -72,6 +73,7 @@ import com.vaadin.flow.server.CspViolationException;
  *     JsFunction createLogger(String prefix);
  * }
  *
+ * &#64;JsDefinition
  * public interface ClickJs extends JsInvokers {
  *
  *     &#64;JsExpression("this.addEventListener('click', () =&gt; $0('clicked'));")

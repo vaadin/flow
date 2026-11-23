@@ -27,6 +27,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
@@ -306,6 +307,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      * 
      * @since 25.4
      */
+    @JsDefinition
     public interface TemplateModelJs extends JsInvokers {
 
         /**

@@ -17,6 +17,7 @@ package com.vaadin.flow.test.cspstrict.js;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
@@ -28,6 +29,7 @@ import com.vaadin.flow.router.Route;
 @Route("declared-js")
 public class DeclaredJsView extends Div {
 
+    @JsDefinition
     interface StatusJs extends JsInvokers {
 
         @JsExpression("this.textContent = $0;")

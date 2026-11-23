@@ -32,6 +32,7 @@ import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.shared.Registration;
@@ -213,6 +214,7 @@ final class BrowserGeolocationClient implements GeolocationClient {
      * What the geolocation client asks of its client-side bridge, as a
      * JavaScript definition for {@link Element#executeJs(Class)}.
      */
+    @JsDefinition
     public interface GeolocationJs extends JsInvokers {
 
         /**

@@ -15,12 +15,10 @@
  */
 package com.vaadin.quarkus.deployment;
 
-import jakarta.servlet.annotation.HandlesTypes;
 import jakarta.servlet.annotation.WebServlet;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -64,9 +62,7 @@ import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
 import io.quarkus.maven.dependency.ArtifactKey;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.maven.dependency.ResolvedDependency;
-import io.quarkus.undertow.deployment.IgnoredServletContainerInitializerBuildItem;
 import io.quarkus.undertow.deployment.ServletBuildItem;
-import io.quarkus.undertow.deployment.ServletContainerInitializerBuildItem;
 import io.quarkus.undertow.deployment.ServletDeploymentManagerBuildItem;
 import io.quarkus.vertx.http.deployment.DefaultRouteBuildItem;
 import io.quarkus.vertx.http.deployment.FilterBuildItem;
@@ -77,12 +73,10 @@ import org.atmosphere.cpr.ApplicationConfig;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
-import org.jboss.jandex.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,15 +120,6 @@ class VaadinQuarkusProcessor {
 
     private static final DotName ROUTE_ANNOTATION = DotName
             .createSimple(Route.class.getName());
-
-    // Named as a string, as the dev server is not on the class path of a
-    // production application
-    private static final DotName DEV_MODE_STARTUP_LISTENER = DotName
-            .createSimple(
-                    "com.vaadin.base.devserver.startup.DevModeStartupListener");
-
-    private static final DotName HANDLES_TYPES = DotName
-            .createSimple(HandlesTypes.class);
 
     @BuildStep
     FeatureBuildItem feature() {
@@ -310,68 +295,6 @@ class VaadinQuarkusProcessor {
                                             + candidates.size() + ": "
                                             + candidates)));
         }
-    }
-
-    /*
-     * Undertow hands a servlet container initializer the classes that implement
-     * an interface it handles, but not the interfaces that extend it. The
-     * JavaScript definitions that development mode generates into the bundle
-     * are such interfaces, as they extend JsInvokers or JsSnippets, so without
-     * them the browser would find no function for any declared call. The
-     * development mode listener is therefore registered here instead of by
-     * Undertow, with what Undertow would hand it plus those sub-interfaces.
-     */
-    @BuildStep
-    void registerDevModeStartupListener(CombinedIndexBuildItem combinedIndex,
-            BuildProducer<IgnoredServletContainerInitializerBuildItem> ignoredInitializers,
-            BuildProducer<ServletContainerInitializerBuildItem> initializers,
-            BuildProducer<AdditionalBeanBuildItem> beans) {
-        IndexView index = combinedIndex.getIndex();
-        ClassInfo listener = index.getClassByName(DEV_MODE_STARTUP_LISTENER);
-        AnnotationInstance handles = listener == null ? null
-                : listener.declaredAnnotation(HANDLES_TYPES);
-        if (handles == null) {
-            return;
-        }
-        String listenerName = DEV_MODE_STARTUP_LISTENER.toString();
-        ignoredInitializers.produce(
-                new IgnoredServletContainerInitializerBuildItem(listenerName));
-        initializers.produce(new ServletContainerInitializerBuildItem(
-                listenerName, collectHandledTypes(index, handles)));
-        beans.produce(AdditionalBeanBuildItem.unremovableOf(listenerName));
-    }
-
-    // Visible for testing
-    static Set<String> collectHandledTypes(IndexView index,
-            AnnotationInstance handles) {
-        Set<String> handled = new HashSet<>();
-        for (Type type : handles.value().asClassArray()) {
-            DotName name = type.name();
-            index.getAllKnownSubclasses(name)
-                    .forEach(info -> handled.add(info.name().toString()));
-            index.getAllKnownImplementations(name)
-                    .forEach(info -> handled.add(info.name().toString()));
-            index.getAllKnownSubinterfaces(name)
-                    .forEach(info -> handled.add(info.name().toString()));
-            for (AnnotationInstance annotation : index.getAnnotations(name)) {
-                ClassInfo declaring = findDeclaringClass(annotation.target());
-                if (declaring != null) {
-                    handled.add(declaring.name().toString());
-                }
-            }
-        }
-        return handled;
-    }
-
-    private static ClassInfo findDeclaringClass(AnnotationTarget target) {
-        return switch (target.kind()) {
-        case CLASS -> target.asClass();
-        case METHOD -> target.asMethod().declaringClass();
-        case FIELD -> target.asField().declaringClass();
-        case METHOD_PARAMETER ->
-            target.asMethodParameter().method().declaringClass();
-        default -> null;
-        };
     }
 
     @BuildStep

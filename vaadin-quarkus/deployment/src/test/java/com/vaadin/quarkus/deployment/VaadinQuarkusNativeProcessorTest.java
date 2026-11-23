@@ -58,6 +58,7 @@ import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
@@ -360,7 +361,7 @@ class VaadinQuarkusNativeProcessorTest {
     }
 
     @Test
-    void testRegisterJsDefinitionProxies_registersTheDefinitionInterfaces()
+    void testRegisterJsDefinitionProxies_registersTheAnnotatedInterfaces()
             throws IOException {
         Indexer indexer = new Indexer();
         indexer.indexClass(GreeterJs.class);
@@ -374,18 +375,18 @@ class VaadinQuarkusNativeProcessorTest {
                 reflective::add);
 
         // Only an interface can be implemented by a JDK proxy, so the
-        // implementing class has to be left out of both registrations.
+        // annotated class has to be left out of both registrations.
         assertEquals(List.of(List.of(GreeterJs.class.getName())),
                 proxies.stream()
                         .map(NativeImageProxyDefinitionBuildItem::getClasses)
                         .toList(),
-                "Should register the definition interface as a proxy definition");
+                "Should register the annotated interface as a proxy definition");
         assertEquals(
                 Set.of(GreeterJs.class.getName(), JsInvokers.class.getName()),
                 reflective.stream()
                         .flatMap(item -> item.getClassNames().stream())
                         .collect(Collectors.toSet()),
-                "Should register the definition interface and the interfaces it"
+                "Should register the annotated interface and the interfaces it"
                         + " extends for reflection");
         assertTrue(
                 reflective.stream()
@@ -508,18 +509,21 @@ class VaadinQuarkusNativeProcessorTest {
     }
 
     // Only an interface can be implemented by the JDK proxy the definitions
-    // are used through, so a class implementing a marker is not one of them
+    // are used through, so an annotated class is not one of them
+    @JsDefinition
     public interface GreeterJs extends JsInvokers {
         void greet(String name);
     }
 
-    public static class Greeter implements JsInvokers {
+    @JsDefinition
+    public static class Greeter {
     }
 
     public interface ValueJs<T> {
         JavaScriptResult<T> readValue();
     }
 
+    @JsDefinition
     public interface SimpleDtoJs extends JsInvokers, ValueJs<SimpleDto> {
         JavaScriptResult<List<OtherDto>> readOthers();
 
@@ -539,6 +543,7 @@ class VaadinQuarkusNativeProcessorTest {
         ItemTemplate status(String label);
     }
 
+    @JsDefinition
     public interface TemplatesJs extends JsSnippets, BaseTemplatesJs {
         JsFunction format(String pattern);
     }

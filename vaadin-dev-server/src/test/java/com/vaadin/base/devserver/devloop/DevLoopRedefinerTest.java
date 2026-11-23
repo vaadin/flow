@@ -43,6 +43,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsInvokers;
@@ -174,6 +175,7 @@ class DevLoopRedefinerTest {
     static class NothingDeclared {
     }
 
+    @JsDefinition
     interface GreeterJs extends JsInvokers {
         @JsExpression("window.alert($0)")
         void showGreeting(String greeting);
@@ -182,29 +184,34 @@ class DevLoopRedefinerTest {
         void shout(String greeting, Object... names);
     }
 
+    @JsDefinition
     interface LoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value)")
         @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
     }
 
+    @JsDefinition
     interface RenamedParameterLoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value)")
         @JsFunctionParameterNames("message")
         JsFunction createLogger(String prefix);
     }
 
+    @JsDefinition
     interface UnwrappedLoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value)")
         JsFunction createLogger(String prefix);
     }
 
+    @JsDefinition
     interface InvalidNameLoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value)")
         @JsFunctionParameterNames("class")
         JsFunction createLogger(String prefix);
     }
 
+    @JsDefinition
     interface EditedGreeterJs extends JsInvokers {
         @JsExpression("window.alert('edited ' + $0)")
         void showGreeting(String greeting);

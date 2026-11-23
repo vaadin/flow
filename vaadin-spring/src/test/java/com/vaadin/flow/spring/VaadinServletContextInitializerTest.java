@@ -56,9 +56,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
-import com.vaadin.flow.js.JsDefinitionProxy;
-import com.vaadin.flow.js.JsInvokers;
-import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
@@ -272,8 +270,8 @@ class VaadinServletContextInitializerTest {
         when(environment.getProperty("vaadin.allowed-packages"))
                 .thenReturn("com/example/app");
         when(devModeHandlerManager.getDevModeHandler()).thenReturn(null);
-        when(devModeHandlerManager.getHandlesTypes()).thenReturn(
-                new Class<?>[] { JsInvokers.class, JsSnippets.class });
+        when(devModeHandlerManager.getHandlesTypes())
+                .thenReturn(new Class<?>[] { JsDefinition.class });
 
         VaadinServletContextInitializer vaadinServletContextInitializer = getStubbedVaadinServletContextInitializer();
         List<String> scannedPackages = new ArrayList<>();
@@ -291,10 +289,9 @@ class VaadinServletContextInitializerTest {
         List<Class<?>> definitions = new VaadinServletContextInitializer(
                 new GenericApplicationContext())
                 .findByAnnotationOrSuperType(List.of("com.vaadin"),
-                        new DefaultResourceLoader(), List.of(),
-                        List.of(JsInvokers.class, JsSnippets.class))
-                .filter(type -> !isTestClass(type))
-                .filter(JsDefinitionProxy::isDefinition).toList();
+                        new DefaultResourceLoader(),
+                        List.of(JsDefinition.class), List.of())
+                .filter(type -> !isTestClass(type)).toList();
         assertThat(definitions).contains(Element.CallFunctionJs.class,
                 Hotswapper.RefreshUiJs.class);
         assertThat(definitions).allSatisfy(type -> assertThat(scannedPackages)

@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.RouterLink;
@@ -34,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 class ShortcutsTest {
 
+    @JsDefinition
     public interface LocatorJs extends JsSnippets {
 
         @JsExpression("return this.firstElementChild;")

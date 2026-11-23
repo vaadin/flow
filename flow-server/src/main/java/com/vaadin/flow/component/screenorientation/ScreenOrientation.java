@@ -27,6 +27,7 @@ import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.signals.Signal;
@@ -238,6 +239,7 @@ public final class ScreenOrientation implements Serializable {
      * 
      * @since 25.4
      */
+    @JsDefinition
     public interface ScreenOrientationJs extends JsInvokers {
 
         /**

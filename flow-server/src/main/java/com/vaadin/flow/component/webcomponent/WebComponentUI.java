@@ -38,6 +38,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -404,6 +405,7 @@ public class WebComponentUI extends UI {
      * 
      * @since 25.4
      */
+    @JsDefinition
     public interface ThemeAttributesJs extends JsInvokers {
 
         /**

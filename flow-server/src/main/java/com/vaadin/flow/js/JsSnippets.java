@@ -26,9 +26,9 @@ import com.vaadin.flow.dom.Element;
  * the client by what the returned value is passed to. An implementation is
  * obtained from {@link #of(Class)}.
  * <p>
- * Extending this interface is what makes the interface findable during the
- * build, like extending {@link JsInvokers} does for an interface whose methods
- * run JavaScript when they are called. An interface can not extend both.
+ * Like an interface that extends {@link JsInvokers}, the interface is annotated
+ * with {@link JsDefinition}, which is what makes it findable during the build.
+ * An interface can not extend both marker interfaces.
  * <p>
  * A snippet is not bound to an element, which is why the implementation comes
  * from here rather than from {@link Element#executeJs(Class)}. It holds no
@@ -38,6 +38,7 @@ import com.vaadin.flow.dom.Element;
  * an argument:
  *
  * <pre>
+ * &#64;JsDefinition
  * public interface LoggerJs extends JsSnippets {
  *
  *     &#64;JsExpression("console.log($0, value);")
@@ -45,6 +46,7 @@ import com.vaadin.flow.dom.Element;
  *     JsFunction createLogger(String prefix);
  * }
  *
+ * &#64;JsDefinition
  * public interface ClickJs extends JsInvokers {
  *
  *     &#64;JsExpression("this.addEventListener('click', () =&gt; $0('clicked'));")

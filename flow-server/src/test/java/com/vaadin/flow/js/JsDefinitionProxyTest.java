@@ -57,6 +57,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JsDefinitionProxyTest {
 
+    @JsDefinition
     interface GreeterJs extends JsInvokers {
         @JsExpression("window.alert($0)")
         void showGreeting(String greeting);
@@ -68,6 +69,7 @@ class JsDefinitionProxyTest {
     public record Person(String name, int age) implements Serializable {
     }
 
+    @JsDefinition
     interface TypedJs extends JsInvokers {
         @JsExpression("return 42;")
         JavaScriptResult<Integer> readAnswer();
@@ -90,19 +92,24 @@ class JsDefinitionProxyTest {
     interface ArrayJs<T> extends ValueJs<T[]> {
     }
 
+    @JsDefinition
     interface CounterJs extends JsInvokers, ValueJs<Integer> {
     }
 
+    @JsDefinition
     interface NumbersJs extends JsInvokers, ListJs<Integer> {
     }
 
+    @JsDefinition
     interface IntsJs extends JsInvokers, ArrayJs<Integer> {
     }
 
     @SuppressWarnings("rawtypes")
+    @JsDefinition
     interface RawValueJs extends JsInvokers, ValueJs {
     }
 
+    @JsDefinition
     interface StillGenericJs<T> extends JsInvokers, ValueJs<T> {
     }
 
@@ -110,9 +117,11 @@ class JsDefinitionProxyTest {
     }
 
     @SuppressWarnings("rawtypes")
+    @JsDefinition
     interface RawUnusedVariableJs extends JsInvokers, UnusedVariableJs {
     }
 
+    @JsDefinition
     interface UntypedJs<T> extends JsInvokers {
         @SuppressWarnings("rawtypes")
         @JsExpression("return 1;")
@@ -125,15 +134,18 @@ class JsDefinitionProxyTest {
         JavaScriptResult<List<T>> readVariable();
     }
 
+    @JsDefinition
     interface UndeclaredJs extends JsInvokers {
         void undeclared();
     }
 
+    @JsDefinition
     interface UnsupportedJs extends JsInvokers {
         @JsExpression("return this.value;")
         String readValue();
     }
 
+    @JsDefinition
     interface ComposingJs extends JsInvokers {
         @JsExpression("this.method()")
         void method();
@@ -144,6 +156,7 @@ class JsDefinitionProxyTest {
         }
     }
 
+    @JsDefinition
     interface HelpingJs extends JsInvokers {
         @JsExpression("this.method()")
         void method();
@@ -153,6 +166,7 @@ class JsDefinitionProxyTest {
         }
     }
 
+    @JsDefinition
     interface LoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value);")
         @JsFunctionParameterNames("value")
@@ -170,6 +184,7 @@ class JsDefinitionProxyTest {
         }
     }
 
+    @JsDefinition
     interface TemplateJs extends JsSnippets {
         @JsExpression("return html`<b>${$0}: ${item.name}</b>`;")
         TemplateSnippet label(String prefix);
@@ -181,6 +196,7 @@ class JsDefinitionProxyTest {
         TemplateSnippet join(String... parts);
     }
 
+    @JsDefinition
     interface OtherTemplateJs extends JsSnippets {
         @JsExpression("return html`<i>${$0}: ${item.name}</i>`;")
         TemplateSnippet label(String prefix);
@@ -195,11 +211,13 @@ class JsDefinitionProxyTest {
         }
     }
 
+    @JsDefinition
     interface ActionJs extends JsSnippets {
         @JsExpression("console.log('run');")
         ActionSnippet createAction();
     }
 
+    @JsDefinition
     interface EventJs extends JsSnippets {
         @JsExpression("return event.key === $0;")
         DomEventFilter isKey(String key);
@@ -223,12 +241,14 @@ class JsDefinitionProxyTest {
         }
     }
 
+    @JsDefinition
     interface FunctionParameterNamesInvalidNameJs extends JsSnippets {
         @JsExpression("console.log(value);")
         @JsFunctionParameterNames("not-a-name")
         JsFunction createLogger();
     }
 
+    @JsDefinition
     interface SnippetAmongCallsJs extends JsInvokers {
         @JsExpression("console.log(value);")
         JsFunction createLogger();
@@ -237,17 +257,26 @@ class JsDefinitionProxyTest {
     static class GreeterDouble implements JsInvokers {
     }
 
+    @JsDefinition
     interface BothKindsJs extends JsInvokers, JsSnippets {
         @JsExpression("console.log($0);")
         void log(String message);
     }
 
+    // Not found by the build, so its JavaScript would not be in the bundle
+    interface UnannotatedJs extends JsInvokers {
+        @JsExpression("console.log($0);")
+        void log(String message);
+    }
+
     @JsFunctionParameterNames("value")
+    @JsDefinition
     interface FunctionParameterNamesOnDefinitionJs extends JsSnippets {
         @JsExpression("console.log(value);")
         JsFunction createLogger();
     }
 
+    @JsDefinition
     interface MixedJs extends JsSnippets {
         @JsExpression("console.log($0, value);")
         @JsFunctionParameterNames("value")
@@ -257,12 +286,14 @@ class JsDefinitionProxyTest {
         void log(String message);
     }
 
+    @JsDefinition
     interface FunctionParameterNamesWhenRunJs extends JsInvokers {
         @JsExpression("console.log(value);")
         @JsFunctionParameterNames("value")
         void log();
     }
 
+    @JsDefinition
     interface SnippetWithExecutionContextJs extends JsSnippets {
         @JsExpression("console.log($executionContext);")
         @JsWithExecutionContext
@@ -502,9 +533,23 @@ class JsDefinitionProxyTest {
     }
 
     @Test
-    void isDefinition_onlyInterfacesExtendingAMarker() {
+    void create_interfaceWithoutJsDefinition_throws() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> proxy(UnannotatedJs.class),
+                "an interface the build does not find should be refused");
+
+        assertTrue(exception.getMessage().contains("UnannotatedJs"),
+                exception.getMessage());
+        assertTrue(exception.getMessage().contains("@JsDefinition"),
+                exception.getMessage());
+    }
+
+    @Test
+    void isDefinition_onlyAnnotatedInterfaces() {
         assertTrue(JsDefinitionProxy.isDefinition(GreeterJs.class));
         assertTrue(JsDefinitionProxy.isDefinition(LoggerJs.class));
+        assertFalse(JsDefinitionProxy.isDefinition(UnannotatedJs.class));
         assertFalse(JsDefinitionProxy.isDefinition(JsInvokers.class));
         assertFalse(JsDefinitionProxy.isDefinition(JsSnippets.class));
         assertFalse(JsDefinitionProxy.isDefinition(GreeterDouble.class));

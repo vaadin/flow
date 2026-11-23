@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippets;
@@ -233,6 +234,7 @@ public class OpenInNewTabAction extends Action {
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      */
+    @JsDefinition
     public interface OpenInNewTabJs extends JsSnippets {
 
         /**

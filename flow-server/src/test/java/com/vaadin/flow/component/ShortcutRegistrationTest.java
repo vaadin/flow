@@ -44,6 +44,7 @@ import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.VaadinSession;
@@ -1120,6 +1121,7 @@ class ShortcutRegistrationTest {
                 .equals(Key.KEY_A.getKeys().get(0));
     }
 
+    @JsDefinition
     public interface LocatorJs extends JsSnippets {
 
         @JsExpression("return this.overlay;")

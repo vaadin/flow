@@ -57,6 +57,7 @@ import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.AfterNavigationListener;
@@ -2449,6 +2450,7 @@ public class UI extends Component
      * 
      * @since 25.4
      */
+    @JsDefinition
     public interface UiJs extends JsInvokers {
 
         /**

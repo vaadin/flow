@@ -25,6 +25,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
@@ -186,6 +187,7 @@ public final class ElementJsInitializerRegistration implements Registration {
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      */
+    @JsDefinition
     public interface InitializerJs extends JsInvokers {
 
         /**

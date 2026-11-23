@@ -200,6 +200,7 @@ public final class Shortcuts {
      * Security Policy that does not allow {@code unsafe-eval}:
      *
      * <pre>
+     * &#64;JsDefinition
      * public interface OverlayJs extends JsSnippets {
      *
      *     &#64;JsExpression("return this.$.overlay;")

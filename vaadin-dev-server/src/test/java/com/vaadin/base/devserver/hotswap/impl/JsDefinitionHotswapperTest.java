@@ -32,6 +32,7 @@ import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsInvokers;
@@ -54,11 +55,13 @@ import static org.mockito.Mockito.when;
 
 class JsDefinitionHotswapperTest {
 
+    @JsDefinition
     interface GreeterJs extends JsInvokers {
         @JsExpression("window.alert($0); this.focus()")
         void showGreeting(String greeting);
     }
 
+    @JsDefinition
     interface CounterJs extends JsInvokers {
         @JsExpression("this.count = ($0 || 0) + 1")
         void count(Integer from);
@@ -68,6 +71,7 @@ class JsDefinitionHotswapperTest {
     interface TemplateSnippet extends JsSnippet {
     }
 
+    @JsDefinition
     interface TemplateJs extends JsSnippets {
         @JsExpression("return item.name + $0;")
         TemplateSnippet label(String suffix);

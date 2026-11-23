@@ -26,6 +26,7 @@ import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.AbstractStreamResource;
@@ -457,6 +458,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * 
      * @since 25.4
      */
+    @JsDefinition
     public interface ReloadJs extends JsInvokers {
 
         /**

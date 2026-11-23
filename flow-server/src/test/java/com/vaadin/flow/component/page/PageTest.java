@@ -36,6 +36,7 @@ import com.vaadin.flow.dom.Element.ElementJs;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
@@ -58,6 +59,7 @@ import static org.mockito.Mockito.when;
 
 class PageTest {
 
+    @JsDefinition
     interface TestPageJs extends JsInvokers {
         @JsExpression("window.alert($0)")
         void showGreeting(String greeting);

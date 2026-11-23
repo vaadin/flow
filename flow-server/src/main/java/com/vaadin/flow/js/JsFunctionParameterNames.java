@@ -51,6 +51,7 @@ import com.vaadin.flow.dom.JsFunction;
  * click <code>event</code>:
  *
  * <pre>
+ * &#64;JsDefinition
  * public interface ShareJs extends JsSnippets {
  *
  *     &#64;JsExpression("""
@@ -85,6 +86,7 @@ import com.vaadin.flow.dom.JsFunction;
  * listener with the click event, which the snippet sees as <code>event</code>:
  *
  * <pre>
+ * &#64;JsDefinition
  * public interface ClickJs extends JsInvokers {
  *
  *     &#64;JsExpression("this.addEventListener('click', $0);")

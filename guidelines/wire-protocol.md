@@ -135,7 +135,7 @@ form, key order included, changes the id.
 #### Declared event data and filters
 
 `addEventData(DomEventData)` and `setFilterExpression(DomEventFilter)` use a
-function that a `JsSnippets` method declares, so the client compiles
+function that a method of a `@JsDefinition` interface extending `JsSnippets` declares, so the client compiles
 nothing from a string. Such an entry is keyed by `@` followed by a short
 hash of the function and its captured values (`JsCall.createSnippetKey()`).
 No JavaScript expression starts with `@`, so this key never equals the
@@ -280,8 +280,8 @@ wire shape:
   `Element.executeJs(String, Object...)`. The JavaScript is a string built
   at the call site and compiled in the browser.
 - **Declared JavaScript** — `Page.executeJs(Class)` and
-  `Element.executeJs(Class)` with an interface that extends
-  `JsInvokers`, whose methods carry their JavaScript in
+  `Element.executeJs(Class)` with an interface annotated with
+  `@JsDefinition` that extends `JsInvokers`, whose methods carry their JavaScript in
   `@JsExpression`. The build collects every such method into the bundle as
   a function, so nothing is compiled in the browser: this is the path that
   works under a content security policy without `unsafe-eval`.
@@ -366,7 +366,8 @@ travels as a single-key wrapper object whose key is reserved:
   This is how `Element.addJsInitializer` ships a user expression as an
   argument of the declared framework call that runs initializers.
 - `{"@v-fn": {"id": …, "captures": […]}}` — a `JsFunction` declared as a
-  `JsSnippet` by a `JsSnippets` method. The client looks the id up in
+  `JsSnippet` by a method of a `@JsDefinition` interface extending
+  `JsSnippets`. The client looks the id up in
   `window.Vaadin.Flow.jsSnippets` and calls that function with the
   captures; what it returns is the decoded value, so nothing is compiled
   from a string. That is a function whose body is the declared expression

@@ -20,6 +20,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsInvokers;
@@ -37,6 +38,7 @@ class JsFunctionTest {
         }
     }
 
+    @JsDefinition
     interface LoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value);")
         @JsFunctionParameterNames("value")
@@ -54,12 +56,14 @@ class JsFunctionTest {
         JsFunction createTaggedLogger(String[] tags);
     }
 
+    @JsDefinition
     interface OtherLoggerJs extends JsSnippets {
         @JsExpression("console.info($0, value);")
         @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
     }
 
+    @JsDefinition
     interface ConsoleJs extends JsInvokers {
         @JsExpression("console.log($0);")
         void log(String message);

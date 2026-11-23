@@ -34,7 +34,6 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +44,7 @@ import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsDefinitionProxy.Kind;
 import com.vaadin.flow.js.JsExpression;
@@ -59,10 +59,10 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
 
 /**
  * Generates {@link FrontendUtils#JS_DEFINITIONS_FILE_NAME}, which registers the
- * JavaScript of every interface on the class path that extends
- * {@link JsInvokers} or {@link JsSnippets} as an ordinary function of the
- * bundle: in one registry for the methods that run their JavaScript when
- * called, in another for those of them that are annotated with
+ * JavaScript of every {@link JsDefinition} interface on the class path, one
+ * that extends {@link JsInvokers} or {@link JsSnippets}, as an ordinary
+ * function of the bundle: in one registry for the methods that run their
+ * JavaScript when called, in another for those of them that are annotated with
  * {@link JsWithExecutionContext} and take the execution context as their first
  * parameter, and in a third for the methods that declare a {@link JsSnippet},
  * which the client turns into a function when it decodes the snippet. A
@@ -145,21 +145,9 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         ClassFinder classFinder = Objects.requireNonNull(
                 options.getClassFinder(),
                 "Generating the file needs a class finder to scan for the JavaScript definitions with");
-        return renderFileContent(findDefinitions(classFinder),
+        return renderFileContent(
+                classFinder.getAnnotatedClasses(JsDefinition.class),
                 findDomEventTypes(classFinder), !options.isProductionMode());
-    }
-
-    /**
-     * The JavaScript definitions, the interfaces that extend one of the two
-     * marker interfaces. A class that implements one of them, such as a test
-     * double, is not a definition and is left out rather than reported.
-     */
-    private static List<Class<?>> findDefinitions(ClassFinder classFinder) {
-        return Stream
-                .concat(classFinder.getSubTypesOf(JsInvokers.class).stream(),
-                        classFinder.getSubTypesOf(JsSnippets.class).stream())
-                .filter(JsDefinitionProxy::isDefinition).distinct()
-                .<Class<?>> map(type -> type).toList();
     }
 
     /**

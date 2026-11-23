@@ -42,6 +42,7 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.CssBundler;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
@@ -457,6 +458,7 @@ public class Page implements Serializable {
      * browser:
      *
      * <pre>
+     * &#64;JsDefinition
      * public interface ReportEditorJs extends JsSnippets {
      *     &#64;JsExpression("return import('Frontend/report-editor/report-editor.js');")
      *     JsFunction loadEditor();
@@ -502,6 +504,7 @@ public class Page implements Serializable {
      * declares the JavaScript it runs with {@link JsExpression}:
      *
      * <pre>
+     * &#64;JsDefinition
      * public interface ClipboardJs extends JsInvokers {
      *     &#64;JsExpression("return navigator.clipboard.readText()")
      *     PendingJavaScriptResult readText();
@@ -1055,6 +1058,7 @@ public class Page implements Serializable {
      * 
      * @since 25.4
      */
+    @JsDefinition
     public interface PageJs extends JsInvokers {
 
         /**
@@ -1114,6 +1118,7 @@ public class Page implements Serializable {
      * 
      * @since 25.4
      */
+    @JsDefinition
     public interface NavigationJs extends JsInvokers {
 
         /**

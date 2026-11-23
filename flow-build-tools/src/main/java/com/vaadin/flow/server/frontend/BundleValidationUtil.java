@@ -1061,7 +1061,7 @@ public final class BundleValidationUtil {
     }
 
     /**
-     * Checks whether the JavaScript that the JavaScript definition interfaces,
+     * Checks whether the JavaScript that the {@code @JsDefinition} interfaces,
      * the {@code @EventData} values and the {@code @DomEvent} filters of the
      * application declare differs from what the bundle was built with.
      * <p>

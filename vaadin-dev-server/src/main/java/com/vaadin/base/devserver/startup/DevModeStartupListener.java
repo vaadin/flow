@@ -41,8 +41,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.Template;
-import com.vaadin.flow.js.JsInvokers;
-import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
@@ -76,8 +75,7 @@ import com.vaadin.flow.theme.Theme;
         Template.class, LoadDependenciesOnStartup.class,
         TypeScriptBootstrapModifier.class, DevToolsMessageHandler.class,
         Component.class, Layout.class, StyleSheet.class,
-        StyleSheet.Container.class, JsInvokers.class, JsSnippets.class,
-        ComponentEvent.class })
+        StyleSheet.Container.class, JsDefinition.class, ComponentEvent.class })
 @WebListener
 public class DevModeStartupListener
         implements VaadinServletContextStartupInitializer, Serializable,

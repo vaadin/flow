@@ -20,6 +20,7 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippets;
@@ -184,6 +185,7 @@ public class DownloadAction extends Action {
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      */
+    @JsDefinition
     public interface DownloadJs extends JsSnippets {
 
         /**

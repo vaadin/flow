@@ -42,6 +42,7 @@ import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
 import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.HandlerHelper;
@@ -403,6 +404,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
      * 
      * @since 25.4
      */
+    @JsDefinition
     public interface MprPushStateJs extends JsInvokers {
 
         /**

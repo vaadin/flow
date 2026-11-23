@@ -70,6 +70,7 @@ import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
@@ -2078,6 +2079,7 @@ public class Element extends Node<Element> {
      * declares the JavaScript it runs with {@link JsExpression}:
      *
      * <pre>
+     * &#64;JsDefinition
      * public interface GreeterJs extends JsInvokers {
      *     &#64;JsExpression("window.alert($0)")
      *     void showGreeting(String greeting);
@@ -2259,6 +2261,7 @@ public class Element extends Node<Element> {
      * <code>unsafe-eval</code>:
      *
      * <pre>
+     * &#64;JsDefinition
      * public interface ListenJs extends JsSnippets {
      *
      *     &#64;JsExpression("""
@@ -2660,6 +2663,7 @@ public class Element extends Node<Element> {
      * 
      * @since 25.4
      */
+    @JsDefinition
     public interface CallFunctionJs extends JsInvokers {
 
         /**
@@ -2695,6 +2699,7 @@ public class Element extends Node<Element> {
      * 
      * @since 25.4
      */
+    @JsDefinition
     public interface ScrollIntoViewJs extends JsInvokers {
 
         /**
@@ -2724,6 +2729,7 @@ public class Element extends Node<Element> {
      * 
      * @since 25.4
      */
+    @JsDefinition
     public interface ElementJs extends JsInvokers {
 
         /**

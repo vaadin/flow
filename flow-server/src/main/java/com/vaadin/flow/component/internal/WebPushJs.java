@@ -17,6 +17,7 @@ package com.vaadin.flow.component.internal;
 
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
 
@@ -34,6 +35,7 @@ import com.vaadin.flow.js.JsInvokers;
  *
  * @since 25.4
  */
+@JsDefinition
 public interface WebPushJs extends JsInvokers {
 
     /**

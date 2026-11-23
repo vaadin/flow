@@ -40,6 +40,7 @@ import com.vaadin.flow.component.screenorientation.ScreenOrientationType;
 import com.vaadin.flow.component.wakelock.WakeLockAvailability;
 import com.vaadin.flow.component.webshare.WebShareSupport;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
 
@@ -736,6 +737,7 @@ public class ExtendedClientDetails implements Serializable {
      * 
      * @since 25.4
      */
+    @JsDefinition
     public interface ClientDetailsJs extends JsInvokers {
 
         /**

@@ -32,6 +32,7 @@ import com.vaadin.flow.server.VaadinSession;
  * the type argument:
  *
  * <pre>
+ * &#64;JsDefinition
  * public interface DeepThoughtJs extends JsInvokers {
  *     &#64;JsExpression("return 42")
  *     JavaScriptResult&lt;Integer&gt; getAnswer();

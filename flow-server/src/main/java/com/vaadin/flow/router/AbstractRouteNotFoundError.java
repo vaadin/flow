@@ -36,6 +36,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.internal.RouteUtil;
@@ -212,6 +213,7 @@ public abstract class AbstractRouteNotFoundError extends Component {
      * 
      * @since 25.4
      */
+    @JsDefinition
     public interface CopilotJs extends JsInvokers {
 
         /**

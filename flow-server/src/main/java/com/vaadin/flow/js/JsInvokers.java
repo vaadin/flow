@@ -27,12 +27,11 @@ import com.vaadin.flow.dom.Element;
  * calling a method of it schedules the declared JavaScript to run on the
  * client.
  * <p>
- * Extending this interface is what makes the interface findable during the
- * build: every interface that extends it is collected into the generated bundle
- * as a function per method, so the JavaScript an application can invoke from
- * the server is known before it runs and the client never has to build a
- * function from a string. That is what keeps a server-initiated call compatible
- * with a content security policy that does not allow <code>unsafe-eval</code>.
+ * The interface is also annotated with {@link JsDefinition}, which is what
+ * makes it findable during the build: its JavaScript is collected into the
+ * generated bundle, so the client never has to build a function from a string.
+ * That is what keeps a server-initiated call compatible with a content security
+ * policy that does not allow <code>unsafe-eval</code>.
  * <p>
  * An interface whose methods only answer with {@link JsSnippet snippets}
  * extends {@link JsSnippets} instead. An interface can not extend both. Both
@@ -40,6 +39,7 @@ import com.vaadin.flow.dom.Element;
  * component.
  *
  * <pre>
+ * &#64;JsDefinition
  * public interface ScrollJs extends JsInvokers {
  *
  *     &#64;JsExpression("this.scrollTop = $0;")
@@ -49,6 +49,7 @@ import com.vaadin.flow.dom.Element;
  * element.executeJs(ScrollJs.class).scrollTo(100);
  * </pre>
  *
+ * @see JsDefinition
  * @see JsExpression
  * @see Element#executeJs(Class)
  * @see Page#executeJs(Class)

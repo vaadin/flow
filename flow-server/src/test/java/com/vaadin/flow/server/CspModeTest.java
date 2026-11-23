@@ -54,6 +54,7 @@ import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippets;
@@ -74,12 +75,14 @@ import static org.mockito.Mockito.verify;
 
 class CspModeTest {
 
+    @JsDefinition
     interface LoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value);")
         @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
     }
 
+    @JsDefinition
     interface EventJs extends JsSnippets {
         @JsExpression("return event.x == $0;")
         DomEventFilter isX(int x);
@@ -88,6 +91,7 @@ class CspModeTest {
         DomEventData<Integer> scaledX(int factor);
     }
 
+    @JsDefinition
     interface LocatorJs extends JsSnippets {
         @JsExpression("return this.firstElementChild;")
         JsFunction locateFirstChild();

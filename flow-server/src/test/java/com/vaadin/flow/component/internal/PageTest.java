@@ -33,6 +33,7 @@ import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
@@ -177,6 +178,7 @@ class PageTest {
         assertCaptureRejected(capture);
     }
 
+    @JsDefinition
     interface ElementSnippets extends JsSnippets {
         @JsExpression("return $0;")
         ElementSnippet capture(Element element);

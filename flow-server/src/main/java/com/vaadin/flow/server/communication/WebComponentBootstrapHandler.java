@@ -49,6 +49,7 @@ import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.BootstrapException;
@@ -672,6 +673,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * 
      * @since 25.4
      */
+    @JsDefinition
     public interface StylesheetJs extends JsInvokers {
 
         /**

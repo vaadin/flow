@@ -38,8 +38,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.Template;
-import com.vaadin.flow.js.JsInvokers;
-import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
@@ -77,7 +76,7 @@ class DevModeClassFinderTest {
                 Template.class, LoadDependenciesOnStartup.class,
                 Component.class, TypeScriptBootstrapModifier.class,
                 DevToolsMessageHandler.class, Layout.class, StyleSheet.class,
-                StyleSheet.Container.class, JsInvokers.class, JsSnippets.class,
+                StyleSheet.Container.class, JsDefinition.class,
                 ComponentEvent.class);
 
         for (Class<?> clz : classes) {

@@ -38,6 +38,7 @@ import com.vaadin.flow.js.JsSnippets;
  * <code>$0</code>, <code>$1</code>, and so on:
  *
  * <pre>
+ * &#64;JsDefinition
  * public interface KeyFilters extends JsSnippets {
  *
  *     &#64;JsExpression("return event.key === $0 &amp;&amp; !event.repeat;")

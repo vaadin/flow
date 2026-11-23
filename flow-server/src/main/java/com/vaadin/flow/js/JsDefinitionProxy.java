@@ -56,9 +56,10 @@ import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 /**
- * Hands out implementations of JavaScript definitions, the interfaces that
- * extend {@link JsInvokers} or {@link JsSnippets}, which turn a call of a
- * declared method into a {@link JsCall} and give it to whoever runs it.
+ * Hands out implementations of JavaScript definitions, the interfaces annotated
+ * with {@link JsDefinition} that extend {@link JsInvokers} or
+ * {@link JsSnippets}, which turn a call of a declared method into a
+ * {@link JsCall} and give it to whoever runs it.
  * <p>
  * The interface is checked here rather than when a method is called, so one
  * that can not work says so when the implementation is handed out.
@@ -134,8 +135,9 @@ public final class JsDefinitionProxy {
      *            what runs a call of the interface, not <code>null</code>
      * @return an implementation of the interface, not <code>null</code>
      * @throws IllegalArgumentException
-     *             if the type is not an interface, also extends
-     *             {@link JsSnippets}, or has a method that can not be answered
+     *             if the type is not an interface, is not annotated with
+     *             {@link JsDefinition}, also extends {@link JsSnippets}, or has
+     *             a method that can not be answered
      */
     @SuppressWarnings("unchecked")
     public static <T extends JsInvokers> T create(Class<T> definitionType,
@@ -164,9 +166,9 @@ public final class JsDefinitionProxy {
      *            the JavaScript definition, not <code>null</code>
      * @return an implementation of the interface, not <code>null</code>
      * @throws IllegalArgumentException
-     *             if the type is not an interface, also extends
-     *             {@link JsInvokers}, or has a method that does not declare a
-     *             snippet
+     *             if the type is not an interface, is not annotated with
+     *             {@link JsDefinition}, also extends {@link JsInvokers}, or has
+     *             a method that does not declare a snippet
      */
     @SuppressWarnings("unchecked")
     public static <T extends JsSnippets> T createSnippets(
@@ -198,7 +200,8 @@ public final class JsDefinitionProxy {
      *            the type to check, not <code>null</code>
      * @return what the definition declares, not <code>null</code>
      * @throws IllegalArgumentException
-     *             if the type is not an interface, extends neither or both of
+     *             if the type is not an interface, is not annotated with
+     *             {@link JsDefinition}, extends neither or both of
      *             {@link JsInvokers} and {@link JsSnippets}, is annotated with
      *             {@link JsFunctionParameterNames}, or has a method that does
      *             not fit what the definition declares
@@ -218,6 +221,14 @@ public final class JsDefinitionProxy {
                     + " JavaScript that runs when a method is called, or"
                     + " JsSnippets for methods that return snippets");
         }
+        if (!definitionType.isAnnotationPresent(JsDefinition.class)) {
+            // Without it the build does not find the interface, so its
+            // JavaScript would be missing from the bundle
+            throw new IllegalArgumentException(definitionType.getName()
+                    + " is not annotated with @JsDefinition, which the build"
+                    + " finds the JavaScript definitions by. Annotate the"
+                    + " interface with @JsDefinition");
+        }
         if (definitionType
                 .isAnnotationPresent(JsFunctionParameterNames.class)) {
             // Only the methods and the snippet types they return are read
@@ -233,9 +244,9 @@ public final class JsDefinitionProxy {
 
     /**
      * Checks whether the given type is a JavaScript definition, an interface
-     * that extends {@link JsInvokers} or {@link JsSnippets}, which the build
-     * collects the JavaScript of. The marker interfaces themselves are not.
-     * Whether the definition can work is up to {@link #checkDefinition(Class)}.
+     * annotated with {@link JsDefinition}, which the build collects the
+     * JavaScript of. Whether the definition can work is up to
+     * {@link #checkDefinition(Class)}.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      *
@@ -245,10 +256,8 @@ public final class JsDefinitionProxy {
      *         <code>false</code> otherwise
      */
     public static boolean isDefinition(Class<?> type) {
-        return type.isInterface() && type != JsInvokers.class
-                && type != JsSnippets.class
-                && (JsInvokers.class.isAssignableFrom(type)
-                        || JsSnippets.class.isAssignableFrom(type));
+        return type.isInterface()
+                && type.isAnnotationPresent(JsDefinition.class);
     }
 
     /**

@@ -50,6 +50,7 @@ import com.vaadin.flow.js.JsSnippets;
  * {@link DomEvent#getEventDataElement(DomEventData)}:
  *
  * <pre>
+ * &#64;JsDefinition
  * public interface ClipboardJs extends JsSnippets {
  *
  *     &#64;JsExpression("return event.clipboardData?.getData($0) || null;")

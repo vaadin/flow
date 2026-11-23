@@ -56,6 +56,7 @@ import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.ParentLayout;
@@ -422,6 +423,7 @@ class UidlWriterTest {
                         + encoded);
     }
 
+    @JsDefinition
     interface TestJs extends JsInvokers {
         @JsExpression("this.method($0)")
         void method(String value);

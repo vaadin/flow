@@ -18,8 +18,8 @@ import { hasOwnJsProperty } from '../../WidgetUtil';
 
 /**
  * Access to what the generated bundle registers for the JavaScript that
- * `JsInvokers` and `JsSnippets` interfaces declare: a function per method that
- * runs its JavaScript when called, a function per method that declares a snippet, and,
+ * `@JsDefinition` interfaces declare: a function per method that runs its
+ * JavaScript when called, a function per method that declares a snippet, and,
  * outside production, what a developer wrote for each of them.
  */
 
@@ -85,5 +85,5 @@ export function getNameOf(functionId: string): string {
  * The message for a function that the bundle does not have.
  */
 export function describeMissingFunction(functionId: string): string {
-  return `No JavaScript in the bundle for ${getNameOf(functionId)}. The build collects the JavaScript of JsInvokers and JsSnippets interfaces, @EventData values and @DomEvent filters, but did not collect this one.`;
+  return `No JavaScript in the bundle for ${getNameOf(functionId)}. The build collects the JavaScript of @JsDefinition interfaces, @EventData values and @DomEvent filters, but did not collect this one.`;
 }

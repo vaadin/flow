@@ -64,6 +64,7 @@ import com.vaadin.flow.dom.JsFunction;
  * public interface ItemTemplate extends JsSnippet {
  * }
  *
+ * &#64;JsDefinition
  * public interface OrderTemplates extends JsSnippets {
  *     &#64;JsExpression("return html`&lt;b&gt;${$0}: ${item.status}&lt;/b&gt;`;")
  *     ItemTemplate status(String label);

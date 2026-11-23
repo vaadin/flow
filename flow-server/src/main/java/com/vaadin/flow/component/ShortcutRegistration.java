@@ -40,6 +40,7 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippets;
@@ -1261,6 +1262,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * @see ShortcutFilterJs
      * @since 25.4
      */
+    @JsDefinition
     public interface ShortcutJs extends JsInvokers {
 
         /**
@@ -1322,6 +1324,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * @see ShortcutJs
      * @since 25.4
      */
+    @JsDefinition
     public interface ShortcutFilterJs extends JsSnippets {
 
         /**

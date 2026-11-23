@@ -22,6 +22,7 @@ import org.jspecify.annotations.Nullable;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippets;
@@ -251,6 +252,7 @@ public class WriteToClipboardAction extends PromiseAction<String> {
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      */
+    @JsDefinition
     public interface WriteToClipboardJs extends JsSnippets {
 
         /**
