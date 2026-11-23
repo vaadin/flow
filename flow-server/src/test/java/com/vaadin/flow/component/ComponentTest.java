@@ -1366,8 +1366,29 @@ public class ComponentTest {
 
     }
 
-    @Tag("span")
+    // Not a component, but what it declares and uses is loaded with the
+    // component that uses it
+    @StyleSheet("non-component.css")
+    @JavaScript("context://non-component.js")
     @Uses(ComponentWithDependencies.class)
+    public interface NonComponentWithDependencies {
+    }
+
+    @Tag("div")
+    @StyleSheet("used-by-plain-class.css")
+    public static class ComponentUsedByPlainClass extends Component {
+    }
+
+    // Neither a component nor an interface, so the build bundles what it
+    // declares and nothing of it is loaded at runtime, but what it uses is
+    @StyleSheet("plain-class.css")
+    @Uses(ComponentUsedByPlainClass.class)
+    public static class PlainClassWithDependencies {
+    }
+
+    @Tag("span")
+    @Uses(NonComponentWithDependencies.class)
+    @Uses(PlainClassWithDependencies.class)
     @JavaScript("uses.js")
     public static class UsesComponentWithDependencies extends Component {
 
@@ -1402,10 +1423,18 @@ public class ComponentTest {
 
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 ui.getInternals().getDependencyList().getPendingSendToClient());
-        assertEquals(1, pendingDependencies.size());
+        assertEquals(4, pendingDependencies.size());
 
         assertDependency(Dependency.Type.STYLESHEET, "context://css.css",
                 pendingDependencies);
+        assertDependency(Dependency.Type.STYLESHEET,
+                "context://non-component.css", pendingDependencies);
+        assertDependency(Dependency.Type.JAVASCRIPT,
+                "context://non-component.js", pendingDependencies);
+        assertDependency(Dependency.Type.STYLESHEET,
+                "context://used-by-plain-class.css", pendingDependencies);
+        assertFalse(
+                pendingDependencies.containsKey("context://plain-class.css"));
     }
 
     @Test
@@ -1417,10 +1446,18 @@ public class ComponentTest {
 
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 internals.getDependencyList().getPendingSendToClient());
-        assertEquals(1, pendingDependencies.size());
+        assertEquals(4, pendingDependencies.size());
 
         assertDependency(Dependency.Type.STYLESHEET, "context://css.css",
                 pendingDependencies);
+        assertDependency(Dependency.Type.STYLESHEET,
+                "context://non-component.css", pendingDependencies);
+        assertDependency(Dependency.Type.JAVASCRIPT,
+                "context://non-component.js", pendingDependencies);
+        assertDependency(Dependency.Type.STYLESHEET,
+                "context://used-by-plain-class.css", pendingDependencies);
+        assertFalse(
+                pendingDependencies.containsKey("context://plain-class.css"));
     }
 
     @Test

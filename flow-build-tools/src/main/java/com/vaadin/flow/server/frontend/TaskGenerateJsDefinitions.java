@@ -52,12 +52,15 @@ import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsStringFallbacks;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsDefinitionProxy.Kind;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.server.Constants;
@@ -68,13 +71,14 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
 
 /**
  * Generates {@link FrontendUtils#JS_DEFINITIONS_FILE_NAME}, which registers the
- * JavaScript of every {@link JsDefinition} interface on the class path as an
- * ordinary function of the bundle: in one registry for the methods that run
- * their JavaScript when called, in another for those of them that are annotated
- * with {@link JsWithExecutionContext} and take the execution context as their
- * first parameter, and in a third for the methods that declare a
- * {@link JsSnippet}, which the client turns into a function when it decodes the
- * snippet. A definition that does not pass
+ * JavaScript of every {@link JsDefinition} interface on the class path, one
+ * that extends {@link JsInvokers} or {@link JsSnippets}, as an ordinary
+ * function of the bundle: in one registry for the methods that run their
+ * JavaScript when called, in another for those of them that are annotated with
+ * {@link JsWithExecutionContext} and take the execution context as their first
+ * parameter, and in a third for the methods that declare a {@link JsSnippet},
+ * which the client turns into a function when it decodes the snippet. A
+ * definition that does not pass
  * {@link JsDefinitionProxy#checkDefinition(Class)} is left out, with an error
  * in the log.
  * <p>
@@ -736,7 +740,9 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             return List.of();
         }
         List<Method> methods = new ArrayList<>();
-        for (Method method : definition.getMethods()) {
+        // Not getMethods(), whose inherited methods keep the annotations they
+        // had before the interface declaring them was hotswapped
+        for (Method method : ReflectTools.getCurrentPublicMethods(definition)) {
             if (method.isAnnotationPresent(JsExpression.class)) {
                 methods.add(method);
             }

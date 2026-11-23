@@ -44,6 +44,8 @@ import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsInvokers;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.CspMode;
@@ -68,7 +70,7 @@ class JsStringFallbacksTest {
 
     @JsDefinition
     @JsStringFallback(filters = FILTER, eventData = EVENT_DATA)
-    interface AddonFallbacks {
+    interface AddonFallbacks extends JsInvokers {
         @JsExpression("return this.scrollTop")
         PendingJavaScriptResult scrollTop();
 
@@ -78,7 +80,7 @@ class JsStringFallbacksTest {
 
     @JsDefinition
     @JsStringFallback
-    interface FunctionFallbacks {
+    interface FunctionFallbacks extends JsSnippets {
         @JsExpression("this.title = $0")
         JsFunction setTitle(Object title);
 
@@ -88,7 +90,7 @@ class JsStringFallbacksTest {
 
     @JsDefinition
     @JsStringFallback
-    interface NamedFunctionFallbacks {
+    interface NamedFunctionFallbacks extends JsSnippets {
         @JsExpression("return value * 2")
         @JsFunctionParameterNames("value")
         JsFunction twice();
@@ -96,19 +98,19 @@ class JsStringFallbacksTest {
 
     @JsDefinition
     @JsStringFallback(filters = "event.detail")
-    interface PathFilterFallbacks {
+    interface PathFilterFallbacks extends JsSnippets {
     }
 
     @JsDefinition
     @JsStringFallback
-    interface FocusFallbacks {
+    interface FocusFallbacks extends JsInvokers {
         @JsExpression("this.focus()")
         void focus();
     }
 
     @JsDefinition
     @JsStringFallback
-    interface OverloadedFallbacks {
+    interface OverloadedFallbacks extends JsInvokers {
         @JsExpression("console.log('text', $0)")
         void log(String text);
 
@@ -118,14 +120,14 @@ class JsStringFallbacksTest {
 
     @JsDefinition
     @JsStringFallback
-    interface DuplicateFallbacks {
+    interface DuplicateFallbacks extends JsInvokers {
         @JsExpression("return this.scrollTop")
         PendingJavaScriptResult readScrollTop();
     }
 
     @JsDefinition
     @JsStringFallback
-    interface VariadicFallbacks {
+    interface VariadicFallbacks extends JsInvokers {
         @JsExpression("console.log(...$0)")
         void log(Object... values);
     }

@@ -277,7 +277,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private String createCspNonce() {
         byte[] bytes = new byte[16];
         nonceRandom.nextBytes(bytes);
-        return Base64.getEncoder().encodeToString(bytes);
+        // Padding is not needed since the nonce is only compared as a string
+        return Base64.getEncoder().withoutPadding().encodeToString(bytes);
     }
 
     private static ContentSecurityPolicy createDefaultContentSecurityPolicy(

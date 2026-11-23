@@ -342,7 +342,7 @@ public final class CspViolationReporter {
                     example:
 
                         @JsDefinition
-                        public interface YourJs {
+                        public interface YourJs extends JsInvokers {
                             @JsExpression("%s")
                             PendingJavaScriptResult %s(%s);
                         }
@@ -385,7 +385,7 @@ public final class CspViolationReporter {
                     example:
 
                         @JsDefinition
-                        public interface YourFunctions {
+                        public interface YourFunctions extends JsSnippets {
                             @JsExpression("%s")
                     %s        JsFunction %s(%s);
                         }
@@ -394,9 +394,7 @@ public final class CspViolationReporter {
                     that method instead of from the string: %s. If the call is \
                     in an add-on that you can not change, also add \
                     @JsStringFallback to the interface, next to @JsDefinition. \
-                    Keep that interface for functions only: methods that run \
-                    JavaScript go into another one. Then the string runs the \
-                    function from the bundle.%s
+                    Then the string runs the function from the bundle.%s
                     """.formatted(escapeJavaString(body), declareNames(), name,
                     declareParameters(captureCount), use, namesHint());
         }
@@ -456,7 +454,7 @@ public final class CspViolationReporter {
                     instead of setFilter:
 
                         @JsDefinition
-                        public interface YourEventJs {
+                        public interface YourEventJs extends JsSnippets {
                             @JsExpression("return (%s);")
                             DomEventFilter %s();
                         }
@@ -467,7 +465,7 @@ public final class CspViolationReporter {
 
                         @JsDefinition
                         @JsStringFallback(filters = "%s")
-                        public interface YourFallbacks {
+                        public interface YourFallbacks extends JsSnippets {
                         }
                     """
                     .formatted(name, escaped, name, escaped);
@@ -508,7 +506,7 @@ public final class CspViolationReporter {
                     the value with event.getEventData for the same object:
 
                         @JsDefinition
-                        public interface YourEventJs {
+                        public interface YourEventJs extends JsSnippets {
                     %s    }
 
                     If the call is in an add-on that you can not change, list \
@@ -518,7 +516,7 @@ public final class CspViolationReporter {
 
                         @JsDefinition
                         @JsStringFallback(eventData = %s)
-                        public interface YourFallbacks {
+                        public interface YourFallbacks extends JsSnippets {
                         }
                     """
                     .formatted(String.join("(), ", names), methods, listed);

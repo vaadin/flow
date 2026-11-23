@@ -42,6 +42,7 @@ import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.shared.Registration;
 
@@ -1262,7 +1263,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * @since 25.4
      */
     @JsDefinition
-    public interface ShortcutJs extends Serializable {
+    public interface ShortcutJs extends JsInvokers {
 
         /**
          * Relays the keydown events of an element that only exists in the
@@ -1324,7 +1325,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * @since 25.4
      */
     @JsDefinition
-    public interface ShortcutFilterJs extends Serializable {
+    public interface ShortcutFilterJs extends JsSnippets {
 
         /**
          * Creates the filter for

@@ -23,6 +23,8 @@ import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsInvokers;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.router.Route;
 
@@ -51,7 +53,7 @@ public class StringFallbackView extends Div {
 
     @JsDefinition
     @JsStringFallback(filters = FILTER, eventData = EVENT_DATA)
-    public interface AddonFallbacks {
+    public interface AddonFallbacks extends JsInvokers {
         @JsExpression(SET_STATUS)
         PendingJavaScriptResult setStatus(String first, String second);
 
@@ -65,7 +67,7 @@ public class StringFallbackView extends Div {
 
     @JsDefinition
     @JsStringFallback
-    public interface AddonFunctionFallbacks {
+    public interface AddonFunctionFallbacks extends JsSnippets {
         @JsExpression(SET_TITLE)
         JsFunction setTitle(Object title);
 
