@@ -394,9 +394,7 @@ public final class CspViolationReporter {
                     that method instead of from the string: %s. If the call is \
                     in an add-on that you can not change, also add \
                     @JsStringFallback to the interface, next to @JsDefinition. \
-                    Methods that run JavaScript go into another interface, \
-                    which extends JsInvokers. Then the string runs the \
-                    function from the bundle.%s
+                    Then the string runs the function from the bundle.%s
                     """.formatted(escapeJavaString(body), declareNames(), name,
                     declareParameters(captureCount), use, namesHint());
         }
@@ -467,7 +465,7 @@ public final class CspViolationReporter {
 
                         @JsDefinition
                         @JsStringFallback(filters = "%s")
-                        public interface YourFallbacks extends JsInvokers {
+                        public interface YourFallbacks extends JsSnippets {
                         }
                     """
                     .formatted(name, escaped, name, escaped);
@@ -518,7 +516,7 @@ public final class CspViolationReporter {
 
                         @JsDefinition
                         @JsStringFallback(eventData = %s)
-                        public interface YourFallbacks extends JsInvokers {
+                        public interface YourFallbacks extends JsSnippets {
                         }
                     """
                     .formatted(String.join("(), ", names), methods, listed);

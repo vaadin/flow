@@ -46,9 +46,9 @@ import java.lang.annotation.Target;
  * with as many parameters as there are captures. When the code then calls
  * {@code withArguments} on the function, the method declares the same names
  * with {@link JsFunctionParameterNames}; other names send the string again.
- * Methods that return snippets go into an interface that extends
- * {@link JsSnippets}, and methods that run JavaScript into one that extends
- * {@link JsInvokers}.
+ * These methods go into an interface that extends {@link JsSnippets}, and the
+ * methods for {@code executeJs} into one that extends {@link JsInvokers}, since
+ * one interface can not do both.
  * <li>{@code DomListenerRegistration.setFilter(String)} and
  * {@code DomListenerRegistration.addEventData(String)}: the strings listed in
  * {@link #filters()} and {@link #eventData()}.

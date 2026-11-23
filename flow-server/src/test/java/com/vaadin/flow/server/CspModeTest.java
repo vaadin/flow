@@ -474,10 +474,6 @@ class CspModeTest {
                 plain.contains(
                         "public interface YourFunctions extends JsSnippets {"),
                 plain);
-        assertTrue(plain.contains(
-                "Methods that run JavaScript go into another interface, which"
-                        + " extends JsInvokers."),
-                plain);
         assertTrue(plain.contains(": JsSnippets.of(YourFunctions.class)."),
                 plain);
         assertTrue(initializer.contains(
@@ -520,7 +516,7 @@ class CspModeTest {
                     "public interface YourEventJs extends JsSnippets {"),
                     message);
             assertTrue(message.contains(
-                    "public interface YourFallbacks extends JsInvokers {"),
+                    "public interface YourFallbacks extends JsSnippets {"),
                     message);
         }
     }

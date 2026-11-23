@@ -1081,7 +1081,7 @@ class TaskGenerateJsDefinitionsTest {
 
     @JsDefinition
     @JsStringFallback(filters = "event.key === 'Escape'", eventData = "event.target.value.trim().length")
-    public interface EventFallbacks extends JsInvokers {
+    public interface EventFallbacks extends JsSnippets {
     }
 
     @Test

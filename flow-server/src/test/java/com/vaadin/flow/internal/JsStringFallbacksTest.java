@@ -98,7 +98,7 @@ class JsStringFallbacksTest {
 
     @JsDefinition
     @JsStringFallback(filters = "event.detail")
-    interface PathFilterFallbacks extends JsInvokers {
+    interface PathFilterFallbacks extends JsSnippets {
     }
 
     @JsDefinition
