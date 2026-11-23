@@ -19,6 +19,9 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -31,17 +34,21 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import com.vaadin.experimental.DisabledFeatureException;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import com.vaadin.flow.shared.ui.Transport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -49,7 +56,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -143,6 +153,30 @@ class WebComponentConfigurationRegistryInitializerTest {
             fail("WebComponentRegistryInitializer.process should not throw with empty set");
         }
         verify(registry).setConfigurations(Collections.emptySet());
+    }
+
+    @Test
+    void pushWithServerSentEventsWithoutFeatureFlag_exceptionIsThrown() {
+        when(registry.getEmbeddedApplicationAnnotation(Push.class)).thenReturn(
+                Optional.of(SsePushExporter.class.getAnnotation(Push.class)));
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put(WebComponentConfigurationRegistry.class.getName(),
+                registry);
+        attributes.put(Lookup.class.getName(), mock(Lookup.class));
+        attributes.put(ApplicationConfiguration.class.getName(),
+                mock(ApplicationConfiguration.class));
+        when(servletContext.getAttribute(anyString())).thenAnswer(
+                invocation -> attributes.get(invocation.getArgument(0)));
+        doAnswer(invocation -> attributes.put(invocation.getArgument(0),
+                invocation.getArgument(1))).when(servletContext)
+                .setAttribute(anyString(), any());
+
+        DisabledFeatureException thrown = assertThrows(
+                DisabledFeatureException.class,
+                () -> initializer.process(Set.of(SsePushExporter.class),
+                        servletContext));
+        assertTrue(thrown.getMessage()
+                .contains("com.vaadin.experimental.ssePushTransport=true"));
     }
 
     @Test
@@ -285,6 +319,21 @@ class WebComponentConfigurationRegistryInitializerTest {
         public SiblingExporter() {
             super("my-component-sibling");
             addProperty("name", "something");
+        }
+
+        @Override
+        public void configureInstance(WebComponent<MyComponent> webComponent,
+                MyComponent component) {
+
+        }
+    }
+
+    @Push(transport = Transport.SERVER_SENT_EVENTS)
+    public static class SsePushExporter
+            extends WebComponentExporter<MyComponent> {
+
+        public SsePushExporter() {
+            super("sse-push-component");
         }
 
         @Override

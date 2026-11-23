@@ -161,26 +161,30 @@ public class VaadinAppShellInitializer
             }
         }
 
-        checkPushTransportEnabled(registry.getShell(), context);
+        Class<? extends AppShellConfigurator> shell = registry.getShell();
+        if (shell != null) {
+            for (Push push : shell.getAnnotationsByType(Push.class)) {
+                checkPushTransportEnabled(push, context);
+            }
+        }
     }
 
     /**
-     * Fails startup when the {@link Push} annotation of the app shell selects a
-     * transport behind a disabled feature flag. Otherwise every UI creation
-     * would fail with the same error, but only once a page is requested.
+     * Checks at startup that the transport selected by a {@link Push}
+     * annotation can be used. Otherwise every UI creation would fail with the
+     * same error, but only once a page is requested.
+     *
+     * @param push
+     *            the push annotation to check
+     * @param context
+     *            the context to read the feature flags from
+     * @throws DisabledFeatureException
+     *             if the transport is behind a feature flag that is not enabled
      */
-    private static void checkPushTransportEnabled(
-            Class<? extends AppShellConfigurator> shell,
-            VaadinContext context) {
-        if (shell == null) {
-            return;
-        }
-        boolean usesServerSentEvents = Arrays
-                .stream(shell.getAnnotationsByType(Push.class))
-                .anyMatch(push -> push
-                        .transport() == Transport.SERVER_SENT_EVENTS);
-        if (usesServerSentEvents && !FeatureFlags.get(context)
-                .isEnabled(CoreFeatureFlagProvider.SSE_PUSH_TRANSPORT)) {
+    static void checkPushTransportEnabled(Push push, VaadinContext context) {
+        if (push.transport() == Transport.SERVER_SENT_EVENTS
+                && !FeatureFlags.get(context).isEnabled(
+                        CoreFeatureFlagProvider.SSE_PUSH_TRANSPORT)) {
             throw new DisabledFeatureException(
                     CoreFeatureFlagProvider.SSE_PUSH_TRANSPORT);
         }

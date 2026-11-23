@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,6 +29,7 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.internal.CustomElementNameValidator;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
@@ -82,6 +84,13 @@ public class WebComponentConfigurationRegistryInitializer
                                     .getSimpleName(),
                             WebComponentExporter.class.getSimpleName()),
                     e);
+        }
+
+        Optional<Push> push = instance
+                .getEmbeddedApplicationAnnotation(Push.class);
+        if (push.isPresent()) {
+            VaadinAppShellInitializer.checkPushTransportEnabled(push.get(),
+                    context);
         }
     }
 
