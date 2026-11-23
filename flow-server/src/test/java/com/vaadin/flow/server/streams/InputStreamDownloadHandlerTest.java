@@ -63,6 +63,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+// The deprecated inline() and isInline() must keep working until removal.
+@SuppressWarnings("removal")
 class InputStreamDownloadHandlerTest {
     private static final int SIMULATED_DOWNLOAD_SIZE = 165000;
 
@@ -517,7 +519,6 @@ class InputStreamDownloadHandlerTest {
     }
 
     @Test
-    @SuppressWarnings("removal")
     void isInlineOverridden_servedInline() throws IOException {
         InputStream stream = mock(InputStream.class);
         when(stream.read(any(), anyInt(), anyInt())).thenReturn(-1);
