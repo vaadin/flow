@@ -17,13 +17,21 @@ package com.vaadin.base.devserver.hotswap.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.agent.ByteBuddyAgent;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import net.bytebuddy.dynamic.loading.ClassReloadingStrategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -32,6 +40,7 @@ import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
@@ -80,6 +89,12 @@ class JsDefinitionHotswapperTest {
     // Only extended, so not a definition itself
     interface ScrollableJs extends JsInvokers {
         @JsExpression("this.scrollTop = $0")
+        void scrollTo(int top);
+    }
+
+    // What ScrollableJs is redefined to
+    interface EditedScrollableJs extends JsInvokers {
+        @JsExpression("this.scrollLeft = $0")
         void scrollTo(int top);
     }
 
@@ -341,6 +356,55 @@ class JsDefinitionHotswapperTest {
         } finally {
             registration.remove();
         }
+    }
+
+    @Test
+    void extendedInterfaceRedefinedInPlace_definitionsExtendingItSeeTheNewJavaScript()
+            throws IOException {
+        // Copies, so that the redefinition leaves the classes of the other
+        // cases alone. Defined without a code source, so a coverage agent does
+        // not add members that the redefinition would then remove.
+        Map<String, Class<?>> copies = new ByteBuddy()
+                .redefine(ScrollableJs.class).make()
+                .include(new ByteBuddy().redefine(ScrollingListJs.class).make())
+                .load(new URLClassLoader(new URL[0],
+                        getClass().getClassLoader()),
+                        ClassLoadingStrategy.Default.CHILD_FIRST)
+                .getAllLoaded().values().stream()
+                .collect(Collectors.toMap(Class::getName, type -> type));
+        Class<?> parent = copies.get(ScrollableJs.class.getName());
+        Class<?> definition = copies.get(ScrollingListJs.class.getName());
+        // What the bundle was built from, which also has the definition list
+        // its methods before the redefinition
+        writeGeneratedDefinitionsFor(definition);
+        new JsCall(definition, "scrollTo", List.of(1)).getFunctionId();
+
+        // In place, as the JVM redefines a class: the definition keeps the
+        // copies of the inherited methods it made before
+        ByteBuddyAgent.install();
+        new ByteBuddy().redefine(EditedScrollableJs.class)
+                .name(ScrollableJs.class.getName()).make()
+                .load(parent.getClassLoader(),
+                        ClassReloadingStrategy.fromInstalledAgent());
+        // Done by ReflectionCacheHotswapper before the hotswappers run
+        ReflectionCache.clearAll(parent);
+
+        // The loader of the application, which is what the definitions the
+        // generated file names are loaded with
+        Thread thread = Thread.currentThread();
+        ClassLoader contextClassLoader = thread.getContextClassLoader();
+        thread.setContextClassLoader(parent.getClassLoader());
+        try {
+            classesChanged(parent);
+        } finally {
+            thread.setContextClassLoader(contextClassLoader);
+        }
+
+        assertEquals(List.of(definition.getName()), hotswapper.reported,
+                "the definition now inherits other JavaScript than the bundle carries");
+        assertEquals(JsCall.functionId("this.scrollLeft = $0", 1, false),
+                new JsCall(definition, "scrollTo", List.of(1)).getFunctionId(),
+                "a call should name the function of the JavaScript the interface declares now");
     }
 
     @Test

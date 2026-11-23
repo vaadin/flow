@@ -43,6 +43,7 @@ import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
@@ -535,7 +536,9 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             return List.of();
         }
         List<Method> methods = new ArrayList<>();
-        for (Method method : definition.getMethods()) {
+        // Not getMethods(), whose inherited methods keep the annotations they
+        // had before the interface declaring them was hotswapped
+        for (Method method : ReflectTools.getCurrentPublicMethods(definition)) {
             if (method.isAnnotationPresent(JsExpression.class)) {
                 methods.add(method);
             }

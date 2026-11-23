@@ -277,7 +277,8 @@ public final class JsDefinitionProxy {
         // Not the shared mapper's factory, whose cache would keep the classes
         // of the project that the build checks reachable after the build
         TypeFactory types = TypeFactory.createDefaultInstance();
-        for (Method method : definitionType.getMethods()) {
+        for (Method method : ReflectTools
+                .getCurrentPublicMethods(definitionType)) {
             if (method.isDefault()
                     || Modifier.isStatic(method.getModifiers())) {
                 inJava.add(method.getName());

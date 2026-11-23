@@ -65,6 +65,7 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ThemeUtils;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinitionProxy;
@@ -1467,7 +1468,7 @@ final class DevLoopRedefiner {
         // extended by one does not need @JsDefinition, and its methods are
         // generated as part of every definition that extends it.
         if (type.isInterface()) {
-            for (Method method : type.getMethods()) {
+            for (Method method : ReflectTools.getCurrentPublicMethods(type)) {
                 if (method.isAnnotationPresent(JsExpression.class)) {
                     imports.add("jsdefinition:" + fingerprintOf(method));
                 }

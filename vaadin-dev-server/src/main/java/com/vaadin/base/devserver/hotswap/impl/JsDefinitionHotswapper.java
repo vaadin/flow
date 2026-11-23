@@ -29,6 +29,7 @@ import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
@@ -140,8 +141,9 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
      * it, whether or not it is a definition itself.
      */
     private static boolean declaresJavaScript(Class<?> type) {
-        return type.isInterface() && Arrays.stream(type.getMethods()).anyMatch(
-                method -> method.isAnnotationPresent(JsExpression.class));
+        return type.isInterface() && ReflectTools.getCurrentPublicMethods(type)
+                .stream().anyMatch(method -> method
+                        .isAnnotationPresent(JsExpression.class));
     }
 
     /**
