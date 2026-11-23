@@ -52,7 +52,6 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -211,7 +210,7 @@ class ClassDownloadHandlerTest {
     }
 
     @Test
-    void inline_setFileNameInvokedByDefault() throws IOException {
+    void fileNameInvokedByDefault() throws IOException {
         DownloadHandler handler = DownloadHandler.forClassResource(
                 this.getClass(), PATH_TO_FILE, "my-download.pdf");
 
@@ -226,27 +225,7 @@ class ClassDownloadHandlerTest {
 
         handler.handleDownloadRequest(event);
 
-        verify(event).setFileName("my-download.pdf");
-        verify(event).setContentType("application/pdf");
-    }
-
-    @Test
-    void attachment_doesNotSetFileNameWhenInlined() throws IOException {
-        DownloadHandler handler = DownloadHandler.forClassResource(
-                this.getClass(), PATH_TO_FILE, "my-download.pdf").inline();
-
-        DownloadEvent event = mock(DownloadEvent.class);
-        when(event.getSession()).thenReturn(session);
-        when(event.getResponse()).thenReturn(response);
-        when(event.getOwningElement()).thenReturn(owner);
-        when(event.getOutputStream()).thenReturn(outputStream);
-        when(response.getOutputStream()).thenReturn(outputStream);
-        when(response.getService()).thenReturn(service);
-        when(service.getMimeType(anyString())).thenReturn("application/pdf");
-
-        handler.handleDownloadRequest(event);
-
-        verify(event, times(0)).setFileName("my-download.pdf");
+        verify(event).fileName("my-download.pdf", false);
         verify(event).setContentType("application/pdf");
     }
 
