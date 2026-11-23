@@ -27,6 +27,7 @@ import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.signals.Signal;
 
@@ -117,6 +118,10 @@ import com.vaadin.flow.signals.Signal;
 @NullMarked
 @Tag("form")
 public class NativeForm extends HtmlContainer {
+
+    static {
+        UsageStatistics.markAsUsed("flow/NativeForm", null);
+    }
 
     private static final String ATTRIBUTE_ACTION = "action";
     private static final String ATTRIBUTE_METHOD = "method";
