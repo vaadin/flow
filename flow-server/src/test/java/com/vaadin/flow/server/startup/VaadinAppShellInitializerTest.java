@@ -42,7 +42,6 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.simple.SimpleLoggerFactory;
 
 import com.vaadin.experimental.CoreFeatureFlagProvider;
-import com.vaadin.experimental.DisabledFeatureException;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.PushConfiguration;
@@ -451,11 +450,13 @@ public class VaadinAppShellInitializerTest {
     public void should_throw_when_appShellPushUsesServerSentEventsWithoutFeatureFlag() {
         classes.add(MyAppShellWithServerSentEventsPush.class);
 
-        DisabledFeatureException thrown = assertThrows(
-                DisabledFeatureException.class,
+        InvalidApplicationConfigurationException thrown = assertThrows(
+                InvalidApplicationConfigurationException.class,
                 () -> initializer.process(classes, servletContext));
         assertTrue(thrown.getMessage()
                 .contains("com.vaadin.experimental.ssePushTransport=true"));
+        assertTrue(thrown.getMessage().contains(
+                "property `vaadin.experimental.ssePushTransport=true`"));
     }
 
     @Test

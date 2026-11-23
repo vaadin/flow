@@ -90,7 +90,8 @@ public class WebComponentConfigurationRegistryInitializer
         Optional<Push> push = instance
                 .getEmbeddedApplicationAnnotation(Push.class);
         if (push.isPresent()) {
-            PushUtil.checkTransportEnabled(push.get().transport(), context);
+            PushUtil.checkTransportEnabledAtStartup(push.get().transport(),
+                    context, "a web component exporter");
         }
     }
 

@@ -34,7 +34,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.experimental.CoreFeatureFlagProvider;
-import com.vaadin.experimental.DisabledFeatureException;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -44,6 +43,7 @@ import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinContext;
@@ -162,11 +162,13 @@ class WebComponentConfigurationRegistryInitializerTest {
         useAttributeMapForServletContext();
 
         Set<Class<?>> exporters = Set.of(SsePushExporter.class);
-        DisabledFeatureException thrown = assertThrows(
-                DisabledFeatureException.class,
+        InvalidApplicationConfigurationException thrown = assertThrows(
+                InvalidApplicationConfigurationException.class,
                 () -> initializer.process(exporters, servletContext));
         assertTrue(thrown.getMessage()
                 .contains("com.vaadin.experimental.ssePushTransport=true"));
+        assertTrue(thrown.getMessage().contains(
+                "property `vaadin.experimental.ssePushTransport=true`"));
     }
 
     @Test

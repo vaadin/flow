@@ -162,7 +162,8 @@ public class VaadinAppShellInitializer
         Class<? extends AppShellConfigurator> shell = registry.getShell();
         if (shell != null) {
             for (Push push : shell.getAnnotationsByType(Push.class)) {
-                PushUtil.checkTransportEnabled(push.transport(), context);
+                PushUtil.checkTransportEnabledAtStartup(push.transport(),
+                        context, "the app shell " + shell.getName());
             }
         }
     }
