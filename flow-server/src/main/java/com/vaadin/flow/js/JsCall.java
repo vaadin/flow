@@ -220,16 +220,6 @@ public record JsCall(Class<?> definitionType, String methodName,
                                     + (variadic ? "*" : "") + ":" + expression,
                             StandardCharsets.UTF_8);
         }
-        if (JsStringFallbacks.isStringFallbackCall(method)) {
-            // Generated to also see the element as the parameter after the
-            // arguments, like the string it stands in for, so told apart from
-            // a call declaring the same JavaScript
-            return StringUtil
-                    .getHash(
-                            "stringFallback," + parameterCount
-                                    + (variadic ? "*" : "") + ":" + expression,
-                            StandardCharsets.UTF_8);
-        }
         if (!JsSnippet.class.isAssignableFrom(method.getReturnType())) {
             return functionId(expression, parameterCount, variadic);
         }
@@ -616,7 +606,10 @@ public record JsCall(Class<?> definitionType, String methodName,
             boolean declaresSnippet = declaresJavaScript
                     && JsSnippet.class.isAssignableFrom(method.getReturnType());
             declared.add(new DeclaredMethod(method,
-                    declaresJavaScript ? functionId(method) : null,
+                    declaresJavaScript
+                            ? JsStringFallbacks.functionId(definitionType,
+                                    method)
+                            : null,
                     declaresSnippet ? getFunctionParameterNames(method)
                             : List.of()));
         }

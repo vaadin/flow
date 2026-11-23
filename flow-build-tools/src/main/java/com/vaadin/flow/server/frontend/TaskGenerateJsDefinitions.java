@@ -198,9 +198,10 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      *            <code>null</code>
      * @param changedClasses
      *            the classes that changed, not <code>null</code>
-     * @return whether one of the classes is or was listed, so that the server
-     *         has to read the list again, even when only the methods of a
-     *         listed interface changed
+     * @return whether one of the classes is or was listed, or is an interface
+     *         that a listed interface extends, so that the server has to read
+     *         the list again, even when only the methods of a listed interface
+     *         changed
      * @throws UncheckedIOException
      *             if the list can not be read or written
      */
@@ -220,8 +221,23 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         if (affected) {
             writeStringFallbackNames(resourceOutputDirectory,
                     List.copyOf(names));
+            return true;
         }
-        return affected;
+        // A listed interface also stands in with what it inherits, so a
+        // change to an interface it extends changes what it declares
+        return changedClasses.stream().filter(Class::isInterface)
+                .anyMatch(changed -> names.stream()
+                        .anyMatch(name -> isSubtype(name, changed)));
+    }
+
+    private static boolean isSubtype(String name, Class<?> type) {
+        try {
+            return type.isAssignableFrom(
+                    Class.forName(name, false, type.getClassLoader()));
+        } catch (ClassNotFoundException | LinkageError e) {
+            // Not visible to the loader of the type, so it can not extend it
+            return false;
+        }
     }
 
     private static List<String> readStringFallbackNames(
@@ -747,11 +763,13 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                 methods.add(method);
             }
         }
-        methods.sort(Comparator.comparing(JsCall::functionId));
+        methods.sort(Comparator.comparing(
+                method -> JsStringFallbacks.functionId(definition, method)));
 
         List<String> functions = new ArrayList<>();
         for (Method method : methods) {
-            String functionId = quote(JsCall.functionId(method));
+            String functionId = quote(
+                    JsStringFallbacks.functionId(definition, method));
             // The parameters of the generated function are the arguments of the
             // call, referenced as $0, $1, ... by the declared expression. The
             // last parameter of a variadic method collects the arguments that
@@ -796,7 +814,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                                 ? (parameters.isEmpty() ? EXECUTION_CONTEXT
                                         : EXECUTION_CONTEXT + ", " + parameters)
                                 : parameters));
-                if (JsStringFallbacks.isStringFallbackCall(method)) {
+                if (JsStringFallbacks.isStringFallbackCall(definition,
+                        method)) {
                     // Sees the element as the parameter after the arguments,
                     // as the string it stands in for does
                     function.addAll(JsStringFallbacks.stringFallbackBody(

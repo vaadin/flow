@@ -470,6 +470,14 @@ class CspModeTest {
                                         JsFunction cspModeTestStrict_stringFunction_messageDeclaresFunctionForEachUse(Object arg0);
                                 """),
                 plain);
+        assertTrue(
+                plain.contains(
+                        "public interface YourFunctions extends JsSnippets {"),
+                plain);
+        assertTrue(plain.contains(
+                "Methods that run JavaScript go into another interface, which"
+                        + " extends JsInvokers."),
+                plain);
         assertTrue(plain.contains(": JsSnippets.of(YourFunctions.class)."),
                 plain);
         assertTrue(initializer.contains(
@@ -507,6 +515,14 @@ class CspModeTest {
                 eventData.contains(
                         "@JsStringFallback(eventData = \"event.x * 2\")"),
                 eventData);
+        for (String message : List.of(filter, eventData)) {
+            assertTrue(message.contains(
+                    "public interface YourEventJs extends JsSnippets {"),
+                    message);
+            assertTrue(message.contains(
+                    "public interface YourFallbacks extends JsInvokers {"),
+                    message);
+        }
     }
 
     @Test

@@ -41,6 +41,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
@@ -933,15 +934,26 @@ class TaskGenerateJsDefinitionsTest {
                         .map(JsonNode::asString).toList());
         assertTrue(
                 fallbackTask.getFileContent()
-                        .contains(JsCall.functionId(TitleFallbacks.class
-                                .getMethod("setTitle", Object.class))),
+                        .contains(JsStringFallbacks.functionId(
+                                TitleFallbacks.class,
+                                TitleFallbacks.class.getMethod("setTitle",
+                                        Object.class))),
                 "a fallback is a definition, so its function is in the bundle");
     }
 
-    @JsDefinition
-    public interface PlainFocusJs extends JsInvokers {
+    // Only extended, so not annotated
+    public interface FocusableJs extends JsInvokers {
         @JsExpression("this.focus()")
         void focus();
+    }
+
+    @JsDefinition
+    public interface PlainFocusJs extends FocusableJs {
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    public interface InheritedFocusFallbacks extends FocusableJs {
     }
 
     @Test
@@ -966,18 +978,24 @@ class TaskGenerateJsDefinitionsTest {
 
     @Test
     void stringFallbackCall_hasAFunctionOfItsOwn() throws Exception {
-        String fallback = JsCall
-                .functionId(FocusFallbacks.class.getMethod("focus"));
-        String plain = JsCall.functionId(PlainFocusJs.class.getMethod("focus"));
+        // Both inherit the method from the same interface
+        String fallback = JsStringFallbacks.functionId(
+                InheritedFocusFallbacks.class,
+                InheritedFocusFallbacks.class.getMethod("focus"));
+        String plain = JsStringFallbacks.functionId(PlainFocusJs.class,
+                PlainFocusJs.class.getMethod("focus"));
 
         assertNotEquals(plain, fallback,
                 "the fallback is generated differently, so it must not replace"
                         + " the function of a definition with the same JavaScript");
         String content = TaskGenerateJsDefinitions.renderFileContent(
-                List.of(FocusFallbacks.class, PlainFocusJs.class), true);
+                List.of(InheritedFocusFallbacks.class, PlainFocusJs.class),
+                true);
         assertTrue(content.contains("[\"" + plain + "\"] = async function () {"
                 + System.lineSeparator() + "this.focus()"), content);
-        assertTrue(content.contains("[\"" + fallback + "\"]"), content);
+        assertTrue(content.contains("[\"" + fallback
+                + "\"] = async function () {" + System.lineSeparator()
+                + "  return (async function ($0) {"), content);
     }
 
     @Test
@@ -1031,6 +1049,22 @@ class TaskGenerateJsDefinitionsTest {
                         TitleFallbacks.class.getName()),
                 JacksonUtils.getMapper().readTree(list).valueStream()
                         .map(JsonNode::asString).toList());
+    }
+
+    @Test
+    void updateStringFallbacks_interfaceAListedOneExtends_affected()
+            throws Exception {
+        File resources = new File(temporaryFolder, "resources");
+        File list = new File(resources, Constants.JS_STRING_FALLBACKS_FILE);
+        list.getParentFile().mkdirs();
+        String listed = "[\"" + InheritedFocusFallbacks.class.getName() + "\"]";
+        Files.writeString(list.toPath(), listed);
+
+        assertTrue(
+                TaskGenerateJsDefinitions.updateStringFallbacks(resources,
+                        Set.of(FocusableJs.class)),
+                "what the listed interface inherits changed");
+        assertEquals(listed, Files.readString(list.toPath()));
     }
 
     @Test

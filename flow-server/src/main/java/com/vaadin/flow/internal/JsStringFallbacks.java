@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -376,40 +377,75 @@ public final class JsStringFallbacks {
 
     private static List<Method> collectDeclaredMethods(
             Class<?> definitionType) {
-        return Arrays.stream(definitionType.getMethods()).filter(
-                method -> method.isAnnotationPresent(JsExpression.class))
+        // Not getMethods(), whose inherited methods keep the annotations they
+        // had before the interface declaring them was hotswapped
+        return ReflectTools.getCurrentPublicMethods(definitionType).stream()
+                .filter(method -> method
+                        .isAnnotationPresent(JsExpression.class))
                 .toList();
     }
 
     /**
-     * Checks whether the given method runs JavaScript in place of an
-     * <code>executeJs</code> string, which is the case for a method that does
-     * not return a snippet and is declared by a {@link JsStringFallback}
-     * interface.
+     * Checks whether the given method of the given definition runs JavaScript
+     * in place of an <code>executeJs</code> string, which is the case for a
+     * method that does not return a snippet of a {@link JsStringFallback}
+     * interface, whether the interface declares the method or inherits it.
      * <p>
      * Such a method is generated so that its JavaScript sees what the string
      * would see: <code>Element.executeJs(String, Object...)</code> gives the
      * element to the string as one more parameter after the arguments, so a
      * string can use <code>$0</code> as the element when it has no arguments.
      * Since it is generated differently, its function has an identifier of its
-     * own, so it never replaces the function of another definition that
-     * declares the same JavaScript.
+     * own, see {@link #functionId(Class, Method)}.
      *
-     * @param method
-     *            a method annotated with {@link JsExpression}, not
+     * @param definitionType
+     *            the definition the method is called through, not
      *            <code>null</code>
+     * @param method
+     *            a method of the definition annotated with
+     *            {@link JsExpression}, not <code>null</code>
      * @return <code>true</code> if the method stands in for a string call
      */
-    public static boolean isStringFallbackCall(Method method) {
-        return method.getDeclaringClass()
-                .isAnnotationPresent(JsStringFallback.class)
+    public static boolean isStringFallbackCall(Class<?> definitionType,
+            Method method) {
+        return definitionType.isAnnotationPresent(JsStringFallback.class)
                 && !JsSnippet.class.isAssignableFrom(method.getReturnType());
     }
 
     /**
+     * Gets the identifier of the function that the given method of the given
+     * definition registers in the generated bundle.
+     * <p>
+     * This is {@link JsCall#functionId(Method)}, except for a method that
+     * {@link #isStringFallbackCall(Class, Method) stands in for a string call}:
+     * it is generated differently, so it has an identifier of its own and never
+     * replaces the function of another definition that declares the same
+     * JavaScript, such as an interface it inherits the method from.
+     *
+     * @param definitionType
+     *            the definition the method is called through, not
+     *            <code>null</code>
+     * @param method
+     *            a method of the definition annotated with
+     *            {@link JsExpression}, not <code>null</code>
+     * @return the function identifier, not <code>null</code>
+     */
+    public static String functionId(Class<?> definitionType, Method method) {
+        if (!isStringFallbackCall(definitionType, method)) {
+            return JsCall.functionId(method);
+        }
+        int parameterCount = method.getParameterCount();
+        return StringUtil.getHash(
+                "stringFallback," + parameterCount
+                        + (method.isVarArgs() ? "*" : "") + ":"
+                        + method.getAnnotation(JsExpression.class).value(),
+                StandardCharsets.UTF_8);
+    }
+
+    /**
      * Gets the body of the generated function for a method that
-     * {@link #isStringFallbackCall(Method) stands in for a string call}. It
-     * runs the declared JavaScript the way
+     * {@link #isStringFallbackCall(Class, Method) stands in for a string call}.
+     * It runs the declared JavaScript the way
      * <code>Element.executeJs(String, Object...)</code> runs the string: in a
      * function whose <code>this</code> is the element and which sees the
      * element as the parameter after the arguments.

@@ -203,6 +203,20 @@ class JsCallTest {
                 "the interface it overrides still runs its own JavaScript");
     }
 
+    @JsDefinition
+    @JsStringFallback
+    interface ScrollFallbacks extends ScrollableJs {
+    }
+
+    @Test
+    void getFunctionId_methodInheritedByStringFallback_isTheFallbackFunction() {
+        // Generated to also see the element after the arguments, so it must
+        // not run the plain function of the interface it is inherited from
+        assertNotEquals(JsCall.functionId("this.scrollTop = $0", 1, false),
+                new JsCall(ScrollFallbacks.class, "scrollTo", List.of(1))
+                        .getFunctionId());
+    }
+
     @Test
     void getExpression_overloadsWithTheSameArity_throws() {
         // Overloads are resolved by name and argument count, so two of them
