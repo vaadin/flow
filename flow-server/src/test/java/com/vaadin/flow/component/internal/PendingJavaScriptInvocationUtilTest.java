@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -54,6 +55,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -84,7 +86,8 @@ class PendingJavaScriptInvocationUtilTest {
     void invisibleOwnersReachingTheThreshold_loggedOnceWhenQueueIsSent() {
         MockUI ui = new MockUI();
         TestComponent component = new TestComponent();
-        ui.add(component);
+        TestComponent visible = new TestComponent();
+        ui.add(component, visible);
         component.setVisible(false);
 
         List<String> warnings = captureWarnings(() -> {
@@ -97,8 +100,11 @@ class PendingJavaScriptInvocationUtilTest {
             executeJs(component, 1);
             sendQueue(ui);
 
+            // Only a few invocations for visible owners pile up on top of
+            // the ones kept for the invisible owner
+            executeJs(visible, 1);
             ui.getInternals().checkUndeliveredJavaScriptInvocations();
-            executeJs(component, 1);
+            executeJs(visible, 1);
             ui.getInternals().checkUndeliveredJavaScriptInvocations();
         });
 
@@ -137,7 +143,42 @@ class PendingJavaScriptInvocationUtilTest {
                 warnings.get(0).contains(
                         "are waiting for the browser to send a request"),
                 warnings.get(0));
+        assertTrue(warnings.get(0)
+                .contains("The newest one still waiting was scheduled for "
+                        + component.getElement().getNode().describe()),
+                warnings.get(0));
+        assertTrue(warnings.get(0).contains("this.foo = $0"), warnings.get(0));
         assertFalse(isLogged(ui, PileUp.DELIVERY_TOO_SLOW));
+    }
+
+    @Test
+    void debugLoggingEnabled_callSiteOfNewestInvocationLogged() {
+        MockUI ui = new MockUI();
+        TestComponent component = new TestComponent();
+        ui.add(component);
+        String name = PendingJavaScriptInvocationUtil.class.getName();
+        Logger logger = spy(LoggerFactory.getLogger(name));
+        when(logger.isDebugEnabled()).thenReturn(true);
+
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
+            loggerFactory.when(() -> LoggerFactory.getLogger(name))
+                    .thenReturn(logger);
+            executeJs(component, WARNING_THRESHOLD);
+            ui.getInternals().checkUndeliveredJavaScriptInvocations();
+            executeJs(component, 1);
+            ui.getInternals().checkUndeliveredJavaScriptInvocations();
+        }
+
+        ArgumentCaptor<Throwable> callSite = ArgumentCaptor
+                .forClass(Throwable.class);
+        verify(logger).debug(eq(
+                "Call site of the newest JavaScript invocation in the warning above"),
+                callSite.capture());
+        assertTrue(Arrays.stream(callSite.getValue().getStackTrace())
+                .anyMatch(frame -> frame.getMethodName().equals(
+                        "debugLoggingEnabled_callSiteOfNewestInvocationLogged")),
+                "the call site should lead back to the code that scheduled the invocation");
     }
 
     @Test
