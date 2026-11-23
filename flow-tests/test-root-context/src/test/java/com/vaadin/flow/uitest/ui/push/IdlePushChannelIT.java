@@ -57,15 +57,30 @@ public abstract class IdlePushChannelIT extends ChromeBrowserTest {
         waitForClientCounter(1);
         PushConnectionTracker pushConnections = new PushConnectionTracker(
                 getDriver());
-        int attempts = pushConnections.getAttemptCount();
+        int[] attempts = { pushConnections.getAttemptCount() };
+        long[] lastAttempt = { System.currentTimeMillis() };
 
         // The idle timeout ends the push connection and the client opens a
         // new one; without it, this test would not test an idle timeout.
-        // Reading the browser's network log does not touch the server, so
-        // the connection stays idle meanwhile.
+        // Long polling also renews its request right after each pushed
+        // message, so an attempt counts only once the connection has been
+        // idle for a while. Reading the browser's network log does not touch
+        // the server, so the connection stays idle meanwhile.
         try {
-            waitUntil(driver -> pushConnections.getAttemptCount() > attempts,
-                    10 * IdlePushChannelServlet.IDLE_TIMEOUT_MS / 1000);
+            waitUntil(driver -> {
+                int count = pushConnections.getAttemptCount();
+                if (count == attempts[0]) {
+                    return false;
+                }
+                long now = System.currentTimeMillis();
+                if (now - lastAttempt[0] >= IdlePushChannelServlet.IDLE_TIMEOUT_MS
+                        / 2) {
+                    return true;
+                }
+                attempts[0] = count;
+                lastAttempt[0] = now;
+                return false;
+            }, 10 * IdlePushChannelServlet.IDLE_TIMEOUT_MS / 1000);
         } catch (TimeoutException e) {
             Assert.fail("Push connection was not re-established while idle. "
                     + "Push connections: " + pushConnections.getTransports());
