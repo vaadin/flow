@@ -49,18 +49,14 @@ public abstract class IdlePushChannelIT extends AbstractBrowserConsoleTest {
         testBench().disableWaitForVaadin();
         waitForClientCounter(1);
         getBrowserLogs(true);
-        String reconnected = "Push connection re-established using "
-                + getViewClass().getAnnotation(CustomPush.class).transport()
-                        .getIdentifier();
 
         // The idle timeout ends the push connection and the client opens a
         // new one; without it, this test would not test an idle timeout.
         // Reading the logs does not touch the server, so the connection
         // stays idle meanwhile.
         try {
-            waitUntil(
-                    driver -> getBrowserLogs(false).stream()
-                            .map(String::valueOf).anyMatch(reconnected::equals),
+            waitUntil(driver -> getBrowserLogs(false).stream()
+                    .map(String::valueOf).anyMatch(this::isReconnectLog),
                     10 * IdlePushChannelServlet.IDLE_TIMEOUT_MS / 1000);
         } catch (TimeoutException e) {
             Assert.fail("Push connection was not re-established while idle. "
@@ -79,6 +75,20 @@ public abstract class IdlePushChannelIT extends AbstractBrowserConsoleTest {
                     + "period. Expected server counter > 0 but was "
                     + BasicPushIT.getServerCounter(this));
         }
+    }
+
+    /**
+     * Checks whether a browser log message shows that the client opened a new
+     * push connection after the previous one ended.
+     *
+     * @param message
+     *            the browser log message
+     * @return {@code true} if the message shows a new push connection
+     */
+    protected boolean isReconnectLog(String message) {
+        return message.equals("Push connection re-established using "
+                + getViewClass().getAnnotation(CustomPush.class).transport()
+                        .getIdentifier());
     }
 
     private void waitForClientCounter(int expected) {

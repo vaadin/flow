@@ -26,4 +26,16 @@ public class IdlePushChannelLongPollingIT extends IdlePushChannelIT {
     protected Class<? extends Component> getViewClass() {
         return BasicPushLongPollingView.class;
     }
+
+    /**
+     * The push client reports a long polling connection only once: when the
+     * server resumes an idle request, the client just polls again. Nothing is
+     * pushed while the test idles, so a new poll request of the push connection
+     * can only follow the idle timeout.
+     */
+    @Override
+    protected boolean isReconnectLog(String message) {
+        return message.startsWith("[Atmosphere] Long-polling request: ")
+                && message.contains("v-r=push");
+    }
 }
