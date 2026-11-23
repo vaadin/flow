@@ -910,7 +910,8 @@ public class RouteUtil {
     private static void requireRegisteredRouteParent(RouteRegistry registry,
             Class<? extends Component> navigationTarget,
             Class<? extends Component> parent) {
-        if (registry != null && registry.getTemplate(parent).isEmpty()) {
+        if (registry != null && !RouteConfiguration.forRegistry(registry)
+                .isRouteRegistered(parent)) {
             throw new InvalidRouteConfigurationException(String.format(
                     "The '@%s' of '%s' is '%s', which is not a registered "
                             + "route. The route parent has to be a navigation "

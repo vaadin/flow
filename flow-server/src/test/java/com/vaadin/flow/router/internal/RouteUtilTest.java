@@ -1348,6 +1348,18 @@ class RouteUtilTest {
     }
 
     @Test
+    void getRouteHierarchy_resolverReturningRegisteredParent_resolvesWithRegistry() {
+        withRegistry(
+                registry -> assertEquals(
+                        List.of(OrgView.class, ProjectView.class),
+                        targets(RouteUtil.getRouteHierarchy(registry,
+                                ProjectView.class,
+                                new RouteParameters(Map.of("orgId", "acme",
+                                        "projectId", "42"))))),
+                OrgView.class, ProjectView.class);
+    }
+
+    @Test
     void getRouteParent_resolverReturningEmpty_marksRoot() {
         // RootResolver returns empty -> RootResolvedView is its own root
         assertFalse(RouteUtil.getRouteParent(null, RootResolvedView.class,
@@ -1370,7 +1382,7 @@ class RouteUtilTest {
                     exception.getMessage()
                             .contains(MainLayoutParent.class.getName()),
                     exception.getMessage());
-        }, HomeView.class, target);
+        }, target);
     }
 
     @SafeVarargs
