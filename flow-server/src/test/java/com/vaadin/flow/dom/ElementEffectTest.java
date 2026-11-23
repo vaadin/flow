@@ -55,6 +55,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -582,6 +583,61 @@ class ElementEffectTest {
         service.runPendingAccessTasks(session);
 
         assertEquals(List.of("changed"), notified);
+    }
+
+    @Test
+    void usage_uiClosedBeforeHiddenSharedSignalChangeDelivered_listenerStillRuns() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+        var ui = new MockUI(session);
+        UI.setCurrent(ui);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        Usage usage = UsageTracker.track(signal::get);
+        Signal.runWithoutTransaction(() -> signal.set("changed"));
+
+        List<String> notified = new ArrayList<>();
+        AtomicReference<UI> currentUI = new AtomicReference<>();
+        usage.onNextChange(immediate -> {
+            notified.add(signal.peek());
+            currentUI.set(UI.getCurrent());
+            return false;
+        });
+        session.removeUI(ui);
+
+        service.runPendingAccessTasks(session);
+
+        assertEquals(List.of("changed"), notified);
+        assertNull(currentUI.get());
+    }
+
+    @Test
+    void usage_listenerRemovedBeforeHiddenSharedSignalChangeDelivered_isNotAdded() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        Usage usage = UsageTracker.track(signal::get);
+        Signal.runWithoutTransaction(() -> signal.set("changed"));
+
+        List<String> notified = new ArrayList<>();
+        usage.onNextChange(immediate -> {
+            notified.add(signal.peek());
+            return true;
+        }).remove();
+
+        service.runPendingAccessTasks(session);
+        Signal.runWithoutTransaction(() -> signal.set("again"));
+
+        assertEquals(List.of(), notified);
     }
 
     @Test
