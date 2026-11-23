@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.DisabledFeatureException;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.BodySize;
@@ -90,7 +89,7 @@ public class VaadinAppShellInitializer
      *            this class.
      * @param context
      *            the {@link VaadinContext}.
-     * @throws DisabledFeatureException
+     * @throws InvalidApplicationConfigurationException
      *             if the {@link Push} annotation of the app shell selects a
      *             transport whose feature flag is not enabled
      * @since 6.0
