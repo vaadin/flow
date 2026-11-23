@@ -409,6 +409,8 @@ class QueryParametersTest {
     void parameterOrderIsKept_whenCreated() {
         String query = "boot=1&ruled=1&disc=1&open=x";
         assertEquals(query, QueryParameters.fromString(query).getQueryString());
+        assertEquals("a=1&a=3&b=2",
+                QueryParameters.fromString("a=1&b=2&a=3").getQueryString());
 
         Map<String, List<String>> full = new LinkedHashMap<>();
         Map<String, String[]> fullArrays = new LinkedHashMap<>();
