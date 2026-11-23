@@ -258,10 +258,13 @@ public class Anchor extends HtmlContainer
      * the content as an attachment, where as {@link AttachmentType#INLINE} will
      * remove it and serve the content inline. This applies when the handler
      * gives only a file name, as the built-in handlers do, also when marked
-     * with {@code inline()}; a handler that calls
-     * {@code DownloadEvent.attachment}, {@code inline} or the deprecated
-     * {@code setFileName} keeps its choice. The choice is kept for handlers set
-     * later with {@link #setHref(DownloadHandler)}.
+     * with
+     * {@link com.vaadin.flow.server.streams.AbstractDownloadHandler#inline()};
+     * a handler that calls
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#attachment(String)},
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#inline(String)} or
+     * the deprecated {@code setFileName} keeps its choice. The choice is kept
+     * for handlers set later with {@link #setHref(DownloadHandler)}.
      * <p>
      * Content served inline is rendered by the browser on the application's
      * origin. Do not serve untrusted content, such as user uploaded HTML or SVG
@@ -409,9 +412,11 @@ public class Anchor extends HtmlContainer
      * If {@link #setDownload(boolean)} or an {@link AttachmentType} has been
      * used on this anchor, that choice is kept and decides how the content is
      * served when the handler gives only a file name, as the built-in handlers
-     * do; a handler that calls {@code DownloadEvent.attachment}, {@code inline}
-     * or the deprecated {@code setFileName} keeps its choice. Otherwise this
-     * sets the 'download' attribute for link when given a non-inline handler
+     * do; a handler that calls
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#attachment(String)},
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#inline(String)} or
+     * the deprecated {@code setFileName} keeps its choice. Otherwise this sets
+     * the 'download' attribute for link when given a non-inline handler
      * implementing AbstractDownloadHandler, and the handler decides how the
      * content is served.
      *
@@ -447,10 +452,11 @@ public class Anchor extends HtmlContainer
      * the content as an attachment, where as {@link AttachmentType#INLINE} will
      * remove it and serve the content inline. This applies when the handler
      * gives only a file name, as the built-in handlers do; a handler that calls
-     * {@code DownloadEvent.attachment}, {@code inline} or the deprecated
-     * {@code setFileName} keeps its choice. This is the same choice as
-     * {@link #setDownload(boolean)}: it is kept for handlers set later with
-     * {@link #setHref(DownloadHandler)}.
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#attachment(String)},
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#inline(String)} or
+     * the deprecated {@code setFileName} keeps its choice. This is the same
+     * choice as {@link #setDownload(boolean)}: it is kept for handlers set
+     * later with {@link #setHref(DownloadHandler)}.
      * <p>
      * Content served inline is rendered by the browser on the application's
      * origin. Do not serve untrusted content, such as user uploaded HTML or SVG
@@ -502,8 +508,11 @@ public class Anchor extends HtmlContainer
      * browser shows it, for {@code false}. This applies when the handler gives
      * only a file name with
      * {@link com.vaadin.flow.server.streams.DownloadEvent#fileName(String)}, as
-     * the built-in handlers do, also when marked with {@code inline()}; a
-     * handler that calls {@code DownloadEvent.attachment}, {@code inline} or
+     * the built-in handlers do, also when marked with
+     * {@link com.vaadin.flow.server.streams.AbstractDownloadHandler#inline()};
+     * a handler that calls
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#attachment(String)},
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#inline(String)} or
      * the deprecated {@code setFileName} keeps its choice. The choice is kept
      * when the handler is replaced with {@link #setHref(DownloadHandler)},
      * whether it is made before or after the handler is set.
