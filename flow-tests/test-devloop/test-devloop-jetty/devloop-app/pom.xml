@@ -173,6 +173,7 @@
             <!-- The daemon owns this process and decides when a change goes
                  live, so nothing else may push to the browser on its own. -->
             <vaadin.frontend.hotdeploy>false</vaadin.frontend.hotdeploy>
+            <vaadin.csp>${vaadin.csp}</vaadin.csp>
           </systemProperties>
         </configuration>
         <executions>

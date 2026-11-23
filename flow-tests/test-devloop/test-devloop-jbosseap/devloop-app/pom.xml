@@ -223,6 +223,7 @@
             <!-- The daemon owns this process and decides when a change goes
                  live, so nothing else may push to the browser on its own. -->
             <server-arg>-Dvaadin.frontend.hotdeploy=false</server-arg>
+            <server-arg>-Dvaadin.csp=${vaadin.csp}</server-arg>
           </server-args>
         </configuration>
         <executions>

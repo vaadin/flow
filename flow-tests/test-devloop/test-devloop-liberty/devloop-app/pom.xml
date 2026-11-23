@@ -196,6 +196,7 @@
                which it does not take away. -->
           <jvmOptions>
             <param>-Dvaadin.frontend.hotdeploy=false</param>
+            <param>-Dvaadin.csp=${vaadin.csp}</param>
           </jvmOptions>
           <!-- Deployed from apps/ as named in server.xml, so the view is at
                http://localhost:8894/devloop/ -->

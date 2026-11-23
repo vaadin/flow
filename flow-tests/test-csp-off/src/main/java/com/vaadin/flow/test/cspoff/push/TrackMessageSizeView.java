@@ -13,21 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.test.cspoff.push;
 
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
 /**
  * Feeds length-prefixed chunks through the message parsing of the bundled
  * atmosphere.js client and checks the messages it reassembles.
  */
-@Route("com.vaadin.flow.uitest.ui.TrackMessageSizeView")
-@Push(transport = Transport.LONG_POLLING)
+@Route("track-message-size")
 public class TrackMessageSizeView extends Div {
 
     public static final String LOG_ELEMENT_ID = "logId";
@@ -81,6 +82,14 @@ public class TrackMessageSizeView extends Div {
 
         logElement.getNode().runWhenAttached(ui -> ui.getPage()
                 .executeJs(TEST_METHOD + TEST_CASES, logElement));
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        // Spring Boot only accepts @Push on the AppShellConfigurator
+        UI ui = attachEvent.getUI();
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+        ui.getPushConfiguration().setTransport(Transport.LONG_POLLING);
     }
 
 }
