@@ -89,6 +89,31 @@ public class BasicsIT extends ViteDevModeIT {
         }
     }
 
+    @Test
+    public void checkerOverlay_viewportHighPage_noScrollbar() {
+        waitUntil(driver -> (Boolean) executeScript(
+                "return !!document.querySelector('vite-plugin-checker-overlay')"),
+                60);
+        Assert.assertEquals(
+                "A page that fills the viewport should not overflow it",
+                Boolean.TRUE, executeScript(
+                        """
+                                for (const child of document.body.children) {
+                                    if (child.localName !== 'vite-plugin-checker-overlay') {
+                                        child.style.display = 'none';
+                                    }
+                                }
+                                document.documentElement.style.height = '100%';
+                                document.body.style.margin = '0';
+                                document.body.style.height = '100%';
+                                const shell = document.createElement('div');
+                                shell.style.height = '100%';
+                                document.body.prepend(shell);
+                                return document.documentElement.scrollHeight
+                                    === window.innerHeight;
+                                """));
+    }
+
     private boolean hasTypescriptErrorOverlay() {
         // The badge label reads e.g. "Checker: 1 error" or
         // "Checker: no problems"

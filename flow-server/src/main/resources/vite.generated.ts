@@ -778,6 +778,24 @@ export const vaadinConfig: UserConfigFn = (env) => {
         }
       },
       //#vitePluginFileSystemRouter#
+      {
+        // vite-plugin-checker 1.0.0 appends its overlay element to the end of
+        // <body> without taking it out of the flow. Its hidden live region
+        // then makes a page that fills the viewport 1px taller than the
+        // viewport, so a scrollbar appears. Position the overlay fixed until
+        // https://github.com/fi3ework/vite-plugin-checker/issues/892 is fixed.
+        name: 'vaadin:fix-checker-overlay-scrollbar',
+        apply: 'serve',
+        transformIndexHtml() {
+          return [
+            {
+              tag: 'style',
+              children: 'vite-plugin-checker-overlay { position: fixed; }',
+              injectTo: 'head'
+            }
+          ];
+        }
+      },
       checker({
         typescript: {
           // tsconfig.json is generated next to package.json, not in the
