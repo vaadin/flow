@@ -69,6 +69,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
@@ -333,7 +334,7 @@ class CspModeTest {
         setup.getDeploymentConfiguration().setCspMode(mode);
         Logger logger = mock(Logger.class);
         try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
-                LoggerFactory.class)) {
+                LoggerFactory.class, CALLS_REAL_METHODS)) {
             loggerFactory.when(
                     () -> LoggerFactory.getLogger(CspViolationReporter.class))
                     .thenReturn(logger);
@@ -375,7 +376,7 @@ class CspModeTest {
         setup.getDeploymentConfiguration().setCspMode(CspMode.WARN);
         Logger logger = mock(Logger.class);
         try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
-                LoggerFactory.class)) {
+                LoggerFactory.class, CALLS_REAL_METHODS)) {
             loggerFactory.when(
                     () -> LoggerFactory.getLogger(CspViolationReporter.class))
                     .thenReturn(logger);
