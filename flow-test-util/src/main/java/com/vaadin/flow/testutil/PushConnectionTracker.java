@@ -24,12 +24,12 @@ import java.util.Map;
 import java.util.logging.Level;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.LoggingPreferences;
-import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -165,20 +165,17 @@ public class PushConnectionTracker {
     /**
      * Asserts that the browser made at least one push connection attempt and
      * used only the given transport for all of them, i.e. that it did not fall
-     * back to another transport. The check is skipped with a warning if the
-     * browser does not record the performance log, so that a test can still run
-     * on a hub or with a debugger attached.
+     * back to another transport. If the browser does not record the performance
+     * log, e.g. on a hub or with a debugger attached, the test is reported as
+     * skipped by a failed assumption instead of passing without the check.
      *
      * @param expected
      *            the transport push should use, not {@code null}
      * @see #isAvailable()
      */
     public void assertOnlyTransport(Transport expected) {
-        if (!isAvailable()) {
-            LoggerFactory.getLogger(PushConnectionTracker.class)
-                    .warn("Not checking the push transport: {}", NOT_AVAILABLE);
-            return;
-        }
+        Assume.assumeTrue("Not checking the push transport: " + NOT_AVAILABLE,
+                isAvailable());
         String name = getAtmosphereTransport(expected);
         List<String> actual = getTransports();
         Assert.assertTrue(

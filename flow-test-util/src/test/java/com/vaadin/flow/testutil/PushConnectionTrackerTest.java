@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
+import org.junit.AssumptionViolatedException;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.logging.LogEntries;
@@ -122,12 +123,13 @@ class PushConnectionTrackerTest {
     }
 
     @Test
-    void assertOnlyTransport_performanceLogNotRecorded_skipped() {
+    void assertOnlyTransport_performanceLogNotRecorded_testSkipped() {
         when(driver.manage().logs().getAvailableLogTypes())
                 .thenReturn(Set.of(LogType.BROWSER));
 
-        new PushConnectionTracker(driver)
-                .assertOnlyTransport(Transport.WEBSOCKET);
+        assertThrows(AssumptionViolatedException.class,
+                () -> new PushConnectionTracker(driver)
+                        .assertOnlyTransport(Transport.WEBSOCKET));
     }
 
     private void givenLogs(LogEntry... entries) {
