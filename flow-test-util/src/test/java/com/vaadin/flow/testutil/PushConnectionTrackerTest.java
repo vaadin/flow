@@ -17,10 +17,10 @@ package com.vaadin.flow.testutil;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;
@@ -30,13 +30,16 @@ import com.vaadin.flow.shared.ui.Transport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class PushConnectionTrackerTest {
 
     private static final String PUSH_URL = "http://localhost:8888/VAADIN/push?v-r=push&v-uiId=0&X-Atmosphere-Transport=";
 
-    private final WebDriver driver = Mockito.mock(WebDriver.class,
-            Mockito.RETURNS_DEEP_STUBS);
+    private final WebDriver driver = mock(WebDriver.class, RETURNS_DEEP_STUBS);
 
     @Test
     void getTransports_connectionAttempts_recordedInOrder() {
@@ -107,8 +110,30 @@ class PushConnectionTrackerTest {
                         .assertOnlyTransport(Transport.LONG_POLLING));
     }
 
+    @Test
+    void getTransports_performanceLogNotRecorded_failsWithReason() {
+        when(driver.manage().logs().getAvailableLogTypes())
+                .thenReturn(Set.of(LogType.BROWSER));
+
+        IllegalStateException error = assertThrows(IllegalStateException.class,
+                () -> new PushConnectionTracker(driver).getTransports());
+        assertTrue(error.getMessage().contains("performance log"),
+                error.getMessage());
+    }
+
+    @Test
+    void assertOnlyTransport_performanceLogNotRecorded_skipped() {
+        when(driver.manage().logs().getAvailableLogTypes())
+                .thenReturn(Set.of(LogType.BROWSER));
+
+        new PushConnectionTracker(driver)
+                .assertOnlyTransport(Transport.WEBSOCKET);
+    }
+
     private void givenLogs(LogEntry... entries) {
-        Mockito.when(driver.manage().logs().get(LogType.PERFORMANCE))
+        when(driver.manage().logs().getAvailableLogTypes())
+                .thenReturn(Set.of(LogType.BROWSER, LogType.PERFORMANCE));
+        when(driver.manage().logs().get(LogType.PERFORMANCE))
                 .thenReturn(new LogEntries(Arrays.asList(entries)));
     }
 

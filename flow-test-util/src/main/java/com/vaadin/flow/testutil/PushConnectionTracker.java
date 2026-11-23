@@ -29,6 +29,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.LoggingPreferences;
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -49,12 +50,19 @@ import com.vaadin.flow.shared.ui.Transport;
  * The performance log has to be enabled with {@link #enable(ChromeOptions)}
  * when the browser is created, e.g. in
  * {@link ChromeBrowserTest#updateHeadlessChromeOptions(ChromeOptions)}. Only a
- * local Chrome is supported.
+ * local Chrome is supported, and {@link ChromeBrowserTest} does not apply those
+ * options when it runs on a hub or with a debugger attached; see
+ * {@link #isAvailable()}.
  */
 public class PushConnectionTracker {
 
     private static final String PUSH_REQUEST = "v-r=push";
     private static final String TRANSPORT_PARAMETER = "X-Atmosphere-Transport";
+    private static final String NOT_AVAILABLE = "the browser does not record "
+            + "the performance log. Push connections can only be tracked in a "
+            + "local Chrome created with PushConnectionTracker.enable(), "
+            + "which ChromeBrowserTest skips on a hub or with a debugger "
+            + "attached.";
 
     private final WebDriver driver;
     private final List<String> transports = new ArrayList<>();
@@ -87,6 +95,19 @@ public class PushConnectionTracker {
     }
 
     /**
+     * Checks whether the browser records the performance log that the tracker
+     * reads, i.e. whether it was created with the options passed to
+     * {@link #enable(ChromeOptions)}.
+     *
+     * @return {@code true} if push connections can be tracked, {@code false}
+     *         otherwise
+     */
+    public boolean isAvailable() {
+        return driver.manage().logs().getAvailableLogTypes()
+                .contains(LogType.PERFORMANCE);
+    }
+
+    /**
      * Gets the transports of all push connection attempts the browser has made
      * so far, in the order it made them. Requests that open no connection, such
      * as messages sent to the server over the push URL, are left out. A
@@ -96,8 +117,14 @@ public class PushConnectionTracker {
      *
      * @return the Atmosphere transport names, such as {@code websocket},
      *         {@code long-polling} or {@code sse}
+     * @throws IllegalStateException
+     *             if the browser does not record the performance log
+     * @see #isAvailable()
      */
     public List<String> getTransports() {
+        if (!isAvailable()) {
+            throw new IllegalStateException(NOT_AVAILABLE);
+        }
         for (LogEntry entry : driver.manage().logs().get(LogType.PERFORMANCE)) {
             JsonNode message = JsonMapper.shared().readTree(entry.getMessage())
                     .path("message");
@@ -127,6 +154,8 @@ public class PushConnectionTracker {
      * Gets the number of push connection attempts the browser has made so far.
      *
      * @return the number of attempts
+     * @throws IllegalStateException
+     *             if the browser does not record the performance log
      * @see #getTransports()
      */
     public int getAttemptCount() {
@@ -136,12 +165,20 @@ public class PushConnectionTracker {
     /**
      * Asserts that the browser made at least one push connection attempt and
      * used only the given transport for all of them, i.e. that it did not fall
-     * back to another transport.
+     * back to another transport. The check is skipped with a warning if the
+     * browser does not record the performance log, so that a test can still run
+     * on a hub or with a debugger attached.
      *
      * @param expected
      *            the transport push should use, not {@code null}
+     * @see #isAvailable()
      */
     public void assertOnlyTransport(Transport expected) {
+        if (!isAvailable()) {
+            LoggerFactory.getLogger(PushConnectionTracker.class)
+                    .warn("Not checking the push transport: {}", NOT_AVAILABLE);
+            return;
+        }
         String name = getAtmosphereTransport(expected);
         List<String> actual = getTransports();
         Assert.assertTrue(
