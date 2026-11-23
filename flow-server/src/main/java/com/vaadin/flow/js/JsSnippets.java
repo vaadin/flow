@@ -96,13 +96,13 @@ public interface JsSnippets extends Serializable {
      * @param <T>
      *            the type of the interface
      * @param definitionType
-     *            the interface that declares the snippets, not
-     *            <code>null</code>
+     *            the interface that declares the snippets, annotated with
+     *            {@link JsDefinition}, not <code>null</code>
      * @return an implementation of the interface, not <code>null</code>
      * @throws IllegalArgumentException
-     *             if the type is not an interface, also extends
-     *             {@link JsInvokers}, or has a method that does not declare a
-     *             snippet
+     *             if the type is not an interface, is not annotated with
+     *             {@link JsDefinition}, also extends {@link JsInvokers}, or has
+     *             a method that does not declare a snippet
      */
     static <T extends JsSnippets> T of(Class<T> definitionType) {
         Objects.requireNonNull(definitionType,

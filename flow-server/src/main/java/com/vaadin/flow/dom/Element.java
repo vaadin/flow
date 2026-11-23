@@ -2075,7 +2075,8 @@ public class Element extends Node<Element> {
      * implementation runs the JavaScript that the method declares, with the
      * arguments of the call as its parameters.
      * <p>
-     * The interface extends {@link JsInvokers}, and each of its methods
+     * The interface is annotated with {@link JsDefinition}, which is what the
+     * build finds it by, extends {@link JsInvokers}, and each of its methods
      * declares the JavaScript it runs with {@link JsExpression}:
      *
      * <pre>
@@ -2135,8 +2136,9 @@ public class Element extends Node<Element> {
      * @return an implementation of the interface, to call the declared
      *         JavaScript through, not <code>null</code>
      * @throws IllegalArgumentException
-     *             if the type is not an interface, also extends
-     *             {@link JsSnippets}, or has a method that can not be answered
+     *             if the type is not an interface, is not annotated with
+     *             {@link JsDefinition}, also extends {@link JsSnippets}, or has
+     *             a method that can not be answered
      * @since 25.4
      */
     public <T extends JsInvokers> T executeJs(Class<T> definitionType) {
