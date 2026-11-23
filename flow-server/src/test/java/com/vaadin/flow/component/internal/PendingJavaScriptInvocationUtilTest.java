@@ -83,17 +83,15 @@ class PendingJavaScriptInvocationUtilTest {
     }
 
     @Test
-    void checkUndeliveredInvocationsPastTheThreshold_warningLogged() {
+    void checkUndeliveredInvocationsAtTheThreshold_warningLogged() {
         MockUI ui = new MockUI();
         UIInternals internals = ui.getInternals();
-        // The count is only checked when the lock is acquired, by which time
-        // it may already be past the threshold
-        internals.addUndeliveredJsInvocations(WARNING_THRESHOLD + 5);
+        internals.addUndeliveredJsInvocations(WARNING_THRESHOLD);
 
         internals.checkUndeliveredJavaScriptInvocations();
 
         assertFalse(internals.markUndeliveredJsInvocationsWarningLogged(),
-                "the warning should have been logged past the threshold");
+                "the warning should have been logged at the threshold");
     }
 
     @Test
