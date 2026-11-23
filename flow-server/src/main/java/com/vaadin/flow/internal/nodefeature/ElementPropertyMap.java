@@ -155,7 +155,10 @@ public class ElementPropertyMap extends AbstractPropertyMap {
                 : "Expected an active signal binding for '" + name + "'";
 
         InternalSignalBinding binding = (InternalSignalBinding) super.get(name);
-        Serializable resolvedValue = writeSignalValue(name, value, binding);
+        // Converted like in the signal effect, so that storing the value
+        // doesn't count as a change and drop what the effect queued
+        Serializable resolvedValue = toPropertyValue(
+                writeSignalValue(name, value, binding));
 
         // Store the resolved value (may differ if signal reverted)
         // Never emit a change event here: if the signal value changed, the

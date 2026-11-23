@@ -1048,6 +1048,21 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
+    void bindProperty_serverSetsNullAndCallbackAcceptsIt_nullSentToClient() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        component.getElement().bindProperty("prop", signal, signal::set);
+        collectPropertyChanges(component.getElement());
+
+        component.getElement().setProperty("prop", (String) null);
+
+        assertNull(signal.peek());
+        assertEquals(Map.of("prop", JacksonUtils.nullNode()),
+                collectPropertyChanges(component.getElement()));
+    }
+
+    @Test
     void bindProperty_clientSendsObjectForStringSignal_updateIgnored() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
