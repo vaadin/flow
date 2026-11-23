@@ -22,8 +22,9 @@ exact, no fluff.
   - This includes a behaviour change that working application code can trip
     over: same API, but a different return value, default, timing or calling
     context that existing callers rely on, so they have to change their code
-  - Skip `!` only when no reasonable caller could have depended on the old
-    behaviour, such as a crash or obviously wrong output nobody works around
+  - Skip `!` when no reasonable caller could have depended on the old
+    behaviour, such as a crash, an exception or obviously wrong output nobody
+    works around. Most bug fixes are like this and stay a plain `fix:`
 - Start with an imperative verb — "add", "fix", "remove" — not "added", "adds", "adding"
 - Use English articles only when omitting them would be ambiguous
   - Good: `fix: handle null in parser`
@@ -193,8 +194,8 @@ would hide that the author checked at all.
 
 | Flag | Icon | Look for |
 |---|---|---|
-| Breaking change | ⚠️ | a signature, default or contract that existing code depends on |
-| Behaviour change | ⚠️ | same API, different outcome — including "it was wrong before" |
+| Breaking change | ⚠️ | a signature, default or contract that existing code depends on — the title gets `!` |
+| Behaviour change | ⚠️ | same API, different outcome — including "it was wrong before"; the title gets `!` only when existing callers relied on the old outcome (see the subject line rules) |
 | Public API | ⚠️ | additions, `protected` members that subclasses override, deprecations |
 | Security | 🔒 | authentication, authorization, permit lists, path matching, input trusted from the client |
 | Memory & leaks | 🧠 | anything held per UI, per session or per binder; who releases it |
