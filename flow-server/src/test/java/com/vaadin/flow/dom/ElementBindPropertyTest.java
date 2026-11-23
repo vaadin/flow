@@ -115,6 +115,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
         component.getElement().bindProperty("foo", signal, signal::set);
+        collectPropertyChanges(component.getElement());
 
         // Should NOT throw; should propagate through the write callback
         component.getElement().setProperty("foo", "baz");
@@ -123,6 +124,8 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         assertEquals("baz", signal.peek());
         // Property value should reflect the signal's new value
         assertEquals("baz", component.getElement().getProperty("foo"));
+        assertEquals(Map.of("foo", "baz"),
+                collectPropertyChanges(component.getElement()));
     }
 
     @Test
@@ -134,6 +137,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         // Write callback that always forces the signal to uppercase
         component.getElement().bindProperty("foo", signal,
                 v -> signal.set(v.toUpperCase()));
+        collectPropertyChanges(component.getElement());
 
         component.getElement().setProperty("foo", "baz");
 
@@ -141,6 +145,8 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         assertEquals("BAZ", signal.peek());
         // Property should reflect the signal's value (BAZ wins)
         assertEquals("BAZ", component.getElement().getProperty("foo"));
+        assertEquals(Map.of("foo", "BAZ"),
+                collectPropertyChanges(component.getElement()));
     }
 
     @Test
@@ -152,6 +158,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         // Write callback that doesn't set signal value
         component.getElement().bindProperty("foo", signal, v -> {
         });
+        collectPropertyChanges(component.getElement());
 
         component.getElement().setProperty("foo", "baz");
 
@@ -159,6 +166,8 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         assertEquals("bar", signal.peek());
         // Property should revert to signal's "bar"
         assertEquals("bar", component.getElement().getProperty("foo"));
+        // The client never saw "baz", so nothing is sent
+        assertEquals(Map.of(), collectPropertyChanges(component.getElement()));
     }
 
     @Test
@@ -1002,7 +1011,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
     }
 
     @Test
-    void bindProperty_noOpCallback_valueChangeEventNotTriggered() {
+    void bindProperty_noOpCallback_noEventAndSignalValueSentToClient() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<String> signal = new ValueSignal<>("foo");
