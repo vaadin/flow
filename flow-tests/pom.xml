@@ -29,11 +29,12 @@
         <testListener></testListener>
 
         <!-- Skip these categories in validation, use -Pslow-tests to run them -->
-        <excludedGroups>
+        <slowTestGroups>
             com.vaadin.flow.testcategory.SlowTests,
             com.vaadin.flow.testcategory.ScreenshotTests,
             com.vaadin.flow.testcategory.PushTests,
-        </excludedGroups>
+        </slowTestGroups>
+        <excludedGroups>${slowTestGroups}</excludedGroups>
 
         <jetty.scantrigger></jetty.scantrigger>
 
@@ -414,9 +415,7 @@
             <properties>
                 <groups></groups>
                 <excludedGroups>
-                    com.vaadin.flow.testcategory.SlowTests,
-                    com.vaadin.flow.testcategory.ScreenshotTests,
-                    com.vaadin.flow.testcategory.PushTests,
+                    ${slowTestGroups}
                     com.vaadin.flow.testcategory.IgnoreIE11,
                 </excludedGroups>
             </properties>
@@ -431,7 +430,9 @@
         <profile>
             <id>slow-tests</id>
             <properties>
-                <groups>${excludedGroups}</groups>
+                <!-- Not ${excludedGroups}, which this profile empties, so it
+                     would resolve to no filter and run every test. -->
+                <groups>${slowTestGroups}</groups>
                 <excludedGroups></excludedGroups>
             </properties>
         </profile>
