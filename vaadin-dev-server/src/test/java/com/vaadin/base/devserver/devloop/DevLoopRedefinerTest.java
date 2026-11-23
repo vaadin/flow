@@ -267,6 +267,27 @@ class DevLoopRedefinerTest {
                 DevLoopRedefiner.frontendDependencies(UnwrappedLoggerJs.class));
     }
 
+    // Only extended by definitions, so not annotated
+    interface ScrollableJs extends JsInvokers {
+        @JsExpression("this.scrollTop = $0")
+        void scrollTo(int top);
+    }
+
+    interface EditedScrollableJs extends JsInvokers {
+        @JsExpression("this.scrollLeft = $0")
+        void scrollTo(int top);
+    }
+
+    @Test
+    void frontendDependencies_seesTheJavaScriptOfAnExtendedInterface() {
+        // Its methods are generated as part of every definition extending it,
+        // so editing what it declares changes what the browser has to run
+        assertNotEquals(
+                DevLoopRedefiner.frontendDependencies(ScrollableJs.class),
+                DevLoopRedefiner
+                        .frontendDependencies(EditedScrollableJs.class));
+    }
+
     @JsFunctionParameterNames({ "html", "item" })
     interface TemplateSnippet extends JsSnippet {
     }

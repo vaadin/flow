@@ -77,6 +77,18 @@ class JsDefinitionHotswapperTest {
         TemplateSnippet label(String suffix);
     }
 
+    // Only extended, so not a definition itself
+    interface ScrollableJs extends JsInvokers {
+        @JsExpression("this.scrollTop = $0")
+        void scrollTo(int top);
+    }
+
+    @JsDefinition
+    interface ScrollingListJs extends ScrollableJs {
+        @JsExpression("this.scrollTop = this.scrollHeight")
+        void scrollToEnd();
+    }
+
     static class NotADefinition {
     }
 
@@ -293,6 +305,22 @@ class JsDefinitionHotswapperTest {
         assertTrue(
                 readGeneratedDefinitions().contains("return function (item) {"),
                 "what the browser reloads is called with the names the type declares now");
+    }
+
+    @Test
+    void extendedInterfaceChanged_definitionsExtendingItReported()
+            throws IOException {
+        writeGeneratedDefinitionsFor(GreeterJs.class);
+        writeGeneratedDefinitionsFor(ScrollingListJs.class);
+        // What the file holds when the extended interface declared other
+        // JavaScript than it does now
+        editGeneratedDefinitions("this.scrollTop = $0", "this.scrollLeft = $0");
+
+        classesChanged(ScrollableJs.class);
+
+        assertEquals(List.of(ScrollingListJs.class.getName()),
+                hotswapper.reported,
+                "the definition extending the interface now declares other JavaScript than the bundle carries");
     }
 
     @Test
