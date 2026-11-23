@@ -20,11 +20,14 @@ exact, no fluff.
 - Allowed types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `ci`
 - Breaking changes: append `!` before the colon (`feat!`, `fix!`, `chore!`)
   - This includes a behaviour change that working application code can trip
-    over: same API, but a different return value, default, timing or calling
-    context that existing callers rely on, so they have to change their code
+    over: same API, but a different return value, default, timing, calling
+    context or thrown exception that existing callers rely on, so they have to
+    change their code. A method that stops throwing, throws a different type,
+    or now rejects input it used to accept is breaking
   - Skip `!` when no reasonable caller could have depended on the old
-    behaviour, such as a crash, an exception or obviously wrong output nobody
-    works around. Most bug fixes are like this and stay a plain `fix:`
+    behaviour, such as a crash, an exception on input the API never supported,
+    or obviously wrong output nobody works around. Most bug fixes are like this
+    and stay a plain `fix:`
 - Start with an imperative verb — "add", "fix", "remove" — not "added", "adds", "adding"
 - Use English articles only when omitting them would be ambiguous
   - Good: `fix: handle null in parser`
