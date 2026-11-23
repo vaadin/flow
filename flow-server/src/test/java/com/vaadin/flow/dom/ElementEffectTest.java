@@ -43,6 +43,8 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.DeniedSignalUsageException;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.impl.UsageTracker;
+import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 import com.vaadin.flow.signals.local.ListSignal;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedListSignal;
@@ -555,6 +557,31 @@ class ElementEffectTest {
         service.runPendingAccessTasks(session);
 
         assertEquals(List.of("initial", "changed"), observed);
+    }
+
+    @Test
+    void usage_sharedSignalChangeHiddenBySessionTransactionWithoutUI_listenerRunsInNextAccess() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        Usage usage = UsageTracker.track(signal::get);
+        Signal.runWithoutTransaction(() -> signal.set("changed"));
+
+        List<String> notified = new ArrayList<>();
+        usage.onNextChange(immediate -> {
+            notified.add(signal.peek());
+            return false;
+        });
+        assertEquals(List.of(), notified);
+
+        service.runPendingAccessTasks(session);
+
+        assertEquals(List.of("changed"), notified);
     }
 
     @Test

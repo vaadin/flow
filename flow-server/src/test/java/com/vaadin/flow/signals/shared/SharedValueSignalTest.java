@@ -418,6 +418,26 @@ public class SharedValueSignalTest extends SignalTestBase {
     }
 
     @Test
+    void usageTracking_changeHiddenByExplicitTransaction_listensForLaterChanges() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        AtomicInteger count = new AtomicInteger();
+
+        Transaction.runInTransaction(() -> {
+            Usage usage = UsageTracker.track(signal::get);
+            Signal.runWithoutTransaction(() -> signal.set("hidden"));
+
+            usage.onNextChange(immediate -> {
+                count.incrementAndGet();
+                return false;
+            });
+            assertEquals(0, count.intValue());
+        }, Transaction.Type.WRITE_THROUGH);
+
+        signal.set("update");
+        assertEquals(1, count.intValue());
+    }
+
+    @Test
     void usageTracking_changingSignalValue_usageDetectsValueChange() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         AtomicInteger count = new AtomicInteger();
