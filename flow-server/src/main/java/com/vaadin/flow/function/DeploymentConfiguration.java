@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.CspMode;
+import com.vaadin.flow.server.ContentSecurityPolicyMode;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.SessionLockCheckStrategy;
@@ -411,15 +411,16 @@ public interface DeploymentConfiguration
      * policy.
      * <p>
      * The mode can be configured with the {@link InitParameters#CSP}
-     * configuration parameter. By default, it returns {@link CspMode#OFF}.
+     * configuration parameter. By default, it returns
+     * {@link ContentSecurityPolicyMode#OFF}.
      * <p>
-     * See {@link CspMode} for what each mode does.
+     * See {@link ContentSecurityPolicyMode} for what each mode does.
      *
      * @return the Content Security Policy mode, never null
      * @since 25.4
      */
-    default CspMode getCspMode() {
-        return CspMode.OFF;
+    default ContentSecurityPolicyMode getContentSecurityPolicyMode() {
+        return ContentSecurityPolicyMode.OFF;
     }
 
     /**

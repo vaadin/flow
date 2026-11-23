@@ -22,7 +22,7 @@ package com.vaadin.flow.server;
  * <p>
  * The mode is configured with the {@link InitParameters#CSP} configuration
  * parameter and read with
- * {@link com.vaadin.flow.function.DeploymentConfiguration#getCspMode()}.
+ * {@link com.vaadin.flow.function.DeploymentConfiguration#getContentSecurityPolicyMode()}.
  * <p>
  * The {@link #WARN} and {@link #STRICT} modes act on the APIs that send
  * JavaScript to the browser as a string, such as
@@ -34,7 +34,7 @@ package com.vaadin.flow.server;
  *
  * @since 25.4
  */
-public enum CspMode {
+public enum ContentSecurityPolicyMode {
     /**
      * The default mode. The application behaves as if no strict Content
      * Security Policy is in use.
@@ -50,8 +50,8 @@ public enum CspMode {
     WARN,
     /**
      * Vaadin sends a nonce-based Content Security Policy, and APIs that need
-     * {@code eval} throw a {@link CspViolationException}, whose stack trace
-     * leads from the API to its caller.
+     * {@code eval} throw a {@link ContentSecurityPolicyViolationException},
+     * whose stack trace leads from the API to its caller.
      * <p>
      * In production mode, every index HTML response gets a new nonce that is
      * put on every {@code <script>} element of the page, and a

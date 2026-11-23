@@ -34,7 +34,7 @@
     },
     {
       "name": "vaadin.csp",
-      "type": "com.vaadin.flow.server.CspMode",
+      "type": "com.vaadin.flow.server.ContentSecurityPolicyMode",
       "description": "Content Security Policy mode of the application.",
       "defaultValue": "off"
     },

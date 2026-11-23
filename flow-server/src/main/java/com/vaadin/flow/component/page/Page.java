@@ -39,7 +39,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Element.ElementJs;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.internal.CspViolationReporter;
+import com.vaadin.flow.internal.ContentSecurityPolicyViolationReporter;
 import com.vaadin.flow.internal.CssBundler;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.js.JsDefinition;
@@ -47,8 +47,8 @@ import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
-import com.vaadin.flow.server.CspMode;
-import com.vaadin.flow.server.CspViolationException;
+import com.vaadin.flow.server.ContentSecurityPolicyMode;
+import com.vaadin.flow.server.ContentSecurityPolicyViolationException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -436,11 +436,12 @@ public class Page implements Serializable {
      * @param expression
      *            the JavaScript expression which return a Promise
      * @since 2.1
-     * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode
+     * @throws ContentSecurityPolicyViolationException
+     *             in the {@link ContentSecurityPolicyMode#STRICT} Content
+     *             Security Policy mode
      */
     public void addDynamicImport(String expression) {
-        CspViolationReporter.reportStringJavaScript();
+        ContentSecurityPolicyViolationReporter.reportStringJavaScript();
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
     }
 
@@ -591,9 +592,9 @@ public class Page implements Serializable {
      * <p>
      * The expression is sent to the browser and compiled there, which a content
      * security policy without <code>unsafe-eval</code> does not allow, so the
-     * {@link CspMode} of the application reports or refuses the call.
-     * {@link #executeJs(Class)} runs JavaScript that is declared in Java and
-     * collected into the bundle instead, and sends no expression.
+     * {@link ContentSecurityPolicyMode} of the application reports or refuses
+     * the call. {@link #executeJs(Class)} runs JavaScript that is declared in
+     * Java and collected into the bundle instead, and sends no expression.
      *
      * @param expression
      *            the JavaScript expression to invoke
@@ -604,12 +605,13 @@ public class Page implements Serializable {
      *         the expression
      * @see #executeJs(Class)
      * @since 25.0
-     * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode
+     * @throws ContentSecurityPolicyViolationException
+     *             in the {@link ContentSecurityPolicyMode#STRICT} Content
+     *             Security Policy mode
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
-        CspViolationReporter.reportStringJavaScript();
+        ContentSecurityPolicyViolationReporter.reportStringJavaScript();
         return ui.getInternals()
                 .addJavaScriptInvocation(new JavaScriptInvocation(expression,
                         parameters == null ? new Object[0] : parameters));

@@ -57,13 +57,13 @@ public class InitParameters implements Serializable {
     /**
      * Configuration parameter name for the Content Security Policy mode of the
      * application. The permitted values are {@code off} (the default),
-     * {@code warn} and {@code strict}, see {@link CspMode}. Values are
-     * case-insensitive; any other value fails the deployment configuration with
-     * an {@link IllegalArgumentException}.
+     * {@code warn} and {@code strict}, see {@link ContentSecurityPolicyMode}.
+     * Values are case-insensitive; any other value fails the deployment
+     * configuration with an {@link IllegalArgumentException}.
      *
      * @since 25.4
      */
-    public static final String CSP = "csp";
+    public static final String CONTENT_SECURITY_POLICY = "csp";
     /**
      * Configuration parameter name for the value of the {@code X-Frame-Options}
      * HTTP response header sent with the application page. The header lets the

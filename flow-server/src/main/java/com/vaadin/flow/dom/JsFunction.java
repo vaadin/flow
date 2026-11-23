@@ -22,15 +22,15 @@ import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
-import com.vaadin.flow.internal.CspViolationReporter;
+import com.vaadin.flow.internal.ContentSecurityPolicyViolationReporter;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
-import com.vaadin.flow.server.CspMode;
-import com.vaadin.flow.server.CspViolationException;
+import com.vaadin.flow.server.ContentSecurityPolicyMode;
+import com.vaadin.flow.server.ContentSecurityPolicyViolationException;
 
 /**
  * A JavaScript function value with captured parameters that can be passed to
@@ -113,10 +113,11 @@ public final class JsFunction implements JsSnippet {
      * <p>
      * The function is compiled in the browser from its body, which a content
      * security policy without <code>unsafe-eval</code> does not allow, so the
-     * {@link CspMode} of the application reports or refuses it. A function
-     * declared by a method of a {@link JsDefinition} interface is collected
-     * into the bundle instead, and the browser is sent only its identifier and
-     * the captures. The class documentation shows how to declare one.
+     * {@link ContentSecurityPolicyMode} of the application reports or refuses
+     * it. A function declared by a method of a {@link JsDefinition} interface
+     * is collected into the bundle instead, and the browser is sent only its
+     * identifier and the captures. The class documentation shows how to declare
+     * one.
      *
      * @param body
      *            the JavaScript function body, with captures referenced as
@@ -127,13 +128,14 @@ public final class JsFunction implements JsSnippet {
      * @return a new {@code JsFunction} instance
      * @throws IllegalArgumentException
      *             if any capture has a type that cannot be sent to the client
-     * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode
+     * @throws ContentSecurityPolicyViolationException
+     *             in the {@link ContentSecurityPolicyMode#STRICT} Content
+     *             Security Policy mode
      */
     public static JsFunction of(String body, @Nullable Object... captures) {
         Objects.requireNonNull(body, "body");
         Objects.requireNonNull(captures, "captures");
-        CspViolationReporter.reportStringJavaScript();
+        ContentSecurityPolicyViolationReporter.reportStringJavaScript();
         @Nullable
         Object[] copy = captures.clone();
         // Dry-run encode each capture so unsupported types fail fast. Mirrors
