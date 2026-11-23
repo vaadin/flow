@@ -407,6 +407,33 @@ function formatSecs(s) {
 }
 
 /**
+ * The modules the slow-tests job in validation.yml runs with -Pslow-tests:
+ * every module of the reactor, except the global exclusions, whose tests
+ * refer to one of the categories in the slowTestGroups property of pom.xml
+ * or flow-tests/pom.xml, which the slow-tests profiles select. Read from the
+ * sources so that a module is picked up as soon as it gets its first test in
+ * one of those categories.
+ */
+function getSlowTestModules() {
+  const regexGroups = /<slowTestGroups>([\s\S]*?)<\/slowTestGroups>/;
+  const categories = ['pom.xml', 'flow-tests/pom.xml'].flatMap(pom => {
+    const content = fs.readFileSync(pom).toString().replace(regexComment, '');
+    const groups = regexGroups.exec(content);
+    if (!groups) {
+      throw new Error(`${pom}: no slowTestGroups property`);
+    }
+    return groups[1].split(',').map(c => c.trim()).filter(Boolean);
+  });
+  return [...new Set(grep(getModulesRecursive(''), globalExclusions))]
+    .filter(module => fs.existsSync(module + '/src/test/java'))
+    .filter(module => getFiles([], module + '/src/test/java', /\.java$/)
+      .some(file => {
+        const content = fs.readFileSync(file).toString();
+        return categories.some(category => content.includes(category));
+      }));
+}
+
+/**
  * Compute module weights by parsing mvn outputs
  */
 function computeResultWeights(suite, prefix, weights) {
@@ -601,6 +628,8 @@ async function main() {
     printStrategy(object);
     const json = objectToString(object, keys);
     console.log(json);
+  } else if (action == 'slow-tests') {
+    console.log(getSlowTestModules().join(','));
   } else if (action == 'clean-success') {
     const xmlSucceed = getFiles([], '.', /(surefire|failsafe)-reports\//)
       .filter(f => !fs.readFileSync(f).toString().match(/<stackTrace>/));
@@ -617,6 +646,7 @@ Actions
   set-version        replace versions in all pom files of the project
   unit-tests         outputs the JSON matrix for unit-tests
   it-tests           outputs the JSON matrix for it-tests
+  slow-tests         outputs the comma separated modules for the slow-tests job
   test-results       process test-results and outputs a matrix with weights
   clean-success      remove success xml test files to reduce uploaded artifact
 
@@ -632,7 +662,8 @@ Keys
   }
 }
 
-main();
+if (require.main === module) {
+  main();
+}
 
-
-
+module.exports = { getSlowTestModules };
