@@ -221,6 +221,12 @@ public class VaadinConfigurationProperties {
      */
     public static class Pnpm {
 
+        /**
+         * Whether pnpm is used instead of npm to install frontend packages.
+         * Also set it in the Vaadin Maven or Gradle plugin configuration,
+         * otherwise the production build and development mode use different
+         * values.
+         */
         private boolean enable;
 
         /**
@@ -260,6 +266,11 @@ public class VaadinConfigurationProperties {
      */
     public static class Bun {
 
+        /**
+         * Whether bun is used instead of npm to install frontend packages. Also
+         * set it in the Vaadin Maven or Gradle plugin configuration, otherwise
+         * the production build and development mode use different values.
+         */
         private boolean enable;
 
         /**
@@ -299,6 +310,11 @@ public class VaadinConfigurationProperties {
      */
     public static class React {
 
+        /**
+         * Whether React support is enabled. Also set it in the Vaadin Maven or
+         * Gradle plugin configuration, otherwise the production build and
+         * development mode use different values.
+         */
         private boolean enable = true;
 
         /**

@@ -284,9 +284,8 @@ public class IndexHtmlRequestHandlerTest {
         });
 
         String header = serveIndexHtmlAndCaptureCspHeader();
-        Matcher matcher = Pattern
-                .compile(
-                        "script-src 'nonce-([A-Za-z0-9+/=]+)' 'strict-dynamic'")
+        Matcher matcher = Pattern.compile(
+                "script-src 'nonce-([A-Za-z0-9+/]{22})' 'strict-dynamic'")
                 .matcher(header);
         assertTrue(matcher.find(), header);
         String nonce = matcher.group(1);

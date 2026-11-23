@@ -25,7 +25,7 @@ mvn verify -pl flow-tests/test-csp-strict \
 |---|---|---|
 | The policy header, a nonce on every script, a new nonce per response, a view rendered under the policy | `csp.PolicyView` | `PolicyIT` |
 | A `data:` URL fetched in the browser, as `vaadin-icon` does for an `SvgIcon` | `csp.DataUrlFetchView` | `DataUrlFetchIT` |
-| JavaScript run through a `@JsDefinition` | `js.DeclaredJsView` | `DeclaredJsIT` |
+| JavaScript run through a `JsInvokers` interface | `js.DeclaredJsView` | `DeclaredJsIT` |
 | `executeJs(String)` throws in Java, trace leads to the caller | `js.StringJsView` | `StringJsIT` |
 | String JavaScript declared with `@JsStringFallback` runs from the bundle: `executeJs` with parameters and a return value, a JS initializer, a listener filter and event data, a call without parameters that gets the element as `$0`, a function given arguments with `withArguments` | `js.StringFallbackView` | `StringFallbackIT` |
 | Framework JavaScript: focus, page title | `dom.FocusView` | `FocusIT` |

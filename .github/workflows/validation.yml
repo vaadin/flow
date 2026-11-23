@@ -134,10 +134,20 @@ jobs:
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
-      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      - name: Hash the poms
+        id: pom-hash
+        # Once, before anything is built: the build below unpacks a war that
+        # carries a pom.xml of its own, so hashFiles evaluated after it no
+        # longer matches the key the entry was restored and saved under.
+        run: echo "hash=${{ hashFiles('**/pom.xml') }}" >> "$GITHUB_OUTPUT"
+      - id: maven-cache
+        # Restore and save are separate steps so that the step resolving the
+        # integration test dependencies below can tell which entry was
+        # restored, which actions/cache does not report.
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          key: ${{ runner.os }}-maven-${{ steps.pom-hash.outputs.hash }}
           restore-keys: ${{ runner.os }}-maven-
       - name: Generate matrices
         id: set-matrix
@@ -157,6 +167,32 @@ jobs:
         run: |
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
+      - name: Resolve what only the integration test modules pull
+        # The it-tests jobs restore the cache this job saves, and cannot add to
+        # it: their primary key is an exact hit, so actions/cache skips their
+        # save. So the dependencies and plugins only flow-tests declares have to
+        # enter the entry here. Otherwise a pom change, such as a dependency
+        # bump, has every it-tests job download the same new artifacts from
+        # Maven Central at once, and Central answers that burst with HTTP 429.
+        # What plugins fetch only while they run, and the reactors of the CDI
+        # and Quarkus jobs, are not covered.
+        #
+        # Skipped when what was restored already holds it: an exact hit, or
+        # the entry warm-caches.yml saved for main with these same poms, which
+        # resolves the same graph. A run's own primary key almost never hits,
+        # since only a re-run or a later push to the same pull request can
+        # read it, so the warmed entry is the common case.
+        #
+        # dependency:resolve rather than a build, which would cost this job the
+        # time the it-tests jobs spend on it anyway; see the script for how it
+        # handles the test modules that are not packaged here.
+        if: ${{ steps.maven-cache.outputs.cache-hit != 'true' && steps.maven-cache.outputs.cache-matched-key != format('{0}-maven-warm-v2-{1}', runner.os, steps.pom-hash.outputs.hash) }}
+        run: ./scripts/resolveItDependencies.sh
+      - uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        if: ${{ steps.maven-cache.outputs.cache-hit != 'true' }}
+        with:
+          path: ~/.m2/repository
+          key: ${{ steps.maven-cache.outputs.cache-primary-key }}
       - name: Save workspace
         run: |
           tar cf workspace.tar -C ~/ $(cd ~/ && echo .m2/repository/com/vaadin/*/999.99-SNAPSHOT)
@@ -174,6 +210,12 @@ jobs:
       matrix: ${{fromJson(needs.build.outputs.matrix-unit)}}
     runs-on: ubuntu-26.04
     steps:
+      # Keep in sync with the job's timeout-minutes: a retry of a Maven build
+      # must end before the job timeout cancels it and hides the transfer
+      # error that caused it. The minute left over is for the report, upload
+      # and cache-save steps that run after the build.
+      - name: Set retry deadline
+        run: echo "MAVEN_RETRY_DEADLINE=$(( $(date +%s) + 29 * 60 ))" >> "$GITHUB_ENV"
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
@@ -215,19 +257,20 @@ jobs:
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Unit Test
+        # A full run's expected length, generously above the longest seen, for
+        # runMavenWithRetry.sh to size a retry by: a transfer error usually
+        # stops the build within a minute.
+        env:
+          MAVEN_RETRY_DURATION: 600
         run: |
           echo Running TESTS: ${{ strategy.job-index }} ${{matrix.module}} ${{ matrix.args }}
           [ -n "${{matrix.module}}" ] && \
             ARGS="-pl ${{matrix.module}} -Dtest=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
-          cmd="mvn -B -ntp -T 1C -Pcoverage $ARGS"
+          args="-B -ntp -T 1C -Pcoverage $ARGS"
           set -x -e
-          LOG=mvn-unit-tests-${{matrix.current}}.out
-          : > "$LOG"
-          $cmd verify -Dmaven.javadoc.skip=false </dev/null >"$LOG" 2>&1 &
-          MVN_PID=$!
-          tail -f --pid=$MVN_PID "$LOG" &
-          wait $MVN_PID
+          scripts/runMavenWithRetry.sh mvn-unit-tests-${{matrix.current}}.out \
+            $args verify -Dmaven.javadoc.skip=false
       - name: Package coverage reports
         # Some modules (see moduleSplits in computeMatrix.js) run their tests
         # split over several matrix jobs, each producing a partial
@@ -277,6 +320,12 @@ jobs:
       matrix: ${{fromJson(needs.build.outputs.matrix-it)}}
     runs-on: ubuntu-26.04
     steps:
+      # Keep in sync with the job's timeout-minutes: a retry of a Maven build
+      # must end before the job timeout cancels it and hides the transfer
+      # error that caused it. The minute left over is for the report, upload
+      # and cache-save steps that run after the build.
+      - name: Set retry deadline
+        run: echo "MAVEN_RETRY_DEADLINE=$(( $(date +%s) + 29 * 60 ))" >> "$GITHUB_ENV"
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
@@ -354,21 +403,26 @@ jobs:
           fi
       - name: Run ITs
         timeout-minutes: 22
+        # A full run's expected length, generously above the longest seen, for
+        # runMavenWithRetry.sh to size a retry by: a transfer error usually
+        # stops the build within a minute.
+        env:
+          MAVEN_RETRY_DURATION: 1080
         run: |
           [ -n "${{matrix.module}}" ] && \
             ARGS="-Dfailsafe.forkCount=4 -pl ${{matrix.module}} -Dit.test=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
-          cmd="mvn -V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Dbun $ARGS"
+          args="-V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Dbun $ARGS"
           set -x -e
-          LOG=mvn-it-tests-${{matrix.current}}.out
-          : > "$LOG"
-          # Detach mvn's stdio from this shell so an orphan child JVM (e.g. a
+          # Detaches mvn's stdio from this shell so an orphan child JVM (e.g. a
           # Spring Boot fork that spring-boot:stop failed to kill) can't pin
-          # the step open by holding the pipe to tee.
-          $cmd verify </dev/null >"$LOG" 2>&1 &
-          MVN_PID=$!
-          tail -f --pid=$MVN_PID "$LOG" &
-          wait $MVN_PID
+          # the step open by holding the pipe to tee, and retries a build that
+          # failed to download from a repository.
+          # Keep in sync with this step's timeout-minutes: a retry must end
+          # before the step timeout too, when that comes before the job's.
+          step_deadline=$(( $(date +%s) + 21 * 60 ))
+          [ "$step_deadline" -lt "$MAVEN_RETRY_DEADLINE" ] && MAVEN_RETRY_DEADLINE=$step_deadline
+          scripts/runMavenWithRetry.sh mvn-it-tests-${{matrix.current}}.out $args verify
       - name: Kill leftover Java processes
         if: ${{ always() }}
         run: |
@@ -400,6 +454,12 @@ jobs:
         profile: [tomee, wildfly, payara, liberty, tomcat-weld]
     runs-on: ubuntu-26.04
     steps:
+      # Keep in sync with the job's timeout-minutes: a retry of a Maven build
+      # must end before the job timeout cancels it and hides the transfer
+      # error that caused it. The minute left over is for the report, upload
+      # and cache-save steps that run after the build.
+      - name: Set retry deadline
+        run: echo "MAVEN_RETRY_DEADLINE=$(( $(date +%s) + 44 * 60 ))" >> "$GITHUB_ENV"
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
@@ -517,24 +577,26 @@ jobs:
       - name: Run CDI ITs
         if: ${{ steps.decide.outputs.run == 'true' }}
         timeout-minutes: 35
+        # A full run's expected length, as in the Unit Test step.
+        env:
+          MAVEN_RETRY_DURATION: 300
         run: |
           # enforcer:enforce has to be named explicitly: the Flow parent keeps
           # the dependencyConvergence rule in the default-cli execution, so no
           # lifecycle phase evaluates it. Each container profile brings its own
           # Arquillian adapter, so this is where a divergence would appear.
-          cmd="mvn -V -B -ntp -e -pl flow-tests/vaadin-cdi-tests -P${{ matrix.profile }} -Dcom.vaadin.testbench.Parameters.maxAttempts=2"
+          args="-V -B -ntp -e -pl flow-tests/vaadin-cdi-tests -P${{ matrix.profile }} -Dcom.vaadin.testbench.Parameters.maxAttempts=2"
           set -x -e
-          LOG=mvn-cdi-tests-${{ matrix.profile }}.out
-          : > "$LOG"
           # Detached the same way the it-tests job detaches its Maven, and for
           # the same reason twice over: these tests fork application server
           # JVMs that can outlive Maven and pin the step open by holding a pipe
           # to tee, and piping would also make the step exit with tee's status
           # instead of Maven's, so a failing container would report success.
-          $cmd enforcer:enforce verify </dev/null >"$LOG" 2>&1 &
-          MVN_PID=$!
-          tail -f --pid=$MVN_PID "$LOG" &
-          wait $MVN_PID
+          # Keep in sync with this step's timeout-minutes: a retry must end
+          # before the step timeout too, when that comes before the job's.
+          step_deadline=$(( $(date +%s) + 34 * 60 ))
+          [ "$step_deadline" -lt "$MAVEN_RETRY_DEADLINE" ] && MAVEN_RETRY_DEADLINE=$step_deadline
+          scripts/runMavenWithRetry.sh mvn-cdi-tests-${{ matrix.profile }}.out $args enforcer:enforce verify
       - name: Kill leftover Java processes
         if: ${{ always() && steps.decide.outputs.run == 'true' }}
         run: |
@@ -581,6 +643,12 @@ jobs:
       matrix: ${{ fromJson(needs.build.outputs.matrix-quarkus) }}
     runs-on: ubuntu-26.04
     steps:
+      # Keep in sync with the job's timeout-minutes: a retry of a Maven build
+      # must end before the job timeout cancels it and hides the transfer
+      # error that caused it. The minute left over is for the report, upload
+      # and cache-save steps that run after the build.
+      - name: Set retry deadline
+        run: echo "MAVEN_RETRY_DEADLINE=$(( $(date +%s) + 39 * 60 ))" >> "$GITHUB_ENV"
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
@@ -674,6 +742,9 @@ jobs:
       - name: Run Quarkus ITs
         if: ${{ steps.decide.outputs.run == 'true' }}
         timeout-minutes: 35
+        # A full run's expected length, as in the Unit Test step.
+        env:
+          MAVEN_RETRY_DURATION: 240
         run: |
           # -am, and the reactor rooted at the suite rather than at the
           # repository: the build job installs with -DskipTests, which
@@ -685,23 +756,20 @@ jobs:
           # Flow suites these tests share a single Quarkus application per
           # module and have never been run in parallel. Flaky runs are retried
           # instead.
-          cmd="mvn -V -B -ntp -e -f flow-tests/vaadin-quarkus-tests/pom.xml \
+          args="-V -B -ntp -e -f flow-tests/vaadin-quarkus-tests/pom.xml \
             -pl ${{ matrix.module }} -am \
             -Dcom.vaadin.testbench.Parameters.maxAttempts=2 \
-            -Dfailsafe.rerunFailingTestsCount=2 \
-            -Dmaven.wagon.httpconnectionManager.ttlSeconds=25 \
-            -Dmaven.wagon.http.retryHandler.count=3"
+            -Dfailsafe.rerunFailingTestsCount=2"
           set -x -e
-          LOG=mvn-quarkus-tests-${{ matrix.name }}.out
-          : > "$LOG"
           # Detached the same way the it-tests job detaches its Maven: these
           # tests fork Quarkus JVMs that can outlive Maven and pin the step
           # open by holding a pipe to tee, and piping would also make the step
           # exit with tee's status instead of Maven's.
-          $cmd verify </dev/null >"$LOG" 2>&1 &
-          MVN_PID=$!
-          tail -f --pid=$MVN_PID "$LOG" &
-          wait $MVN_PID
+          # Keep in sync with this step's timeout-minutes: a retry must end
+          # before the step timeout too, when that comes before the job's.
+          step_deadline=$(( $(date +%s) + 34 * 60 ))
+          [ "$step_deadline" -lt "$MAVEN_RETRY_DEADLINE" ] && MAVEN_RETRY_DEADLINE=$step_deadline
+          scripts/runMavenWithRetry.sh mvn-quarkus-tests-${{ matrix.name }}.out $args verify
       - name: Kill leftover Java processes
         if: ${{ always() && steps.decide.outputs.run == 'true' }}
         run: |
@@ -1129,6 +1197,13 @@ jobs:
       issues: write
       pull-requests: write
     steps:
+      # Keep in sync with the job's timeout-minutes. Both builds below run
+      # whole reactors and retry a transfer error. A retry that the job
+      # timeout cuts off would hide that error, so a retry must end a minute
+      # before the timeout. That minute is for the report, upload and
+      # cache-save steps that run after the builds.
+      - name: Set retry deadline
+        run: echo "MAVEN_RETRY_DEADLINE=$(( $(date +%s) + 14 * 60 ))" >> "$GITHUB_ENV"
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
@@ -1180,10 +1255,15 @@ jobs:
           echo "BASE_API_VERSION=${baseVersion}" >> $GITHUB_OUTPUT
       - name: Build base version locally
         working-directory: ../base-build
+        # A full run's expected length, as in the Unit Test step, plus that of
+        # the apicmp build below, which still has to fit after a retry.
+        env:
+          MAVEN_RETRY_DURATION: 540
         run: |
           echo "Building base version ${{ steps.base-version.outputs.BASE_API_VERSION }} from merge base ${{ steps.merge-base.outputs.merge_base_sha }} with ${{ env._BASE_REF }}"
           echo "Running in $(pwd)"
-          mvn clean install -B -ntp -DskipTests
+          "$GITHUB_WORKSPACE/scripts/runMavenWithRetry.sh" mvn-api-diff-base.out \
+            clean install -B -ntp -DskipTests
       - name: Use temporary flow version for PR
         # working-directory is not set, so it defaults back to the PR branch checkout
         run: |
@@ -1195,6 +1275,9 @@ jobs:
         # profile comes from vaadin-parent, which compares the file named
         # after the packaging and so cannot handle the maven-plugin modules.
         # flow-tests is left out too, as it builds with flow-maven-plugin.
+        # A full run's expected length, as in the Unit Test step.
+        env:
+          MAVEN_RETRY_DURATION: 240
         run: |
           echo "Running in $(pwd)"
           MODULES=$(sed -n 's|.*<module>\(.*\)</module>.*|\1|p' pom.xml | while read -r m; do
@@ -1203,7 +1286,8 @@ jobs:
             fi
           done | paste -sd, -)
           echo "Comparing $MODULES"
-          mvn clean install -B -ntp -e -V -pl "$MODULES" -am -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
+          scripts/runMavenWithRetry.sh mvn-api-diff.out \
+            clean install -B -ntp -e -V -pl "$MODULES" -am -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
       - name: Move API diff results
         run: |
           #!/bin/bash
