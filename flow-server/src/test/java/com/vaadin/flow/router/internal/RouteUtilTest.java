@@ -1371,11 +1371,11 @@ class RouteUtilTest {
             LayoutResolvedParentView.class })
     void getRouteHierarchy_parentIsNotARoute_throwsNamingRouteAndParent(
             Class<? extends Component> target) {
+        RouteParameters parameters = RouteParameters.empty();
         withRegistry(registry -> {
             InvalidRouteConfigurationException exception = assertThrows(
-                    InvalidRouteConfigurationException.class,
-                    () -> RouteUtil.getRouteHierarchy(registry, target,
-                            RouteParameters.empty()));
+                    InvalidRouteConfigurationException.class, () -> RouteUtil
+                            .getRouteHierarchy(registry, target, parameters));
             assertTrue(exception.getMessage().contains(target.getName()),
                     exception.getMessage());
             assertTrue(

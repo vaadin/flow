@@ -390,7 +390,7 @@ public class MenuRegistry {
             } catch (InvalidRouteConfigurationException e) {
                 warnOnce(navigationTarget, "route-parent",
                         "{} Showing {} as a root menu entry.", e.getMessage(),
-                        navigationTarget.getName());
+                        navigationTarget.getName(), e);
                 return Optional.empty();
             } catch (RuntimeException e) {
                 // The menu has no route parameters to offer, so a resolver
