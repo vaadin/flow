@@ -63,10 +63,10 @@ public class ArchiveProvider {
 
     /**
      * Passes the {@code vaadin.contentSecurityPolicy} system property of the
-     * test JVM to the deployment as a {@code csp} context parameter. The
-     * containers run in their own JVM, and each takes its JVM options in a
-     * different way. A web fragment in a library JAR is used because some tests
-     * add their own {@code web.xml}.
+     * test JVM to the deployment as a {@code contentSecurityPolicy} context
+     * parameter. The containers run in their own JVM, and each takes its JVM
+     * options in a different way. A web fragment in a library JAR is used
+     * because some tests add their own {@code web.xml}.
      */
     private static void addContentSecurityPolicyMode(WebArchive archive) {
         String cspMode = System.getProperty("vaadin.contentSecurityPolicy");

@@ -98,7 +98,7 @@ class SpringConfigurationMetadataTest {
         for (String type : readValues(
                 "META-INF/additional-spring-configuration-metadata.json",
                 "properties", "type")) {
-            if (type.startsWith("com.vaadin.")) {
+            if (type != null && type.startsWith("com.vaadin.")) {
                 assertDoesNotThrow(() -> Class.forName(type),
                         "Property type '" + type + "' does not exist");
             }
@@ -140,7 +140,10 @@ class SpringConfigurationMetadataTest {
 
     private static List<String> readNames(String resource, String section)
             throws IOException {
-        return readValues(resource, section, "name");
+        List<String> names = readValues(resource, section, "name");
+        assertFalse(names.contains(null),
+                "An entry in '" + section + "' has no name");
+        return names;
     }
 
     private static List<String> readValues(String resource, String section,
@@ -149,9 +152,9 @@ class SpringConfigurationMetadataTest {
                 .getClassLoader().getResourceAsStream(resource)) {
             assertNotNull(stream, resource + " not found");
             JsonNode metadata = JsonMapper.builder().build().readTree(stream);
-            return metadata.get(section).valueStream()
-                    .filter(item -> item.has(field))
-                    .map(item -> item.get(field).asString()).toList();
+            return metadata.get(section).valueStream().map(
+                    item -> item.has(field) ? item.get(field).asString() : null)
+                    .toList();
         }
     }
 }
