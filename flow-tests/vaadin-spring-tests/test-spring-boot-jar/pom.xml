@@ -164,7 +164,7 @@
               <async>true</async>
               <asyncDestroyOnShutdown>true</asyncDestroyOnShutdown>
               <workingDirectory>${project.build.directory}</workingDirectory>
-              <commandlineArgs>-jar vaadin-test-spring-boot-jar-${project.version}.jar</commandlineArgs>
+              <commandlineArgs>-Dvaadin.csp=${vaadin.csp} -jar vaadin-test-spring-boot-jar-${project.version}.jar</commandlineArgs>
             </configuration>
           </execution>
           <execution>

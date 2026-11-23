@@ -181,6 +181,7 @@
                  <systemProperties>. The dev loop's own flags cannot carry it:
                  tomee-plugin.args is the channel it takes for its agents. -->
             <vaadin.frontend.hotdeploy>false</vaadin.frontend.hotdeploy>
+            <vaadin.csp>${vaadin.csp}</vaadin.csp>
           </systemVariables>
         </configuration>
         <!-- No executions: the daemon owns the application process, and for
