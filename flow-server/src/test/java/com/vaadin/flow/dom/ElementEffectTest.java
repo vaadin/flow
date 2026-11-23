@@ -459,6 +459,38 @@ class ElementEffectTest {
     }
 
     @Test
+    void effect_triggeredWithOwnerUICurrentButSessionUnlocked_effectRunWithLock() {
+        // Code that runs after a request has released the session lock,
+        // such as a request end listener, still has the UI of the request
+        // as the current UI
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+        var ui = new MockUI(session);
+
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        List<Boolean> lockedDuringRun = new ArrayList<>();
+        Signal.effect(ui, () -> {
+            signal.get();
+            lockedDuringRun.add(session.hasLock());
+        });
+        session.unlock();
+        assertSame(ui, UI.getCurrent());
+
+        signal.set("changed");
+        assertEquals(List.of(true), lockedDuringRun,
+                "Effect must not run inline without the session lock");
+
+        service.flushExecutorAndAccessTasks(session);
+
+        assertEquals(List.of(true, true), lockedDuringRun,
+                "Effect should run once more with the session lock held");
+    }
+
+    @Test
     void effect_sharedSignalUpdatedOutsideSessionTransaction_reRunsWithFreshValue() {
         // Reproduces issue #24399: while a UIDL request holds the session
         // lock, the session's repeatable-read transaction has cached the
