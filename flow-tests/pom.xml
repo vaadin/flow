@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.4-SNAPSHOT</version>
+    <version>25.5-SNAPSHOT</version>
   </parent>
   <artifactId>flow-tests</artifactId>
   <packaging>pom</packaging>
@@ -41,9 +41,10 @@
     <exclude.windows.failed.it.tests/>
 
     <!-- Skip these categories in validation, use -Pslow-tests to run them -->
-    <excludedGroups>com.vaadin.flow.testcategory.SlowTests,
+    <slowTestGroups>com.vaadin.flow.testcategory.SlowTests,
             com.vaadin.flow.testcategory.ScreenshotTests,
-            com.vaadin.flow.testcategory.PushTests,</excludedGroups>
+            com.vaadin.flow.testcategory.PushTests,</slowTestGroups>
+    <excludedGroups>${slowTestGroups}</excludedGroups>
 
     <!-- Surefire/Failsafe test framework provider for the IT modules. Defaults
             to the JUnit 4 provider; modules running their ITs on JUnit Platform
@@ -489,9 +490,7 @@
       </activation>
       <properties>
         <groups/>
-        <excludedGroups>com.vaadin.flow.testcategory.SlowTests,
-                    com.vaadin.flow.testcategory.ScreenshotTests,
-                    com.vaadin.flow.testcategory.PushTests,
+        <excludedGroups>${slowTestGroups}
                     com.vaadin.flow.testcategory.IgnoreIE11,</excludedGroups>
       </properties>
     </profile>
@@ -505,7 +504,9 @@
     <profile>
       <id>slow-tests</id>
       <properties>
-        <groups>${excludedGroups}</groups>
+        <!-- Not ${excludedGroups}, which this profile empties, so it would
+             resolve to no filter and run every test. -->
+        <groups>${slowTestGroups}</groups>
         <excludedGroups/>
       </properties>
     </profile>

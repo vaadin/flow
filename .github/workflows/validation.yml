@@ -149,6 +149,8 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ steps.pom-hash.outputs.hash }}
           restore-keys: ${{ runner.os }}-maven-
+      - name: Test the slow-tests module list
+        run: node --test scripts/computeMatrix.test.js
       - name: Generate matrices
         id: set-matrix
         run: |
@@ -174,8 +176,9 @@ jobs:
         # enter the entry here. Otherwise a pom change, such as a dependency
         # bump, has every it-tests job download the same new artifacts from
         # Maven Central at once, and Central answers that burst with HTTP 429.
-        # What plugins fetch only while they run, and the reactors of the CDI
-        # and Quarkus jobs, are not covered.
+        # The Quarkus suite, which is not part of the flow-tests reactor, is
+        # resolved here too. What plugins fetch only while they run, and the
+        # reactor of the CDI job, are not covered.
         #
         # Skipped when what was restored already holds it: an exact hit, or
         # the entry warm-caches.yml saved for main with these same poms, which
@@ -186,7 +189,7 @@ jobs:
         # dependency:resolve rather than a build, which would cost this job the
         # time the it-tests jobs spend on it anyway; see the script for how it
         # handles the test modules that are not packaged here.
-        if: ${{ steps.maven-cache.outputs.cache-hit != 'true' && steps.maven-cache.outputs.cache-matched-key != format('{0}-maven-warm-v2-{1}', runner.os, steps.pom-hash.outputs.hash) }}
+        if: ${{ steps.maven-cache.outputs.cache-hit != 'true' && steps.maven-cache.outputs.cache-matched-key != format('{0}-maven-warm-v3-{1}', runner.os, steps.pom-hash.outputs.hash) }}
         run: ./scripts/resolveItDependencies.sh
       - uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         if: ${{ steps.maven-cache.outputs.cache-hit != 'true' }}
@@ -993,6 +996,108 @@ jobs:
           files: 'flow-plugins/flow-gradle-plugin/build/test-results/**/TEST-*.xml'
           comment_mode: 'off'
           check_run_annotations: all tests, skipped tests
+  slow-tests:
+    name: Slow Tests
+    # Ports the TeamCity 'Validation-SlowTests' build. The validation profiles
+    # leave out the tests tagged SlowTests (and, under flow-tests, PushTests
+    # and ScreenshotTests); -Pslow-tests runs only those. computeMatrix.js
+    # lists the modules whose tests use those categories, leaving out the
+    # modules excluded from the other test jobs too. So the slow tests of
+    # vaadin-cdi-tests and vaadin-quarkus-tests are not run here: they
+    # need an application server or a separate build, and neither the cdi-tests
+    # nor the quarkus-tests job enables their slow-tests profiles either. A
+    # separate check rather than part of test-results, so it can be made
+    # required on its own. Needs the TestBench license, so not for forks.
+    permissions:
+      contents: read
+      checks: write
+    needs: build
+    if: ${{ !github.event.pull_request.head.repo.fork }}
+    timeout-minutes: 60
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: ${{env._HEAD_SHA}}
+      # No global pnpm: Flow installs the pnpm it needs itself, and
+      # FrontendToolsTest installs an old global pnpm and expects to find it,
+      # which fails when pnpm/action-setup puts a current one first on PATH.
+      - uses: ./.github/actions/setup-frontend-tools
+      - name: Set up JDK
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version-file: .tool-versions
+          distribution: 'temurin'
+      - name: Set flow version to 999.99-SNAPSHOT
+        run: |
+          ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: ${{ github.run_attempt == 1 }}
+        with:
+          name: saved-workspace
+      - name: Restore Workspace
+        if: ${{ github.run_attempt == 1 }}
+        run: |
+          tar xf workspace.tar
+          tar cf - .m2 | (cd ~ && tar xf -)
+      - name: Set TB License
+        # Written before the fallback compile below, so a re-run does
+        # not build the reactor without a license.
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
+        run: |
+          mkdir -p ~/.vaadin/
+          echo '{"username":"'$(echo $TB_LICENSE | cut -d / -f1)'","proKey":"'$(echo $TB_LICENSE | cut -d / -f2)'"}' > ~/.vaadin/proKey
+      - name: Compile and Install Flow
+        # On re-runs the saved-workspace artifact has already been deleted,
+        # so compile from scratch like the test jobs do.
+        if: ${{ github.run_attempt > 1 }}
+        run: |
+          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
+          eval $cmd -T 2C -q || eval $cmd
+      - name: Run Slow Tests
+        run: |
+          MODULES=$(./scripts/computeMatrix.js slow-tests)
+          echo "Running slow tests in $MODULES"
+          cmd="mvn -V -B -ntp -e -fae -Pslow-tests -pl $MODULES -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2"
+          set -x -e
+          LOG=mvn-slow-tests.out
+          : > "$LOG"
+          # Detach mvn's stdio from this shell so an orphan child JVM can't
+          # pin the step open by holding the pipe to tail.
+          $cmd verify </dev/null >"$LOG" 2>&1 &
+          MVN_PID=$!
+          tail -f --pid=$MVN_PID "$LOG" &
+          wait $MVN_PID
+      - name: Kill leftover Java processes
+        if: ${{ always() }}
+        run: |
+          pkill -TERM java || true
+          sleep 2
+          pkill -KILL java || true
+      - name: Package test-report files
+        if: ${{ always() }}
+        run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" -o -name "jetty-start.out" | tar -czf slow-tests-report.tgz -T -
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() }}
+        with:
+          # Deliberately not named tests-output-*: the test-results job merges
+          # that pattern, and this job publishes its own results below.
+          name: slow-tests-report
+          path: slow-tests-report.tgz
+      - name: Publish Slow Test Results
+        if: ${{ always() }}
+        uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
+        with:
+          check_name: Slow Test Results
+          files: '**/target/*-reports/TEST*.xml'
+          comment_mode: 'off'
+          check_run_annotations: all tests, skipped tests
   sonar-analysis:
     name: Sonar Analysis
     # Runs after the unit tests so the analysis can reuse their JaCoCo
@@ -1134,7 +1239,7 @@ jobs:
     # restores it has run: deleting it in test-results could race with the
     # Sonar analysis, which starts as soon as the unit tests finish.
     if: ${{ always() && !github.event.pull_request.head.repo.fork && needs.changes.outputs.docs-only != 'true' }}
-    needs: [changes, test-results, sonar-analysis, gradle-tests]
+    needs: [changes, test-results, sonar-analysis, gradle-tests, slow-tests]
     runs-on: ubuntu-26.04
     steps:
       - uses: geekyeggo/delete-artifact@176a747ab7e287e3ff4787bf8a148716375ca118 # v6.0.0

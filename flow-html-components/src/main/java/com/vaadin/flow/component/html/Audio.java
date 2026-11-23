@@ -18,6 +18,7 @@ package com.vaadin.flow.component.html;
 import org.jspecify.annotations.NullMarked;
 
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.internal.UsageStatistics;
 
 /**
  * Component representing an <code>&lt;audio&gt;</code> element — the browser's
@@ -46,6 +47,10 @@ import com.vaadin.flow.component.Tag;
 @NullMarked
 @Tag(Tag.AUDIO)
 public class Audio extends Media {
+
+    static {
+        UsageStatistics.markAsUsed("flow/Audio", null);
+    }
 
     /**
      * Creates an audio player without any source. The browser's playback
