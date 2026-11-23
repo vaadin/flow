@@ -257,6 +257,11 @@ class JsDefinitionProxyTest {
     static class GreeterDouble implements JsInvokers {
     }
 
+    // Only an interface can be implemented by a proxy
+    @JsDefinition
+    static class AnnotatedDouble implements JsInvokers {
+    }
+
     @JsDefinition
     interface BothKindsJs extends JsInvokers, JsSnippets {
         @JsExpression("console.log($0);")
@@ -553,6 +558,7 @@ class JsDefinitionProxyTest {
         assertFalse(JsDefinitionProxy.isDefinition(JsInvokers.class));
         assertFalse(JsDefinitionProxy.isDefinition(JsSnippets.class));
         assertFalse(JsDefinitionProxy.isDefinition(GreeterDouble.class));
+        assertFalse(JsDefinitionProxy.isDefinition(AnnotatedDouble.class));
         assertFalse(JsDefinitionProxy.isDefinition(Serializable.class));
     }
 

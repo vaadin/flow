@@ -366,6 +366,7 @@ class VaadinQuarkusNativeProcessorTest {
         Indexer indexer = new Indexer();
         indexer.indexClass(GreeterJs.class);
         indexer.indexClass(Greeter.class);
+        indexer.indexClass(UnannotatedJs.class);
         Index jsIndex = indexer.complete();
         List<NativeImageProxyDefinitionBuildItem> proxies = new ArrayList<>();
         List<ReflectiveClassBuildItem> reflective = new ArrayList<>();
@@ -375,7 +376,8 @@ class VaadinQuarkusNativeProcessorTest {
                 reflective::add);
 
         // Only an interface can be implemented by a JDK proxy, so the
-        // annotated class has to be left out of both registrations.
+        // annotated class has to be left out of both registrations, and an
+        // interface without the annotation is not a definition.
         assertEquals(List.of(List.of(GreeterJs.class.getName())),
                 proxies.stream()
                         .map(NativeImageProxyDefinitionBuildItem::getClasses)
@@ -517,6 +519,10 @@ class VaadinQuarkusNativeProcessorTest {
 
     @JsDefinition
     public static class Greeter {
+    }
+
+    public interface UnannotatedJs extends JsInvokers {
+        void greet(String name);
     }
 
     public interface ValueJs<T> {

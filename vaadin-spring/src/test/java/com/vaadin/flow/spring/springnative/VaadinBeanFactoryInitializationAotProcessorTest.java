@@ -1248,6 +1248,10 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     public interface TestSnippetJs extends JsSnippets, TestBaseSnippetJs {
     }
 
+    // Found by the annotation, not by the marker interface
+    public interface TestUnannotatedJs extends JsInvokers {
+    }
+
     public interface TestValueJs<T> {
         @JsExpression("return this.value")
         JavaScriptResult<T> readValue();
