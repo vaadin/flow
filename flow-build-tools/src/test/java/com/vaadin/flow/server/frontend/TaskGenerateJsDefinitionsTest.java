@@ -68,6 +68,8 @@ class TaskGenerateJsDefinitionsTest {
 
     private static final String SCROLL_TO_END_EXPRESSION = "this.scrollTop = this.scrollHeight";
 
+    private static final String SCROLL_OVERRIDE_EXPRESSION = "this.scrollTop = $0 * 2";
+
     private static final String COUNT_EXPRESSION = "this.count = ($0 || 0) + 1";
 
     private static final String SHOUT_EXPRESSION = "window.alert([$0, ...$1].join(' '))";
@@ -105,6 +107,13 @@ class TaskGenerateJsDefinitionsTest {
     public interface ScrollingListJs extends ScrollableJs {
         @JsExpression(SCROLL_TO_END_EXPRESSION)
         void scrollToEnd();
+    }
+
+    @JsDefinition
+    public interface OverridingListJs extends ScrollableJs {
+        @Override
+        @JsExpression(SCROLL_OVERRIDE_EXPRESSION)
+        void scrollTo(int top);
     }
 
     @JsDefinition
@@ -280,6 +289,23 @@ class TaskGenerateJsDefinitionsTest {
                         + JsCall.functionId(SCROLL_TO_END_EXPRESSION, 0, false)
                         + "\"] = async function () {"),
                 "the method the definition declares itself should be collected too: "
+                        + content);
+    }
+
+    @Test
+    void overriddenMethod_collectsTheJavaScriptOfTheOverride() {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(OverridingListJs.class), false);
+
+        assertTrue(
+                content.contains(JsCall.functionId(SCROLL_OVERRIDE_EXPRESSION,
+                        1, false)),
+                "the override declares what runs through the sub-interface: "
+                        + content);
+        assertFalse(
+                content.contains(
+                        JsCall.functionId(SCROLL_EXPRESSION, 1, false)),
+                "what the override replaces is not part of the sub-interface: "
                         + content);
     }
 
