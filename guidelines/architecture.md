@@ -117,10 +117,12 @@ the data is corrupted.
 The shape to follow is the one of `UI.access` and `VaadinSession.access`: lock
 the session, set the current instances with `CurrentInstance.setCurrent`, run
 the work, and restore the previous instances with
-`CurrentInstance.restoreInstances` in a `finally` block. Restore them before
-`unlock()` in new code; `accessSynchronously` restores right after it, which
-is safe only because the only application code `unlock()` runs is queued
-access tasks, and each of those sets its own current instances under the lock. Request handlers that set the current UI while they hold the lock — finding
+`CurrentInstance.restoreInstances` in a `finally` block right after
+`unlock()`. That keeps the session current for as long as the lock is held
+(see below), and the short window after `unlock()` with the instances still
+set is safe because no application code runs in it: the only application code
+`unlock()` runs is queued access tasks, and each of those sets its own current
+instances under the lock. Request handlers that set the current UI while they hold the lock — finding
 the UI of a UIDL or heartbeat request, bootstrapping a page — have to restore
 it the same way when they unlock, because everything after that point in the
 request (writing the response, the request end callbacks) runs without the
@@ -133,8 +135,8 @@ upload handlers that transfer data while other requests use the session. Code
 that gets a session from `VaadinSession.getCurrent()` or from a parameter
 locks it, or goes through `access`, before it touches the session's state.
 
-The promise holds the other way round, though: a session whose lock the thread
-holds is always the current one. Flow avoids deadlocks between sessions by
+The reverse has to hold, though: a session whose lock the thread holds must be
+the current one. Flow avoids deadlocks between sessions by
 refusing to lock a session while the thread holds the lock of another one
 (`VaadinService.verifyNoOtherSessionLocked`), and it finds that other session
 only through `VaadinSession.getCurrent()`. A thread that locks session A
