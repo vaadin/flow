@@ -133,6 +133,17 @@ upload handlers that transfer data while other requests use the session. Code
 that gets a session from `VaadinSession.getCurrent()` or from a parameter
 locks it, or goes through `access`, before it touches the session's state.
 
+The promise holds the other way round, though: a session whose lock the thread
+holds is always the current one. Flow avoids deadlocks between sessions by
+refusing to lock a session while the thread holds the lock of another one
+(`VaadinService.verifyNoOtherSessionLocked`), and it finds that other session
+only through `VaadinSession.getCurrent()`. A thread that locks session A
+without making it current can go on to lock session B unchallenged, while
+another thread does the same in the opposite order, and both wait forever.
+`VaadinSession.access` and `UI.access` keep this symmetry by setting the
+session as current together with the UI; code that calls `lock()` directly
+outside a request has to do the same.
+
 Whether a callback runs with the lock is part of its contract, and a contract
 that depends on the request is no contract at all. A request end callback also
 fires for requests that never used a session, so taking the lock only to fire
