@@ -89,6 +89,13 @@ class JsDefinitionHotswapperTest {
         void scrollToEnd();
     }
 
+    // Annotations are not inherited, so it needs its own
+    @JsDefinition
+    interface DetailedListJs extends ScrollingListJs {
+        @JsExpression("this.dataset.detail = $0")
+        void showDetail(String detail);
+    }
+
     static class NotADefinition {
     }
 
@@ -316,11 +323,41 @@ class JsDefinitionHotswapperTest {
         // JavaScript than it does now
         editGeneratedDefinitions("this.scrollTop = $0", "this.scrollLeft = $0");
 
-        classesChanged(ScrollableJs.class);
+        List<Class<?>> cleared = new ArrayList<>();
+        Registration registration = ReflectionCache
+                .addClearAllAction(cleared::add);
 
-        assertEquals(List.of(ScrollingListJs.class.getName()),
-                hotswapper.reported,
-                "the definition extending the interface now declares other JavaScript than the bundle carries");
+        try {
+            classesChanged(ScrollableJs.class);
+
+            assertEquals(List.of(ScrollingListJs.class.getName()),
+                    hotswapper.reported,
+                    "the definition extending the interface now declares other JavaScript than the bundle carries");
+            assertTrue(cleared.contains(ScrollingListJs.class),
+                    "what was cached of the definition depends on the interface: "
+                            + cleared);
+            assertFalse(cleared.contains(GreeterJs.class),
+                    "a definition not extending the interface is left alone");
+        } finally {
+            registration.remove();
+        }
+    }
+
+    @Test
+    void extendedDefinitionChanged_definitionsExtendingItReported()
+            throws IOException {
+        writeGeneratedDefinitionsFor(ScrollingListJs.class);
+        writeGeneratedDefinitionsFor(DetailedListJs.class);
+        editGeneratedDefinitions("this.scrollTop = this.scrollHeight",
+                "this.scrollTop = 0");
+
+        classesChanged(ScrollingListJs.class);
+
+        assertEquals(
+                Set.of(ScrollingListJs.class.getName(),
+                        DetailedListJs.class.getName()),
+                Set.copyOf(hotswapper.reported),
+                "an annotated interface carries its JavaScript into the definitions extending it too");
     }
 
     @Test

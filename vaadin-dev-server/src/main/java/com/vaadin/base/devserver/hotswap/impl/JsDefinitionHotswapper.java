@@ -73,11 +73,10 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * among the definitions the generated file names, which is every one a browser
  * can run.
  * <p>
- * An interface that a definition extends does not need to be a definition
- * itself, but the methods it declares are generated as part of every definition
- * that extends it. Redefining such an interface is handled the same way: the
- * definitions the generated file names that extend it are written again or
- * reported.
+ * The methods of an interface that a definition extends, annotated or not, are
+ * generated as part of every definition that extends it. Redefining such an
+ * interface is handled the same way: the definitions the generated file names
+ * that extend it are written again or reported.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  * 
@@ -93,8 +92,7 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
         List<Class<?>> snippetTypes = changed.stream()
                 .filter(JsDefinitionProxy::isApplicationSnippetType).toList();
         List<Class<?>> inheritedTypes = changed.stream()
-                .filter(JsDefinitionHotswapper::isInheritedDeclaration)
-                .toList();
+                .filter(JsDefinitionHotswapper::declaresJavaScript).toList();
         if (definitions.isEmpty() && snippetTypes.isEmpty()
                 && inheritedTypes.isEmpty()) {
             return;
@@ -137,15 +135,13 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
     }
 
     /**
-     * Checks whether the given type is an interface that is not a definition
-     * itself but declares JavaScript, which is then generated as part of the
-     * definitions that extend it.
+     * Checks whether the given type is an interface with JavaScript of its own
+     * or inherited, which is generated as part of the definitions that extend
+     * it, whether or not it is a definition itself.
      */
-    private static boolean isInheritedDeclaration(Class<?> type) {
-        return type.isInterface() && !JsDefinitionProxy.isDefinition(type)
-                && Arrays.stream(type.getDeclaredMethods())
-                        .anyMatch(method -> method
-                                .isAnnotationPresent(JsExpression.class));
+    private static boolean declaresJavaScript(Class<?> type) {
+        return type.isInterface() && Arrays.stream(type.getMethods()).anyMatch(
+                method -> method.isAnnotationPresent(JsExpression.class));
     }
 
     /**
@@ -167,8 +163,9 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
             Class<?> definition = load(name, relatedTypes);
             if (definition != null && (Arrays.stream(definition.getMethods())
                     .map(Method::getReturnType).anyMatch(snippetTypes::contains)
-                    || inheritedTypes.stream().anyMatch(
-                            type -> type.isAssignableFrom(definition)))) {
+                    || inheritedTypes.stream()
+                            .anyMatch(type -> type != definition
+                                    && type.isAssignableFrom(definition)))) {
                 definitions.add(definition);
             }
         }
