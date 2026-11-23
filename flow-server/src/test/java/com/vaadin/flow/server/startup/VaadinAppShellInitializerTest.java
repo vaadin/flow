@@ -457,6 +457,10 @@ public class VaadinAppShellInitializerTest {
                 .contains("com.vaadin.experimental.ssePushTransport=true"));
         assertTrue(thrown.getMessage().contains(
                 "property `vaadin.experimental.ssePushTransport=true`"));
+        assertTrue(thrown.getMessage()
+                .contains(MyAppShellWithServerSentEventsPush.class.getName()));
+        // Copilot cannot be used when the application does not start
+        assertFalse(thrown.getMessage().contains("Copilot"));
     }
 
     @Test

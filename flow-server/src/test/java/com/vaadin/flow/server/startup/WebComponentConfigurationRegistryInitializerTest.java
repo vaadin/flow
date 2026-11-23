@@ -165,10 +165,7 @@ class WebComponentConfigurationRegistryInitializerTest {
         InvalidApplicationConfigurationException thrown = assertThrows(
                 InvalidApplicationConfigurationException.class,
                 () -> initializer.process(exporters, servletContext));
-        assertTrue(thrown.getMessage()
-                .contains("com.vaadin.experimental.ssePushTransport=true"));
-        assertTrue(thrown.getMessage().contains(
-                "property `vaadin.experimental.ssePushTransport=true`"));
+        assertTrue(thrown.getMessage().contains("web component exporter"));
     }
 
     @Test

@@ -55,8 +55,9 @@ public final class PushUtil {
 
     /**
      * Checks at application startup that the transport of a static
-     * {@code @Push} annotation can be used, i.e. that the feature flag guarding
-     * an experimental transport is enabled.
+     * {@code @Push} annotation can be used, i.e. that the feature flag for the
+     * experimental server-sent events transport is enabled when that transport
+     * is selected.
      * <p>
      * Unlike {@link #checkTransportEnabled(Transport, VaadinContext)}, the
      * error only names the ways to enable the flag that work without a running
