@@ -33,7 +33,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import com.vaadin.experimental.CoreFeatureFlagProvider;
 import com.vaadin.experimental.DisabledFeatureException;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
@@ -46,6 +48,7 @@ import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ui.Transport;
 
@@ -156,6 +159,33 @@ class WebComponentConfigurationRegistryInitializerTest {
 
     @Test
     void pushWithServerSentEventsWithoutFeatureFlag_exceptionIsThrown() {
+        useAttributeMapForServletContext();
+
+        Set<Class<?>> exporters = Set.of(SsePushExporter.class);
+        DisabledFeatureException thrown = assertThrows(
+                DisabledFeatureException.class,
+                () -> initializer.process(exporters, servletContext));
+        assertTrue(thrown.getMessage()
+                .contains("com.vaadin.experimental.ssePushTransport=true"));
+    }
+
+    @Test
+    void pushWithServerSentEventsWithFeatureFlag_noExceptionIsThrown()
+            throws ServletException {
+        useAttributeMapForServletContext();
+        VaadinServletContext vaadinContext = new VaadinServletContext(
+                servletContext);
+        FeatureFlags.get(vaadinContext).getFeatures().stream()
+                .filter(CoreFeatureFlagProvider.SSE_PUSH_TRANSPORT::equals)
+                .forEach(feature -> feature.setEnabled(true));
+
+        initializer.process(Set.of(SsePushExporter.class), servletContext);
+
+        assertTrue(WebComponentConfigurationRegistry.getInstance(vaadinContext)
+                .getConfiguration("sse-push-component").isPresent());
+    }
+
+    private void useAttributeMapForServletContext() {
         Map<String, Object> attributes = new HashMap<>();
         attributes.put(Lookup.class.getName(), mock(Lookup.class));
         attributes.put(ApplicationConfiguration.class.getName(),
@@ -165,13 +195,6 @@ class WebComponentConfigurationRegistryInitializerTest {
         doAnswer(invocation -> attributes.put(invocation.getArgument(0),
                 invocation.getArgument(1))).when(servletContext)
                 .setAttribute(anyString(), any());
-
-        Set<Class<?>> exporters = Set.of(SsePushExporter.class);
-        DisabledFeatureException thrown = assertThrows(
-                DisabledFeatureException.class,
-                () -> initializer.process(exporters, servletContext));
-        assertTrue(thrown.getMessage()
-                .contains("com.vaadin.experimental.ssePushTransport=true"));
     }
 
     @Test
