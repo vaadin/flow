@@ -109,42 +109,40 @@ touch from this thread right now. Application code relies on that promise
 without checking it, and so does the framework — a signal effect, for example,
 treats a signal change made on a thread where its UI is current as a change
 made inside that UI's locked work, and handles it without going through
-`UI.access`. A current UI without the lock breaks that promise silently: the code mutates the state tree
-concurrently with the thread that does hold the lock, and nothing fails until
-the data is corrupted.
+`UI.access`. A current UI without the lock breaks that promise silently: the
+code mutates the state tree concurrently with the thread that does hold the
+lock, and nothing fails until the data is corrupted.
 
-The shape to follow is the one of `UI.access` and `VaadinSession.access`: lock
-the session, set the current instances with `CurrentInstance.setCurrent`, run
-the work, and restore the previous instances with
-`CurrentInstance.restoreInstances` in a `finally` block right after
-`unlock()`. That keeps the session current for as long as the lock is held
-(see below). No application code may run between `unlock()` and the restore
-with the old instances still set; the access tasks that `unlock()` runs set
-their own instances under the lock. Request handlers that set the current UI
-while they hold the lock — finding the UI of a UIDL or heartbeat request,
-bootstrapping a page — have to restore it the same way when they unlock, because everything after that point in the
-request (writing the response, the request end callbacks) runs without the
-lock.
+`UI.accessSynchronously` and `VaadinSession.accessSynchronously` show the shape
+to copy: lock the session, set the current instances with
+`CurrentInstance.setCurrent`, run the work, then unlock and restore the
+previous instances with `CurrentInstance.restoreInstances` in a `finally`
+block. Restoring right after `unlock()` keeps the session current for as long
+as the lock is held, and the window in between is harmless because the access
+tasks that `unlock()` runs set their own instances under the lock. A request
+handler that sets the current UI while it holds the lock — to find the UI of a
+UIDL or heartbeat request, or to bootstrap a page — is no different: everything
+after it unlocks, from writing the response to the request end callbacks, runs
+without the lock, so a UI left current there would break the promise.
 
 The current `VaadinSession` is a weaker promise. It is set for the whole
 request, including phases that run without the lock, such as download and
-upload handlers that transfer data while other requests use the session. Code
-that gets a session from `VaadinSession.getCurrent()` or from a parameter
-locks it, or goes through `access`, before it touches the session's state.
+upload handlers that transfer data while other requests use the session. Being
+able to reach the session therefore says nothing about holding its lock.
 
-The reverse has to hold, though: a session whose lock the thread holds must be
-the current one. Flow avoids deadlocks between sessions by refusing to lock a session while the thread holds the lock of another one
+The opposite direction is a promise, though, because deadlock detection relies
+on it. Flow avoids deadlocks between sessions by refusing to lock a session
+while the thread holds the lock of another one
 (`VaadinService.verifyNoOtherSessionLocked`), and it finds that other session
 only through `VaadinSession.getCurrent()`. A thread that locks session A
 without making it current can go on to lock session B unchallenged, while
 another thread does the same in the opposite order, and both wait forever.
-`VaadinSession.access` and `UI.access` keep this symmetry by setting the
-session as current together with the UI; code that calls `lock()` directly
-outside a request has to do the same.
+The `access` methods avoid this by setting the session as current together
+with the UI; a direct call to `lock()` outside a request does not.
 
 Whether a callback runs with the lock is part of its contract, and a contract
 that depends on the request is no contract at all. A request end callback also
 fires for requests that never used a session, so taking the lock only to fire
 it would add lock contention to every request, and it would still have no lock
-to take for the sessionless ones. Such a callback runs without the lock, and
-code in it that needs the UI or the session uses `access`.
+to take for the sessionless ones. Code in such a callback that needs the UI or
+the session gets the lock through `access`.

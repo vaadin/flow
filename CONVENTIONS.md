@@ -190,9 +190,14 @@ for `CurrentInstance.clearAll()` at the end of the request. See
 
 Keep the locked session current for as long as the lock is held: code that
 locks a session sets it as the current `VaadinSession` if it is not already,
-and restores the previous current instances only after it unlocks. Deadlock
-detection (`VaadinService.verifyNoOtherSessionLocked`) finds the other locked
-session only through `VaadinSession.getCurrent()`. See
+and restores the previous current instances right after it unlocks, with no
+application code in between. Deadlock detection
+(`VaadinService.verifyNoOtherSessionLocked`) finds the other locked session
+only through `VaadinSession.getCurrent()`. See `guidelines/architecture.md`.
+
+Lock a session, or go through `access`, before touching its state, also when
+it is the current `VaadinSession`. A current session does not mean the lock is
+held: it stays current during request phases that run without the lock. See
 `guidelines/architecture.md`.
 
 Run a callback in the same lock state every time it fires. Do not acquire the
