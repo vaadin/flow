@@ -18,6 +18,7 @@ package com.vaadin.flow.signals.impl;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.jspecify.annotations.Nullable;
@@ -463,7 +464,8 @@ public abstract class Transaction implements Serializable {
      */
     public static Transaction createWriteThrough(
             SerializableExecutor freshReadExecutor) {
-        assert freshReadExecutor != null;
+        Objects.requireNonNull(freshReadExecutor,
+                "Fresh read executor cannot be null");
         return new RepeatableReadTransaction(ROOT, freshReadExecutor);
     }
 
