@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +40,7 @@ import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.server.ErrorHandler;
@@ -56,8 +58,12 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -362,6 +368,42 @@ class StreamReceiverHandlerTest {
 
         verify(response)
                 .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+    }
+
+    @Test
+    void handleRequest_uiIsCurrentOnlyInStreamVariableCallbacks()
+            throws IOException {
+        when(stateNode.getOwner()).thenReturn(stateTree);
+        when(stateTree.getUI()).thenReturn(ui);
+        List<UI> inCallbacks = new ArrayList<>();
+        doAnswer(i -> inCallbacks.add(UI.getCurrent())).when(streamVariable)
+                .streamingStarted(any());
+        doAnswer(i -> inCallbacks.add(UI.getCurrent())).when(streamVariable)
+                .streamingFinished(any());
+        List<UI> inWrite = new ArrayList<>();
+        outputStream = new OutputStream() {
+            @Override
+            public void write(int b) {
+                inWrite.add(UI.getCurrent());
+            }
+
+            @Override
+            public void write(byte[] b, int off, int len) {
+                inWrite.add(UI.getCurrent());
+            }
+        };
+
+        try {
+            handler.handleRequest(session, request, response, streamReceiver,
+                    String.valueOf(uiId), expectedSecurityKey);
+
+            assertEquals(List.of(ui, ui), inCallbacks);
+            assertFalse(inWrite.isEmpty());
+            assertTrue(inWrite.stream().allMatch(Objects::isNull));
+            assertNull(UI.getCurrent());
+        } finally {
+            CurrentInstance.clearAll();
+        }
     }
 
     @Test

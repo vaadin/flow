@@ -1719,6 +1719,11 @@ public abstract class VaadinService implements Serializable {
      * related to any particular UI or have the UI information encoded in a
      * non-standard way. The returned UI is also set as the current UI (
      * {@link UI#setCurrent(UI)}).
+     * <p>
+     * The caller must hold the session lock, and must restore the current
+     * instances it had before locking right after it unlocks the session, so
+     * that no code runs with the UI as current without holding its session
+     * lock.
      *
      * @param request
      *            the request for which a UI is desired

@@ -19,15 +19,24 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.internal.CurrentInstance;
 
 /**
  * RequestHandler which takes care of locking and unlocking of the VaadinSession
  * automatically. The session is locked before
  * {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
  * is called and unlocked after it has completed.
+ * <p>
+ * The current instances, such as the current
+ * {@link com.vaadin.flow.component.UI UI}, are restored to what they were
+ * before locking right after the session is unlocked, so the handler can set
+ * the current UI for the work it does with the lock held, and nothing that runs
+ * after the unlock sees that UI as current.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -42,7 +51,8 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      *
      * The ResponseWriter will be executed by
      * {@link #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
-     * without holding Vaadin session lock.
+     * without holding Vaadin session lock, and with the current instances
+     * restored to what they were before the session was locked.
      * 
      * @since 24.5.6
      */
@@ -58,33 +68,55 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
             return false;
         }
 
-        try {
-            if (isReadAndWriteOutsideSessionLock()) {
-                BufferedReader reader = request.getReader();
-                String requestBody;
-                try {
-                    requestBody = reader == null ? null
-                            : getRequestBody(reader,
-                                    getMaxRequestBodySize(request));
-                } catch (RequestBodyTooLargeException e) {
-                    return rejectOversizedRequest(response, e);
-                }
-                session.lock();
-                Optional<ResponseWriter> responseWriter = synchronizedHandleRequest(
-                        session, request, response, requestBody);
-                session.unlock();
-                if (responseWriter.isPresent()) {
-                    responseWriter.get().writeResponse();
-                }
-                return responseWriter.isPresent();
-            } else {
-                session.lock();
+        if (isReadAndWriteOutsideSessionLock()) {
+            BufferedReader reader = request.getReader();
+            String requestBody;
+            try {
+                requestBody = reader == null ? null
+                        : getRequestBody(reader,
+                                getMaxRequestBodySize(request));
+            } catch (RequestBodyTooLargeException e) {
+                return rejectOversizedRequest(response, e);
+            }
+            Optional<ResponseWriter> responseWriter;
+            Map<Class<?>, CurrentInstance> instances = CurrentInstance
+                    .getInstances();
+            session.lock();
+            try {
+                responseWriter = synchronizedHandleRequest(session, request,
+                        response, requestBody);
+            } finally {
+                unlockAndRestore(session, instances);
+            }
+            if (responseWriter.isPresent()) {
+                responseWriter.get().writeResponse();
+            }
+            return responseWriter.isPresent();
+        } else {
+            Map<Class<?>, CurrentInstance> instances = CurrentInstance
+                    .getInstances();
+            session.lock();
+            try {
                 return synchronizedHandleRequest(session, request, response);
+            } finally {
+                unlockAndRestore(session, instances);
             }
+        }
+    }
+
+    /*
+     * The handler may set the current UI while it holds the lock (e.g.
+     * VaadinService.findUI). Code that runs after the unlock, such as the
+     * response writer and the request end callbacks, must not see a current UI
+     * without holding its session lock.
+     */
+    private static void unlockAndRestore(VaadinSession session,
+            Map<Class<?>, CurrentInstance> instances) {
+        try {
+            session.unlock();
         } finally {
-            if (session.hasLock()) {
-                session.unlock();
-            }
+            CurrentInstance.clearAll();
+            CurrentInstance.restoreInstances(instances);
         }
     }
 

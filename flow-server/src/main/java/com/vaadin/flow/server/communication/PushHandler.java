@@ -358,6 +358,8 @@ public class PushHandler {
             cleanDisconnectedUuidBuffer(resource);
 
             UI ui = null;
+            Map<Class<?>, CurrentInstance> instances = CurrentInstance
+                    .getInstances();
             session.lock();
             try {
                 ui = service.findUI(vaadinRequest);
@@ -396,12 +398,7 @@ public class PushHandler {
                 service.recordRequestFailure(vaadinRequest, e);
                 callErrorHandler(session, e);
             } finally {
-                try {
-                    session.unlock();
-                } catch (Exception e) {
-                    getLogger().warn("Error while unlocking session", e);
-                    // can't call ErrorHandler, we (hopefully) don't have a lock
-                }
+                unlockAndRestore(session, instances);
             }
         } finally {
             try {
@@ -525,6 +522,8 @@ public class PushHandler {
         }
 
         UI ui;
+        Map<Class<?>, CurrentInstance> instances = CurrentInstance
+                .getInstances();
         session.lock();
         try {
             VaadinSession.setCurrent(session);
@@ -599,14 +598,27 @@ public class PushHandler {
         } catch (final Exception e) {
             callErrorHandler(session, e);
         } finally {
-            try {
-                session.unlock();
-            } catch (Exception e) {
-                getLogger().warn("Error while unlocking session", e);
-                // can't call ErrorHandler, we (hopefully) don't have a lock
-            }
+            unlockAndRestore(session, instances);
         }
         return session;
+    }
+
+    /*
+     * findUI sets the current UI while the lock is held. Code that runs after
+     * the unlock, such as the request end callbacks, must not see a current UI
+     * without holding its session lock.
+     */
+    private static void unlockAndRestore(VaadinSession session,
+            Map<Class<?>, CurrentInstance> instances) {
+        try {
+            session.unlock();
+        } catch (Exception e) {
+            getLogger().warn("Error while unlocking session", e);
+            // can't call ErrorHandler, we (hopefully) don't have a lock
+        } finally {
+            CurrentInstance.clearAll();
+            CurrentInstance.restoreInstances(instances);
+        }
     }
 
     private static UI findUiUsingResource(AtmosphereResource resource,

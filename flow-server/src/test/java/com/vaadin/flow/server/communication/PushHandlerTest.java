@@ -40,6 +40,7 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -149,7 +150,7 @@ class PushHandlerTest {
     }
 
     @Test
-    void callWithUi_handlingFails_requestEndedEventReportsFailure()
+    void callWithUi_handlingFails_requestEndedEventReportsFailureWithoutCurrentUI()
             throws Exception {
         AtomicReference<UI> currentUi = new AtomicReference<>();
         AtomicReference<VaadinSession> currentSession = new AtomicReference<>();
@@ -172,6 +173,8 @@ class PushHandlerTest {
             currentUi.set(new MockUI(session));
             return null;
         });
+        // A websocket message thread starts without current instances
+        CurrentInstance.clearAll();
         AtmosphereResource resource = mockWebsocketResource("1");
         Map<String, Object> attributes = new HashMap<>();
         AtmosphereRequest request = resource.getRequest();
@@ -181,7 +184,11 @@ class PushHandlerTest {
                 i.getArgument(1))).when(request)
                 .setAttribute(anyString(), any());
         List<RequestEndedEvent> ended = new ArrayList<>();
-        service.getEventBus().addListener(RequestEndedEvent.class, ended::add);
+        AtomicReference<UI> currentInListener = new AtomicReference<>();
+        service.getEventBus().addListener(RequestEndedEvent.class, event -> {
+            ended.add(event);
+            currentInListener.set(UI.getCurrent());
+        });
         IllegalStateException failure = new IllegalStateException("BOOM");
 
         new PushHandler(service).callWithUi(resource, (r, ui) -> {
@@ -191,6 +198,8 @@ class PushHandlerTest {
         assertEquals(1, ended.size());
         assertSame(failure, ended.get(0).getFailure().orElseThrow());
         assertTrue(ended.get(0).getResponse().isEmpty());
+        // The UI found under the lock is not current after the unlock
+        assertNull(currentInListener.get());
     }
 
     @Test
