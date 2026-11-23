@@ -98,3 +98,42 @@ constructing implementations directly.
 Prefer reaching the UI through the component (`getUI()`) or through an event
 that provides it (e.g. `AttachEvent`). `UI.getCurrent()` is a last resort for
 code that has no component instance available.
+
+## Session lock and current instances
+
+The rules are in the Session Lock and Current Instances section of
+[`CONVENTIONS.md`](../CONVENTIONS.md#session-lock-and-current-instances).
+
+`UI.getCurrent()` is a promise to the code that reads it: the UI is safe to
+touch from this thread right now. Application code relies on that promise
+without checking it, and so does the framework — a signal effect, for example,
+treats a signal change made on a thread where its UI is current as a change
+made inside that UI's locked work, and handles it without going through
+`UI.access`. A current UI without
+the lock breaks that promise silently: the code mutates the state tree
+concurrently with the thread that does hold the lock, and nothing fails until
+the data is corrupted.
+
+`UI.access` and `VaadinSession.access` show the shape to follow. They lock the
+session, set the current instances with `CurrentInstance.setCurrent`, run the
+work, and restore the previous instances with
+`CurrentInstance.restoreInstances` in a `finally` block before they unlock.
+Request handlers that set the current UI while they hold the lock — finding
+the UI of a UIDL or heartbeat request, bootstrapping a page — have to restore
+it the same way when they unlock, because everything after that point in the
+request (writing the response, the request end callbacks) runs without the
+lock.
+
+The current `VaadinSession` is a weaker promise. It is set for the whole
+request, including phases that run without the lock, such as download and
+upload handlers that transfer data while other requests use the session. Code
+that gets a session from `VaadinSession.getCurrent()` or from a parameter
+locks it, or goes through `access`, before it touches the session's state.
+
+Whether a callback runs with the lock is part of its contract, and a contract
+that depends on the request is no contract at all. A request end callback also
+fires for requests that never used a session, so taking the lock only to fire
+it would add lock contention to every request, and it would still have no lock
+to take for the sessionless ones. Such a callback runs without the lock, and
+code in it that needs the UI or the session uses `access`.
+
