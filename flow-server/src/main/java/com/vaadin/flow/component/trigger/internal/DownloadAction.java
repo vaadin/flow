@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.io.Serializable;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
@@ -122,7 +121,10 @@ public class DownloadAction extends Action {
      * stream resource scoped to the trigger host element the first time this
      * action is wired to each trigger; re-attaching the host re-registers the
      * resource with the same URL. The content is served as an attachment,
-     * whatever the handler asks for.
+     * unless the handler calls
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#inline()} or
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#inline(String)}
+     * itself.
      *
      * @param handler
      *            produces the response when the URL is fetched, not
@@ -188,9 +190,11 @@ public class DownloadAction extends Action {
      * How a download is started, as a snippet for {@link JsSnippets#of(Class)}.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
      */
     @JsDefinition
-    public interface DownloadJs extends Serializable {
+    public interface DownloadJs extends JsSnippets {
 
         /**
          * An action that downloads from the URL of an input, next to the

@@ -377,7 +377,7 @@ public class ElementListenersTest
     }
 
     @JsDefinition
-    public interface EventJs extends Serializable {
+    public interface EventJs extends JsSnippets {
         @JsExpression("return element.closest($0).tagName;")
         DomEventData<String> closestTag(String selector);
 

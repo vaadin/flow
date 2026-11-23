@@ -43,6 +43,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.StreamRequestHandler;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -53,6 +54,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -368,10 +370,9 @@ class InputStreamDownloadHandlerTest {
     }
 
     @Test
-    void inline_setFileNameInvokedByDefault() throws IOException {
+    void fileNameInvokedByDefault() throws IOException {
         DownloadEvent event = mock(DownloadEvent.class);
         DownloadHandler handler = DownloadHandler.fromInputStream(request -> {
-            verify(event, times(0)).setFileName("my-download.bin");
             verify(event, times(0)).setContentType("application/octet-stream");
             byte[] data = getBytes();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
@@ -392,34 +393,7 @@ class InputStreamDownloadHandlerTest {
 
         handler.handleDownloadRequest(event);
 
-        verify(event).setFileName("my-download.bin");
-        verify(event).setContentType("application/octet-stream");
-    }
-
-    @Test
-    void attachment_doesNotSetFileNameWhenInlined() throws IOException {
-        DownloadHandler handler = DownloadHandler.fromInputStream(request -> {
-            byte[] data = getBytes();
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
-            return new DownloadResponse(inputStream, "download",
-                    "application/octet-stream", data.length);
-        }).inline();
-
-        DownloadEvent event = mock(DownloadEvent.class);
-        when(event.getSession()).thenReturn(session);
-        when(event.getRequest()).thenReturn(request);
-        when(event.getResponse()).thenReturn(response);
-        when(event.getOwningElement()).thenReturn(owner);
-        when(event.getOutputStream()).thenReturn(outputStream);
-        when(event.getUI()).thenReturn(ui);
-        when(response.getOutputStream()).thenReturn(outputStream);
-        when(response.getService()).thenReturn(service);
-        when(service.getMimeType(anyString()))
-                .thenReturn("application/octet-stream");
-
-        handler.handleDownloadRequest(event);
-
-        verify(event, times(0)).setFileName("my-download.bin");
+        verify(event).fileName("my-download.bin", false);
         verify(event).setContentType("application/octet-stream");
     }
 
@@ -514,6 +488,32 @@ class InputStreamDownloadHandlerTest {
 
         verify(response).setHeader("Content-Disposition",
                 "inline; filename=\"download\"");
+    }
+
+    @Test
+    void callbackAsksForAttachment_inlineDisposition_attachmentWithCallbackName()
+            throws IOException {
+        InputStream stream = mock(InputStream.class);
+        when(stream.read(any(), anyInt(), anyInt())).thenReturn(-1);
+        DownloadHandler handler = DownloadHandler.fromInputStream(event -> {
+            event.attachment("x.pdf");
+            return new DownloadResponse(stream, "report.pdf", "application/pdf",
+                    0);
+        });
+        when(request.getAttribute(
+                StreamRequestHandler.DISPOSITION_REQUEST_ATTRIBUTE))
+                .thenReturn(DownloadDisposition.INLINE);
+
+        DownloadEvent event = new DownloadEvent(request, response, session,
+                new Element("t"));
+        when(response.getOutputStream()).thenReturn(outputStream);
+        when(response.getService()).thenReturn(service);
+        handler.handleDownloadRequest(event);
+
+        verify(response).setHeader("Content-Disposition",
+                "attachment; filename=\"x.pdf\"");
+        verify(response, never()).setHeader(eq("Content-Disposition"),
+                startsWith("inline"));
     }
 
     @Test

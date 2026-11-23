@@ -37,6 +37,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
@@ -111,8 +112,8 @@ public record JsCall(Class<?> definitionType, String methodName,
      * since a call is resolved several times when it is sent, and resolving it
      * otherwise copies the methods of the interface, hashes the declared
      * JavaScript and checks the declared names every time. Keyed by any class,
-     * since a JavaScript definition is marked by an annotation rather than by a
-     * common supertype.
+     * since a JavaScript definition extends one of two marker interfaces rather
+     * than a common supertype.
      */
     private static final ReflectionCache<Object, List<DeclaredMethod>> declaredMethods = new ReflectionCache<>(
             JsCall::collectDeclaredMethods);
@@ -569,7 +570,10 @@ public record JsCall(Class<?> definitionType, String methodName,
     private static List<DeclaredMethod> collectDeclaredMethods(
             Class<?> definitionType) {
         List<DeclaredMethod> declared = new ArrayList<>();
-        for (Method method : definitionType.getMethods()) {
+        // Not getMethods(), whose inherited methods keep the annotations they
+        // had before the interface declaring them was hotswapped
+        for (Method method : ReflectTools
+                .getCurrentPublicMethods(definitionType)) {
             boolean declaresJavaScript = method
                     .isAnnotationPresent(JsExpression.class);
             // Only a snippet wraps a function around its expression, so only

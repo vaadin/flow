@@ -59,7 +59,9 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -1216,7 +1218,8 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     }
 
     @JsDefinition
-    public interface TestJsDefinition extends TestValueJs<TestJsValue> {
+    public interface TestJsDefinition
+            extends JsInvokers, TestValueJs<TestJsValue> {
         @JsExpression("this.classList.add($0)")
         void addClass(String className);
 
@@ -1242,7 +1245,11 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     }
 
     @JsDefinition
-    public interface TestSnippetJs extends TestBaseSnippetJs {
+    public interface TestSnippetJs extends JsSnippets, TestBaseSnippetJs {
+    }
+
+    // Found by the annotation, not by the marker interface
+    public interface TestUnannotatedJs extends JsInvokers {
     }
 
     public interface TestValueJs<T> {
