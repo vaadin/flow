@@ -21,7 +21,6 @@ import jakarta.servlet.ServletException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -157,11 +156,7 @@ class WebComponentConfigurationRegistryInitializerTest {
 
     @Test
     void pushWithServerSentEventsWithoutFeatureFlag_exceptionIsThrown() {
-        when(registry.getEmbeddedApplicationAnnotation(Push.class)).thenReturn(
-                Optional.of(SsePushExporter.class.getAnnotation(Push.class)));
         Map<String, Object> attributes = new HashMap<>();
-        attributes.put(WebComponentConfigurationRegistry.class.getName(),
-                registry);
         attributes.put(Lookup.class.getName(), mock(Lookup.class));
         attributes.put(ApplicationConfiguration.class.getName(),
                 mock(ApplicationConfiguration.class));
