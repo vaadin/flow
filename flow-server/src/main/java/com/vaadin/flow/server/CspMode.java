@@ -62,11 +62,9 @@ public enum CspMode {
      * No header is sent in development mode, because the development server and
      * the development tools need {@code eval}.
      * <p>
-     * <strong>Note:</strong> Vaadin itself still uses APIs that need
-     * {@code eval} in some places, such as the event filters of double and
-     * single click listeners and of keyboard shortcuts. Until those are
-     * changed, they throw in this mode. Event data that is a property path,
-     * such as that of a click listener, does not need {@code eval}.
+     * <strong>Note:</strong> An API that needs {@code eval} throws for every
+     * caller, including a Vaadin component or an add-on that uses one. Run the
+     * application in the {@link #WARN} mode first to find such uses.
      */
     STRICT
 }
