@@ -21,10 +21,16 @@ import java.util.EventObject;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.component.UI;
+
 /**
  * {@link ReentrantLock} used for Vaadin session locking that notifies the
  * owning {@link VaadinService}'s {@link SessionLockListener}s around the
- * outermost lock acquisition and release.
+ * outermost lock acquisition and release, and checks on every outermost
+ * acquisition whether JavaScript invocations are piling up in the UIs of the
+ * session.
  * <p>
  * Both the request-handling lock path
  * ({@link VaadinService#lockSession(WrappedSession)}) and
@@ -195,6 +201,31 @@ class InstrumentedReentrantLock extends ReentrantLock {
                     .fireEvent(new SessionLockAcquiredEvent(currentService,
                             getSession(),
                             Duration.ofNanos(acquiredAt - requestedAt)));
+        }
+        checkUndeliveredJavaScriptInvocations();
+    }
+
+    /*
+     * Everything scheduled during the previous hold of the lock has been sent
+     * by now, so this is where JavaScript invocations that keep piling up can
+     * be told apart from a single hold that schedules a lot of them.
+     */
+    private void checkUndeliveredJavaScriptInvocations() {
+        VaadinSession currentSession = getSession();
+        if (currentSession == null
+                || currentSession.getLockInstance() != this) {
+            return;
+        }
+        try {
+            for (UI ui : currentSession.getUIs()) {
+                ui.getInternals().checkUndeliveredJavaScriptInvocations();
+            }
+        } catch (RuntimeException e) {
+            // The lock is already held, so failing here would leave it
+            // locked. A check that only backs a warning is not worth that
+            LoggerFactory.getLogger(InstrumentedReentrantLock.class).debug(
+                    "Failed to check for undelivered JavaScript invocations",
+                    e);
         }
     }
 

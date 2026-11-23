@@ -52,12 +52,14 @@ final class PendingJavaScriptInvocationUtil {
     }
 
     /**
-     * Records that the given invocation is waiting to be sent, and logs a
-     * warning if its UI has an alarming number of undelivered invocations.
+     * Records that the given invocation is waiting to be sent.
      * <p>
      * The count is kept per UI rather than per state node, since a running
      * application has far more state nodes than UIs and even a single field on
-     * every node adds up.
+     * every node adds up. Nothing is logged here, since every invocation
+     * scheduled while holding the session lock is sent when the response is
+     * written or pushed, no matter how many there are. See
+     * {@link #checkUndeliveredInvocations(UIInternals)}.
      *
      * @param invocation
      *            the invocation waiting to be sent, not <code>null</code>
@@ -78,20 +80,30 @@ final class PendingJavaScriptInvocationUtil {
             return null;
         }
 
-        int count = internals.addUndeliveredJsInvocations(1);
-        if (count == WARNING_THRESHOLD
+        internals.addUndeliveredJsInvocations(1);
+        internals.undeliveredJsInvocationCounted(invocation);
+        return internals;
+    }
+
+    /**
+     * Logs a warning if the UI of the given internals has an alarming number of
+     * undelivered invocations. Called when the session lock is acquired, when
+     * any invocation still counted was scheduled during an earlier hold of the
+     * lock and has not been sent since.
+     *
+     * @param internals
+     *            the internals of the UI to check, not <code>null</code>
+     */
+    static void checkUndeliveredInvocations(UIInternals internals) {
+        int count = internals.addUndeliveredJsInvocations(0);
+        if (count >= WARNING_THRESHOLD
                 && internals.markUndeliveredJsInvocationsWarningLogged()) {
             Logger logger = getLogger();
             if (logger.isWarnEnabled()) {
-                logger.warn(buildWarningMessage(invocation, count));
-            }
-            if (logger.isDebugEnabled()) {
-                logger.debug(
-                        "Call site of the JavaScript invocation that triggered the warning above",
-                        new Throwable("executeJs call site"));
+                logger.warn(buildWarningMessage(
+                        internals.findNewestUndeliveredJsInvocation(), count));
             }
         }
-        return internals;
     }
 
     private static UIInternals findInternals(StateNode owner) {
@@ -100,23 +112,32 @@ final class PendingJavaScriptInvocationUtil {
     }
 
     // Non-private for testing purposes
-    static String buildWarningMessage(PendingJavaScriptInvocation invocation,
+    static String buildWarningMessage(PendingJavaScriptInvocation newest,
             int count) {
-        StateNode owner = invocation.getOwner();
-
         return String.format(
                 "%d JavaScript invocations scheduled for this UI have not been sent to the browser yet. "
-                        + "The most recent one was scheduled for %s with the expression %s. %s "
+                        + "%s"
                         + "Undelivered invocations are kept in memory until they are sent, so a growing number of them eventually causes an OutOfMemoryError. "
                         + "If only the latest value is relevant for the client, for example a progress value or the current time, do not schedule a new invocation for every update: "
                         + "either keep the PendingJavaScriptResult returned by executeJs and call cancelExecution() on it before scheduling the next one, "
                         + "or set an element property instead (element.setProperty(...)), since only the last value of a property is sent. "
                         + "A background task can also compare UI.getLastUpdateSentTimestamp() against the current time to stop scheduling updates while the client is not receiving them. "
-                        + "This is logged once per UI. Enable debug logging for %s to also log the call site of the invocation, or turn that logger off to silence the warning.",
-                count, owner.describe(),
-                describeExpression(invocation.getInvocation().getExpression()),
-                describeState(owner),
+                        + "This is logged once per UI. Turn off the logger %s to silence the warning.",
+                count, describeNewest(newest),
                 PendingJavaScriptInvocationUtil.class.getName());
+    }
+
+    private static String describeNewest(PendingJavaScriptInvocation newest) {
+        if (newest == null) {
+            return "";
+        }
+        StateNode owner = newest.getOwner();
+        String state = describeState(owner);
+        return String.format(
+                "The newest one still waiting was scheduled for %s with the expression %s. %s",
+                owner.describe(),
+                describeExpression(newest.getInvocation().getExpression()),
+                state.isEmpty() ? "" : state + " ");
     }
 
     private static String describeExpression(String expression) {

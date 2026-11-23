@@ -23,14 +23,25 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
+import org.mockito.MockedStatic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.tests.util.MockUI;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class SessionLockListenerTest {
@@ -296,6 +307,45 @@ public class SessionLockListenerTest {
         assertEquals(3, events.size());
         events.forEach(
                 event -> assertSame(session, event.getSession().orElseThrow()));
+    }
+
+    @Test
+    public void lockAcquired_javaScriptInvocationsLeftFromEarlierHold_warningLogged() {
+        MockVaadinServletService service = new MockVaadinServletService();
+        InstrumentedReentrantLock lock = new InstrumentedReentrantLock(service);
+        VaadinSession session = bindNewSession(service, lock);
+        Logger logger = mock(Logger.class);
+        when(logger.isWarnEnabled()).thenReturn(true);
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class, CALLS_REAL_METHODS)) {
+            loggerFactory.when(() -> LoggerFactory.getLogger(
+                    "com.vaadin.flow.component.internal.PendingJavaScriptInvocationUtil"))
+                    .thenReturn(logger);
+
+            lock.lock();
+            try {
+                MockUI ui = new MockUI(session);
+                ui.doInit(null, 1, "foo");
+                session.addUI(ui);
+                for (int i = 0; i < 1000; i++) {
+                    ui.getPage().executeJs("window.foo = $0", i);
+                }
+            } finally {
+                lock.unlock();
+            }
+            verify(logger, never()).warn(anyString());
+
+            // Nothing is sent without a request or push, so the invocations
+            // are still waiting the next time the lock is acquired
+            lock.lock();
+            lock.unlock();
+
+            verify(logger).warn(contains(
+                    "1000 JavaScript invocations scheduled for this UI have not been sent to the browser yet. "
+                            + "The newest one still waiting was scheduled for node id=1"));
+        } finally {
+            CurrentInstance.clearAll();
+        }
     }
 
     private static VaadinSession bindNewSession(VaadinService service,

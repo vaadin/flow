@@ -261,6 +261,14 @@ public class UIInternals implements Serializable {
 
     private boolean undeliveredJsInvocationsWarningLogged;
 
+    /**
+     * The invocation that most recently started being counted in
+     * {@link #undeliveredJsInvocations}, or <code>null</code> if it has stopped
+     * being counted since. Only used to describe the invocations in the warning
+     * about undelivered invocations.
+     */
+    private PendingJavaScriptInvocation newestUndeliveredJsInvocation;
+
     private Set<PendingJavaScriptInvocation> pendingJsInvocations = new LinkedHashSet<>();
 
     /**
@@ -587,6 +595,78 @@ public class UIInternals implements Serializable {
         undeliveredJsInvocations = Math.max(0,
                 undeliveredJsInvocations + delta);
         return undeliveredJsInvocations;
+    }
+
+    /**
+     * Records the given invocation as the newest one counted as undelivered.
+     *
+     * @param invocation
+     *            the invocation that started being counted, not
+     *            <code>null</code>
+     */
+    // Package private: only used through PendingJavaScriptInvocationUtil
+    void undeliveredJsInvocationCounted(
+            PendingJavaScriptInvocation invocation) {
+        newestUndeliveredJsInvocation = invocation;
+    }
+
+    /**
+     * Forgets the given invocation as the newest one counted as undelivered, so
+     * that an invocation that is no longer waiting to be sent is not kept in
+     * memory or described as undelivered.
+     *
+     * @param invocation
+     *            the invocation that stopped being counted, not
+     *            <code>null</code>
+     */
+    // Package private: only used through PendingJavaScriptInvocation
+    void undeliveredJsInvocationUncounted(
+            PendingJavaScriptInvocation invocation) {
+        if (newestUndeliveredJsInvocation == invocation) {
+            newestUndeliveredJsInvocation = null;
+        }
+    }
+
+    /**
+     * Finds the newest JavaScript invocation that is still waiting to be sent
+     * to the client.
+     * <p>
+     * That is the one most recently counted, unless it has been sent or
+     * canceled since while older ones are still waiting, typically ones
+     * retained in the queue for an invisible owner. Then it is the newest of
+     * those in the queue.
+     *
+     * @return the newest undelivered invocation, or <code>null</code> if none
+     *         can be found
+     */
+    // Package private: only used through PendingJavaScriptInvocationUtil
+    PendingJavaScriptInvocation findNewestUndeliveredJsInvocation() {
+        if (newestUndeliveredJsInvocation != null) {
+            return newestUndeliveredJsInvocation;
+        }
+        PendingJavaScriptInvocation newest = null;
+        for (PendingJavaScriptInvocation invocation : pendingJsInvocations) {
+            if (!invocation.isSentToBrowser() && !invocation.isCanceled()) {
+                newest = invocation;
+            }
+        }
+        return newest;
+    }
+
+    /**
+     * Logs a warning if an alarming number of JavaScript invocations scheduled
+     * for the related UI are still waiting to be sent to the client.
+     * <p>
+     * Called by the framework whenever the session lock is acquired. All
+     * invocations scheduled while holding the lock are sent when the response
+     * is written or pushed, so only invocations left over from earlier holds of
+     * the lock are an actual sign of invocations piling up. The warning is
+     * logged at most once for the UI.
+     *
+     * @since 25.4
+     */
+    public void checkUndeliveredJavaScriptInvocations() {
+        PendingJavaScriptInvocationUtil.checkUndeliveredInvocations(this);
     }
 
     /**
