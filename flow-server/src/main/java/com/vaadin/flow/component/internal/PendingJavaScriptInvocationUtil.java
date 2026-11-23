@@ -137,7 +137,7 @@ final class PendingJavaScriptInvocationUtil {
                 "The newest one still waiting was scheduled for %s with the expression %s. %s",
                 owner.describe(),
                 describeExpression(newest.getInvocation().getExpression()),
-                state.isEmpty() ? "" : state + " ");
+                state.isEmpty() ? "" : (state + " "));
     }
 
     private static String describeExpression(String expression) {
