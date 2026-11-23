@@ -264,13 +264,10 @@ class StreamRequestHandlerTest {
 
     @ParameterizedTest
     @EnumSource(DownloadDisposition.class)
-    void resourceWithDisposition_overridesTypeAskedForByHandler(
+    void resourceWithDisposition_fileNameServedWithDisposition(
             DownloadDisposition disposition) throws IOException {
-        // the handler asks for the opposite of the disposition of the resource
-        DownloadHandler downloadHandler = disposition == DownloadDisposition.INLINE
-                ? event -> event.setFileName("q3.pdf")
-                : event -> event.inline("q3.pdf");
-        registerDownloadResource(downloadHandler, disposition);
+        registerDownloadResource(event -> event.fileName("q3.pdf"),
+                disposition);
 
         handler.handleRequest(session, request, response);
 
@@ -283,17 +280,16 @@ class StreamRequestHandlerTest {
     void dispositionChangedAfterRegistration_appliesToLaterRequests()
             throws IOException {
         StreamResourceRegistry.ElementStreamResource res = registerDownloadResource(
-                event -> event.inline("q3.pdf"), null);
+                event -> event.fileName("q3.pdf"), null);
 
-        // without a disposition the handler decides
-        handler.handleRequest(session, request, response);
-        verify(response).setHeader("Content-Disposition",
-                "inline; filename=\"q3.pdf\"");
-
-        res.setDisposition(DownloadDisposition.ATTACHMENT);
         handler.handleRequest(session, request, response);
         verify(response).setHeader("Content-Disposition",
                 "attachment; filename=\"q3.pdf\"");
+
+        res.setDisposition(DownloadDisposition.INLINE);
+        handler.handleRequest(session, request, response);
+        verify(response).setHeader("Content-Disposition",
+                "inline; filename=\"q3.pdf\"");
     }
 
     private StreamResourceRegistry.ElementStreamResource registerDownloadResource(
