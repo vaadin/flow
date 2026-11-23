@@ -22,9 +22,9 @@ exact, no fluff.
   - This includes a behaviour change that working application code can trip
     over: same API, but a different return value, default, timing, calling
     context or thrown exception that a reasonable caller could have depended
-    on, so callers have to change their code. A method that stops throwing a documented exception
-    callers catch, replaces it with a different type, or now rejects valid
-    input it used to accept is breaking
+    on, so callers have to change their code. A method that stops throwing a
+    documented exception callers catch, replaces it with a different type, or
+    now rejects valid input it used to accept is breaking
   - Skip `!` when no reasonable caller could have depended on the old
     behaviour, such as a crash, an exception on input the API never supported,
     or obviously wrong output nobody works around. Most bug fixes are like this
@@ -198,7 +198,7 @@ would hide that the author checked at all.
 
 | Flag | Icon | Look for |
 |---|---|---|
-| Breaking change | ⚠️ | a signature, default, thrown exception or contract that existing code depends on — the title gets `!` (see the subject line rules) |
+| Breaking change | ⚠️ | a signature, default, thrown exception or contract that a reasonable caller could have depended on — the title gets `!` (see the subject line rules) |
 | Behaviour change | ⚠️ | same API, different outcome — including "it was wrong before"; the title gets `!` only when a reasonable caller could have depended on the old outcome (see the subject line rules) |
 | Public API | ⚠️ | additions, `protected` members that subclasses override, deprecations |
 | Security | 🔒 | authentication, authorization, permit lists, path matching, input trusted from the client |
