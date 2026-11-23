@@ -197,6 +197,7 @@ public class StreamResourceRegistry implements Serializable {
          *            how the content is served, or {@code null} to let the
          *            handler decide
          * @see #setDisposition(DownloadDisposition)
+         * @since 25.4
          */
         public ElementStreamResource(
                 ElementRequestHandler elementRequestHandler, Element owner,
@@ -211,6 +212,7 @@ public class StreamResourceRegistry implements Serializable {
          * resource.
          *
          * @return the disposition, or {@code null} if the handler decides
+         * @since 25.4
          */
         public DownloadDisposition getDisposition() {
             return disposition;
@@ -238,6 +240,7 @@ public class StreamResourceRegistry implements Serializable {
          * @param disposition
          *            how the content is served, or {@code null} to let the
          *            handler decide
+         * @since 25.4
          */
         public void setDisposition(DownloadDisposition disposition) {
             this.disposition = disposition;

@@ -1120,6 +1120,7 @@ public class RouteUtil {
      *            {@code true} if Copilot has replaced the page body with its
      *            page for a project without routes
      * @see #isNoRoutesPage(Component)
+     * @since 25.4
      */
     public static void setNoRoutesPage(Component view, boolean noRoutesPage) {
         ComponentUtil.setData(view, NO_ROUTES_PAGE_KEY,
@@ -1135,6 +1136,7 @@ public class RouteUtil {
      *            the view to check, not {@code null}
      * @return {@code true} if Copilot has taken over the page of the view
      * @see #setNoRoutesPage(Component, boolean)
+     * @since 25.4
      */
     public static boolean isNoRoutesPage(Component view) {
         return ComponentUtil.getData(view, NO_ROUTES_PAGE_KEY) != null;

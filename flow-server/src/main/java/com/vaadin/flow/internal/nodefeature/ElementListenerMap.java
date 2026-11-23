@@ -1127,6 +1127,7 @@ public class ElementListenerMap extends NodeMap {
      *            {@link #add(String, DomEventListener)}, not <code>null</code>
      * @param filter
      *            the filter, not <code>null</code>
+     * @since 25.4
      */
     public static void setBundledFilter(DomListenerRegistration registration,
             String filter) {

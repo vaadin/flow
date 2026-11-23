@@ -17,7 +17,6 @@ package com.vaadin.flow.router;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +38,7 @@ import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HttpStatusCode;
 
@@ -214,7 +214,7 @@ public abstract class AbstractRouteNotFoundError extends Component {
      * @since 25.4
      */
     @JsDefinition
-    public interface CopilotJs extends Serializable {
+    public interface CopilotJs extends JsInvokers {
 
         /**
          * Tells Copilot that the project has no routes yet, waiting for it to

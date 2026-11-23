@@ -29,13 +29,20 @@ import com.vaadin.flow.component.Component;
  * breadcrumb trails and hierarchical menus. It is independent of the layout
  * chain declared through {@link Route#layout()} and {@link RoutePrefix}: a
  * route may be rendered inside one layout while logically belonging under a
- * completely different route.
+ * completely different route. The parent must therefore be a registered route;
+ * a router layout that is not itself a route cannot be a parent.
  * <p>
  * The parent can be defined either as a static {@link #value()} or, when it
  * needs to be computed, through a {@link #resolver()}. Both are resolved
  * without creating an instance of the route or its parent, which makes them
  * usable for routes that are not currently shown, such as the ancestors of a
  * breadcrumb trail.
+ * <p>
+ * Without this annotation, the parent is derived from the route URL: the
+ * registered route serving the nearest ancestor path is the parent. The walk up
+ * the URL therefore ends at the route mapped to the empty path ({@code ""}), if
+ * one is registered. To make a route a root of the hierarchy instead, use a
+ * {@link #resolver()} that returns an empty {@link java.util.Optional}.
  *
  * @author Vaadin Ltd
  * @since 25.2

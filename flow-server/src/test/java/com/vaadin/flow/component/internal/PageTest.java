@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.internal;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -180,7 +179,7 @@ class PageTest {
     }
 
     @JsDefinition
-    interface ElementSnippets extends Serializable {
+    interface ElementSnippets extends JsSnippets {
         @JsExpression("return $0;")
         ElementSnippet capture(Element element);
     }
