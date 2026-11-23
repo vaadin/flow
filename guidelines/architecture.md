@@ -119,8 +119,8 @@ the session, set the current instances with `CurrentInstance.setCurrent`, run
 the work, and restore the previous instances with
 `CurrentInstance.restoreInstances` in a `finally` block. Restore them before
 `unlock()` in new code; `accessSynchronously` restores right after it, which
-is safe only because `unlock()` runs nothing but queued access tasks, and each
-of those sets its own current instances under the lock. Request handlers that set the current UI while they hold the lock — finding
+is safe only because the only application code `unlock()` runs is queued
+access tasks, and each of those sets its own current instances under the lock. Request handlers that set the current UI while they hold the lock — finding
 the UI of a UIDL or heartbeat request, bootstrapping a page — have to restore
 it the same way when they unlock, because everything after that point in the
 request (writing the response, the request end callbacks) runs without the
