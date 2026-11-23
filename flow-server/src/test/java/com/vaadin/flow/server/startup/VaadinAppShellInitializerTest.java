@@ -448,8 +448,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_throw_when_appShellPushUsesServerSentEventsWithoutFeatureFlag()
-            throws Exception {
+    public void should_throw_when_appShellPushUsesServerSentEventsWithoutFeatureFlag() {
         classes.add(MyAppShellWithServerSentEventsPush.class);
 
         DisabledFeatureException thrown = assertThrows(

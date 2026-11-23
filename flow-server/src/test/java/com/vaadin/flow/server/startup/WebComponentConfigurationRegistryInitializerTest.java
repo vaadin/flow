@@ -171,10 +171,10 @@ class WebComponentConfigurationRegistryInitializerTest {
                 invocation.getArgument(1))).when(servletContext)
                 .setAttribute(anyString(), any());
 
+        Set<Class<?>> exporters = Set.of(SsePushExporter.class);
         DisabledFeatureException thrown = assertThrows(
                 DisabledFeatureException.class,
-                () -> initializer.process(Set.of(SsePushExporter.class),
-                        servletContext));
+                () -> initializer.process(exporters, servletContext));
         assertTrue(thrown.getMessage()
                 .contains("com.vaadin.experimental.ssePushTransport=true"));
     }
@@ -339,7 +339,7 @@ class WebComponentConfigurationRegistryInitializerTest {
         @Override
         public void configureInstance(WebComponent<MyComponent> webComponent,
                 MyComponent component) {
-
+            // Only the @Push annotation matters for the test
         }
     }
 
