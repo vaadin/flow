@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyModifier;
 import com.vaadin.flow.component.Shortcuts;
@@ -27,6 +25,7 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.Route;
 
@@ -44,13 +43,13 @@ import com.vaadin.flow.router.Route;
 public class DelegateLeakView extends Div {
 
     @JsDefinition
-    public interface PopoverJs extends Serializable {
+    public interface PopoverJs extends JsInvokers {
         @JsExpression("this.showPopover();")
         void showPopover();
     }
 
     @JsDefinition
-    public interface OverlayJs extends Serializable {
+    public interface OverlayJs extends JsSnippets {
         @JsExpression("return document.getElementById('overlay');")
         JsFunction locateOverlay();
     }

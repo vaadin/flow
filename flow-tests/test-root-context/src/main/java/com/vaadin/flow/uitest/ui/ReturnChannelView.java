@@ -15,13 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -29,7 +28,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class ReturnChannelView extends AbstractDivView {
 
     @JsDefinition
-    public interface ChannelJs extends Serializable {
+    public interface ChannelJs extends JsInvokers {
         @JsExpression("this.addEventListener('click', function() { $0('hello') })")
         void sendOnClick(ReturnChannelRegistration channel);
     }

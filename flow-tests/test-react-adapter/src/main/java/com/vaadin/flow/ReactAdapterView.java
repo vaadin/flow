@@ -15,13 +15,12 @@
  */
 package com.vaadin.flow;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 
 @Route("com.vaadin.flow.ReactAdapterView")
@@ -34,7 +33,7 @@ public class ReactAdapterView extends Div {
     public static final String OWN_ROOT_SERVER_VALUE = "own root server value";
 
     @JsDefinition
-    public interface ReconnectJs extends Serializable {
+    public interface ReconnectJs extends JsInvokers {
 
         @JsExpression("document.body.appendChild(this); this.remove(); document.body.appendChild(this);")
         void moveToBody();

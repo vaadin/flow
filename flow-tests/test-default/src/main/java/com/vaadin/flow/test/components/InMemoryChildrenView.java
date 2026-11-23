@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.test.components;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
@@ -24,6 +22,7 @@ import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 
 @JavaScript("./in-memory-connector.js")
@@ -31,7 +30,7 @@ import com.vaadin.flow.router.Route;
 public class InMemoryChildrenView extends Div {
 
     @JsDefinition
-    public interface ConnectorJs extends Serializable {
+    public interface ConnectorJs extends JsInvokers {
 
         @JsExpression("window.inMemoryConnector.init(this, $0)")
         void init(Element inMemory);

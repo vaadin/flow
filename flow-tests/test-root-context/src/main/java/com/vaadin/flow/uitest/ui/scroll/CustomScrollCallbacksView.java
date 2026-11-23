@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui.scroll;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
@@ -24,6 +22,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
@@ -37,7 +36,7 @@ public class CustomScrollCallbacksView extends AbstractDivView
         implements HasUrlParameter<String> {
 
     @JsDefinition
-    public interface ScrollCallbacksJs extends Serializable {
+    public interface ScrollCallbacksJs extends JsInvokers {
         @JsExpression("window.Vaadin.Flow.setScrollPosition = function(xAndY) { $0.textContent += JSON.stringify(xAndY) + '\\n' }")
         void logSetScrollPosition(Element log);
 

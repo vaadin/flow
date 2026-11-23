@@ -15,14 +15,13 @@
  */
 package com.vaadin.flow.test.components;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.Shortcuts;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
@@ -34,14 +33,14 @@ public class ComplexDialogShortcutView extends DialogShortcutView {
     public static final String OVERLAY_ID = "overlay";
 
     @JsDefinition
-    public interface OverlayLocatorJs extends Serializable {
+    public interface OverlayLocatorJs extends JsSnippets {
 
         @JsExpression("return document.getElementById($0);")
         JsFunction locateById(String id);
     }
 
     @JsDefinition
-    public interface OverlayJs extends Serializable {
+    public interface OverlayJs extends JsInvokers {
 
         @JsExpression("document.getElementById($0).appendChild(this.firstElementChild);")
         void moveContent(String overlayId);

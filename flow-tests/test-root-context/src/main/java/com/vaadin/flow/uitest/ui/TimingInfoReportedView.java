@@ -15,13 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -52,7 +51,7 @@ public class TimingInfoReportedView extends Div {
   //@formatter:on
 
     @JsDefinition
-    public interface TimingsJs extends Serializable {
+    public interface TimingsJs extends JsInvokers {
         @JsExpression(REPORT_TIMINGS)
         void reportTimings();
     }

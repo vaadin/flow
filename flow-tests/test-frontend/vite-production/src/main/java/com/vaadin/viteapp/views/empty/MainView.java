@@ -15,8 +15,6 @@
  */
 package com.vaadin.viteapp.views.empty;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -27,6 +25,7 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 
 @Route("")
@@ -47,7 +46,7 @@ public class MainView extends Div {
     public static final String FORCED_DARK = "forcedDark";
 
     @JsDefinition
-    public interface MainJs extends Serializable {
+    public interface MainJs extends JsInvokers {
 
         @JsExpression(OUTSIDE_RESULT
                 + ".innerText = window.packageOutsideNpm() + ' - ' + window.package2OutsideNpm();")

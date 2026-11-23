@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui.push.components;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
@@ -33,7 +32,7 @@ import com.vaadin.flow.js.JsSnippets;
 public class NativeRadioButtonGroup<T> extends Composite<Div> {
 
     @JsDefinition
-    public interface FilterJs extends Serializable {
+    public interface FilterJs extends JsSnippets {
         @JsExpression("return element.checked;")
         DomEventFilter isChecked();
     }

@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.navigate;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -27,6 +26,7 @@ import com.vaadin.flow.component.html.Pre;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -41,7 +41,7 @@ public class HelloWorldView extends Span implements BeforeEnterObserver {
     public static final String IS_CONNECTED_ON_ATTACH = "is-connected-on-attach";
 
     @JsDefinition
-    public interface ConnectedJs extends Serializable {
+    public interface ConnectedJs extends JsInvokers {
 
         @JsExpression("this.textContent=String(this.isConnected)")
         void showIsConnected();

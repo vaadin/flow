@@ -284,16 +284,15 @@ public class IndexHtmlRequestHandlerTest {
         });
 
         String header = serveIndexHtmlAndCaptureCspHeader();
-        Matcher matcher = Pattern
-                .compile(
-                        "script-src 'nonce-([A-Za-z0-9+/=]+)' 'strict-dynamic'")
+        Matcher matcher = Pattern.compile(
+                "script-src 'nonce-([A-Za-z0-9+/]{22})' 'strict-dynamic'")
                 .matcher(header);
         assertTrue(matcher.find(), header);
         String nonce = matcher.group(1);
         assertEquals("default-src 'self'; script-src 'nonce-" + nonce
                 + "' 'strict-dynamic'; style-src 'self' 'unsafe-inline'; "
                 + "img-src 'self' data:; font-src 'self' data:; "
-                + "connect-src 'self' https://api.example.com; "
+                + "connect-src 'self' data: https://api.example.com; "
                 + "worker-src 'self'; object-src 'none'; base-uri 'self'",
                 header);
 
@@ -581,6 +580,25 @@ public class IndexHtmlRequestHandlerTest {
         Element initialUidlScript = findScript(scripts,
                 INITIAL_UIDL_SEARCH_STRING);
         assertEquals("", initialUidlScript.attr("initial"));
+    }
+
+    @Test
+    public void oldBrowserCheck_usesOnlySyntaxThatOldBrowsersParse()
+            throws IOException {
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        Document document = Jsoup
+                .parse(responseOutput.toString(StandardCharsets.UTF_8));
+
+        Element oldBrowserCheck = findScript(
+                document.head().getElementsByTag("script"), "v-r=oldbrowser");
+        assertNotNull(oldBrowserCheck);
+        // The check is not transpiled, and a syntax error would keep the
+        // browsers it is meant for from being redirected
+        String script = oldBrowserCheck.data();
+        for (String newerSyntax : List.of("?.", "??", "=>", "`")) {
+            assertFalse(script.contains(newerSyntax), script);
+        }
     }
 
     private static Element findScript(Elements scripts, String needle) {

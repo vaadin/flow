@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui.frontend;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -25,6 +23,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -37,7 +36,7 @@ import com.vaadin.flow.uitest.ui.template.HiddenTemplateView;
 public class UsageStatisticsView extends Div {
 
     @JsDefinition
-    public interface StatisticsJs extends Serializable {
+    public interface StatisticsJs extends JsInvokers {
         @JsExpression("var basket = localStorage.getItem('vaadin.statistics.basket'); if (basket) basket = JSON.parse(basket); console.log(basket)")
         void printBasket();
 

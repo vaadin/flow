@@ -15,14 +15,13 @@
  */
 package com.vaadin.flow.test.devmode;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.ui.LoadMode;
 
@@ -31,7 +30,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
 public class BrowserLoggingView extends Div {
 
     @JsDefinition
-    public interface ErrorJs extends Serializable {
+    public interface ErrorJs extends JsInvokers {
 
         @JsExpression("null.foo")
         void throwError();

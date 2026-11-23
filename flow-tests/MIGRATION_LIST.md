@@ -23,9 +23,9 @@ procedure in [README.md](README.md) and the permutation policy in
 | test-vaadin-router | 22 |
 | test-devloop(keep) | 21 |
 | test-spring-security | 21 |
+| test-csp-strict(keep) | 14 |
 | test-themes | 14 |
 | test-contextpath | 13 |
-| test-csp-strict(keep) | 13 |
 | test-csp-off(keep) | 10 |
 | test-dev-bundle | 9 |
 | test-livereload | 9 |
@@ -46,7 +46,7 @@ procedure in [README.md](README.md) and the permutation policy in
 | test-plain-spring | 1 |
 | test-push-startup(keep) | 1 |
 | test-tailwind | 1 |
-| **TOTAL** | **630** |
+| **TOTAL** | **631** |
 
 ## Mapping (grouped by target module, then feature)
 
@@ -170,6 +170,7 @@ procedure in [README.md](README.md) and the permutation policy in
 | AbstractCspStrictIT | test-csp-strict | keep |
 | AbstractPushIT | test-csp-strict | keep |
 | ClickIT | test-csp-strict | keep |
+| DataUrlFetchIT | test-csp-strict | keep |
 | DeclaredJsIT | test-csp-strict | keep |
 | EmbeddedWebComponentIT | test-csp-strict | keep |
 | FocusIT | test-csp-strict | keep |
@@ -370,6 +371,7 @@ procedure in [README.md](README.md) and the permutation policy in
 | ClientCallableIT | vaadin-spring-tests/test-spring-native | move |
 | DomEventIT | vaadin-spring-tests/test-spring-native | move |
 | FocusIT | vaadin-spring-tests/test-spring-native | move |
+| JsDefinitionIT | vaadin-spring-tests/test-spring-native | move |
 | LitIT | vaadin-spring-tests/test-spring-native | move |
 | MainViewIT | vaadin-spring-tests/test-spring-native | move |
 | PushIT | vaadin-spring-tests/test-spring-native | move |
@@ -456,7 +458,6 @@ procedure in [README.md](README.md) and the permutation policy in
 | TriggerAfterIT | test-root-context | move |
 | TriggerDownloadIT | test-root-context | move |
 | TriggerFilePasteIT | test-root-context | move |
-| TriggerOpenInNewTabIT | test-root-context | move |
 | TriggerPasteIT | test-root-context | move |
 | TriggerReadFromClipboardIT | test-root-context | move |
 | TriggerRequestFullscreenIT | test-root-context | move |

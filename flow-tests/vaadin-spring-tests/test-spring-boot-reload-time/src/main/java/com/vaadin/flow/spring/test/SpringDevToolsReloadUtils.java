@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.spring.test;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -28,11 +27,12 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 
 public class SpringDevToolsReloadUtils {
 
     @JsDefinition
-    public interface BenchmarkJs extends Serializable {
+    public interface BenchmarkJs extends JsInvokers {
 
         @JsExpression("window.benchmark.start()")
         void start();

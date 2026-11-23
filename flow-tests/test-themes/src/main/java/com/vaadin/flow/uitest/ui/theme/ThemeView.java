@@ -15,21 +15,20 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 
 @Route("com.vaadin.flow.uitest.ui.theme.ThemeView")
 public class ThemeView extends Div {
 
     @JsDefinition
-    public interface BodyJs extends Serializable {
+    public interface BodyJs extends JsInvokers {
 
         @JsExpression("document.body.classList.add('bg')")
         void addBackgroundClass();

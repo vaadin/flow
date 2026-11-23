@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.test.devmode;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -24,6 +22,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 
 @Route("vite-communication")
@@ -31,7 +30,7 @@ import com.vaadin.flow.router.Route;
 public class ViteCommunicationView extends Div {
 
     @JsDefinition
-    public interface ViteJs extends Serializable {
+    public interface ViteJs extends JsInvokers {
 
         @JsExpression("""
                 window.importmetahot.on('test-event-response', (event) => {

@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.geolocation.Geolocation;
 import com.vaadin.flow.component.geolocation.GeolocationOptions;
@@ -26,6 +24,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -33,7 +32,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class GeolocationView extends AbstractDivView {
 
     @JsDefinition
-    public interface GeolocationJs extends Serializable {
+    public interface GeolocationJs extends JsInvokers {
         @JsExpression("""
                 const debugEl = document.getElementById('debug');
                 const info = [];

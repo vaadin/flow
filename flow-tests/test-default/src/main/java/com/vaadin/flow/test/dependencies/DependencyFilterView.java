@@ -15,14 +15,13 @@
  */
 package com.vaadin.flow.test.dependencies;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 
 @Route("dependency-filter")
@@ -33,7 +32,7 @@ public class DependencyFilterView extends Div {
     static final String DOM_CHANGE_TEXT = "I appear after inline and eager dependencies and before lazy";
 
     @JsDefinition
-    public interface AttachTestDivJs extends Serializable {
+    public interface AttachTestDivJs extends JsInvokers {
 
         @JsExpression("window.attachTestDiv($0)")
         void attachTestDiv(String text);

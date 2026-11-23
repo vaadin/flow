@@ -19,7 +19,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.util.function.Supplier;
 
@@ -32,6 +31,7 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
@@ -50,7 +50,7 @@ import com.vaadin.flow.server.streams.UploadHandler;
 public final class LoanApplicationUpload {
 
     @JsDefinition
-    public interface UploadJs extends Serializable {
+    public interface UploadJs extends JsInvokers {
 
         @JsExpression("""
                 this.addEventListener('change', () => {

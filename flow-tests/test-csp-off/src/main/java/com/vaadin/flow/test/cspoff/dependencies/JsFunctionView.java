@@ -15,14 +15,13 @@
  */
 package com.vaadin.flow.test.cspoff.dependencies;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.test.cspoff.AbstractDivView;
@@ -31,14 +30,14 @@ import com.vaadin.flow.test.cspoff.AbstractDivView;
 public class JsFunctionView extends AbstractDivView {
 
     @JsDefinition
-    public interface GreeterJs extends Serializable {
+    public interface GreeterJs extends JsSnippets {
         @JsExpression("this.textContent = $0 + ' ' + name;")
         @JsFunctionParameterNames("name")
         JsFunction createGreeter(String greeting);
     }
 
     @JsDefinition
-    public interface CallerJs extends Serializable {
+    public interface CallerJs extends JsInvokers {
         @JsExpression("$0.call(this, 'World');")
         void callWithWorld(JsFunction function);
     }

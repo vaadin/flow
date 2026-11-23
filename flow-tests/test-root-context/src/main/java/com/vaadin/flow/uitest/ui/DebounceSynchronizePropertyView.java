@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.io.Serializable;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.component.Component;
@@ -37,7 +36,7 @@ public class DebounceSynchronizePropertyView
         extends AbstractDebounceSynchronizeView {
 
     @JsDefinition
-    public interface FilterJs extends Serializable {
+    public interface FilterJs extends JsSnippets {
         @JsExpression("return element.value.length % 2 === 0;")
         DomEventFilter hasEvenLength();
     }

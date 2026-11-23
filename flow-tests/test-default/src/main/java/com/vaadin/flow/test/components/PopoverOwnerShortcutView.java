@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.test.components;
 
-import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.flow.component.AttachEvent;
@@ -27,6 +26,7 @@ import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 
 /**
@@ -65,7 +65,7 @@ public class PopoverOwnerShortcutView extends Div {
     public static final KeyModifier UI_SHORTCUT_MODIFIER = KeyModifier.ALT;
 
     @JsDefinition
-    public interface PopoverJs extends Serializable {
+    public interface PopoverJs extends JsInvokers {
 
         @JsExpression("this.showPopover();")
         void showPopover();

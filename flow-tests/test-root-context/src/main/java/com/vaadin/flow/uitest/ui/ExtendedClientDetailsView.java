@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
@@ -24,6 +22,7 @@ import com.vaadin.flow.component.page.ColorScheme;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -31,7 +30,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class ExtendedClientDetailsView extends AbstractDivView {
 
     @JsDefinition
-    public interface FakeDetailsJs extends Serializable {
+    public interface FakeDetailsJs extends JsInvokers {
         @JsExpression("{" + "window.devicePixelRatio = 2.0;"
                 + "navigator.msMaxTouchPoints = 1;" + "}")
         void setTestValues();

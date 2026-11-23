@@ -42,7 +42,6 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * Video video = new Video();
  * video.addSource("/intro.webm", "video/webm");
  * video.addSource("/intro.mp4", "video/mp4");
- * video.setControlsVisible(true);
  * </pre>
  *
  * Besides the sources, the elements accept <code>&lt;track&gt;</code> elements
@@ -62,7 +61,7 @@ public abstract class Media extends HtmlComponent
     private static final String AUTOPLAY_ATTRIBUTE = "autoplay";
     private static final String CONTROLS_ATTRIBUTE = "controls";
     private static final String LOOP_ATTRIBUTE = "loop";
-    private static final String MUTED_ATTRIBUTE = "muted";
+    private static final String MUTED_PROPERTY = "muted";
     private static final String PRELOAD_ATTRIBUTE = "preload";
 
     /**
@@ -126,21 +125,23 @@ public abstract class Media extends HtmlComponent
     }
 
     /**
-     * Creates a media component without any source.
+     * Creates a media component without any source. The browser's playback
+     * controls are shown.
      */
     protected Media() {
         super();
+        getElement().setAttribute(CONTROLS_ATTRIBUTE, true);
     }
 
     /**
      * Creates a media component that plays the first of the given sources the
-     * browser can decode.
+     * browser can decode. The browser's playback controls are shown.
      *
      * @param sources
      *            the same recording in one or more file formats
      */
     protected Media(Source... sources) {
-        super();
+        this();
         add(sources);
     }
 
@@ -197,9 +198,10 @@ public abstract class Media extends HtmlComponent
 
     /**
      * Sets whether the browser shows its own playback controls — a play button,
-     * a timeline, a volume slider. Without them, nothing on the page starts the
-     * playback, so turn them on unless the application drives the player
-     * itself.
+     * a timeline, a volume slider. The controls are shown by default. Without
+     * them, nothing on the page starts the playback, so hide them only when the
+     * application drives the player itself, such as for a background video or a
+     * sound the application plays on its own.
      * <p>
      * The controls are the browser's, so they do not look the same everywhere
      * and cannot be styled through the application theme.
@@ -269,27 +271,36 @@ public abstract class Media extends HtmlComponent
     }
 
     /**
-     * Sets whether the recording is silent when the player is first shown.
+     * Sets whether the player is muted. The change takes effect right away,
+     * also on a player that is already playing. A player that should
+     * {@link #setAutoplay(boolean) autoplay} usually has to be muted, because
+     * most browsers block autoplay with sound.
      * <p>
-     * This is the initial state only. Once the visitor has unmuted the player
-     * through the browser's controls, the browser stops reading this attribute,
-     * and setting it again does not mute the player a second time.
+     * The visitor can still mute and unmute the player through the browser's
+     * controls. That change is not sent to the server, so {@link #isMuted()}
+     * keeps returning the value set here. Setting the same value again does not
+     * undo what the visitor chose, but the value set here is applied again
+     * whenever the browser creates the element anew, such as when the component
+     * is removed and added back.
      *
      * @param muted
-     *            <code>true</code> to start the player muted
+     *            <code>true</code> to mute the player
      */
     public void setMuted(boolean muted) {
-        getElement().setAttribute(MUTED_ATTRIBUTE, muted);
+        // Not the muted attribute: it only sets the default muted state, which
+        // the browser applies when it parses HTML, not to an element created
+        // by script as Flow does
+        getElement().setProperty(MUTED_PROPERTY, muted);
     }
 
     /**
-     * Gets whether the player starts muted.
+     * Gets whether the player has been muted from the server.
      *
-     * @return <code>true</code> if the player starts muted
+     * @return <code>true</code> if the player has been muted
      * @see #setMuted(boolean)
      */
     public boolean isMuted() {
-        return getElement().hasAttribute(MUTED_ATTRIBUTE);
+        return getElement().getProperty(MUTED_PROPERTY, false);
     }
 
     /**

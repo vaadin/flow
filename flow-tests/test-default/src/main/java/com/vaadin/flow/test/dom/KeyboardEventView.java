@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.test.dom;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.KeyDownEvent;
@@ -29,6 +27,7 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DefaultErrorHandler;
 
@@ -36,7 +35,7 @@ import com.vaadin.flow.server.DefaultErrorHandler;
 public class KeyboardEventView extends Div {
 
     @JsDefinition
-    public interface KeyUpJs extends Serializable {
+    public interface KeyUpJs extends JsInvokers {
 
         @JsExpression("$0.dispatchEvent(new KeyboardEvent('keyup', {}))")
         void dispatchEmptyKeyUp(Element target);

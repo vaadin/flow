@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.test.components;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
@@ -24,6 +22,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 
@@ -31,7 +30,7 @@ import com.vaadin.flow.router.RouterLink;
 public class InertComponentView extends Div {
 
     @JsDefinition
-    public interface OutletJs extends Serializable {
+    public interface OutletJs extends JsInvokers {
 
         @JsExpression("document.getElementById('outlet').style.height = 'auto';")
         void collapseOutlet();

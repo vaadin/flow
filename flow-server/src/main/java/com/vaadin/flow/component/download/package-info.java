@@ -14,18 +14,20 @@
  * the License.
  */
 /**
- * Server-side API for starting file downloads from buttons and other clickable
- * components.
+ * Server-side API for delivering content to the browser from buttons and other
+ * clickable components, either saved as a file or opened in a new browser tab.
  * <p>
  * Use
  * {@link com.vaadin.flow.component.download.Download#onClick(com.vaadin.flow.component.Component, com.vaadin.flow.server.streams.DownloadHandler)
  * Download.onClick(component, handler)} to make a click download the content of
  * a {@link com.vaadin.flow.server.streams.DownloadHandler DownloadHandler} or a
- * URL.
+ * URL, and pass a {@link com.vaadin.flow.component.download.DownloadTarget
+ * DownloadTarget} to open it in a new tab instead.
  * <p>
  * Downloads go through {@code onClick} rather than an ordinary server-side
- * click listener so that the download starts in the browser's own click
- * handler, inside the user gesture and without waiting for a server round trip.
+ * click listener so that the download starts, or the tab opens, in the
+ * browser's own click handler, inside the user gesture and without waiting for
+ * a server round trip.
  */
 @NullMarked
 package com.vaadin.flow.component.download;

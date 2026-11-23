@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.spring.test;
 
-import java.io.Serializable;
 import java.util.concurrent.locks.Lock;
 
 import com.vaadin.flow.component.AttachEvent;
@@ -29,6 +28,7 @@ import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
@@ -40,7 +40,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 public class TemplatePushView extends PolymerTemplate<TemplateModel> {
 
     @JsDefinition
-    public interface LabelJs extends Serializable {
+    public interface LabelJs extends JsInvokers {
 
         @JsExpression("$0.setText = function(text) {$0.innerText=text;}")
         void addSetTextFunction(Element label);

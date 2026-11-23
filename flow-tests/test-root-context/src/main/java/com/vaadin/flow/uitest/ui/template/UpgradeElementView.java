@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.NativeButton;
@@ -25,6 +23,7 @@ import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
@@ -32,7 +31,7 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 public class UpgradeElementView extends AbstractDivView {
 
     @JsDefinition
-    public interface UpgradeJs extends Serializable {
+    public interface UpgradeJs extends JsInvokers {
         @JsExpression("if ( !window.upgradeElementDefined ) "
                 + "{customElements.define(window.MyTemplate.is, window.MyTemplate);}")
         void defineElement();

@@ -15,8 +15,6 @@
  */
 package com.example.application;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
@@ -25,6 +23,7 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 
 /**
@@ -38,7 +37,7 @@ public class DomEventView extends Div {
     public static final String RESULT_ID = "result";
 
     @JsDefinition
-    public interface FireJs extends Serializable {
+    public interface FireJs extends JsInvokers {
 
         @JsExpression("this.dispatchEvent(new CustomEvent('native-event', {detail: {name: $0, count: $1}}))")
         void fire(String name, int count);

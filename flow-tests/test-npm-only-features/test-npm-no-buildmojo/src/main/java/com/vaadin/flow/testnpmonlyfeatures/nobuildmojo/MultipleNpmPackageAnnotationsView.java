@@ -15,14 +15,13 @@
  */
 package com.vaadin.flow.testnpmonlyfeatures.nobuildmojo;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 
 @JsModule("@polymer/paper-input/paper-input.js")
@@ -33,7 +32,7 @@ import com.vaadin.flow.router.Route;
 public class MultipleNpmPackageAnnotationsView extends Div {
 
     @JsDefinition
-    public interface ConnectorJs extends Serializable {
+    public interface ConnectorJs extends JsInvokers {
 
         @JsExpression("window.Vaadin.Flow.connector.initLazy()")
         void initLazy();

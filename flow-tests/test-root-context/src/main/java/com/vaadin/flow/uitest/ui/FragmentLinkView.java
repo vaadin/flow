@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.page.History.HistoryStateChangeHandler;
 import com.vaadin.flow.component.page.Page;
@@ -24,6 +22,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -31,7 +30,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class FragmentLinkView extends AbstractDivView {
 
     @JsDefinition
-    public interface HashChangeJs extends Serializable {
+    public interface HashChangeJs extends JsInvokers {
         @JsExpression("var i = 0;"
                 + "window.addEventListener('hashchange', function(event) {"
                 + "var x = document.createElement('span');"

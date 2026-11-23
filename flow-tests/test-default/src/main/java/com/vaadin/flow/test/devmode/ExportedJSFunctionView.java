@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.test.devmode;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
@@ -24,6 +22,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
@@ -32,7 +31,7 @@ import com.vaadin.flow.router.Route;
 public class ExportedJSFunctionView extends Div {
 
     @JsDefinition
-    public interface ClientJs extends Serializable {
+    public interface ClientJs extends JsInvokers {
 
         @JsExpression("""
                 const client = window.Vaadin.Flow.clients[Object.keys(Vaadin.Flow.clients).filter(k => k !== 'TypeScript')];

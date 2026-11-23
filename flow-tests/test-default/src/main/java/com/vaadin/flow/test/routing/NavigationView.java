@@ -15,14 +15,13 @@
  */
 package com.vaadin.flow.test.routing;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
@@ -31,7 +30,7 @@ import com.vaadin.flow.router.RouterLink;
 public class NavigationView extends Div {
 
     @JsDefinition
-    public interface NavigatedListenerJs extends Serializable {
+    public interface NavigatedListenerJs extends JsInvokers {
 
         @JsExpression("if(!window.test) { window.addEventListener('vaadin-navigated', (e) => { window.testMessage = 'navigated to ' + window.location.pathname; }); window.test = true; }")
         void listenForNavigated();

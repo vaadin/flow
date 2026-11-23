@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.4-SNAPSHOT</version>
+    <version>25.5-SNAPSHOT</version>
   </parent>
   <artifactId>flow-polymer-template</artifactId>
   <packaging>jar</packaging>
@@ -19,6 +19,7 @@
   </licenses>
 
   <properties>
+    <jpms.module.name>com.vaadin.flow.component.polymertemplate</jpms.module.name>
     <cvdlName>flow-polymer-template</cvdlName>
     <currentYear>2022</currentYear>
   </properties>

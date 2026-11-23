@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.4-SNAPSHOT</version>
+    <version>25.5-SNAPSHOT</version>
   </parent>
   <artifactId>flow-client</artifactId>
   <packaging>jar</packaging>
@@ -12,6 +12,7 @@
   <description>${project.name}</description>
 
   <properties>
+    <jpms.module.name>com.vaadin.flow.client</jpms.module.name>
     <jandex.skip>true</jandex.skip>
     <skipTsTests>${skipTests}</skipTsTests>
     <!-- The module has no Java sources, so there is no API to compare. -->

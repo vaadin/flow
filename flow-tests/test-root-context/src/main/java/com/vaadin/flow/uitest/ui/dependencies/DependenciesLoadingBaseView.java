@@ -15,12 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui.dependencies;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 /**
@@ -33,7 +32,7 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 public class DependenciesLoadingBaseView extends AbstractDivView {
 
     @JsDefinition
-    public interface AttachTestDivJs extends Serializable {
+    public interface AttachTestDivJs extends JsInvokers {
 
         // See eager.js for attachTestDiv code
         @JsExpression("window.attachTestDiv($0)")

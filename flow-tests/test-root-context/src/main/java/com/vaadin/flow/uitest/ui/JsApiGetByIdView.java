@@ -15,13 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -30,7 +29,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class JsApiGetByIdView extends AbstractDivView {
 
     @JsDefinition
-    public interface ConnectorJs extends Serializable {
+    public interface ConnectorJs extends JsInvokers {
         @JsExpression("window.jsApiConnector.jsFunction($0, $1, $2)")
         void connect(Element target, String appId, int nodeId);
     }

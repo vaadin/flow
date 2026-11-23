@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
@@ -24,6 +22,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
@@ -41,7 +40,7 @@ public class NavigationView extends Div {
     public static final String SET_PARAMETER_COUNTER_ID = "set-parameter-counter";
 
     @JsDefinition
-    public interface NavigatedListenerJs extends Serializable {
+    public interface NavigatedListenerJs extends JsInvokers {
 
         @JsExpression("""
                 if(!window.test) {

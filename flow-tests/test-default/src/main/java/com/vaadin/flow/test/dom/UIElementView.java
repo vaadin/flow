@@ -15,19 +15,18 @@
  */
 package com.vaadin.flow.test.dom;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 
 @Route("u-i-element")
 public class UIElementView extends Div {
 
     @JsDefinition
-    public interface ChildJs extends Serializable {
+    public interface ChildJs extends JsInvokers {
 
         @JsExpression("""
                 var newElement = document.createElement('div');

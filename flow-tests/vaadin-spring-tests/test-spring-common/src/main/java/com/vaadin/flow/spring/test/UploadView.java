@@ -17,7 +17,6 @@ package com.vaadin.flow.spring.test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 
 import com.vaadin.flow.component.html.Div;
@@ -26,6 +25,7 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResourceRegistry;
@@ -38,7 +38,7 @@ public class UploadView extends Div {
     public static final String UPLOAD_ID = "upl";
 
     @JsDefinition
-    public interface UploadJs extends Serializable {
+    public interface UploadJs extends JsInvokers {
 
         @JsExpression("""
                 this.addEventListener('change', () => {

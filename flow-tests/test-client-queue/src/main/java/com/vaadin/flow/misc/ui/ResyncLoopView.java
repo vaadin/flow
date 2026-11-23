@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.misc.ui;
 
-import java.io.Serializable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,6 +28,7 @@ import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Command;
 
@@ -36,7 +36,7 @@ import com.vaadin.flow.server.Command;
 public class ResyncLoopView extends Div {
 
     @JsDefinition
-    public interface CallbackJs extends Serializable {
+    public interface CallbackJs extends JsInvokers {
 
         @JsExpression("return true;")
         PendingJavaScriptResult returnTrue();

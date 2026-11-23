@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.quarkus.it.clientcallable;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
@@ -24,6 +22,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 
 /**
@@ -43,7 +42,7 @@ public class ClientCallableView extends Div {
     }
 
     @JsDefinition
-    public interface GreetJs extends Serializable {
+    public interface GreetJs extends JsInvokers {
 
         @JsExpression("this.$server.greet({first: $0}).then(result => $1.textContent = result.text)")
         void greet(String first, Element target);

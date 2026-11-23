@@ -15,12 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 
 /**
@@ -37,7 +36,7 @@ public class ResynchronizationView extends AbstractDivView {
     final static String REJECTED_CLASS = "rejected";
 
     @JsDefinition
-    public interface ResyncJs extends Serializable {
+    public interface ResyncJs extends JsInvokers {
         @JsExpression("document.getElementById(\"" + ID
                 + "\").$server.clientCallable()" + ".then(_ => {})"
                 + ".catch(_ => { document.body.innerHTML += '<span class=\""

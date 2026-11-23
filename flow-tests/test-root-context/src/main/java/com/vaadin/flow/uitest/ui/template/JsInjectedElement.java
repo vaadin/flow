@@ -15,14 +15,13 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("js-injected-template")
@@ -30,7 +29,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 public class JsInjectedElement extends PolymerTemplate<TemplateModel> {
 
     @JsDefinition
-    public interface ClientHandlerJs extends Serializable {
+    public interface ClientHandlerJs extends JsInvokers {
         @JsExpression("this.clientHandler()")
         void callClientHandler();
     }

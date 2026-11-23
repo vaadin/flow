@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
@@ -25,6 +23,7 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
@@ -52,7 +51,7 @@ public class ScrollPositionLiveReloadView extends AbstractLiveReloadView
     private static final int RENDER_LATE_DELAY_MS = 2000;
 
     @JsDefinition
-    public interface RenderLateJs extends Serializable {
+    public interface RenderLateJs extends JsInvokers {
 
         @JsExpression("setTimeout(() => Array.from(this.children).forEach(child => child.style.display = ''), $0)")
         void showChildrenLater(int delayMs);

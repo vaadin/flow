@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.dom.DomEventData;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
@@ -30,7 +28,7 @@ import com.vaadin.flow.server.VaadinSession;
 public class PopStateHandlerView extends RouterLinkView {
 
     @JsDefinition
-    public interface HistoryJs extends Serializable {
+    public interface HistoryJs extends JsSnippets {
 
         @JsExpression("window.history.pushState(null, null, event.target.textContent)")
         DomEventData<String> pushState();

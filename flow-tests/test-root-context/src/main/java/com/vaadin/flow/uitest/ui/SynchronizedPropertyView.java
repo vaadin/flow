@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.Text;
@@ -26,6 +24,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -33,7 +32,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class SynchronizedPropertyView extends AbstractDivView {
 
     @JsDefinition
-    public interface ShimJs extends Serializable {
+    public interface ShimJs extends JsInvokers {
         //@formatter:off
         @JsExpression("var input = document.createElement('input');"
           + "input.setAttribute('type', 'number');"
