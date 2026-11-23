@@ -64,6 +64,10 @@ class TaskGenerateJsDefinitionsTest {
 
     private static final String GREETING_EXPRESSION = "window.alert({ text: $0, kind: 'greeting' })";
 
+    private static final String SCROLL_EXPRESSION = "this.scrollTop = $0";
+
+    private static final String SCROLL_TO_END_EXPRESSION = "this.scrollTop = this.scrollHeight";
+
     private static final String COUNT_EXPRESSION = "this.count = ($0 || 0) + 1";
 
     private static final String SHOUT_EXPRESSION = "window.alert([$0, ...$1].join(' '))";
@@ -89,6 +93,18 @@ class TaskGenerateJsDefinitionsTest {
 
         @JsExpression("window.alert('Hello')")
         void showGreeting();
+    }
+
+    // Only extended, so it does not need the annotation
+    public interface ScrollableJs extends JsInvokers {
+        @JsExpression(SCROLL_EXPRESSION)
+        void scrollTo(int top);
+    }
+
+    @JsDefinition
+    public interface ScrollingListJs extends ScrollableJs {
+        @JsExpression(SCROLL_TO_END_EXPRESSION)
+        void scrollToEnd();
     }
 
     @JsDefinition
@@ -245,6 +261,25 @@ class TaskGenerateJsDefinitionsTest {
                         + JsCall.functionId("window.alert('Hello')", 0, false)
                         + "\"] = async function () {"),
                 "the overload that takes no arguments is another function: "
+                        + content);
+    }
+
+    @Test
+    void inheritedMethods_areCollectedWithTheDefinition() {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(ScrollingListJs.class), false);
+
+        assertTrue(
+                content.contains("window.Vaadin.Flow.jsDefinitions[\""
+                        + JsCall.functionId(SCROLL_EXPRESSION, 1, false)
+                        + "\"] = async function ($0) {"),
+                "a method inherited from an interface without the annotation should be collected with the definition: "
+                        + content);
+        assertTrue(
+                content.contains("window.Vaadin.Flow.jsDefinitions[\""
+                        + JsCall.functionId(SCROLL_TO_END_EXPRESSION, 0, false)
+                        + "\"] = async function () {"),
+                "the method the definition declares itself should be collected too: "
                         + content);
     }
 

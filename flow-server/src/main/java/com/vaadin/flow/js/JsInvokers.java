@@ -31,7 +31,8 @@ import com.vaadin.flow.dom.Element;
  * makes it findable during the build: its JavaScript is collected into the
  * generated bundle, so the client never has to build a function from a string.
  * That is what keeps a server-initiated call compatible with a content security
- * policy that does not allow <code>unsafe-eval</code>.
+ * policy that does not allow <code>unsafe-eval</code>. See {@link JsDefinition}
+ * for how a definition that extends another interface is declared.
  * <p>
  * An interface whose methods only answer with {@link JsSnippet snippets}
  * extends {@link JsSnippets} instead. An interface can not extend both. Both

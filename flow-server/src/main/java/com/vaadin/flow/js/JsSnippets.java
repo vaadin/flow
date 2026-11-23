@@ -28,7 +28,8 @@ import com.vaadin.flow.dom.Element;
  * <p>
  * Like an interface that extends {@link JsInvokers}, the interface is annotated
  * with {@link JsDefinition}, which is what makes it findable during the build.
- * An interface can not extend both marker interfaces.
+ * An interface can not extend both marker interfaces. See {@link JsDefinition}
+ * for how a definition that extends another interface is declared.
  * <p>
  * A snippet is not bound to an element, which is why the implementation comes
  * from here rather than from {@link Element#executeJs(Class)}. It holds no

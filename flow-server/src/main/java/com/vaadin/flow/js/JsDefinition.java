@@ -55,6 +55,36 @@ import com.vaadin.flow.dom.Element;
  * }
  * </pre>
  *
+ * <h2>Inheritance</h2>
+ *
+ * A definition can extend other interfaces, and the methods it inherits are
+ * part of it: they are collected into the bundle with the definition and can be
+ * called through its implementation, as if the definition declared them itself.
+ * <p>
+ * Annotations on interfaces are not inherited, so every interface that is
+ * passed to {@link Element#executeJs(Class)} or {@link JsSnippets#of(Class)}
+ * needs its own {@code @JsDefinition}, even when an interface it extends has
+ * one. An interface that is only extended, and never passed to either method
+ * itself, does not need the annotation:
+ *
+ * <pre>
+ * // Only extended, so not annotated
+ * public interface ScrollableJs extends JsInvokers {
+ *
+ *     &#64;JsExpression("this.scrollTop = $0;")
+ *     void scrollTo(int top);
+ * }
+ *
+ * &#64;JsDefinition
+ * public interface ListJs extends ScrollableJs {
+ *
+ *     &#64;JsExpression("this.scrollTop = this.scrollHeight;")
+ *     void scrollToEnd();
+ * }
+ *
+ * element.executeJs(ListJs.class).scrollTo(100);
+ * </pre>
+ *
  * @see JsInvokers
  * @see JsSnippets
  * @see JsExpression
