@@ -866,6 +866,9 @@ public class RouteUtil {
      *            not {@code null}
      * @return the logical parent reference, or an empty {@link Optional} if the
      *         target has no logical parent
+     * @throws InvalidRouteConfigurationException
+     *             if a registry is given and the parent declared through
+     *             {@link RouteParent} is not a route registered in it
      * @since 25.2
      */
     public static Optional<RouteReference> getRouteParent(
@@ -878,16 +881,44 @@ public class RouteUtil {
                 .getAnnotation(RouteParent.class);
         if (annotation != null) {
             if (definesResolver(annotation)) {
-                return instantiateResolver(annotation.resolver()).resolveParent(
-                        new RouteParentContext(navigationTarget, parameters));
+                Optional<RouteReference> parent = instantiateResolver(
+                        annotation.resolver())
+                        .resolveParent(new RouteParentContext(navigationTarget,
+                                parameters));
+                parent.ifPresent(reference -> requireRegisteredRouteParent(
+                        registry, navigationTarget,
+                        reference.navigationTarget()));
+                return parent;
             }
             if (definesStaticParent(annotation)) {
+                requireRegisteredRouteParent(registry, navigationTarget,
+                        annotation.value());
                 return Optional.of(new RouteReference(annotation.value(),
                         narrowParametersToTemplate(registry, annotation.value(),
                                 parameters)));
             }
         }
         return getUrlBasedRouteParent(registry, navigationTarget, parameters);
+    }
+
+    /**
+     * Fails fast when an explicitly declared route parent is not a registered
+     * route. Such a parent, e.g. a router layout, cannot be linked to, and
+     * building a link to it later throws a {@code NotFoundException} that the
+     * router reports as the annotated route itself not being found.
+     */
+    private static void requireRegisteredRouteParent(RouteRegistry registry,
+            Class<? extends Component> navigationTarget,
+            Class<? extends Component> parent) {
+        if (registry != null && registry.getTemplate(parent).isEmpty()) {
+            throw new InvalidRouteConfigurationException(String.format(
+                    "The '@%s' of '%s' is '%s', which is not a registered "
+                            + "route. The route parent has to be a navigation "
+                            + "target, not a router layout or another "
+                            + "component.",
+                    RouteParent.class.getSimpleName(),
+                    navigationTarget.getName(), parent.getName()));
+        }
     }
 
     /**
@@ -1017,6 +1048,9 @@ public class RouteUtil {
      *            not {@code null}
      * @return the chain of the target and its logical ancestors, ordered from
      *         root to the navigation target, never empty
+     * @throws InvalidRouteConfigurationException
+     *             if a registry is given and a parent declared through
+     *             {@link RouteParent} is not a route registered in it
      * @since 25.2
      */
     public static List<RouteReference> getRouteHierarchy(RouteRegistry registry,
