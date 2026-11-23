@@ -19,6 +19,10 @@ exact, no fluff.
 - Length: under 72 chars
 - Allowed types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `ci`
 - Breaking changes: append `!` before the colon (`feat!`, `fix!`, `chore!`)
+  - This includes a behaviour change that working application code can trip
+    over: same API, but a different return value, default, timing or calling
+    context that existing callers rely on, so they have to change their code
+  - A behaviour change that only corrects clearly wrong output does not get `!`
 - Start with an imperative verb — "add", "fix", "remove" — not "added", "adds", "adding"
 - Use English articles only when omitting them would be ambiguous
   - Good: `fix: handle null in parser`
@@ -314,6 +318,7 @@ Only when the change genuinely needs them, always after `How to test`:
 - Summary at most 3 sentences, no class or method names in it.
 - Every risk flag walked; non-empty ones at the top, the rest in one ✅ line.
 - Every behaviour change is in **Risks**, not only in the bullets.
+- A breaking change, or a behaviour change that existing application code has to adapt to, has `!` in the title.
 - Issue link present when there is an issue, with the right relation.
 - No `## Checklist`, no footer, no AI attribution.
 - Open the pull request as a draft, and self-review before marking it ready.
