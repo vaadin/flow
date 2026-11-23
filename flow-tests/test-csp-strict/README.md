@@ -24,9 +24,20 @@ mvn verify -pl flow-tests/test-csp-strict \
 | Scenario | View | IT |
 |---|---|---|
 | The policy header, a nonce on every script, a new nonce per response, a view rendered under the policy | `csp.PolicyView` | `PolicyIT` |
+| A `data:` URL fetched in the browser, as `vaadin-icon` does for an `SvgIcon` | `csp.DataUrlFetchView` | `DataUrlFetchIT` |
 | JavaScript run through a `@JsDefinition` | `js.DeclaredJsView` | `DeclaredJsIT` |
 | `executeJs(String)` throws in Java, trace leads to the caller | `js.StringJsView` | `StringJsIT` |
 | Framework JavaScript: focus, page title | `dom.FocusView` | `FocusIT` |
 | Navigation through a router link | `routing.NavigationView` | `NavigationIT` |
 | Click listener with event data, element listener with an event data property path | `dom.ClickView` | `ClickIT` |
 | Keyboard shortcut | `components.ShortcutView` | `ShortcutIT` |
+| Server push from a background thread over WebSocket, the default transport, with no fallback | `push.PushView` | `PushIT` |
+| Server push from a background thread over long polling | `push.LongPollingPushView` | `LongPollingPushIT` |
+| Navigation to a view whose frontend module is in a lazy chunk | `chunk.LazyChunkView` | `LazyChunkIT` |
+| A server-side component embedded as a web component in a page that Vaadin does not serve, under the strict policy of that page: rendering, a property from the page, a click, an event to the page | `webcomponent.EmbeddedComponent`, `EmbeddedExporter`, `EmbeddedHostPage` | `EmbeddedWebComponentIT` |
+
+The host page of an embedded web component is not served by Vaadin, so it
+sends its own policy and puts its own nonce on the script that loads the web
+component. The policy needs `'strict-dynamic'`: the script that Vaadin serves
+for the web component adds the scripts of the bundle to the page, and without
+`'strict-dynamic'` the browser blocks them.

@@ -509,6 +509,32 @@ class StateTreeTest {
     }
 
     @Test
+    void beforeClientResponse_registeredFromDetachListener_executionDiscardedAndRunWhenAttachedAgain() {
+        StateNode child = new StateNode(ElementChildrenList.class);
+        StateNodeTest.setParent(child, tree.getRootNode());
+
+        TestExecution execution = new TestExecution();
+        child.addDetachListener(
+                () -> tree.beforeClientResponse(child, execution));
+
+        StateNodeTest.setParent(child, null);
+        tree.collectChanges(change -> {
+        });
+
+        assertFalse(tree.isDirty(),
+                "an execution registered while the node is being detached should not wait for the next response");
+        assertEquals(1, execution.discarded,
+                "an execution registered while the node is being detached should be reported as discarded");
+
+        StateNodeTest.setParent(child, tree.getRootNode());
+        tree.runExecutionsBeforeClientResponse();
+
+        assertEquals(1, execution.restored);
+        assertEquals(1, execution.executed,
+                "the execution should be run when the node is attached again");
+    }
+
+    @Test
     void beforeClientResponse_ownerDetachedByEarlierExecution_executionDiscardedAndRunWhenAttachedAgain() {
         StateNode child = new StateNode(ElementChildrenList.class);
         StateNodeTest.setParent(child, tree.getRootNode());

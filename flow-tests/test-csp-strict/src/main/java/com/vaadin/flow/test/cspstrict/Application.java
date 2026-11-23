@@ -18,14 +18,21 @@ package com.vaadin.flow.test.cspstrict;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.Push;
+
 /**
  * Spring Boot entry point for the strict Content Security Policy test module.
  * The application runs in production mode with {@code vaadin.csp=strict}, see
  * {@code application.properties}, so every page is served with Vaadin's
  * nonce-based policy and the browser enforces it.
+ * <p>
+ * Push is on for every view, as in an application that uses it: the push client
+ * is loaded with the page and the connection stays open during every scenario.
  */
 @SpringBootApplication
-public class Application {
+@Push
+public class Application implements AppShellConfigurator {
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);

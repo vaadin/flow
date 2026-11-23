@@ -23,6 +23,7 @@ import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DoubleClickTriggerTest {
@@ -43,10 +44,7 @@ class DoubleClickTriggerTest {
         // is a capture at $1, distinguishing dblclick from click only via that
         // capture.
         JsFunction install = singleInstallFn(ui);
-        assertEquals(
-                "this.addEventListener($1, $0);"
-                        + "return () => this.removeEventListener($1, $0);",
-                install.getBody());
+        assertEquals("listenToEvent", snippetOf(TriggerJs.class, install));
         assertEquals("dblclick", install.getCaptures().get(1));
 
         // The EventData field is inherited from MouseEventTrigger.EventData and

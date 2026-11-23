@@ -1259,6 +1259,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * For internal use only. May be renamed or removed in a future release.
      *
      * @see ShortcutFilterJs
+     * @since 25.4
      */
     @JsDefinition
     public interface ShortcutJs extends Serializable {
@@ -1320,6 +1321,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * For internal use only. May be renamed or removed in a future release.
      *
      * @see ShortcutJs
+     * @since 25.4
      */
     @JsDefinition
     public interface ShortcutFilterJs extends Serializable {

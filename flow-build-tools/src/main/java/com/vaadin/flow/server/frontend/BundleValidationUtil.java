@@ -1061,14 +1061,15 @@ public final class BundleValidationUtil {
     }
 
     /**
-     * Checks whether the JavaScript that the {@code @JsDefinition} interfaces
-     * of the application declare differs from what the bundle was built with.
+     * Checks whether the JavaScript that the {@code @JsDefinition} interfaces,
+     * the {@code @EventData} values and the {@code @DomEvent} filters of the
+     * application declare differs from what the bundle was built with.
      * <p>
      * The functions are generated into the bundle, so a declaration that
-     * changed, a definition that was added and a bundle built before any
-     * definition existed all mean that the bundle no longer contains what a
-     * call would look up, which shows up at runtime as a call that cannot be
-     * run.
+     * changed, a definition, an event data value or a filter that was added and
+     * a bundle built before any of them existed all mean that the bundle no
+     * longer contains what a call would look up, which shows up at runtime as a
+     * call that cannot be run.
      */
     private static boolean jsDefinitionsChanged(Options options,
             JsonNode statsJson) {
@@ -1085,7 +1086,7 @@ public final class BundleValidationUtil {
             // Either the declarations changed, or the bundle was built before
             // they existed and carries none of their JavaScript
             getLogger().info(
-                    "Detected JavaScript declared by the JavaScript definitions that the bundle does not carry");
+                    "Detected JavaScript declared by the JavaScript definitions, event data or event filters that the bundle does not carry");
             return true;
         }
         return false;

@@ -41,6 +41,7 @@ import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyModifier;
+import com.vaadin.flow.component.KeyUpEvent;
 import com.vaadin.flow.component.Shortcuts;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
@@ -53,9 +54,10 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.js.JsCalledWith;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.JsonConstants;
@@ -63,6 +65,7 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -76,7 +79,7 @@ class CspModeTest {
     @JsDefinition
     interface LoggerJs extends Serializable {
         @JsExpression("console.log($0, value);")
-        @JsCalledWith("value")
+        @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
     }
 
@@ -95,6 +98,12 @@ class CspModeTest {
         JsFunction locateFirstChild();
     }
 
+    record AsciiDetail(int x, String label) {
+    }
+
+    record NonAsciiDetail(int größe) {
+    }
+
     @Tag("div")
     private static class Clickable extends Component
             implements ClickNotifier<Clickable> {
@@ -105,10 +114,20 @@ class CspModeTest {
     private static class RouteView extends Component {
     }
 
-    @DomEvent("custom-event")
-    public static class KeyedEvent extends ComponentEvent<UI> {
-        public KeyedEvent(UI source, boolean fromClient,
-                @EventData("key") String key) {
+    @DomEvent(value = "offset-event", filter = "event.button === 0", preventDefault = true)
+    public static class OffsetEvent extends ComponentEvent<Component> {
+        // Only the event data annotations of the parameters are used
+        public OffsetEvent(Component source, boolean fromClient,
+                @EventData("event.clientX - element.offsetLeft") double offset) { // NOSONAR
+            super(source, fromClient);
+        }
+    }
+
+    @DomEvent("element-target-event")
+    public static class ElementTargetEvent extends ComponentEvent<Component> {
+        // Only the event data annotations of the parameters are used
+        public ElementTargetEvent(Component source, boolean fromClient,
+                @EventData("event.composedPath()[0]") Element target) { // NOSONAR
             super(source, fromClient);
         }
     }
@@ -144,11 +163,9 @@ class CspModeTest {
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).addEventData("event.x * 2")),
                 call(DomListenerRegistration.class, "addEventData",
-                        ui -> ui.getElement().addEventListener("click", e -> {
-                        }).addEventData(List.of("event?.x()"))),
-                call(DomListenerRegistration.class, "addEventData",
-                        ui -> ui.getElement().addEventListener("click", e -> {
-                        }).addEventData(
+                        ui -> ElementListenerMap.addEventData(
+                                ui.getElement().addEventListener("click", e -> {
+                                }),
                                 List.of(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN
                                         + "value", "event.x[0]"))),
                 call(DomListenerRegistration.class, "addEventData",
@@ -166,17 +183,19 @@ class CspModeTest {
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).addEventDataElement("document.head")),
+                // Not a property path the browser reads without compiling
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ui.getElement().addEventListener("click", e -> {
+                        }).addEventDetail(NonAsciiDetail.class)),
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ui.getElement().addEventListener("click", e -> {
+                        }).addEventData(AsciiDetail.class)),
                 call(DomListenerRegistration.class, "setFilter",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).setFilter("event.x == 1")),
                 // The deprecated locator is an expression for the browser
                 call(JsFunction.class, "of",
-                        CspModeTest::delegateShortcutToStringLocator),
-                // A key of client-built data only for Flow's own events
-                call(DomListenerRegistration.class, "addEventData",
-                        ui -> ComponentUtil.addListener(ui, KeyedEvent.class,
-                                e -> {
-                                })));
+                        CspModeTest::delegateShortcutToStringLocator));
     }
 
     private static Arguments call(Class<?> api, String method,
@@ -193,6 +212,8 @@ class CspModeTest {
         CspViolationException exception = assertThrows(
                 CspViolationException.class, () -> call.accept(ui));
 
+        assertFalse(exception.getMessage().contains("The JavaScript is in"),
+                exception.getMessage());
         assertTraceLeadsFromApiToTest(exception, api, method);
     }
 
@@ -207,8 +228,8 @@ class CspModeTest {
                     .addEventListener("click", e -> {
                     });
             registration.setFilter(null);
-            registration.addEventData(List.of());
-            registration.addEventData(
+            ElementListenerMap.addEventData(registration, List.of());
+            ElementListenerMap.addEventData(registration,
                     List.of(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + "value",
                             JsonConstants.MAP_STATE_NODE_EVENT_DATA));
             registration.synchronizeProperty("value");
@@ -216,8 +237,12 @@ class CspModeTest {
             // The client reads property paths without compiling them
             registration.addEventData("event.detail.value");
             registration.addEventData("event.detail?.value");
-            registration.addEventData(List.of("element.value", "event"));
+            ElementListenerMap.addEventData(registration,
+                    List.of("element.value", "event"));
+            registration.addEventDataPath("event.detail?.value");
+            registration.addEventDataElementPath("event.target.parentElement");
             registration.addEventDetail();
+            registration.addEventDetail(AsciiDetail.class);
             registration.addEventDataElement("event.target.parentElement");
             registration.setFilter("event.isTrusted");
             // The client runs these without compiling them, also when Flow
@@ -236,6 +261,19 @@ class CspModeTest {
             });
             clickable.addDoubleClickListener(e -> {
             });
+            // The filter of the key up event is a property path
+            ComponentUtil.addListener(clickable, KeyUpEvent.class, e -> {
+            });
+            // The build puts the event data and the filter that are not
+            // property paths into the bundle, also when the filter decides
+            // whether the default is prevented
+            ComponentUtil.addListener(clickable, OffsetEvent.class, e -> {
+            });
+            // also a value of an element, whose function returns the DOM node
+            // that the client maps to a state node
+            ComponentUtil.addListener(clickable, ElementTargetEvent.class,
+                    e -> {
+                    });
             // Loads the chunk of the route with a function from the bundle
             ui.getInternals().addComponentDependencies(RouteView.class);
             // Shortcuts send their keys and options as data to JavaScript in
@@ -277,6 +315,15 @@ class CspModeTest {
             new Element("div").executeJs("return 1");
             JsFunction.of("return 1");
         });
+        assertFalse(CspViolationReporter.isEnabled());
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "OFF, false", "WARN, true", "STRICT, true" })
+    void isEnabled_onlyInModesThatReport(CspMode mode, boolean enabled) {
+        setup.getDeploymentConfiguration().setCspMode(mode);
+
+        assertEquals(enabled, CspViolationReporter.isEnabled());
     }
 
     @ParameterizedTest
@@ -305,6 +352,74 @@ class CspModeTest {
         for (Throwable warning : warnings.getAllValues()) {
             assertTraceLeadsFromApiToTest(warning, Element.class, "executeJs");
         }
+    }
+
+    @Test
+    void strict_stringJavaScriptWithDetail_throwsWithDetailAndTraceFromApi() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+
+        CspViolationException exception = assertThrows(
+                CspViolationException.class,
+                () -> reportFromComponent("series[2].formatter"));
+
+        assertTrue(
+                exception.getMessage().endsWith(
+                        " The JavaScript is in \"series[2].formatter\"."),
+                exception.getMessage());
+        assertTraceLeadsFromApiToTest(exception, CspModeTest.class,
+                "reportFromComponent");
+    }
+
+    @Test
+    void warn_stringJavaScriptWithDetail_logsOncePerCallSiteAndDetail() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.WARN);
+        Logger logger = mock(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            loggerFactory.when(
+                    () -> LoggerFactory.getLogger(CspViolationReporter.class))
+                    .thenReturn(logger);
+
+            // One call site, as for a component that reports before the
+            // client response
+            reportFromComponent("tooltip.formatter");
+            reportFromComponent("tooltip.formatter");
+            reportFromComponent("series[2].formatter");
+            reportFromOtherComponent("tooltip.formatter");
+        }
+
+        ArgumentCaptor<String> messages = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Throwable> warnings = ArgumentCaptor
+                .forClass(Throwable.class);
+        verify(logger, times(3)).warn(messages.capture(), warnings.capture());
+        assertTrue(
+                messages.getAllValues().get(0).contains("tooltip.formatter"));
+        assertTrue(
+                messages.getAllValues().get(1).contains("series[2].formatter"));
+        assertTrue(
+                messages.getAllValues().get(2).contains("tooltip.formatter"));
+        assertTraceLeadsFromApiToTest(warnings.getAllValues().get(0),
+                CspModeTest.class, "reportFromComponent");
+        assertTraceLeadsFromApiToTest(warnings.getAllValues().get(1),
+                CspModeTest.class, "reportFromComponent");
+        assertTraceLeadsFromApiToTest(warnings.getAllValues().get(2),
+                CspModeTest.class, "reportFromOtherComponent");
+    }
+
+    @Test
+    void stringJavaScriptWithNullDetail_throws() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.WARN);
+
+        assertThrows(NullPointerException.class,
+                () -> CspViolationReporter.reportStringJavaScript(null));
+    }
+
+    private static void reportFromComponent(String detail) {
+        CspViolationReporter.reportStringJavaScript(detail);
+    }
+
+    private static void reportFromOtherComponent(String detail) {
+        CspViolationReporter.reportStringJavaScript(detail);
     }
 
     @SuppressWarnings("removal")
