@@ -178,6 +178,31 @@ class JsCallTest {
         assertThrows(IllegalStateException.class, undeclared::getFunctionId);
     }
 
+    // Only extended, so not annotated
+    interface ScrollableJs extends JsInvokers {
+        @JsExpression("this.scrollTop = $0")
+        void scrollTo(int top);
+    }
+
+    @JsDefinition
+    interface DoubleScrollJs extends ScrollableJs {
+        @Override
+        @JsExpression("this.scrollTop = $0 * 2")
+        void scrollTo(int top);
+    }
+
+    @Test
+    void getFunctionId_overriddenMethod_namesTheJavaScriptOfTheType() {
+        assertEquals(JsCall.functionId("this.scrollTop = $0 * 2", 1, false),
+                new JsCall(DoubleScrollJs.class, "scrollTo", List.of(1))
+                        .getFunctionId(),
+                "the override is what runs through the sub-interface");
+        assertEquals(JsCall.functionId("this.scrollTop = $0", 1, false),
+                new JsCall(ScrollableJs.class, "scrollTo", List.of(1))
+                        .getFunctionId(),
+                "the interface it overrides still runs its own JavaScript");
+    }
+
     @Test
     void getExpression_overloadsWithTheSameArity_throws() {
         // Overloads are resolved by name and argument count, so two of them
