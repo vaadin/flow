@@ -18,6 +18,8 @@ package com.vaadin.flow.dom.impl;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
@@ -76,7 +78,7 @@ public final class ElementJsInitializerRegistration implements Registration {
      *            the user-supplied parameters, captured by the JsFunction
      */
     public ElementJsInitializerRegistration(StateNode node, String expression,
-            Object[] parameters) {
+            @Nullable Object[] parameters) {
         // JsFunction.of validates each capture, so unsupported parameter
         // types fail fast here rather than at execution time.
         this(node, JsFunction.of(

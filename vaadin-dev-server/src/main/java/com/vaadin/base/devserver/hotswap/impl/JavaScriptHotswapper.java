@@ -255,6 +255,11 @@ public class JavaScriptHotswapper implements VaadinHotswapper {
         if (!visited.add(type)) {
             return false;
         }
+        // A used class that is not a component, such as a JavaScript
+        // definition, has no superclasses that carry dependencies
+        if (classNames.contains(type.getName())) {
+            return true;
+        }
         for (Class<?> clazz = type; clazz != null && Component.class
                 .isAssignableFrom(clazz); clazz = clazz.getSuperclass()) {
             if (classNames.contains(clazz.getName())) {
