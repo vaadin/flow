@@ -440,7 +440,8 @@ class StreamReceiverHandlerTest {
         when(stateNode.getOwner()).thenReturn(stateTree);
         when(stateTree.getUI()).thenReturn(ui);
         // The UI comes from the node's owner, not from the request's UI id
-        when(session.getUIById(uiId)).thenReturn(mock(UI.class));
+        UI uiById = mock(UI.class);
+        when(session.getUIById(uiId)).thenReturn(uiById);
         List<UI> inCallbacks = new ArrayList<>();
         doAnswer(i -> inCallbacks.add(UI.getCurrent())).when(streamVariable)
                 .streamingStarted(any());
