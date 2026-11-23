@@ -155,6 +155,15 @@ public abstract class VaadinService implements Serializable {
     private static final String REQUEST_FAILURE_ATTRIBUTE = VaadinService.class
             .getName() + ".requestFailure";
 
+    /*
+     * The UI that was current when a request handler failed with the session
+     * locked. The handler restores the current instances when it unlocks, so
+     * this lets the error handling make the UI current again once it holds the
+     * lock.
+     */
+    static final String FAILED_REQUEST_UI_ATTRIBUTE = VaadinService.class
+            .getName() + ".failedRequestUI";
+
     /**
      * Should never be used directly, always use
      * {@link #getDeploymentConfiguration()}.
@@ -2282,8 +2291,15 @@ public abstract class VaadinService implements Serializable {
     private void handleExceptionDuringRequest(VaadinRequest request,
             VaadinResponse response, VaadinSession vaadinSession, Exception t)
             throws ServiceException {
+        Map<Class<?>, CurrentInstance> instances = CurrentInstance
+                .getInstances();
         if (vaadinSession != null) {
             vaadinSession.lock();
+            if (request.getAttribute(
+                    FAILED_REQUEST_UI_ATTRIBUTE) instanceof UI failedUI
+                    && failedUI.getSession() == vaadinSession) {
+                UI.setCurrent(failedUI);
+            }
         }
         try {
             try {
@@ -2326,7 +2342,8 @@ public abstract class VaadinService implements Serializable {
             }
         } finally {
             if (vaadinSession != null) {
-                vaadinSession.unlock();
+                CurrentInstance.unlockAndRestoreInstances(vaadinSession,
+                        instances);
             }
         }
 

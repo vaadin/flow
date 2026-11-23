@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -44,11 +45,14 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -288,6 +292,37 @@ class VaadinServletServiceTest {
         assertEquals("BOOM!", failed.getFailure().orElseThrow().getMessage());
         assertFalse(failed.getHandler().isPresent());
         assertFalse(failed.getSession().isPresent());
+    }
+
+    @Test
+    void handleRequest_handlerSetsCurrentUIAndThrows_errorHandlerSeesUIAndRequestEndDoesNot()
+            throws Exception {
+        CurrentInstance.clearAll();
+        AtomicReference<UI> ui = new AtomicReference<>();
+        List<UI> inErrorHandler = new ArrayList<>();
+        service.getRequestHandlers().clear();
+        service.getRequestHandlers().add(new SynchronizedRequestHandler() {
+            @Override
+            public boolean synchronizedHandleRequest(VaadinSession session,
+                    VaadinRequest request, VaadinResponse response) {
+                session.setErrorHandler(
+                        event -> inErrorHandler.add(UI.getCurrent()));
+                // Like VaadinService.findUI, sets the UI as current
+                ui.set(new MockUI(session));
+                throw new IllegalStateException("BOOM");
+            }
+        });
+        List<UI> inRequestEnd = new ArrayList<>();
+        service.getEventBus().addListener(RequestEndedEvent.class,
+                event -> inRequestEnd.add(UI.getCurrent()));
+        VaadinRequest request = servlet.createVaadinRequest(createRequest(
+                "http://dummy.host:8080/", "/contextpath", "/servlet", "/"));
+
+        assertThrows(ServiceException.class, () -> service
+                .handleRequest(request, mock(VaadinResponse.class)));
+
+        assertEquals(List.of(ui.get()), inErrorHandler);
+        assertEquals(Collections.singletonList(null), inRequestEnd);
     }
 
     @Test

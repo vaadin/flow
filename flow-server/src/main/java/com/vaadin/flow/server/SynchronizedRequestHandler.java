@@ -24,6 +24,7 @@ import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
 
 /**
@@ -32,11 +33,12 @@ import com.vaadin.flow.internal.CurrentInstance;
  * {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
  * is called and unlocked after it has completed.
  * <p>
- * The current instances, such as the current
- * {@link com.vaadin.flow.component.UI UI}, are restored to what they were
- * before locking right after the session is unlocked, so the handler can set
- * the current UI for the work it does with the lock held, and nothing that runs
- * after the unlock sees that UI as current.
+ * The current instances, such as the current {@link UI}, are restored to what
+ * they were before locking right after the session is unlocked, so the handler
+ * can set the current UI for the work it does with the lock held, and nothing
+ * that runs after the unlock sees that UI as current. If the handler throws,
+ * the UI it left current is made current again while the session
+ * {@link ErrorHandler} handles the exception.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -85,6 +87,9 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
             try {
                 responseWriter = synchronizedHandleRequest(session, request,
                         response, requestBody);
+            } catch (IOException | RuntimeException e) {
+                rememberFailedUI(request);
+                throw e;
             } finally {
                 CurrentInstance.unlockAndRestoreInstances(session, instances);
             }
@@ -98,9 +103,24 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
             session.lock();
             try {
                 return synchronizedHandleRequest(session, request, response);
+            } catch (IOException | RuntimeException e) {
+                rememberFailedUI(request);
+                throw e;
             } finally {
                 CurrentInstance.unlockAndRestoreInstances(session, instances);
             }
+        }
+    }
+
+    /*
+     * The current instances are restored before the exception reaches the error
+     * handling in VaadinService, which makes this UI current again while it
+     * holds the lock, so that the error handler still sees it.
+     */
+    private static void rememberFailedUI(VaadinRequest request) {
+        UI ui = UI.getCurrent();
+        if (ui != null) {
+            request.setAttribute(VaadinService.FAILED_REQUEST_UI_ATTRIBUTE, ui);
         }
     }
 
