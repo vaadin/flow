@@ -75,6 +75,8 @@ public class StreamRequestHandler implements RequestHandler {
      * The request attribute that carries the
      * {@link com.vaadin.flow.server.streams.DownloadDisposition} of the
      * resource that is served, for the download event to read.
+     * 
+     * @since 25.4
      */
     public static final String DISPOSITION_REQUEST_ATTRIBUTE = DownloadDisposition.class
             .getName();

@@ -27,6 +27,7 @@ package com.vaadin.flow.server.streams;
  * disposition.
  *
  * @see com.vaadin.flow.server.StreamResourceRegistry.ElementStreamResource
+ * @since 25.4
  */
 public enum DownloadDisposition {
 

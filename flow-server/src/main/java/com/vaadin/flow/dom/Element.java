@@ -1993,7 +1993,7 @@ public class Element extends Node<Element> {
      *            for no arguments
      * @return a pending result that can be used to get a return value from the
      *         execution
-     * @since 2.0
+     * @since 25.4
      */
     @Deprecated
     public PendingJavaScriptResult callJsFunction(String functionName,
@@ -2189,7 +2189,7 @@ public class Element extends Node<Element> {
      *            no parameters
      * @return a pending result that can be used to get a value returned from
      *         the expression
-     * @since 2.0
+     * @since 25.4
      */
     @Deprecated
     public PendingJavaScriptResult executeJs(String expression,

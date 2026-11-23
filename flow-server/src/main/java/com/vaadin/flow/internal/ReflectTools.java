@@ -556,6 +556,7 @@ public class ReflectTools implements Serializable {
      *             if class instance creation fails, for example when the
      *             constructor is not public and the package of the class is in
      *             a named module that does not open it to Vaadin
+     * @since 25.4
      */
     public static <T> T createInstanceWithAccessibleConstructor(Class<T> cls) {
         checkClassAccessibility(cls);

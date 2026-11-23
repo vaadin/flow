@@ -153,6 +153,8 @@ public class ShareAction extends PromiseAction<Void> {
      * {@link JsSnippets#of(Class)}.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface ShareJs extends Serializable {

@@ -40,6 +40,8 @@ import com.vaadin.flow.js.JsSnippets;
  * passing one snippet as an argument of another, which calls it.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.4
  */
 @JsDefinition
 public interface TriggerJs extends Serializable {

@@ -33,6 +33,8 @@ import com.vaadin.flow.js.JsSnippets;
  * calls it for the value it works on.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.4
  */
 @JsDefinition
 public interface TriggerInputJs extends Serializable {

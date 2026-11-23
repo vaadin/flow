@@ -99,6 +99,7 @@ public final class ElementJsInitializerRegistration implements Registration {
      *            the owning state node, not {@code null}
      * @param initializer
      *            the initializer to run, not {@code null}
+     * @since 25.4
      */
     public ElementJsInitializerRegistration(StateNode node,
             JsFunction initializer) {
@@ -186,6 +187,8 @@ public final class ElementJsInitializerRegistration implements Registration {
      * definition. Both calls run on the element of the registration.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface InitializerJs extends Serializable {
