@@ -23,8 +23,8 @@ exact, no fluff.
     over: same API, but a different return value, default, timing, calling
     context or thrown exception that existing callers rely on, so they have to
     change their code. A method that stops throwing a documented exception
-    callers catch, throws a different type, or now rejects valid input it used
-    to accept is breaking
+    callers catch, replaces it with a different type, or now rejects valid
+    input it used to accept is breaking
   - Skip `!` when no reasonable caller could have depended on the old
     behaviour, such as a crash, an exception on input the API never supported,
     or obviously wrong output nobody works around. Most bug fixes are like this
