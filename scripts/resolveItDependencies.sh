@@ -12,6 +12,13 @@
 # rather than failing the job, since the jobs that need the artifacts resolve
 # them again anyway.
 #
+# The plugins are resolved in a build of their own: a module whose
+# dependencies fail to resolve skips its remaining goals, so in the same build
+# the plugins of every module depending on another flow-tests module, such as
+# the dev loop fixture apps and their server plugins, would never be resolved.
+# Plugins do not need the reactor's snapshots, so on their own they all
+# resolve.
+#
 # Without -DskipTests, as that is what activates the it-test-modules profile.
 #
 # The Quarkus suite is resolved in a second build, from its own root, as it
@@ -29,9 +36,12 @@
 set -u
 
 log=$(mktemp)
-mvn -B -ntp -fn dependency:resolve dependency:resolve-plugins \
+mvn -B -ntp -fn dependency:resolve \
   -Pit-shared-modules,it-shared-spring-modules -pl flow-tests -amd >"$log" 2>&1
 status=$?
+mvn -B -ntp -fn dependency:resolve-plugins \
+  -Pit-shared-modules,it-shared-spring-modules -pl flow-tests -amd >>"$log" 2>&1
+plugins_status=$?
 
 quarkus_pom=flow-tests/vaadin-quarkus-tests/pom.xml
 quarkus_version=$(sed -n 's:.*<quarkus.version>\(.*\)</quarkus.version>.*:\1:p' pom.xml)
@@ -43,6 +53,7 @@ mvn -B -ntp -N -f "$quarkus_pom" dependency:get -Dtransitive=false \
   "-Dartifact=io.quarkus:quarkus-bom-quarkus-platform-descriptor:$quarkus_version:json:$quarkus_version" \
   >>"$log" 2>&1
 descriptor_status=$?
+[ "$status" -eq 0 ] && status=$plugins_status
 [ "$status" -eq 0 ] && status=$quarkus_status
 [ "$status" -eq 0 ] && status=$descriptor_status
 mvn -B -ntp -q -f "$quarkus_pom" clean
