@@ -21,8 +21,8 @@
 #
 # Without -DskipTests, as that is what activates the it-test-modules profile.
 #
-# The Quarkus suite is resolved in a second build, from its own root, as it
-# is not a module of the flow-tests reactor; see flow-tests/pom.xml. Most of
+# The Quarkus suite is resolved in a build of its own, from its own root, as
+# it is not a module of the flow-tests reactor; see flow-tests/pom.xml. Most of
 # its modules depend on fixture modules of the suite, and dependency:resolve
 # alone would fail each of them before resolving anything, so the suite is
 # compiled first for the reactor to supply them. The go-offline goal adds
