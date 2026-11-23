@@ -21,11 +21,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -34,9 +38,12 @@ import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry.ElementStreamResource;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
+import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 import com.vaadin.flow.server.streams.ServletResourceDownloadHandler;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
@@ -397,27 +404,128 @@ class AnchorTest extends ComponentTest {
     }
 
     @Test
-    void anchorWithLinkModeDownload_downloadAttributeIsSet() {
-        mockUI();
-        DownloadHandler downloadHandler = DownloadHandler
-                .forServletResource("null/path").inline();
+    void anchorWithLinkModeDownload_downloadAttributeIsSet() throws Exception {
+        UI attachTo = createUiWithDefaultSafeUrlSchemes();
+        UI.setCurrent(attachTo);
+        DownloadHandler downloadHandler = DownloadHandler.fromInputStream(
+                event -> DownloadResponse.error(500), "report.pdf").inline();
         Anchor anchor = new Anchor(downloadHandler, AttachmentType.DOWNLOAD,
                 "bar");
+        attachTo.add(anchor);
 
         assertTrue(anchor.isDownload(),
-                "Inline download handlers should not add download attribute");
+                "AttachmentType.DOWNLOAD should set the download attribute even for an inline handler");
+        assertEquals("attachment; filename=\"report.pdf\"",
+                servedContentDisposition(attachTo, anchor));
     }
 
     @Test
-    void anchorWithLinkModeInline_downloadAttributeIsNotSet() {
-        mockUI();
-        DownloadHandler downloadHandler = DownloadHandler
-                .forServletResource("null/path");
+    void anchorWithLinkModeInline_downloadAttributeIsNotSet() throws Exception {
+        UI attachTo = createUiWithDefaultSafeUrlSchemes();
+        UI.setCurrent(attachTo);
+        DownloadHandler downloadHandler = DownloadHandler.fromInputStream(
+                event -> DownloadResponse.error(500), "report.pdf");
         Anchor anchor = new Anchor(downloadHandler, AttachmentType.INLINE,
                 "bar");
+        attachTo.add(anchor);
 
         assertFalse(anchor.isDownload(),
                 "Inline download handlers should not add download attribute");
+        assertEquals("inline; filename=\"report.pdf\"",
+                servedContentDisposition(attachTo, anchor));
+    }
+
+    @Test
+    void customDownloadHandler_noChoiceMade_noDispositionOnResource() {
+        UI attachTo = createUiWithDefaultSafeUrlSchemes();
+        UI.setCurrent(attachTo);
+        Anchor anchor = new Anchor(event -> event.fileName("a.pdf"), "bar");
+        attachTo.add(anchor);
+
+        assertNull(registeredResource(attachTo, anchor).getDisposition());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void customHandlerConstructor_laterBuiltInInlineHandler_decidesAttribute(
+            boolean textSignal) throws Exception {
+        UI attachTo = createUiWithDefaultSafeUrlSchemes();
+        UI.setCurrent(attachTo);
+        DownloadHandler custom = event -> event.fileName("a.pdf");
+        Anchor anchor = textSignal
+                ? new Anchor(custom, new ValueSignal<>("bar"))
+                : new Anchor(custom, "bar");
+        attachTo.add(anchor);
+
+        anchor.setHref(DownloadHandler.fromInputStream(
+                event -> DownloadResponse.error(500), "report.pdf").inline());
+
+        assertFalse(anchor.isDownload());
+        assertEquals("inline; filename=\"report.pdf\"",
+                servedContentDisposition(attachTo, anchor));
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "false, true", "false, false", "true, true", "true, false" })
+    void setDownload_beforeOrAfterSetHref_decidesAttributeAndHowContentIsServed(
+            boolean download, boolean downloadSetFirst) throws Exception {
+        UI attachTo = createUiWithDefaultSafeUrlSchemes();
+        UI.setCurrent(attachTo);
+        // a built-in handler whose own link mode and disposition differ
+        // from the choice made on the anchor
+        InputStreamDownloadHandler handler = DownloadHandler.fromInputStream(
+                event -> DownloadResponse.error(500), "report.pdf");
+        if (download) {
+            handler.inline();
+        }
+        Anchor anchor = new Anchor();
+        attachTo.add(anchor);
+
+        if (downloadSetFirst) {
+            anchor.setDownload(download);
+            anchor.setHref(handler);
+        } else {
+            anchor.setHref(handler);
+            String href = anchor.getHref();
+            anchor.setDownload(download);
+            assertEquals(href, anchor.getHref(),
+                    "Changing the choice should keep the URL of the handler");
+        }
+
+        assertEquals(download, anchor.isDownload());
+        assertEquals(
+                (download ? "attachment" : "inline")
+                        + "; filename=\"report.pdf\"",
+                servedContentDisposition(attachTo, anchor));
+    }
+
+    @Test
+    void setHrefWithAttachmentType_newHandler_typeIsKept() throws Exception {
+        UI attachTo = createUiWithDefaultSafeUrlSchemes();
+        UI.setCurrent(attachTo);
+        Anchor anchor = new Anchor(event -> event.fileName("a.pdf"),
+                AttachmentType.INLINE, "bar");
+        attachTo.add(anchor);
+
+        anchor.setHref(DownloadHandler.fromInputStream(
+                event -> DownloadResponse.error(500), "report.pdf"));
+
+        assertFalse(anchor.isDownload());
+        assertEquals("inline; filename=\"report.pdf\"",
+                servedContentDisposition(attachTo, anchor));
+    }
+
+    private static String servedContentDisposition(UI attachTo, Anchor anchor)
+            throws Exception {
+        return AssertUtils
+                .servedContentDisposition(registeredResource(attachTo, anchor));
+    }
+
+    private static ElementStreamResource registeredResource(UI attachTo,
+            Anchor anchor) {
+        return (ElementStreamResource) attachTo.getSession()
+                .getResourceRegistry().getResource(URI.create(anchor.getHref()))
+                .orElseThrow();
     }
 
     @Test
@@ -433,15 +541,25 @@ class AnchorTest extends ComponentTest {
     }
 
     @Test
-    void customDownloadHandler_nullType_constructorSetsDownloadMode() {
-        mockUI();
-        DownloadHandler downloadHandler = DownloadHandler
-                .forServletResource("null/path");
+    void customDownloadHandler_nullType_constructorSetsDownloadMode()
+            throws Exception {
+        UI attachTo = createUiWithDefaultSafeUrlSchemes();
+        UI.setCurrent(attachTo);
         Anchor anchor = new Anchor(event -> {
         }, null, "bar");
+        attachTo.add(anchor);
 
         assertTrue(anchor.isDownload(),
                 "Custom download handlers should by default add download attribute");
+
+        anchor.setHref(DownloadHandler
+                .fromInputStream(event -> DownloadResponse.error(500), "x.pdf")
+                .inline());
+
+        assertTrue(anchor.isDownload(),
+                "A null type is kept as a choice for later handlers");
+        assertEquals("attachment; filename=\"x.pdf\"",
+                servedContentDisposition(attachTo, anchor));
     }
 
     @Test
