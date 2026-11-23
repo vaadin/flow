@@ -442,13 +442,18 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // Intl.Locale#getWeekInfo needs Firefox 153 (ESR), Chrome 130 or
         // Safari 17, and light-dark() needs Firefox 120, Chrome 123 or Safari
         // 17.5. Together they match the build target in vite.generated.ts
-        // without turning away Chrome that is a few versions behind.
-        addScript(indexDocument, """
-                if (typeof Intl.Locale?.prototype.getWeekInfo !== "function"
-                        || !CSS.supports("color", "light-dark(red, red)")) {
-                    window.location.search='v-r=oldbrowser';
-                }
-                """);
+        // without turning away Chrome that is a few versions behind. The
+        // script is not transpiled, so it must parse in the old browsers it
+        // turns away.
+        addScript(indexDocument,
+                """
+                        if (typeof Intl === "undefined"
+                                || typeof Intl.Locale !== "function"
+                                || typeof Intl.Locale.prototype.getWeekInfo !== "function"
+                                || !CSS.supports("color", "light-dark(red, red)")) {
+                            window.location.search='v-r=oldbrowser';
+                        }
+                        """);
     }
 
     private void catchErrorsInDevMode(Document indexDocument) {
