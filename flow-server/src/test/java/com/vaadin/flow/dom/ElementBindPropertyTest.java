@@ -25,6 +25,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -48,6 +51,7 @@ import com.vaadin.flow.signals.shared.SharedValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -1020,6 +1024,27 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         assertEquals("foo", component.getElement().getProperty("prop"));
         assertEquals(Map.of("prop", "foo"),
                 collectPropertyChanges(component.getElement()));
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = "foo")
+    void bindProperty_clientSendsNullAndCallbackAcceptsIt_nothingSentBack(
+            String initialValue) {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        ValueSignal<String> signal = new ValueSignal<>(initialValue);
+        component.getElement().bindProperty("prop", signal, signal::set);
+        component.getElement().addPropertyChangeListener("prop", "change",
+                event -> {
+                });
+        collectPropertyChanges(component.getElement());
+
+        emulateClientUpdate(component.getElement(), "prop", null);
+
+        // The client already shows null, so echoing it back is pointless
+        assertNull(signal.peek());
+        assertEquals(Map.of(), collectPropertyChanges(component.getElement()));
     }
 
     @Test

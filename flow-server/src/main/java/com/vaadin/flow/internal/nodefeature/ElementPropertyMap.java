@@ -158,10 +158,11 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         Serializable resolvedValue = writeSignalValue(name, value, binding);
 
         // Store the resolved value (may differ if signal reverted)
-        // Never emit a change event here: if the signal accepted the new value,
-        // the signal's own effect will fire the change event; if it reverted,
-        // the signal's effect will fire the change event for the reverted
-        // value.
+        // Never emit a change event here: if the signal value changed, the
+        // signal's own effect fires the change event and queues the value for
+        // the client. If the callback left the signal unchanged, nothing needs
+        // to be sent: unlike a client update, the rejected value never reached
+        // the client, which still shows the signal value.
         super.put(name, new InternalSignalBinding(binding.signal(),
                 resolvedValue, binding.writeCallback()), false);
     }
@@ -246,8 +247,12 @@ public class ElementPropertyMap extends AbstractPropertyMap {
                 binding.writeCallback());
         // Object rather than Serializable since the signal may hold a value
         // that is not Serializable, such as a bean
-        feat.<Object> updateSignalByWriteCallback(SignalBindingFeature.VALUE,
-                get(name), value, Objects::equals, resolvedValue::set);
+        boolean accepted = feat.<Object> updateSignalByWriteCallback(
+                SignalBindingFeature.VALUE, get(name), value, Objects::equals,
+                resolvedValue::set);
+        if (accepted) {
+            return value;
+        }
 
         // A reverted value comes from the signal as is and may be sent to the
         // client, so it needs the same conversion as in the signal effect
@@ -677,6 +682,10 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
             // Never fire a property change event here: if the signal value
             // changed, the signal's own effect fires it.
+            // This put also clears any change the signal's effect queued for
+            // the key (e.g. a transformed value), so the second put below is
+            // what sends the signal value to the client. The two puts must
+            // stay together.
             Serializable oldValue = super.put(key, new InternalSignalBinding(
                     binding.signal(), value, binding.writeCallback()), false);
             if (!Objects.equals(resolvedValue, value)) {
