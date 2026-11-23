@@ -87,9 +87,10 @@ and cover the related choices.
   `AbstractXyz` will still reject interface-only implementations, so the
   migration is just as expensive as not having had an interface at all.
 - **What "demonstrate today" means.** Ship a worked example of using the
-  interface without the abstract class. The interface is a commitment that it stands on its own today and keeps
-  standing — not an option you keep open "in case". An interface that
-  only ever has one valid implementation adds noise without value.
+  interface without the abstract class. The interface is a commitment
+  that it stands on its own today and keeps standing — not an option you
+  keep open "in case". An interface that only ever has one valid
+  implementation adds noise without value.
 - **Name it `Xyz`, not `AbstractXyz`, unless an interface exists or is
   explicitly planned.** The class name appears in every method signature
   that accepts an instance (`doSomething(Trigger trigger)` reads better
