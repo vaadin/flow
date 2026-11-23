@@ -299,7 +299,7 @@ class VaadinServletServiceTest {
     @ValueSource(strings = { "handler", "handlerOutsideLock",
             "responseWriter" })
     void handleRequest_handlingFailsWithCurrentUI_errorHandlerSeesUIAndRequestEndDoesNot(
-            String failingPart) throws Exception {
+            String failingPart) {
         CurrentInstance.clearAll();
         AtomicReference<UI> ui = new AtomicReference<>();
         List<UI> inErrorHandler = new ArrayList<>();
