@@ -81,7 +81,7 @@ jobs:
         # the common case.
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-warm-v2-${{ hashFiles('**/pom.xml') }}
+          key: ${{ runner.os }}-maven-warm-v3-${{ hashFiles('**/pom.xml') }}
           lookup-only: true
       - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         if: ${{ steps.probe.outputs.cache-hit != 'true' }}
@@ -98,10 +98,11 @@ jobs:
           # restore is an exact hit and their save is skipped. What they need
           # is resolved here, and by that build job when its poms differ.
           #
-          # The v2 segment tells entries that hold the integration test
-          # dependencies from older ones that do not, which validation.yml
-          # must not trust; the restore keys still start from either.
-          key: ${{ runner.os }}-maven-warm-v2-${{ hashFiles('**/pom.xml') }}
+          # The v3 segment tells entries that hold the integration test
+          # dependencies, those of the Quarkus suite included, from older ones
+          # that do not, which validation.yml must not trust; the restore keys
+          # still start from any of them.
+          key: ${{ runner.os }}-maven-warm-v3-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-warm-
       - name: Populate the local repository
         if: ${{ steps.probe.outputs.cache-hit != 'true' }}
@@ -190,7 +191,7 @@ jobs:
         # has nothing to add to that entry and should not race it for the key.
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-warm-v2-${{ hashFiles('**/pom.xml') }}
+          key: ${{ runner.os }}-maven-warm-v3-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-warm-
       - name: Install what the plugin build resolves
         # The plugin depends on com.vaadin:flow-plugin-base, so that module and
