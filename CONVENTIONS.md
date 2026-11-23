@@ -184,15 +184,15 @@ Never put a password, token or other credential in `toString()`.
 Run application code — listeners, callbacks, handlers, signal effects — with a
 current `UI` only while holding the lock of that UI's session. Code that sets
 the current `UI` for locked work restores the previous current instances
-before it releases the lock, the way `UI.access` and `VaadinSession.access` do,
-instead of leaving them for `CurrentInstance.clearAll()` at the end of the
-request. See `guidelines/architecture.md`.
+before any application code runs without the lock, instead of leaving them
+for `CurrentInstance.clearAll()` at the end of the request. See
+`guidelines/architecture.md`.
 
 Run a callback in the same lock state every time it fires. Do not acquire the
 session lock only to fire an event: a callback that can fire for a request
 that never touched a session, such as `RequestEndedEvent` listeners and
-`VaadinRequestInterceptor.requestEnd`, always runs without the lock and
-without a current `UI`, and reaches the session through its parameters.
+`VaadinRequestInterceptor.requestEnd`, is fired without the lock and without a
+current `UI`, and its code reaches the session through its parameters.
 
 State in the Javadoc of every new listener or callback API whether it runs
 with the session lock held.

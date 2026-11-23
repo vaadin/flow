@@ -114,15 +114,18 @@ the lock breaks that promise silently: the code mutates the state tree
 concurrently with the thread that does hold the lock, and nothing fails until
 the data is corrupted.
 
-`UI.access` and `VaadinSession.access` show the shape to follow. They lock the
-session, set the current instances with `CurrentInstance.setCurrent`, run the
-work, and restore the previous instances with
-`CurrentInstance.restoreInstances` in a `finally` block before they unlock.
-Request handlers that set the current UI while they hold the lock — finding
+The shape to follow is the one of `UI.access` and `VaadinSession.access`: lock
+the session, set the current instances with `CurrentInstance.setCurrent`, run
+the work, and restore the previous instances with
+`CurrentInstance.restoreInstances` in a `finally` block. Restore them before
+`unlock()` in new code; `accessSynchronously` restores right after it, which
+is safe only because `unlock()` runs nothing but queued access tasks, and each
+of those sets its own current instances under the lock. Request handlers that set the current UI while they hold the lock — finding
 the UI of a UIDL or heartbeat request, bootstrapping a page — have to restore
 it the same way when they unlock, because everything after that point in the
 request (writing the response, the request end callbacks) runs without the
-lock.
+lock. Some handlers do not restore it yet, so the request end callbacks can
+still see a current UI today; that is a bug to fix, not behaviour to rely on.
 
 The current `VaadinSession` is a weaker promise. It is set for the whole
 request, including phases that run without the lock, such as download and
@@ -136,4 +139,3 @@ fires for requests that never used a session, so taking the lock only to fire
 it would add lock contention to every request, and it would still have no lock
 to take for the sessionless ones. Such a callback runs without the lock, and
 code in it that needs the UI or the session uses `access`.
-
