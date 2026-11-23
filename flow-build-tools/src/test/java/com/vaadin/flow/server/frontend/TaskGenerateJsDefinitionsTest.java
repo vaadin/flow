@@ -550,6 +550,12 @@ class TaskGenerateJsDefinitionsTest {
                     + TaskGenerateJsDefinitions.FUNCTION_ID.pattern() + "/gm"),
                     "vite.generated.ts should use the pattern "
                             + TaskGenerateJsDefinitions.FUNCTION_ID.pattern());
+            // and the bundle check reads them under this key of the stats
+            String key = BundleValidationUtil.JS_DEFINITION_FUNCTION_IDS_STATS_KEY;
+            assertTrue(
+                    Pattern.compile("^\\s+" + key + ",$", Pattern.MULTILINE)
+                            .matcher(content).find(),
+                    "vite.generated.ts should write the stats key " + key);
         }
     }
 

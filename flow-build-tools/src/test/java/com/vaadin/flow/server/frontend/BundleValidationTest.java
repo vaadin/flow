@@ -1141,7 +1141,8 @@ class BundleValidationTest {
                 FrontendUtils.GENERATED
                         + FrontendUtils.JS_DEFINITIONS_FILE_NAME,
                 "not the hash of what the interfaces declare");
-        ArrayNode functionIds = stats.putArray("jsDefinitionFunctionIds");
+        ArrayNode functionIds = stats.putArray(
+                BundleValidationUtil.JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
         bundledFunctionIds.forEach(functionIds::add);
         setupFrontendUtilsMock(stats);
 

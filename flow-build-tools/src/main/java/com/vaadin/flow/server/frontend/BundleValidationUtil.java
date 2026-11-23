@@ -71,7 +71,7 @@ public final class BundleValidationUtil {
 
     private static final String FRONTEND_HASHES_STATS_KEY = "frontendHashes";
 
-    private static final String JS_DEFINITION_FUNCTION_IDS_STATS_KEY = "jsDefinitionFunctionIds";
+    static final String JS_DEFINITION_FUNCTION_IDS_STATS_KEY = "jsDefinitionFunctionIds";
 
     private static final String PWA_OFFLINE_PATH_STATS_KEY = "pwaOfflinePath";
 
