@@ -325,7 +325,7 @@ public interface WebStorage extends Serializable {
      * @since 25.4
      */
     @JsDefinition
-    public interface WebStorageJs extends JsInvokers {
+    interface WebStorageJs extends JsInvokers {
 
         /**
          * Writes a value.
