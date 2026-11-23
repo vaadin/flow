@@ -10,7 +10,7 @@
   <packaging>jar</packaging>
   <name>Flow strict Content Security Policy tests</name>
   <description>Integration tests that run a production-mode Spring Boot
-    application with csp=strict: the browser enforces the nonce-based policy
+    application with contentSecurityPolicy=strict: the browser enforces the nonce-based policy
     that Vaadin sends, and the tests check that each scenario works without a
     policy violation. Runs on JUnit 6 (Jupiter).</description>
 

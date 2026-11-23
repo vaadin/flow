@@ -63,7 +63,7 @@ public class InitParameters implements Serializable {
      *
      * @since 25.4
      */
-    public static final String CONTENT_SECURITY_POLICY = "csp";
+    public static final String CONTENT_SECURITY_POLICY = "contentSecurityPolicy";
     /**
      * Configuration parameter name for the value of the {@code X-Frame-Options}
      * HTTP response header sent with the application page. The header lets the

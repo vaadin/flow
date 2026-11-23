@@ -325,7 +325,8 @@ public class IndexHtmlRequestHandlerTest {
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class, () -> indexHtmlRequestHandler
                         .synchronizedHandleRequest(session, request, response));
-        assertTrue(exception.getMessage().contains("csp=strict"),
+        assertTrue(
+                exception.getMessage().contains("contentSecurityPolicy=strict"),
                 exception.getMessage());
         verify(response, never()).setHeader(eq("Content-Security-Policy"),
                 any());
