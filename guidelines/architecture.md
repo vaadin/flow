@@ -43,7 +43,9 @@ build on top of them:
 
 An element's `nodeId` is assigned on attach and is `-1` before that, which is
 why the Code Style section of [`CONVENTIONS.md`](../CONVENTIONS.md#code-style)
-rules it out as an identifier.
+rules it out as a stable identifier. While the node is attached, the node id
+is how the framework itself identifies it on the wire (see
+[`wire-protocol.md`](wire-protocol.md)).
 
 ## Client-server communication
 

@@ -586,11 +586,12 @@ says why, or it does not need to exist.
 
 Reach the UI through the component (`getUI()`) or through an event that
 provides it, such as `AttachEvent`. Use `UI.getCurrent()` only in code that
-has no component instance available.
+has no component instance available. See `guidelines/architecture.md`.
 
-Do not use the `nodeId` of an element as an identifier — it is `-1` until the
-node is attached. Use an identifier that does not depend on attachment, such
-as a UUID.
+Do not use the `nodeId` of an element as a stable identifier that has to hold
+before attach or across a detach — it is `-1` until the node is attached. When
+you need one, use an identifier that does not depend on attachment, such as a
+UUID. See `guidelines/architecture.md`.
 
 ## Commit & PR Hygiene
 
