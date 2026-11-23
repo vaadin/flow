@@ -21,8 +21,8 @@ exact, no fluff.
 - Breaking changes: append `!` before the colon (`feat!`, `fix!`, `chore!`)
   - This includes a behaviour change that working application code can trip
     over: same API, but a different return value, default, timing, calling
-    context or thrown exception that callers could reasonably depend on, so they have to
-    change their code. A method that stops throwing a documented exception
+    context or thrown exception that a reasonable caller could have depended
+    on, so callers have to change their code. A method that stops throwing a documented exception
     callers catch, replaces it with a different type, or now rejects valid
     input it used to accept is breaking
   - Skip `!` when no reasonable caller could have depended on the old
