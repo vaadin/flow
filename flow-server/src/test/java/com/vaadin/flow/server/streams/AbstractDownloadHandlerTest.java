@@ -277,7 +277,7 @@ class AbstractDownloadHandlerTest {
         DownloadEvent event = new DownloadEvent(request, response, session,
                 owner);
         event.setContentLength(1024);
-        event.setFileName("test.txt");
+        event.fileName("test.txt");
         AbstractDownloadHandler<AbstractDownloadHandler> handler = new AbstractDownloadHandler<>() {
             @Override
             public void handleDownloadRequest(DownloadEvent event)

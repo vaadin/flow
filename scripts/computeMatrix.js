@@ -492,17 +492,18 @@ function getQuarkusTestsMatrix() {
 /**
  * The modules the slow-tests job in validation.yml runs with -Pslow-tests:
  * every module of the reactor, except the global exclusions, whose tests
- * refer to one of the categories the slow-tests profiles of pom.xml and
- * flow-tests/pom.xml select. Read from the sources so that a module is picked
- * up as soon as it gets its first test in one of those categories.
+ * refer to one of the categories in the slowTestGroups property of pom.xml
+ * or flow-tests/pom.xml, which the slow-tests profiles select. Read from the
+ * sources so that a module is picked up as soon as it gets its first test in
+ * one of those categories.
  */
 function getSlowTestModules() {
-  const regexGroups = /<id>\s*slow-tests\s*<\/id>[\s\S]*?<groups>([\s\S]*?)<\/groups>/;
+  const regexGroups = /<slowTestGroups>([\s\S]*?)<\/slowTestGroups>/;
   const categories = ['pom.xml', 'flow-tests/pom.xml'].flatMap(pom => {
     const content = fs.readFileSync(pom).toString().replace(regexComment, '');
     const groups = regexGroups.exec(content);
     if (!groups) {
-      throw new Error(`${pom}: no <groups> in the slow-tests profile`);
+      throw new Error(`${pom}: no slowTestGroups property`);
     }
     return groups[1].split(',').map(c => c.trim()).filter(Boolean);
   });

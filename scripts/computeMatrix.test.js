@@ -7,21 +7,20 @@ const path = require('path');
 const { getSlowTestModules } = require('./computeMatrix');
 
 const TEST_DIR = 'src/test/java/com/vaadin/flow';
-const profile = (groups) =>
-  `<profiles><profile><id>slow-tests</id><properties><groups>${groups}</groups></properties></profile></profiles>`;
+const property = (groups) => `<properties><slowTestGroups>${groups}</slowTestGroups></properties>`;
 
 // A reactor with flow-tests in it, written to a temporary directory
 const FILES = {
   'pom.xml':
     '<modules><module>slow</module><module>plain</module><module>no-tests</module>' +
     '<!-- <module>commented</module> --><module>flow-tests</module></modules>' +
-    profile('com.vaadin.flow.testcategory.SlowTests'),
+    property('com.vaadin.flow.testcategory.RootOnlyTests'),
   'flow-tests/pom.xml':
     '<modules><module>push</module><module>vaadin-cdi-tests</module></modules>' +
-    '<!-- <groups>com.vaadin.flow.testcategory.CommentedTests</groups> -->' +
-    profile('com.vaadin.flow.testcategory.SlowTests,\n    com.vaadin.flow.testcategory.PushTests,'),
+    '<!-- <slowTestGroups>com.vaadin.flow.testcategory.CommentedTests</slowTestGroups> -->' +
+    property('com.vaadin.flow.testcategory.SlowTests,\n    com.vaadin.flow.testcategory.PushTests,'),
   'slow/pom.xml': '',
-  [`slow/${TEST_DIR}/ATest.java`]: '@Tag("com.vaadin.flow.testcategory.SlowTests")',
+  [`slow/${TEST_DIR}/ATest.java`]: '@Tag("com.vaadin.flow.testcategory.RootOnlyTests")',
   'plain/pom.xml': '',
   [`plain/${TEST_DIR}/BTest.java`]: 'import com.vaadin.flow.testcategory.CommentedTests;',
   'no-tests/pom.xml': '',
@@ -51,11 +50,14 @@ function inReactor(files, fn) {
   }
 }
 
-test('slow-tests lists the modules whose tests use a category of either slow-tests profile', () => {
+test('slow-tests lists the modules whose tests use a category of either slowTestGroups', () => {
   assert.deepStrictEqual(inReactor(FILES, getSlowTestModules), ['slow', 'flow-tests/push']);
 });
 
-test('slow-tests fails naming the pom when a slow-tests profile has no groups', () => {
-  const files = { ...FILES, 'flow-tests/pom.xml': '<modules><module>push</module></modules>' };
-  assert.throws(() => inReactor(files, getSlowTestModules), /flow-tests\/pom\.xml: no <groups>/);
-});
+for (const pom of ['pom.xml', 'flow-tests/pom.xml']) {
+  test(`slow-tests fails naming ${pom} when it has no slowTestGroups`, () => {
+    const files = { ...FILES, [pom]: '<modules><module>flow-tests</module><module>push</module></modules>' };
+    const escaped = pom.replace(/[./]/g, '\\$&');
+    assert.throws(() => inReactor(files, getSlowTestModules), new RegExp(`^Error: ${escaped}: no slowTestGroups`));
+  });
+}
