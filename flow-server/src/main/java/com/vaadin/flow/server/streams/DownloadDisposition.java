@@ -30,6 +30,7 @@ package com.vaadin.flow.server.streams;
  * {@link DownloadEvent#inline(String)}, keeps its choice.
  *
  * @see com.vaadin.flow.server.StreamResourceRegistry.ElementStreamResource
+ * @since 25.4
  */
 public enum DownloadDisposition {
 

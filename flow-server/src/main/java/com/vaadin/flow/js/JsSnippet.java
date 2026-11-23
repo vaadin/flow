@@ -26,7 +26,7 @@ import com.vaadin.flow.dom.JsFunction;
  * JavaScript that is declared on the server and evaluated later on the client,
  * by whatever it is passed to.
  * <p>
- * A method of a {@link JsDefinition} interface that returns a snippet type does
+ * A method of a {@link JsSnippets} interface that returns a snippet type does
  * not run anything. Called on the implementation that {@link JsSnippets#of}
  * hands out, it answers with a value that names the function the build
  * generated from its {@link JsExpression} and carries the arguments of the
@@ -65,14 +65,14 @@ import com.vaadin.flow.dom.JsFunction;
  * }
  *
  * &#64;JsDefinition
- * public interface OrderTemplates extends Serializable {
+ * public interface OrderTemplates extends JsSnippets {
  *     &#64;JsExpression("return html`&lt;b&gt;${$0}: ${item.status}&lt;/b&gt;`;")
  *     ItemTemplate status(String label);
  * }
  * </pre>
  *
  * {@link JsSnippets#of(Class)} implements the type, and a snippet of it is sent
- * to the client like a {@link JsFunction} that a {@link JsDefinition} interface
+ * to the client like a {@link JsFunction} that a {@link JsSnippets} interface
  * declares: as the function the client calls with those parameters.
  *
  * @see JsSnippets#of(Class)

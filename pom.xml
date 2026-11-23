@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>flow-project</artifactId>
-  <version>25.4-SNAPSHOT</version>
+  <version>25.5-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Flow</name>
   <url>https://vaadin.com/flow</url>
@@ -142,7 +142,7 @@
     <jetty.version>12.1.15</jetty.version>
     <properties-maven-plugin.version>1.4.0</properties-maven-plugin.version>
     <build-helper-maven-plugin.version>3.8.0</build-helper-maven-plugin.version>
-    <maven.version>3.10.1</maven.version>
+    <maven.version>3.10.2</maven.version>
     <maven-plugin-annotations.version>3.16.0</maven-plugin-annotations.version>
     <jandex.plugin.version>3.6.1</jandex.plugin.version>
     <!-- The Jandex index format that the plugin writes, set apart from the
@@ -282,7 +282,7 @@
       <dependency>
         <groupId>com.vaadin</groupId>
         <artifactId>license-checker</artifactId>
-        <version>3.1.4</version>
+        <version>3.1.5</version>
       </dependency>
 
       <!-- Test dependencies -->
