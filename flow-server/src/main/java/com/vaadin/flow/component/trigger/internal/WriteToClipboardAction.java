@@ -252,6 +252,8 @@ public class WriteToClipboardAction extends PromiseAction<String> {
      * {@link JsSnippets#of(Class)}.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface WriteToClipboardJs extends Serializable {

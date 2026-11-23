@@ -240,6 +240,8 @@ public class OpenInNewTabAction extends Action {
      * {@link JsSnippets#of(Class)}.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface OpenInNewTabJs extends Serializable {
