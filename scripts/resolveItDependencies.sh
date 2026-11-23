@@ -39,7 +39,7 @@ mvn -B -ntp -fn -f "$quarkus_pom" -Dvaadin.skip test-compile \
   dependency:resolve dependency:resolve-plugins \
   "io.quarkus:quarkus-maven-plugin:$quarkus_version:go-offline" >>"$log" 2>&1
 quarkus_status=$?
-mvn -B -ntp dependency:get -Dtransitive=false \
+mvn -B -ntp -N -f "$quarkus_pom" dependency:get -Dtransitive=false \
   "-Dartifact=io.quarkus:quarkus-bom-quarkus-platform-descriptor:$quarkus_version:json:$quarkus_version" \
   >>"$log" 2>&1
 descriptor_status=$?
