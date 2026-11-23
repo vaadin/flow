@@ -30,6 +30,7 @@ import com.vaadin.flow.internal.EncodeUtil;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.StreamRequestHandler;
 
 /**
  * Class containing meta-data for handling the requested client download.
@@ -42,14 +43,23 @@ import com.vaadin.flow.server.VaadinSession;
  */
 public class DownloadEvent {
 
-    private VaadinRequest request;
-    private VaadinResponse response;
-    private VaadinSession session;
-    private Element owningElement;
+    private static final String ATTACHMENT = "attachment";
+    private static final String INLINE = "inline";
+    private static final String CONTENT_DISPOSITION = "Content-Disposition";
+
+    private final VaadinRequest request;
+    private final VaadinResponse response;
+    private final VaadinSession session;
+    private final Element owningElement;
     private String fileName;
+    // inline or attachment as asked for by the handler, null if not asked
+    private String requestedType;
+    private String defaultType = ATTACHMENT;
+    private String writtenContentDisposition;
     private String contentType;
     private long contentLength = -1;
     private Exception exception;
+    private final DownloadDisposition disposition;
 
     public DownloadEvent(VaadinRequest request, VaadinResponse response,
             VaadinSession session, Element owningElement) {
@@ -57,6 +67,9 @@ public class DownloadEvent {
         this.response = response;
         this.session = session;
         this.owningElement = owningElement;
+        disposition = request == null ? null
+                : (DownloadDisposition) request.getAttribute(
+                        StreamRequestHandler.DISPOSITION_REQUEST_ATTRIBUTE);
     }
 
     /**
@@ -130,62 +143,127 @@ public class DownloadEvent {
     }
 
     /**
-     * Sets the name of the file to be downloaded. This method utilizes the HTTP
-     * Content-Disposition header to specify the name of the file to be
-     * downloaded.
+     * Sets the name of the file to be downloaded and serves it as an
+     * attachment. This method utilizes the HTTP Content-Disposition header to
+     * specify the name of the file to be downloaded.
      * <p>
      * To be called before the response is committed.
      * <p>
      * If the <code>fileName</code> is <code>null</code>, the
-     * Content-Disposition header won't be set.
+     * Content-Disposition header won't be set. Control characters, such as line
+     * breaks, are removed from the file name.
      * <p>
-     * If the Content-Disposition header has already been set, this method will
-     * not override it.
+     * If the Content-Disposition header was set directly on the response before
+     * any of these methods wrote it, this method will not override it.
+     * <p>
+     * The header is always {@code attachment}, even when the place where the
+     * handler is used asks for the content to be shown inline, for example
+     * {@code Download.onClick} with a new tab.
      *
      * @param fileName
      *            the name to be assigned to the file
+     * @deprecated use {@link #attachment(String)}, which behaves the same for a
+     *             non-null name; unlike this method, {@code attachment(null)}
+     *             still sends a bare {@code attachment} header. Or use
+     *             {@link #fileName(String)} to let the place where the handler
+     *             is used decide whether the content is saved or shown
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public void setFileName(String fileName) {
-        if (fileName == null
-                || response.containsHeader("Content-Disposition")) {
-            return;
+        if (fileName != null) {
+            attachment(fileName);
         }
-        if (fileName.isBlank()) {
-            response.setHeader("Content-Disposition", "attachment");
-        } else {
-            StringBuilder value = new StringBuilder();
-            value.append("attachment; ");
-            if (EncodeUtil.isPureUSASCII(fileName)) {
-                value.append("filename=\"").append(fileName).append("\"");
-            } else {
-                value
-                        // fallback legacy support
-                        .append("filename=\"")
-                        .append(EncodeUtil.rfc2047Encode(fileName))
-                        // used primarily
-                        .append("\"; filename*=UTF-8''")
-                        .append(EncodeUtil.rfc5987Encode(fileName));
-            }
-            response.setHeader("Content-Disposition", value.toString());
+    }
+
+    /**
+     * Sets the name of the file, which the browser uses when the content is
+     * saved. This does not change whether the content is saved or shown: that
+     * is decided by {@link #inline()} or {@link #attachment(String)} if the
+     * handler calls them, before or after this method, and otherwise by the
+     * place where the handler is used, through the {@link DownloadDisposition}
+     * of the resource the handler is registered with. For example,
+     * {@code Download.onClick} with a new tab shows the content. Without any of
+     * these, the content is saved as an attachment.
+     * <p>
+     * This method utilizes the HTTP Content-Disposition header. To be called
+     * before the response is committed.
+     * <p>
+     * If the <code>fileName</code> is <code>null</code> or blank, this method
+     * does nothing. Control characters, such as line breaks, are removed from
+     * the file name.
+     * <p>
+     * If the Content-Disposition header was set directly on the response before
+     * any of these methods wrote it, this method will not override it.
+     *
+     * @param fileName
+     *            the name of the file
+     * @see #attachment(String)
+     * @see #inline(String)
+     */
+    public void fileName(String fileName) {
+        if (setName(fileName)) {
+            writeContentDisposition();
         }
-        this.fileName = fileName;
+    }
+
+    /**
+     * Gives the file name of a built-in handler, which shows its content by
+     * default when {@code inlineByDefault} is {@code true}. A name given
+     * earlier, for example by the handler's callback, is kept.
+     */
+    void fileName(String fileName, boolean inlineByDefault) {
+        defaultType = inlineByDefault ? INLINE : ATTACHMENT;
+        if (this.fileName == null) {
+            setName(fileName);
+        }
+        writeContentDisposition();
+    }
+
+    /**
+     * Sets the Content-Disposition header to attachment with a filename, so
+     * that the browser saves the content as a file instead of showing it.
+     * <p>
+     * The header is {@code attachment} even when the place where the handler is
+     * used asks for the content to be shown inline. Use
+     * {@link #fileName(String)} to let that place decide.
+     * <p>
+     * To be called before the response is committed.
+     * <p>
+     * If the <code>fileName</code> is <code>null</code> or blank, the file name
+     * given earlier, if any, is kept. Control characters, such as line breaks,
+     * are removed from the file name.
+     * <p>
+     * If the Content-Disposition header was set directly on the response before
+     * any of these methods wrote it, this method will not override it.
+     *
+     * @param fileName
+     *            the name of the saved file
+     */
+    public void attachment(String fileName) {
+        requestedType = ATTACHMENT;
+        setName(fileName);
+        writeContentDisposition();
     }
 
     /**
      * Sets the Content-Disposition header to inline, allowing the content to be
-     * displayed directly in the browser instead of being downloaded.
+     * displayed directly in the browser instead of being downloaded. A file
+     * name given with {@link #fileName(String)} is kept.
+     * <p>
+     * The header is {@code inline} even when the place where the handler is
+     * used asks for the content to be saved as a file. Use
+     * {@link #fileName(String)} alone to let that place decide.
      * <p>
      * To be called before the response is committed.
      * <p>
-     * If the Content-Disposition header has already been set, this method will
-     * not override it.
-     * 
+     * If the Content-Disposition header was set directly on the response before
+     * any of these methods wrote it, this method will not override it.
+     *
      * @since 25.0
      */
     public void inline() {
-        if (!response.containsHeader("Content-Disposition")) {
-            response.setHeader("Content-Disposition", "inline");
-        }
+        requestedType = INLINE;
+        writeContentDisposition();
     }
 
     /**
@@ -193,41 +271,88 @@ public class DownloadEvent {
      * the content to be displayed directly in the browser with a suggested
      * filename if the user chooses to save it.
      * <p>
+     * The header is {@code inline} even when the place where the handler is
+     * used asks for the content to be saved as a file. Use
+     * {@link #fileName(String)} alone to let that place decide.
+     * <p>
      * To be called before the response is committed.
      * <p>
      * If the <code>fileName</code> is <code>null</code> or blank, this behaves
-     * the same as calling {@link #inline()}.
+     * the same as calling {@link #inline()}. Control characters, such as line
+     * breaks, are removed from the file name.
      * <p>
-     * If the Content-Disposition header has already been set, this method will
-     * not override it.
+     * If the Content-Disposition header was set directly on the response before
+     * any of these methods wrote it, this method will not override it.
      *
      * @param fileName
      *            the suggested name for the file if saved by the user
      * @since 25.0
      */
     public void inline(String fileName) {
-        if (response.containsHeader("Content-Disposition")) {
+        requestedType = INLINE;
+        setName(fileName);
+        writeContentDisposition();
+    }
+
+    /**
+     * Stores the cleaned file name unless it is null or blank.
+     *
+     * @return whether the name was stored
+     */
+    private boolean setName(String fileName) {
+        if (fileName == null) {
+            return false;
+        }
+        String cleaned = EncodeUtil.removeControlCharacters(fileName);
+        if (cleaned.isBlank()) {
+            return false;
+        }
+        this.fileName = cleaned;
+        return true;
+    }
+
+    private void writeContentDisposition() {
+        if (writtenContentDisposition == null
+                && response.containsHeader(CONTENT_DISPOSITION)) {
+            // set directly on the response
             return;
         }
-        if (fileName == null || fileName.isBlank()) {
-            response.setHeader("Content-Disposition", "inline");
-        } else {
-            StringBuilder value = new StringBuilder();
-            value.append("inline; ");
-            if (EncodeUtil.isPureUSASCII(fileName)) {
-                value.append("filename=\"").append(fileName).append("\"");
-            } else {
-                value
-                        // fallback legacy support
-                        .append("filename=\"")
-                        .append(EncodeUtil.rfc2047Encode(fileName))
-                        // used primarily
-                        .append("\"; filename*=UTF-8''")
-                        .append(EncodeUtil.rfc5987Encode(fileName));
+        String type = requestedType;
+        if (type == null) {
+            if (fileName == null) {
+                return;
             }
-            response.setHeader("Content-Disposition", value.toString());
+            type = disposition != null ? disposition.getHeaderValue()
+                    : defaultType;
         }
-        this.fileName = fileName;
+        String value = buildContentDisposition(type, fileName);
+        if (!value.equals(writtenContentDisposition)) {
+            response.setHeader(CONTENT_DISPOSITION, value);
+            writtenContentDisposition = value;
+        }
+    }
+
+    private static String buildContentDisposition(String type,
+            String fileName) {
+        if (fileName == null || fileName.isBlank()) {
+            return type;
+        }
+        StringBuilder value = new StringBuilder();
+        value.append(type).append("; ");
+        if (EncodeUtil.isPureUSASCII(fileName)) {
+            value.append("filename=\"")
+                    .append(EncodeUtil.quotedStringEscape(fileName))
+                    .append("\"");
+        } else {
+            value
+                    // fallback legacy support
+                    .append("filename=\"")
+                    .append(EncodeUtil.rfc2047Encode(fileName))
+                    // used primarily
+                    .append("\"; filename*=UTF-8''")
+                    .append(EncodeUtil.rfc5987Encode(fileName));
+        }
+        return value.toString();
     }
 
     /**

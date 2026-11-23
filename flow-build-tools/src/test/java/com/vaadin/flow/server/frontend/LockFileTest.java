@@ -1,0 +1,179 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.server.frontend;
+
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
+class LockFileTest {
+
+    @TempDir
+    Path folder;
+
+    @Test
+    void acquire_concurrentlyWithLockOfDeadProcess_onlyOneHolderAtATime()
+            throws Exception {
+        Path path = folder.resolve("test.lock");
+        // All threads find this lock abandoned and try to take it over
+        Files.writeString(path, "1\nnot the command line of the process",
+                StandardCharsets.UTF_8);
+        int threads = 4;
+        CountDownLatch start = new CountDownLatch(1);
+        AtomicInteger holders = new AtomicInteger();
+        AtomicInteger maxHolders = new AtomicInteger();
+        AtomicInteger acquisitions = new AtomicInteger();
+        List<Throwable> failures = new CopyOnWriteArrayList<>();
+        List<Thread> started = new ArrayList<>();
+        for (int i = 0; i < threads; i++) {
+            Thread thread = new Thread(() -> {
+                LockFile lock = new LockFile(path, "test");
+                try {
+                    start.await();
+                    lock.acquire();
+                    acquisitions.incrementAndGet();
+                    try {
+                        maxHolders.accumulateAndGet(holders.incrementAndGet(),
+                                Math::max);
+                        Thread.sleep(50);
+                        holders.decrementAndGet();
+                    } finally {
+                        lock.release();
+                    }
+                } catch (Throwable e) {
+                    failures.add(e);
+                }
+            });
+            thread.start();
+            started.add(thread);
+        }
+
+        start.countDown();
+        for (Thread thread : started) {
+            thread.join(TimeUnit.SECONDS.toMillis(30));
+        }
+
+        assertEquals(List.of(), failures);
+        assertEquals(threads, acquisitions.get(),
+                "Every thread should get the lock in turn");
+        assertEquals(1, maxHolders.get(),
+                "Threads that find the lock free or abandoned at the same time should still hold it one at a time");
+    }
+
+    @Test
+    void acquire_unreadableLockFile_isTakenOverWhenOld() throws Exception {
+        Path path = folder.resolve("test.lock");
+        // Not even valid UTF-8
+        Files.write(path, new byte[] { (byte) 0xC3, 0x28 });
+        Files.setLastModifiedTime(path,
+                FileTime.from(Instant.now().minus(Duration.ofMinutes(1))));
+
+        assertTimeoutPreemptively(Duration.ofSeconds(30),
+                () -> new LockFile(path, "test").acquire());
+
+        assertEquals(Long.toString(ProcessHandle.current().pid()),
+                Files.readAllLines(path, StandardCharsets.UTF_8).get(0));
+    }
+
+    @Test
+    void tryAcquire_heldByAnotherThread_returnsWithoutTakingIt()
+            throws Exception {
+        Path path = folder.resolve("test.lock");
+        LockFile holder = new LockFile(path, "test");
+        holder.acquire();
+        byte[] content = Files.readAllBytes(path);
+        try {
+            LockFile other = new LockFile(path, "test");
+            assertFalse(assertTimeoutPreemptively(Duration.ofSeconds(30),
+                    other::tryAcquire));
+            // Not holding it, so releasing must leave the holder's lock
+            other.release();
+            assertArrayEquals(content, Files.readAllBytes(path));
+        } finally {
+            holder.release();
+        }
+    }
+
+    @Test
+    void tryAcquire_heldByAnotherRunningProcess_returnsWithoutTakingIt()
+            throws Exception {
+        ProcessHandle otherProcess = ProcessHandle.current().parent()
+                .orElse(null);
+        assumeTrue(otherProcess != null,
+                "Another running process is needed as the holder");
+        Path path = folder.resolve("test.lock");
+        Files.write(path, LockFile.describe(otherProcess),
+                StandardCharsets.UTF_8);
+        byte[] content = Files.readAllBytes(path);
+
+        assertFalse(assertTimeoutPreemptively(Duration.ofSeconds(30),
+                () -> new LockFile(path, "test").tryAcquire()));
+        assertArrayEquals(content, Files.readAllBytes(path));
+    }
+
+    @Test
+    void tryAcquire_lockOfDeadProcess_isTakenOver() throws Exception {
+        Path path = folder.resolve("test.lock");
+        Files.writeString(path, "1\nnot the command line of the process",
+                StandardCharsets.UTF_8);
+
+        assertTrue(assertTimeoutPreemptively(Duration.ofSeconds(30),
+                () -> new LockFile(path, "test").tryAcquire()));
+        assertEquals(Long.toString(ProcessHandle.current().pid()),
+                Files.readAllLines(path, StandardCharsets.UTF_8).get(0));
+    }
+
+    @Test
+    void acquire_lockOfEarlierProcessWithSamePid_isTakenOver()
+            throws Exception {
+        Path path = folder.resolve("test.lock");
+        // A lock file naming this pid and command line, left behind by a
+        // killed run whose process got the same pid, but started earlier
+        List<String> earlier = new ArrayList<>(
+                LockFile.describe(ProcessHandle.current()));
+        assumeTrue(earlier.size() == 3,
+                "The start time of the process is needed to tell runs apart");
+        earlier.set(2, Instant.parse(earlier.get(2))
+                .minus(Duration.ofMinutes(1)).toString());
+        Files.write(path, earlier, StandardCharsets.UTF_8);
+
+        LockFile lock = new LockFile(path, "test");
+        assertTimeoutPreemptively(Duration.ofSeconds(30), lock::acquire);
+        lock.release();
+
+        assertFalse(Files.exists(path),
+                "The lock taken over should be released normally");
+    }
+}

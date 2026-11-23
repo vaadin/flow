@@ -47,7 +47,6 @@ import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -64,8 +63,6 @@ import static org.mockito.Mockito.when;
 class TranslationFileRequestHandlerTest {
 
     private final VaadinService service = mock(VaadinService.class);
-
-    private final VaadinSession session = mock(VaadinSession.class);
 
     private final VaadinRequest request = mock(VaadinRequest.class);
 
@@ -102,7 +99,7 @@ class TranslationFileRequestHandlerTest {
     void pathDoesNotMatch_requestNotHandled() throws IOException {
         configure(true);
         setRequestParams(null, "other", null, null);
-        assertFalse(handler.handleRequest(session, request, response));
+        assertFalse(handler.handleRequest(request, response));
     }
 
     @Test
@@ -292,7 +289,7 @@ class TranslationFileRequestHandlerTest {
         setRequestParams(requestedLanguageTag,
                 HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier(),
                 requestedChunks, requestedKeys);
-        assertTrue(handler.handleRequest(session, request, response),
+        assertTrue(handler.handleRequest(request, response),
                 "The request was not handled by the handler.");
         assertEquals(expectedResponseContent, getResponseContent(),
                 "The expected response content does not match the actual response content.");
@@ -407,39 +404,10 @@ class TranslationFileRequestHandlerTest {
         when(configuration.isProductionMode()).thenReturn(isProductionMode);
         when(service.getDeploymentConfiguration()).thenReturn(configuration);
         when(request.getService()).thenReturn(service);
-        // Just a guard to ensure the handler never uses VaadinSession
-        when(session.getService()).thenThrow(new IllegalStateException(
-                "TranslationFileRequestHandler should not use Vaadin session."));
     }
 
     @Test
-    void handleSessionExpired_translationRequest_returnsTranslations()
-            throws IOException {
-        configure(true);
-        setRequestParams("fi",
-                HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier(),
-                null, null);
-
-        assertTrue(handler.handleSessionExpired(request, response),
-                "handleSessionExpired should return true for i18n requests");
-
-        assertEquals("{\"title\":\"Suomi\"}", getResponseContent(),
-                "The expected response content does not match.");
-        verify(response).setStatus(HttpStatusCode.OK.getCode());
-    }
-
-    @Test
-    void handleSessionExpired_nonTranslationRequest_returnsFalse()
-            throws IOException {
-        configure(true);
-        setRequestParams(null, "other", null, null);
-
-        assertFalse(handler.handleSessionExpired(request, response),
-                "handleSessionExpired should return false for non-i18n requests");
-    }
-
-    @Test
-    void handleSessionExpired_noI18nProvider_returnsError() throws IOException {
+    void noI18nProvider_returnsError() throws IOException {
         // Create handler without I18NProvider
         createTranslationFiles(true);
         mockResponse();
@@ -450,8 +418,7 @@ class TranslationFileRequestHandlerTest {
                 HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier(),
                 null, null);
 
-        assertTrue(handler.handleSessionExpired(request, response),
-                "handleSessionExpired should return true");
+        assertTrue(handler.handleRequest(request, response));
 
         // In dev mode, should return 501 Not Implemented error
         verify(response).sendError(HttpStatusCode.NOT_IMPLEMENTED.getCode(),
@@ -459,8 +426,7 @@ class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    void handleSessionExpired_noI18nProvider_productionMode_returnsNotFound()
-            throws IOException {
+    void noI18nProvider_productionMode_returnsNotFound() throws IOException {
         // Create handler without I18NProvider
         createTranslationFiles(true);
         mockResponse();
@@ -471,8 +437,7 @@ class TranslationFileRequestHandlerTest {
                 HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier(),
                 null, null);
 
-        assertTrue(handler.handleSessionExpired(request, response),
-                "handleSessionExpired should return true");
+        assertTrue(handler.handleRequest(request, response));
 
         // In production mode, should return 404 Not Found
         verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());

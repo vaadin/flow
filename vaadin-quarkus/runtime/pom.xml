@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>vaadin-quarkus-parent</artifactId>
-    <version>25.4-SNAPSHOT</version>
+    <version>25.5-SNAPSHOT</version>
   </parent>
 
   <artifactId>vaadin-quarkus</artifactId>
@@ -13,6 +13,7 @@
   <description>Provides Quarkus integration for Vaadin applications.</description>
 
   <properties>
+    <jpms.module.name>com.vaadin.quarkus</jpms.module.name>
     <!--
       Two kinds of code here never run under surefire, so measuring them says
       nothing about how well they are tested:

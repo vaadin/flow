@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-test-devloop-liberty</artifactId>
-    <version>25.4-SNAPSHOT</version>
+    <version>25.5-SNAPSHOT</version>
   </parent>
   <artifactId>flow-test-devloop-liberty-app</artifactId>
   <!-- A WAR, and unlike the Jetty fixture's one it is deployed rather than
@@ -119,7 +119,8 @@
     </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
-      <artifactId>vaadin-testbench-core-junit5</artifactId>
+      <artifactId>flow-test-util-junit6</artifactId>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <!-- DevLoopPomEditIT adds a dependency below this line and reverts it. The
@@ -172,7 +173,7 @@
       <plugin>
         <groupId>io.openliberty.tools</groupId>
         <artifactId>liberty-maven-plugin</artifactId>
-        <version>3.12.4</version>
+        <version>3.12.5</version>
         <configuration>
           <runtimeArtifact>
             <groupId>io.openliberty</groupId>

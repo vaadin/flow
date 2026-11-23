@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import java.io.Serializable;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
@@ -34,8 +33,8 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
 
-import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
+import com.vaadin.flow.component.internal.PrebuiltEventData;
 import com.vaadin.flow.component.internal.UIInternalUpdater;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.History;
@@ -60,6 +59,7 @@ import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveListener;
@@ -118,7 +118,6 @@ import com.vaadin.flow.signals.local.ValueSignal;
  *
  * @since 1.0
  */
-@JsModule("@vaadin/common-frontend/ConnectionIndicator.js")
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
 
@@ -2086,9 +2085,13 @@ public class UI extends Component
     }
 
     /**
+     * Event fired by the client when the user leaves the current view by a
+     * navigation in the browser.
+     *
      * @since 24.4
      */
     @DomEvent(BrowserLeaveNavigationEvent.EVENT_NAME)
+    @PrebuiltEventData
     public static class BrowserLeaveNavigationEvent extends ComponentEvent<UI> {
         public static final String EVENT_NAME = "ui-leave-navigation";
         private final String route;
@@ -2117,9 +2120,12 @@ public class UI extends Component
     }
 
     /**
+     * Event fired by the client when the user navigates in the browser.
+     *
      * @since 24.4
      */
     @DomEvent(BrowserNavigateEvent.EVENT_NAME)
+    @PrebuiltEventData
     public static class BrowserNavigateEvent extends ComponentEvent<UI> {
         public static final String EVENT_NAME = "ui-navigate";
 
@@ -2178,6 +2184,7 @@ public class UI extends Component
      * @since 24.5
      */
     @DomEvent(BrowserRefreshEvent.EVENT_NAME)
+    @PrebuiltEventData
     public static class BrowserRefreshEvent extends ComponentEvent<UI> {
         public static final String EVENT_NAME = "ui-refresh";
 
@@ -2444,7 +2451,7 @@ public class UI extends Component
      * @since 25.4
      */
     @JsDefinition
-    public interface UiJs extends Serializable {
+    public interface UiJs extends JsInvokers {
 
         /**
          * Sets the direction the document is read in.

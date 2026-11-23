@@ -1,8 +1,9 @@
-import { expect } from '@open-wc/testing';
+import { expect, waitUntil } from '@open-wc/testing';
 import { testRegistry } from './testRegistry';
 import sinon from 'sinon';
 import { Console } from '../../../../main/frontend/internal/client/Console';
 import { SystemErrorHandler } from '../../../../main/frontend/internal/client/SystemErrorHandler';
+import { VaadinServerMessage } from '../../../../main/frontend/internal/client/communication/VaadinServerMessage';
 
 // Ported from com.vaadin.client.flow.GwtErrotHandlerTest (the class name carries
 // a typo in the Java source), whose single case is ported below. Every other case
@@ -139,6 +140,74 @@ describe('SystemErrorHandler', () => {
     });
   });
 
+  describe('handleSessionExpiredError', () => {
+    let errorStub: sinon.SinonStub;
+
+    // With a caption the expiration is shown as a notification, which the
+    // cases can find, instead of a redirect that would leave the test page.
+    function makeSessionExpiredHandler(webComponentMode = false): SystemErrorHandler {
+      return new SystemErrorHandler(
+        testRegistry({
+          ApplicationConfiguration: {
+            isWebComponentMode: () => webComponentMode,
+            getSessionExpiredError: () => ({ caption: 'Session ended', url: 'about:blank' })
+          }
+        })
+      );
+    }
+
+    function findNotification(): Element | null {
+      return document.querySelector('.v-system-error');
+    }
+
+    beforeEach(() => {
+      errorStub = sinon.stub(Console, 'error');
+    });
+
+    afterEach(() => {
+      errorStub.restore();
+      document.querySelectorAll('.v-system-error').forEach((el) => el.remove());
+    });
+
+    it('shows the expiration right away when a synthetic beforeunload was dispatched', () => {
+      const handler = makeSessionExpiredHandler();
+      // As vite-devmode does when its HMR socket is closed with 1008.
+      window.dispatchEvent(new Event('beforeunload'));
+
+      handler.handleSessionExpiredError(null);
+
+      expect(findNotification()?.textContent).to.equal('Session ended');
+    });
+
+    it('defers the expiration while the browser leaves the page, until the page is used again', async () => {
+      const handler = makeSessionExpiredHandler();
+      const leaving = new Promise((resolve) => window.addEventListener('beforeunload', resolve, { once: true }));
+      // Fires a trusted beforeunload; the empty response keeps the page.
+      window.location.href = '/no-content';
+      await leaving;
+
+      handler.handleSessionExpiredError(null);
+      // A count, as a failure that reports the element hangs the test runner
+      expect(document.querySelectorAll('.v-system-error').length).to.equal(0);
+
+      window.dispatchEvent(new PointerEvent('pointerdown'));
+      expect(findNotification()?.textContent).to.equal('Session ended');
+    });
+
+    it('does not defer the expiration in web-component mode while the browser leaves the page', async () => {
+      const handler = makeSessionExpiredHandler(true);
+      const leaving = new Promise((resolve) => window.addEventListener('beforeunload', resolve, { once: true }));
+      window.location.href = '/no-content';
+      await leaving;
+
+      handler.handleSessionExpiredError(null);
+
+      expect(document.querySelectorAll('.v-system-error').length).to.equal(1);
+      // Clears the leaving state for the cases that follow.
+      window.dispatchEvent(new PointerEvent('pointerdown'));
+    });
+  });
+
   describe('class', () => {
     it('resynchronizes instead of redirecting when in web-component mode', () => {
       // With every part null, Java redirects outside web-component mode and
@@ -168,6 +237,122 @@ describe('SystemErrorHandler', () => {
       expect(intervals).to.deep.equal([-1]);
     });
 
+    it('announces the session resynchronization message and hands it on', async () => {
+      const message = new VaadinServerMessage();
+      const handled: unknown[] = [];
+      const handler = new SystemErrorHandler(
+        testRegistry({
+          ApplicationConfiguration: {
+            isWebComponentMode: () => true,
+            getExportedWebComponents: () => [],
+            getSessionExpiredError: () => null,
+            // The resync request reads the message from a JSON file the test
+            // server serves; the path and parameters it appends land in the
+            // fragment.
+            getServiceUrl: () => '/package.json#',
+            getUIId: () => 0,
+            setUIId: () => {},
+            getHeartbeatInterval: () => 0
+          },
+          Heartbeat: { setInterval: () => {} },
+          PushConfiguration: { isPushEnabled: () => false },
+          MessageSender: { setPushEnabled: () => {} },
+          UILifecycle: { setState: () => {} },
+          MessageHandler: {
+            announceMessage: () => message,
+            handleMessage: (json: unknown, announced: unknown) => handled.push(json, announced)
+          }
+        })
+      );
+
+      handler.handleUnrecoverableError(null, null, null, null, null);
+
+      await waitUntil(() => handled.length > 0);
+      const [json, announced] = handled;
+      expect(json).to.include({ name: '@vaadin/flow-client' });
+      expect(announced).to.equal(message);
+    });
+
+    it('ends an unparseable session resynchronization message as discarded and lets a later resync start', async () => {
+      const messages: VaadinServerMessage[] = [];
+      const intervals: number[] = [];
+      const handleMessage = sinon.spy();
+      const setState = sinon.spy();
+      const registry = testRegistry({
+        ApplicationConfiguration: {
+          isWebComponentMode: () => true,
+          getExportedWebComponents: () => [],
+          getSessionExpiredError: () => null,
+          // A file the test server serves that is not JSON.
+          getServiceUrl: () => '/README.md#',
+          getUIId: () => 0,
+          setUIId: () => {},
+          getHeartbeatInterval: () => 300
+        },
+        Heartbeat: { setInterval: (interval: number) => intervals.push(interval) },
+        PushConfiguration: { isPushEnabled: () => false },
+        UILifecycle: { setState },
+        MessageHandler: {
+          announceMessage: () => {
+            const message = new VaadinServerMessage();
+            messages.push(message);
+            return message;
+          },
+          handleMessage
+        }
+      });
+      const reset = sinon.spy(registry, 'reset');
+      const errorStub = sinon.stub(Console, 'error');
+      try {
+        const handler = new SystemErrorHandler(registry);
+        handler.handleUnrecoverableError(null, null, null, null, null);
+
+        await waitUntil(() => messages[0]?.outcome !== undefined);
+        expect(messages[0].outcome).to.equal('discarded');
+        expect(handleMessage.called).to.be.false;
+        expect(reset.called).to.be.false;
+        expect(setState.called).to.be.false;
+        expect(intervals.at(-1)).to.equal(300);
+        expect(errorStub.calledWith('Ignored unparseable session resynchronization message')).to.be.true;
+
+        // The failed attempt no longer counts as in progress.
+        handler.handleUnrecoverableError(null, null, null, null, null);
+        await waitUntil(() => messages[1]?.outcome !== undefined);
+      } finally {
+        errorStub.restore();
+      }
+    });
+
+    it('lets a later resync start after a failed session resynchronization request', async () => {
+      const intervals: number[] = [];
+      const errorStub = sinon.stub(Console, 'error');
+      const failures = () =>
+        errorStub.getCalls().filter((call) => String(call.args[0]).includes('failed with status 404')).length;
+      try {
+        const handler = new SystemErrorHandler(
+          testRegistry({
+            ApplicationConfiguration: {
+              isWebComponentMode: () => true,
+              getSessionExpiredError: () => null,
+              // A path the test server does not serve.
+              getServiceUrl: () => '/no-such-resync-endpoint/',
+              getHeartbeatInterval: () => 300
+            },
+            Heartbeat: { setInterval: (interval: number) => intervals.push(interval) },
+            PushConfiguration: { isPushEnabled: () => false }
+          })
+        );
+        handler.handleUnrecoverableError(null, null, null, null, null);
+        await waitUntil(() => failures() === 1);
+        expect(intervals).to.deep.equal([-1, 300]);
+
+        handler.handleUnrecoverableError(null, null, null, null, null);
+        await waitUntil(() => failures() === 2);
+      } finally {
+        errorStub.restore();
+      }
+    });
+
     it('recreates exported web components after resynchronization, also those that never connected', async () => {
       const connected = document.createElement('x-resync-test') as HTMLElement & {
         $server?: { disconnected: () => void };
@@ -193,7 +378,7 @@ describe('SystemErrorHandler', () => {
           PushConfiguration: { isPushEnabled: () => false },
           MessageSender: { setPushEnabled: () => {} },
           UILifecycle: { setState: () => {} },
-          MessageHandler: { handleMessage: () => {} }
+          MessageHandler: { announceMessage: () => new VaadinServerMessage(), handleMessage: () => {} }
         })
       );
 

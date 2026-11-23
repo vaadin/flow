@@ -73,7 +73,11 @@ on:
 # already shipped its documentation, and what it clarifies is by definition
 # behavior that was there before. The one the bot has run on so far opened a
 # documentation pull request that was closed unmerged.
+#
+# Only vaadin/flow runs the bot: a copy of this repository that has the
+# organization secrets would otherwise spend the shared API credits.
 if: >
+  github.repository == 'vaadin/flow' &&
   github.event.pull_request.merged == true &&
   !startsWith(github.event.pull_request.title, 'test:') &&
   !startsWith(github.event.pull_request.title, 'test(') &&

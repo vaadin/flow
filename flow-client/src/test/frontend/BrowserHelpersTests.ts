@@ -10,6 +10,11 @@ describe('BrowserHelpers', () => {
     expect($wnd.Vaadin.Flow.getBrowserDetailsParameters).to.equal(collectBrowserDetails);
   });
 
+  it('installs the shortcut and web push helpers', () => {
+    expect($wnd.Vaadin.Flow.shortcut.eventInOwnerScope).to.be.a('function');
+    expect($wnd.Vaadin.Flow.webPush.subscribe).to.be.a('function');
+  });
+
   it('collects the browser details as string parameters', async () => {
     const params = await $wnd.Vaadin.Flow.getBrowserDetailsParameters();
 

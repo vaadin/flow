@@ -122,8 +122,8 @@ public class InstallDevCliMojo extends AbstractMojo {
                     "Could not install the vaadin-dev CLI into " + target, e);
         }
         // After the files: they are the part of the install that cannot fail
-        // for a reason outside the machine, so an unreachable GitHub still
-        // leaves a project with a working CLI to report the problem from.
+        // for a reason outside the machine, so an unreachable download host
+        // still leaves a project with a working CLI to report the problem from.
         if (skipHotswapAgent) {
             getLog().info(
                     "Skipping HotswapAgent; the first `vaadin-dev start` will "
@@ -151,9 +151,9 @@ public class InstallDevCliMojo extends AbstractMojo {
                             + "have to download it the first time it runs: "
                             + e.getMessage()
                             + ". It is fetched once per machine into "
-                            + "~/.vaadin/devloop from a HotswapAgent GitHub "
-                            + "release, so run this goal somewhere that is "
-                            + "reachable, or put the jar there by hand - it is "
+                            + "~/.vaadin/devloop from the URL logged above, "
+                            + "so run this goal somewhere that can reach it, "
+                            + "or put the jar there by hand - it is "
                             + "verified against a pinned checksum either way. "
                             + "Pass -Dvaadin.devcli.skipHotswapAgent=true to "
                             + "install the CLI without it.",

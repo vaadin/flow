@@ -33,12 +33,33 @@ public class ClassInfo {
     final LinkedHashSet<String> modulesDevelopmentOnly = new LinkedHashSet<>();
     final LinkedHashSet<String> scripts = new LinkedHashSet<>();
     final LinkedHashSet<String> scriptsDevelopmentOnly = new LinkedHashSet<>();
+    /**
+     * {@code @JsModule} values with a runtime URL prefix ({@code context://},
+     * {@code base://}, {@code http(s)://}, {@code //}, {@code /}). These are
+     * filtered out of the bundle and emit a build-time deprecation warning
+     * recommending migration to {@code @JavaScript}. Only used when
+     * {@link #loadsRuntimeDependencies} is set.
+     */
+    final LinkedHashSet<String> deprecatedRuntimeModules = new LinkedHashSet<>();
+    /**
+     * Runtime {@code @JsModule} and {@code @JavaScript} values, formatted as
+     * the annotation, of a class that nothing adds to the page at runtime. Only
+     * used when {@link #loadsRuntimeDependencies} is not set.
+     */
+    final LinkedHashSet<String> unloadedRuntimeDependencies = new LinkedHashSet<>();
     final transient List<CssData> css = new ArrayList<>();
     String route = "";
     String layout;
     ThemeData theme = new ThemeData();
     Set<String> children = new LinkedHashSet<>();
     boolean loadCss = true;
+    /**
+     * Whether runtime {@code @JsModule} and {@code @JavaScript} values of the
+     * class are added to the page at runtime, which is the case for components
+     * and the app shell. Otherwise runtime URL modules are kept in
+     * {@link #modules} as before.
+     */
+    boolean loadsRuntimeDependencies = true;
 
     public ClassInfo(String className) {
         this.className = className;

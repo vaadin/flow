@@ -16,7 +16,7 @@ procedure in [README.md](README.md) and the permutation policy in
 
 | Target | ITs |
 |---|---|
-| test-default | 372 |
+| test-default | 371 |
 | ?UNMAPPED? | 32 |
 | test-embedding | 26 |
 | test-production | 23 |
@@ -43,7 +43,7 @@ procedure in [README.md](README.md) and the permutation policy in
 | test-plain-spring | 1 |
 | test-push-startup(keep) | 1 |
 | test-tailwind | 1 |
-| **TOTAL** | **607** |
+| **TOTAL** | **606** |
 
 ## Mapping (grouped by target module, then feature)
 
@@ -409,7 +409,6 @@ procedure in [README.md](README.md) and the permutation policy in
 | TriggerAfterIT | test-root-context | move |
 | TriggerDownloadIT | test-root-context | move |
 | TriggerFilePasteIT | test-root-context | move |
-| TriggerOpenInNewTabIT | test-root-context | move |
 | TriggerPasteIT | test-root-context | move |
 | TriggerReadFromClipboardIT | test-root-context | move |
 | TriggerRequestFullscreenIT | test-root-context | move |

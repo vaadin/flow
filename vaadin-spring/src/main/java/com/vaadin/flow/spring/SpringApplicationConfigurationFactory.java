@@ -47,10 +47,12 @@ public class SpringApplicationConfigurationFactory
                 .getApplicationContext(context);
         Environment env = appContext.getBean(Environment.class);
         // Collect any vaadin.XZY properties from application.properties
-        SpringServlet.PROPERTY_NAMES.stream()
-                .filter(name -> env.getProperty("vaadin." + name) != null)
-                .forEach(name -> properties.put(name,
-                        env.getProperty("vaadin." + name)));
+        for (String name : SpringServlet.PROPERTY_NAMES) {
+            String value = SpringUtil.getVaadinProperty(env, name);
+            if (value != null) {
+                properties.put(name, value);
+            }
+        }
         return super.doCreate(context, properties);
     }
 }

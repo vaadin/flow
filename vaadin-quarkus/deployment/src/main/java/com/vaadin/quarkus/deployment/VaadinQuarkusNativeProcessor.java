@@ -105,9 +105,11 @@ import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.router.AccessDeniedException;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -140,7 +142,8 @@ import com.vaadin.quarkus.graal.QuarkusJSR356AsyncSupport;
  * <li>Generates stub classes for DAU integration if license checker is not
  * present at runtime
  * <li>Registers classes for reflection
- * <li>Registers the JDK proxies of the JavaScript definitions
+ * <li>Registers the JDK proxies of the JavaScript definitions and of the
+ * snippet types they return
  * <li>Registers the service providers Flow loads with {@link ServiceLoader}
  * </ul>
  */
@@ -154,15 +157,15 @@ public class VaadinQuarkusNativeProcessor {
     private static final DotName JS_DEFINITION = DotName
             .createSimple(JsDefinition.class);
 
-    // FlowShortcut.js and FlowWebPush.js are client-side helpers Flow reads
-    // from the classpath at runtime. The rest of META-INF/frontend is
-    // build-time input for Vite and is served from the production bundle, so
-    // it is deliberately left out.
+    private static final DotName JS_SNIPPET = DotName
+            .createSimple(JsSnippet.class);
+
+    private static final DotName JAVASCRIPT_RESULT = DotName
+            .createSimple(JavaScriptResult.class);
+
     // Visible for testing
     static final List<String> NATIVE_RESOURCE_GLOBS = List.of(
             "META-INF/VAADIN/**", "com/vaadin/**", "vaadin-i18n/**",
-            "META-INF/frontend/FlowShortcut.js",
-            "META-INF/frontend/FlowWebPush.js",
             "org/atmosphere/util/version.properties",
             "META-INF/maven/com.vaadin/vaadin-core/pom.properties",
             "vaadin-featureflags.properties");
@@ -411,23 +414,111 @@ public class VaadinQuarkusNativeProcessor {
      * Element.executeJs(Class) hands a JavaScript definition to
      * JsDefinitionProxy, which implements it with a JDK proxy, and a native
      * image only builds a proxy that is registered at build time. The interface
-     * itself is registered for reflection as well, as that is how the
-     * annotations the definition is validated against are read.
+     * and the interfaces it extends are registered for reflection as well, as
+     * that is how the annotations the definition is validated against are read,
+     * and how the generic return type of an inherited method returning a typed
+     * JavaScriptResult is resolved.
+     *
+     * A method that returns an interface extending JsSnippet gets a JDK proxy
+     * of that snippet type, so the snippet types the definitions return are
+     * registered the same way. Reflection on a snippet type and the interfaces
+     * it extends is how the check that it declares no methods, inherited ones
+     * included, and its {@code @JsFunctionParameterNames} names are read.
      */
     @BuildStep(onlyIf = IsNativeBuild.class)
     void registerJsDefinitionProxies(CombinedIndexBuildItem combinedIndex,
             BuildProducer<NativeImageProxyDefinitionBuildItem> proxyDefinition,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
-        Set<String> definitions = getJsDefinitions(combinedIndex.getIndex())
-                .stream().map(classInfo -> classInfo.name().toString())
-                .collect(Collectors.toSet());
+        IndexView index = combinedIndex.getIndex();
+        Set<ClassInfo> definitions = getJsDefinitions(index);
         if (definitions.isEmpty()) {
             return;
         }
-        definitions.stream().map(NativeImageProxyDefinitionBuildItem::new)
+        Set<String> interfaces = new HashSet<>();
+        definitions.forEach(definition -> collectInterfaces(definition.name(),
+                index, interfaces));
+        Set<String> snippetTypes = collectSnippetTypes(interfaces, index);
+        Stream.concat(
+                definitions.stream()
+                        .map(definition -> definition.name().toString()),
+                snippetTypes.stream())
+                .map(NativeImageProxyDefinitionBuildItem::new)
                 .forEach(proxyDefinition::produce);
+        snippetTypes.forEach(snippetType -> collectInterfaces(
+                DotName.createSimple(snippetType), index, interfaces));
         reflectiveClass.produce(ReflectiveClassBuildItem
-                .builder(definitions.toArray(String[]::new)).methods().build());
+                .builder(interfaces.toArray(String[]::new)).methods().build());
+    }
+
+    /**
+     * Collects the snippet types that the methods of the given interfaces
+     * return: interfaces that extend {@link JsSnippet}, which are known only
+     * when they are in the index.
+     */
+    private static Set<String> collectSnippetTypes(Set<String> interfaces,
+            IndexView index) {
+        Set<DotName> snippetTypes = index.getAllKnownSubinterfaces(JS_SNIPPET)
+                .stream().map(ClassInfo::name).collect(Collectors.toSet());
+        return interfaces.stream().map(index::getClassByName)
+                .filter(Objects::nonNull)
+                .flatMap(type -> type.methods().stream())
+                .map(method -> method.returnType().name())
+                .filter(snippetTypes::contains).map(DotName::toString)
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * Collects the name of the given interface and of the interfaces it
+     * extends. The names of interfaces that are not in the index are collected
+     * too, but their super-interfaces can not be inspected.
+     */
+    private static void collectInterfaces(DotName name, IndexView index,
+            Set<String> interfaces) {
+        ClassInfo type = index.getClassByName(name);
+        if (interfaces.add(name.toString()) && type != null) {
+            type.interfaceNames()
+                    .forEach(superInterface -> collectInterfaces(superInterface,
+                            index, interfaces));
+        }
+    }
+
+    /**
+     * Detects the types that Jackson converts the value of a typed
+     * {@link JavaScriptResult} to, for the JavaScript definitions and the
+     * interfaces they extend: the type argument of a method returning one, and
+     * the type arguments given to a generic super-interface, which can be what
+     * an inherited method returns. The latter is an over-approximation, as a
+     * type argument is registered even when the super-interface does not use it
+     * for a result.
+     */
+    Set<ClassInfo> detectJsResultTypes(IndexView index) {
+        Set<String> interfaces = new HashSet<>();
+        getJsDefinitions(index)
+                .forEach(definition -> collectInterfaces(definition.name(),
+                        index, interfaces));
+        Set<ClassInfo> resultTypes = new HashSet<>();
+        for (String name : interfaces) {
+            ClassInfo type = index.getClassByName(name);
+            if (type == null) {
+                continue;
+            }
+            Stream<Type> resultTypeArguments = type.methods().stream()
+                    .map(MethodInfo::returnType).filter(returnType -> returnType
+                            .name().equals(JAVASCRIPT_RESULT));
+            Stream.concat(resultTypeArguments, type.interfaceTypes().stream())
+                    .filter(generic -> generic
+                            .kind() == Type.Kind.PARAMETERIZED_TYPE)
+                    .flatMap(generic -> generic.asParameterizedType()
+                            .arguments().stream())
+                    .forEach(argument -> resultTypes.addAll(
+                            TypeInspector.collectTypes(argument, index)));
+        }
+        resultTypes.removeIf(VaadinQuarkusNativeProcessor::isJacksonType);
+        return resultTypes;
+    }
+
+    private static boolean isJacksonType(ClassInfo type) {
+        return type.name().toString().startsWith("tools.jackson.");
     }
 
     // Visible for testing
@@ -512,6 +603,7 @@ public class VaadinQuarkusNativeProcessor {
         classesWithHierarchy.addAll(getJsonClasses(index));
         classesWithHierarchy.addAll(detectClientCallablesTypes(index));
         classesWithHierarchy.addAll(detectEventDataTypes(index));
+        classesWithHierarchy.addAll(detectJsResultTypes(index));
         classesWithHierarchy.stream().map(
                 c -> ReflectiveHierarchyBuildItem.builder(c.name()).build())
                 .forEach(reflectiveHierarchy::produce);
@@ -572,7 +664,7 @@ public class VaadinQuarkusNativeProcessor {
                     return index.getClassByName(type.name());
                 }).filter(Objects::nonNull)
                 .filter(type -> !componentClasses.contains(type.name())
-                        && !type.name().toString().startsWith("tools.jackson."))
+                        && !isJacksonType(type))
                 .collect(Collectors.toSet());
     }
 

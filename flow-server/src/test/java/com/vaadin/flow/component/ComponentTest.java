@@ -51,6 +51,7 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -608,6 +609,31 @@ public class ComponentTest {
 
         ui.remove(component);
         assertEquals(List.of("attach:true", "detach"), log);
+    }
+
+    @Test
+    public void whenAttached_overrideWithOriginalParameterType_isCalled() {
+        // Declared with the parameter type whenAttached had before it was
+        // null-marked, so this stops compiling if the change breaks overrides
+        AtomicInteger overrideCalls = new AtomicInteger();
+        TestComponent component = new TestComponent() {
+            @Override
+            public Registration whenAttached(
+                    SerializableFunction<UI, Registration> attachHandler) {
+                overrideCalls.incrementAndGet();
+                return super.whenAttached(attachHandler);
+            }
+        };
+        AtomicBoolean attached = new AtomicBoolean();
+
+        component.whenAttached(ui -> {
+            attached.set(true);
+            return null;
+        });
+        new UI().add(component);
+
+        assertEquals(1, overrideCalls.get());
+        assertTrue(attached.get());
     }
 
     @Test
@@ -1340,8 +1366,29 @@ public class ComponentTest {
 
     }
 
-    @Tag("span")
+    // Not a component, but what it declares and uses is loaded with the
+    // component that uses it
+    @StyleSheet("non-component.css")
+    @JavaScript("context://non-component.js")
     @Uses(ComponentWithDependencies.class)
+    public interface NonComponentWithDependencies {
+    }
+
+    @Tag("div")
+    @StyleSheet("used-by-plain-class.css")
+    public static class ComponentUsedByPlainClass extends Component {
+    }
+
+    // Neither a component nor an interface, so the build bundles what it
+    // declares and nothing of it is loaded at runtime, but what it uses is
+    @StyleSheet("plain-class.css")
+    @Uses(ComponentUsedByPlainClass.class)
+    public static class PlainClassWithDependencies {
+    }
+
+    @Tag("span")
+    @Uses(NonComponentWithDependencies.class)
+    @Uses(PlainClassWithDependencies.class)
     @JavaScript("uses.js")
     public static class UsesComponentWithDependencies extends Component {
 
@@ -1376,10 +1423,18 @@ public class ComponentTest {
 
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 ui.getInternals().getDependencyList().getPendingSendToClient());
-        assertEquals(1, pendingDependencies.size());
+        assertEquals(4, pendingDependencies.size());
 
         assertDependency(Dependency.Type.STYLESHEET, "context://css.css",
                 pendingDependencies);
+        assertDependency(Dependency.Type.STYLESHEET,
+                "context://non-component.css", pendingDependencies);
+        assertDependency(Dependency.Type.JAVASCRIPT,
+                "context://non-component.js", pendingDependencies);
+        assertDependency(Dependency.Type.STYLESHEET,
+                "context://used-by-plain-class.css", pendingDependencies);
+        assertFalse(
+                pendingDependencies.containsKey("context://plain-class.css"));
     }
 
     @Test
@@ -1391,10 +1446,18 @@ public class ComponentTest {
 
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 internals.getDependencyList().getPendingSendToClient());
-        assertEquals(1, pendingDependencies.size());
+        assertEquals(4, pendingDependencies.size());
 
         assertDependency(Dependency.Type.STYLESHEET, "context://css.css",
                 pendingDependencies);
+        assertDependency(Dependency.Type.STYLESHEET,
+                "context://non-component.css", pendingDependencies);
+        assertDependency(Dependency.Type.JAVASCRIPT,
+                "context://non-component.js", pendingDependencies);
+        assertDependency(Dependency.Type.STYLESHEET,
+                "context://used-by-plain-class.css", pendingDependencies);
+        assertFalse(
+                pendingDependencies.containsKey("context://plain-class.css"));
     }
 
     @Test
@@ -1423,13 +1486,6 @@ public class ComponentTest {
         assertDependency(Dependency.Type.STYLESHEET, "context://css2.css",
                 pendingDependencies);
 
-    }
-
-    public static <T> Map<String, T> filterLazyLoading(
-            Map<String, T> dependenciesMap) {
-        dependenciesMap.entrySet().removeIf(
-                entry -> entry.getKey().contains("Flow.loadOnDemand"));
-        return dependenciesMap;
     }
 
     @Test
@@ -1550,8 +1606,12 @@ public class ComponentTest {
 
     private Map<String, Dependency> getDependenciesMap(
             Collection<Dependency> dependencies) {
-        return filterLazyLoading(dependencies.stream().collect(
-                Collectors.toMap(Dependency::getUrl, Function.identity())));
+        // Leave out the chunks the components are loaded with
+        return dependencies.stream()
+                .filter(dependency -> dependency
+                        .getType() != Dependency.Type.DYNAMIC_IMPORT)
+                .collect(Collectors.toMap(Dependency::getUrl,
+                        Function.identity()));
     }
 
     @Test // 3818

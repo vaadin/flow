@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -113,7 +112,7 @@ public class ShortcutEvent extends EventObject implements Serializable {
             return false;
         }
         List<String> keyStrings = Stream.of(keyModifiers)
-                .map(k -> k.getKeys().get(0)).collect(Collectors.toList());
+                .map(k -> k.getKeys().get(0)).toList();
         return key.matches(this.key.getKeys().get(0))
                 && this.keyModifiers.stream().allMatch(
                         k -> keyStrings.stream().anyMatch(k::matches));

@@ -199,7 +199,9 @@ dropped, so `fix/my-thing` on a `25.4-SNAPSHOT` branch publishes
 snapshot builds of the other Vaadin repositories use, so snapshots built from
 equally named branches of two repositories resolve each other. The workflow
 comments the version and a copy-pasteable `flow-bom` import on the pull
-request, editing the same comment on every rebuild.
+request, followed by the matching `vaadin-bom` import (`25.4-SNAPSHOT` for
+the branch above) in the order Maven needs for the snapshot to win, editing
+the same comment on every rebuild.
 
 Dropping the prefix means the version is only as unique as the part of the
 branch name after the last slash: `fix/npe` and `issues/npe` both publish
@@ -223,6 +225,34 @@ Configuration:
 
 The `snapshot build` label has to exist in the repository for it to be
 selectable.
+
+## Formatter suggestions
+
+`formatter.yml` runs `mvn spotless:apply` on every pull request and fails
+when it changes anything. `formatter-suggestions.yml` then reports the
+result on the pull request with the
+[`formatter-suggestions`](https://github.com/vaadin/github-actions/tree/main/formatter-suggestions)
+action of `vaadin/github-actions`: a comment listing the files that are not
+formatted, and a review that suggests the changes on the lines they apply
+to, so the author can accept them with **Commit suggestions** instead of
+running the formatter locally. At most 12 changes are suggested per review;
+the comment counts the rest, along with changes outside the lines of the
+pull request diff, and points at `mvn spotless:apply`. Suggestions a later
+run no longer makes are deleted, unless someone replied to them, and the
+comment is deleted once the format is fixed.
+
+The two are split so that pull requests from forks get the report too. The
+formatter runs code of the pull request — its build files and Maven plugins
+— so it runs without write access and only uploads the diff.
+`formatter-suggestions.yml` is triggered by `workflow_run`, which runs it
+from the default branch with `pull-requests` and `issues` write access. It
+does not check out the pull request: the action reads the diff as text and
+suggests changes only in files the pull request changes. Being a
+`workflow_run` workflow, a change to `formatter-suggestions.yml` takes
+effect only once it is on the default branch. It is triggered by the
+`Formatter` runs of maintenance branches too, which post their own comment;
+those upload a differently named artifact, so the report is skipped for
+them.
 
 ## Memory footprint
 
@@ -261,6 +291,42 @@ title, a unit and a value. The script matches scenarios and metrics by id and
 reports whatever it finds, so adding or changing one only takes a change to the
 test. Keep an id as long as it measures the same thing, so that the base and
 the head can be compared.
+
+## Bundle size
+
+`bundle-size.yml` reports how a pull request changes what Flow adds to the
+production bundle of every application. It runs the production build of
+`flow-tests/test-express-build/test-prod-bundle`, an application with no code
+of its own, on the head of the pull request and on the commit it branches
+from, and `scripts/bundleSize.js` compares the two. The bundle holds the Flow
+client, the files Flow generates, such as the functions of every
+`@JsDefinition`, and the npm packages Flow brings in, as the application's Vite
+build bundles and minifies them.
+
+The comment lists every JavaScript and CSS file of the bundle with its
+minified size and its size compressed with Brotli, which is what the build
+precompresses the files with, and the total. The content hashes in the file
+names are left out, so that a file can be compared with itself. A collapsed
+table lists the modules whose size in the bundle changed, as the build reports
+them in `config/bundle-size.html`; those are sizes before minification, which
+tell what changed rather than by how much.
+
+The base is built in the same run instead of being cached: the build resolves
+npm packages without a lock file, so a base built days earlier could hold
+other versions of the packages Flow depends on, and their difference would be
+reported as the pull request's.
+
+As with the memory footprint, the comment is posted once a pull request changes
+the minified size of a file and then updated on every push, also when the difference
+goes away again. Pull requests from forks are skipped, and runs that Dependabot
+triggers only write the comparison to the job summary.
+
+To run it locally, build the application with
+`mvn package -pl flow-tests/test-express-build/test-prod-bundle -am -DskipTests`
+in both checkouts, measure each with
+`node scripts/bundleSize.js measure flow-tests/test-express-build/test-prod-bundle/target/classes/vaadin-prod-bundle <report>`,
+and compare the reports with
+`node scripts/bundleSize.js compare <base report> <head report> <base commit>`.
 
 ## Code review
 
