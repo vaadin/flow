@@ -34,6 +34,8 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -315,8 +317,9 @@ class StreamReceiverHandlerTest {
         }
     }
 
-    @Test
-    void doHandleXhrFilePost_nodeDetached_errorHandlerCalledWithLockAndUI()
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void nodeDetached_errorHandlerCalledWithLockAndUI(boolean multipart)
             throws IOException {
         when(stateNode.isAttached()).thenReturn(false);
         when(stateNode.getOwner()).thenReturn(stateTree);
@@ -334,8 +337,15 @@ class StreamReceiverHandlerTest {
         });
 
         try {
-            handler.doHandleXhrFilePost(session, request, response,
-                    streamReceiver, stateNode, 1);
+            if (multipart) {
+                parts = List.of(createPart(createInputStream("foobar"),
+                        "text/plain", "foobar.txt", 6));
+                handler.doHandleMultipartFileUpload(session, request, response,
+                        streamReceiver, stateNode);
+            } else {
+                handler.doHandleXhrFilePost(session, request, response,
+                        streamReceiver, stateNode, 1);
+            }
 
             verify(errorHandler).error(any());
             assertEquals(List.of(ui), inErrorHandler);
@@ -416,6 +426,8 @@ class StreamReceiverHandlerTest {
             throws IOException {
         when(stateNode.getOwner()).thenReturn(stateTree);
         when(stateTree.getUI()).thenReturn(ui);
+        // The UI comes from the node's owner, not from the request's UI id
+        when(session.getUIById(uiId)).thenReturn(mock(UI.class));
         List<UI> inCallbacks = new ArrayList<>();
         doAnswer(i -> inCallbacks.add(UI.getCurrent())).when(streamVariable)
                 .streamingStarted(any());

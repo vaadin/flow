@@ -645,7 +645,7 @@ class PushHandlerTest {
 
             assertNull(VaadinSession.getCurrent());
         } finally {
-            VaadinSession.setCurrent(null);
+            CurrentInstance.clearAll();
         }
     }
 
@@ -658,7 +658,7 @@ class PushHandlerTest {
             // The UI found under the lock is not current after the unlock
             assertNull(UI.getCurrent());
         } finally {
-            VaadinSession.setCurrent(null);
+            CurrentInstance.clearAll();
         }
     }
 
