@@ -23,6 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -49,7 +54,11 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class PendingJavaScriptInvocationUtilTest {
@@ -72,59 +81,84 @@ class PendingJavaScriptInvocationUtilTest {
     }
 
     @Test
-    void invisibleOwnersReachingTheThreshold_loggedWhenQueueIsSent() {
+    void invisibleOwnersReachingTheThreshold_loggedOnceWhenQueueIsSent() {
         MockUI ui = new MockUI();
         TestComponent component = new TestComponent();
         ui.add(component);
         component.setVisible(false);
 
-        executeJs(component, WARNING_THRESHOLD - 1);
-        sendQueue(ui);
-        assertNothingLogged(ui);
+        List<String> warnings = captureWarnings(() -> {
+            executeJs(component, WARNING_THRESHOLD - 1);
+            sendQueue(ui);
+            assertNothingLogged(ui);
 
-        executeJs(component, 1);
-        sendQueue(ui);
-        assertTrue(isLogged(ui, PileUp.INVISIBLE_OWNERS));
+            executeJs(component, 1);
+            sendQueue(ui);
+            executeJs(component, 1);
+            sendQueue(ui);
 
-        ui.getInternals().checkUndeliveredJavaScriptInvocations();
+            ui.getInternals().checkUndeliveredJavaScriptInvocations();
+            executeJs(component, 1);
+            ui.getInternals().checkUndeliveredJavaScriptInvocations();
+        });
+
+        assertEquals(1, warnings.size(), warnings.toString());
+        assertTrue(
+                warnings.get(0).startsWith(WARNING_THRESHOLD
+                        + " JavaScript invocations for invisible components"),
+                warnings.get(0));
         assertFalse(isLogged(ui, PileUp.NO_DELIVERY),
                 "invocations kept for invisible owners should not be reported as undeliverable");
     }
 
     @Test
-    void noPushOrPolling_thresholdReachedWhenLockReleased_logged() {
+    void noPushOrPolling_growingOverSeparateLockHolds_loggedOnce() {
         MockUI ui = new MockUI();
         TestComponent component = new TestComponent();
         ui.add(component);
 
-        executeJs(component, WARNING_THRESHOLD - 1);
-        ui.getInternals().checkUndeliveredJavaScriptInvocations();
-        assertNothingLogged(ui);
+        List<String> warnings = captureWarnings(() -> {
+            // A single hold that schedules many invocations, such as an
+            // upload building a big view, goes out with the next request
+            executeJs(component, WARNING_THRESHOLD);
+            ui.getInternals().checkUndeliveredJavaScriptInvocations();
+            // A hold that schedules nothing does not make it pile up
+            ui.getInternals().checkUndeliveredJavaScriptInvocations();
+            assertNothingLogged(ui);
 
-        executeJs(component, 1);
-        ui.getInternals().checkUndeliveredJavaScriptInvocations();
-        assertTrue(isLogged(ui, PileUp.NO_DELIVERY));
+            executeJs(component, 1);
+            ui.getInternals().checkUndeliveredJavaScriptInvocations();
+            executeJs(component, 1);
+            ui.getInternals().checkUndeliveredJavaScriptInvocations();
+        });
+
+        assertEquals(1, warnings.size(), warnings.toString());
+        assertTrue(
+                warnings.get(0).contains(
+                        "are waiting for the browser to send a request"),
+                warnings.get(0));
         assertFalse(isLogged(ui, PileUp.DELIVERY_TOO_SLOW));
     }
 
     @Test
-    void polling_loggedOnlyWhenPilingUpOverSeparateLockHolds() {
+    void polling_growingOverSeparateLockHolds_logged() {
         MockUI ui = new MockUI();
         ui.setPollInterval(1000);
         TestComponent component = new TestComponent();
         ui.add(component);
 
-        executeJs(component, WARNING_THRESHOLD);
-        ui.getInternals().checkUndeliveredJavaScriptInvocations();
-        assertNothingLogged(ui);
+        List<String> warnings = captureWarnings(() -> {
+            executeJs(component, WARNING_THRESHOLD);
+            ui.getInternals().checkUndeliveredJavaScriptInvocations();
+            assertNothingLogged(ui);
 
-        // A lock hold that schedules nothing does not make it pile up
-        ui.getInternals().checkUndeliveredJavaScriptInvocations();
-        assertNothingLogged(ui);
+            executeJs(component, 1);
+            ui.getInternals().checkUndeliveredJavaScriptInvocations();
+        });
 
-        executeJs(component, 1);
-        ui.getInternals().checkUndeliveredJavaScriptInvocations();
-        assertTrue(isLogged(ui, PileUp.DELIVERY_TOO_SLOW));
+        assertEquals(1, warnings.size(), warnings.toString());
+        assertTrue(warnings.get(0).contains("polls every 1000 ms"),
+                warnings.get(0));
         assertFalse(isLogged(ui, PileUp.NO_DELIVERY));
     }
 
@@ -146,6 +180,36 @@ class PendingJavaScriptInvocationUtilTest {
     }
 
     @Test
+    void newestInvocationCanceled_notNamedInWarning() {
+        MockUI ui = new MockUI();
+        TestComponent component = new TestComponent();
+        ui.add(component);
+
+        List<String> warnings = captureWarnings(() -> {
+            executeJs(component, WARNING_THRESHOLD);
+            ui.getInternals().checkUndeliveredJavaScriptInvocations();
+            executeJs(component, 1);
+            component.getElement().executeJs("this.newest = 1")
+                    .cancelExecution();
+            ui.getInternals().checkUndeliveredJavaScriptInvocations();
+        });
+
+        assertEquals(1, warnings.size(), warnings.toString());
+        assertFalse(warnings.get(0).contains("this.newest"), warnings.get(0));
+        assertFalse(warnings.get(0).contains("The newest one still waiting"),
+                warnings.get(0));
+    }
+
+    @Test
+    void checkUndeliveredInvocations_uiWithoutSession_doesNotThrow() {
+        MockUI ui = new MockUI();
+        ui.getInternals().setSession(null);
+
+        assertDoesNotThrow(
+                ui.getInternals()::checkUndeliveredJavaScriptInvocations);
+    }
+
+    @Test
     void sessionUnlock_checksUndeliveredInvocationsOfItsUIs() {
         MockUI ui = new MockUI(
                 new AlwaysLockedVaadinSession(new MockVaadinServletService()));
@@ -153,8 +217,11 @@ class PendingJavaScriptInvocationUtilTest {
         ui.getSession().addUI(ui);
         TestComponent component = new TestComponent();
         ui.add(component);
-        executeJs(component, WARNING_THRESHOLD);
 
+        executeJs(component, WARNING_THRESHOLD);
+        ui.getSession().unlock();
+        ui.getSession().lock();
+        executeJs(component, 1);
         ui.getSession().unlock();
         ui.getSession().lock();
 
@@ -373,7 +440,7 @@ class PendingJavaScriptInvocationUtilTest {
                 Delivery.of(ui), null);
         assertTrue(polling.contains("over 3 separate holds"), polling);
         assertTrue(polling.contains("polls every 500 ms"), polling);
-        assertFalse(polling.contains("newest"),
+        assertFalse(polling.contains("The newest one still waiting"),
                 "no invocation should be named when none is known: " + polling);
         assertAdvice(polling);
 
@@ -386,6 +453,12 @@ class PendingJavaScriptInvocationUtilTest {
         PushConnection pushConnection = mock(PushConnection.class);
         when(pushConnection.isConnected()).thenReturn(true);
         ui.getInternals().setPushConnection(pushConnection);
+        String pushed = buildDeliveryTooSlowMessage(ui, 1000, 2,
+                Delivery.of(ui), null);
+        assertEquals(Delivery.PUSH, Delivery.of(ui));
+        assertTrue(pushed.contains("has an open push connection"), pushed);
+        assertFalse(pushed.contains("UI.push()"), pushed);
+
         ui.getPushConfiguration().setPushMode(PushMode.MANUAL);
         String manual = buildDeliveryTooSlowMessage(ui, 1000, 2,
                 Delivery.of(ui), null);
@@ -579,6 +652,24 @@ class PendingJavaScriptInvocationUtilTest {
         for (int i = 0; i < times; i++) {
             component.getElement().executeJs("this.foo = $0", i);
         }
+    }
+
+    /**
+     * Runs the given action and returns the warnings it logged through the
+     * logger of {@link PendingJavaScriptInvocationUtil}.
+     */
+    private static List<String> captureWarnings(Runnable action) {
+        String name = PendingJavaScriptInvocationUtil.class.getName();
+        Logger logger = spy(LoggerFactory.getLogger(name));
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
+            loggerFactory.when(() -> LoggerFactory.getLogger(name))
+                    .thenReturn(logger);
+            action.run();
+        }
+        ArgumentCaptor<String> messages = ArgumentCaptor.forClass(String.class);
+        verify(logger, atLeast(0)).warn(messages.capture());
+        return messages.getAllValues();
     }
 
     private static void sendQueue(MockUI ui) {

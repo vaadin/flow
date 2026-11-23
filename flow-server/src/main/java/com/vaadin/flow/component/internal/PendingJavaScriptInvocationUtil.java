@@ -120,15 +120,28 @@ final class PendingJavaScriptInvocationUtil {
     }
 
     static void warnNoDelivery(UIInternals internals, int waiting,
-            PendingJavaScriptInvocation newest) {
-        log(buildNoDeliveryMessage(internals.getUI(), waiting, newest));
+            PendingJavaScriptInvocation newest, Throwable newestCallSite) {
+        log(buildNoDeliveryMessage(internals.getUI(), waiting, newest),
+                newestCallSite);
     }
 
     static void warnDeliveryTooSlow(UIInternals internals, int waiting,
             int lockHolds, Delivery delivery,
-            PendingJavaScriptInvocation newest) {
+            PendingJavaScriptInvocation newest, Throwable newestCallSite) {
         log(buildDeliveryTooSlowMessage(internals.getUI(), waiting, lockHolds,
-                delivery, newest));
+                delivery, newest), newestCallSite);
+    }
+
+    /**
+     * Records where an invocation is counted from, if debug logging is enabled
+     * to show it in the warnings.
+     *
+     * @return the call site, or <code>null</code> if it is not recorded
+     */
+    static Throwable captureCallSite() {
+        return getLogger().isDebugEnabled()
+                ? new Throwable("executeJs call site")
+                : null;
     }
 
     // Non-private for testing purposes
@@ -157,7 +170,7 @@ final class PendingJavaScriptInvocationUtil {
     static String buildNoDeliveryMessage(UI ui, int waiting,
             PendingJavaScriptInvocation newest) {
         return String.format(
-                "%d JavaScript invocations scheduled for this UI are waiting for the browser to send a request. "
+                "%d JavaScript invocations scheduled for this UI over separate holds of the session lock are waiting for the browser to send a request. "
                         + "The UI uses neither push (push mode %s) nor polling, so nothing is sent until the user interacts with the application. %s"
                         + "Changes made from a background thread with UI.access(...) need push or polling to reach the browser, and a closed browser tab whose session has not expired yet looks exactly like this. "
                         + "%s A background task can compare UI.getLastUpdateSentTimestamp() against the current time to stop scheduling updates while the client is not receiving them. "
@@ -189,8 +202,10 @@ final class PendingJavaScriptInvocationUtil {
                 "The UI uses push (push mode %s) but has no open push connection, so they are sent only once the browser connects again. "
                         + "A closed browser tab whose session has not expired yet looks exactly like this.",
                 ui.getPushConfiguration().getPushMode());
-        case PUSH, NONE ->
-            "They are being scheduled faster than they are sent.";
+        case PUSH ->
+            "The UI has an open push connection, so they are most likely scheduled faster than the browser can receive them.";
+        case NONE ->
+            "The UI uses neither push nor polling, so nothing is sent until the user interacts with the application.";
         };
     }
 
@@ -206,7 +221,7 @@ final class PendingJavaScriptInvocationUtil {
 
     private static String onceNote() {
         return String.format(
-                "This is logged once per UI. Turn the %s logger off to silence the warning.",
+                "This is logged once per UI. Enable debug logging for %s to also log where the newest invocation was scheduled from, or turn that logger off to silence the warning.",
                 PendingJavaScriptInvocationUtil.class.getName());
     }
 
@@ -229,6 +244,15 @@ final class PendingJavaScriptInvocationUtil {
 
     private static void log(String message) {
         getLogger().warn(message);
+    }
+
+    private static void log(String message, Throwable newestCallSite) {
+        log(message);
+        if (newestCallSite != null) {
+            getLogger().debug(
+                    "Call site of the newest JavaScript invocation in the warning above",
+                    newestCallSite);
+        }
     }
 
     private static Logger getLogger() {

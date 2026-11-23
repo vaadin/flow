@@ -596,12 +596,11 @@ public class UIInternals implements Serializable {
     /**
      * Checks whether JavaScript invocations are piling up for the related UI
      * without being sent to the client, and logs a warning if they are. Called
-     * by the framework right before the session lock is released, after any
-     * pending changes have been pushed.
+     * by the framework right before the session lock is released, after
+     * automatic push, if enabled, has sent the pending changes. Never throws,
+     * since a warning is not worth failing the release of the lock over.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
-     *
-     * @since 25.4
      */
     public void checkUndeliveredJavaScriptInvocations() {
         if (session == null) {
@@ -609,8 +608,13 @@ public class UIInternals implements Serializable {
             // session after being detached from it, and has nothing to check
             return;
         }
-        session.checkHasLock();
-        undeliveredJsInvocations.lockReleasing(this);
+        try {
+            session.checkHasLock();
+            undeliveredJsInvocations.lockReleasing(this);
+        } catch (RuntimeException e) {
+            getLogger().debug(
+                    "Failed to check undelivered JavaScript invocations", e);
+        }
     }
 
     /**

@@ -29,14 +29,18 @@ import java.util.List;
  * <ul>
  * <li>invocations for invisible owners, which stay in the queue when everything
  * else is sent, checked whenever the queue is sent,
- * <li>invocations for a UI that has no way of getting them to the browser
- * without the user interacting with the application, i.e. neither push nor
- * polling, checked when the session lock is released,
- * <li>invocations that keep being scheduled over several holds of the session
- * lock faster than push or polling sends them, also checked when the session
- * lock is released.
+ * <li>invocations that keep being scheduled for a UI that has no way of getting
+ * them to the browser without the user interacting with the application, i.e.
+ * neither push nor polling,
+ * <li>invocations that keep being scheduled faster than push or polling sends
+ * them.
  * </ul>
- * Each of them is logged at most once per UI, with a message of its own.
+ * The last two are checked when the session lock is released, and only count as
+ * piling up once they have grown over separate holds of the lock since the
+ * queue was last sent. A single hold that schedules many invocations, such as
+ * an upload or a background task building a big view, is sent in one go by the
+ * next request, push or poll. Each of them is logged at most once per UI, with
+ * a message of its own.
  * <p>
  * Kept in a single object per UI rather than on the individual state nodes,
  * since a running application has far more state nodes than UIs. Serialized
@@ -81,6 +85,12 @@ final class UndeliveredJsInvocations implements Serializable {
      */
     private PendingJavaScriptInvocation newest;
 
+    /**
+     * Where {@link #newest} was counted from, only recorded while debug logging
+     * is enabled for {@link PendingJavaScriptInvocationUtil}.
+     */
+    private transient Throwable newestCallSite;
+
     private final EnumSet<PileUp> logged = EnumSet.noneOf(PileUp.class);
 
     /**
@@ -110,6 +120,7 @@ final class UndeliveredJsInvocations implements Serializable {
     void scheduled(PendingJavaScriptInvocation invocation) {
         add(1);
         newest = invocation;
+        newestCallSite = PendingJavaScriptInvocationUtil.captureCallSite();
     }
 
     /**
@@ -126,6 +137,7 @@ final class UndeliveredJsInvocations implements Serializable {
         growingLockHoldsSinceSent = 0;
         if (newest != null && !isWaiting(newest)) {
             newest = null;
+            newestCallSite = null;
         }
         if (retained.size() >= PendingJavaScriptInvocationUtil.WARNING_THRESHOLD
                 && markLogged(PileUp.INVISIBLE_OWNERS)) {
@@ -148,29 +160,24 @@ final class UndeliveredJsInvocations implements Serializable {
         countAtLastLockRelease = count;
 
         int waiting = count - retainedForInvisibleOwners;
-        if (waiting < PendingJavaScriptInvocationUtil.WARNING_THRESHOLD) {
+        if (waiting < PendingJavaScriptInvocationUtil.WARNING_THRESHOLD
+                || growingLockHoldsSinceSent < 2) {
             return;
         }
         PendingJavaScriptInvocationUtil.Delivery delivery = PendingJavaScriptInvocationUtil.Delivery
                 .of(internals.getUI());
-        PendingJavaScriptInvocation newestWaiting = newest != null
-                && isWaiting(newest) ? newest : null;
+        boolean newestWaiting = newest != null && isWaiting(newest);
+        PendingJavaScriptInvocation named = newestWaiting ? newest : null;
+        Throwable callSite = newestWaiting ? newestCallSite : null;
         if (delivery == PendingJavaScriptInvocationUtil.Delivery.NONE) {
-            // Nothing will come for these without the user, so there is no
-            // need to wait and see whether they keep piling up
             if (markLogged(PileUp.NO_DELIVERY)) {
                 PendingJavaScriptInvocationUtil.warnNoDelivery(internals,
-                        waiting, newestWaiting);
+                        waiting, named, callSite);
             }
-        } else if (growingLockHoldsSinceSent >= 2
-                && markLogged(PileUp.DELIVERY_TOO_SLOW)) {
-            // A single hold that schedules many invocations, such as a
-            // background task building a big view, is sent in one go by the
-            // next push or poll. Only growth over separate holds means that
-            // invocations are scheduled faster than they are sent
+        } else if (markLogged(PileUp.DELIVERY_TOO_SLOW)) {
             PendingJavaScriptInvocationUtil.warnDeliveryTooSlow(internals,
-                    waiting, growingLockHoldsSinceSent, delivery,
-                    newestWaiting);
+                    waiting, growingLockHoldsSinceSent, delivery, named,
+                    callSite);
         }
     }
 
