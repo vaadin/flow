@@ -70,8 +70,8 @@ public interface RouteParentResolver extends Serializable {
      * The returned reference carries both the parent navigation target and the
      * {@link RouteParameters} it should be resolved with. The resolver is
      * responsible for mapping the child route parameters to the subset the
-     * parent route expects. The parent must be a registered navigation target,
-     * not a router layout.
+     * parent route expects. The parent must be a registered route; a router
+     * layout that is not itself a route cannot be a parent.
      *
      * @param context
      *            the context describing the route whose parent is resolved and

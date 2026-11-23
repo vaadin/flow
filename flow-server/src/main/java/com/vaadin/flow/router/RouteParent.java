@@ -29,8 +29,8 @@ import com.vaadin.flow.component.Component;
  * breadcrumb trails and hierarchical menus. It is independent of the layout
  * chain declared through {@link Route#layout()} and {@link RoutePrefix}: a
  * route may be rendered inside one layout while logically belonging under a
- * completely different route. Router layouts are therefore never part of the
- * hierarchy, and the parent must itself be a navigation target, not a layout.
+ * completely different route. The parent must therefore be a registered route;
+ * a router layout that is not itself a route cannot be a parent.
  * <p>
  * The parent can be defined either as a static {@link #value()} or, when it
  * needs to be computed, through a {@link #resolver()}. Both are resolved
@@ -39,10 +39,10 @@ import com.vaadin.flow.component.Component;
  * breadcrumb trail.
  * <p>
  * Without this annotation, the parent is derived from the route URL: the
- * registered route serving the nearest ancestor path is the parent, so the
- * route mapped to the empty path ({@code ""}) is the root of every other route.
- * To make a route a root of the hierarchy instead, use a {@link #resolver()}
- * that returns an empty {@link java.util.Optional}.
+ * registered route serving the nearest ancestor path is the parent. The walk up
+ * the URL therefore ends at the route mapped to the empty path ({@code ""}), if
+ * one is registered. To make a route a root of the hierarchy instead, use a
+ * {@link #resolver()} that returns an empty {@link java.util.Optional}.
  *
  * @author Vaadin Ltd
  * @since 25.2
@@ -56,8 +56,8 @@ public @interface RouteParent {
      * <p>
      * The parent must be a registered navigation target, typically a class
      * annotated with {@link Route}. Building a link to a class that is not a
-     * route, such as a router layout, fails when the hierarchy is used, for
-     * example by a breadcrumb trail.
+     * route, such as a router layout that is not itself a route, fails when the
+     * hierarchy is used, for example by a breadcrumb trail.
      * <p>
      * The parent inherits the {@link RouteParameters} of the annotated route,
      * narrowed to the names the parent's own route template declares (so a
