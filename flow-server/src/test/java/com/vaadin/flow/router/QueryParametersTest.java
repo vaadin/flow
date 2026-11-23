@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -402,5 +403,47 @@ class QueryParametersTest {
     void fromString_nullString_getsEmptyParameters() {
         QueryParameters params = QueryParameters.fromString(null);
         assertEquals(Collections.emptyMap(), params.getParameters());
+    }
+
+    @Test
+    void parameterOrderIsKept_whenCreated() {
+        String query = "boot=1&ruled=1&disc=1&open=x";
+        assertEquals(query, QueryParameters.fromString(query).getQueryString());
+
+        Map<String, List<String>> full = new LinkedHashMap<>();
+        Map<String, String[]> fullArrays = new LinkedHashMap<>();
+        Map<String, String> simple = new LinkedHashMap<>();
+        for (String key : List.of("boot", "ruled", "disc")) {
+            full.put(key, List.of("1"));
+            fullArrays.put(key, new String[] { "1" });
+            simple.put(key, "1");
+        }
+        full.put("open", List.of("x"));
+        fullArrays.put("open", new String[] { "x" });
+        simple.put("open", "x");
+
+        assertEquals(query, new QueryParameters(full).getQueryString());
+        assertEquals(query, QueryParameters.full(fullArrays).getQueryString());
+        assertEquals(query, QueryParameters.simple(simple).getQueryString());
+    }
+
+    @Test
+    void parameterOrderIsKept_whenDerived() {
+        QueryParameters params = QueryParameters
+                .fromString("boot=1&ruled=1&disc=1&open=x");
+
+        assertEquals("boot=1&disc=1&open=x",
+                params.excluding("ruled").getQueryString());
+        assertEquals("boot=1&disc=1&open=x",
+                params.including("open", "disc", "boot").getQueryString());
+        assertEquals("boot=1&ruled=2&disc=1&open=x&zed=1", params
+                .merging("ruled", "2").merging("zed", "1").getQueryString());
+
+        Map<String, List<String>> merged = new LinkedHashMap<>();
+        merged.put("zed", List.of("1"));
+        merged.put("disc", List.of("2"));
+        merged.put("alpha", List.of("1"));
+        assertEquals("boot=1&ruled=1&disc=2&open=x&zed=1&alpha=1",
+                params.mergingAll(merged).getQueryString());
     }
 }

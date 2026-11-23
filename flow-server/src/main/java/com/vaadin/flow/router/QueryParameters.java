@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -49,6 +49,10 @@ public class QueryParameters implements Serializable {
 
     /**
      * Creates query parameters from parameter map.
+     * <p>
+     * The parameters keep the iteration order of the given map, so use an
+     * ordered map such as {@link LinkedHashMap} to control the order in which
+     * they appear in {@link #getQueryString()}.
      *
      * @param parameters
      *            the parameter map
@@ -58,7 +62,9 @@ public class QueryParameters implements Serializable {
                 .unmodifiableMap(parameters.entrySet().stream()
                         .collect(Collectors.toMap(Map.Entry::getKey,
                                 entry -> Collections.unmodifiableList(
-                                        new ArrayList<>(entry.getValue())))));
+                                        new ArrayList<>(entry.getValue())),
+                                QueryParameters::throwOnDuplicateKey,
+                                LinkedHashMap::new)));
     }
 
     /**
@@ -85,7 +91,8 @@ public class QueryParameters implements Serializable {
     private static Map<String, List<String>> convertArraysToLists(
             Map<String, String[]> fullParameters) {
         return fullParameters.entrySet().stream().collect(Collectors.toMap(
-                Map.Entry::getKey, entry -> Arrays.asList(entry.getValue())));
+                Map.Entry::getKey, entry -> Arrays.asList(entry.getValue()),
+                QueryParameters::throwOnDuplicateKey, LinkedHashMap::new));
     }
 
     /**
@@ -104,7 +111,9 @@ public class QueryParameters implements Serializable {
             Map<String, String> simpleParameters) {
         return simpleParameters.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey,
-                        entry -> Collections.singletonList(entry.getValue())));
+                        entry -> Collections.singletonList(entry.getValue()),
+                        QueryParameters::throwOnDuplicateKey,
+                        LinkedHashMap::new));
     }
 
     /**
@@ -145,7 +154,7 @@ public class QueryParameters implements Serializable {
                 .map(QueryParameters::makeQueryParamList)
                 .collect(Collectors.toMap(List::getFirst,
                         QueryParameters::getParameterValues,
-                        QueryParameters::mergeLists));
+                        QueryParameters::mergeLists, LinkedHashMap::new));
     }
 
     private static List<String> makeQueryParamList(String paramAndValue) {
@@ -231,10 +240,12 @@ public class QueryParameters implements Serializable {
     /**
      * Returns a UTF-8 encoded query string containing all parameter names and
      * values suitable for appending to a URL after the {@code ?} character.
-     * Parameters may appear in different order than in the query string they
-     * were originally parsed from, and may be differently encoded (for example,
-     * if a space was encoded as {@code +} in the initial URL it will be encoded
-     * as {@code %20} in the result.
+     * Parameters appear in the order they were given in: the order of the query
+     * string they were parsed from, or the iteration order of the map they were
+     * created from. All values of a parameter are written together at the
+     * position of its first occurrence, and values may be differently encoded
+     * (for example, if a space was encoded as {@code +} in the initial URL it
+     * will be encoded as {@code %20} in the result).
      *
      * @return query string suitable for appending to a URL
      * @see URLEncoder#encode(String, String)
@@ -257,7 +268,8 @@ public class QueryParameters implements Serializable {
         if (keys == null || keys.length == 0) {
             return this;
         }
-        Map<String, List<String>> newParameters = new HashMap<>(parameters);
+        Map<String, List<String>> newParameters = new LinkedHashMap<>(
+                parameters);
         Stream.of(keys).forEach(newParameters::remove);
         return new QueryParameters(newParameters);
     }
@@ -277,14 +289,17 @@ public class QueryParameters implements Serializable {
         Set<String> includedKeys = Set.of(keys);
         Map<String, List<String>> newParameters = parameters.entrySet().stream()
                 .filter(entry -> includedKeys.contains(entry.getKey()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Entry::getValue));
+                .collect(Collectors.toMap(Map.Entry::getKey, Entry::getValue,
+                        QueryParameters::throwOnDuplicateKey,
+                        LinkedHashMap::new));
         return new QueryParameters(newParameters);
     }
 
     /**
      * Return new QueryParameters adding given parameter to the existing ones.
      * If a parameter with the same name is already present, its values will be
-     * replaced with the provided ones.
+     * replaced with the provided ones, keeping its position; otherwise it is
+     * added after the existing ones.
      *
      * @param key
      *            Parameter name as String
@@ -298,7 +313,8 @@ public class QueryParameters implements Serializable {
                 || values.length == 0) {
             throw new IllegalArgumentException("Parameter missing");
         }
-        Map<String, List<String>> newParameters = new HashMap<>(parameters);
+        Map<String, List<String>> newParameters = new LinkedHashMap<>(
+                parameters);
         List<String> newValues = List.of(values);
         newParameters.put(key, newValues);
         return new QueryParameters(newParameters);
@@ -306,7 +322,8 @@ public class QueryParameters implements Serializable {
 
     /**
      * Return new QueryParameters including given parameters and the existing
-     * ones. Existing parameters will be replaced by the provided ones.
+     * ones. Existing parameters will be replaced by the provided ones, keeping
+     * their position; new ones are added after the existing ones.
      *
      * @param parameters
      *            Map of new parameters to be included
@@ -315,7 +332,7 @@ public class QueryParameters implements Serializable {
      */
     public QueryParameters mergingAll(Map<String, List<String>> parameters) {
         Objects.requireNonNull(parameters);
-        Map<String, List<String>> newParameters = new HashMap<>(
+        Map<String, List<String>> newParameters = new LinkedHashMap<>(
                 this.parameters);
         newParameters.putAll(parameters);
         return new QueryParameters(newParameters);
@@ -334,6 +351,11 @@ public class QueryParameters implements Serializable {
                         : UrlUtil.encodeURIComponent(param)
                                 + PARAMETER_VALUES_SEPARATOR
                                 + UrlUtil.encodeURIComponent(value));
+    }
+
+    private static <T> T throwOnDuplicateKey(T value1, T value2) {
+        // Keys come from a map, so they are unique
+        throw new IllegalStateException("Duplicate query parameter name");
     }
 
     private static String decode(String parameter) {
