@@ -784,13 +784,16 @@ export const vaadinConfig: UserConfigFn = (env) => {
         // then makes a page that fills the viewport 1px taller than the
         // viewport, so a scrollbar appears. Position the overlay fixed until
         // https://github.com/fi3ework/vite-plugin-checker/issues/892 is fixed.
+        // A fixed element starts its own stacking context, so it also needs
+        // the z-index the overlay uses inside its shadow root to stay above
+        // application content.
         name: 'vaadin:fix-checker-overlay-scrollbar',
         apply: 'serve',
         transformIndexHtml() {
           return [
             {
               tag: 'style',
-              children: 'vite-plugin-checker-overlay { position: fixed; }',
+              children: 'vite-plugin-checker-overlay { position: fixed; z-index: 99990; }',
               injectTo: 'head'
             }
           ];
