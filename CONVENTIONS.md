@@ -281,7 +281,9 @@ changed class itself, such as regenerating a file the build generates from Java
 or updating what the browser already holds. Hotswapping through JRebel or
 HotswapAgent is the main way a developer sees a change without a restart, and
 it replaces only the class — the hotswapper does the rest and pushes it to the
-browser with an HMR event.
+browser with an HMR event. A hotswapper re-runs the real generator at the
+narrowest granularity that generator offers, and never derives the file
+content itself. See `guidelines/frontend-hotswap.md`.
 
 Keep reading and patching a generated file inside the task that generates it. A
 caller that reacts to a change asks the task to bring the file up to date; it

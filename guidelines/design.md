@@ -77,21 +77,17 @@ The `Signal` suffix lets callers see the shape at the call site. Precedents:
 
 ### Interfaces vs abstract classes
 
-When introducing a new type that callers will receive or pass around
-(e.g. `Trigger`, `Action`, `Argument`), pick *one* of: a single concrete /
-abstract class named `Xyz`, or both an interface `Xyz` and an abstract
-class `AbstractXyz`. Don't introduce one half speculatively.
+The rule for a new type that callers will receive or pass around (e.g.
+`Trigger`, `Action`, `Argument`) is in the Public API section of
+[`CONVENTIONS.md`](../CONVENTIONS.md#public-api). The points below explain it
+and cover the related choices.
 
-- **Default to a single abstract (or concrete) class named `Xyz`.** Skip
-  the interface unless you can demonstrate, today, a useful implementation
-  that does *not* extend the abstract class. Introducing the interface
-  later does not retroactively help: every existing method signature that
-  accepts `AbstractXyz` will still reject interface-only implementations,
-  so the migration is just as expensive as not having had an interface at
-  all.
-- **Only add an interface alongside an abstract class if you can ship a
-  worked example of using the interface without the abstract class.** The
-  interface is a commitment that it stands on its own today and keeps
+- **Why the single class is the default.** Introducing the interface later
+  does not retroactively help: every existing method signature that accepts
+  `AbstractXyz` will still reject interface-only implementations, so the
+  migration is just as expensive as not having had an interface at all.
+- **What "demonstrate today" means.** Ship a worked example of using the
+  interface without the abstract class. The interface is a commitment that it stands on its own today and keeps
   standing — not an option you keep open "in case". An interface that
   only ever has one valid implementation adds noise without value.
 - **Name it `Xyz`, not `AbstractXyz`, unless an interface exists or is

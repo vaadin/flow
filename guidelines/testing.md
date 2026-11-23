@@ -22,7 +22,7 @@ TypeScript tests run with Web Test Runner in a headless browser; run them with
 
 ## Testing a browser-API wrapper
 
-A browser-facing feature needs an IT, and a real browser API is rarely
+When a browser-facing feature needs an IT, the real browser API is rarely
 deterministic enough to test against — it asks for permission, depends on the
 device, or never fails on demand. Mock the browser API in the test view
 instead:

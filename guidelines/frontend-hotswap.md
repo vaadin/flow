@@ -31,12 +31,11 @@ change and reloads the module.
 
 ## Re-run the generator, never reimplement it
 
-The one rule everything else follows from is in the Client-Side JavaScript
-section of [`CONVENTIONS.md`](../CONVENTIONS.md#client-side-javascript): a
-hotswapper re-runs the real generator at the narrowest granularity that
-generator offers, and never derives the file content itself. What that looks
-like depends on whether the generator is a Flow `Task*` command or something
-else.
+The one rule everything else follows from is the hotswapper rule in the
+Client-Side JavaScript section of
+[`CONVENTIONS.md`](../CONVENTIONS.md#client-side-javascript). What following it
+looks like depends on whether the generator is a Flow `Task*` command or
+something else.
 
 ## For a Flow task, call into the task
 
