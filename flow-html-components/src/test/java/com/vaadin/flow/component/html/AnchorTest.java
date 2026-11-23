@@ -29,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -435,14 +436,32 @@ class AnchorTest extends ComponentTest {
     }
 
     @Test
-    void customDownloadHandler_noChoiceMade_handlerDecidesHowContentIsServed()
-            throws Exception {
+    void customDownloadHandler_noChoiceMade_noDispositionOnResource() {
         UI attachTo = createUiWithDefaultSafeUrlSchemes();
         UI.setCurrent(attachTo);
-        Anchor anchor = new Anchor(event -> event.inline("a.pdf"), "bar");
+        Anchor anchor = new Anchor(event -> event.fileName("a.pdf"), "bar");
         attachTo.add(anchor);
 
-        assertEquals("inline; filename=\"a.pdf\"",
+        assertNull(registeredResource(attachTo, anchor).getDisposition());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void customHandlerConstructor_laterBuiltInInlineHandler_decidesAttribute(
+            boolean textSignal) throws Exception {
+        UI attachTo = createUiWithDefaultSafeUrlSchemes();
+        UI.setCurrent(attachTo);
+        DownloadHandler custom = event -> event.fileName("a.pdf");
+        Anchor anchor = textSignal
+                ? new Anchor(custom, new ValueSignal<>("bar"))
+                : new Anchor(custom, "bar");
+        attachTo.add(anchor);
+
+        anchor.setHref(DownloadHandler.fromInputStream(
+                event -> DownloadResponse.error(500), "report.pdf").inline());
+
+        assertFalse(anchor.isDownload());
+        assertEquals("inline; filename=\"report.pdf\"",
                 servedContentDisposition(attachTo, anchor));
     }
 
@@ -498,10 +517,15 @@ class AnchorTest extends ComponentTest {
 
     private static String servedContentDisposition(UI attachTo, Anchor anchor)
             throws Exception {
-        ElementStreamResource resource = (ElementStreamResource) attachTo
-                .getSession().getResourceRegistry()
-                .getResource(URI.create(anchor.getHref())).orElseThrow();
-        return AssertUtils.servedContentDisposition(resource);
+        return AssertUtils
+                .servedContentDisposition(registeredResource(attachTo, anchor));
+    }
+
+    private static ElementStreamResource registeredResource(UI attachTo,
+            Anchor anchor) {
+        return (ElementStreamResource) attachTo.getSession()
+                .getResourceRegistry().getResource(URI.create(anchor.getHref()))
+                .orElseThrow();
     }
 
     @Test
