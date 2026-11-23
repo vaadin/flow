@@ -410,9 +410,9 @@ public interface DeploymentConfiguration
      * whether the application is meant to run under a strict, nonce-based
      * policy.
      * <p>
-     * The mode can be configured with the {@link InitParameters#CSP}
-     * configuration parameter. By default, it returns
-     * {@link ContentSecurityPolicyMode#OFF}.
+     * The mode can be configured with the
+     * {@link InitParameters#CONTENT_SECURITY_POLICY} configuration parameter.
+     * By default, it returns {@link ContentSecurityPolicyMode#OFF}.
      * <p>
      * See {@link ContentSecurityPolicyMode} for what each mode does.
      *

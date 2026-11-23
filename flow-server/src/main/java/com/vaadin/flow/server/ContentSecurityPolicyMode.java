@@ -20,8 +20,9 @@ package com.vaadin.flow.server;
  * i.e. a nonce-based {@code script-src} policy without {@code 'unsafe-inline'}
  * and {@code 'unsafe-eval'}.
  * <p>
- * The mode is configured with the {@link InitParameters#CSP} configuration
- * parameter and read with
+ * The mode is configured with the
+ * {@link InitParameters#CONTENT_SECURITY_POLICY} configuration parameter and
+ * read with
  * {@link com.vaadin.flow.function.DeploymentConfiguration#getContentSecurityPolicyMode()}.
  * <p>
  * The {@link #WARN} and {@link #STRICT} modes act on the APIs that send
