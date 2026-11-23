@@ -174,8 +174,9 @@ jobs:
         # enter the entry here. Otherwise a pom change, such as a dependency
         # bump, has every it-tests job download the same new artifacts from
         # Maven Central at once, and Central answers that burst with HTTP 429.
-        # What plugins fetch only while they run, and the reactors of the CDI
-        # and Quarkus jobs, are not covered.
+        # The Quarkus suite, which is not part of the flow-tests reactor, is
+        # resolved here too. What plugins fetch only while they run, and the
+        # reactor of the CDI job, are not covered.
         #
         # Skipped when what was restored already holds it: an exact hit, or
         # the entry warm-caches.yml saved for main with these same poms, which
@@ -186,7 +187,7 @@ jobs:
         # dependency:resolve rather than a build, which would cost this job the
         # time the it-tests jobs spend on it anyway; see the script for how it
         # handles the test modules that are not packaged here.
-        if: ${{ steps.maven-cache.outputs.cache-hit != 'true' && steps.maven-cache.outputs.cache-matched-key != format('{0}-maven-warm-v2-{1}', runner.os, steps.pom-hash.outputs.hash) }}
+        if: ${{ steps.maven-cache.outputs.cache-hit != 'true' && steps.maven-cache.outputs.cache-matched-key != format('{0}-maven-warm-v3-{1}', runner.os, steps.pom-hash.outputs.hash) }}
         run: ./scripts/resolveItDependencies.sh
       - uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         if: ${{ steps.maven-cache.outputs.cache-hit != 'true' }}
