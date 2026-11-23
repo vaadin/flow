@@ -226,8 +226,9 @@ string, and prefer TypeScript for new files. See
 
 Prefer declared JavaScript — an interface annotated with `@JsDefinition` —
 over an expression string for new framework code. It runs under a content
-security policy without `unsafe-eval`, sends no JavaScript to the browser and
-keeps Java names off the wire. See `guidelines/wire-protocol.md`.
+security policy without `unsafe-eval`, sends no JavaScript code over the wire
+at runtime, since the code ships in the frontend bundle, and keeps Java names
+off the wire. See `guidelines/wire-protocol.md`.
 
 Keep client-side global state and helper functions under `window.Vaadin.Flow`.
 
