@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import java.io.Serializable;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
@@ -60,6 +59,7 @@ import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveListener;
@@ -2085,6 +2085,9 @@ public class UI extends Component
     }
 
     /**
+     * Event fired by the client when the user leaves the current view by a
+     * navigation in the browser.
+     *
      * @since 24.4
      */
     @DomEvent(BrowserLeaveNavigationEvent.EVENT_NAME)
@@ -2117,6 +2120,8 @@ public class UI extends Component
     }
 
     /**
+     * Event fired by the client when the user navigates in the browser.
+     *
      * @since 24.4
      */
     @DomEvent(BrowserNavigateEvent.EVENT_NAME)
@@ -2446,7 +2451,7 @@ public class UI extends Component
      * @since 25.4
      */
     @JsDefinition
-    public interface UiJs extends Serializable {
+    public interface UiJs extends JsInvokers {
 
         /**
          * Sets the direction the document is read in.

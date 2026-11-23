@@ -19,7 +19,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.Serializable;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.net.URI;
@@ -52,6 +51,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.BootstrapException;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
@@ -669,7 +669,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * @since 25.4
      */
     @JsDefinition
-    public interface StylesheetJs extends Serializable {
+    public interface StylesheetJs extends JsInvokers {
 
         /**
          * Adds a stylesheet link to the head of the document.

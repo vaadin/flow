@@ -33,6 +33,9 @@ import com.vaadin.flow.server.Constants;
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
 /**
+ * Utilities for building a frontend bundle from the files of an existing
+ * dev-bundle.
+ *
  * @since 25.1
  */
 public class BundleBuildUtils {

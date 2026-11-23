@@ -18,7 +18,6 @@ package com.vaadin.base.devserver.devloop;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -33,15 +32,23 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsInvokers;
+import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.theme.Theme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -169,7 +176,7 @@ class DevLoopRedefinerTest {
     }
 
     @JsDefinition
-    interface GreeterJs extends Serializable {
+    interface GreeterJs extends JsInvokers {
         @JsExpression("window.alert($0)")
         void showGreeting(String greeting);
 
@@ -178,34 +185,34 @@ class DevLoopRedefinerTest {
     }
 
     @JsDefinition
-    interface LoggerJs extends Serializable {
+    interface LoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value)")
-        @JsCalledWith("value")
+        @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
-    interface RenamedParameterLoggerJs extends Serializable {
+    interface RenamedParameterLoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value)")
-        @JsCalledWith("message")
+        @JsFunctionParameterNames("message")
         JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
-    interface UnwrappedLoggerJs extends Serializable {
+    interface UnwrappedLoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value)")
         JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
-    interface InvalidNameLoggerJs extends Serializable {
+    interface InvalidNameLoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value)")
-        @JsCalledWith("class")
+        @JsFunctionParameterNames("class")
         JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
-    interface EditedGreeterJs extends Serializable {
+    interface EditedGreeterJs extends JsInvokers {
         @JsExpression("window.alert('edited ' + $0)")
         void showGreeting(String greeting);
     }
@@ -260,6 +267,51 @@ class DevLoopRedefinerTest {
                 DevLoopRedefiner.frontendDependencies(UnwrappedLoggerJs.class));
     }
 
+    // Only extended by definitions, so not annotated
+    interface ScrollableJs extends JsInvokers {
+        @JsExpression("this.scrollTop = $0")
+        void scrollTo(int top);
+    }
+
+    interface EditedScrollableJs extends JsInvokers {
+        @JsExpression("this.scrollLeft = $0")
+        void scrollTo(int top);
+    }
+
+    @Test
+    void frontendDependencies_seesTheJavaScriptOfAnExtendedInterface() {
+        // Its methods are generated as part of every definition extending it,
+        // so editing what it declares changes what the browser has to run
+        assertNotEquals(
+                DevLoopRedefiner.frontendDependencies(ScrollableJs.class),
+                DevLoopRedefiner
+                        .frontendDependencies(EditedScrollableJs.class));
+    }
+
+    @JsFunctionParameterNames({ "html", "item" })
+    interface TemplateSnippet extends JsSnippet {
+    }
+
+    @JsFunctionParameterNames({ "html", "model" })
+    interface RenamedParameterTemplateSnippet extends JsSnippet {
+    }
+
+    interface UnnamedTemplateSnippet extends JsSnippet {
+    }
+
+    @Test
+    void frontendDependencies_seesTheParametersASnippetTypeDeclares() {
+        // The names on a snippet type are parameters of the generated function
+        // of every definition returning it, while only the type is redefined
+        String imports = DevLoopRedefiner
+                .frontendDependencies(TemplateSnippet.class);
+
+        assertNotEquals(imports, DevLoopRedefiner
+                .frontendDependencies(RenamedParameterTemplateSnippet.class));
+        assertNotEquals(imports, DevLoopRedefiner
+                .frontendDependencies(UnnamedTemplateSnippet.class));
+    }
+
     @Test
     void frontendDependencies_nameNoFunctionCanDeclare_isStillAChange() {
         // What a developer gets by typing a bad name into a snippet method:
@@ -301,6 +353,93 @@ class DevLoopRedefinerTest {
         // declares, so an edited expression is a different one.
         assertNotEquals(imports,
                 DevLoopRedefiner.frontendDependencies(EditedGreeterJs.class));
+    }
+
+    @DomEvent(value = "offset", filter = "event.button === 0")
+    public static class OffsetEvent extends ComponentEvent<Component> {
+        public OffsetEvent(Component source, boolean fromClient,
+                @EventData("event.clientX - 1") double offset, // NOSONAR
+                @EventData("event.clientY") double clientY) {
+            super(source, fromClient);
+        }
+    }
+
+    @DomEvent(value = "offset", filter = "event.button === 0")
+    public static class EditedOffsetEvent extends ComponentEvent<Component> {
+        public EditedOffsetEvent(Component source, boolean fromClient,
+                @EventData("event.clientX - 2") double offset, // NOSONAR
+                @EventData("event.clientY") double clientY) {
+            super(source, fromClient);
+        }
+    }
+
+    @DomEvent(value = "offset", filter = "event.button === 1")
+    public static class EditedFilterOffsetEvent
+            extends ComponentEvent<Component> {
+        public EditedFilterOffsetEvent(Component source, boolean fromClient,
+                @EventData("event.clientX - 1") double offset, // NOSONAR
+                @EventData("event.clientY") double clientY) {
+            super(source, fromClient);
+        }
+    }
+
+    @Test
+    void frontendDependencies_seesTheEventDataAndFilterTheBuildBundles() {
+        // An @EventData value or a filter the client would compile is
+        // generated into the bundle, so an edited one only reaches the browser
+        // through a restart
+        String imports = DevLoopRedefiner
+                .frontendDependencies(OffsetEvent.class);
+
+        assertEquals(
+                "eventdata:"
+                        + BundledEventData.getFunctionId("event.clientX - 1")
+                        + ";eventfilter:"
+                        + BundledEventData.getFunctionId("event.button === 0"),
+                imports);
+        assertNotEquals(imports,
+                DevLoopRedefiner.frontendDependencies(EditedOffsetEvent.class));
+        assertNotEquals(imports, DevLoopRedefiner
+                .frontendDependencies(EditedFilterOffsetEvent.class));
+    }
+
+    @DomEvent("child")
+    public static class ChildEvent extends ComponentEvent<Component> {
+        public ChildEvent(Component source, boolean fromClient,
+                @EventData("element.querySelector('span')") Element child) { // NOSONAR
+            super(source, fromClient);
+        }
+    }
+
+    @Test
+    void frontendDependencies_seesTheEventDataOfAnElementByItsExpression() {
+        // The bundle has the function of the expression, without the prefix
+        // that tells the client to map what it returns to a state node
+        assertEquals(
+                "eventdata:" + BundledEventData
+                        .getFunctionId("element.querySelector('span')"),
+                DevLoopRedefiner.frontendDependencies(ChildEvent.class));
+    }
+
+    @DomEvent("offset")
+    public static class UnlistenableOffsetEvent
+            extends ComponentEvent<Component> {
+        public UnlistenableOffsetEvent(Component source, boolean fromClient,
+                double offset) { // NOSONAR
+            super(source, fromClient);
+        }
+    }
+
+    @Test
+    void frontendDependencies_eventNoListenerCanUse_isStillAChange() {
+        // A parameter without @EventData: the build leaves the event out, and
+        // the edit still has to be told apart from the one before
+        String imports = DevLoopRedefiner
+                .frontendDependencies(UnlistenableOffsetEvent.class);
+
+        assertTrue(imports.startsWith("eventdata:invalid:"), imports);
+        assertNotEquals(imports,
+                DevLoopRedefiner.frontendDependencies(OffsetEvent.class));
     }
 
     @Test

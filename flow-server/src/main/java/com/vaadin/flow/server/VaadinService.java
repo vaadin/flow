@@ -52,7 +52,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
@@ -364,11 +363,11 @@ public abstract class VaadinService implements Serializable {
 
             dependencyFilters = Collections.unmodifiableCollection(instantiator
                     .getDependencyFilters(event.getAddedDependencyFilters())
-                    .collect(Collectors.toList()));
+                    .toList());
             indexHtmlRequestListeners = instantiator
                     .getIndexHtmlRequestListeners(
                             event.getAddedIndexHtmlRequestListeners())
-                    .collect(Collectors.toList());
+                    .toList();
         });
 
         if (this.executor == null) {
@@ -1460,13 +1459,7 @@ public abstract class VaadinService implements Serializable {
         // Initial WebBrowser data comes from the request
         session.setBrowser(new WebBrowser(request));
 
-        SessionLockCheckStrategy sessionLockCheckStrategy = getDeploymentConfiguration()
-                .isProductionMode()
-                        ? getDeploymentConfiguration()
-                                .getSessionLockCheckStrategy()
-                        : SessionLockCheckStrategy.THROW;
-        assert sessionLockCheckStrategy != null;
-        session.applyLockStrategy(sessionLockCheckStrategy);
+        applySessionLockCheckStrategy(session);
 
         // Initial locale comes from the request
         if (getInstantiator().getI18NProvider() != null) {
@@ -1476,6 +1469,38 @@ public abstract class VaadinService implements Serializable {
         onVaadinSessionStarted(request, session);
 
         return session;
+    }
+
+    /**
+     * Sets the strategy that the given session uses to check that it is locked
+     * when its state is accessed.
+     * <p>
+     * In development mode, the session always uses
+     * {@link SessionLockCheckStrategy#THROW}, so that accessing a session or UI
+     * without holding its lock fails right away. In production mode, it uses
+     * the strategy configured with
+     * {@link InitParameters#SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY}.
+     * <p>
+     * The framework calls this for every session it creates while handling a
+     * request. Call it for a session created with
+     * {@link #createVaadinSession(VaadinRequest)} outside that flow, for
+     * example in a test framework, so that the session checks its lock the same
+     * way. A session that this method was not called for uses
+     * {@link SessionLockCheckStrategy#ASSERT}.
+     *
+     * @param session
+     *            the session to set the lock check strategy for, not
+     *            {@code null}
+     * @see VaadinSession#checkHasLock()
+     * @since 25.4
+     */
+    protected void applySessionLockCheckStrategy(VaadinSession session) {
+        SessionLockCheckStrategy sessionLockCheckStrategy = getDeploymentConfiguration()
+                .isProductionMode()
+                        ? getDeploymentConfiguration()
+                                .getSessionLockCheckStrategy()
+                        : SessionLockCheckStrategy.THROW;
+        session.applyLockStrategy(sessionLockCheckStrategy);
     }
 
     private void setLocale(VaadinRequest request, VaadinSession session) {

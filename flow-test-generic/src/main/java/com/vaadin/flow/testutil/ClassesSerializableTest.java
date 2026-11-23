@@ -215,6 +215,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentMetaData(\\$.*)?",
                 "com\\.vaadin\\.flow\\.js\\.JsCall\\$DeclaredMethod",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentTracker",
+                "com\\.vaadin\\.flow\\.component\\.internal\\.BundledEventData",
+                "com\\.vaadin\\.flow\\.component\\.internal\\.DomEventInfo",
                 "com\\.vaadin\\.flow\\.dom\\.ElementEffect",
                 "com\\.vaadin\\.flow\\.dom\\.ElementFactory",
                 "com\\.vaadin\\.flow\\.dom\\.NodeVisitor",
@@ -223,6 +225,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.internal\\.ReflectTools(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.FutureAccess",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.ElementPropertyMap\\$PutResult",
+                "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeMap\\$SharedKeySet\\$RegistryReference",
                 "com\\.vaadin\\.flow\\.client\\.osgi\\.OSGiClientStaticResource(\\$.*)?",
                 "com\\.vaadin\\.flow\\.osgi\\.support\\.OsgiVaadinContributor(\\$.*)?",
                 "com\\.vaadin\\.flow\\.osgi\\.support\\.OsgiVaadinStaticResource(\\$.*)?",
@@ -275,7 +278,6 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 // Static Utilities
                 "com\\.vaadin\\.flow\\.component\\.wakelock\\.WakeLock",
                 "com\\.vaadin\\.flow\\.js\\.JsDefinitionProxy",
-                "com\\.vaadin\\.flow\\.js\\.JsSnippets",
 
                 // Flow client classes
                 "com\\.vaadin\\.client\\..*",
@@ -363,7 +365,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
 
         List<String> classes = new ArrayList<>();
         List<Pattern> excludes = getExcludedPatterns().map(Pattern::compile)
-                .collect(Collectors.toList());
+                .toList();
         for (String location : rawClasspathEntries) {
             if (!isTestClassPath(location)) {
                 classes.addAll(findServerClasses(location, excludes));

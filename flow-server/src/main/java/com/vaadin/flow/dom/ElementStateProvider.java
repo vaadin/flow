@@ -79,10 +79,34 @@ public interface ElementStateProvider extends Serializable {
      *            the name of the attribute
      * @param signal
      *            the signal to bind, not <code>null</code>
+     * @return the binding, which can be used to react to updates
      * @since 25.0
      */
     SignalBinding<String> bindAttributeSignal(Element owner, String attribute,
             Signal<String> signal);
+
+    /**
+     * Binds the given signal to the presence of the given attribute. The
+     * attribute is set to an empty value while the signal value is {@code true}
+     * and removed while it is {@code false}.
+     * <p>
+     * The default implementation throws, so that only the providers that
+     * support attributes at all have to implement this.
+     *
+     * @param owner
+     *            the owner element for which the signal is bound, not
+     *            <code>null</code>
+     * @param attribute
+     *            the name of the attribute
+     * @param signal
+     *            the signal to bind, not <code>null</code>
+     * @return the created binding
+     * @since 25.4
+     */
+    default SignalBinding<Boolean> bindAttributeBooleanSignal(Element owner,
+            String attribute, Signal<Boolean> signal) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Sets the given attribute to the given {@link StreamResource} value.
@@ -284,6 +308,7 @@ public interface ElementStateProvider extends Serializable {
      * @param writeCallback
      *            the callback to propagate value changes back, or
      *            <code>null</code> for a read-only binding
+     * @return the binding, which can be used to react to updates
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             given property
@@ -477,6 +502,7 @@ public interface ElementStateProvider extends Serializable {
      *            <code>null</code>
      * @param signal
      *            the signal to bind, not <code>null</code>
+     * @return the binding, which can be used to react to updates
      * @since 25.1
      */
     SignalBinding<Boolean> bindVisibleSignal(Element owner,

@@ -27,13 +27,13 @@ import com.vaadin.flow.server.VaadinSession;
  * The result of a JavaScript execution, which hands the value that the
  * JavaScript returns to the server as a value of the type {@code T}.
  * <p>
- * A method of a {@link com.vaadin.flow.js.JsDefinition JavaScript definition}
+ * A method of a {@link com.vaadin.flow.js.JsInvokers JavaScript definition}
  * declares this as its return type, with the type to convert the value to as
  * the type argument:
  *
  * <pre>
  * &#64;JsDefinition
- * public interface DeepThoughtJs {
+ * public interface DeepThoughtJs extends JsInvokers {
  *     &#64;JsExpression("return 42")
  *     JavaScriptResult&lt;Integer&gt; getAnswer();
  * }
@@ -70,6 +70,7 @@ import com.vaadin.flow.server.VaadinSession;
  *
  * @param <T>
  *            the type of the value of a successful execution
+ * @since 25.4
  */
 public interface JavaScriptResult<T> extends Serializable {
 

@@ -8,7 +8,6 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
-import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -18,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import tools.jackson.databind.node.ArrayNode;
 
@@ -31,6 +29,7 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.templatemodel.BeanModelType;
 import com.vaadin.flow.templatemodel.ListModelType;
@@ -132,8 +131,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      */
     public boolean isSupportedClass(Class<?> type) {
         List<ModelType> modelTypes = ModelDescriptor.get(getModelType())
-                .getPropertyNames().map(this::getModelType)
-                .collect(Collectors.toList());
+                .getPropertyNames().map(this::getModelType).toList();
 
         boolean result = false;
         for (ModelType modelType : modelTypes) {
@@ -174,8 +172,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      */
     public ModelType getModelType(Type type) {
         List<ModelType> modelTypes = ModelDescriptor.get(getModelType())
-                .getPropertyNames().map(this::getModelType)
-                .collect(Collectors.toList());
+                .getPropertyNames().map(this::getModelType).toList();
 
         for (ModelType mtype : modelTypes) {
             if (type.equals(mtype.getJavaType())) {
@@ -296,7 +293,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
                 .getFeature(ElementPropertyMap.class);
         List<String> props = map.getPropertyNames()
                 .filter(name -> !(map.getProperty(name) instanceof StateNode))
-                .collect(Collectors.toList());
+                .toList();
         props.forEach(map::removeProperty);
         return props;
     }
@@ -311,7 +308,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      * @since 25.4
      */
     @JsDefinition
-    public interface TemplateModelJs extends Serializable {
+    public interface TemplateModelJs extends JsInvokers {
 
         /**
          * Tells the client which properties of the template element are sent to

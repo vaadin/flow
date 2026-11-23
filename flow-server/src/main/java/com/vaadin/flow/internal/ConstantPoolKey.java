@@ -104,6 +104,7 @@ public class ConstantPoolKey implements Serializable {
      * @param content
      *            the string to get a key for, not <code>null</code>
      * @return the key of the string, not <code>null</code>
+     * @since 25.4
      */
     public static String calculateHash(String content) {
         byte[] digest = MessageDigestUtil.sha256(content);

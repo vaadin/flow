@@ -21,21 +21,26 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
@@ -68,6 +73,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -167,8 +174,11 @@ public class ElementListenersTest
 
     @Test
     void addEventDataList_existingExpressions_merged() {
-        ns.add("eventType", noOp).addEventData("data1")
-                .addEventData(List.of("data1", "data2"));
+        DomListenerRegistration registration = ns.add("eventType", noOp)
+                .addEventData("data1");
+
+        ElementListenerMap.addEventData(registration,
+                List.of("data1", "data2"));
 
         assertEquals(Set.of("data1", "data2"), getExpressions("eventType"));
     }
@@ -179,7 +189,42 @@ public class ElementListenersTest
         List<String> eventData = Arrays.asList("data1", null);
 
         assertThrows(IllegalArgumentException.class,
-                () -> registration.addEventData(eventData));
+                () -> ElementListenerMap.addEventData(registration, eventData));
+    }
+
+    @Test
+    void defaultMethods_otherRegistration_addEachWithAddEventData() {
+        DomListenerRegistration registration = mock(
+                DomListenerRegistration.class, CALLS_REAL_METHODS);
+
+        registration.preventDefault().synchronizeProperty("value");
+
+        verify(registration)
+                .addEventData(JsonConstants.EVENT_DATA_PREVENT_DEFAULT);
+        verify(registration).addEventData(
+                JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + "value");
+    }
+
+    @Test
+    void addEventDataPath_propertyPath_addedWithPathAsKey() {
+        ns.add("eventType", noOp).addEventDataPath("event.detail?.itemKey")
+                .addEventDataPath("element");
+
+        assertEquals(Set.of("event.detail?.itemKey", "element"),
+                getExpressions("eventType"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "event.x * 2", "event.composedPath()[0]",
+            "window.location", "event.", "event..x", "detail.value", "" })
+    void addEventDataPath_notPropertyPath_throwsWithoutAdding(String path) {
+        DomListenerRegistration registration = ns.add("eventType", noOp);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> registration.addEventDataPath(path));
+        assertThrows(IllegalArgumentException.class,
+                () -> registration.addEventDataElementPath(path));
+        assertEquals(Set.of(), getExpressions("eventType"));
     }
 
     @Test
@@ -332,7 +377,7 @@ public class ElementListenersTest
     }
 
     @JsDefinition
-    public interface EventJs extends Serializable {
+    public interface EventJs extends JsSnippets {
         @JsExpression("return element.closest($0).tagName;")
         DomEventData<String> closestTag(String selector);
 
@@ -344,6 +389,9 @@ public class ElementListenersTest
 
         @JsExpression("return [];")
         DomEventData<List<Point>> points();
+
+        @JsExpression("return event.composedPath()[0];")
+        DomEventData<Element> originalTarget();
     }
 
     public record Point(int x, int y) {
@@ -422,6 +470,118 @@ public class ElementListenersTest
         assertEquals("[\".container\"]",
                 settings.get(JsonConstants.EVENT_SETTINGS_CAPTURES).toString());
         assertFalse(settings.has(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT));
+        assertFalse(settings.has(JsonConstants.EVENT_SETTINGS_MAP_ELEMENT));
+    }
+
+    @Test
+    void declaredElementEventData_settingsMapElement() {
+        ns.add("foo", noOp).addEventData(JS.originalTarget());
+
+        JsonNode settings = eventSettings(ns, "foo")
+                .get(ElementListenerMap.getEventDataKey(JS.originalTarget()));
+
+        assertTrue(settings.get(JsonConstants.EVENT_SETTINGS_MAP_ELEMENT)
+                .asBoolean());
+    }
+
+    @Test
+    void declaredElementEventData_nodeIdMappedToElement() {
+        Element parent = new Element("parent");
+        Element child = new Element("child");
+        Element sibling = new Element("sibling");
+        parent.appendChild(child);
+        new StateTree(new UI().getInternals(), ElementChildrenList.class)
+                .getUI().getElement().appendChild(parent, sibling);
+        DomEventData<Element> target = JS.originalTarget();
+        String key = ElementListenerMap.getEventDataKey(target);
+
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put(key, child.getNode().getId());
+        DomEvent event = new DomEvent(parent, "click", fromClient);
+        assertEquals(Optional.of(child), event.getEventDataElement(target));
+        assertEquals(child, event.getEventData(target));
+
+        // Also an element outside of the source element
+        fromClient.put(key, sibling.getNode().getId());
+        assertEquals(Optional.of(sibling),
+                new DomEvent(parent, "click", fromClient)
+                        .getEventDataElement(target));
+
+        // No state node
+        fromClient.put(key, -1);
+        assertEquals(Optional.empty(), new DomEvent(parent, "click", fromClient)
+                .getEventDataElement(target));
+
+        // No value, from a function that is missing from the bundle
+        fromClient.putNull(key);
+        DomEvent withoutValue = new DomEvent(parent, "click", fromClient);
+        assertEquals(Optional.empty(),
+                withoutValue.getEventDataElement(target));
+        assertNull(withoutValue.getEventData(target));
+
+        // Invisible elements are not reported
+        sibling.setVisible(false);
+        fromClient.put(key, sibling.getNode().getId());
+        assertEquals(Optional.empty(), new DomEvent(parent, "click", fromClient)
+                .getEventDataElement(target));
+    }
+
+    @Test
+    void bundledEventData_sentAsTheFunctionOfTheBundleUnderTheExpression() {
+        String expression = "event.clientX - element.offsetLeft";
+        // Also added as a string by another listener, which must not make the
+        // client compile it
+        ns.add("foo", noOp).addEventData(expression);
+        ElementListenerMap.addBundledEventData(ns.add("foo", noOp),
+                List.of(expression));
+
+        JsonNode settings = eventSettings(ns, "foo").get(expression);
+
+        assertEquals(BundledEventData.getFunctionId(expression),
+                settings.get(JsonConstants.EVENT_SETTINGS_FUNCTION).asString());
+        assertEquals("false",
+                settings.get(JsonConstants.EVENT_SETTINGS_DEBOUNCE).toString());
+        assertFalse(settings.has(JsonConstants.EVENT_SETTINGS_CAPTURES));
+        // The server reads the value under the expression, as before
+        assertEquals(Set.of(expression), ns.getExpressions("foo"));
+    }
+
+    @Test
+    void bundledFilterWithPreventDefault_functionOfTheBundleWithSideEffect() {
+        String filter = "event.button === 0";
+        String conditional = "(" + filter + ") && event.preventDefault()";
+        AtomicInteger notified = new AtomicInteger();
+        DomListenerRegistration registration = ns.add("click",
+                event -> notified.incrementAndGet());
+        ElementListenerMap.setBundledFilter(registration, filter);
+        registration.preventDefault();
+
+        ObjectNode settings = eventSettings(ns, "click");
+
+        String functionId = BundledEventData.getFunctionId(filter);
+        assertEquals(Set.of(filter, conditional),
+                Set.copyOf(JacksonUtils.getKeys(settings)));
+        assertEquals(functionId, settings.get(filter)
+                .get(JsonConstants.EVENT_SETTINGS_FUNCTION).asString());
+        assertEquals("true", settings.get(filter)
+                .get(JsonConstants.EVENT_SETTINGS_DEBOUNCE).toString());
+        assertFalse(settings.get(filter)
+                .has(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT));
+        // The key is what the client compiles when the bundle has no function
+        assertEquals(functionId, settings.get(conditional)
+                .get(JsonConstants.EVENT_SETTINGS_FUNCTION).asString());
+        assertEquals("preventDefault", settings.get(conditional)
+                .get(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT).asString());
+        assertEquals(filter, registration.getFilter());
+
+        // The value of the filter is sent under the filter, as before
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put(filter, false);
+        ns.fireEvent(new DomEvent(new Element("element"), "click", eventData));
+        assertEquals(0, notified.get());
+        eventData.put(filter, true);
+        ns.fireEvent(new DomEvent(new Element("element"), "click", eventData));
+        assertEquals(1, notified.get());
     }
 
     @Test
@@ -562,6 +722,83 @@ public class ElementListenersTest
         assertEquals(1, sideEffects.size());
         assertEquals("preventDefault", sideEffects.get(0)
                 .get(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT).asString());
+    }
+
+    @Test
+    void getSnippetEntries_eventSimulatedFromEntries() {
+        AtomicReference<DomEvent> eventReference = new AtomicReference<>();
+        DomListenerRegistration registration = ns.add("keydown",
+                eventReference::set);
+        registration.setFilterExpression(JS.isKey("Enter"));
+        registration.addEventData(JS.closestTag(".container"));
+        registration.addEventData("event.code");
+        registration.preventDefault();
+
+        Set<ElementListenerMap.SnippetEntry> entries = ns
+                .getSnippetEntries("keydown");
+        assertEquals(3, entries.size());
+        ElementListenerMap.SnippetEntry filter = findEntry(entries,
+                ElementListenerMap.SnippetEntry::filter);
+        ElementListenerMap.SnippetEntry sideEffect = findEntry(entries,
+                entry -> entry.sideEffect() != null);
+        ElementListenerMap.SnippetEntry data = findEntry(entries,
+                entry -> !entry.filter() && entry.sideEffect() == null);
+
+        // Together with the expressions, these are the keys sent to the client
+        assertEquals(Set.of("event.code"), getExpressions("keydown"));
+        assertEquals(
+                Set.of(filter.key(), sideEffect.key(), data.key(),
+                        "event.code"),
+                Set.copyOf(JacksonUtils.getKeys(eventSettings(ns, "keydown"))));
+        assertEquals("return event.key === $0;", filter.call().getExpression());
+        assertEquals(List.of("Enter"), filter.call().flattenArguments());
+        assertEquals("preventDefault", sideEffect.sideEffect());
+        assertEquals(filter.key() + ".preventDefault", sideEffect.key());
+        assertEquals(filter.call(), sideEffect.call());
+        assertEquals(
+                ElementListenerMap.getEventDataKey(JS.closestTag(".container")),
+                data.key());
+
+        // The values the client would send are enough to notify the listener
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put(filter.key(), true);
+        fromClient.put(sideEffect.key(), true);
+        fromClient.put(data.key(), "DIV");
+        fromClient.put("event.code", "Enter");
+        ns.fireEvent(
+                new DomEvent(new Element("element"), "keydown", fromClient));
+
+        assertEquals("DIV",
+                eventReference.get().getEventData(JS.closestTag(".container")));
+    }
+
+    @Test
+    void getSnippetEntries_sameCallAsEventDataAndFilter_isFilter() {
+        DomEventFilter isEnter = JS.isKey("Enter");
+        DomEventData<Boolean> isEnterData = DomEventData
+                .ofDeclaredCall(isEnter.getDeclaredCall(), Boolean.class);
+        // Event data first, then the filter
+        ns.add("keydown", noOp).addEventData(isEnterData);
+        ns.add("keydown", noOp).setFilterExpression(isEnter);
+        // The filter first, then event data
+        ns.add("keyup", noOp).setFilterExpression(isEnter);
+        ns.add("keyup", noOp).addEventData(isEnterData);
+
+        for (String eventType : List.of("keydown", "keyup")) {
+            Set<ElementListenerMap.SnippetEntry> entries = ns
+                    .getSnippetEntries(eventType);
+            assertEquals(1, entries.size());
+            assertTrue(entries.iterator().next().filter());
+        }
+    }
+
+    private static ElementListenerMap.SnippetEntry findEntry(
+            Set<ElementListenerMap.SnippetEntry> entries,
+            Predicate<ElementListenerMap.SnippetEntry> condition) {
+        List<ElementListenerMap.SnippetEntry> matching = entries.stream()
+                .filter(condition).toList();
+        assertEquals(1, matching.size());
+        return matching.get(0);
     }
 
     @Test
@@ -916,8 +1153,10 @@ public class ElementListenersTest
         assertNull(capturedTarget.get(), "no element should be reported");
     }
 
-    @Test
-    void addEventDataElement_targetNodeInJsonData_elementMapped() {
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void addEventDataElement_targetNodeInJsonData_elementMapped(
+            boolean usePath) {
         Element parent = new Element("parent");
         Element child = new Element("child");
         Element sibling = new Element("sibling");
@@ -925,7 +1164,8 @@ public class ElementListenersTest
         new StateTree(new UI().getInternals(), ElementChildrenList.class)
                 .getUI().getElement().appendChild(parent, sibling);
         final String eventType = "click";
-        final String expression = "expression";
+        final String expression = usePath ? "event.target.parentElement"
+                : "expression";
         final String key = JsonConstants.MAP_STATE_NODE_EVENT_DATA + expression;
 
         AtomicReference<DomEvent> capturedTarget = new AtomicReference<>();
@@ -937,7 +1177,11 @@ public class ElementListenersTest
         Set<String> expressions = getExpressions(listenerMap, eventType);
         assertEquals(0, expressions.size());
 
-        registration.addEventDataElement(expression);
+        if (usePath) {
+            registration.addEventDataElementPath(expression);
+        } else {
+            registration.addEventDataElement(expression);
+        }
         expressions = getExpressions(listenerMap, eventType);
 
         assertEquals(1, expressions.size());
@@ -963,7 +1207,7 @@ public class ElementListenersTest
     }
 
     @Test
-    void addEventDataElement_eventTarget_usesMapEventTargetInstead() {
+    void addEventDataElementPath_eventTarget_usesMapEventTargetInstead() {
         Element parent = new Element("parent");
         Element child = new Element("child");
         parent.appendChild(child);
@@ -977,7 +1221,7 @@ public class ElementListenersTest
         final ElementListenerMap listenerMap = parent.getNode()
                 .getFeature(ElementListenerMap.class);
 
-        registration.addEventDataElement("event.target");
+        registration.addEventDataElementPath("event.target");
         Set<String> expressions = getExpressions(listenerMap, eventType);
 
         assertEquals(1, expressions.size());
@@ -1315,8 +1559,20 @@ public class ElementListenersTest
     }
 
     @Test
-    void testAddEventDataWithSimpleBean() {
-        // Test with a simple bean (non-record)
+    void addEventData_topLevelPropertyNotEventOrElement_added() {
+        record EventDetails(int button) {
+        }
+        record MixedEventData(EventDetails event, String message) {
+        }
+
+        ns.add("custom", noOp).addEventData(MixedEventData.class);
+
+        assertEquals(Set.of("event.button", "message"),
+                getExpressions("custom"));
+    }
+
+    @Test
+    void addEventData_simpleBean_propertiesFromGettersAdded() {
         class SimpleEventData {
             private String message;
             private int code;
@@ -1330,15 +1586,20 @@ public class ElementListenersTest
             }
         }
 
-        DomListenerRegistration registration = ns.add("custom", noOp);
-        registration.addEventData(SimpleEventData.class);
+        ns.add("custom", noOp).addEventData(SimpleEventData.class);
 
-        Set<String> expressions = getExpressions("custom");
+        assertEquals(Set.of("message", "code"), getExpressions("custom"));
+    }
 
-        // Should have captured both fields
-        assertTrue(expressions.contains("message"), "Should capture message");
-        assertTrue(expressions.contains("code"), "Should capture code");
-        assertEquals(2, expressions.size(), "Should have 2 expressions");
+    @Test
+    void addEventDetail_propertyNotAsciiIdentifier_added() {
+        record Detail(int a, int größe) {
+        }
+
+        ns.add("custom", noOp).addEventDetail(Detail.class);
+
+        assertEquals(Set.of("event.detail.a", "event.detail.größe"),
+                getExpressions("custom"));
     }
 
     @Test
