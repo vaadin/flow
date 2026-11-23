@@ -19,6 +19,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
@@ -52,6 +53,10 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 @NullMarked
 @Tag(Tag.VIDEO)
 public class Video extends Media {
+
+    static {
+        UsageStatistics.markAsUsed("flow/Video", null);
+    }
 
     private static final String PLAYS_INLINE_ATTRIBUTE = "playsinline";
     private static final String POSTER_ATTRIBUTE = "poster";
