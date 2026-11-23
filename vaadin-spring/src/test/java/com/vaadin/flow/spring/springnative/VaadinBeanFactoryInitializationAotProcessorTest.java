@@ -59,6 +59,9 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
+import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -777,6 +780,32 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     }
 
     @Test
+    void processAheadOfTime_jsDefinition_returnedSnippetTypeRegistered() {
+        RuntimeHints hints = processAotForHints(
+                createProcessorWithJsDefinitions(TestSnippetJs.class));
+
+        // Returned by an inherited method, so that is covered too
+        assertThat(RuntimeHintsPredicates.proxies()
+                .forInterfaces(TestItemTemplate.class))
+                .as("Returned snippet type should be registered as a JDK proxy")
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(TestItemTemplate.class))
+                .as("Returned snippet type should be registered for reflection")
+                .accepts(hints);
+        // The check that a snippet type declares no methods sees the inherited
+        // ones only if the interfaces it extends are registered too
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(TestBaseTemplate.class))
+                .as("Interfaces the snippet type extends should be registered for reflection")
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.proxies()
+                .forInterfaces(TestBaseTemplate.class))
+                .as("Only the returned snippet type should get a JDK proxy")
+                .rejects(hints);
+    }
+
+    @Test
     void getJsDefinitionTypes_findsAnnotatedInterfaces() {
         VaadinBeanFactoryInitializationAotProcessor processor = new VaadinBeanFactoryInitializationAotProcessor();
 
@@ -785,7 +814,8 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
 
         assertThat(definitions)
                 .as("Should find @JsDefinition annotated interfaces")
-                .containsExactly(TestJsDefinition.class);
+                .containsExactlyInAnyOrder(TestJsDefinition.class,
+                        TestSnippetJs.class);
     }
 
     @Test
@@ -1188,7 +1218,8 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     }
 
     @JsDefinition
-    public interface TestJsDefinition extends TestValueJs<TestJsValue> {
+    public interface TestJsDefinition
+            extends JsInvokers, TestValueJs<TestJsValue> {
         @JsExpression("this.classList.add($0)")
         void addClass(String className);
 
@@ -1200,6 +1231,25 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
 
         @JsExpression("return {}")
         JavaScriptResult<ObjectNode> readNode();
+    }
+
+    public interface TestBaseTemplate extends JsSnippet {
+    }
+
+    public interface TestItemTemplate extends TestBaseTemplate {
+    }
+
+    public interface TestBaseSnippetJs {
+        @JsExpression("return $0")
+        TestItemTemplate status(String label);
+    }
+
+    @JsDefinition
+    public interface TestSnippetJs extends JsSnippets, TestBaseSnippetJs {
+    }
+
+    // Found by the annotation, not by the marker interface
+    public interface TestUnannotatedJs extends JsInvokers {
     }
 
     public interface TestValueJs<T> {

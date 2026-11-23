@@ -18,7 +18,6 @@ package com.vaadin.base.devserver.devloop;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -47,7 +46,9 @@ import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.theme.Theme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -175,7 +176,7 @@ class DevLoopRedefinerTest {
     }
 
     @JsDefinition
-    interface GreeterJs extends Serializable {
+    interface GreeterJs extends JsInvokers {
         @JsExpression("window.alert($0)")
         void showGreeting(String greeting);
 
@@ -184,34 +185,34 @@ class DevLoopRedefinerTest {
     }
 
     @JsDefinition
-    interface LoggerJs extends Serializable {
+    interface LoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value)")
         @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
-    interface RenamedParameterLoggerJs extends Serializable {
+    interface RenamedParameterLoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value)")
         @JsFunctionParameterNames("message")
         JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
-    interface UnwrappedLoggerJs extends Serializable {
+    interface UnwrappedLoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value)")
         JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
-    interface InvalidNameLoggerJs extends Serializable {
+    interface InvalidNameLoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value)")
         @JsFunctionParameterNames("class")
         JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
-    interface EditedGreeterJs extends Serializable {
+    interface EditedGreeterJs extends JsInvokers {
         @JsExpression("window.alert('edited ' + $0)")
         void showGreeting(String greeting);
     }
@@ -264,6 +265,27 @@ class DevLoopRedefinerTest {
                 .frontendDependencies(RenamedParameterLoggerJs.class));
         assertNotEquals(imports,
                 DevLoopRedefiner.frontendDependencies(UnwrappedLoggerJs.class));
+    }
+
+    // Only extended by definitions, so not annotated
+    interface ScrollableJs extends JsInvokers {
+        @JsExpression("this.scrollTop = $0")
+        void scrollTo(int top);
+    }
+
+    interface EditedScrollableJs extends JsInvokers {
+        @JsExpression("this.scrollLeft = $0")
+        void scrollTo(int top);
+    }
+
+    @Test
+    void frontendDependencies_seesTheJavaScriptOfAnExtendedInterface() {
+        // Its methods are generated as part of every definition extending it,
+        // so editing what it declares changes what the browser has to run
+        assertNotEquals(
+                DevLoopRedefiner.frontendDependencies(ScrollableJs.class),
+                DevLoopRedefiner
+                        .frontendDependencies(EditedScrollableJs.class));
     }
 
     @JsFunctionParameterNames({ "html", "item" })
@@ -333,7 +355,7 @@ class DevLoopRedefinerTest {
                 DevLoopRedefiner.frontendDependencies(EditedGreeterJs.class));
     }
 
-    @DomEvent("offset")
+    @DomEvent(value = "offset", filter = "event.button === 0")
     public static class OffsetEvent extends ComponentEvent<Component> {
         public OffsetEvent(Component source, boolean fromClient,
                 @EventData("event.clientX - 1") double offset, // NOSONAR
@@ -342,7 +364,7 @@ class DevLoopRedefinerTest {
         }
     }
 
-    @DomEvent("offset")
+    @DomEvent(value = "offset", filter = "event.button === 0")
     public static class EditedOffsetEvent extends ComponentEvent<Component> {
         public EditedOffsetEvent(Component source, boolean fromClient,
                 @EventData("event.clientX - 2") double offset, // NOSONAR
@@ -351,19 +373,34 @@ class DevLoopRedefinerTest {
         }
     }
 
+    @DomEvent(value = "offset", filter = "event.button === 1")
+    public static class EditedFilterOffsetEvent
+            extends ComponentEvent<Component> {
+        public EditedFilterOffsetEvent(Component source, boolean fromClient,
+                @EventData("event.clientX - 1") double offset, // NOSONAR
+                @EventData("event.clientY") double clientY) {
+            super(source, fromClient);
+        }
+    }
+
     @Test
-    void frontendDependencies_seesTheEventDataTheBuildBundles() {
-        // An @EventData value the client would compile is generated into the
-        // bundle, so an edited one only reaches the browser through a restart
+    void frontendDependencies_seesTheEventDataAndFilterTheBuildBundles() {
+        // An @EventData value or a filter the client would compile is
+        // generated into the bundle, so an edited one only reaches the browser
+        // through a restart
         String imports = DevLoopRedefiner
                 .frontendDependencies(OffsetEvent.class);
 
         assertEquals(
                 "eventdata:"
-                        + BundledEventData.getFunctionId("event.clientX - 1"),
+                        + BundledEventData.getFunctionId("event.clientX - 1")
+                        + ";eventfilter:"
+                        + BundledEventData.getFunctionId("event.button === 0"),
                 imports);
         assertNotEquals(imports,
                 DevLoopRedefiner.frontendDependencies(EditedOffsetEvent.class));
+        assertNotEquals(imports, DevLoopRedefiner
+                .frontendDependencies(EditedFilterOffsetEvent.class));
     }
 
     @DomEvent("child")

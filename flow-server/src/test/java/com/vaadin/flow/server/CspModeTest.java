@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -70,6 +69,7 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -81,14 +81,14 @@ import static org.mockito.Mockito.verify;
 class CspModeTest {
 
     @JsDefinition
-    interface LoggerJs extends Serializable {
+    interface LoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value);")
         @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
-    interface EventJs extends Serializable {
+    interface EventJs extends JsSnippets {
         @JsExpression("return event.x == $0;")
         DomEventFilter isX(int x);
 
@@ -97,7 +97,7 @@ class CspModeTest {
     }
 
     @JsDefinition
-    interface LocatorJs extends Serializable {
+    interface LocatorJs extends JsSnippets {
         @JsExpression("return this.firstElementChild;")
         JsFunction locateFirstChild();
     }
@@ -118,7 +118,7 @@ class CspModeTest {
     private static class RouteView extends Component {
     }
 
-    @DomEvent("offset-event")
+    @DomEvent(value = "offset-event", filter = "event.button === 0", preventDefault = true)
     public static class OffsetEvent extends ComponentEvent<Component> {
         // Only the event data annotations of the parameters are used
         public OffsetEvent(Component source, boolean fromClient,
@@ -132,13 +132,6 @@ class CspModeTest {
         // Only the event data annotations of the parameters are used
         public ElementTargetEvent(Component source, boolean fromClient,
                 @EventData("event.composedPath()[0]") Element target) { // NOSONAR
-            super(source, fromClient);
-        }
-    }
-
-    @DomEvent(value = "click", filter = "event.button === 0")
-    public static class LeftClickEvent extends ComponentEvent<Component> {
-        public LeftClickEvent(Component source, boolean fromClient) {
             super(source, fromClient);
         }
     }
@@ -223,6 +216,8 @@ class CspModeTest {
         CspViolationException exception = assertThrows(
                 CspViolationException.class, () -> call.accept(ui));
 
+        assertFalse(exception.getMessage().contains("The JavaScript is in"),
+                exception.getMessage());
         assertTraceLeadsFromApiToTest(exception, api, method);
     }
 
@@ -235,11 +230,7 @@ class CspModeTest {
                 refusedListenerCall("addEventData",
                         (component, onClick) -> component.getElement()
                                 .addEventListener("click", e -> onClick.run())
-                                .addEventData("event.x * 2")),
-                refusedListenerCall("@DomEvent filter",
-                        (component, onClick) -> ComponentUtil.addListener(
-                                component, LeftClickEvent.class,
-                                e -> onClick.run())));
+                                .addEventData("event.x * 2")));
     }
 
     private static Arguments refusedListenerCall(String name,
@@ -320,8 +311,9 @@ class CspModeTest {
             // The filter of the key up event is a property path
             ComponentUtil.addListener(clickable, KeyUpEvent.class, e -> {
             });
-            // The build puts the event data that is not a property path into
-            // the bundle
+            // The build puts the event data and the filter that are not
+            // property paths into the bundle, also when the filter decides
+            // whether the default is prevented
             ComponentUtil.addListener(clickable, OffsetEvent.class, e -> {
             });
             // also a value of an element, whose function returns the DOM node
@@ -370,6 +362,15 @@ class CspModeTest {
             new Element("div").executeJs("return 1");
             JsFunction.of("return 1");
         });
+        assertFalse(CspViolationReporter.isEnabled());
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "OFF, false", "WARN, true", "STRICT, true" })
+    void isEnabled_onlyInModesThatReport(CspMode mode, boolean enabled) {
+        setup.getDeploymentConfiguration().setCspMode(mode);
+
+        assertEquals(enabled, CspViolationReporter.isEnabled());
     }
 
     @ParameterizedTest
@@ -398,6 +399,74 @@ class CspModeTest {
         for (Throwable warning : warnings.getAllValues()) {
             assertTraceLeadsFromApiToTest(warning, Element.class, "executeJs");
         }
+    }
+
+    @Test
+    void strict_stringJavaScriptWithDetail_throwsWithDetailAndTraceFromApi() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+
+        CspViolationException exception = assertThrows(
+                CspViolationException.class,
+                () -> reportFromComponent("series[2].formatter"));
+
+        assertTrue(
+                exception.getMessage().endsWith(
+                        " The JavaScript is in \"series[2].formatter\"."),
+                exception.getMessage());
+        assertTraceLeadsFromApiToTest(exception, CspModeTest.class,
+                "reportFromComponent");
+    }
+
+    @Test
+    void warn_stringJavaScriptWithDetail_logsOncePerCallSiteAndDetail() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.WARN);
+        Logger logger = mock(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            loggerFactory.when(
+                    () -> LoggerFactory.getLogger(CspViolationReporter.class))
+                    .thenReturn(logger);
+
+            // One call site, as for a component that reports before the
+            // client response
+            reportFromComponent("tooltip.formatter");
+            reportFromComponent("tooltip.formatter");
+            reportFromComponent("series[2].formatter");
+            reportFromOtherComponent("tooltip.formatter");
+        }
+
+        ArgumentCaptor<String> messages = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Throwable> warnings = ArgumentCaptor
+                .forClass(Throwable.class);
+        verify(logger, times(3)).warn(messages.capture(), warnings.capture());
+        assertTrue(
+                messages.getAllValues().get(0).contains("tooltip.formatter"));
+        assertTrue(
+                messages.getAllValues().get(1).contains("series[2].formatter"));
+        assertTrue(
+                messages.getAllValues().get(2).contains("tooltip.formatter"));
+        assertTraceLeadsFromApiToTest(warnings.getAllValues().get(0),
+                CspModeTest.class, "reportFromComponent");
+        assertTraceLeadsFromApiToTest(warnings.getAllValues().get(1),
+                CspModeTest.class, "reportFromComponent");
+        assertTraceLeadsFromApiToTest(warnings.getAllValues().get(2),
+                CspModeTest.class, "reportFromOtherComponent");
+    }
+
+    @Test
+    void stringJavaScriptWithNullDetail_throws() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.WARN);
+
+        assertThrows(NullPointerException.class,
+                () -> CspViolationReporter.reportStringJavaScript(null));
+    }
+
+    private static void reportFromComponent(String detail) {
+        CspViolationReporter.reportStringJavaScript(detail);
+    }
+
+    private static void reportFromOtherComponent(String detail) {
+        CspViolationReporter.reportStringJavaScript(detail);
     }
 
     @SuppressWarnings("removal")

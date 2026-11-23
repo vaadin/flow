@@ -66,7 +66,7 @@ public interface DomListenerRegistration extends Registration {
      * browser without compiling it. Any other expression is compiled by the
      * browser from a string, so it does not work with a Content Security Policy
      * that does not allow <code>unsafe-eval</code>. To get such event data
-     * without that, declare it in a {@link com.vaadin.flow.js.JsDefinition}
+     * without that, declare it in a {@link com.vaadin.flow.js.JsSnippets}
      * interface and use {@link #addEventData(DomEventData)}.
      *
      * @param eventData
@@ -103,7 +103,7 @@ public interface DomListenerRegistration extends Registration {
      * as the key in the JSON object. The browser reads the path without
      * compiling anything, so this also works with a Content Security Policy
      * that does not allow <code>unsafe-eval</code>. To get data that is not a
-     * property path, declare it in a {@link com.vaadin.flow.js.JsDefinition}
+     * property path, declare it in a {@link com.vaadin.flow.js.JsSnippets}
      * interface and use {@link #addEventData(DomEventData)}.
      *
      * @param path
@@ -113,6 +113,7 @@ public interface DomListenerRegistration extends Registration {
      * @throws IllegalArgumentException
      *             if the path is not a property path
      * @see #addEventDataElementPath(String) for mapping an element
+     * @since 25.4
      */
     default DomListenerRegistration addEventDataPath(String path) {
         return addEventDataEntry(requirePropertyPath(path));
@@ -146,6 +147,7 @@ public interface DomListenerRegistration extends Registration {
      *            the event data to send, not <code>null</code>
      * @return this registration, for chaining
      * @see DomEventData
+     * @since 25.4
      */
     default DomListenerRegistration addEventData(DomEventData<?> eventData) {
         /*
@@ -174,9 +176,15 @@ public interface DomListenerRegistration extends Registration {
      * <code>?.</code>, such as <code>event.isTrusted</code>, is read in the
      * browser without compiling it. Any other expression is compiled by the
      * browser from a string, so it does not work with a Content Security Policy
-     * that does not allow <code>unsafe-eval</code>. To filter events without
-     * that, declare the filter in a {@link com.vaadin.flow.js.JsDefinition}
-     * interface and use {@link #setFilterExpression(DomEventFilter)}.
+     * that does not allow <code>unsafe-eval</code>. Many filters can be written
+     * as a path, as the value only has to be truthy: for example
+     * <code>event.key?.length</code> passes the same events as
+     * <code>typeof(event.key) === 'string' &amp;&amp; event.key.length &gt;
+     * 0</code>. To filter events in other ways, declare the filter in a
+     * {@link com.vaadin.flow.js.JsSnippets} interface and use
+     * {@link #setFilterExpression(DomEventFilter)}. The
+     * {@link com.vaadin.flow.component.DomEvent#filter()} of a component event
+     * is put into the frontend bundle when the application is built instead.
      *
      * @param filter
      *            the JavaScript filter expression, or <code>null</code> to
@@ -211,6 +219,7 @@ public interface DomListenerRegistration extends Registration {
      *            the filter, or <code>null</code> to clear the filter
      * @return this registration, for chaining
      * @see DomEventFilter
+     * @since 25.4
      */
     default DomListenerRegistration setFilterExpression(DomEventFilter filter) {
         /*
@@ -493,7 +502,7 @@ public interface DomListenerRegistration extends Registration {
      * the browser from a string, so it does not work with a Content Security
      * Policy that does not allow <code>unsafe-eval</code>. To get such an
      * element without that, declare <code>DomEventData&lt;Element&gt;</code> in
-     * a {@link com.vaadin.flow.js.JsDefinition} interface and use
+     * a {@link com.vaadin.flow.js.JsSnippets} interface and use
      * {@link #addEventData(DomEventData)}.
      *
      * @param eventData
@@ -509,8 +518,8 @@ public interface DomListenerRegistration extends Registration {
      *             <code>event.target.parentElement</code>. For any other
      *             expression, such as <code>event.composedPath()[0]</code>,
      *             declare <code>DomEventData&lt;Element&gt;</code> in a
-     *             {@link com.vaadin.flow.js.JsDefinition} interface, add it
-     *             with {@link #addEventData(DomEventData)} and read it with
+     *             {@link com.vaadin.flow.js.JsSnippets} interface, add it with
+     *             {@link #addEventData(DomEventData)} and read it with
      *             {@link DomEvent#getEventDataElement(DomEventData)}.
      */
     @Deprecated(since = "25.4")
@@ -546,6 +555,7 @@ public interface DomListenerRegistration extends Registration {
      *             if the path is not a property path
      * @see #mapEventTargetElement() to map the {@code event.target} to an
      *      element
+     * @since 25.4
      */
     default DomListenerRegistration addEventDataElementPath(String path) {
         return addEventDataElementEntry(requirePropertyPath(path));
@@ -599,7 +609,7 @@ public interface DomListenerRegistration extends Registration {
         Objects.requireNonNull(path, "Event data path cannot be null");
         if (!ElementListenerMap.isPropertyPath(path)) {
             throw new IllegalArgumentException("'" + path
-                    + "' is not a property path, which is 'event' or 'element' followed by property names that each start with '.' or '?.'. Declare other event data in a JsDefinition interface and add it as a DomEventData.");
+                    + "' is not a property path, which is 'event' or 'element' followed by property names that each start with '.' or '?.'. Declare other event data in a JsSnippets interface and add it as a DomEventData.");
         }
         return path;
     }

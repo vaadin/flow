@@ -51,6 +51,7 @@ import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
@@ -819,9 +820,11 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
      * so that they can keep the scroll positions across it.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
      */
     @JsDefinition
-    public interface RefreshUiJs extends Serializable {
+    public interface RefreshUiJs extends JsInvokers {
 
         /**
          * Asks the dev tools to refresh the UI.

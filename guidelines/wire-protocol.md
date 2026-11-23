@@ -135,7 +135,7 @@ form, key order included, changes the id.
 #### Declared event data and filters
 
 `addEventData(DomEventData)` and `setFilterExpression(DomEventFilter)` use a
-function that a `@JsDefinition` method declares, so the client compiles
+function that a method of a `@JsDefinition` interface extending `JsSnippets` declares, so the client compiles
 nothing from a string. Such an entry is keyed by `@` followed by a short
 hash of the function and its captured values (`JsCall.createSnippetKey()`).
 No JavaScript expression starts with `@`, so this key never equals the
@@ -154,7 +154,8 @@ below, keeps the expression as its key. The object holds:
   `preventDefault()` or `stopPropagation()` on a listener with a declared
   filter. The entry runs the filter, and the client calls that method of
   the event only when the filter passes. Its key is the key of the filter
-  followed by `.` and the method name.
+  followed by `.` and the method name. A bundled `@DomEvent` filter,
+  described below, uses `s` too, with a different key.
 - `e` — `true` for event data declared as `DomEventData<Element>`, left
   out otherwise. The function returns a DOM node, and the client sends the
   id of the closest state node instead (`-1` when there is none), like it
@@ -223,6 +224,26 @@ the keys of a `@PrebuiltEventData` event stay plain expressions.
 }
 ```
 
+The `filter` of a `@DomEvent` class is sent the same way when it is not a
+property path, and shares the function of an `@EventData` value with the
+same expression. Its object has the debounce settings of a filter in `d`.
+For `preventDefault()` or `stopPropagation()` on a listener with such a
+filter, the key is the conditional expression that a string filter would
+get, such as `(event.button === 0) && event.preventDefault()`, and the
+object has the function of the filter and `s`. The client runs the
+function and calls the method when it returns a truthy value, or compiles
+the key when the bundle has no function for it, which does the same. For
+a filter that is a property path, the conditional expression is sent as a
+plain expression, and the client reads it without compiling it: it reads
+the path and calls the method when the value is truthy.
+
+```json
+{
+  "event.button === 0": { "f": "9d02…5b1e", "d": true },
+  "(event.button === 0) && event.preventDefault()": { "f": "9d02…5b1e", "d": false, "s": "preventDefault" }
+}
+```
+
 ### Constraints this puts on new code
 
 - **Nothing is ever evicted, on either side.** The pool grows for the
@@ -260,7 +281,7 @@ wire shape:
   at the call site and compiled in the browser.
 - **Declared JavaScript** — `Page.executeJs(Class)` and
   `Element.executeJs(Class)` with an interface annotated with
-  `@JsDefinition`, whose methods carry their JavaScript in
+  `@JsDefinition` that extends `JsInvokers`, whose methods carry their JavaScript in
   `@JsExpression`. The build collects every such method into the bundle as
   a function, so nothing is compiled in the browser: this is the path that
   works under a content security policy without `unsafe-eval`.
@@ -342,10 +363,11 @@ travels as a single-key wrapper object whose key is reserved:
   a callback that sends a `channel` RPC back to the server.
 - `{"@v-fn": {"body": …, "captures": […], "args": […]}}` — a `JsFunction`,
   manifested on the client as a real function with its captures pre-bound.
-  This is how `Element.addJsInitializer` ships a user expression as a
-  parameter of a fixed framework expression.
+  This is how `Element.addJsInitializer` ships a user expression as an
+  argument of the declared framework call that runs initializers.
 - `{"@v-fn": {"id": …, "captures": […]}}` — a `JsFunction` declared as a
-  `JsSnippet` by a `@JsDefinition` method. The client looks the id up in
+  `JsSnippet` by a method of a `@JsDefinition` interface extending
+  `JsSnippets`. The client looks the id up in
   `window.Vaadin.Flow.jsSnippets` and calls that function with the
   captures; what it returns is the decoded value, so nothing is compiled
   from a string. That is a function whose body is the declared expression

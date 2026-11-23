@@ -43,12 +43,15 @@ import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsDefinitionProxy.Kind;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
@@ -57,20 +60,22 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
 
 /**
  * Generates {@link FrontendUtils#JS_DEFINITIONS_FILE_NAME}, which registers the
- * JavaScript of every {@link JsDefinition} interface on the class path as an
- * ordinary function of the bundle: in one registry for the methods that run
- * their JavaScript when called, in another for those of them that are annotated
- * with {@link JsWithExecutionContext} and take the execution context as their
- * first parameter, and in a third for the methods that declare a
- * {@link JsSnippet}, which the client turns into a function when it decodes the
- * snippet. A definition that does not pass
+ * JavaScript of every {@link JsDefinition} interface on the class path, one
+ * that extends {@link JsInvokers} or {@link JsSnippets}, as an ordinary
+ * function of the bundle: in one registry for the methods that run their
+ * JavaScript when called, in another for those of them that are annotated with
+ * {@link JsWithExecutionContext} and take the execution context as their first
+ * parameter, and in a third for the methods that declare a {@link JsSnippet},
+ * which the client turns into a function when it decodes the snippet. A
+ * definition that does not pass
  * {@link JsDefinitionProxy#checkDefinition(Class)} is left out, with an error
  * in the log.
  * <p>
- * The snippet registry also holds the {@link EventData} values of the
- * {@link DomEvent} classes on the class path that the client would otherwise
- * compile from a string, see {@link BundledEventData}, so that the server can
- * send the identifier of a function instead of the value.
+ * The snippet registry also holds the {@link EventData} values and the
+ * {@link DomEvent#filter()} of the {@link DomEvent} classes on the class path
+ * that the client would otherwise compile from a string, see
+ * {@link BundledEventData}, so that the server can send the identifier of a
+ * function instead of the value.
  * <p>
  * This is what lets the client run a server-initiated call without compiling
  * anything from a string: the server sends the identifier of the function to
@@ -193,11 +198,12 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     }
 
     /**
-     * Renders one snippet per distinct {@link EventData} value of the given
-     * event types that {@link BundledEventData} puts into the bundle, under the
-     * identifier the server sends for it. The snippet captures nothing, and the
-     * function it evaluates to is called with the event and the element, the
-     * same names the client compiles such a value with.
+     * Renders one snippet per distinct {@link EventData} value and
+     * {@link DomEvent#filter()} of the given event types that
+     * {@link BundledEventData} puts into the bundle, under the identifier the
+     * server sends for it. The snippet captures nothing, and the function it
+     * evaluates to is called with the event and the element, the same names the
+     * client compiles such a value with.
      */
     private static List<String> renderEventDataLines(
             Collection<Class<?>> eventTypes, boolean withNames) {
@@ -206,18 +212,31 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         Map<String, String> expressions = new TreeMap<>();
         Map<String, String> declaredBy = new HashMap<>();
         eventTypes.stream().sorted(Comparator.comparing(Class::getName))
-                .forEach(eventType -> findBundledEventData(eventType)
-                        .forEach(eventData -> {
-                            // A value mapped to an element shares the
-                            // function of its expression, and the client maps
-                            // what the function returns
-                            String functionId = BundledEventData
-                                    .getFunctionId(eventData);
-                            expressions.putIfAbsent(functionId,
-                                    BundledEventData.getExpression(eventData));
-                            declaredBy.putIfAbsent(functionId,
-                                    eventType.getName());
-                        }));
+                .forEach(eventType -> {
+                    findBundledEventData(eventType).forEach(eventData -> {
+                        // A value mapped to an element shares the function
+                        // of its expression, and the client maps what the
+                        // function returns
+                        String functionId = BundledEventData
+                                .getFunctionId(eventData);
+                        expressions.putIfAbsent(functionId,
+                                BundledEventData.getExpression(eventData));
+                        declaredBy.putIfAbsent(functionId,
+                                eventType.getName()
+                                        + " @EventData(\"" + BundledEventData
+                                                .getExpression(eventData)
+                                        + "\")");
+                    });
+                    String filter = BundledEventData
+                            .getBundledFilter(eventType);
+                    if (filter != null) {
+                        String functionId = BundledEventData
+                                .getFunctionId(filter);
+                        expressions.putIfAbsent(functionId, filter);
+                        declaredBy.putIfAbsent(functionId, eventType.getName()
+                                + " @DomEvent(filter = \"" + filter + "\")");
+                    }
+                });
 
         List<String> lines = new ArrayList<>();
         expressions.forEach((functionId, expression) -> {
@@ -235,8 +254,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             if (withNames) {
                 lines.add(String.format(
                         "window.Vaadin.Flow.jsDefinitionNames[%s] = %s;", id,
-                        quote(declaredBy.get(functionId) + " @EventData(\""
-                                + expression + "\")")));
+                        quote(declaredBy.get(functionId))));
             }
         });
         return lines.stream().flatMap(
@@ -518,7 +536,9 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             return List.of();
         }
         List<Method> methods = new ArrayList<>();
-        for (Method method : definition.getMethods()) {
+        // Not getMethods(), whose inherited methods keep the annotations they
+        // had before the interface declaring them was hotswapped
+        for (Method method : ReflectTools.getCurrentPublicMethods(definition)) {
             if (method.isAnnotationPresent(JsExpression.class)) {
                 methods.add(method);
             }
