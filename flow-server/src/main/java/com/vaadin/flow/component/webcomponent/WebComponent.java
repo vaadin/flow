@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.BaseJsonNode;
 import tools.jackson.databind.node.IntNode;
 import tools.jackson.databind.node.NumericNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -28,6 +27,8 @@ import tools.jackson.databind.node.ValueNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
@@ -42,15 +43,6 @@ import com.vaadin.flow.server.webcomponent.WebComponentBinding;
  * @since 2.0
  */
 public final class WebComponent<C extends Component> implements Serializable {
-    private static final String UPDATE_PROPERTY = "this"
-            + "._updatePropertyFromServer($0, $1);";
-    private static final String UPDATE_PROPERTY_NULL = "this"
-            + "._updatePropertyFromServer($0, null);";
-    private static final String UPDATE_PROPERTY_FORMAT = "this"
-            + "._updatePropertyFromServer($0, %s);";
-    private static final String CUSTOM_EVENT = "this.dispatchEvent(new "
-            + "CustomEvent($0, %s));";
-
     private static final EventOptions BASIC_OPTIONS = new EventOptions();
 
     private Element componentHost;
@@ -143,7 +135,10 @@ public final class WebComponent<C extends Component> implements Serializable {
         object.set("detail",
                 objectData == null ? JacksonUtils.nullNode() : objectData);
 
-        componentHost.executeJs(String.format(CUSTOM_EVENT, object), eventName);
+        // The options are an argument of the call, so a quote in the detail
+        // is data instead of the end of a JavaScript string
+        componentHost.executeJs(CustomEventJs.class).fireEvent(eventName,
+                object);
     }
 
     /**
@@ -209,38 +204,40 @@ public final class WebComponent<C extends Component> implements Serializable {
     }
 
     private void setProperty(String propertyName, Object value) {
+        // A property is a Boolean, a String, an Integer, a Double or a JSON
+        // node - see WebComponentExporter - and a node standing for a single
+        // value is sent as that value rather than as a node. Everything else,
+        // which is an object or an array node, is sent as it is: the client
+        // decodes it into the value the property takes.
+        Object jsValue = switch (value) {
+        case IntNode node -> node.intValue();
+        case NumericNode node -> node.doubleValue();
+        case ValueNode node -> node.asString();
+        case null, default -> value;
+        };
 
-        if (value == null) {
-            componentHost.executeJs(UPDATE_PROPERTY_NULL, propertyName);
-        }
+        componentHost.callJsFunction("_updatePropertyFromServer", propertyName,
+                jsValue);
+    }
 
-        if (value instanceof Integer) {
-            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
-                    (Integer) value);
-        } else if (value instanceof Double) {
-            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
-                    (Double) value);
-        } else if (value instanceof String) {
-            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
-                    (String) value);
-        } else if (value instanceof Boolean) {
-            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
-                    (Boolean) value);
-        } else if (value instanceof IntNode) {
-            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
-                    ((ValueNode) value).intValue());
-        } else if (value instanceof NumericNode) {
-            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
-                    ((ValueNode) value).doubleValue());
-        } else if (value instanceof ValueNode) {
-            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
-                    ((ValueNode) value).asString());
-        } else if (value instanceof BaseJsonNode) {
-            // this gets around executeJavaScript limitation.
-            // Since properties can take JSON values, this was needed to allow
-            // that expected behavior.
-            componentHost.executeJs(
-                    String.format(UPDATE_PROPERTY_FORMAT, value), propertyName);
-        }
+    /**
+     * How an event of an exported web component is fired, as a JavaScript
+     * definition for {@link Element#executeJs(Class)}.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface CustomEventJs extends Serializable {
+
+        /**
+         * Fires an event on the host of the web component.
+         *
+         * @param eventName
+         *            the name of the event
+         * @param options
+         *            what the event is made of, including its detail
+         */
+        @JsExpression("this.dispatchEvent(new CustomEvent($0, $1));")
+        void fireEvent(String eventName, ObjectNode options);
     }
 }

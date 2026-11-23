@@ -42,7 +42,7 @@ class GradleVersionSupportTest(private val versionUnderTest: GradleVersion) : Ab
                         // same published plugin (cross-version support): the
                         // first Gradle 9 release and the latest released 9.x.
                         "9.0.0",
-                        "9.6.1"
+                        "9.8.0"
                     ).map { GradleVersion(it, true) }
     }
 

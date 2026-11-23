@@ -26,6 +26,6 @@ public class ForwardToView extends Div implements BeforeEnterObserver {
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        event.forwardTo("com.vaadin.flow.uitest.ui.BasicComponentView");
+        event.forwardTo("com.vaadin.flow.uitest.ui.BaseHrefView");
     }
 }

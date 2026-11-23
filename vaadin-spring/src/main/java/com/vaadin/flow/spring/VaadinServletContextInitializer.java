@@ -43,7 +43,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
@@ -66,6 +65,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.LookupInitializer;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Layout;
@@ -142,8 +142,7 @@ public class VaadinServletContextInitializer
             "com/nimbusds", "elemental/util", "org/reflections",
             "org/aopalliance", "org/objectweb",
 
-            "com/vaadin/hilla", "com/vaadin/copilot")
-            .collect(Collectors.toList());
+            "com/vaadin/hilla", "com/vaadin/copilot").toList();
 
     /**
      * Packages that should be scanned by default and can't be overriden by a
@@ -153,9 +152,17 @@ public class VaadinServletContextInitializer
             .of(Component.class.getPackage().getName(),
                     Theme.class.getPackage().getName(),
                     // LitRenderer uses script annotation
-                    "com.vaadin.flow.data.renderer", "com.vaadin.shrinkwrap",
+                    "com.vaadin.flow.data.renderer",
+                    // hold JavaScript definitions of the framework, which
+                    // development mode generates from the scanned classes
+                    Element.class.getPackage().getName(),
+                    Route.class.getPackage().getName(),
+                    IndexHtmlRequestHandler.class.getPackage().getName(),
+                    // named as a string, as the dev server is not on the
+                    // class path of a production application
+                    "com.vaadin.base.devserver", "com.vaadin.shrinkwrap",
                     "com.vaadin.copilot.startup", "com.vaadin.hilla.startup")
-            .collect(Collectors.toList());
+            .toList();
 
     /**
      * Packages marked by the user to be scanned exclusively.
@@ -348,7 +355,7 @@ public class VaadinServletContextInitializer
 
                     List<Class<?>> routeClasses = findByAnnotation(
                             routePackages, Route.class, RouteAlias.class)
-                            .collect(Collectors.toList());
+                            .toList();
 
                     if (devModeCachingEnabled) {
                         ReloadCache.routePackages = routeClasses.stream()
@@ -438,11 +445,10 @@ public class VaadinServletContextInitializer
                 RouteConfiguration routeConfiguration,
                 Class<? extends Component> configuredNavigationTarget,
                 Class<? extends Component> navigationTarget) {
-            if (GenericTypeReflector.isSuperType(navigationTarget,
-                    configuredNavigationTarget)) {
+            if (navigationTarget.isAssignableFrom(configuredNavigationTarget)) {
                 return true;
-            } else if (GenericTypeReflector.isSuperType(
-                    configuredNavigationTarget, navigationTarget)) {
+            } else if (configuredNavigationTarget
+                    .isAssignableFrom(navigationTarget)) {
                 routeConfiguration.removeRoute(configuredNavigationTarget);
                 routeConfiguration.setAnnotatedRoute(navigationTarget);
                 return true;
@@ -652,6 +658,19 @@ public class VaadinServletContextInitializer
 
     }
 
+    /**
+     * Scans the given packages for the classes development mode needs, which is
+     * a wider set than what a production build scans for.
+     *
+     * @param basePackages
+     *            the packages to scan
+     * @param annotations
+     *            the annotations a matching class is annotated with
+     * @param superTypes
+     *            the types a matching class extends or implements
+     * @return the classes found, never {@code null}
+     * @since 24.5
+     */
     protected Set<Class<?>> findClassesForDevMode(Set<String> basePackages,
             List<Class<? extends Annotation>> annotations,
             List<Class<?>> superTypes) {
@@ -745,8 +764,7 @@ public class VaadinServletContextInitializer
             neverScan = Collections.emptyList();
         } else {
             neverScan = Arrays.stream(neverScanProperty.split(","))
-                    .map(pkg -> pkg.replace('.', '/').trim())
-                    .collect(Collectors.toList());
+                    .map(pkg -> pkg.replace('.', '/').trim()).toList();
         }
 
         String onlyScanProperty = appContext.getEnvironment()
@@ -766,7 +784,7 @@ public class VaadinServletContextInitializer
         } else {
             customScanOnly = Arrays.stream(onlyScanProperty.split(","))
                     .map(onlyPackage -> onlyPackage.replace('/', '.').trim())
-                    .collect(Collectors.toList());
+                    .toList();
             customLoader = new CustomResourceLoader(appContext);
         }
 
@@ -961,7 +979,7 @@ public class VaadinServletContextInitializer
                 .getBeanNamesForType(VaadinScanPackages.class).length > 0) {
             VaadinScanPackages packages = appContext
                     .getBean(VaadinScanPackages.class);
-            packagesList = packages.getScanPackages();
+            packagesList = packages.scanPackages();
 
         }
         if (!packagesList.isEmpty()) {
@@ -975,12 +993,11 @@ public class VaadinServletContextInitializer
     }
 
     private List<String> getLookupPackages() {
-        return Stream
-                .concat(getDefaultPackages().stream(),
-                        Stream.of("com.vaadin.hilla.frontend",
-                                "com.vaadin.flow.component.polymertemplate.rpc",
-                                "com.vaadin.base.devserver"))
-                .collect(Collectors.toList());
+        return Stream.concat(getDefaultPackages().stream(),
+                Stream.of("com.vaadin.hilla.frontend",
+                        "com.vaadin.flow.component.polymertemplate.rpc",
+                        "com.vaadin.base.devserver"))
+                .toList();
     }
 
     private static void collectHandleTypes(Class<?> clazz,
@@ -1014,7 +1031,7 @@ public class VaadinServletContextInitializer
 
         private final PrefixTree scanAlways = new PrefixTree(DEFAULT_SCAN_ONLY
                 .stream().map(packageName -> packageName.replace('.', '/'))
-                .collect(Collectors.toList()));
+                .toList());
 
         /**
          * If true, only filter based on the package.properties in jar/module.

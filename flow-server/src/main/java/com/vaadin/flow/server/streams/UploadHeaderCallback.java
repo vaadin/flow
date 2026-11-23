@@ -26,6 +26,8 @@ import java.nio.ByteBuffer;
  * Call {@link UploadEvent#reject(String)} to refuse the upload. See
  * {@link UploadValidator#validateHeader(UploadEvent, ByteBuffer)} for the phase
  * semantics.
+ * 
+ * @since 25.3
  */
 @FunctionalInterface
 public interface UploadHeaderCallback extends Serializable {

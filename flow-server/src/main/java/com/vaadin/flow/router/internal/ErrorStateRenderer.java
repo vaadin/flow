@@ -89,6 +89,9 @@ public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
         boolean isFirstCall = trace == null;
         Exception exception = ((ErrorNavigationEvent) event).getErrorParameter()
                 .getCaughtException();
+        // Recorded here rather than by the router, so that an error view shown
+        // through BeforeEvent.rerouteToError also makes the navigation fail
+        event.getUI().getInternals().recordNavigationFailure(exception);
         if (isFirstCall) {
             trace = new ExceptionsTrace(exception);
             ComponentUtil.setData(event.getUI(), ExceptionsTrace.class, trace);

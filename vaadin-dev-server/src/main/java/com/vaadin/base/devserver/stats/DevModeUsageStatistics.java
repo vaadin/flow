@@ -39,7 +39,7 @@ import com.vaadin.pro.licensechecker.MachineId;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since 24.3.22
+ * @since 9.0.2
  */
 public class DevModeUsageStatistics {
 
@@ -85,6 +85,7 @@ public class DevModeUsageStatistics {
      *            the statistics sender to use
      *
      * @return the created instance or {@code null} if telemetry is not used
+     * @since 24.0.5
      */
     public static DevModeUsageStatistics init(File projectFolder,
             StatisticsStorage storage, StatisticsSender sender) {
@@ -160,8 +161,8 @@ public class DevModeUsageStatistics {
     }
 
     /**
-     * Populates the static identity data (versions and source id) of the
-     * current project.
+     * Populates the static identity data (versions, source id, build tool and
+     * AI agent) of the current project.
      *
      * @param projectData
      *            the project specific data to populate
@@ -175,6 +176,14 @@ public class DevModeUsageStatistics {
                 ServerInfo.fetchHillaVersion());
         projectData.setValue(StatisticsConstants.FIELD_SOURCE_ID,
                 ProjectHelpers.getProjectSource(projectFolder));
+        projectData.setValue(StatisticsConstants.FIELD_BUILD_TOOL,
+                ProjectHelpers.getBuildTool(projectFolder));
+        // Only set when detected, so that a start without an agent leaves out
+        // the field but does not clear an agent detected earlier in the same
+        // report interval
+        ProjectHelpers.getAiAgent(System.getenv())
+                .ifPresent(aiAgent -> projectData
+                        .setValue(StatisticsConstants.FIELD_AI_AGENT, aiAgent));
     }
 
     /**

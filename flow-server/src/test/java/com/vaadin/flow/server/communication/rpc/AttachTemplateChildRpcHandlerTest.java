@@ -18,7 +18,6 @@ package com.vaadin.flow.server.communication.rpc;
 import java.util.HashMap;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -29,6 +28,9 @@ import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.shared.JsonConstants;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class AttachTemplateChildRpcHandlerTest {
 
@@ -84,20 +86,19 @@ class AttachTemplateChildRpcHandlerTest {
         object.put(JsonConstants.RPC_ATTACH_ASSIGNED_ID, assignedId);
         object.set(JsonConstants.RPC_ATTACH_ID, id);
 
-        StateNode node = Mockito.mock(StateNode.class);
-        StateNode parentNode = Mockito.mock(StateNode.class);
-        StateTree tree = Mockito.mock(StateTree.class);
-        Mockito.when(node.getOwner()).thenReturn(tree);
-        Mockito.when(node.getParent()).thenReturn(parentNode);
-        Mockito.when(tree.getNodeById(requestedId)).thenReturn(node);
-        Mockito.when(node.getChangeTracker(Mockito.any(), Mockito.any()))
-                .thenReturn(new HashMap<>());
+        StateNode node = mock(StateNode.class);
+        StateNode parentNode = mock(StateNode.class);
+        StateTree tree = mock(StateTree.class);
+        when(node.getOwner()).thenReturn(tree);
+        when(node.getParent()).thenReturn(parentNode);
+        when(tree.getNodeById(requestedId)).thenReturn(node);
+        when(node.getChangeTracker(any(), any())).thenReturn(new HashMap<>());
 
         ElementData data = new ElementData(node);
         data.setTag("foo");
-        Mockito.when(node.getFeature(ElementData.class)).thenReturn(data);
+        when(node.getFeature(ElementData.class)).thenReturn(data);
 
-        Mockito.when(parentNode.getId()).thenReturn(3);
+        when(parentNode.getId()).thenReturn(3);
 
         handler.handleNode(node, object);
     }

@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.web.context.WebApplicationContext;
@@ -42,7 +41,9 @@ import com.vaadin.flow.server.VaadinSession;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -63,7 +64,7 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
     protected VaadinRouteScope getScope() {
         VaadinRouteScope scope = new VaadinRouteScope();
         scope.postProcessBeanFactory(
-                Mockito.mock(ConfigurableListableBeanFactory.class));
+                mock(ConfigurableListableBeanFactory.class));
         return scope;
     }
 
@@ -98,11 +99,10 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
         VaadinSession session = VaadinSession.getCurrent();
         VaadinService service = session.getService();
 
-        doCallRealMethod().when(session)
-                .addSessionDestroyListener(Mockito.any());
+        doCallRealMethod().when(session).addSessionDestroyListener(any());
         doCallRealMethod().when(session).getLockInstance();
         doCallRealMethod().when(session).getPendingAccessQueue();
-        doCallRealMethod().when(session).access(Mockito.any());
+        doCallRealMethod().when(session).access(any());
 
         VaadinRouteScope scope = initScope(ui);
 
@@ -139,9 +139,8 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
 
         UI anotherUI = makeAnotherUI(ui);
 
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
-        Mockito.when(details.getWindowName()).thenReturn("bar");
+        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
+        when(details.getWindowName()).thenReturn("bar");
         ui.getInternals().setExtendedClientDetails(details);
         anotherUI.getInternals().setExtendedClientDetails(details);
 
@@ -188,9 +187,8 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
 
         UI anotherUI = makeAnotherUI(ui);
 
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
-        Mockito.when(details.getWindowName()).thenReturn("bar");
+        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
+        when(details.getWindowName()).thenReturn("bar");
         ui.getInternals().setExtendedClientDetails(details);
 
         ui.getSession().addUI(ui);
@@ -235,9 +233,8 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
 
         UI anotherUI = makeAnotherUI(ui);
 
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
-        Mockito.when(details.getWindowName()).thenReturn("bar");
+        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
+        when(details.getWindowName()).thenReturn("bar");
         ui.getInternals().setExtendedClientDetails(details);
         anotherUI.getInternals().setExtendedClientDetails(details);
 
@@ -262,7 +259,7 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
         initScope(anotherUI);
 
         List<Throwable> reportedErrors = new ArrayList<>();
-        Mockito.when(session.getErrorHandler())
+        when(session.getErrorHandler())
                 .thenReturn(event -> reportedErrors.add(event.getThrowable()));
 
         // Session expiration removes the UIs one by one. The refreshed UI, the
@@ -285,9 +282,8 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
 
         UI anotherUI = makeAnotherUI(ui);
 
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
-        Mockito.when(details.getWindowName()).thenReturn("bar");
+        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
+        when(details.getWindowName()).thenReturn("bar");
         ui.getInternals().setExtendedClientDetails(details);
         anotherUI.getInternals().setExtendedClientDetails(details);
 
@@ -326,8 +322,8 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
     }
 
     private void navigateTo(UI ui, Component component) {
-        AfterNavigationEvent event = Mockito.mock(AfterNavigationEvent.class);
-        Mockito.when(event.getActiveChain())
+        AfterNavigationEvent event = mock(AfterNavigationEvent.class);
+        when(event.getActiveChain())
                 .thenReturn(Collections.singletonList(component));
         List<AfterNavigationHandler> navigationListeners = ui
                 .getNavigationListeners(AfterNavigationHandler.class);
@@ -338,7 +334,7 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
     private ObjectFactory<?> putObjectIntoScope(VaadinRouteScope scope) {
         Object object = new Object();
         @SuppressWarnings("rawtypes")
-        ObjectFactory factory = Mockito.mock(ObjectFactory.class);
+        ObjectFactory factory = mock(ObjectFactory.class);
         when(factory.getObject()).thenReturn(object);
         scope.get("foo", factory);
         return factory;
@@ -358,9 +354,8 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
         VaadinServletContext context = ((VaadinServletContext) service
                 .getContext());
         ServletContext servletContext = context.getContext();
-        WebApplicationContext appContext = Mockito
-                .mock(WebApplicationContext.class);
-        Mockito.when(servletContext.getAttribute(
+        WebApplicationContext appContext = mock(WebApplicationContext.class);
+        when(servletContext.getAttribute(
                 WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE))
                 .thenReturn(appContext);
 

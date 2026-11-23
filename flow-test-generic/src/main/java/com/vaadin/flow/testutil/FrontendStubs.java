@@ -31,15 +31,76 @@ public class FrontendStubs {
     public static final String VITE_PACKAGE_JSON = "node_modules/vite/package.json";
     public static final String VITE_TEST_OUT_FILE = "vite-out.test";
 
-    private static final String NPM_BIN_PATH = System.getProperty("os.name")
-            .startsWith("Windows") ? "node/node_modules/npm/bin/"
-                    : "node/lib/node_modules/npm/bin/";
+    private static final boolean IS_WINDOWS = System.getProperty("os.name")
+            .startsWith("Windows");
+
+    private static final String NPM_BIN_PATH = IS_WINDOWS
+            ? "node/node_modules/npm/bin/"
+            : "node/lib/node_modules/npm/bin/";
     private static final String NPM_CACHE_PATH_STUB = "cache";
 
     /**
      * Only static methods.
      */
     private FrontendStubs() {
+    }
+
+    /**
+     * Makes a stub executable, failing loudly if it cannot be, since a stub
+     * that cannot be run only surfaces much later as a confusing "cannot
+     * execute" failure inside the code under test.
+     *
+     * @param stub
+     *            the stub file to make executable
+     * @throws IOException
+     *             if the file cannot be made executable
+     */
+    private static void makeExecutable(File stub) throws IOException {
+        if (!stub.setExecutable(true)) {
+            throw new IOException(
+                    "Could not make the stub " + stub + " executable");
+        }
+    }
+
+    /**
+     * Creates stub versions of `node` and `npm` in a versioned installation
+     * directory, i.e. in {@code <baseDir>/node-<version>}, as the installer of
+     * Flow does. The node stub outputs the given version when it is called with
+     * '-v' or '--version'.
+     *
+     * @param version
+     *            the Node.js version to stub, e.g. `v24.19.0`
+     * @param baseDir
+     *            parent to create the versioned node directory in
+     * @return the created installation directory
+     * @throws IOException
+     *             when a file operation fails
+     */
+    public static File createStubVersionedNode(String version, String baseDir)
+            throws IOException {
+        String normalizedVersion = version.startsWith("v")
+                ? version.substring(1)
+                : version;
+        File installation = new File(baseDir, "node-v" + normalizedVersion);
+
+        File node = new File(installation,
+                IS_WINDOWS ? "node.exe" : "bin/node");
+        FileUtils.forceMkdir(node.getParentFile());
+        FileUtils.write(
+                node, ToolStubInfo.builder(Tool.NODE)
+                        .withVersion(normalizedVersion).build().getScript(),
+                StandardCharsets.UTF_8);
+        makeExecutable(node);
+
+        File npmCli = new File(installation,
+                IS_WINDOWS ? "node_modules/npm/bin/npm-cli.js"
+                        : "lib/node_modules/npm/bin/npm-cli.js");
+        FileUtils.forceMkdir(npmCli.getParentFile());
+        FileUtils.write(npmCli,
+                ToolStubInfo.builder(Tool.NPM).build().getScript(),
+                StandardCharsets.UTF_8);
+
+        return installation;
     }
 
     /**
@@ -75,16 +136,14 @@ public class FrontendStubs {
             FileUtils.writeStringToFile(new File(binDir, "npx-cli.js"), stub,
                     StandardCharsets.UTF_8);
         }
-        boolean isWindows = System.getProperty("os.name").startsWith("Windows");
-
         if (stubNode.isStubbed()) {
             File nodeDir = new File(baseDir, "node");
             FileUtils.forceMkdir(nodeDir);
             File node = new File(baseDir,
-                    isWindows ? "node/node.exe" : "node/node");
-            node.createNewFile();
-            node.setExecutable(true);
-            if (isWindows) {
+                    IS_WINDOWS ? "node/node.exe" : "node/node");
+            FileUtils.touch(node);
+            makeExecutable(node);
+            if (IS_WINDOWS) {
                 // Commented out until a node.exe is created that is not flagged
                 // by Windows defender.
                 // FileUtils.copyFile(new File(
@@ -183,8 +242,8 @@ public class FrontendStubs {
             boolean enableListening) throws IOException {
         FileUtils.forceMkdirParent(serverFile);
 
-        serverFile.createNewFile();
-        serverFile.setExecutable(true);
+        FileUtils.touch(serverFile);
+        makeExecutable(serverFile);
 
         StringBuilder sb = new StringBuilder();
         sb.append("#!/user/bin/env node\n");

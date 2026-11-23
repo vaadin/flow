@@ -91,11 +91,19 @@ import com.vaadin.flow.spring.security.VaadinSavedRequestAwareAuthenticationSucc
 public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuilder<H>>
         extends
         AbstractHttpConfigurer<VaadinStatelessSecurityConfigurer<H>, H> {
+
     private long expiresIn = 1800L;
 
     private String issuer;
 
     private SecretKeyConfigurer secretKeyConfigurer;
+
+    /**
+     * Creates the configurer with the default settings.
+     */
+    public VaadinStatelessSecurityConfigurer() {
+        // Default constructor
+    }
 
     /**
      * Applies configuration required to enable stateless security for a Vaadin

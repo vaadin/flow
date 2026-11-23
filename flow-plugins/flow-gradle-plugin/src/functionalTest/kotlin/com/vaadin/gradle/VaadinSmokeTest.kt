@@ -18,6 +18,9 @@ package com.vaadin.flow.gradle
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import java.util.jar.JarEntry
+import java.util.jar.JarOutputStream
+import java.util.zip.ZipFile
 import kotlin.io.path.div
 import kotlin.io.path.writeText
 import kotlin.test.assertContains
@@ -129,7 +132,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         expect(true, buildInfo.toString()) { buildInfo.get(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE).booleanValue() }
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
-        ), buildInfo.toString()) { buildInfo.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+        ), buildInfo.toString()) { buildInfo.get(InitParameters.APPLICATION_IDENTIFIER).stringValue() }
     }
 
     @Test
@@ -141,7 +144,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         // Read from cached copy since the task deletes the original
         val tokenFile = File(testProject.dir, "build/${VaadinBuildFrontendTask.CACHED_BUILD_INFO_FILE}")
         val buildInfo: JsonNode = JacksonUtils.readTree(tokenFile.readText())
-        expect("MY_APP_ID", buildInfo.toString()) { buildInfo.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+        expect("MY_APP_ID", buildInfo.toString()) { buildInfo.get(InitParameters.APPLICATION_IDENTIFIER).stringValue() }
     }
 
     @Test
@@ -480,11 +483,14 @@ class VaadinSmokeTest : AbstractGradleTest() {
     }
 
     @Test
-    fun testPrepareFrontend_configurationCache() {
-        // Create frontend folder, that will otherwise be created by the first
-        // execution of vaadinPrepareFrontend, invalidating the cache on the
-        // second run
-        testProject.newFolder("src/main/frontend")
+    fun testPrepareFrontend_configurationCache_freshCheckout() {
+        // Same fresh-checkout premise as
+        // testBuildFrontend_configurationCache_freshCheckout, for the task
+        // that runs on every build: src/main/frontend does not exist on a
+        // clean clone, the first build creates it, and the second build must
+        // still reuse the entry.
+        val frontendFolder = File(testProject.dir, "src/main/frontend")
+        expect(false, "the test must start without $frontendFolder") { frontendFolder.exists() }
 
         val result = testProject.build("--configuration-cache", "vaadinPrepareFrontend")
         result.expectTaskSucceded("vaadinPrepareFrontend")
@@ -660,14 +666,63 @@ class VaadinSmokeTest : AbstractGradleTest() {
     }
 
     @Test
-    fun testBuildFrontend_configurationCache() {
-        // Create frontend folder, that will otherwise be created by the first
-        // execution, invalidating the cache on the second run
-        testProject.newFolder("src/main/frontend")
+    fun testBuildFrontend_configurationCache_freshCheckout() {
+        // Regression test for the configuration-cache entry being discarded on
+        // the second build of a fresh checkout. src/main/frontend is generated
+        // and gitignored, so it does not exist on a clean clone; the first
+        // build creates it, as the parent of vaadinBuildFrontend's optional
+        // src/main/frontend/index.html output. If the plugin probes that same
+        // path while configuring, Gradle records a file-system-entry input on
+        // a path the build itself creates, and the next build reports
+        //   configuration cache cannot be reused because the file system entry
+        //   'src/main/frontend' has been created
+        // although nothing in the project changed. Unlike the other
+        // configuration cache tests here, this one deliberately does NOT
+        // pre-create the folder: that pre-creation is what hides the defect.
+        val frontendFolder = File(testProject.dir, "src/main/frontend")
+        expect(false, "the test must start without $frontendFolder") { frontendFolder.exists() }
 
         val result = testProject.build("--configuration-cache", "-Pvaadin.productionMode", "vaadinBuildFrontend")
         result.expectTaskSucceded("vaadinBuildFrontend")
         assertContains(result.output, "Calculating task graph as no cached configuration is available for tasks: vaadinBuildFrontend")
+        assertContains(result.output, "Configuration cache entry stored")
+
+        val result2 = testProject.build("--configuration-cache", "-Pvaadin.productionMode", "vaadinBuildFrontend", checkTasksSuccessful = false)
+        result2.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.UP_TO_DATE)
+        assertContains(result2.output, "Reusing configuration cache")
+    }
+
+    @Test
+    fun testBuildFrontend_configurationCache_fileDependency() {
+        // Regression test for the configuration cache failure on a project
+        // that declares a file-based dependency. Such a dependency makes
+        // Gradle keep the classpath artifact view's component filter alive in
+        // the serialized task graph instead of flattening it away, so the
+        // classpath filter predicate has to be storable. Built out of the
+        // Predicate.and()/or()/negate() combinators it was not: those return
+        // lambdas hosted in java.base/java.util.function, and the build failed
+        // with `module java.base does not "opens java.util.function"`.
+
+        // Create frontend folder, that will otherwise be created by the first
+        // execution, invalidating the cache on the second run
+        testProject.newFolder("src/main/frontend")
+
+        val localJar = testProject.newFile("libs/local.jar")
+        JarOutputStream(localJar.outputStream()).use { jar ->
+            jar.putNextEntry(JarEntry("marker.txt"))
+            jar.write("placeholder".toByteArray())
+            jar.closeEntry()
+        }
+        testProject.buildFile.writeText(
+            testProject.buildFile.readText().replace(
+                """implementation("org.slf4j:slf4j-simple:$slf4jVersion")""",
+                """implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+                implementation(files("libs/local.jar"))"""
+            )
+        )
+
+        val result = testProject.build("--configuration-cache", "-Pvaadin.productionMode", "vaadinBuildFrontend")
+        result.expectTaskSucceded("vaadinBuildFrontend")
         assertContains(result.output, "Configuration cache entry stored")
 
         val result2 = testProject.build("--configuration-cache", "-Pvaadin.productionMode", "vaadinBuildFrontend", checkTasksSuccessful = false)
@@ -746,6 +801,70 @@ class VaadinSmokeTest : AbstractGradleTest() {
 
         val result2 = testProject.build("--configuration-cache", "-Pvaadin.productionMode", "war", checkTasksSuccessful = false)
         assertContains(result2.output, "Reusing configuration cache")
+    }
+
+    @Test
+    fun testBuildFrontend_rebuild_removesChunksOfPreviousBuild() {
+        // Vite does not empty its output folder in production builds, and
+        // chunk names contain a content hash, so the chunks of earlier builds
+        // used to pile up in the output folder, the archive and prod.bundle.
+        // Deleting them must not break the build cache or the configuration
+        // cache of vaadinBuildFrontend.
+        testProject.newFile("src/main/java/org/vaadin/example/MainView.java", """
+            package org.vaadin.example;
+
+            import com.vaadin.flow.component.dependency.JsModule;
+            import com.vaadin.flow.component.html.Div;
+            import com.vaadin.flow.router.Route;
+
+            @JsModule("./marker.js")
+            @Route("")
+            public class MainView extends Div {
+            }
+        """.trimIndent())
+        val marker = testProject.newFile("src/main/frontend/marker.js",
+            "window.chunkMarker = 'MARK-one';")
+        val args = arrayOf("--build-cache", "--configuration-cache",
+            "-Pvaadin.productionMode", "vaadinBuildFrontend")
+
+        testProject.build(*args)
+        marker.writeText("window.chunkMarker = 'MARK-two';")
+        testProject.build(*args)
+        expectOnlyChunksOfCurrentBuild("MARK-two", "MARK-one")
+
+        val result = testProject.build(*args, checkTasksSuccessful = false)
+        result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.UP_TO_DATE)
+        assertContains(result.output, "Reusing configuration cache")
+
+        File(testProject.dir, "build/vaadin-build-frontend").deleteRecursively()
+        File(testProject.dir, "build/cached-flow-build-info.json").delete()
+        val restored = testProject.build(*args, checkTasksSuccessful = false)
+        restored.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.FROM_CACHE)
+        expectOnlyChunksOfCurrentBuild("MARK-two", "MARK-one")
+    }
+
+    private fun expectOnlyChunksOfCurrentBuild(currentMarker: String,
+                                               staleMarker: String) {
+        val buildFolder = File(testProject.dir,
+            "build/vaadin-build-frontend/META-INF/VAADIN/webapp/VAADIN/build")
+        buildFolder.find("indexhtml-*.js")
+        val chunks = buildFolder.find("*.js", 1..Int.MAX_VALUE)
+        expect(true, "No chunk contains $currentMarker") {
+            chunks.any { it.readText().contains(currentMarker) }
+        }
+        expect(listOf(), "Chunks of the previous build found") {
+            chunks.filter { it.readText().contains(staleMarker) }
+        }
+
+        val prodBundle = File(testProject.dir, "src/main/bundles/prod.bundle")
+        val indexHtmlChunks = ZipFile(prodBundle).use { zip ->
+            zip.entries().asSequence().map { it.name }
+                .filter { it.contains("/indexhtml-") && it.endsWith(".js") }
+                .toList()
+        }
+        expect(1, "indexhtml chunks in $prodBundle: $indexHtmlChunks") {
+            indexHtmlChunks.size
+        }
     }
 
     private fun enableHilla() {

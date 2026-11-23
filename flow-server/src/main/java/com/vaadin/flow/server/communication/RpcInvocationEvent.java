@@ -15,15 +15,13 @@
  */
 package com.vaadin.flow.server.communication;
 
-import java.util.EventObject;
-
 import com.vaadin.flow.component.UI;
 
 /**
  * Event fired to {@link RpcInvocationListener}s around the server-side handling
- * of a single client-to-server RPC invocation (a DOM event, a
- * {@code @ClientCallable}/template event handler, a server-side navigation, a
- * return channel message, and so on).
+ * of a single client-to-server RPC invocation (a DOM event, a synchronized
+ * property update, a {@code @ClientCallable}/template event handler, a
+ * server-side navigation, a return channel message, and so on).
  * <p>
  * A client request can carry several invocations; one event is fired per
  * invocation. The {@link RpcInvocationListener#invocationStarted}, (optional)
@@ -34,12 +32,14 @@ import com.vaadin.flow.component.UI;
  *
  * @see RpcInvocationListener
  * @since 25.2
+ * @deprecated use {@link RpcInvocationStartedEvent},
+ *             {@link RpcInvocationFailedEvent} and
+ *             {@link RpcInvocationEndedEvent} on the
+ *             {@link com.vaadin.flow.server.VaadinService#getEventBus() service
+ *             event bus} instead
  */
-public class RpcInvocationEvent extends EventObject {
-
-    private final String type;
-    private final int nodeId;
-    private final String name;
+@Deprecated(since = "25.3", forRemoval = true)
+public class RpcInvocationEvent extends AbstractRpcInvocationEvent {
 
     /**
      * Creates a new RPC invocation event.
@@ -48,60 +48,17 @@ public class RpcInvocationEvent extends EventObject {
      *            the UI the invocation is handled against, not {@code null}
      * @param type
      *            the protocol-level invocation type (for example {@code event},
-     *            {@code publishedEventHandler}, {@code navigation},
-     *            {@code channel}), not {@code null}
+     *            {@code mSync}, {@code publishedEventHandler},
+     *            {@code navigation}, {@code channel}), not {@code null}
      * @param nodeId
      *            the id of the targeted {@code StateNode}, or {@code -1} if the
      *            invocation does not target a node
      * @param name
      *            a human-readable identifier for the invocation (the DOM event
-     *            name, the invoked method name, the navigation location, ...),
-     *            or {@code null} if none applies
+     *            name, the synchronized property name, the invoked method name,
+     *            the navigation location, ...), or {@code null} if none applies
      */
     public RpcInvocationEvent(UI ui, String type, int nodeId, String name) {
-        super(ui);
-        this.type = type;
-        this.nodeId = nodeId;
-        this.name = name;
-    }
-
-    /**
-     * Gets the UI the invocation is handled against.
-     *
-     * @return the UI, not {@code null}
-     */
-    public UI getUI() {
-        return (UI) getSource();
-    }
-
-    /**
-     * Gets the protocol-level invocation type, for example {@code event},
-     * {@code publishedEventHandler}, {@code navigation} or {@code channel}.
-     *
-     * @return the invocation type, not {@code null}
-     */
-    public String getType() {
-        return type;
-    }
-
-    /**
-     * Gets the id of the {@code StateNode} the invocation targets.
-     *
-     * @return the node id, or {@code -1} if the invocation does not target a
-     *         node
-     */
-    public int getNodeId() {
-        return nodeId;
-    }
-
-    /**
-     * Gets a human-readable identifier for the invocation, such as the DOM
-     * event name, the invoked {@code @ClientCallable}/template method name, or
-     * the navigation location.
-     *
-     * @return the invocation name, or {@code null} if none applies
-     */
-    public String getName() {
-        return name;
+        super(ui, type, nodeId, name);
     }
 }

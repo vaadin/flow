@@ -28,10 +28,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasOrderedComponents;
+import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -58,6 +57,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -559,6 +559,73 @@ class ElementEffectTest {
 
         Throwable throwable = events.get(0).getThrowable();
         assertEquals(RuntimeException.class, throwable.getClass());
+    }
+
+    @Test
+    void effect_sneakyThrowCheckedException_delegatedToErrorHandler() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        var ui = new MockUI(session);
+
+        var events = new ArrayList<ErrorEvent>();
+        session.setErrorHandler(events::add);
+
+        var expected = new Exception("Expected checked exception");
+
+        ValueSignal<Void> dependency = new ValueSignal<>(null);
+        Signal.effect(ui, () -> {
+            dependency.get();
+            throw sneakyThrow(expected);
+        });
+
+        assertEquals(1, events.size(), "Error handler should have been called");
+        assertSame(expected, events.get(0).getThrowable());
+    }
+
+    @Test
+    void effect_notAttached_sneakyThrowCheckedException_rethrownUnwrapped() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+
+        var expected = new Exception("Expected checked exception");
+
+        // There is no session error handler to use for the probe run that
+        // happens while the component is detached, so the exception ends up in
+        // the uncaught exception handler of the current thread
+        var uncaught = new ArrayList<Throwable>();
+        Thread thread = Thread.currentThread();
+        Thread.UncaughtExceptionHandler originalHandler = thread
+                .getUncaughtExceptionHandler();
+        thread.setUncaughtExceptionHandler((t, throwable) -> {
+            uncaught.add(throwable);
+        });
+        try {
+            ValueSignal<Void> dependency = new ValueSignal<>(null);
+            Signal.effect(component, () -> {
+                dependency.get();
+                throw sneakyThrow(expected);
+            });
+        } finally {
+            thread.setUncaughtExceptionHandler(originalHandler);
+        }
+
+        assertEquals(1, uncaught.size(),
+                "Uncaught exception handler should have been called");
+        assertSame(expected, uncaught.get(0),
+                "The exception should be passed on as-is, without wrapping");
+    }
+
+    /**
+     * Throws the given exception without declaring it, mimicking what e.g.
+     * Kotlin or Lombok's {@code @SneakyThrows} does.
+     */
+    @SuppressWarnings("unchecked")
+    private static <T extends Throwable> RuntimeException sneakyThrow(
+            Exception exception) throws T {
+        throw (T) exception;
     }
 
     @Test
@@ -1286,8 +1353,8 @@ class ElementEffectTest {
             return component;
         });
 
-        Mockito.clearInvocations(expectedMockedElements.toArray());
-        Mockito.clearInvocations(parentComponent.getElement());
+        clearInvocations(expectedMockedElements.toArray());
+        clearInvocations(parentComponent.getElement());
         var op = Signal.runInTransaction(() -> {
             taskList.insertFirst("first");
             taskList.insertLast("last");
@@ -1778,7 +1845,7 @@ class ElementEffectTest {
      */
     @Tag("div")
     private static class TestLayout extends TestComponent
-            implements HasOrderedComponents {
+            implements HasComponents {
 
         /**
          * Construct test layout component without any mocked elements.

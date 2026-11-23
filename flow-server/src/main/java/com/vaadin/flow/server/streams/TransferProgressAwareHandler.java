@@ -22,7 +22,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
@@ -111,10 +114,7 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
         addTransferProgressListenerInternal(new TransferProgressListener() {
             @Override
             public void onStart(TransferContext context) {
-                if (ui == null) {
-                    setTransferUI(context.getUI());
-                }
-                ui.access(startHandler::run);
+                uiAccess(context, startHandler::run);
             }
         });
         return (R) this;
@@ -412,7 +412,27 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
         if (ui == null) {
             setTransferUI(context.getUI());
         }
-        ui.access(command);
+        notifyThroughUI(ui, command);
+    }
+
+    /**
+     * Runs the given notification through the given UI, ignoring the case where
+     * the UI is no longer attached to its session.
+     * <p>
+     * A UI that has an ongoing transfer is kept attached until the transfer has
+     * completed, so it is only detached at this point if the session has been
+     * invalidated. That also terminates the transfer, which is reported to the
+     * application through the transfer itself failing rather than through a
+     * {@link UIDetachedException} from notifying a listener.
+     */
+    private static void notifyThroughUI(UI ui, Command command) {
+        try {
+            ui.access(command);
+        } catch (UIDetachedException e) {
+            LoggerFactory.getLogger(TransferProgressAwareHandler.class).debug(
+                    "Skipped a transfer progress notification since the UI has been detached from its session",
+                    e);
+        }
     }
 
     /**
@@ -467,7 +487,7 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
             if (ui == null) {
                 setTransferUI(context.getUI());
             }
-            ui.access(command);
+            notifyThroughUI(ui, command);
         }
     }
 }

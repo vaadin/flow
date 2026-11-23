@@ -17,16 +17,38 @@ package com.vaadin.base.devserver.hotswap.impl;
 
 import jakarta.annotation.Priority;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import com.vaadin.base.devserver.hotswap.HotswapClassSessionEvent;
 import com.vaadin.base.devserver.hotswap.UIUpdateStrategy;
 import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 /**
- * Triggers UI refresh when hotswap occurs while an error view is displayed.
- * This ensures that fixing a broken class during development will refresh the
- * error page and attempt to re-navigate to the original location.
+ * Re-attempts the navigation when hotswap occurs while an error view is
+ * displayed. This ensures that fixing a broken class, or adding a missing
+ * route, during development retries the navigation to the original location.
+ * <p>
+ * The UI is normally refreshed in place. The page is reloaded only when routes
+ * exist while the page for a project without routes is shown and Copilot has
+ * taken it over: Copilot replaces the page body, so an in-place refresh would
+ * render the new view into detached DOM. Without Copilot, that page is
+ * refreshed in place like any other error view.
+ * <p>
+ * A reload is not used more widely because it is sent to every open browser tab
+ * and recreates their UIs, unless they use {@code @PreserveOnRefresh}. A
+ * refresh reaches only the affected UIs when they all use push; otherwise it is
+ * also sent to every open tab, but it only re-navigates each tab in place
+ * instead of reloading the page.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -35,25 +57,54 @@ import com.vaadin.flow.server.VaadinSession;
 @Priority(100)
 public class ErrorViewHotswapper implements VaadinHotswapper {
 
+    /**
+     * Creates the hotswapper. It is found through the service loader.
+     */
+    public ErrorViewHotswapper() {
+        // Default constructor
+    }
+
     @Override
     public void onClassesChange(HotswapClassSessionEvent event) {
-        // Only process redefined classes (not first-time loads)
-        if (!event.isRedefined()) {
-            return;
-        }
-
-        VaadinSession session = event.getVaadinSession();
-
-        // Check each UI in the session
-        for (UI ui : session.getUIs()) {
-            if (ui.isClosing()) {
+        boolean redefined = event.isRedefined();
+        Set<Class<?>> changedClasses = event.getChangedClasses();
+        for (UI ui : event.getVaadinSession().getUIs()) {
+            if (ui.isClosing() || !ui.getInternals().isShowingErrorView()) {
                 continue;
             }
-
-            // If showing error view, trigger refresh to re-attempt navigation
-            if (ui.getInternals().isShowingErrorView()) {
-                event.triggerUpdate(ui, UIUpdateStrategy.REFRESH);
+            Set<Class<?>> routeTargets = getRouteTargets(ui);
+            // A class loaded for the first time cannot affect the error view
+            // unless it is a new route, which the global registry update has
+            // already registered by now
+            if (redefined || changedClasses.stream()
+                    .anyMatch(routeTargets::contains)) {
+                event.triggerUpdate(ui,
+                        !routeTargets.isEmpty() && isShowingNoRoutesPage(ui)
+                                ? UIUpdateStrategy.RELOAD
+                                : UIUpdateStrategy.REFRESH);
             }
         }
+    }
+
+    private static Set<Class<?>> getRouteTargets(UI ui) {
+        // Router.getRegistry() depends on VaadinSession.getCurrent(), which is
+        // not set while hotswapping, so resolve the registry of the UI's own
+        // session; a session registry also includes the application routes
+        VaadinSession session = ui.getSession();
+        RouteRegistry registry = session
+                .getAttribute(SessionRouteRegistry.class) != null
+                        ? SessionRouteRegistry.getSessionRegistry(session)
+                        : ApplicationRouteRegistry
+                                .getInstance(session.getService().getContext());
+        Set<Class<?>> routeTargets = new HashSet<>();
+        registry.getRegisteredRoutes().forEach(
+                route -> routeTargets.add(route.getNavigationTarget()));
+        return routeTargets;
+    }
+
+    private static boolean isShowingNoRoutesPage(UI ui) {
+        List<HasElement> chain = ui.getActiveRouterTargetsChain();
+        return !chain.isEmpty() && chain.get(0) instanceof Component view
+                && RouteUtil.isNoRoutesPage(view);
     }
 }

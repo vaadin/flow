@@ -19,11 +19,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.slf4j.Logger;
 
 import com.vaadin.experimental.FeatureFlags;
@@ -41,8 +40,13 @@ import static com.vaadin.flow.server.frontend.TaskUpdateThemeImport.APPLICATION_
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
-@NotThreadSafe
+@Isolated
 class TaskUpdateThemeImportTest {
 
     private static final String CUSTOM_THEME_NAME = "custom-theme";
@@ -79,13 +83,13 @@ class TaskUpdateThemeImportTest {
         themeImportTsFile = new File(
                 new File(frontendFolder, FrontendUtils.GENERATED),
                 THEME_IMPORTS_D_TS_NAME);
-        dummyThemeClass = Mockito.mock(AbstractTheme.class).getClass();
+        dummyThemeClass = mock(AbstractTheme.class).getClass();
         customTheme = new ThemeDefinition(dummyThemeClass, CUSTOM_VARIANT_NAME,
                 CUSTOM_THEME_NAME);
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+        Options options = new Options(mock(Lookup.class), npmFolder)
                 .withFrontendDirectory(frontendDirectory);
 
-        logger = Mockito.mock(Logger.class);
+        logger = mock(Logger.class);
 
         taskUpdateThemeImport = new TaskUpdateThemeImport(customTheme,
                 options) {
@@ -102,7 +106,7 @@ class TaskUpdateThemeImportTest {
         File faultyFrontendDirectory = new File(projectRoot,
                 DEFAULT_FRONTEND_DIR);
 
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+        Options options = new Options(mock(Lookup.class), npmFolder)
                 .withFrontendDirectory(faultyFrontendDirectory);
         TaskUpdateThemeImport taskUpdateThemeImportWithNonExistentThemeFolder = new TaskUpdateThemeImport(
                 customTheme, options);
@@ -220,7 +224,7 @@ class TaskUpdateThemeImportTest {
         assertNoThemeGeneratedDefinitionFilesExist(EMPTY_BEFORE_EXECUTION);
         taskUpdateThemeImport.execute();
         assertThemeGeneratedDefinitionFilesExist(SHOULD_EXIST_AFTER_EXECUTION);
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+        Options options = new Options(mock(Lookup.class), npmFolder)
                 .withFrontendDirectory(frontendDirectory);
 
         taskUpdateThemeImport = new TaskUpdateThemeImport(null, options);
@@ -463,7 +467,7 @@ class TaskUpdateThemeImportTest {
 
         taskUpdateThemeImport.execute();
 
-        Mockito.verify(logger, Mockito.atLeastOnce()).warn(
+        verify(logger, atLeastOnce()).warn(
                 "Theme '{}' contains component styles, but the '{}' feature flag is not set, so component styles will not be applied for\n{}",
                 CUSTOM_THEME_NAME,
                 FeatureFlags.COMPONENT_STYLE_INJECTION.getId(),
@@ -492,14 +496,13 @@ class TaskUpdateThemeImportTest {
                 "com.vaadin.experimental."
                         + FeatureFlags.COMPONENT_STYLE_INJECTION.getId()
                         + "=true\n");
-        FeatureFlags featureFlags = new FeatureFlags(
-                Mockito.mock(Lookup.class));
+        FeatureFlags featureFlags = new FeatureFlags(mock(Lookup.class));
         featureFlags.setPropertiesLocation(flagFolder);
         assertTrue(
                 featureFlags.isEnabled(FeatureFlags.COMPONENT_STYLE_INJECTION));
 
-        Options optionsWithFlag = new Options(Mockito.mock(Lookup.class),
-                npmFolder).withFrontendDirectory(frontendDirectory)
+        Options optionsWithFlag = new Options(mock(Lookup.class), npmFolder)
+                .withFrontendDirectory(frontendDirectory)
                 .withFeatureFlags(featureFlags);
         TaskUpdateThemeImport task = new TaskUpdateThemeImport(customTheme,
                 optionsWithFlag) {
@@ -511,11 +514,11 @@ class TaskUpdateThemeImportTest {
 
         task.execute();
 
-        Mockito.verify(logger, Mockito.never()).warn(Mockito.eq(
+        verify(logger, never()).warn(eq(
                 "Theme '{}' contains component styles, but the '{}' feature flag is not set, so component styles will not be applied for\n{}"),
-                Mockito.eq(CUSTOM_THEME_NAME),
-                Mockito.eq(FeatureFlags.COMPONENT_STYLE_INJECTION.getId()),
-                Mockito.eq("vaadin-button.css"));
+                eq(CUSTOM_THEME_NAME),
+                eq(FeatureFlags.COMPONENT_STYLE_INJECTION.getId()),
+                eq("vaadin-button.css"));
         assertTrue(themeImportFile.exists(), String
                 .format(SHOULD_EXIST_AFTER_EXECUTION, THEME_IMPORTS_NAME));
     }

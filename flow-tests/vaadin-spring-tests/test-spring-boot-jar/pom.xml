@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>vaadin-spring-tests</artifactId>
-    <version>25.3-SNAPSHOT</version>
+    <version>25.4-SNAPSHOT</version>
   </parent>
   <artifactId>vaadin-test-spring-boot-jar</artifactId>
   <packaging>jar</packaging>
@@ -152,7 +152,6 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.6.3</version>
         <executions>
           <execution>
             <id>pre-it</id>

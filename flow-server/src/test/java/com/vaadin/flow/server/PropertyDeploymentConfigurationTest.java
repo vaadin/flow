@@ -22,7 +22,6 @@ import java.util.Properties;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
@@ -30,6 +29,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class PropertyDeploymentConfigurationTest {
     @TempDir
@@ -38,7 +39,7 @@ class PropertyDeploymentConfigurationTest {
     @Test
     void isProductionMode_modeIsProvidedViaParentOnly_valueFromParentIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
-        Mockito.when(appConfig.isProductionMode()).thenReturn(true);
+        when(appConfig.isProductionMode()).thenReturn(true);
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
                 new Properties());
         assertTrue(config.isProductionMode());
@@ -49,7 +50,7 @@ class PropertyDeploymentConfigurationTest {
     @Test
     void isProductionMode_modeIsProvidedViaPropertiesAndParent_valueFromPropertiesIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
-        Mockito.when(appConfig.isProductionMode()).thenReturn(false);
+        when(appConfig.isProductionMode()).thenReturn(false);
 
         Properties properties = new Properties();
         properties.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
@@ -63,7 +64,7 @@ class PropertyDeploymentConfigurationTest {
     @Test
     void changingInitialProperty_throwsException() {
         ApplicationConfiguration appConfig = mockAppConfig();
-        Mockito.when(appConfig.isProductionMode()).thenReturn(false);
+        when(appConfig.isProductionMode()).thenReturn(false);
 
         Properties properties = new Properties();
         properties.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
@@ -80,7 +81,7 @@ class PropertyDeploymentConfigurationTest {
     @Test
     void reuseDevServer_valueIsProvidedViaPropertiesAndParent_valueFromPropertiesIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
-        Mockito.when(appConfig.reuseDevServer()).thenReturn(false);
+        when(appConfig.reuseDevServer()).thenReturn(false);
 
         Properties properties = new Properties();
         properties.put(InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER,
@@ -94,7 +95,7 @@ class PropertyDeploymentConfigurationTest {
     @Test
     void reuseDevServer_valueIsProvidedViaParentOnly_valueFromParentIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
-        Mockito.when(appConfig.reuseDevServer()).thenReturn(true);
+        when(appConfig.reuseDevServer()).thenReturn(true);
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
                 new Properties());
         assertTrue(config.reuseDevServer());
@@ -105,7 +106,7 @@ class PropertyDeploymentConfigurationTest {
     @Test
     void isPnpmEnabled_valueIsProvidedViaParentOnly_valueFromParentIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
-        Mockito.when(appConfig.isPnpmEnabled()).thenReturn(true);
+        when(appConfig.isPnpmEnabled()).thenReturn(true);
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
                 new Properties());
         assertTrue(config.isPnpmEnabled());
@@ -116,7 +117,7 @@ class PropertyDeploymentConfigurationTest {
     @Test
     void isPnpmEnabled_valueIsProvidedViaPropertiesAndParent_valueFromPropertiesIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
-        Mockito.when(appConfig.isPnpmEnabled()).thenReturn(false);
+        when(appConfig.isPnpmEnabled()).thenReturn(false);
 
         Properties properties = new Properties();
         properties.put(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
@@ -130,7 +131,7 @@ class PropertyDeploymentConfigurationTest {
     @Test
     void isXsrfProtectionEnabled_valueIsProvidedViaParentOnly_valueFromParentIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
-        Mockito.when(appConfig.isXsrfProtectionEnabled()).thenReturn(true);
+        when(appConfig.isXsrfProtectionEnabled()).thenReturn(true);
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
                 new Properties());
         assertTrue(config.isXsrfProtectionEnabled());
@@ -141,7 +142,7 @@ class PropertyDeploymentConfigurationTest {
     @Test
     void isXsrfProtectionEnabled_valueIsProvidedViaPropertiesAndParent_valueFromPropertiesIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
-        Mockito.when(appConfig.isXsrfProtectionEnabled()).thenReturn(false);
+        when(appConfig.isXsrfProtectionEnabled()).thenReturn(false);
 
         Properties properties = new Properties();
         properties.put(InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
@@ -156,8 +157,7 @@ class PropertyDeploymentConfigurationTest {
     void getApplicationProperty_propertyIsDefinedInParentOnly_valueFromParentIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
 
-        Mockito.when(appConfig.getStringProperty("foo", null))
-                .thenReturn("bar");
+        when(appConfig.getStringProperty("foo", null)).thenReturn("bar");
 
         PropertyDeploymentConfiguration configuration = createConfiguration(
                 appConfig, new Properties());
@@ -171,8 +171,7 @@ class PropertyDeploymentConfigurationTest {
     void getApplicationProperty_propertyIsDefinedInPropertiesAndParent_valueFromPropertiesIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
 
-        Mockito.when(appConfig.getStringProperty("foo", null))
-                .thenReturn("bar");
+        when(appConfig.getStringProperty("foo", null)).thenReturn("bar");
 
         Properties properties = new Properties();
         properties.put("foo", "baz");
@@ -189,14 +188,14 @@ class PropertyDeploymentConfigurationTest {
         ApplicationConfiguration appConfig = mockAppConfig();
 
         // The property value is provided via API
-        Mockito.when(appConfig.isProductionMode()).thenReturn(true);
+        when(appConfig.isProductionMode()).thenReturn(true);
 
         // The property whose value is overridden above via API is different
-        Mockito.when(appConfig.getPropertyNames())
+        when(appConfig.getPropertyNames())
                 .thenReturn(Collections.enumeration(Collections.singleton(
                         InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE)));
 
-        Mockito.when(appConfig.getStringProperty(
+        when(appConfig.getStringProperty(
                 InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, null))
                 .thenReturn(Boolean.FALSE.toString());
 
@@ -217,14 +216,14 @@ class PropertyDeploymentConfigurationTest {
         ApplicationConfiguration appConfig = mockAppConfig();
 
         // The property value is provided via API
-        Mockito.when(appConfig.isPnpmEnabled()).thenReturn(true);
+        when(appConfig.isPnpmEnabled()).thenReturn(true);
 
         // The property whose value is overridden above via API is different
-        Mockito.when(appConfig.getPropertyNames())
+        when(appConfig.getPropertyNames())
                 .thenReturn(Collections.enumeration(Collections.singleton(
                         InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)));
 
-        Mockito.when(appConfig.getStringProperty(
+        when(appConfig.getStringProperty(
                 InitParameters.SERVLET_PARAMETER_ENABLE_PNPM, null))
                 .thenReturn(Boolean.FALSE.toString());
 
@@ -245,14 +244,14 @@ class PropertyDeploymentConfigurationTest {
         ApplicationConfiguration appConfig = mockAppConfig();
 
         // The property value is provided via API
-        Mockito.when(appConfig.reuseDevServer()).thenReturn(true);
+        when(appConfig.reuseDevServer()).thenReturn(true);
 
         // The property whose value is overridden above via API is different
-        Mockito.when(appConfig.getPropertyNames())
+        when(appConfig.getPropertyNames())
                 .thenReturn(Collections.enumeration(Collections.singleton(
                         InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER)));
 
-        Mockito.when(appConfig.getStringProperty(
+        when(appConfig.getStringProperty(
                 InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER, null))
                 .thenReturn(Boolean.FALSE.toString());
 
@@ -273,14 +272,14 @@ class PropertyDeploymentConfigurationTest {
         ApplicationConfiguration appConfig = mockAppConfig();
 
         // The property value is provided via API
-        Mockito.when(appConfig.isXsrfProtectionEnabled()).thenReturn(true);
+        when(appConfig.isXsrfProtectionEnabled()).thenReturn(true);
 
         // The property whose value is overridden above via API is different
-        Mockito.when(appConfig.getPropertyNames())
+        when(appConfig.getPropertyNames())
                 .thenReturn(Collections.enumeration(Collections.singleton(
                         InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION)));
 
-        Mockito.when(appConfig.getStringProperty(
+        when(appConfig.getStringProperty(
                 InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, null))
                 .thenReturn(Boolean.TRUE.toString());
 
@@ -298,13 +297,12 @@ class PropertyDeploymentConfigurationTest {
 
     @Test
     void getInitParameters_prorprtiesAreMergedFromParentAndDeploymentConfig() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.getPropertyNames()).thenReturn(
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
+        when(appConfig.getPropertyNames()).thenReturn(
                 Collections.enumeration(Collections.singleton("foo")));
 
-        Mockito.when(appConfig.getStringProperty("foo", null))
-                .thenReturn("foobar");
+        when(appConfig.getStringProperty("foo", null)).thenReturn("foobar");
 
         Properties properties = new Properties();
         properties.put("bar", "baz");
@@ -346,9 +344,9 @@ class PropertyDeploymentConfigurationTest {
     }
 
     private ApplicationConfiguration mockAppConfig() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.getPropertyNames())
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
+        when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
 
         return appConfig;

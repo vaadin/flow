@@ -1,0 +1,401 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.base.devserver.devloop;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.base.devserver.PublicResourcesLiveUpdater;
+import com.vaadin.base.devserver.ThemeLiveUpdater;
+import com.vaadin.base.devserver.hotswap.Hotswapper;
+import com.vaadin.flow.server.VaadinService;
+
+/**
+ * Registers the running application with the dev-loop daemon over a connection
+ * held open for the application's lifetime.
+ * <p>
+ * The connection is the liveness signal in both directions: the daemon learns
+ * the app is up when it arrives and that the app is gone when it closes, with
+ * no polling and no port probing. The daemon passes its port and token in as
+ * system properties at launch, so there is nothing to discover and no file to
+ * read.
+ * <p>
+ * If those properties are absent the app was not launched by the daemon (a
+ * developer running it from an IDE, say) and nothing here happens - the
+ * ownership model says the daemon aggregates state, it never competes for it.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ */
+final class DevLoopRegistration {
+
+    static final String DAEMON_PORT_PROPERTY = "vaadin.devloop.daemonPort";
+    static final String TOKEN_PROPERTY = "vaadin.devloop.token";
+
+    /**
+     * How long one loopback address is given to answer.
+     * <p>
+     * Both ends are on this machine and the daemon is already listening by the
+     * time it launches the application, so a connection that is going to happen
+     * happens in microseconds. The window is for the address that answers
+     * neither way - filtered rather than refused - and it is short because
+     * there is a second address to try after it.
+     */
+    private static final int CONNECT_TIMEOUT_MILLIS = 2000;
+
+    /** Whitespace and C0 controls, which is everything that breaks a line. */
+    private static final Pattern CONTROL_OR_SPACE_RUN = Pattern
+            .compile("[\\s\\p{Cntrl}]+");
+
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(DevLoopRegistration.class);
+
+    /**
+     * The dev-mode service, for the frontend and resource legs. Static because
+     * the daemon owns this JVM and serves exactly one application in it.
+     */
+    private static volatile VaadinService service;
+
+    /**
+     * The registration connection while it is open, so that an undeploy can
+     * close it; see {@link #start}.
+     */
+    private static final AtomicReference<Socket> REGISTRATION = new AtomicReference<>();
+
+    private DevLoopRegistration() {
+    }
+
+    /**
+     * Whether the daemon launched this JVM, which is the only case in which any
+     * of this applies.
+     *
+     * @return {@code true} if the daemon's handshake properties are present
+     */
+    static boolean isDaemonLaunched() {
+        return System.getProperty(DAEMON_PORT_PROPERTY) != null
+                && System.getProperty(TOKEN_PROPERTY) != null;
+    }
+
+    /**
+     * Opens the registration connection and hands the resource leg over from
+     * Flow's own CSS watcher.
+     *
+     * @param vaadinService
+     *            the dev-mode service
+     */
+    static void start(VaadinService vaadinService) {
+        service = vaadinService;
+        int port = Integer.parseInt(System.getProperty(DAEMON_PORT_PROPERTY));
+        String token = System.getProperty(TOKEN_PROPERTY);
+
+        // The daemon drives Flow's hotswapper over the registration connection,
+        // so the connector registers it here rather than relying on anything
+        // else to have done it. Nothing else in Flow does, and nothing should:
+        // onHotswap is an instance method, so a tool that wants to drive it has
+        // to obtain the instance, and register is the only way to get one. That
+        // also means registering for applications that have no such tool would
+        // be pure cost - it instantiates every VaadinHotswapper, one of which
+        // installs an after-navigation listener that walks the component tree.
+        //
+        // Idempotent, so a hotswap agent that injects its own call still ends
+        // up
+        // with one instance rather than two doubling every refresh.
+        if (Hotswapper.register(vaadinService).isEmpty()) {
+            LOGGER.warn(
+                    "Flow's hotswapper is not available, so an apply can only ever restart the application");
+        }
+
+        // Flow's watcher fires on save, not on apply. The whole point of the
+        // transaction model is that one command decides when a change goes
+        // live, and a second watcher pushing on its own makes "what is the
+        // state of my last change?" unanswerable again.
+        PublicResourcesLiveUpdater.suspend(vaadinService.getContext());
+        ThemeLiveUpdater.suspend(vaadinService.getContext());
+
+        // An application server can undeploy this application while the JVM
+        // lives on - WildFly and Payara Server do it at every start, booting
+        // the deployment their configuration persisted from the last run and
+        // then replacing it with the one the build plugin deploys. The JVM
+        // exiting is what closes this connection otherwise, so an undeployed
+        // copy would go on speaking for the process: the daemon would send
+        // its redefines to a service that no longer serves anything, and the
+        // open connection would keep that copy's class loader alive with the
+        // previous build's classes in it.
+        vaadinService.addServiceDestroyListener(event -> closeRegistration());
+
+        String mode = modeOf(vaadinService);
+
+        Thread thread = new Thread(() -> hold(port, token, mode),
+                "devloop-registration");
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    /**
+     * Which dev mode the app is actually running in.
+     * <p>
+     * Not {@code isDevModeLiveReloadEnabled()}, which reads as if it answered
+     * this and does not: it is
+     * {@code isDevToolsEnabled() && devmode.liveReload} and both default to
+     * true, so it says {@code DEVELOPMENT_FRONTEND_LIVERELOAD} for a dev-bundle
+     * application as well. The daemon uses this to decide whether a frontend
+     * edit was already applied by Vite or needs the bundle rebuilt, and those
+     * are opposite answers.
+     *
+     * @param vaadinService
+     *            the dev-mode service
+     * @return the mode's name
+     */
+    static String modeOf(VaadinService vaadinService) {
+        return vaadinService.getDeploymentConfiguration().getMode().name();
+    }
+
+    /**
+     * The service the daemon launched, or {@code null} before registration.
+     *
+     * @return the dev-mode service, or {@code null}
+     */
+    static VaadinService service() {
+        return service;
+    }
+
+    /**
+     * The hotswapper registered for this service.
+     * <p>
+     * Looked up on demand rather than captured in {@link #start}, so a hotswap
+     * agent that registered one first is found too.
+     *
+     * @return the registered hotswapper, or empty when there is none
+     */
+    static Optional<Hotswapper> hotswapper() {
+        VaadinService current = service;
+        return current == null ? Optional.empty()
+                : Hotswapper.getRegistered(current);
+    }
+
+    /**
+     * Connects to the daemon on whichever loopback address it bound.
+     * <p>
+     * Both ends ask for {@link InetAddress#getLoopbackAddress()}, and that is
+     * not one address: it is IPv4 or IPv6 depending on the JVM asking. The
+     * daemon and the application are different JVMs, and a server may change
+     * the answer for its own while starting - measured against Payara Micro
+     * 7.2026.9, whose boot leaves the application JVM preferring IPv6, so the
+     * daemon was listening on {@code 127.0.0.1} and the application dialled
+     * {@code ::1} and was refused. The application then ran with no
+     * registration at all: serving pages, invisible to the loop, and every
+     * apply reporting that there was nothing to apply to.
+     * <p>
+     * So the preferred address is tried first and the other literal after it,
+     * rather than either end being pinned to one family. Nothing is widened -
+     * every candidate is a loopback address, so the daemon's port stays
+     * unreachable from off the machine.
+     * <p>
+     * Each attempt is given {@link #CONNECT_TIMEOUT_MILLIS} rather than the
+     * operating system's default. A loopback that refuses answers at once, but
+     * one that is filtered rather than refused answers not at all - and the
+     * default would then be spent twice, once per address, before the
+     * application gave up registering and ran on invisible to the loop.
+     *
+     * @param port
+     *            the port the daemon passed at launch
+     * @return the connected socket
+     * @throws IOException
+     *             if no loopback address accepted the connection, carrying the
+     *             failure from the address the JVM itself prefers
+     */
+    static Socket connectToDaemon(int port) throws IOException {
+        IOException refused = null;
+        for (InetAddress address : loopbackAddresses()) {
+            Socket socket = new Socket();
+            try {
+                socket.connect(new InetSocketAddress(address, port),
+                        CONNECT_TIMEOUT_MILLIS);
+                return socket;
+            } catch (IOException e) {
+                close(socket);
+                // Kept only if nothing else answers, and the first is the one
+                // worth reporting: it is the address this JVM would call the
+                // loopback, so it is the one a reader will go looking at.
+                if (refused == null) {
+                    refused = e;
+                }
+            }
+        }
+        // getLoopbackAddress always yields one candidate, so the loop runs at
+        // least once - but nothing here enforces that, and an empty list would
+        // otherwise leave this method throwing a NullPointerException out of a
+        // signature that promises an IOException.
+        throw refused != null ? refused
+                : new IOException("no loopback address to reach the dev-loop "
+                        + "daemon on port " + port);
+    }
+
+    private static void close(Socket socket) {
+        try {
+            socket.close();
+        } catch (IOException e) {
+            // Nothing was connected, and the address that failed is already
+            // being reported.
+            LOGGER.debug("Could not close an unconnected socket", e);
+        }
+    }
+
+    /**
+     * Every loopback address worth trying, the JVM's own preference first.
+     *
+     * @return the candidates, without duplicates
+     */
+    static List<InetAddress> loopbackAddresses() {
+        List<InetAddress> candidates = new ArrayList<>();
+        candidates.add(InetAddress.getLoopbackAddress());
+        for (String literal : new String[] { "127.0.0.1", "::1" }) {
+            try {
+                // A literal, so this resolves without asking a name server.
+                InetAddress address = InetAddress.getByName(literal);
+                if (!candidates.contains(address)) {
+                    candidates.add(address);
+                }
+            } catch (UnknownHostException e) {
+                // A stack without that family. The other candidate answers for
+                // it, and if neither does the connect below reports it.
+                LOGGER.debug("No loopback address {} on this host", literal, e);
+            }
+        }
+        return candidates;
+    }
+
+    private static void hold(int port, String token, String mode) {
+        try (Socket socket = connectToDaemon(port);
+                PrintWriter out = new PrintWriter(socket.getOutputStream(),
+                        true, StandardCharsets.UTF_8);
+                BufferedReader in = new BufferedReader(new InputStreamReader(
+                        socket.getInputStream(), StandardCharsets.UTF_8))) {
+            socket.setKeepAlive(true);
+            REGISTRATION.set(socket);
+            out.println(token + " register " + mode + " "
+                    + ProcessHandle.current().pid());
+            LOGGER.info("Registered with the dev-loop daemon on port {} ({})",
+                    port, oneLine(in.readLine()));
+            // Block for the app's lifetime, serving commands on the same
+            // connection. Reaching the end of the stream means the daemon went
+            // away; the JVM exiting closes this socket, which is how the daemon
+            // learns the app is gone.
+            String request;
+            while ((request = in.readLine()) != null) {
+                out.println(handle(request.trim()));
+            }
+            LOGGER.info("The dev-loop daemon closed the registration");
+        } catch (Exception e) {
+            LOGGER.info("The dev-loop registration ended: {}", e.toString());
+            LOGGER.debug("The dev-loop registration ended", e);
+        }
+    }
+
+    /**
+     * Closes the registration connection, which is how the daemon learns this
+     * application is gone while the JVM it ran in is not.
+     */
+    private static void closeRegistration() {
+        Socket open = REGISTRATION.getAndSet(null);
+        if (open == null) {
+            return;
+        }
+        LOGGER.info(
+                "The application is being undeployed; closing the dev-loop registration");
+        try {
+            open.close();
+        } catch (IOException e) {
+            LOGGER.debug("Could not close the dev-loop registration", e);
+        }
+    }
+
+    /**
+     * Commands the daemon issues over the registration connection. Always
+     * answers exactly one line, even on failure, so the daemon never blocks
+     * waiting for a reply that is not coming.
+     */
+    private static String handle(String request) {
+        try {
+            if (request.startsWith("REDEFINE ")) {
+                return DevLoopRedefiner.redefine(
+                        request.substring("REDEFINE ".length()).trim());
+            }
+            if (request.startsWith("RESOURCES ")) {
+                return DevLoopRedefiner.resources(
+                        request.substring("RESOURCES ".length()).trim());
+            }
+            if (request.startsWith("THEME ")) {
+                return DevLoopRedefiner
+                        .theme(request.substring("THEME ".length()).trim());
+            }
+            if (request.equals("RELOAD")) {
+                return DevLoopRedefiner.reload();
+            }
+            if (request.equals("INFO")) {
+                return DevLoopRedefiner.info();
+            }
+            // The daemon's own answer for the frontend folder rides in as the
+            // argument rather than as a reply field: a reply is parsed on
+            // whitespace and a Windows path can contain a space.
+            if (request.startsWith("FRONTEND ")) {
+                return DevLoopRedefiner.frontend(
+                        request.substring("FRONTEND ".length()).trim());
+            }
+            if (request.equals("FRONTEND")) {
+                return DevLoopRedefiner.frontend(null);
+            }
+            // The paths ride in as the argument for the same reason the
+            // frontend folder does above: a reply is parsed on whitespace and
+            // a Windows path can contain a space.
+            if (request.startsWith("FRONTEND_CHECK ")) {
+                return DevLoopRedefiner.frontendCheck(
+                        request.substring("FRONTEND_CHECK ".length()).trim());
+            }
+            if (request.equals("PING")) {
+                return "OK pong";
+            }
+            return "ERR kind=protocol message=unknown-request";
+        } catch (Throwable t) {
+            return "ERR kind=internal class=" + t.getClass().getName()
+                    + " message=" + oneLine(t.getMessage());
+        }
+    }
+
+    /**
+     * One log- and protocol-safe line. Both directions of this socket end up in
+     * a log or in a single-line reply, so a value that carries a line break -
+     * or any other control character - would split one record into two.
+     */
+    private static String oneLine(String value) {
+        return value == null ? "null"
+                : CONTROL_OR_SPACE_RUN.matcher(value).replaceAll(" ").trim();
+    }
+}

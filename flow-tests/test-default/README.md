@@ -10,7 +10,8 @@ Home for integration tests that need only the **default Flow configuration**:
 ## Adding a test
 
 1. Add a `@Route` view under `src/main/java/com/vaadin/flow/test/...` — Spring
-   picks it up automatically, no servlet registration needed.
+   picks it up automatically, no servlet registration needed, and the index
+   view at `/` lists it with a link.
 2. Add an IT under `src/test/java/...` extending
    [`AbstractDefaultIT`](src/test/java/com/vaadin/flow/test/AbstractDefaultIT.java)
    and annotate test methods with `@BrowserTest` (not JUnit's `@Test`). Use

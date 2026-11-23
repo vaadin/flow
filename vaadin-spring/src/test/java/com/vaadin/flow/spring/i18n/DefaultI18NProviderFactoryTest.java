@@ -27,14 +27,13 @@ import java.nio.file.StandardOpenOption;
 import java.util.Locale;
 import java.util.Properties;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.MockedConstruction;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
@@ -52,10 +51,13 @@ import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @Import(VaadinApplicationConfiguration.class)
-@NotThreadSafe
+@Isolated
 class DefaultI18NProviderFactoryTest {
 
     @Autowired
@@ -95,22 +97,19 @@ class DefaultI18NProviderFactoryTest {
                 .getResource(DefaultI18NProvider.BUNDLE_FOLDER + "/"
                         + DefaultI18NProvider.BUNDLE_FILENAME + ".properties");
 
-        pathMatchingResourcePatternResolverMockedConstruction = Mockito
-                .mockConstruction(PathMatchingResourcePatternResolver.class,
-                        (mock, context) -> {
-                            Mockito.when(mock.getPathMatcher())
-                                    .thenCallRealMethod();
-                            Mockito.when(mock.getResources(Mockito.anyString()))
-                                    .thenAnswer(invocationOnMock -> {
-                                        String pattern = invocationOnMock
-                                                .getArgument(0);
-                                        assertEquals(
-                                                "classpath*:/vaadin-i18n/*.properties",
-                                                pattern);
-                                        return new Resource[] {
-                                                translationResource };
-                                    });
-                        });
+        pathMatchingResourcePatternResolverMockedConstruction = mockConstruction(
+                PathMatchingResourcePatternResolver.class, (mock, context) -> {
+                    when(mock.getPathMatcher()).thenCallRealMethod();
+                    when(mock.getResources(anyString()))
+                            .thenAnswer(invocationOnMock -> {
+                                String pattern = invocationOnMock
+                                        .getArgument(0);
+                                assertEquals(
+                                        "classpath*:/vaadin-i18n/*.properties",
+                                        pattern);
+                                return new Resource[] { translationResource };
+                            });
+                });
     }
 
     @AfterAll

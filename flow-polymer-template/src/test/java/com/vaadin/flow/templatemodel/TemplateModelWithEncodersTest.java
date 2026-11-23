@@ -15,9 +15,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.parallel.Isolated;
 
 import com.vaadin.flow.component.polymertemplate.HasCurrentService;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -29,8 +28,10 @@ import com.vaadin.flow.templatemodel.TemplateModelTest.EmptyDivTemplate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-@NotThreadSafe
+@Isolated
 class TemplateModelWithEncodersTest extends HasCurrentService {
 
     public static class TemplateWithEncoders extends
@@ -545,12 +546,11 @@ class TemplateModelWithEncodersTest extends HasCurrentService {
 
     @Override
     protected VaadinService createService() {
-        VaadinService service = Mockito.mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        VaadinService service = mock(VaadinService.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
+        when(configuration.isProductionMode()).thenReturn(true);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
         return service;
     }
 

@@ -28,7 +28,19 @@ import com.vaadin.flow.component.Tag;
  * Component representing a <code>&lt;table&gt;</code> element.
  *
  * @since 24.5
+ * @deprecated since 25.3, scheduled for removal in Vaadin 26. Use {@code Table}
+ *             instead. It does not extend {@code HtmlContainer}, so it has no
+ *             generic {@code add(Component)} and cannot be given children the
+ *             HTML specification does not allow inside a
+ *             <code>&lt;table&gt;</code>; it keeps the caption, column groups
+ *             and sections in the order the specification requires whatever
+ *             order they are added in; and it carries a good deal more API,
+ *             including {@code <colgroup>} and <code>&lt;col&gt;</code>
+ *             support, row and cell factories that set {@code scope},
+ *             {@code colspan} and {@code rowspan}, and binding a section's rows
+ *             to a signal.
  */
+@Deprecated(since = "25.3", forRemoval = true)
 @Tag(Tag.TABLE)
 public class NativeTable extends HtmlContainer
         implements ClickNotifier<NativeTable> {

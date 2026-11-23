@@ -23,7 +23,6 @@ import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.QuerySortOrder;
@@ -35,6 +34,7 @@ import com.vaadin.flow.function.SerializablePredicate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.clearInvocations;
 
 class HierarchicalDataCommunicatorFlatHierarchyTest
         extends AbstractHierarchicalDataCommunicatorTest {
@@ -80,7 +80,7 @@ class HierarchicalDataCommunicatorFlatHierarchyTest
                 4, "Item 0-1", //
                 5, "Item 1"));
 
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         dataCommunicator.setViewportRange(100, 8);
         fakeClientCommunication();
@@ -109,7 +109,7 @@ class HierarchicalDataCommunicatorFlatHierarchyTest
                 12, "Item 12", //
                 13, "Item 13"));
 
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         dataCommunicator.expand(new Item("Item 10"));
         fakeClientCommunication();
@@ -122,7 +122,7 @@ class HierarchicalDataCommunicatorFlatHierarchyTest
                 12, "Item 10-1", //
                 13, "Item 11"));
 
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         dataCommunicator.collapse(new Item("Item 10"));
         fakeClientCommunication();
@@ -146,7 +146,7 @@ class HierarchicalDataCommunicatorFlatHierarchyTest
                 2, "initial", //
                 3, "initial"));
 
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         dataCommunicator.refresh(new Item("Item 0", "refreshed"));
         fakeClientCommunication();
@@ -172,7 +172,7 @@ class HierarchicalDataCommunicatorFlatHierarchyTest
                 3, "Item 1-0-0", //
                 4, "Item 1-0-1"));
 
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         treeData.removeItem(new Item("Item 0"));
         treeData.removeItem(new Item("Item 1-0"));

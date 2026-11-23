@@ -21,6 +21,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
+import org.gradle.work.DisableCachingByDefault
 
 /**
  * Cleans everything Vaadin-related. Useful if npm fails to run after Vaadin
@@ -41,6 +42,7 @@ import org.gradle.api.tasks.TaskAction
  * the rest of the files will be re-created by Vaadin Servlet, simply by running the application
  * in the development mode.
  */
+@DisableCachingByDefault(because = "Deletes files and produces no output")
 public abstract class VaadinCleanTask : DefaultTask() {
 
     init {

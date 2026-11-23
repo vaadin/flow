@@ -64,6 +64,57 @@ class NativeLabelTest extends ComponentTest {
     }
 
     @Test
+    void setForComponent_explicitIdSetLater_explicitIdWins() {
+        UI ui = new UI();
+        NativeLabel otherComponent = new NativeLabel();
+        NativeLabel l = (NativeLabel) getComponent();
+        ui.add(l, otherComponent);
+        l.setFor(otherComponent);
+
+        l.setFor("another-input");
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertEquals("another-input", l.getFor().orElse(null));
+        assertFalse(otherComponent.getId().isPresent());
+    }
+
+    @Test
+    void setForComponent_clearedLater_forIsCleared() {
+        UI ui = new UI();
+        NativeLabel otherComponent = new NativeLabel();
+        NativeLabel l = (NativeLabel) getComponent();
+        ui.add(l, otherComponent);
+        l.setFor(otherComponent);
+
+        l.setFor("");
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertFalse(l.getFor().isPresent());
+        assertFalse(otherComponent.getId().isPresent());
+    }
+
+    @Test
+    void setForComponent_calledTwice_lastComponentWins() {
+        UI ui = new UI();
+        NativeLabel firstTarget = new NativeLabel();
+        NativeLabel secondTarget = new NativeLabel();
+        NativeLabel l = (NativeLabel) getComponent();
+        ui.add(l, firstTarget, secondTarget);
+
+        l.setFor(firstTarget);
+        l.setFor(secondTarget);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertFalse(firstTarget.getId().isPresent(),
+                "The superseded target should keep its original id");
+        assertEquals(secondTarget.getId().orElse(null),
+                l.getFor().orElse(null));
+    }
+
+    @Test
     void setForComponent_idSetLater() {
         UI ui = new UI();
         NativeLabel otherComponent = new NativeLabel();

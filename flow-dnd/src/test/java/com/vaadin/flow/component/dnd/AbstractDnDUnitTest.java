@@ -21,8 +21,6 @@ import java.util.function.Supplier;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Lookup;
@@ -34,8 +32,13 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 abstract class AbstractDnDUnitTest {
 
@@ -44,30 +47,28 @@ abstract class AbstractDnDUnitTest {
 
     @BeforeEach
     void setup() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.getPropertyNames())
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
+        when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
-        Mockito.when(appConfig.getBuildFolder()).thenReturn(".");
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        Mockito.when(appConfig.getContext()).thenReturn(context);
+        when(appConfig.getBuildFolder()).thenReturn(".");
+        VaadinContext context = mock(VaadinContext.class);
+        when(appConfig.getContext()).thenReturn(context);
 
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
-        Mockito.when(context.getAttribute(ArgumentMatchers.any(Class.class),
-                ArgumentMatchers.any(Supplier.class)))
+        Lookup lookup = mock(Lookup.class);
+        when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        when(context.getAttribute(any(Class.class), any(Supplier.class)))
                 .then(i -> i.getArgument(1, Supplier.class).get());
 
         DefaultDeploymentConfiguration configuration = new DefaultDeploymentConfiguration(
                 appConfig, VaadinServlet.class, new Properties());
 
-        VaadinService service = Mockito.mock(VaadinService.class);
-        Mockito.when(service.resolveResource(Mockito.anyString()))
-                .thenReturn("");
+        VaadinService service = mock(VaadinService.class);
+        when(service.resolveResource(anyString())).thenReturn("");
 
-        VaadinSession session = Mockito.mock(VaadinSession.class);
-        Mockito.when(session.getConfiguration()).thenReturn(configuration);
-        Mockito.when(session.getService()).thenReturn(service);
+        VaadinSession session = mock(VaadinSession.class);
+        when(session.getConfiguration()).thenReturn(configuration);
+        when(session.getService()).thenReturn(service);
 
         ui = new MockUI(session);
     }

@@ -16,11 +16,17 @@
 package com.vaadin.flow.server.webpush;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 import com.interaso.webpush.WebPush.SubscriptionState;
 import com.interaso.webpush.WebPushService;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.WebPushJs;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.server.VaadinSession;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -76,5 +82,44 @@ public class WebPushTest {
         WebPushMessage message = new WebPushMessage("title", "body");
 
         webPush.sendNotification(subscription, message);
+    }
+
+    @Test
+    public void clientCommands_runTheDeclaredJavaScript() {
+        UI ui = new UI();
+        VaadinSession session = mock(VaadinSession.class);
+        when(session.hasLock()).thenReturn(true);
+        ui.getInternals().setSession(session);
+        WebPushState state = mock(WebPushState.class);
+        WebPushSubscriptionResponse response = mock(
+                WebPushSubscriptionResponse.class);
+
+        webPush.subscriptionExists(ui, state);
+        webPush.isNotificationDenied(ui, state);
+        webPush.isNotificationGranted(ui, state);
+        webPush.subscribe(ui, response);
+        webPush.unsubscribe(ui, response);
+        webPush.fetchExistingSubscription(ui, response);
+
+        List<JsCall> calls = ui.getInternals()
+                .dumpPendingJavaScriptInvocations().stream()
+                .map(invocation -> invocation.getInvocation().getJsCall())
+                .toList();
+        assertEquals(List.of(
+                new JsCall(WebPushJs.class, "registrationStatus", List.of()),
+                new JsCall(WebPushJs.class, "notificationDenied", List.of()),
+                new JsCall(WebPushJs.class, "notificationGranted", List.of()),
+                new JsCall(WebPushJs.class, "subscribe", List.of(PUBLIC_KEY)),
+                new JsCall(WebPushJs.class, "unsubscribe", List.of()),
+                new JsCall(WebPushJs.class, "getSubscription", List.of())),
+                calls);
+        assertEquals(List.of(
+                "return window.Vaadin.Flow.webPush.registrationStatus()",
+                "return window.Vaadin.Flow.webPush.notificationDenied()",
+                "return window.Vaadin.Flow.webPush.notificationGranted()",
+                "return window.Vaadin.Flow.webPush.subscribe($0)",
+                "return window.Vaadin.Flow.webPush.unsubscribe()",
+                "return window.Vaadin.Flow.webPush.getSubscription()"),
+                calls.stream().map(JsCall::getExpression).toList());
     }
 }

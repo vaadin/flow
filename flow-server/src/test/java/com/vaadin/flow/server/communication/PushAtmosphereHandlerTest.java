@@ -17,23 +17,19 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Collections;
-import java.util.Properties;
 
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
-import com.vaadin.flow.server.DefaultDeploymentConfiguration;
-import com.vaadin.flow.server.MockVaadinContext;
-import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class PushAtmosphereHandlerTest {
 
@@ -47,25 +43,19 @@ class PushAtmosphereHandlerTest {
 
     @BeforeEach
     void setup() throws IOException {
-        request = Mockito.mock(AtmosphereRequest.class);
-        response = Mockito.mock(AtmosphereResponse.class);
-        printWriter = Mockito.mock(PrintWriter.class);
-        Mockito.when(response.getWriter()).thenReturn(printWriter);
+        request = mock(AtmosphereRequest.class);
+        response = mock(AtmosphereResponse.class);
+        printWriter = mock(PrintWriter.class);
+        when(response.getWriter()).thenReturn(printWriter);
 
-        resource = Mockito.mock(AtmosphereResource.class);
-        Mockito.when(resource.getRequest()).thenReturn(request);
-        Mockito.when(resource.getResponse()).thenReturn(response);
-        Mockito.when(resource.uuid()).thenReturn("1");
+        resource = mock(AtmosphereResource.class);
+        when(resource.getRequest()).thenReturn(request);
+        when(resource.getResponse()).thenReturn(response);
+        when(resource.uuid()).thenReturn("1");
 
-        VaadinContext context = new MockVaadinContext();
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(config.getPropertyNames())
-                .thenReturn(Collections.emptyEnumeration());
-        Mockito.when(config.getContext()).thenReturn(context);
-        VaadinServletService service = new VaadinServletService(null,
-                new DefaultDeploymentConfiguration(config, getClass(),
-                        new Properties()));
+        // The service must be initialized, otherwise the push handler waits
+        // for it to become ready instead of reporting the expired session
+        VaadinServletService service = new MockVaadinServletService();
 
         PushHandler handler = new PushHandler(service);
 
@@ -85,7 +75,7 @@ class PushAtmosphereHandlerTest {
 
     private void writeSessionExpiredAsync(String httpMethod)
             throws IOException {
-        Mockito.when(request.getMethod()).thenReturn(httpMethod);
+        when(request.getMethod()).thenReturn(httpMethod);
 
         atmosphereHandler.onRequest(resource);
 

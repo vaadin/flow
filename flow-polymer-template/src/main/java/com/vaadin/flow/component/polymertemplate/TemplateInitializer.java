@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Vaadin Ltd
+ * Copyright (C) 2022-2026 Vaadin Ltd
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
@@ -56,7 +56,7 @@ public class TemplateInitializer {
 
     private final PolymerParserData parserData;
 
-    private IdMapper idMapper;
+    private final IdMapper idMapper;
 
     /**
      * Creates a new initializer instance.
@@ -189,6 +189,8 @@ public class TemplateInitializer {
 
         AnnotationReader
                 .getAnnotationValuesFor(templateType, Uses.class, Uses::value)
+                .filter(Component.class::isAssignableFrom)
+                .map(usedType -> usedType.asSubclass(Component.class))
                 .forEach(usedType -> AnnotationReader
                         .getAnnotationValueFor(usedType, Tag.class, Tag::value)
                         .map(tag -> tag.toLowerCase(Locale.ROOT))

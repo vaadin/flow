@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
@@ -225,6 +224,8 @@ public class StateTree implements NodeOwner {
 
         if (node.hasBeforeClientResponseEntries()) {
             pendingExecutionNodes.add(node);
+            // A response is written for the node again
+            node.getBeforeClientResponseEntries().forEach(StateTree::restore);
         }
 
         return nodeId;
@@ -249,6 +250,10 @@ public class StateTree implements NodeOwner {
         }
 
         pendingExecutionNodes.remove(node);
+        // The executions stay on the node, but no response is written for a
+        // node that is not in the tree
+        node.getBeforeClientResponseEntries().forEach(StateTree::discard);
+        uiInternals.discardPendingJavaScriptInvocations(node);
     }
 
     @Override
@@ -367,14 +372,20 @@ public class StateTree implements NodeOwner {
         assert context != null : "The 'context' parameter can not be null";
         assert execution != null : "The 'execution' parameter can not be null";
 
-        if (context.isAttached()) {
-            pendingExecutionNodes.add(context);
-        }
-
         BeforeClientResponseEntry entry = new BeforeClientResponseEntry(
                 nextBeforeClientResponseIndex, context, execution);
         nextBeforeClientResponseIndex++;
-        return context.addBeforeClientResponseEntry(entry);
+        ExecutionRegistration registration = context
+                .addBeforeClientResponseEntry(entry);
+
+        if (context.isRegistered()) {
+            pendingExecutionNodes.add(context);
+        } else if (context.isAttached()) {
+            // The node is being detached: it is already unregistered, which
+            // discarded its other executions, so this one is discarded too
+            discard(entry);
+        }
+        return registration;
     }
 
     /**
@@ -389,22 +400,55 @@ public class StateTree implements NodeOwner {
             if (callbacks.isEmpty()) {
                 return;
             }
-            callbacks.stream().filter(entry -> entry.canExecute(getUI()))
-                    .forEach(entry -> {
-                        try {
-                            ExecutionContext context = new ExecutionContext(
-                                    getUI(), entry.getStateNode()
-                                            .isClientSideInitialized());
-                            entry.getExecution().accept(context);
-                        } catch (Exception e) {
-                            if (getErrorHandlerClass()
-                                    .equals(DefaultErrorHandler.class)) {
-                                throw e;
-                            }
-                            getUI().getSession().getErrorHandler().error(
-                                    new ErrorEvent(e, entry.getStateNode()));
-                        }
-                    });
+            callbacks.forEach(entry -> {
+                if (!entry.canExecute(getUI())) {
+                    // Flushed off its node for a tree it cannot run in
+                    discard(entry);
+                    return;
+                }
+                StateNode node = entry.getStateNode();
+                if (!node.isAttached()) {
+                    // Detached by an earlier execution in this round, after
+                    // the entry was flushed off the node. Postpone it until
+                    // the node is attached again, as for a node detached
+                    // before the round.
+                    node.addBeforeClientResponseEntry(entry);
+                    discard(entry);
+                    return;
+                }
+                try {
+                    ExecutionContext context = new ExecutionContext(getUI(),
+                            node.isClientSideInitialized());
+                    entry.getExecution().accept(context);
+                } catch (Exception e) {
+                    if (getErrorHandlerClass()
+                            .equals(DefaultErrorHandler.class)) {
+                        throw e;
+                    }
+                    getUI().getSessionOrThrow().getErrorHandler()
+                            .error(new ErrorEvent(e, node));
+                }
+            });
+        }
+    }
+
+    /**
+     * Tells the execution of the given entry that the tree has stopped waiting
+     * to run it, if it wants to know.
+     */
+    private static void discard(BeforeClientResponseEntry entry) {
+        if (entry.getExecution() instanceof DiscardAwareExecution execution) {
+            execution.executionDiscarded();
+        }
+    }
+
+    /**
+     * Tells the execution of the given entry that the tree is waiting to run it
+     * again, if it wants to know.
+     */
+    private static void restore(BeforeClientResponseEntry entry) {
+        if (entry.getExecution() instanceof DiscardAwareExecution execution) {
+            execution.executionRestored();
         }
     }
 
@@ -426,8 +470,7 @@ public class StateTree implements NodeOwner {
         List<StateTree.BeforeClientResponseEntry> flushed = pendingExecutionNodes
                 .stream().map(StateNode::dumpBeforeClientResponseEntries)
                 .flatMap(List::stream)
-                .sorted(BeforeClientResponseEntry.COMPARING_INDEX)
-                .collect(Collectors.toList());
+                .sorted(BeforeClientResponseEntry.COMPARING_INDEX).toList();
 
         // Reset bookeeping for the next round
         pendingExecutionNodes = new HashSet<>();
@@ -484,6 +527,11 @@ public class StateTree implements NodeOwner {
     public void prepareForResync() {
         preparingForResync = true;
         try {
+            // The client rebuilds its state from scratch, and the components
+            // reinitialize it from the initial attach events that preparing
+            // dispatches. Anything still queued predates that, so it would run
+            // against a client side that no longer expects it.
+            uiInternals.discardPendingJavaScriptInvocations();
             rootNode.prepareForResync();
         } finally {
             preparingForResync = false;

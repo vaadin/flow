@@ -44,8 +44,13 @@ import com.vaadin.flow.server.VaadinServletRequest;
  */
 public class VaadinRolePrefixHolder implements Serializable {
 
+    /** The role prefix in use, or {@code null} if none is set. */
     private String rolePrefix;
 
+    /**
+     * Whether the prefix has been resolved, so that it is not looked up again
+     * when it resolves to {@code null}.
+     */
     private boolean rolePrefixSet;
 
     /**

@@ -369,6 +369,8 @@ public interface Style extends Serializable {
     }
 
     /**
+     * The values of the <code>box-sizing</code> property.
+     *
      * @since 24.1
      */
     public enum BoxSizing {
@@ -494,6 +496,8 @@ public interface Style extends Serializable {
     }
 
     /**
+     * The values of the <code>display</code> property.
+     *
      * @since 24.1
      */
     public enum Display {
@@ -741,6 +745,8 @@ public interface Style extends Serializable {
     }
 
     /**
+     * The values of the <code>overflow</code> property.
+     *
      * @since 24.1
      */
     public enum Overflow {

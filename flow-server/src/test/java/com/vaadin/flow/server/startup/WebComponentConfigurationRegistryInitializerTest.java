@@ -23,13 +23,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Component;
@@ -51,9 +50,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@NotThreadSafe
+@Isolated
 class WebComponentConfigurationRegistryInitializerTest {
     private static final String DUPLICATE_PROPERTY_NAME = "one";
 
@@ -70,13 +70,11 @@ class WebComponentConfigurationRegistryInitializerTest {
     @BeforeEach
     void init() {
         MockitoAnnotations.initMocks(this);
-        Mockito.when(vaadinService.getContext()).thenReturn(context);
-        Mockito.when(
-                context.getAttribute(WebComponentConfigurationRegistry.class))
+        when(vaadinService.getContext()).thenReturn(context);
+        when(context.getAttribute(WebComponentConfigurationRegistry.class))
                 .thenReturn(registry);
-        Mockito.when(context.getAttribute(
-                eq(WebComponentConfigurationRegistry.class), any()))
-                .thenReturn(registry);
+        when(context.getAttribute(eq(WebComponentConfigurationRegistry.class),
+                any())).thenReturn(registry);
 
         initializer = new WebComponentConfigurationRegistryInitializer();
         when(servletContext.getAttribute(
@@ -100,7 +98,7 @@ class WebComponentConfigurationRegistryInitializerTest {
                         ExporterFactory.class).collect(Collectors.toSet()),
                 servletContext);
         ArgumentCaptor<Set> captor = ArgumentCaptor.forClass(Set.class);
-        Mockito.verify(registry).setConfigurations(captor.capture());
+        verify(registry).setConfigurations(captor.capture());
         Set<?> set = captor.getValue();
         assertEquals(3, set.size());
         Set<Class> componentClasses = set.stream()
@@ -121,7 +119,7 @@ class WebComponentConfigurationRegistryInitializerTest {
         }
         // Expect a call to setWebComponents even if we have an empty or null
         // set
-        Mockito.verify(registry).setConfigurations(Collections.emptySet());
+        verify(registry).setConfigurations(Collections.emptySet());
     }
 
     @Test
@@ -144,7 +142,7 @@ class WebComponentConfigurationRegistryInitializerTest {
         } catch (Exception e) {
             fail("WebComponentRegistryInitializer.process should not throw with empty set");
         }
-        Mockito.verify(registry).setConfigurations(Collections.emptySet());
+        verify(registry).setConfigurations(Collections.emptySet());
     }
 
     @Test

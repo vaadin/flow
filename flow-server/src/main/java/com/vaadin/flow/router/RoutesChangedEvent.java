@@ -18,7 +18,6 @@ package com.vaadin.flow.router;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.server.RouteRegistry;
@@ -138,9 +137,8 @@ public class RoutesChangedEvent extends EventObject {
      * @since 3.1
      */
     public List<Class<? extends Component>> getAddedNavigationTargets() {
-        return Collections.unmodifiableList(
-                added.stream().map(RouteBaseData::getNavigationTarget)
-                        .collect(Collectors.toList()));
+        return Collections.unmodifiableList(added.stream()
+                .map(RouteBaseData::getNavigationTarget).toList());
     }
 
     /**
@@ -150,9 +148,8 @@ public class RoutesChangedEvent extends EventObject {
      * @since 3.1
      */
     public List<Class<? extends Component>> getRemovedNavigationTargets() {
-        return Collections.unmodifiableList(
-                removed.stream().map(RouteBaseData::getNavigationTarget)
-                        .collect(Collectors.toList()));
+        return Collections.unmodifiableList(removed.stream()
+                .map(RouteBaseData::getNavigationTarget).toList());
     }
 
     /**
@@ -162,8 +159,8 @@ public class RoutesChangedEvent extends EventObject {
      * @since 3.1
      */
     public List<String> getAddedURLs() {
-        return Collections.unmodifiableList(added.stream()
-                .map(RouteBaseData::getTemplate).collect(Collectors.toList()));
+        return Collections.unmodifiableList(
+                added.stream().map(RouteBaseData::getTemplate).toList());
     }
 
     /**
@@ -173,8 +170,8 @@ public class RoutesChangedEvent extends EventObject {
      * @since 3.1
      */
     public List<String> getRemovedURLs() {
-        return Collections.unmodifiableList(removed.stream()
-                .map(RouteBaseData::getTemplate).collect(Collectors.toList()));
+        return Collections.unmodifiableList(
+                removed.stream().map(RouteBaseData::getTemplate).toList());
     }
 
     private boolean checkIfRouteIsPresent(List<RouteBaseData<?>> routes,

@@ -33,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.mockito.Mockito.when;
 
 class OpenInCurrentIdeTest {
 
@@ -601,11 +602,10 @@ class OpenInCurrentIdeTest {
 
     private Info mock(String cmd, String[] arguments) {
         Info info = Mockito.mock(Info.class);
-        Mockito.when(info.command()).thenReturn(Optional.ofNullable(cmd));
-        Mockito.when(info.arguments())
-                .thenReturn(Optional.ofNullable(arguments));
+        when(info.command()).thenReturn(Optional.ofNullable(cmd));
+        when(info.arguments()).thenReturn(Optional.ofNullable(arguments));
         if (cmd != null && arguments != null) {
-            Mockito.when(info.commandLine()).thenReturn(
+            when(info.commandLine()).thenReturn(
                     Optional.of(cmd + " " + String.join(" ", arguments)));
         }
 
@@ -614,9 +614,9 @@ class OpenInCurrentIdeTest {
 
     private Info mock(String cmd, String cmdline) {
         Info info = Mockito.mock(Info.class);
-        Mockito.when(info.command()).thenReturn(Optional.of(cmd));
-        Mockito.when(info.arguments()).thenReturn(Optional.empty());
-        Mockito.when(info.commandLine()).thenReturn(Optional.of(cmdline));
+        when(info.command()).thenReturn(Optional.of(cmd));
+        when(info.arguments()).thenReturn(Optional.empty());
+        when(info.commandLine()).thenReturn(Optional.of(cmdline));
 
         return info;
     }

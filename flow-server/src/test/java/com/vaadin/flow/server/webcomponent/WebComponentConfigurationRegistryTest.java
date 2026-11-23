@@ -27,13 +27,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.parallel.Isolated;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -51,8 +49,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-@NotThreadSafe
+@Isolated
 class WebComponentConfigurationRegistryTest {
 
     private static final String MY_COMPONENT_TAG = "my-component";
@@ -72,14 +71,12 @@ class WebComponentConfigurationRegistryTest {
         VaadinService service = mock(VaadinService.class);
         context = mock(VaadinContext.class);
         VaadinService.setCurrent(service);
-        Mockito.when(service.getContext()).thenReturn(context);
+        when(service.getContext()).thenReturn(context);
         WebComponentConfigurationRegistry instance = createRegistry();
-        Mockito.when(
-                context.getAttribute(WebComponentConfigurationRegistry.class))
+        when(context.getAttribute(WebComponentConfigurationRegistry.class))
                 .thenReturn(instance);
-        Mockito.when(context.getAttribute(
-                eq(WebComponentConfigurationRegistry.class), any()))
-                .thenReturn(instance);
+        when(context.getAttribute(eq(WebComponentConfigurationRegistry.class),
+                any())).thenReturn(instance);
         registry = WebComponentConfigurationRegistry.getInstance(context);
     }
 
@@ -225,7 +222,7 @@ class WebComponentConfigurationRegistryTest {
                                         MyComponentExporter.class)));
                     };
                     return callable;
-                }).collect(Collectors.toList());
+                }).toList();
 
         List<Future<AtomicBoolean>> futures = executorService
                 .invokeAll(callables);

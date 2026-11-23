@@ -46,6 +46,19 @@ public class FrontendConverter implements AutoCloseable {
 
     private final Path converterTempPath;
 
+    /**
+     * Creates a converter that runs the bundled {@code convert.js} script with
+     * the Node.js executable provided by the given tools.
+     * <p>
+     * The script is unpacked into a temporary directory that is removed again
+     * by {@link #close()}, so the converter has to be closed after use.
+     *
+     * @param frontendTools
+     *            the tools used to locate the Node.js executable
+     * @throws IOException
+     *             if the temporary directory or the script copy cannot be
+     *             created
+     */
     public FrontendConverter(FrontendTools frontendTools) throws IOException {
         this.frontendTools = frontendTools;
         this.tempDirPath = Files.createTempDirectory("converter");
@@ -64,6 +77,28 @@ public class FrontendConverter implements AutoCloseable {
         FileIOUtils.delete(tempDirPath);
     }
 
+    /**
+     * Converts a single Polymer-based {@code *.js} file to Lit in place.
+     * <p>
+     * Files that do not contain {@code PolymerElement} are left untouched.
+     *
+     * @param filePath
+     *            the file to convert
+     * @param useLit1
+     *            {@code true} to generate Lit 1 compatible output,
+     *            {@code false} to target the current Lit version
+     * @param disableOptionalChaining
+     *            {@code true} to avoid the optional chaining operator in the
+     *            generated output, for tooling that cannot parse it
+     * @return {@code true} if the file was converted, {@code false} if it is
+     *         not a Polymer file
+     * @throws IOException
+     *             if the file cannot be read or written
+     * @throws InterruptedException
+     *             if waiting for the converter process is interrupted
+     * @throws CommandExecutionException
+     *             if the converter process fails
+     */
     public boolean convertFile(Path filePath, boolean useLit1,
             boolean disableOptionalChaining) throws IOException,
             InterruptedException, CommandExecutionException {

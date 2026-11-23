@@ -19,8 +19,6 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -28,11 +26,25 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.tests.util.MockUI;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 class RouteNotFoundErrorTest {
 
@@ -45,32 +57,34 @@ class RouteNotFoundErrorTest {
     void setErrorParameter_productionMode_pathContainRoutesTemplate_renderedElementHasNoRoutes() {
 
         RouteNotFoundError page = new RouteNotFoundError();
+        // A reused view instance must drop a mark from an earlier render
+        RouteUtil.setNoRoutesPage(page, true);
         BeforeEnterEvent event = createEvent(true);
 
         ErrorParameter<NotFoundException> param = new ErrorParameter<NotFoundException>(
                 NotFoundException.class, new NotFoundException());
 
-        Router router = Mockito.mock(Router.class);
-        Mockito.when(event.getSource()).thenReturn(router);
-        RouteRegistry registry = Mockito.mock(RouteRegistry.class);
-        Mockito.when(router.getRegistry()).thenReturn(registry);
+        Router router = mock(Router.class);
+        when(event.getSource()).thenReturn(router);
+        RouteRegistry registry = mock(RouteRegistry.class);
+        when(router.getRegistry()).thenReturn(registry);
         RouteData data = new RouteData(Collections.emptyList(), "bar",
                 Collections.emptyList(), RouteTarget.class,
                 Collections.emptyList());
-        Mockito.when(registry.getRegisteredRoutes())
+        when(registry.getRegisteredRoutes())
                 .thenReturn(Collections.singletonList(data));
 
         event.getSource().getRegistry().getRegisteredRoutes();
 
-        try (MockedStatic<VaadinService> service = Mockito
-                .mockStatic(VaadinService.class, Mockito.CALLS_REAL_METHODS)) {
-            VaadinService vaadinService = Mockito.mock(VaadinService.class);
-            DeploymentConfiguration configuration = Mockito
-                    .mock(DeploymentConfiguration.class);
-            Mockito.when(vaadinService.getDeploymentConfiguration())
+        try (MockedStatic<VaadinService> service = mockStatic(
+                VaadinService.class, Mockito.CALLS_REAL_METHODS)) {
+            VaadinService vaadinService = mock(VaadinService.class);
+            DeploymentConfiguration configuration = mock(
+                    DeploymentConfiguration.class);
+            when(vaadinService.getDeploymentConfiguration())
                     .thenReturn(configuration);
-            Mockito.when(configuration.isProductionMode()).thenReturn(true);
-            Mockito.when(configuration.getFrontendFolder())
+            when(configuration.isProductionMode()).thenReturn(true);
+            when(configuration.getFrontendFolder())
                     .thenReturn(new File("front"));
 
             service.when(() -> VaadinService.getCurrent())
@@ -78,62 +92,69 @@ class RouteNotFoundErrorTest {
             page.setErrorParameter(event, param);
         }
 
-        MatcherAssert.assertThat(page.getElement().toString(),
-                CoreMatchers.not(CoreMatchers.containsString("bar")));
+        assertThat(page.getElement().toString(), not(containsString("bar")));
+        assertFalse(RouteUtil.isNoRoutesPage(page));
     }
 
     @Test
     void setErrorParameter_devMode_noRoutes() {
         RouteNotFoundError page = new RouteNotFoundError();
+        MockUI ui = new MockUI();
+        ui.add(page);
         BeforeEnterEvent event = createEvent(false);
 
         ErrorParameter<NotFoundException> param = new ErrorParameter<>(
                 NotFoundException.class, new NotFoundException());
 
-        VaadinService vaadinService = Mockito.mock(VaadinService.class);
-        Mockito.when(vaadinService.getDeploymentConfiguration())
-                .thenReturn(null);
+        VaadinService vaadinService = mock(VaadinService.class);
+        when(vaadinService.getDeploymentConfiguration()).thenReturn(null);
 
-        Router router = Mockito.mock(Router.class);
-        Mockito.when(event.getSource()).thenReturn(router);
-        RouteRegistry registry = Mockito.mock(RouteRegistry.class);
-        Mockito.when(router.getRegistry()).thenReturn(registry);
-        Mockito.when(registry.getRegisteredRoutes()).thenReturn(List.of());
+        Router router = mock(Router.class);
+        when(event.getSource()).thenReturn(router);
+        RouteRegistry registry = mock(RouteRegistry.class);
+        when(router.getRegistry()).thenReturn(registry);
+        when(registry.getRegisteredRoutes()).thenReturn(List.of());
 
         event.getSource().getRegistry().getRegisteredRoutes();
 
-        try (MockedStatic<FrontendUtils> util = Mockito
-                .mockStatic(FrontendUtils.class);
-                MockedStatic<VaadinService> service = Mockito.mockStatic(
+        try (MockedStatic<FrontendUtils> util = mockStatic(FrontendUtils.class);
+                MockedStatic<VaadinService> service = mockStatic(
                         VaadinService.class, Mockito.CALLS_REAL_METHODS);) {
-            util.when(() -> FrontendUtils.getProjectFrontendDir(Mockito.any()))
+            util.when(() -> FrontendUtils.getProjectFrontendDir(any()))
                     .thenReturn(null);
-            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
-                    .thenReturn(false);
+            util.when(() -> FrontendUtils.isHillaUsed(any())).thenReturn(false);
             service.when(() -> VaadinService.getCurrent())
                     .thenReturn(vaadinService);
 
             page.setErrorParameter(event, param);
         }
 
-        MatcherAssert.assertThat(page.getElement().toString(),
-                CoreMatchers.containsString("No views found"));
+        assertThat(page.getElement().toString(),
+                containsString("No views found"));
+        assertFalse(RouteUtil.isNoRoutesPage(page),
+                "The page is marked only once Copilot has taken over");
+
+        List<PendingJavaScriptInvocation> invocations = ui
+                .dumpPendingJsInvocations();
+        invocations.get(invocations.size() - 1)
+                .complete(JacksonUtils.nullNode());
+        assertTrue(RouteUtil.isNoRoutesPage(page));
     }
 
     private BeforeEnterEvent createEvent(boolean productionMode) {
-        BeforeEnterEvent event = Mockito.mock(BeforeEnterEvent.class);
-        Location location = Mockito.mock(Location.class);
-        Mockito.when(location.getPath()).thenReturn("{{routes}}");
-        Mockito.when(event.getLocation()).thenReturn(location);
-        UI ui = Mockito.mock(UI.class);
-        VaadinSession session = Mockito.mock(VaadinSession.class);
-        Mockito.when(ui.getSession()).thenReturn(session);
-        DeploymentConfiguration config = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(session.getConfiguration()).thenReturn(config);
-        Mockito.when(config.isProductionMode()).thenReturn(productionMode);
-        Mockito.when(config.getFrontendFolder()).thenReturn(new File("front"));
-        Mockito.when(event.getUI()).thenReturn(ui);
+        BeforeEnterEvent event = mock(BeforeEnterEvent.class);
+        Location location = mock(Location.class);
+        when(location.getPath()).thenReturn("{{routes}}");
+        when(event.getLocation()).thenReturn(location);
+        UI ui = mock(UI.class);
+        VaadinSession session = mock(VaadinSession.class);
+        when(ui.getSession()).thenReturn(session);
+        when(ui.getSessionOrThrow()).thenCallRealMethod();
+        DeploymentConfiguration config = mock(DeploymentConfiguration.class);
+        when(session.getConfiguration()).thenReturn(config);
+        when(config.isProductionMode()).thenReturn(productionMode);
+        when(config.getFrontendFolder()).thenReturn(new File("front"));
+        when(event.getUI()).thenReturn(ui);
         return event;
     }
 

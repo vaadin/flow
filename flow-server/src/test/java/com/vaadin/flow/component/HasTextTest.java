@@ -17,7 +17,6 @@ package com.vaadin.flow.component;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.HasText.WhiteSpace;
 import com.vaadin.flow.dom.Element;
@@ -29,20 +28,24 @@ import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class HasTextTest {
 
-    private HasText hasText = Mockito.mock(HasText.class);
+    private HasText hasText = mock(HasText.class);
 
     @BeforeEach
     void setUp() {
         Element element = ElementFactory.createDiv();
-        Mockito.when(hasText.getElement()).thenReturn(element);
+        when(hasText.getElement()).thenReturn(element);
 
-        Mockito.doCallRealMethod().when(hasText).setWhiteSpace(Mockito.any());
-        Mockito.doCallRealMethod().when(hasText).getWhiteSpace();
-        Mockito.doCallRealMethod().when(hasText).setText(Mockito.any());
-        Mockito.doCallRealMethod().when(hasText).bindText(Mockito.any());
+        doCallRealMethod().when(hasText).setWhiteSpace(any());
+        doCallRealMethod().when(hasText).getWhiteSpace();
+        doCallRealMethod().when(hasText).setText(any());
+        doCallRealMethod().when(hasText).bindText(any());
     }
 
     @Test

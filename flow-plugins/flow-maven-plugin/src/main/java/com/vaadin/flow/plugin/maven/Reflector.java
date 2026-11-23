@@ -624,14 +624,8 @@ public final class Reflector implements Closeable {
 
     private static Field findField(Class<?> clazz, String fieldName)
             throws NoSuchFieldException {
-        while (clazz != null && !clazz.equals(Object.class)) {
-            try {
-                return clazz.getDeclaredField(fieldName);
-            } catch (NoSuchFieldException e) {
-                clazz = clazz.getSuperclass();
-            }
-        }
-        throw new NoSuchFieldException(fieldName);
+        return ReflectTools.findDeclaredField(clazz, fieldName)
+                .orElseThrow(() -> new NoSuchFieldException(fieldName));
     }
 
     /*

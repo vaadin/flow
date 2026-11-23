@@ -17,10 +17,9 @@ package com.vaadin.flow.spring.scopes;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
 
@@ -29,12 +28,14 @@ import com.vaadin.flow.server.VaadinSession;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@NotThreadSafe
+@Isolated
 class VaadinSessionScopeTest extends AbstractScopeTest {
 
     @BeforeEach
@@ -73,11 +74,10 @@ class VaadinSessionScopeTest extends AbstractScopeTest {
         VaadinSession session = mockSession();
         VaadinService service = session.getService();
 
-        doCallRealMethod().when(session)
-                .addSessionDestroyListener(Mockito.any());
+        doCallRealMethod().when(session).addSessionDestroyListener(any());
         doCallRealMethod().when(session).getLockInstance();
         doCallRealMethod().when(session).getPendingAccessQueue();
-        doCallRealMethod().when(session).access(Mockito.any());
+        doCallRealMethod().when(session).access(any());
 
         VaadinSessionScope scope = new VaadinSessionScope();
 
@@ -86,7 +86,7 @@ class VaadinSessionScopeTest extends AbstractScopeTest {
 
         Object object = new Object();
 
-        ObjectFactory factory = Mockito.mock(ObjectFactory.class);
+        ObjectFactory factory = mock(ObjectFactory.class);
         when(factory.getObject()).thenReturn(object);
         scope.get("foo", factory);
 

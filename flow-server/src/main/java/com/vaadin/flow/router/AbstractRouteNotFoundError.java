@@ -17,6 +17,7 @@ package com.vaadin.flow.router;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +34,12 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HttpStatusCode;
 
 /**
@@ -74,8 +79,8 @@ public abstract class AbstractRouteNotFoundError extends Component {
         path = Jsoup.clean(path, Safelist.none());
         additionalInfo = Jsoup.clean(additionalInfo, Safelist.none());
 
-        boolean productionMode = event.getUI().getSession().getConfiguration()
-                .isProductionMode();
+        boolean productionMode = event.getUI().getSessionOrThrow()
+                .getConfiguration().isProductionMode();
         String template;
         String routes = getRoutes(event);
 
@@ -99,17 +104,12 @@ public abstract class AbstractRouteNotFoundError extends Component {
         template = template.replace("{{path}}", path);
 
         getElement().setChild(0, new Html(template).getElement());
+        RouteUtil.setNoRoutesPage(this, false);
         if (noRoutes && !productionMode) {
-            String copilotNoRoutes = """
-                    (function poll() {
-                        if (window.Vaadin?.copilot?.noRoutesInProject) {
-                            window.Vaadin.copilot.noRoutesInProject();
-                        } else {
-                            setTimeout(poll, 100);
-                        }
-                    })();
-                    """;
-            getElement().executeJs(copilotNoRoutes);
+            // Copilot replaces the page body once told, so the page is marked
+            // only when it actually was, not when Copilot is missing
+            getElement().executeJs(CopilotJs.class).reportNoRoutes()
+                    .then(ignore -> RouteUtil.setNoRoutesPage(this, true));
         }
         return HttpStatusCode.NOT_FOUND.getCode();
     }
@@ -205,5 +205,36 @@ public abstract class AbstractRouteNotFoundError extends Component {
 
         private static final String PRODUCTION_MODE_TEMPLATE = readHtmlFile(
                 "RouteNotFoundError_prod.html");
+    }
+
+    /**
+     * What this page tells Copilot, as a JavaScript definition for
+     * {@link com.vaadin.flow.dom.Element#executeJs(Class)}.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface CopilotJs extends Serializable {
+
+        /**
+         * Tells Copilot that the project has no routes yet, waiting for it to
+         * load rather than assuming it already has.
+         *
+         * @return the pending result, which completes once Copilot has been
+         *         told, and never if Copilot is not available
+         */
+        @JsExpression("""
+                return new Promise((resolve) => {
+                    (function poll() {
+                        if (window.Vaadin?.copilot?.noRoutesInProject) {
+                            window.Vaadin.copilot.noRoutesInProject();
+                            resolve();
+                        } else {
+                            setTimeout(poll, 100);
+                        }
+                    })();
+                });
+                """)
+        PendingJavaScriptResult reportNoRoutes();
     }
 }

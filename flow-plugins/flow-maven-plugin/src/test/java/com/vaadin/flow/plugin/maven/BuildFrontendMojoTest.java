@@ -36,7 +36,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.model.Build;
@@ -57,7 +56,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.parallel.Isolated;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -89,8 +88,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 
-@NotThreadSafe
+@Isolated
 class BuildFrontendMojoTest {
     public static final String TEST_PROJECT_RESOURCE_JS = "test_project_resource.js";
     @TempDir
@@ -112,7 +116,7 @@ class BuildFrontendMojoTest {
     private File tokenFile;
     private File jarResourcesSource;
 
-    private final BuildFrontendMojo mojo = Mockito.spy(new BuildFrontendMojo());
+    private final BuildFrontendMojo mojo = spy(new BuildFrontendMojo());
     private Lookup lookup;
     private File frontendDirectory;
 
@@ -201,8 +205,7 @@ class BuildFrontendMojoTest {
                 Collections.emptyList());
         ReflectionUtils.setVariableValueInObject(mojo,
                 "excludePostinstallPackages", Collections.emptyList());
-        Mockito.doReturn(
-                Set.of(jarResourcesSource.getParentFile().getParentFile()))
+        doReturn(Set.of(jarResourcesSource.getParentFile().getParentFile()))
                 .when(mojo).getJarFiles();
 
         setProject(mojo, npmFolder);
@@ -213,14 +216,14 @@ class BuildFrontendMojoTest {
         FileUtils.fileWrite(packageJson, "UTF-8",
                 TestUtils.getInitialPackageJson().toString());
 
-        lookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(new TestEndpointGeneratorTaskFactory()).when(lookup)
+        lookup = mock(Lookup.class);
+        doReturn(new TestEndpointGeneratorTaskFactory()).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
-        Mockito.doAnswer(invocation -> {
-            Mockito.doReturn((ClassFinder) invocation.getArguments()[0])
-                    .when(lookup).lookup(ClassFinder.class);
+        doAnswer(invocation -> {
+            doReturn((ClassFinder) invocation.getArguments()[0]).when(lookup)
+                    .lookup(ClassFinder.class);
             return lookup;
-        }).when(mojo).createLookup(Mockito.any(ClassFinder.class));
+        }).when(mojo).createLookup(any(ClassFinder.class));
     }
 
     @AfterEach

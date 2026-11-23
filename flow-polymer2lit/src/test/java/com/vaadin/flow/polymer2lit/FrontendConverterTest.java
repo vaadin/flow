@@ -23,7 +23,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -32,24 +34,46 @@ import org.junit.jupiter.api.io.TempDir;
 import com.vaadin.flow.internal.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
+import com.vaadin.flow.testutil.FrontendStubs;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Tag("com.vaadin.flow.testcategory.SlowTests")
 class FrontendConverterTest {
+    /**
+     * The directory Node.js is installed into, shared by all tests in this
+     * class. FrontendTools caches the resolved Node.js installation in a static
+     * field, so a per-test directory would be deleted after the first test and
+     * leave every later test with the path of a Node.js that no longer exists.
+     */
+    @TempDir
+    static File nodeHomeDir;
+
     @TempDir
     File tmpDir;
 
     private FrontendConverter frontendConverter;
 
+    @BeforeAll
+    static void clearNodeCacheBefore() throws Exception {
+        // Another test class may have cached the path of a Node.js in its own,
+        // by now deleted, temporary directory
+        FrontendStubs.resetFrontendToolsNodeCache();
+    }
+
+    @AfterAll
+    static void clearNodeCacheAfter() throws Exception {
+        // nodeHomeDir is deleted once this class is done, so the path of the
+        // Node.js in it must not be left behind for other test classes
+        FrontendStubs.resetFrontendToolsNodeCache();
+    }
+
     @BeforeEach
     void init() throws IOException {
         String baseDir = Files.createTempDirectory(tmpDir.toPath(), "tmp")
                 .toFile().getAbsolutePath();
-        String vaadinHomeDir = Files.createTempDirectory(tmpDir.toPath(), "tmp")
-                .toFile().getAbsolutePath();
         FrontendToolsSettings settings = new FrontendToolsSettings(baseDir,
-                () -> vaadinHomeDir);
+                nodeHomeDir::getAbsolutePath);
         FrontendTools tools = new FrontendTools(settings);
         frontendConverter = new FrontendConverter(tools);
     }

@@ -26,7 +26,6 @@ import org.jsoup.nodes.Element;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
@@ -34,6 +33,11 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for Aura theme auto-loading behavior in AppShellRegistry.
@@ -50,33 +54,31 @@ class AppShellRegistryAuraAutoLoadTest {
     @BeforeEach
     void setup() {
         Map<String, Object> attributeMap = new HashMap<>();
-        ServletContext servletContext = Mockito.mock(ServletContext.class);
-        Mockito.when(servletContext.getAttribute(Mockito.anyString()))
+        ServletContext servletContext = mock(ServletContext.class);
+        when(servletContext.getAttribute(anyString()))
                 .then(invocation -> attributeMap
                         .get(invocation.getArguments()[0].toString()));
-        Mockito.doAnswer(invocation -> attributeMap.put(
+        doAnswer(invocation -> attributeMap.put(
                 invocation.getArguments()[0].toString(),
                 invocation.getArguments()[1])).when(servletContext)
-                .setAttribute(Mockito.anyString(), Mockito.any());
+                .setAttribute(anyString(), any());
 
-        Lookup lookup = Mockito.mock(Lookup.class);
+        Lookup lookup = mock(Lookup.class);
         attributeMap.put(Lookup.class.getName(), lookup);
 
         context = new VaadinServletContext(servletContext);
         document = Document.createShell("");
 
         // Create a minimal service mock
-        service = Mockito.mock(VaadinServletService.class);
-        DeploymentConfiguration deploymentConfig = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(deploymentConfig.isProductionMode()).thenReturn(false);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(deploymentConfig);
-        Mockito.when(service.getInstantiator()).thenReturn(
-                Mockito.mock(com.vaadin.flow.di.Instantiator.class));
-        Mockito.when(service.getContext()).thenReturn(context);
-        Mockito.when(service.getContextRootRelativePath(Mockito.any()))
-                .thenReturn("./");
+        service = mock(VaadinServletService.class);
+        DeploymentConfiguration deploymentConfig = mock(
+                DeploymentConfiguration.class);
+        when(deploymentConfig.isProductionMode()).thenReturn(false);
+        when(service.getDeploymentConfiguration()).thenReturn(deploymentConfig);
+        when(service.getInstantiator())
+                .thenReturn(mock(com.vaadin.flow.di.Instantiator.class));
+        when(service.getContext()).thenReturn(context);
+        when(service.getContextRootRelativePath(any())).thenReturn("./");
     }
 
     @AfterEach
@@ -90,8 +92,7 @@ class AppShellRegistryAuraAutoLoadTest {
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
 
         // Mock Aura resource availability
-        Mockito.when(service.isResourceAvailable("/aura/aura.css"))
-                .thenReturn(true);
+        when(service.isResourceAvailable("/aura/aura.css")).thenReturn(true);
 
         VaadinServletRequest request = createRequest("/", "");
         registry.modifyIndexHtml(document, request);
@@ -112,8 +113,7 @@ class AppShellRegistryAuraAutoLoadTest {
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
 
         // Mock Aura resource NOT available
-        Mockito.when(service.isResourceAvailable("/aura/aura.css"))
-                .thenReturn(false);
+        when(service.isResourceAvailable("/aura/aura.css")).thenReturn(false);
 
         VaadinServletRequest request = createRequest("/", "");
         registry.modifyIndexHtml(document, request);
@@ -132,10 +132,10 @@ class AppShellRegistryAuraAutoLoadTest {
         VaadinService.setCurrent(service);
 
         // Configure instantiator to return a new instance of MyAppShell
-        com.vaadin.flow.di.Instantiator instantiator = Mockito
-                .mock(com.vaadin.flow.di.Instantiator.class);
-        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
-        Mockito.when(instantiator.getOrCreate(MyAppShell.class))
+        com.vaadin.flow.di.Instantiator instantiator = mock(
+                com.vaadin.flow.di.Instantiator.class);
+        when(service.getInstantiator()).thenReturn(instantiator);
+        when(instantiator.getOrCreate(MyAppShell.class))
                 .thenReturn(new MyAppShell());
 
         try {
@@ -155,13 +155,12 @@ class AppShellRegistryAuraAutoLoadTest {
 
     private VaadinServletRequest createRequest(String pathInfo,
             String contextPath) {
-        jakarta.servlet.http.HttpServletRequest req = Mockito
-                .mock(jakarta.servlet.http.HttpServletRequest.class);
-        Mockito.when(req.getServletPath()).thenReturn("");
-        Mockito.when(req.getPathInfo()).thenReturn(pathInfo);
-        Mockito.when(req.getRequestURL())
-                .thenReturn(new StringBuffer(pathInfo));
-        Mockito.when(req.getContextPath()).thenReturn(contextPath);
+        jakarta.servlet.http.HttpServletRequest req = mock(
+                jakarta.servlet.http.HttpServletRequest.class);
+        when(req.getServletPath()).thenReturn("");
+        when(req.getPathInfo()).thenReturn(pathInfo);
+        when(req.getRequestURL()).thenReturn(new StringBuffer(pathInfo));
+        when(req.getContextPath()).thenReturn(contextPath);
         return new VaadinServletRequest(req, service);
     }
 }

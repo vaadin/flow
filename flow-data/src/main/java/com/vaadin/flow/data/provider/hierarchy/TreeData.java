@@ -24,7 +24,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.function.ValueProvider;
@@ -32,7 +31,9 @@ import com.vaadin.flow.function.ValueProvider;
 /**
  * Represents hierarchical data.
  * <p>
- * Typically used as a backing data source for {@link TreeDataProvider}.
+ * Typically used as a backing data source for {@link TreeDataProvider}. After
+ * making changes to the tree data, {@link TreeDataProvider#refreshAll()} should
+ * be called.
  *
  * @author Vaadin Ltd
  * @since 1.1
@@ -86,6 +87,9 @@ public class TreeData<T> implements HierarchicalData<T> {
     /**
      * Adds the items as root items to this structure.
      *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
+     *
      * @param items
      *            the items to add
      * @return this
@@ -104,6 +108,9 @@ public class TreeData<T> implements HierarchicalData<T> {
     /**
      * Adds the items of the given collection as root items to this structure.
      *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
+     *
      * @param items
      *            the collection of items to add
      * @return this
@@ -121,6 +128,9 @@ public class TreeData<T> implements HierarchicalData<T> {
 
     /**
      * Adds the items of the given stream as root items to this structure.
+     *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
      *
      * @param items
      *            the stream of root items to add
@@ -141,6 +151,9 @@ public class TreeData<T> implements HierarchicalData<T> {
      * Adds a data item as a child of {@code parent}. Call with {@code null} as
      * parent to add a root level item. The given parent item must already exist
      * in this structure, and an item can only be added to this structure once.
+     *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
      *
      * @param parent
      *            the parent item for which the items are added as children
@@ -176,6 +189,9 @@ public class TreeData<T> implements HierarchicalData<T> {
      * must already exist in this structure, and an item can only be added to
      * this structure once.
      *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
+     *
      * @param parent
      *            the parent item for which the items are added as children
      * @param items
@@ -202,6 +218,9 @@ public class TreeData<T> implements HierarchicalData<T> {
      * must already exist in this structure, and an item can only be added to
      * this structure once.
      *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
+     *
      * @param parent
      *            the parent item for which the items are added as children
      * @param items
@@ -227,6 +246,9 @@ public class TreeData<T> implements HierarchicalData<T> {
      * item must already exist in this structure, and an item can only be added
      * to this structure once.
      *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
+     *
      * @param parent
      *            the parent item for which the items are added as children
      * @param items
@@ -250,6 +272,9 @@ public class TreeData<T> implements HierarchicalData<T> {
      * Adds the given items as root items and uses the given value provider to
      * recursively populate children of the root items.
      *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
+     *
      * @param rootItems
      *            the root items to add
      * @param childItemProvider
@@ -272,6 +297,9 @@ public class TreeData<T> implements HierarchicalData<T> {
      * Adds the given items as root items and uses the given value provider to
      * recursively populate children of the root items.
      *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
+     *
      * @param rootItems
      *            the root items to add
      * @param childItemProvider
@@ -282,14 +310,16 @@ public class TreeData<T> implements HierarchicalData<T> {
     public TreeData<T> addItems(Stream<T> rootItems,
             ValueProvider<T, Stream<T>> childItemProvider) {
         // Must collect to lists since the algorithm iterates multiple times
-        return addItems(rootItems.collect(Collectors.toList()),
-                item -> childItemProvider.apply(item)
-                        .collect(Collectors.toList()));
+        return addItems(rootItems.toList(),
+                item -> childItemProvider.apply(item).toList());
     }
 
     /**
      * Remove a given item from this structure. Additionally, this will
      * recursively remove any descendants of the item.
+     *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
      *
      * @param item
      *            the item to remove, or null to clear all data
@@ -316,6 +346,9 @@ public class TreeData<T> implements HierarchicalData<T> {
     /**
      * Clear all items from this structure. Shorthand for calling
      * {@link #removeItem(Object)} with null.
+     *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
      *
      * @return this
      */

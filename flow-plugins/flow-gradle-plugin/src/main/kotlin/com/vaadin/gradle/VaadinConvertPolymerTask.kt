@@ -21,11 +21,13 @@ import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
+import org.gradle.work.DisableCachingByDefault
 
 /**
  * This task converts Polymer-based source files into Lit.
  * By default, the task tries to convert all `*.js` and `*.java` files.
  */
+@DisableCachingByDefault(because = "Rewrites project sources in place")
 public abstract class VaadinConvertPolymerTask : DefaultTask() {
 
     init {

@@ -24,8 +24,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.internal.ComponentMetaData;
 import com.vaadin.flow.component.internal.ComponentTracker;
@@ -36,6 +39,8 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.dom.SignalBinding;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -433,6 +438,28 @@ public abstract class Component
     }
 
     /**
+     * Gets the UI this component is attached to, throwing an exception if the
+     * component is not attached.
+     * <p>
+     * Use this method when the code can only run while the component is
+     * attached, e.g. in an event listener or in {@link #onAttach(AttachEvent)}.
+     * If the code has to work also for a detached component, use
+     * {@link #getUI()} instead.
+     *
+     * @return the UI this component is attached to, never <code>null</code>
+     * @throws IllegalStateException
+     *             if this component is not attached to a UI
+     * @see #getUI()
+     * @since 25.4
+     */
+    public UI getUIOrThrow() {
+        return getUI().orElseThrow(() -> new IllegalStateException("Component "
+                + getClass().getName()
+                + " is not attached to a UI. This code must be run while the component is attached, "
+                + "e.g. from an attach listener or onAttach()."));
+    }
+
+    /**
      * Sets the id of the root element of this component. The id is used with
      * various APIs to identify the element, and it should be unique on the
      * page.
@@ -468,11 +495,7 @@ public abstract class Component
      * @since 25.1
      */
     public void setTestId(String testId) {
-        if (testId == null) {
-            getElement().removeAttribute("data-testid");
-        } else {
-            getElement().setAttribute("data-testid", testId);
-        }
+        getElement().setAttribute("data-testid", testId);
     }
 
     /**
@@ -487,6 +510,56 @@ public abstract class Component
      */
     public String getTestId() {
         return getElement().getAttribute("data-testid");
+    }
+
+    /**
+     * Runs the given handler each time this component is attached to a UI, and
+     * runs the {@link Registration} returned by the handler when the component
+     * is detached again. The handler is run immediately if the component is
+     * already attached.
+     * <p>
+     * This keeps the setup and the matching teardown in one place, instead of
+     * spreading them over {@link #onAttach(AttachEvent)},
+     * {@link #onDetach(DetachEvent)} and a field for carrying the state from
+     * one to the other:
+     *
+     * <pre>
+     * public MyComponent() {
+     *     whenAttached(ui -&gt; registerForPush(this, ui));
+     * }
+     * </pre>
+     * <p>
+     * Since the method is public, it can also be used to hook into the
+     * life-cycle of another component:
+     *
+     * <pre>
+     * avatarGroup.whenAttached(ui -&gt; {
+     *     presence.put(userId, user);
+     *     return () -&gt; presence.remove(userId);
+     * });
+     * </pre>
+     * <p>
+     * Removing the returned registration removes the handler and also runs any
+     * cleanup that is pending from the latest attach.
+     * <p>
+     * Exceptions thrown by the handler are propagated to the caller, whereas
+     * exceptions thrown by the cleanup are passed to the session error handler
+     * so that a failing cleanup does not prevent the rest of the detach
+     * handling from running.
+     *
+     * @see Element#whenAttached(SerializableFunction)
+     *
+     * @param attachHandler
+     *            the handler to run on attach, returning the cleanup to run on
+     *            the matching detach or <code>null</code> if there is nothing
+     *            to clean up, not <code>null</code>
+     * @return a registration for removing the handler and running any pending
+     *         cleanup, not <code>null</code>
+     * @since 25.3
+     */
+    public Registration whenAttached(
+            SerializableFunction<UI, @Nullable Registration> attachHandler) {
+        return getElement().whenAttached(attachHandler);
     }
 
     /**
@@ -635,6 +708,7 @@ public abstract class Component
      *
      * @param visibleSignal
      *            the signal to bind, not <code>null</code>
+     * @return the binding, which can be used to react to updates
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setVisible(boolean)
@@ -919,6 +993,9 @@ public abstract class Component
     /**
      * Traverses the component tree up and returns the first ancestor component
      * that matches the given type.
+     * <p>
+     * Use {@link #findAncestor(SerializablePredicate)} when the ancestor is
+     * identified by something other than its type.
      *
      * @param componentType
      *            the class of the ancestor component to search for
@@ -929,16 +1006,37 @@ public abstract class Component
      * @since 23.2
      */
     public <T> T findAncestor(Class<T> componentType) {
+        return findAncestor(componentType::isInstance).map(componentType::cast)
+                .orElse(null);
+    }
+
+    /**
+     * Traverses the component tree up and returns the first ancestor component
+     * that matches the given predicate.
+     * <p>
+     * Unlike {@link #findAncestor(Class)}, the ancestor can be identified by
+     * any condition, such as its id, a class name or its enabled state, and the
+     * result is an {@link Optional} instead of a nullable value. This component
+     * itself is not tested, only its ancestors.
+     *
+     * @param predicate
+     *            the condition the ancestor component must satisfy, not
+     *            {@code null}
+     * @return the first ancestor that satisfies the predicate, or an empty
+     *         optional if no ancestor satisfies it
+     * @since 25.4
+     */
+    public Optional<Component> findAncestor(
+            SerializablePredicate<Component> predicate) {
+        Objects.requireNonNull(predicate, "Predicate must not be null");
         Optional<Component> optionalParent = getParent();
         while (optionalParent.isPresent()) {
-            Component parent = optionalParent.get();
-            if (componentType.isAssignableFrom(parent.getClass())) {
-                return componentType.cast(parent);
-            } else {
-                optionalParent = parent.getParent();
+            if (predicate.test(optionalParent.get())) {
+                return optionalParent;
             }
+            optionalParent = optionalParent.get().getParent();
         }
-        return null;
+        return Optional.empty();
     }
 
     /**

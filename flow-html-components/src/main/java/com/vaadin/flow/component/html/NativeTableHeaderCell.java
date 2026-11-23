@@ -27,7 +27,11 @@ import com.vaadin.flow.signals.Signal;
  * Component representing a <code>&lt;th&gt;</code> element.
  *
  * @since 24.5
+ * @deprecated since 25.3, scheduled for removal in Vaadin 26. Use
+ *             {@code TableHeaderCell} instead, the equivalent in the
+ *             {@code Table} component family.
  */
+@Deprecated(since = "25.3", forRemoval = true)
 @Tag(Tag.TH)
 public class NativeTableHeaderCell extends HtmlContainer
         implements ClickNotifier<NativeTableHeaderCell> {

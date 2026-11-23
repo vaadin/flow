@@ -40,11 +40,7 @@ public interface HasAriaRole extends HasElement {
      *            the role to set, or {@code null} to clear
      */
     default void setAriaRole(String role) {
-        if (role != null) {
-            getElement().setAttribute("role", role);
-        } else {
-            getElement().removeAttribute("role");
-        }
+        getElement().setAttribute("role", role);
     }
 
     /**

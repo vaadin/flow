@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.TypeReference;
@@ -40,6 +39,7 @@ import com.vaadin.flow.component.Component;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 class ClientCallableAotProcessorTest {
@@ -308,8 +308,7 @@ class ClientCallableAotProcessorTest {
                 ConfigurableEnvironment.class);
         MutablePropertySources propertySources = new MutablePropertySources();
 
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
+        try (var mockedStatic = mockStatic(AutoConfigurationPackages.class)) {
 
             when(beanFactory.getBeanClassLoader())
                     .thenReturn(getClass().getClassLoader());
@@ -343,8 +342,7 @@ class ClientCallableAotProcessorTest {
         MutablePropertySources propertySources = new MutablePropertySources();
 
         // Mock AutoConfigurationPackages to return the test package
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
+        try (var mockedStatic = mockStatic(AutoConfigurationPackages.class)) {
             mockedStatic.when(() -> AutoConfigurationPackages.get(beanFactory))
                     .thenReturn(List.of(getClass().getPackageName()));
 

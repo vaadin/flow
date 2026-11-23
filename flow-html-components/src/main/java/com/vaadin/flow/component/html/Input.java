@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasAriaLabel;
@@ -30,7 +32,13 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 
 /**
  * Component representing an <code>&lt;input&gt;</code> element.
+ * <p>
+ * An empty form field. The type attribute selects the control (text, checkbox,
+ * and so on).
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input">MDN:
+ *      &lt;input&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */
@@ -45,8 +53,10 @@ public class Input extends AbstractSinglePropertyField<Input, String>
     private static final PropertyDescriptor<String, String> typeDescriptor = PropertyDescriptors
             .attributeWithDefault("type", "text");
 
+    /** The value change timeout in milliseconds. */
     private int valueChangeTimeout = DEFAULT_CHANGE_TIMEOUT;
 
+    /** The value change mode currently applied to the element. */
     private ValueChangeMode currentMode;
 
     /**
@@ -102,6 +112,61 @@ public class Input extends AbstractSinglePropertyField<Input, String>
     }
 
     /**
+     * Sets the name of this input. A {@link NativeForm} only submits the value
+     * of an input that has a name, and sends it under that name.
+     *
+     * @param name
+     *            the name, or {@code null} to remove the attribute
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input#name">The
+     *      name attribute (MDN)</a>
+     * @since 25.4
+     */
+    public void setName(@Nullable String name) {
+        getElement().setAttribute("name", name);
+    }
+
+    /**
+     * Gets the name of this input.
+     *
+     * @return the name, or {@code null} if not set
+     * @see #setName(String)
+     * @since 25.4
+     */
+    public @Nullable String getName() {
+        return getElement().getAttribute("name");
+    }
+
+    /**
+     * Sets the autocomplete hint of this input, which tells the browser and
+     * password managers what kind of value the field expects, such as
+     * {@code "username"}, {@code "current-password"}, {@code "new-password"},
+     * {@code "email"} or {@code "off"}.
+     *
+     * @param autocomplete
+     *            the space-separated autocomplete tokens, or {@code null} to
+     *            remove the attribute
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/autocomplete">The
+     *      autocomplete attribute (MDN)</a>
+     * @since 25.4
+     */
+    public void setAutocomplete(@Nullable String autocomplete) {
+        getElement().setAttribute("autocomplete", autocomplete);
+    }
+
+    /**
+     * Gets the autocomplete hint of this input.
+     *
+     * @return the autocomplete tokens, or {@code null} if not set
+     * @see #setAutocomplete(String)
+     * @since 25.4
+     */
+    public @Nullable String getAutocomplete() {
+        return getElement().getAttribute("autocomplete");
+    }
+
+    /**
      * Sets the {@link InputMode} that hints at the type of virtual keyboard to
      * display when the user interacts with the field on a mobile device. If not
      * set, the browser defaults to {@link InputMode#TEXT}.
@@ -114,11 +179,8 @@ public class Input extends AbstractSinglePropertyField<Input, String>
      * @since 25.3
      */
     public void setInputMode(InputMode inputMode) {
-        if (inputMode == null) {
-            getElement().removeAttribute("inputmode");
-        } else {
-            getElement().setAttribute("inputmode", inputMode.getValue());
-        }
+        getElement().setAttribute("inputmode",
+                inputMode == null ? null : inputMode.getValue());
     }
 
     /**

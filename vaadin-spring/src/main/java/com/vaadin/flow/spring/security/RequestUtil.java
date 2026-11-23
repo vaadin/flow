@@ -86,6 +86,15 @@ public class RequestUtil {
 
     private WebIconsRequestMatcher webIconsRequestMatcher;
 
+    private PwaResourcesRequestMatcher pwaResourcesRequestMatcher;
+
+    /**
+     * Creates the helper. Spring instantiates it as a bean.
+     */
+    public RequestUtil() {
+        // Default constructor
+    }
+
     /**
      * Checks whether the request is an internal request.
      * <p>
@@ -275,6 +284,36 @@ public class RequestUtil {
     }
 
     /**
+     * Checks whether the request targets the PWA manifest, the offline page or
+     * one of the additional offline resources configured by the application.
+     * <p>
+     * The default manifest and offline paths are not considered, as they are
+     * already part of {@link HandlerHelper#getPublicResources()}.
+     *
+     * @param request
+     *            the servlet request
+     * @return {@code true} if the request is targeting a configured PWA
+     *         resource, {@code false} otherwise
+     * @since 25.2.9
+     */
+    public boolean isPwaResource(HttpServletRequest request) {
+        if (pwaResourcesRequestMatcher == null) {
+            VaadinServletService vaadinService = springServletRegistration
+                    .getServlet().getService();
+            if (vaadinService != null) {
+                pwaResourcesRequestMatcher = new PwaResourcesRequestMatcher(
+                        vaadinService, configurationProperties.getUrlMapping());
+            } else {
+                getLogger().debug(
+                        "PwaResourcesRequestMatcher cannot be created because VaadinService is not yet available. "
+                                + "This may happen after a hot-reload, and can cause requests for PWA resources to be blocked by Spring Security.");
+                return false;
+            }
+        }
+        return pwaResourcesRequestMatcher.matches(request);
+    }
+
+    /**
      * Utility to create {@link RequestMatcher}s from ant patterns.
      * <p>
      * Since org.springframework.security.web.util.matcher.AntPathRequestMatcher
@@ -416,11 +455,11 @@ public class RequestUtil {
             return false;
         }
 
-        NavigationContext navigationContext = new NavigationContext(router,
-                targetView,
-                new Location(path,
-                        QueryParameters.full(request.getParameterMap())),
-                target.getRouteParameters(), null, role -> false, false, false);
+        Location location = new Location(path,
+                QueryParameters.full(request.getParameterMap()));
+        NavigationContext navigationContext = NavigationContext
+                .forPublicRouteCheck(router, targetView, location,
+                        target.getRouteParameters());
 
         AccessCheckResult result = navigationAccessControl
                 .checkAccess(navigationContext, productionMode);
@@ -428,9 +467,8 @@ public class RequestUtil {
         if (isAllowed) {
             getLogger().debug("{} refers to a public view", path);
         } else {
-            getLogger().debug(
-                    "Access to {} denied by Flow navigation access control. {}",
-                    path, result.reason());
+            getLogger().debug("{} is not a public view. {}", path,
+                    result.reason());
         }
         return isAllowed;
     }

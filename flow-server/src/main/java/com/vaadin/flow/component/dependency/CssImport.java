@@ -26,17 +26,19 @@ import java.lang.annotation.Target;
 /**
  * Imports a CSS file into the application bundle.
  * <p>
- * The CSS files should be located in the place as JS module files:
- * <ul>
- * <li>inside {@code frontend} directory in your root project folder in case of
- * WAR project
- * <li>inside {@code META-INF/resources/frontend} directory (inside a project
- * resources folder) in case of JAR project (if you are using Maven this is
- * {@code src/main/resources/META-INF/resources/frontend} directory).
- * </ul>
+ * This is a <em>build-time</em> dependency: the referenced CSS file is a bundle
+ * source processed by Vite at build time and is not served as a static resource
+ * at runtime. Use {@link StyleSheet} when the CSS file should be served as a
+ * plain {@code <link rel="stylesheet">} at runtime.
  * <p>
- * The annotation doesn't have any effect in the compatibility mode: use it only
- * for Polymer 3 templates.
+ * Source locations (same as {@link JsModule}):
+ * <ul>
+ * <li>Application projects: {@code src/main/frontend/} (recommended), or the
+ * legacy top-level {@code frontend/} directory.</li>
+ * <li>Add-on JARs: {@code META-INF/frontend/} (recommended). The legacy
+ * location {@code META-INF/resources/frontend/} is still supported but
+ * deprecated and emits a build-time warning.</li>
+ * </ul>
  * <p>
  * Depending on the attributes provided, the CSS content will be appended in
  * different ways:
@@ -81,7 +83,9 @@ import java.lang.annotation.Target;
  * <li>When 'value' and 'themeFor' are given, a new 'dom-module' for customizing
  * a themable element is registered using the {@code registerStyles} function
  * from {@code vaadin-themable-mixin}. The 'include' parameter is allowed and is
- * added to the &lt;style&gt; element inside the module template.*
+ * added to the &lt;style&gt; element inside the module template. The target
+ * custom element must implement {@code ThemableMixin}; otherwise the CSS is
+ * registered but is not applied to that element.
  *
  * </ul>
  * <p>
@@ -104,6 +108,7 @@ import java.lang.annotation.Target;
  * @since 2.0.3
  *
  * @see JsModule
+ * @see StyleSheet
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -112,7 +117,12 @@ import java.lang.annotation.Target;
 @Repeatable(CssImport.Container.class)
 public @interface CssImport {
     /**
-     * Location of the file with the CSS content.
+     * Bundler import specifier for the CSS file. Same rules as
+     * {@link JsModule#value()} — typically a relative path
+     * ({@code "./styles/foo.css"}) or a package specifier. Not a URL:
+     * {@code context://}, {@code base://}, and absolute URLs are not supported
+     * here. Use {@link StyleSheet} for files that should be served as runtime
+     * stylesheets.
      *
      * @return the value.
      */
@@ -122,6 +132,12 @@ public @interface CssImport {
      * The 'id' of a module to include in the generated 'custom-style'.
      *
      * @return the include value.
+     *
+     * @deprecated The generated 'custom-style' relies on the legacy Polymer
+     *             styling mechanism. Component styling can be done entirely
+     *             with normal "light DOM" CSS: drop this attribute and put the
+     *             rules that were pulled in from the included module into the
+     *             CSS file given as {@link #value()}.
      */
     @Deprecated(since = "25.0")
     String include() default "";
@@ -130,6 +146,11 @@ public @interface CssImport {
      * The 'id' of the new 'dom-module' created.
      *
      * @return the id.
+     *
+     * @deprecated The generated 'dom-module' relies on the legacy Polymer
+     *             styling mechanism. Component styling can be done entirely
+     *             with normal "light DOM" CSS: drop this attribute and import
+     *             the CSS file given as {@link #value()} as plain CSS.
      */
     @Deprecated(since = "25.0")
     String id() default "";
@@ -137,6 +158,11 @@ public @interface CssImport {
     /**
      * The tag name of the themable element that the generated 'dom-module' will
      * target.
+     * <p>
+     * The target must implement {@code ThemableMixin}
+     * ({@code vaadin-themable-mixin}). {@code registerStyles} only applies to
+     * those elements. A custom element without the mixin does not pick up this
+     * CSS.
      *
      * @return the themable element.
      *

@@ -4,13 +4,17 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.3-SNAPSHOT</version>
+    <version>25.4-SNAPSHOT</version>
   </parent>
 
   <artifactId>flow-react</artifactId>
   <packaging>jar</packaging>
   <name>Flow React Component Support</name>
   <description>${project.name}</description>
+
+  <properties>
+    <jpms.module.name>com.vaadin.flow.component.react</jpms.module.name>
+  </properties>
 
   <dependencies>
     <!-- Project dependencies -->

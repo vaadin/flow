@@ -30,7 +30,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.base.devserver.hotswap.HotswapClassSessionEvent;
@@ -53,12 +54,17 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class StyleSheetHotswapperTest {
 
@@ -67,6 +73,7 @@ class StyleSheetHotswapperTest {
     private VaadinSession session;
     private MockUI ui;
     private AppShellRegistry appShellRegistry;
+    private ApplicationConfiguration appConfig;
 
     @TempDir
     File tempProjectDir;
@@ -91,12 +98,10 @@ class StyleSheetHotswapperTest {
 
         appShellRegistry = AppShellRegistry.getInstance(service.getContext());
 
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.isProductionMode()).thenAnswer(
+        appConfig = mock(ApplicationConfiguration.class);
+        when(appConfig.isProductionMode()).thenAnswer(
                 i -> service.getDeploymentConfiguration().isProductionMode());
-        Mockito.when(service.getLookup()
-                .lookup(ApplicationConfigurationFactory.class))
+        when(service.getLookup().lookup(ApplicationConfigurationFactory.class))
                 .thenReturn(context -> appConfig);
     }
 
@@ -190,6 +195,39 @@ class StyleSheetHotswapperTest {
                 "Should require page refresh");
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void onClassesChange_appShellAddAnnotation_pushesContentOnlyWithoutLayer(
+            boolean layered) throws IOException {
+        File css = new File(tempProjectDir, "src/main/webapp/styles/app.css");
+        css.getParentFile().mkdirs();
+        Files.writeString(css.toPath(), ".app { color: red; }\n");
+        when(appConfig.getProjectFolder()).thenReturn(tempProjectDir);
+        appShellRegistry.setShell(TestAppShellNoAnnotation.class);
+        hotswapper.onInit(service);
+
+        Class<?> appShell = modifyStyleSheetAnnotation(
+                TestAppShellNoAnnotation.class,
+                layered ? TestAppShellLayered.class : TestAppShell.class);
+        var event = spy(new HotswapClassSessionEvent(service, session,
+                Set.of(appShell), true));
+        hotswapper.onClassesChange(event);
+
+        Dependency dependency = ui.getInternals().getDependencyList()
+                .getPendingSendToClient().stream()
+                .filter(dep -> dep.getUrl().contains("styles/app.css"))
+                .findFirst().orElseThrow();
+        if (layered) {
+            assertEquals("theme", dependency.getLayer());
+            // Pushed content would apply outside of the layer
+            verify(event, never()).updateClientResource(anyString(), any());
+        } else {
+            assertNull(dependency.getLayer());
+            verify(event).updateClientResource(eq("context://styles/app.css"),
+                    contains(".app"));
+        }
+    }
+
     @Test
     void onClassesChange_appShellRemoveAnnotation_removesStylesheet() {
         appShellRegistry.setShell(TestAppShell.class);
@@ -225,7 +263,75 @@ class StyleSheetHotswapperTest {
         assertTrue(hasStylesheet("styles/modified.css"),
                 "Should have modified.css stylesheet");
         assertEquals(1, countStylesheets(), "Should add one stylesheet");
+        assertFalse(event.anyUIRequiresPageReload(),
+                "Should not require page reload");
+        assertEquals(UIUpdateStrategy.REFRESH,
+                event.getUIUpdateStrategy(ui).orElse(null),
+                "Should require page refresh");
 
+        // Absolute path format
+
+        appShell = modifyStyleSheetAnnotation(TestAppShell.class,
+                TestAppShellAbsolute.class);
+        event = new HotswapClassSessionEvent(service, session, Set.of(appShell),
+                true);
+        hotswapper.onClassesChange(event);
+
+        assertAppShellStyleSheetRemoved("styles/modified.css");
+        assertTrue(hasStylesheet("/styles/absolute.css"),
+                "Should have absolute.css stylesheet");
+        assertFalse(event.anyUIRequiresPageReload(),
+                "Should not require page reload");
+        assertEquals(UIUpdateStrategy.REFRESH,
+                event.getUIUpdateStrategy(ui).orElse(null),
+                "Should require page refresh");
+
+        // Relative path format
+
+        appShell = modifyStyleSheetAnnotation(TestAppShell.class,
+                TestAppShellRelative.class);
+        event = new HotswapClassSessionEvent(service, session, Set.of(appShell),
+                true);
+        hotswapper.onClassesChange(event);
+
+        assertAppShellStyleSheetRemoved("/styles/absolute.css");
+        // The dependency is registered under the resolved URL, so the './'
+        // prefix of the annotation value is not part of it
+        assertTrue(hasStylesheet("styles/relative.css"),
+                "Should have relative.css stylesheet");
+        assertFalse(event.anyUIRequiresPageReload(),
+                "Should not require page reload");
+        assertEquals(UIUpdateStrategy.REFRESH,
+                event.getUIUpdateStrategy(ui).orElse(null),
+                "Should require page refresh");
+
+        // Context path format
+
+        appShell = modifyStyleSheetAnnotation(TestAppShell.class,
+                TestAppShellContext.class);
+        event = new HotswapClassSessionEvent(service, session, Set.of(appShell),
+                true);
+        hotswapper.onClassesChange(event);
+
+        assertAppShellStyleSheetRemoved("./styles/relative.css");
+        assertTrue(hasStylesheet("context://styles/context.css"),
+                "Should have context.css stylesheet");
+        assertFalse(event.anyUIRequiresPageReload(),
+                "Should not require page reload");
+        assertEquals(UIUpdateStrategy.REFRESH,
+                event.getUIUpdateStrategy(ui).orElse(null),
+                "Should require page refresh");
+
+        // Return to original app.css to verify context path stylesheet removal
+
+        appShell = TestAppShell.class;
+        event = new HotswapClassSessionEvent(service, session, Set.of(appShell),
+                true);
+        hotswapper.onClassesChange(event);
+
+        assertAppShellStyleSheetRemoved("context://styles/context.css");
+        assertTrue(hasStylesheet("styles/app.css"),
+                "Should have app.css stylesheet");
         assertFalse(event.anyUIRequiresPageReload(),
                 "Should not require page reload");
         assertEquals(UIUpdateStrategy.REFRESH,
@@ -497,10 +603,10 @@ class StyleSheetHotswapperTest {
     @Test
     void onClassesChange_exceptionDuringProcessing_doesNotCrash() {
         // Setup: create a scenario that might cause issues
-        VaadinSession faultySession = Mockito.mock(VaadinSession.class);
-        Mockito.when(faultySession.getUIs())
+        VaadinSession faultySession = mock(VaadinSession.class);
+        when(faultySession.getUIs())
                 .thenThrow(new RuntimeException("Test exception"));
-        Mockito.when(faultySession.getService()).thenReturn(service);
+        when(faultySession.getService()).thenReturn(service);
 
         // Simulate: class change that would access UIs
         var event = new HotswapClassSessionEvent(service, faultySession,
@@ -624,6 +730,10 @@ class StyleSheetHotswapperTest {
     public static class TestAppShell implements AppShellConfigurator {
     }
 
+    @StyleSheet(value = "styles/app.css", layer = "theme")
+    public static class TestAppShellLayered implements AppShellConfigurator {
+    }
+
     @StyleSheet("styles/app.css")
     @StyleSheet("styles/theme.css")
     public static class TestAppShellMultiple implements AppShellConfigurator {
@@ -635,6 +745,18 @@ class StyleSheetHotswapperTest {
 
     @StyleSheet("styles/modified.css")
     public static class TestAppShellModified implements AppShellConfigurator {
+    }
+
+    @StyleSheet("/styles/absolute.css")
+    public static class TestAppShellAbsolute implements AppShellConfigurator {
+    }
+
+    @StyleSheet("./styles/relative.css")
+    public static class TestAppShellRelative implements AppShellConfigurator {
+    }
+
+    @StyleSheet("context://styles/context.css")
+    public static class TestAppShellContext implements AppShellConfigurator {
     }
 
     // Test classes for Components

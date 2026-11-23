@@ -17,7 +17,6 @@ package com.vaadin.flow.server;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
@@ -130,8 +129,8 @@ public final class ErrorHandlerUtil {
             List<Class<? extends RouterLayout>> routeLayouts = RouteUtil
                     .getParentLayoutsForNonRouteTarget(routeTarget.getClass());
             List<RouterLayout> parentLayouts = routeLayouts.stream()
-                    .map(route -> getRouteTarget(route, ui))
-                    .collect(Collectors.toList());
+                    .<RouterLayout> map(route -> getRouteTarget(route, ui))
+                    .toList();
 
             // Connect to ui
             UIInternals internals = ui.getInternals();

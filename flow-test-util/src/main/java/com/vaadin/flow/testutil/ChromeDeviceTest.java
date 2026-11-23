@@ -121,6 +121,12 @@ public class ChromeDeviceTest extends ViewOrUITest {
             // Use headless Chrome for running locally
             if (!isJavaInDebugMode()) {
                 chromeOptions.addArguments("--headless=new", "--disable-gpu");
+
+                // Required to run reliably in CI and other headless/container
+                // environments such as Docker, where Chrome cannot use its
+                // sandbox.
+                chromeOptions.addArguments("--no-sandbox",
+                        "--disable-dev-shm-usage");
             }
         } else {
             // Enable service workers over http remote connection

@@ -25,7 +25,12 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;p&gt;</code> element.
+ * <p>
+ * A paragraph of text.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/p">MDN:
+ *      &lt;p&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */

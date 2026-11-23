@@ -73,6 +73,8 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @Import(SpringInstantiatorTest.TestConfiguration.class)
@@ -250,49 +252,48 @@ public class SpringInstantiatorTest {
         };
         String servletName = SpringServlet.class.getSimpleName();
 
-        ServletConfig config = Mockito.mock(ServletConfig.class);
-        ServletContext servletContext = Mockito.mock(ServletContext.class);
+        ServletConfig config = mock(ServletConfig.class);
+        ServletContext servletContext = mock(ServletContext.class);
 
-        Mockito.when(servletContext.getClassLoader())
+        when(servletContext.getClassLoader())
                 .thenReturn(servlet.getClass().getClassLoader());
 
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.getPropertyNames())
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
+        when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
-        Mockito.when(appConfig.getContext())
+        when(appConfig.getContext())
                 .thenReturn(new VaadinServletContext(servletContext));
-        Mockito.when(servletContext
+        when(servletContext
                 .getAttribute(ApplicationConfiguration.class.getName()))
                 .thenReturn(appConfig);
 
-        Lookup lookup = Mockito.mock(Lookup.class);
-        ResourceProvider provider = Mockito.mock(ResourceProvider.class);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
-                .thenReturn(provider);
+        Lookup lookup = mock(Lookup.class);
+        ResourceProvider provider = mock(ResourceProvider.class);
+        when(lookup.lookup(ResourceProvider.class)).thenReturn(provider);
 
         StaticFileHandlerFactory staticFileHandlerFactory = vaadinService -> new StaticFileServer(
                 (VaadinServletService) vaadinService);
-        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
+        when(lookup.lookup(StaticFileHandlerFactory.class))
                 .thenReturn(staticFileHandlerFactory);
 
-        Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
+        when(servletContext.getAttribute(Lookup.class.getName()))
                 .thenReturn(lookup);
 
-        Mockito.when(config.getServletContext()).thenReturn(servletContext);
-        Mockito.when(config.getServletName()).thenReturn(servletName);
-        Mockito.when(config.getInitParameterNames())
+        when(config.getServletContext()).thenReturn(servletContext);
+        when(config.getServletName()).thenReturn(servletName);
+        when(config.getInitParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
 
-        Mockito.when(servletContext.getInitParameterNames())
+        when(servletContext.getInitParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
-        Mockito.when(servletContext.getServerInfo()).thenReturn("MockServer");
+        when(servletContext.getServerInfo()).thenReturn("MockServer");
         // Prevent Atmosphere initialization by providing a mock framework
         // instance. Push is not required by calling tests, and initialization
         // would anyway fail because of mocking Servlet environment
-        Mockito.when(servletContext.getAttribute(
+        when(servletContext.getAttribute(
                 JSR356WebsocketInitializer.getAttributeName(servletName)))
-                .thenReturn(Mockito.mock(AtmosphereFramework.class));
+                .thenReturn(mock(AtmosphereFramework.class));
         servlet.init(config);
         return servlet.getService();
     }
@@ -305,12 +306,11 @@ public class SpringInstantiatorTest {
 
     @Test
     void getOrCreateBean_noBeansGivenCannotInstantiate_throwsExceptionWithoutHint() {
-        ApplicationContext context = Mockito.mock(ApplicationContext.class,
+        ApplicationContext context = mock(ApplicationContext.class,
                 Mockito.RETURNS_DEEP_STUBS);
-        Mockito.when(context.getBean(Number.class))
+        when(context.getBean(Number.class))
                 .thenThrow(NoSuchBeanDefinitionException.class);
-        Mockito.when(context.getAutowireCapableBeanFactory()
-                .createBean(Number.class))
+        when(context.getAutowireCapableBeanFactory().createBean(Number.class))
                 .thenThrow(new BeanInstantiationException(Number.class,
                         "This is an abstract class"));
         SpringInstantiator instantiator = new SpringInstantiator(null, context);
@@ -327,12 +327,11 @@ public class SpringInstantiatorTest {
 
     @Test
     void getOrCreateBean_multipleBeansGivenCannotInstantiate_throwsExceptionWithHint() {
-        ApplicationContext context = Mockito.mock(ApplicationContext.class,
+        ApplicationContext context = mock(ApplicationContext.class,
                 Mockito.RETURNS_DEEP_STUBS);
-        Mockito.when(context.getBean(Number.class))
+        when(context.getBean(Number.class))
                 .thenThrow(NoUniqueBeanDefinitionException.class);
-        Mockito.when(context.getAutowireCapableBeanFactory()
-                .createBean(Number.class))
+        when(context.getAutowireCapableBeanFactory().createBean(Number.class))
                 .thenThrow(new BeanInstantiationException(Number.class,
                         "This is an abstract class"));
         SpringInstantiator instantiator = new SpringInstantiator(null, context);
@@ -349,10 +348,10 @@ public class SpringInstantiatorTest {
 
     @Test
     void getOrCreateBean_oneBeanGiven_noException() {
-        ApplicationContext context = Mockito.mock(ApplicationContext.class);
-        Mockito.when(context.getBeanNamesForType(Number.class))
+        ApplicationContext context = mock(ApplicationContext.class);
+        when(context.getBeanNamesForType(Number.class))
                 .thenReturn(new String[] { "one" });
-        Mockito.when(context.getBean(Number.class)).thenReturn(0);
+        when(context.getBean(Number.class)).thenReturn(0);
         SpringInstantiator instantiator = new SpringInstantiator(null, context);
 
         Number bean = instantiator.getOrCreate(Number.class);
@@ -362,12 +361,12 @@ public class SpringInstantiatorTest {
 
     @Test
     void getOrCreateBean_multipleBeansGivenButCanInstantiate_noException() {
-        ApplicationContext context = Mockito.mock(ApplicationContext.class,
+        ApplicationContext context = mock(ApplicationContext.class,
                 Mockito.RETURNS_DEEP_STUBS);
-        Mockito.when(context.getBean(String.class))
+        when(context.getBean(String.class))
                 .thenThrow(NoUniqueBeanDefinitionException.class);
-        Mockito.when(context.getAutowireCapableBeanFactory()
-                .createBean(String.class)).thenReturn("string");
+        when(context.getAutowireCapableBeanFactory().createBean(String.class))
+                .thenReturn("string");
         SpringInstantiator instantiator = new SpringInstantiator(null, context);
 
         String bean = instantiator.getOrCreate(String.class);

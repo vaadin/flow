@@ -48,58 +48,75 @@ public class UsageTracker {
         public Registration onNextChange(TransientListener listener) {
             return new Registration() {
                 /*
-                 * Synchronize since listeners can fire at any time, e.g. before
+                 * A leaf lock since listeners can fire at any time, e.g. before
                  * all listeners have been registered, or while running the
-                 * action due to another listener being fired, or during cleanup
+                 * action due to another listener being fired, or during
+                 * cleanup. Being a LeafLock, it must never be held while
+                 * calling into a signal tree (usage.onNextChange /
+                 * listener.invoke / Registration.remove) -- doing so is the
+                 * ABBA ordering behind #25166 and is now caught by an assertion
+                 * in SignalTree.
                  */
-                final Object lock = new Object();
+                final LeafLock lock = new LeafLock("CombinedUsage");
                 final Collection<Registration> cleanups = new ArrayList<>();
 
                 boolean closed = false;
 
                 {
-                    synchronized (lock) {
-                        for (Usage usage : usages) {
-                            // avoid lambda to allow proper deserialization
-                            TransientListener usageListener = new TransientListener() {
-                                @Override
-                                public boolean invoke(boolean immediate) {
-                                    return onChange(immediate);
-                                }
-                            };
-                            Registration cleanup = usage
-                                    .onNextChange(usageListener);
+                    for (Usage usage : usages) {
+                        // avoid lambda to allow proper deserialization
+                        TransientListener usageListener = new TransientListener() {
+                            @Override
+                            public boolean invoke(boolean immediate) {
+                                return onChange(immediate);
+                            }
+                        };
+                        // Register outside the leaf lock: onNextChange acquires
+                        // the dependency's tree lock.
+                        Registration cleanup = usage
+                                .onNextChange(usageListener);
+                        boolean removeNow;
+                        try (var ignored = lock.lock()) {
                             if (closed) {
-                                cleanup.remove();
-                                break;
+                                removeNow = true;
                             } else {
                                 cleanups.add(cleanup);
+                                removeNow = false;
                             }
+                        }
+                        if (removeNow) {
+                            // Removed outside the leaf lock (tree lock again).
+                            cleanup.remove();
+                            break;
                         }
                     }
                 }
 
                 private boolean onChange(boolean immediate) {
-                    synchronized (lock) {
+                    try (var ignored = lock.lock()) {
                         if (closed) {
                             return false;
                         }
-                        boolean listenToNext = listener.invoke(immediate);
-                        if (!listenToNext) {
-                            close();
-                        }
-                        return listenToNext;
                     }
+                    // Invoke the downstream listener outside the leaf lock: it
+                    // may read signals / register usages, which take tree
+                    // locks.
+                    boolean listenToNext = listener.invoke(immediate);
+                    if (!listenToNext) {
+                        close();
+                    }
+                    return listenToNext;
                 }
 
                 private void close() {
-                    synchronized (lock) {
+                    try (var ignored = lock.lock()) {
                         if (closed) {
                             return;
                         }
                         closed = true;
                     }
-                    // Important release the lock before calling signal methods
+                    // Important: release the leaf lock before calling signal
+                    // methods (Registration.remove acquires the tree lock).
                     cleanups.forEach(Registration::remove);
                     cleanups.clear();
                 }

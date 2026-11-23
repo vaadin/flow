@@ -4,13 +4,14 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.3-SNAPSHOT</version>
+    <version>25.4-SNAPSHOT</version>
   </parent>
   <artifactId>flow-build-tools</artifactId>
   <packaging>jar</packaging>
   <name>Flow Frontend Build Tools</name>
   <description>A module to handle frontend build tools common to the plugins and dev server</description>
   <properties>
+    <jandex.skip>true</jandex.skip>
     <!-- It appears that sonar does not like shade plugin -->
     <sonar.skip>true</sonar.skip>
   </properties>

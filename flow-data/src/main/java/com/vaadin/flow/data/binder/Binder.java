@@ -39,7 +39,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -581,9 +580,9 @@ public class Binder<BEAN> implements Serializable {
          * <p>
          * For a <code>Binder</code> created using the
          * {@link Binder#Binder(Class)} constructor, introspection will be used
-         * to find a Java Bean property. If a JSR-303 bean validation
-         * implementation is present on the classpath, a {@link BeanValidator}
-         * is also added to the binding.
+         * to find a Java Bean property. A regular {@code Binder} does not add a
+         * {@link BeanValidator} even if a JSR-303 implementation is on the
+         * classpath; use {@link BeanValidationBinder} for that.
          * <p>
          * The property must have an accessible getter method. It need not have
          * an accessible setter; in that case the property value is never
@@ -622,9 +621,9 @@ public class Binder<BEAN> implements Serializable {
          * <p>
          * For a <code>Binder</code> created using the
          * {@link Binder#Binder(Class)} constructor, introspection will be used
-         * to find a Java Bean property. If a JSR-303 bean validation
-         * implementation is present on the classpath, a {@link BeanValidator}
-         * is also added to the binding.
+         * to find a Java Bean property. A regular {@code Binder} does not add a
+         * {@link BeanValidator} even if a JSR-303 implementation is on the
+         * classpath; use {@link BeanValidationBinder} for that.
          * <p>
          * The property must have an accessible getter method.
          *
@@ -912,6 +911,67 @@ public class Binder<BEAN> implements Serializable {
                 String errorMessage) {
             return withConverter(Converter.from(toModel, toPresentation,
                     exception -> errorMessage));
+        }
+
+        /**
+         * Maps the binding to another data type using mapping functions that
+         * never receive null or the given {@code nullRepresentation}.
+         * <p>
+         * A field value that is null or equal to {@code nullRepresentation}
+         * converts to a null model value, and a null model value converts to
+         * {@code nullRepresentation}. Other values are passed to the mapping
+         * functions. This lets method references that do not accept null, such
+         * as {@code LocalDate::parse}, be used directly, unlike with
+         * {@link #withConverter(SerializableFunction, SerializableFunction)}.
+         * <p>
+         * Pass the field's empty value as {@code nullRepresentation}, for
+         * example {@code ""} for a text field, so that an empty field becomes a
+         * null model value and a null model value empties the field. For a
+         * field whose empty value is null, such as a date picker, pass null.
+         * <p>
+         * Example use:
+         *
+         * <pre>
+         * {@code
+         * binder.forField(textField)
+         *         .withNullSafeConverter(LocalDate::parse, LocalDate::toString,
+         *                 Exception::getMessage, "")
+         *         .bind(Person::getBirthDate, Person::setBirthDate);
+         * }
+         * </pre>
+         * <p>
+         * To wrap an existing {@link Converter} in the same way, use
+         * {@link Converter#nullSafeConverter(Converter, Object)}.
+         *
+         * @param <NEWTARGET>
+         *            the type to convert to
+         * @param toModel
+         *            the function which can convert from the old target type to
+         *            the new target type, never called with null or
+         *            {@code nullRepresentation}
+         * @param toPresentation
+         *            the function which can convert from the new target type to
+         *            the old target type, never called with null
+         * @param onError
+         *            the function which provides the error message if
+         *            conversion using {@code toModel} fails, for example
+         *            {@code Exception::getMessage}
+         * @param nullRepresentation
+         *            the field value that stands for a null model value; may be
+         *            null
+         * @return this BindingBuilder configured with the appropriate type
+         * @throws IllegalStateException
+         *             if {@code bind} has already been called
+         * @since 25.4
+         */
+        default <NEWTARGET> BindingBuilder<BEAN, NEWTARGET> withNullSafeConverter(
+                SerializableFunction<TARGET, NEWTARGET> toModel,
+                SerializableFunction<NEWTARGET, TARGET> toPresentation,
+                SerializableFunction<Exception, String> onError,
+                TARGET nullRepresentation) {
+            return withConverter(Converter.nullSafeConverter(
+                    Converter.from(toModel, toPresentation, onError),
+                    nullRepresentation));
         }
 
         /**
@@ -1764,20 +1824,20 @@ public class Binder<BEAN> implements Serializable {
 
         private void initInternalSignalEffectForValidators() {
             if (signalRegistration == null
+                    && signalEffectAttachRegistration == null
                     && getField() instanceof Component component) {
                 if (component.isAttached()) {
                     initInternalSignalEffectForValidators(component);
                 } else {
-                    // Set up the effect lazily on attach. The registration is
-                    // stored so unbind() can cancel it; otherwise a stale
-                    // listener would later create an effect for an already
-                    // unbound binding whose field is null.
+                    // Set up the effect lazily on attach. Only one listener is
+                    // kept pending, and it is stored so unbind() can cancel it;
+                    // otherwise a stale listener would later create an
+                    // additional effect, or one for an already unbound binding
+                    // whose field is null.
                     signalEffectAttachRegistration = component
                             .addAttachListener(event -> {
-                                if (event.isInitialAttach()) {
-                                    event.unregisterListener();
-                                    signalEffectAttachRegistration = null;
-                                }
+                                event.unregisterListener();
+                                signalEffectAttachRegistration = null;
                                 initInternalSignalEffectForValidators(
                                         event.getSource());
                             });
@@ -2530,9 +2590,10 @@ public class Binder<BEAN> implements Serializable {
      * setter of the property are looked up using a {@link PropertySet}.
      * <p>
      * For a <code>Binder</code> created using the {@link Binder#Binder(Class)}
-     * constructor, introspection will be used to find a Java Bean property. If
-     * a JSR-303 bean validation implementation is present on the classpath, a
-     * {@link BeanValidator} is also added to the binding.
+     * constructor, introspection will be used to find a Java Bean property. A
+     * regular {@code Binder} does not add a {@link BeanValidator} even if a
+     * JSR-303 implementation is on the classpath; use
+     * {@link BeanValidationBinder} for that.
      * <p>
      * The property must have an accessible getter method. It need not have an
      * accessible setter; in that case the property value is never updated and
@@ -2575,9 +2636,10 @@ public class Binder<BEAN> implements Serializable {
      * not written back to the bean so the binding is read-only.
      * <p>
      * For a <code>Binder</code> created using the {@link Binder#Binder(Class)}
-     * constructor, introspection will be used to find a Java Bean property. If
-     * a JSR-303 bean validation implementation is present on the classpath, a
-     * {@link BeanValidator} is also added to the binding.
+     * constructor, introspection will be used to find a Java Bean property. A
+     * regular {@code Binder} does not add a {@link BeanValidator} even if a
+     * JSR-303 implementation is on the classpath; use
+     * {@link BeanValidationBinder} for that.
      * <p>
      * The property must have an accessible getter method.
      *
@@ -2663,7 +2725,17 @@ public class Binder<BEAN> implements Serializable {
         } else {
             doRemoveBean(false);
             this.bean = bean;
-            getBindings().forEach(b -> b.initFieldValue(bean, true));
+            getBindings().forEach(binding -> {
+                /*
+                 * Some bindings may have been removed from the binder during
+                 * setBean. We should skip those bindings to avoid NPE inside
+                 * initFieldValue. It happens e.g. when we unbind a binding in
+                 * valueChangeListener of another field.
+                 */
+                if (binding.getField() != null) {
+                    binding.initFieldValue(bean, true);
+                }
+            });
             // if there has been field value change listeners that trigger
             // validation, need to make sure the validation errors are cleared
             var status = BinderValidationStatus.createUnresolvedStatus(this);
@@ -2984,8 +3056,9 @@ public class Binder<BEAN> implements Serializable {
         // First run fields level validation, if no validation errors then
         // create a record.
         List<BindingValidationStatus<?>> bindingResults = currentBindings
-                .stream().map(b -> b.validate(false))
-                .collect(Collectors.toList());
+                .stream()
+                .<BindingValidationStatus<?>> map(b -> b.validate(false))
+                .toList();
 
         if (bindingResults.stream()
                 .noneMatch(BindingValidationStatus::isError)) {
@@ -3072,13 +3145,14 @@ public class Binder<BEAN> implements Serializable {
         // make a copy of the incoming bindings to avoid their modifications
         // during validation
         Collection<Binding<BEAN, ?>> currentBindings = bindings.stream()
-                .filter(Binding::isApplied).collect(Collectors.toList());
+                .filter(Binding::isApplied).toList();
 
         // First run fields level validation, if no validation errors then
         // update bean.
         List<BindingValidationStatus<?>> bindingResults = currentBindings
-                .stream().map(b -> b.validate(false))
-                .collect(Collectors.toList());
+                .stream()
+                .<BindingValidationStatus<?>> map(b -> b.validate(false))
+                .toList();
 
         if (bindingResults.stream()
                 .noneMatch(BindingValidationStatus::isError)) {
@@ -3297,9 +3371,16 @@ public class Binder<BEAN> implements Serializable {
      * Clear all the bound fields for this binder.
      */
     private void clearFields() {
-        bindings.forEach(binding -> {
-            binding.getField().clear();
-            clearError(binding.getField());
+        /*
+         * Iterate over a copy and skip already unbound bindings, as clearing a
+         * field may trigger a valueChangeListener that removes a binding.
+         */
+        getBindings().forEach(binding -> {
+            HasValue<?, ?> field = binding.getField();
+            if (field != null) {
+                field.clear();
+                clearError(field);
+            }
         });
         if (hasChanges()) {
             fireStatusChangeEvent(false);
@@ -3404,9 +3485,8 @@ public class Binder<BEAN> implements Serializable {
      */
     private List<BindingValidationStatus<?>> validateBindings() {
         return getBindings().stream().filter(Binding::isApplied)
-                .map(BindingImpl::doValidation)
-                .collect(Collectors.collectingAndThen(Collectors.toList(),
-                        Collections::unmodifiableList));
+                .<BindingValidationStatus<?>> map(BindingImpl::doValidation)
+                .toList();
     }
 
     /**
@@ -3425,8 +3505,7 @@ public class Binder<BEAN> implements Serializable {
         Objects.requireNonNull(bean, "bean cannot be null");
         return validators.stream()
                 .map(validator -> validator.apply(bean, new ValueContext(this)))
-                .collect(Collectors.collectingAndThen(Collectors.toList(),
-                        Collections::unmodifiableList));
+                .toList();
     }
 
     /**
@@ -4079,7 +4158,7 @@ public class Binder<BEAN> implements Serializable {
      */
     private boolean bindProperty(Object objectWithMemberFields,
             Field memberField, String property, Class<?> propertyType) {
-        Type valueType = GenericTypeReflector.getTypeParameter(
+        Type valueType = ReflectTools.getTypeParameter(
                 memberField.getGenericType(),
                 HasValue.class.getTypeParameters()[1]);
         if (valueType == null) {
@@ -4089,7 +4168,7 @@ public class Binder<BEAN> implements Serializable {
                     memberField.getName(),
                     objectWithMemberFields.getClass().getName()));
         }
-        Class<?> erasedValueType = GenericTypeReflector.erase(valueType);
+        Class<?> erasedValueType = ReflectTools.erase(valueType);
         boolean compatibleTypes = propertyType.equals(erasedValueType);
         Converter automaticConverter = compatibleTypes ? null
                 : getConverterFactory()

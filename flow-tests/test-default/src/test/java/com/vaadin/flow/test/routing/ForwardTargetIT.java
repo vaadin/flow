@@ -23,6 +23,9 @@ import com.vaadin.flow.test.AbstractDefaultIT;
 import com.vaadin.flow.test.TestFor;
 import com.vaadin.testbench.BrowserTest;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 @TestFor(ForwardTargetView.class)
 public class ForwardTargetIT extends AbstractDefaultIT {
 
@@ -31,42 +34,38 @@ public class ForwardTargetIT extends AbstractDefaultIT {
     // Test for https://github.com/vaadin/flow/issues/19794
     @BrowserTest
     public void testUrlIsCorrectAfterForward() {
-        getDriver().get(getRootURL() + FORWARD_TARGET_VIEW);
+        open(FORWARD_TARGET_VIEW);
 
         try {
             waitUntil(arg -> getDriver().getCurrentUrl()
                     .endsWith(FORWARD_TARGET_VIEW));
         } catch (TimeoutException e) {
-            Assertions.fail("URL wasn't updated to expected one: "
-                    + FORWARD_TARGET_VIEW);
+            fail("URL wasn't updated to expected one: " + FORWARD_TARGET_VIEW);
         }
 
-        getDriver().get(getRootURL() + "/com.vaadin.flow.ForwardingView");
+        open("/com.vaadin.flow.ForwardingView");
 
         try {
             waitUntil(arg -> getDriver().getCurrentUrl()
                     .endsWith(FORWARD_TARGET_VIEW));
         } catch (TimeoutException e) {
-            Assertions.fail("URL wasn't updated to expected one: "
-                    + FORWARD_TARGET_VIEW);
+            fail("URL wasn't updated to expected one: " + FORWARD_TARGET_VIEW);
         }
 
-        Assertions.assertTrue(
-                getDriver().getCurrentUrl().endsWith(FORWARD_TARGET_VIEW),
+        assertTrue(getDriver().getCurrentUrl().endsWith(FORWARD_TARGET_VIEW),
                 "URL was not the expected one after forward call");
     }
 
     // Test for https://github.com/vaadin/flow/issues/19822
     @BrowserTest
     public void testSetParameterCalledOnlyOnceAfterForward() {
-        getDriver().get(
-                getRootURL() + "/com.vaadin.flow.ForwardingToParametersView");
+        open("/com.vaadin.flow.ForwardingToParametersView");
 
         try {
             waitUntil(arg -> getDriver().getCurrentUrl().endsWith(
                     "/com.vaadin.flow.ForwardTargetWithParametersView"));
         } catch (TimeoutException e) {
-            Assertions.fail("URL wasn't updated to expected one: "
+            fail("URL wasn't updated to expected one: "
                     + "/com.vaadin.flow.ForwardTargetWithParametersView");
         }
 
@@ -78,15 +77,14 @@ public class ForwardTargetIT extends AbstractDefaultIT {
     // Test for https://github.com/vaadin/flow/issues/19822
     @BrowserTest
     public void testRouterLinkSetParameterCalledOnlyOnceAfterForward() {
-        getDriver().get(getRootURL()
-                + "/com.vaadin.flow.RouterLinkForwardingToParametersView");
+        open("/com.vaadin.flow.RouterLinkForwardingToParametersView");
         $("a").id("forwardViewLink").click();
 
         try {
             waitUntil(arg -> getDriver().getCurrentUrl().endsWith(
                     "/com.vaadin.flow.ForwardTargetWithParametersView"));
         } catch (TimeoutException e) {
-            Assertions.fail("URL wasn't updated to expected one: "
+            fail("URL wasn't updated to expected one: "
                     + "/com.vaadin.flow.ForwardTargetWithParametersView");
         }
 

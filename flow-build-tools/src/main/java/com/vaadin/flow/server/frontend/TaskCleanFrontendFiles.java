@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +46,8 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
 
     private File projectRoot;
 
+    private File jarResourcesTsConfig;
+
     private List<String> generatedFiles = List.of(NODE_MODULES,
             Constants.PACKAGE_JSON, Constants.PACKAGE_LOCK_JSON,
             Constants.PACKAGE_LOCK_YAML, Constants.PACKAGE_LOCK_BUN,
@@ -68,6 +69,8 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
      */
     public TaskCleanFrontendFiles(Options options) {
         this.projectRoot = options.getNpmFolder();
+        this.jarResourcesTsConfig = TaskGenerateJarResourcesTsConfig
+                .getTsConfigFile(options);
 
         Arrays.stream(projectRoot
                 .listFiles(file -> generatedFiles.contains(file.getName())))
@@ -91,11 +94,10 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
 
     @Override
     public void execute() throws ExecutionFailedException {
-        final List<File> filesToRemove = Arrays
-                .stream(projectRoot.listFiles(
-                        file -> generatedFiles.contains(file.getName())
-                                && !existingFiles.contains(file)))
-                .collect(Collectors.toList());
+        final List<File> filesToRemove = Arrays.stream(projectRoot
+                .listFiles(file -> generatedFiles.contains(file.getName())
+                        && !existingFiles.contains(file)))
+                .toList();
         for (File file : filesToRemove) {
             log().debug("Removing file {}", file);
             try {
@@ -104,6 +106,14 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
                 log().warn(ioe.getMessage());
                 log().debug("Failed to remove file", ioe);
             }
+        }
+        if (filesToRemove.stream().anyMatch(file -> file.getName()
+                .equals(TaskGenerateTsConfig.TSCONFIG_JSON))) {
+            // The configuration of the frontend sources of add-ons extends the
+            // project one, so removing only the latter would leave behind a
+            // configuration that no longer resolves
+            log().debug("Removing file {}", jarResourcesTsConfig);
+            FileIOUtils.deleteQuietly(jarResourcesTsConfig);
         }
     }
 

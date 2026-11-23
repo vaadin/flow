@@ -16,6 +16,9 @@
 package com.vaadin.flow.component.html;
 
 import java.util.Objects;
+import java.util.stream.Stream;
+
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ClickNotifier;
@@ -28,13 +31,67 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;button&gt;</code> element.
+ * <p>
+ * A clickable control that submits a form, resets it, or runs an action.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button">MDN:
+ *      &lt;button&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */
 @Tag(Tag.BUTTON)
 public class NativeButton extends HtmlContainer implements
         ClickNotifier<NativeButton>, Focusable<NativeButton>, HasAriaLabel {
+
+    /**
+     * What the button does when it is activated inside a {@link NativeForm}.
+     * 
+     * @since 25.4
+     */
+    public enum Type {
+        /**
+         * Submits the form. This is what the browser does when no type is set.
+         */
+        SUBMIT("submit"),
+        /**
+         * Resets the fields of the form to their initial values.
+         */
+        RESET("reset"),
+        /**
+         * Does nothing in the form, so that only click listeners run.
+         */
+        BUTTON("button");
+
+        private final String value;
+
+        Type(String value) {
+            this.value = value;
+        }
+
+        /**
+         * Returns the attribute value as it appears in the rendered HTML.
+         *
+         * @return the {@code type} attribute value
+         */
+        public String getValue() {
+            return value;
+        }
+
+        /**
+         * Resolves an attribute value to its constant. The comparison ignores
+         * case, because {@code type} is an HTML enumerated attribute and its
+         * keywords are matched ASCII case-insensitively, so an element that
+         * arrived with {@code type="SUBMIT"} has to read back as
+         * {@link #SUBMIT}.
+         */
+        private static @Nullable Type fromValue(@Nullable String value) {
+            return Stream.of(values())
+                    .filter(type -> type.value.equalsIgnoreCase(value))
+                    .findFirst().orElse(null);
+        }
+    }
+
     /**
      * Creates a new empty button.
      */
@@ -77,6 +134,32 @@ public class NativeButton extends HtmlContainer implements
             ComponentEventListener<ClickEvent<NativeButton>> clickListener) {
         this(text);
         addClickListener(clickListener);
+    }
+
+    /**
+     * Sets what the button does when it is activated inside a
+     * {@link NativeForm}. A button without a type submits the form, so set
+     * {@link Type#BUTTON} on a button in a form that should only run its click
+     * listeners.
+     *
+     * @param type
+     *            the type, or {@code null} to remove the attribute
+     * @since 25.4
+     */
+    public void setType(@Nullable Type type) {
+        getElement().setAttribute("type",
+                type == null ? null : type.getValue());
+    }
+
+    /**
+     * Gets what the button does when it is activated inside a form.
+     *
+     * @return the type, or {@code null} if not set or not recognized
+     * @see #setType(Type)
+     * @since 25.4
+     */
+    public @Nullable Type getType() {
+        return Type.fromValue(getElement().getAttribute("type"));
     }
 
 }

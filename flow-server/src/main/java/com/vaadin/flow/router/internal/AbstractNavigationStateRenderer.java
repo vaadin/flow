@@ -60,7 +60,6 @@ import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteParameters;
@@ -91,6 +90,9 @@ public abstract class AbstractNavigationStateRenderer
     private Postpone postponed = null;
 
     private LocationChangeEvent locationChangeEvent = null;
+
+    // Whether this renderer handles a forward or reroute of a page reload
+    private boolean redirectedFromReload;
 
     /**
      * Creates a new renderer for the given navigation state.
@@ -148,7 +150,8 @@ public abstract class AbstractNavigationStateRenderer
 
         if (forceInstantiation
                 && event.getTrigger() == NavigationTrigger.REFRESH_ROUTE
-                && !ui.getSession().getConfiguration().isProductionMode()) {
+                && !ui.getSessionOrThrow().getConfiguration()
+                        .isProductionMode()) {
             findActiveRouteTarget(event, isRouteTargetType)
                     .ifPresent(oldInstance -> SignalFieldTransfer
                             .transferLocalSignalValues(oldInstance,
@@ -209,11 +212,18 @@ public abstract class AbstractNavigationStateRenderer
             return HttpStatusCode.OK.getCode();
         }
 
-        // Set navigationTrigger to RELOAD if this is a refresh of a preserve
-        // view.
-        if (preserveOnRefreshTarget && !chain.isEmpty()) {
+        // Set navigationTrigger to REFRESH if this is a reload of a preserved
+        // view, also when the reload reaches it through a forward or reroute.
+        // Other navigations that reuse the preserved chain, e.g. a link or
+        // history navigation that only changes the query parameters, keep
+        // their trigger so that history is handled the same way as without
+        // preserve on refresh.
+        if (preserveOnRefreshTarget && !chain.isEmpty() && isReload(event)) {
             event = new NavigationEvent(event.getSource(), event.getLocation(),
-                    event.getUI(), NavigationTrigger.REFRESH);
+                    event.getUI(), NavigationTrigger.REFRESH,
+                    event.getState().orElse(null), event.isForwardTo(),
+                    event.isForceInstantiation(),
+                    event.isRecreateLayoutChain());
         }
 
         // If the navigation is postponed, using BeforeLeaveEvent#postpone,
@@ -259,6 +269,18 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     /**
+     * Handles the navigation event again once the client data requested during
+     * the initial handling has been retrieved.
+     * <p>
+     * This happens outside the original navigation, so the app shell title
+     * fallback applied when the navigation completes is applied here as well.
+     */
+    private void handleDeferred(NavigationEvent event) {
+        handle(event);
+        event.getUI().getInternals().restoreAppShellTitleIfEmpty();
+    }
+
+    /**
      * Populate element chain from a preserved chain or give clean chain to be
      * populated.
      *
@@ -295,19 +317,19 @@ public abstract class AbstractNavigationStateRenderer
                 ExtendedClientDetails details = ui.getInternals()
                         .getExtendedClientDetails();
                 if (details.getWindowName() == null) {
-                    PreservedComponentCache cache = ui.getSession()
+                    PreservedComponentCache cache = ui.getSessionOrThrow()
                             .getAttribute(PreservedComponentCache.class);
                     if (cache != null && !cache.isEmpty()) {
                         // As there is a cached chain we get the client details
                         // to get the window name so we can determine if the
                         // cache contains a chain for us to use.
                         ui.getPage().retrieveExtendedClientDetails(
-                                d -> handle(event));
+                                d -> handleDeferred(event));
                         return true;
                     }
                 } else {
                     Optional<List<HasElement>> partialChain = getWindowPreservedChain(
-                            ui.getSession(), details.getWindowName());
+                            ui.getSessionOrThrow(), details.getWindowName());
                     if (partialChain.isPresent()) {
                         List<HasElement> oldChain = partialChain.get();
                         disconnectElements(oldChain, ui);
@@ -356,21 +378,28 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     /**
-     * If a route refresh has been requested, remove all modal components. This
-     * is necessary because maintaining the correct modality cardinality and
-     * order is not feasible without knowing who opened them and when.
+     * If a route refresh has been requested, remove all components with
+     * modality, that is both strictly and visually modal components. This is
+     * necessary because maintaining the correct modality cardinality and order
+     * is not feasible without knowing who opened them and when.
+     * <p>
+     * Components with modality, such as dialogs, are usually attached to the UI
+     * instead of the route they are opened from, so they would otherwise
+     * survive the refresh and keep showing outdated contents.
      *
      * @param event
      *            navigation event
      */
     private static void cleanModalComponents(NavigationEvent event) {
-        if (event.getUI().hasModalComponent()
-                && event.getTrigger() == NavigationTrigger.REFRESH_ROUTE) {
-            Component modalComponent;
-            while ((modalComponent = event.getUI().getInternals()
-                    .getActiveModalComponent()) != null) {
-                modalComponent.removeFromParent();
-            }
+        if (event.getTrigger() == NavigationTrigger.REFRESH_ROUTE) {
+            List<Component> modalityComponents = event.getUI().getInternals()
+                    .getModalityComponents();
+            // Components with modality nested inside another one go away
+            // together with it, and must stay in their parent. The rest are
+            // removed most recently set first.
+            modalityComponents.stream().filter(component -> component
+                    .findAncestor(modalityComponents::contains).isEmpty())
+                    .forEachOrdered(Component::removeFromParent);
         }
     }
 
@@ -458,39 +487,24 @@ public abstract class AbstractNavigationStateRenderer
      */
     protected List<Class<? extends RouterLayout>> getTargetParentLayouts(
             RouteTarget routeTarget, RouteRegistry registry, String path) {
-        if (routeTarget.getParentLayouts().isEmpty()
-                && RouteUtil.isAutolayoutEnabled(routeTarget.getTarget(), path)
-                && registry.hasLayout(path)) {
-            return RouteUtil
-                    .collectRouteParentLayouts(registry.getLayout(path));
-        }
-        return routeTarget.getParentLayouts();
+        return RouteUtil.getTargetParentLayouts(routeTarget, registry, path);
     }
 
     private void pushHistoryStateIfNeeded(NavigationEvent event, UI ui) {
         boolean reactEnabled = ui.getInternals().getSession().getService()
                 .getDeploymentConfiguration().isReactEnabled();
         Location currentLocation = ui.getInternals().getActiveViewLocation();
-        NavigationTrigger eventTrigger = event.getTrigger();
-        if (event instanceof ErrorNavigationEvent errorEvent) {
-            if (isRouterLinkNotFoundNavigationError(errorEvent)) {
-                // #8544
-                event.getState().ifPresent(s -> ui.getPage().executeJs(
-                        "this.scrollPositionHandlerAfterServerNavigation($0);",
-                        s));
-            }
-        } else if (NavigationTrigger.REFRESH != eventTrigger
-                && !event.isForwardTo()
+        if (event instanceof ErrorNavigationEvent) {
+            // The history is left as it is for an error view
+            return;
+        }
+        boolean locationChanged = !event.isForwardTo()
                 && (currentLocation == null || !event.getLocation()
-                        .getPathWithQueryParameters().equals(currentLocation
-                                .getPathWithQueryParameters()))) {
-            if (shouldPushHistoryState(event)) {
-                pushHistoryState(event);
-            }
-        } else if (reactEnabled) {
-            if (shouldPushHistoryState(event)) {
-                pushHistoryState(event);
-            }
+                        .getPathWithQueryParameters()
+                        .equals(currentLocation.getPathWithQueryParameters()));
+        if ((locationChanged || reactEnabled)
+                && shouldPushHistoryState(event)) {
+            pushHistoryState(event);
         }
     }
 
@@ -501,16 +515,7 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     protected boolean shouldPushHistoryState(NavigationEvent event) {
-        return NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger())
-                || NavigationTrigger.REFRESH.equals(event.getTrigger());
-    }
-
-    private boolean isRouterLinkNotFoundNavigationError(
-            ErrorNavigationEvent event) {
-        return NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())
-                && event.getErrorParameter() != null
-                && event.getErrorParameter()
-                        .getCaughtException() instanceof NotFoundException;
+        return event.getTrigger() == NavigationTrigger.UI_NAVIGATE;
     }
 
     /**
@@ -933,6 +938,9 @@ public abstract class AbstractNavigationStateRenderer
         if (handler instanceof NavigationStateRenderer renderer) {
             renderer.setOngoingLocationChangeEvent(locationChangeEvent);
         }
+        if (handler instanceof AbstractNavigationStateRenderer renderer) {
+            renderer.redirectedFromReload = isReload(event);
+        }
 
         NavigationEvent newNavigationEvent = getNavigationEvent(event,
                 beforeNavigation);
@@ -948,11 +956,26 @@ public abstract class AbstractNavigationStateRenderer
         if (handler instanceof NavigationStateRenderer renderer) {
             renderer.setOngoingLocationChangeEvent(locationChangeEvent);
         }
+        if (handler instanceof AbstractNavigationStateRenderer renderer) {
+            renderer.redirectedFromReload = isReload(event);
+        }
 
         NavigationEvent newNavigationEvent = getNavigationEvent(event,
                 beforeNavigation);
 
         return handler.handle(newNavigationEvent);
+    }
+
+    /**
+     * Checks whether the event is for a page reload. A forward or reroute
+     * replaces the original trigger with
+     * {@link NavigationTrigger#PROGRAMMATIC}, so for such an event the trigger
+     * of the redirected navigation is used.
+     */
+    private boolean isReload(NavigationEvent event) {
+        return event.getTrigger() == NavigationTrigger.PAGE_LOAD
+                || event.getTrigger() == NavigationTrigger.REFRESH
+                || (event.isForwardTo() && redirectedFromReload);
     }
 
     private NavigationEvent getNavigationEvent(NavigationEvent event,
@@ -1025,7 +1048,7 @@ public abstract class AbstractNavigationStateRenderer
             NavigationEvent event) {
         final Location location = event.getLocation();
         final UI ui = event.getUI();
-        final VaadinSession session = ui.getSession();
+        final VaadinSession session = ui.getSessionOrThrow();
 
         final ExtendedClientDetails details = ui.getInternals()
                 .getExtendedClientDetails();
@@ -1034,7 +1057,8 @@ public abstract class AbstractNavigationStateRenderer
                 // We may have a cached instance for this location, but we
                 // need to retrieve the window name before we can determine
                 // this, so execute a client-side request.
-                ui.getPage().retrieveExtendedClientDetails(d -> handle(event));
+                ui.getPage().retrieveExtendedClientDetails(
+                        d -> handleDeferred(event));
                 return Optional.empty();
             }
         } else {
@@ -1065,9 +1089,12 @@ public abstract class AbstractNavigationStateRenderer
         // Remove the top-level component from the tree
         root.getElement().removeFromTree(false);
 
-        // Transfer all remaining UI child elements (typically dialogs
-        // and notifications) to the new UI
+        // Keep the locale of the previous UI so that the preserved components
+        // are re-attached with the locale they were showing, and transfer all
+        // remaining UI child elements (typically dialogs and notifications)
+        // to the new UI
         maybePrevUI.ifPresent(prevUi -> {
+            ui.setLocale(prevUi.getLocale());
             ui.getInternals().moveElementsFrom(prevUi);
             prevUi.close();
         });
@@ -1082,7 +1109,7 @@ public abstract class AbstractNavigationStateRenderer
 
         final Location location = event.getLocation();
         final UI ui = event.getUI();
-        final VaadinSession session = ui.getSession();
+        final VaadinSession session = ui.getSessionOrThrow();
 
         final ExtendedClientDetails extendedClientDetails = ui.getInternals()
                 .getExtendedClientDetails();
@@ -1132,7 +1159,7 @@ public abstract class AbstractNavigationStateRenderer
 
     private static void updatePageTitle(NavigationEvent navigationEvent,
             Component routeTarget, String route, RouteParameters parameters) {
-        Instantiator instantiator = navigationEvent.getUI().getSession()
+        Instantiator instantiator = navigationEvent.getUI().getSessionOrThrow()
                 .getService().getInstantiator();
         QueryParameters queryParameters = navigationEvent.getLocation()
                 .getQueryParameters();
@@ -1236,7 +1263,7 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private static void clearAllPreservedChains(UI ui) {
-        final VaadinSession session = ui.getSession();
+        final VaadinSession session = ui.getSessionOrThrow();
         // Note that this check is always false if @PreserveOnRefresh has not
         // been used at all, avoiding the round-trip overhead.
         if (hasPreservedChain(session)) {
@@ -1266,7 +1293,7 @@ public abstract class AbstractNavigationStateRenderer
             throw new IllegalStateException(
                     "Cannot purge preserved chain cache for an active UI");
         }
-        final VaadinSession session = inactiveUI.getSession();
+        final VaadinSession session = inactiveUI.getSessionOrThrow();
         final PreservedComponentCache cache = session
                 .getAttribute(PreservedComponentCache.class);
         if (cache != null && !cache.isEmpty()) {

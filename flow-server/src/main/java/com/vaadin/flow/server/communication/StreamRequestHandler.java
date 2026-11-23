@@ -31,6 +31,7 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.internal.streams.ActiveTransfer;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.HttpStatusCode;
@@ -42,7 +43,9 @@ import com.vaadin.flow.server.UploadException;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.UploadHandler;
+import com.vaadin.flow.shared.Registration;
 
 import static com.vaadin.flow.server.Constants.DEFAULT_FILE_COUNT_MAX;
 import static com.vaadin.flow.server.Constants.DEFAULT_FILE_SIZE_MAX;
@@ -67,6 +70,14 @@ public class StreamRequestHandler implements RequestHandler {
      * @since 4.0
      */
     public static final String DYN_RES_PREFIX = "VAADIN/dynamic/resource/";
+
+    /**
+     * The request attribute that carries the
+     * {@link com.vaadin.flow.server.streams.DownloadDisposition} of the
+     * resource that is served, for the download event to read.
+     */
+    public static final String DISPOSITION_REQUEST_ATTRIBUTE = DownloadDisposition.class
+            .getName();
 
     private final StreamResourceHandler resourceHandler = new StreamResourceHandler();
     private final StreamReceiverHandler receiverHandler;
@@ -141,6 +152,11 @@ public class StreamRequestHandler implements RequestHandler {
         Element owner = elementRequest.getOwner();
         StateNode node = owner.getNode();
 
+        PathData parts = parsePath(pathInfo);
+        ActiveTransfer transfer = new ActiveTransfer(pathInfo, owner);
+        Registration transferRegistration = null;
+
+        DownloadDisposition disposition;
         session.lock();
         try {
             if (blockInert(elementRequest, node)
@@ -155,7 +171,6 @@ public class StreamRequestHandler implements RequestHandler {
                     .getElementRequestHandler() instanceof UploadHandler) {
                 // Validate upload security key. Else respond with
                 // FORBIDDEN.
-                PathData parts = parsePath(pathInfo);
                 String secKey = elementRequest.getId();
                 if (secKey == null || !MessageDigest.isEqual(
                         secKey.getBytes(StandardCharsets.UTF_8),
@@ -190,11 +205,41 @@ public class StreamRequestHandler implements RequestHandler {
                     return;
                 }
             }
+
+            /*
+             * The path has been matched against a registered resource, whose
+             * URI is generated from the id of the UI that registered it, so the
+             * UI id is a number here.
+             *
+             * Registered while the session is locked, so that an invalidation
+             * either runs after this and terminates the transfer, or has
+             * already detached the UI, in which case the owner element is no
+             * longer attached and the request has been rejected above.
+             */
+            UI ui = session.getUIById(Integer.parseInt(parts.UIid));
+            if (ui != null) {
+                transferRegistration = ui.getInternals()
+                        .registerActiveTransfer(transfer);
+            }
+            // read while locked, as the owner can change it at any time
+            disposition = elementRequest.getDisposition();
         } finally {
             session.unlock();
         }
-        elementRequest.getElementRequestHandler().handleRequest(request,
-                response, session, elementRequest.getOwner());
+        VaadinRequest transferRequest = transfer.wrapRequest(request);
+        if (disposition != null) {
+            transferRequest.setAttribute(DISPOSITION_REQUEST_ATTRIBUTE,
+                    disposition);
+        }
+        try {
+            elementRequest.getElementRequestHandler().handleRequest(
+                    transferRequest, transfer.wrapResponse(response), session,
+                    elementRequest.getOwner());
+        } finally {
+            if (transferRegistration != null) {
+                transferRegistration.remove();
+            }
+        }
     }
 
     private static boolean blockDisabled(

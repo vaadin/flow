@@ -28,13 +28,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mockStatic;
 
 class ServerInfoTest {
     private ClassLoader oldContextClassLoader;
@@ -79,8 +79,8 @@ class ServerInfoTest {
         final ClassLoader classLoader = new URLClassLoader(
                 classpath.toArray(new URL[0]), null);
         if (hilla) {
-            endpointRequestUtilMockedStatic = Mockito
-                    .mockStatic(EndpointRequestUtil.class);
+            endpointRequestUtilMockedStatic = mockStatic(
+                    EndpointRequestUtil.class);
             endpointRequestUtilMockedStatic
                     .when(EndpointRequestUtil::isHillaAvailable)
                     .thenReturn(true);

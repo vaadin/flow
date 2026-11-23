@@ -21,10 +21,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.parallel.Isolated;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -39,11 +38,14 @@ import com.vaadin.flow.shared.ApplicationConstants;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-@NotThreadSafe
+@Isolated
 class RouterLinkTest extends HasCurrentService {
 
     private ApplicationRouteRegistry registry;
@@ -67,11 +69,9 @@ class RouterLinkTest extends HasCurrentService {
     void setUp() throws NoSuchFieldException, IllegalAccessException,
             InvalidRouteConfigurationException {
         VaadinService service = VaadinService.getCurrent();
-        DeploymentConfiguration config = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(config.getFrontendFolder())
-                .thenReturn(new File("/frontend"));
-        Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
+        DeploymentConfiguration config = mock(DeploymentConfiguration.class);
+        when(config.getFrontendFolder()).thenReturn(new File("/frontend"));
+        when(service.getDeploymentConfiguration()).thenReturn(config);
 
         registry = new TestRouteRegistry();
         RouteConfiguration routeConfiguration = RouteConfiguration
@@ -87,7 +87,7 @@ class RouterLinkTest extends HasCurrentService {
 
         ui = new RoutingTestBase.RouterTestUI(router);
 
-        Mockito.when(service.getRouter()).thenReturn(router);
+        when(service.getRouter()).thenReturn(router);
     }
 
     @Test
@@ -278,7 +278,7 @@ class RouterLinkTest extends HasCurrentService {
     @Test
     void noImplicitRouter() {
         VaadinService service = VaadinService.getCurrent();
-        Mockito.when(service.getRouter()).thenReturn(null);
+        when(service.getRouter()).thenReturn(null);
         assertThrows(IllegalStateException.class,
                 () -> new RouterLink("Show something", TestView.class));
     }
@@ -336,7 +336,7 @@ class RouterLinkTest extends HasCurrentService {
 
     @Override
     protected VaadinService createService() {
-        return Mockito.mock(VaadinService.class);
+        return mock(VaadinService.class);
     }
 
     @Test
@@ -469,6 +469,44 @@ class RouterLinkTest extends HasCurrentService {
                 IllegalArgumentException.class, () -> {
                     new RouterLink("", Foo.class);
                 });
+    }
+
+    @Test
+    void setOpenInNewBrowserTab_togglesBlankTarget() {
+        RouterLink link = new RouterLink(router, FooNavigationTarget.class);
+        assertNull(link.getTarget());
+        assertFalse(link.isOpenInNewBrowserTab());
+
+        link.setOpenInNewBrowserTab(true);
+        assertEquals("_blank", link.getElement().getAttribute("target"));
+        assertTrue(link.isOpenInNewBrowserTab());
+
+        link.setOpenInNewBrowserTab(false);
+        assertFalse(link.getElement().hasAttribute("target"));
+        assertFalse(link.isOpenInNewBrowserTab());
+    }
+
+    @Test
+    void setTarget_nullOrEmptyRemovesAttribute() {
+        RouterLink link = new RouterLink(router, FooNavigationTarget.class);
+
+        link.setTarget("_top");
+        assertEquals("_top", link.getTarget());
+        assertEquals("_top", link.getElement().getAttribute("target"));
+        assertFalse(link.isOpenInNewBrowserTab());
+
+        link.setTarget("");
+        assertFalse(link.getElement().hasAttribute("target"));
+        assertNull(link.getTarget());
+
+        link.setTarget("_top");
+        link.setTarget(null);
+        assertFalse(link.getElement().hasAttribute("target"));
+        assertNull(link.getTarget());
+
+        link.setTarget("_top");
+        link.setOpenInNewBrowserTab(false);
+        assertFalse(link.getElement().hasAttribute("target"));
     }
 
     @Route("foo")

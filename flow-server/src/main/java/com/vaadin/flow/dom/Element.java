@@ -25,11 +25,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.TextNode;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.NullUnmarked;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
@@ -42,29 +44,46 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.ScrollIntoViewOption;
 import com.vaadin.flow.component.ScrollOptions;
+import com.vaadin.flow.component.Size;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.component.page.JavaScriptResult;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.component.trigger.internal.SetSignalAction;
+import com.vaadin.flow.component.trigger.internal.SizeTrigger;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.CspViolationReporter;
+import com.vaadin.flow.internal.DiscardAwareExecution;
+import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionProxy;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.CspMode;
+import com.vaadin.flow.server.CspViolationException;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Represents an element in the DOM.
@@ -75,6 +94,7 @@ import com.vaadin.flow.signals.Signal;
  * @author Vaadin Ltd
  * @since 1.0
  */
+@NullMarked
 public class Element extends Node<Element> {
     private static final String EVENT_TYPE_MUST_NOT_BE_NULL = "Event type must not be null";
 
@@ -218,7 +238,7 @@ public class Element extends Node<Element> {
      *            empty string
      * @return an element representing the text node, never <code>null</code>
      */
-    public static Element createText(String text) {
+    public static Element createText(@Nullable String text) {
         if (text == null) {
             text = "";
         }
@@ -255,8 +275,7 @@ public class Element extends Node<Element> {
      * immediately with the current signal value when the binding is created,
      * and is kept synchronized with any subsequent signal value changes while
      * the element is in attached state. When the element is in detached state,
-     * signal value changes have no effect. <code>null</code> signal unbinds
-     * existing binding.
+     * signal value changes have no effect.
      * <p>
      * Same rules applies for the attribute name and value from the bound Signal
      * as in {@link #setAttribute(String, String)}.
@@ -282,11 +301,16 @@ public class Element extends Node<Element> {
      *            the name of the attribute
      * @param signal
      *            the signal to bind, not <code>null</code>
+     * @return the binding, which can be used to react to updates
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setAttribute(String, String)
      * @since 25.0
      */
+    // The signal value may be null. Signal<? extends @Nullable String> would
+    // say so, but it would break overrides of this method and change the
+    // returned binding type, so the method is left unmarked instead
+    @NullUnmarked
     public SignalBinding<String> bindAttribute(String attribute,
             Signal<String> signal) {
         String validAttribute = validateAttribute(attribute);
@@ -300,6 +324,70 @@ public class Element extends Node<Element> {
             return getStateProvider().bindAttributeSignal(this, validAttribute,
                     signal);
         }
+    }
+
+    /**
+     * Binds a {@link Signal}'s value to the presence of a given attribute. A
+     * {@code true} signal value sets the attribute to <code>""</code>, which is
+     * rendered as {@literal <div name>}, and a {@code false} value removes the
+     * attribute. This is the signal counterpart of
+     * {@link #setAttribute(String, boolean)}, meant for the boolean attributes
+     * that web components and CSS attribute selectors interpret by presence
+     * alone. A {@code null} signal value is treated the same as {@code false}.
+     * <p>
+     * The attribute is updated immediately with the current signal value when
+     * the binding is created, and is kept synchronized with any subsequent
+     * signal value changes while the element is in attached state. When the
+     * element is in detached state, signal value changes have no effect.
+     * <p>
+     * Same rules apply for the attribute name as in
+     * {@link #setAttribute(String, String)}.
+     * <p>
+     * While a Signal is bound to an attribute, any attempt to set or remove the
+     * attribute value manually throws
+     * {@link com.vaadin.flow.signals.BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Binding style or class attribute to a Signal is not supported. Use
+     * {@link ClassList#bind(String, Signal)} and
+     * {@link ThemeList#bind(String, Signal)} to bind the presence of an
+     * individual class or theme name.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ValueSignal&lt;Boolean&gt; signal = new ValueSignal&lt;&gt;(false);
+     * Element element = new Element("span");
+     * getElement().appendChild(element);
+     * element.bindAttributeBoolean("noborder", signal);
+     * signal.set(true); // The element now has attribute noborder
+     * </pre>
+     *
+     * @param attribute
+     *            the name of the attribute
+     * @param signal
+     *            the signal to bind, not <code>null</code>
+     * @return a {@link SignalBinding} that can be used to register change
+     *         callbacks
+     * @throws com.vaadin.flow.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setAttribute(String, boolean)
+     * @see #bindAttribute(String, Signal)
+     * @since 25.4
+     */
+    // The signal value may be null, as in bindVisible and bindEnabled. Left
+    // unmarked like them, so all Element signal bindings read the same way
+    @NullUnmarked
+    public SignalBinding<Boolean> bindAttributeBoolean(String attribute,
+            Signal<Boolean> signal) {
+        String validAttribute = validateAttribute(attribute);
+
+        if (CustomAttribute.get(validAttribute).isPresent()) {
+            throw new UnsupportedOperationException(
+                    "Binding style or class attribute to a Signal is not supported.");
+        }
+        return getStateProvider().bindAttributeBooleanSignal(this,
+                validAttribute, signal);
     }
 
     /**
@@ -322,18 +410,26 @@ public class Element extends Node<Element> {
      * Note that attribute changes made on the server are sent to the client but
      * attribute changes made on the client side are not reflected back to the
      * server.
+     * <p>
+     * Passing a <code>null</code> value removes the attribute. A bare
+     * <code>null</code> literal is ambiguous between the
+     * <code>setAttribute</code> overloads and needs a cast, e.g.
+     * <code>setAttribute(name, (String) null)</code>; prefer
+     * {@link #removeAttribute(String)} in that case.
      *
      * @param attribute
      *            the name of the attribute
      * @param value
-     *            the value of the attribute, not null
+     *            the value of the attribute, or <code>null</code> to remove the
+     *            attribute
      * @return this element
+     * @see #removeAttribute(String)
      */
-    public Element setAttribute(String attribute, String value) {
-        if (value == null) {
-            throw new IllegalArgumentException("Value cannot be null");
-        }
+    public Element setAttribute(String attribute, @Nullable String value) {
         String lowerCaseAttribute = validateAttribute(attribute);
+        if (value == null) {
+            return removeAttribute(lowerCaseAttribute);
+        }
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(lowerCaseAttribute);
@@ -390,14 +486,16 @@ public class Element extends Node<Element> {
      * @param attribute
      *            the name of the attribute
      * @param resource
-     *            the resource value, not null
+     *            the resource value, or <code>null</code> to remove the
+     *            attribute
      * @return this element
+     * @see #removeAttribute(String)
      */
     public Element setAttribute(String attribute,
-            AbstractStreamResource resource) {
+            @Nullable AbstractStreamResource resource) {
         String lowerCaseAttribute = validateAttribute(attribute);
         if (resource == null) {
-            throw new IllegalArgumentException("Value cannot be null");
+            return removeAttribute(lowerCaseAttribute);
         }
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
@@ -464,7 +562,7 @@ public class Element extends Node<Element> {
      * @return the value of the attribute or null if the attribute has not been
      *         set
      */
-    public String getAttribute(String attribute) {
+    public @Nullable String getAttribute(String attribute) {
         if (attribute == null) {
             throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
         }
@@ -565,6 +663,12 @@ public class Element extends Node<Element> {
                 getStateProvider().removeAttribute(getNode(),
                         lowerCaseAttribute);
             }
+        } else if (getNode().hasFeature(ElementAttributeMap.class) && getNode()
+                .getFeatureIfInitialized(ElementAttributeMap.class)
+                .filter(map -> map.hasSignal(lowerCaseAttribute)).isPresent()) {
+            // A bound attribute whose signal value is null is not present,
+            // but removing it must still fail while the binding is active
+            getStateProvider().removeAttribute(getNode(), lowerCaseAttribute);
         }
         return this;
     }
@@ -662,7 +766,7 @@ public class Element extends Node<Element> {
      * @return the parent element or null if this element does not have a parent
      *         or the parent is not an element
      */
-    public Element getParent() {
+    public @Nullable Element getParent() {
         Node<?> parent = getParentNode();
         if (parent instanceof Element) {
             return (Element) parent;
@@ -717,12 +821,14 @@ public class Element extends Node<Element> {
      * @param name
      *            the property name, not <code>null</code>
      * @param value
-     *            the property value
+     *            the property value, or <code>null</code> to set the property
+     *            to <code>null</code>; unlike {@link #removeProperty(String)},
+     *            the property is kept
      * @return this element
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             if the property has an active read-only signal binding
      */
-    public Element setProperty(String name, String value) {
+    public Element setProperty(String name, @Nullable String value) {
         return setRawProperty(name, value);
     }
 
@@ -955,6 +1061,9 @@ public class Element extends Node<Element> {
      *            calling {@link #setProperty(String, String)} (or any overload)
      *            on the bound property will invoke this callback instead of
      *            throwing.
+     * @param <T>
+     *            the type of the signal value
+     * @return the binding, which can be used to react to updates
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setProperty(String, String)
@@ -963,7 +1072,7 @@ public class Element extends Node<Element> {
     @SuppressWarnings("unchecked")
     public <T extends @Nullable Object> SignalBinding<T> bindProperty(
             String name, Signal<T> signal,
-            SerializableConsumer<T> writeCallback) {
+            @Nullable SerializableConsumer<T> writeCallback) {
         verifySetPropertyName(name);
 
         return (SignalBinding<T>) getStateProvider().bindPropertySignal(this,
@@ -1028,7 +1137,7 @@ public class Element extends Node<Element> {
                 .onUnregister(propertyListenerRegistration::remove);
     }
 
-    private Element setRawProperty(String name, Serializable value) {
+    private Element setRawProperty(String name, @Nullable Serializable value) {
         verifySetPropertyName(name);
 
         if ("innerHTML".equals(name)) {
@@ -1065,7 +1174,8 @@ public class Element extends Node<Element> {
      *            value is <code>null</code>
      * @return the property value
      */
-    public String getProperty(String name, String defaultValue) {
+    public @Nullable String getProperty(String name,
+            @Nullable String defaultValue) {
         Object value = getPropertyRaw(name);
         if (value == null || value instanceof NullNode) {
             return defaultValue;
@@ -1092,7 +1202,7 @@ public class Element extends Node<Element> {
      *            the property name, not <code>null</code>
      * @return the property value, or <code>null</code> if no value is set
      */
-    public String getProperty(String name) {
+    public @Nullable String getProperty(String name) {
         return getProperty(name, null);
     }
 
@@ -1204,7 +1314,7 @@ public class Element extends Node<Element> {
      *            the property name, not null
      * @return the raw property value, or <code>null</code>
      */
-    public Serializable getPropertyRaw(String name) {
+    public @Nullable Serializable getPropertyRaw(String name) {
         return getStateProvider().getProperty(getNode(), name);
     }
 
@@ -1236,7 +1346,7 @@ public class Element extends Node<Element> {
      *         <code>null</code> if not set
      * @since 25.0
      */
-    public <T> T getPropertyBean(String name, Class<T> type) {
+    public <T> @Nullable T getPropertyBean(String name, Class<T> type) {
         Serializable raw = getPropertyRaw(name);
         if (raw == null || raw instanceof NullNode) {
             return null;
@@ -1276,7 +1386,8 @@ public class Element extends Node<Element> {
      *         <code>null</code> if not set
      * @since 25.0
      */
-    public <T> T getPropertyBean(String name, TypeReference<T> typeReference) {
+    public <T> @Nullable T getPropertyBean(String name,
+            TypeReference<T> typeReference) {
         Serializable raw = getPropertyRaw(name);
         if (raw == null || raw instanceof NullNode) {
             return null;
@@ -1356,7 +1467,7 @@ public class Element extends Node<Element> {
      * @throws BindingActiveException
      *             if a binding has been set on the text content of this element
      */
-    public Element setText(String textContent) {
+    public Element setText(@Nullable String textContent) {
         getNode().getFeatureIfInitialized(SignalBindingFeature.class)
                 .ifPresent(feature -> {
                     if (feature.hasBinding(SignalBindingFeature.TEXT)) {
@@ -1369,7 +1480,7 @@ public class Element extends Node<Element> {
         return this;
     }
 
-    private void setTextContent(String textContent) {
+    private void setTextContent(@Nullable String textContent) {
         if (textContent == null) {
             // Browsers work this way
             textContent = "";
@@ -1416,11 +1527,16 @@ public class Element extends Node<Element> {
      *
      * @param signal
      *            the signal to bind, not <code>null</code>
+     * @return the binding, which can be used to react to updates
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setText(String)
      * @since 25.0
      */
+    // The signal value may be null. Signal<? extends @Nullable String> would
+    // say so, but it would break overrides of this method and change the
+    // returned binding type, so the method is left unmarked instead
+    @NullUnmarked
     public SignalBinding<String> bindText(Signal<String> signal) {
         Objects.requireNonNull(signal, "Signal cannot be null");
         SignalBindingFeature feature = getNode()
@@ -1442,6 +1558,14 @@ public class Element extends Node<Element> {
      * any immediate child text nodes, but ignores text inside child elements.
      * Use {@link #getTextRecursively()} to get the full text that recursively
      * includes the text content of the entire element tree.
+     * <p>
+     * HTML set through the "innerHTML" property counts as children, so only its
+     * top-level text is included:
+     *
+     * <pre>{@code
+     * new Html("<span>Hi <b>there</b></span>").getElement().getText(); // =>
+     *                                                                  // "Hi "
+     * }</pre>
      *
      * @see #getTextRecursively()
      * @see #setText(String)
@@ -1449,49 +1573,59 @@ public class Element extends Node<Element> {
      * @return the text content of this element
      */
     public String getText() {
-        return getTextContent(Element::isTextNode);
+        if (isTextNode()) {
+            return getStateProvider().getTextContent(getNode());
+        }
+        StringBuilder builder = new StringBuilder();
+        parseInnerHtml().ifPresent(html -> html.textNodes()
+                .forEach(text -> builder.append(text.getWholeText())));
+        getChildren().filter(Element::isTextNode)
+                .forEach(child -> builder.append(child.getText()));
+        return builder.toString();
     }
 
     /**
      * Gets the text content of this element tree. This includes the text
-     * content of all child nodes recursively. Use {@link #getText()} to only
-     * get the text from text nodes that are immediate children of this element.
+     * content of all child nodes recursively, and the text of any HTML set
+     * through the "innerHTML" property. Use {@link #getText()} to only get the
+     * text from text nodes that are immediate children of this element.
+     *
+     * <pre>{@code
+     * new Html("<span>Hi <b>there</b></span>").getElement()
+     *         .getTextRecursively(); // => "Hi there"
+     * }</pre>
      *
      * @see #getText()
      *
      * @return the text content of this element and all child elements
      */
     public String getTextRecursively() {
-        return getTextContent(e -> true);
+        StringBuilder builder = new StringBuilder();
+        appendTextRecursively(builder);
+        return builder.toString();
     }
 
-    /**
-     * Returns the text content for this element by including children matching
-     * the given filter.
-     *
-     * @param childFilter
-     *            the filter used to decide whether to include a child or not
-     * @return the text content for this element and any matching child nodes
-     *         recursively, never {@code null}
-     */
-    private String getTextContent(Predicate<? super Element> childFilter) {
-        if (isTextNode()) {
-            return getStateProvider().getTextContent(getNode());
-        } else {
-            StringBuilder builder = new StringBuilder();
-            appendTextContent(builder, childFilter);
-            return builder.toString();
-        }
-    }
-
-    private void appendTextContent(StringBuilder builder,
-            Predicate<? super Element> childFilter) {
+    private void appendTextRecursively(StringBuilder builder) {
         if (isTextNode()) {
             builder.append(getText());
-        } else {
-            getChildren().filter(childFilter)
-                    .forEach(e -> e.appendTextContent(builder, childFilter));
+            return;
         }
+        // Match the browser's textContent: <br> adds nothing, while the
+        // contents of <script> and <style> are included
+        parseInnerHtml().ifPresent(html -> html.nodeStream().forEach(node -> {
+            if (node instanceof TextNode text) {
+                builder.append(text.getWholeText());
+            } else if (node instanceof DataNode data) {
+                builder.append(data.getWholeData());
+            }
+        }));
+        getChildren().forEach(child -> child.appendTextRecursively(builder));
+    }
+
+    private Optional<org.jsoup.nodes.Element> parseInnerHtml() {
+        // Parsed in the context of this tag, as the browser does
+        return Optional.ofNullable(getProperty("innerHTML"))
+                .map(html -> new org.jsoup.nodes.Element(getTag()).html(html));
     }
 
     /**
@@ -1539,7 +1673,7 @@ public class Element extends Node<Element> {
      */
     public void flashClass(String className) {
         Objects.requireNonNull(className, "className cannot be null");
-        executeJs("window.Vaadin.Flow.flashClass(this, $0)", className);
+        executeJs(ElementJs.class).flashClass(className);
     }
 
     /**
@@ -1547,6 +1681,21 @@ public class Element extends Node<Element> {
      * {@code theme} attribute. The set returned can be modified to add or
      * remove the theme names, changes to the set will be reflected in the
      * attribute value.
+     * <p>
+     * The returned set is a live view of the {@code theme} attribute, so it
+     * also reflects theme names that are added or removed by other means after
+     * this method has been called. Its iterator is the one exception: it
+     * iterates the theme names present when {@link Set#iterator()} was called.
+     * <p>
+     * Since the {@code theme} attribute value is space separated, a theme name
+     * cannot contain spaces. {@link Set#add(Object)} still accepts a space
+     * separated value for backwards compatibility, adding each theme name in it
+     * and logging a warning, but all the other operations treat the value they
+     * are given as a single theme name, so for example
+     * {@code contains("badge success")} is {@code false}. Use
+     * {@link com.vaadin.flow.component.HasTheme#addThemeNames(String...)} or
+     * {@link #setAttribute(String, String)} to set several theme names in one
+     * go.
      * <p>
      * Despite the name implying a list being returned, the return type is
      * actually a {@link Set} since the in-browser return value behaves like a
@@ -1663,6 +1812,85 @@ public class Element extends Node<Element> {
                 });
     }
 
+    /**
+     * Runs the given handler each time this element is attached to a UI, and
+     * runs the {@link Registration} returned by the handler when the element is
+     * detached again. The handler is run immediately if the element is already
+     * attached.
+     * <p>
+     * This makes it possible to set up state that should live exactly as long
+     * as the element is attached, and to carry that state over from an attach
+     * to the matching detach without keeping it in a field:
+     *
+     * <pre>
+     * element.whenAttached(ui -&gt; registerForPush(element, ui));
+     * </pre>
+     * <p>
+     * Removing the returned registration removes the handler and also runs any
+     * cleanup that is pending from the latest attach.
+     * <p>
+     * Exceptions thrown by the handler are propagated to the caller, whereas
+     * exceptions thrown by the cleanup are passed to the session error handler
+     * so that a failing cleanup does not prevent the rest of the detach
+     * handling from running.
+     *
+     * @param attachHandler
+     *            the handler to run on attach, returning the cleanup to run on
+     *            the matching detach or <code>null</code> if there is nothing
+     *            to clean up, not <code>null</code>
+     * @return a registration for removing the handler and running any pending
+     *         cleanup, not <code>null</code>
+     * @since 25.3
+     */
+    public Registration whenAttached(
+            SerializableFunction<UI, @Nullable Registration> attachHandler) {
+        return new AttachScope(this, attachHandler);
+    }
+
+    /**
+     * Returns a signal that tracks the current size of this element as reported
+     * by the browser's {@code ResizeObserver} API.
+     * <p>
+     * The signal is lazily initialized on the first call and the same instance
+     * is returned for subsequent calls on the same element. The value is
+     * {@code Size(0, 0)} until the browser has reported the actual size, which
+     * happens shortly after the element has been attached. Sub-pixel sizes are
+     * rounded to whole pixels.
+     * <p>
+     * The browser observes the element as long as it is present in the DOM, and
+     * the signal is updated on every observed resize. The returned signal is
+     * read-only.
+     * <p>
+     * While the element is detached there is nothing to observe, so the signal
+     * keeps the size that was last reported for it rather than falling back to
+     * {@code Size(0, 0)}. Observation resumes when the element is attached
+     * again, and the value is updated as soon as the browser reports a size for
+     * it.
+     *
+     * @return a read-only signal with the current size of this element, never
+     *         <code>null</code>
+     * @since 25.3
+     */
+    public Signal<Size> sizeSignal() {
+        SignalBindingFeature feature = getNode()
+                .getFeature(SignalBindingFeature.class);
+        Signal<Size> existing = feature.getSignal(SignalBindingFeature.SIZE);
+        if (existing != null) {
+            return existing;
+        }
+
+        ValueSignal<Size> signal = new ValueSignal<>(new Size(0, 0));
+        Signal<Size> readonly = signal.asReadonly();
+        // Cached on the node so that repeated calls share one signal and one
+        // browser-side observer.
+        feature.setBinding(SignalBindingFeature.SIZE, readonly);
+
+        new SizeTrigger(this).triggers(new SetSignalAction<>(signal, Size.class,
+                SizeTrigger.EventData.size));
+
+        return readonly;
+    }
+
     @Override
     public String toString() {
         return getOuterHTML();
@@ -1721,6 +1949,11 @@ public class Element extends Node<Element> {
      * <p>
      * If the element is not attached or not visible, the function call will be
      * deferred until the element is attached and visible.
+     * <p>
+     * The name of the function and the arguments are sent to the browser, which
+     * looks the function up on the element and calls it. Nothing is compiled
+     * from a string there, so the call works under a content security policy
+     * that does not allow <code>unsafe-eval</code>.
      *
      * @param functionName
      *            the name of the function to call, may contain dots to indicate
@@ -1730,32 +1963,21 @@ public class Element extends Node<Element> {
      *            Jackson for JSON serialization are supported. Special cases:
      *            {@link Element} instances (will be sent as DOM element
      *            references to the browser if attached when invoked, or as
-     *            <code>null</code> if not attached).
+     *            <code>null</code> if not attached). A <code>null</code> array
+     *            is treated as no arguments.
      * @return a pending result that can be used to get a return value from the
      *         execution
+     * @see #executeJs(Class)
      * @since 25.0
      */
     public PendingJavaScriptResult callJsFunction(String functionName,
-            Object... arguments) {
+            @Nullable Object @Nullable... arguments) {
         assert functionName != null;
         assert !functionName.startsWith(".")
                 : "Function name should not start with a dot";
 
-        // "$1,$2,$3,..."
-        String paramPlaceholderString = IntStream.range(1, arguments.length + 1)
-                .mapToObj(i -> "$" + i).collect(Collectors.joining(","));
-        // Inject the element as $0
-        Object[] jsParameters;
-        if (arguments.length == 0) {
-            jsParameters = new Object[] { this };
-        } else {
-            jsParameters = new Object[arguments.length + 1];
-            jsParameters[0] = this;
-            System.arraycopy(arguments, 0, jsParameters, 1, arguments.length);
-        }
-
-        return scheduleJavaScriptInvocation("return $0." + functionName + "("
-                + paramPlaceholderString + ")", jsParameters);
+        return executeJs(CallFunctionJs.class).callFunction(functionName,
+                arguments == null ? new @Nullable Object[0] : arguments);
     }
 
     /**
@@ -1767,14 +1989,15 @@ public class Element extends Node<Element> {
      * @param functionName
      *            the name of the function to call
      * @param arguments
-     *            the arguments to pass to the function
+     *            the arguments to pass to the function, or <code>null</code>
+     *            for no arguments
      * @return a pending result that can be used to get a return value from the
      *         execution
      * @since 2.0
      */
     @Deprecated
     public PendingJavaScriptResult callJsFunction(String functionName,
-            Serializable[] arguments) {
+            @Nullable Serializable @Nullable [] arguments) {
         return callJsFunction(functionName, (Object[]) arguments);
     }
 
@@ -1817,34 +2040,140 @@ public class Element extends Node<Element> {
      * <p>
      * If the element is not attached or not visible, the function call will be
      * deferred until the element is attached and visible.
+     * <p>
+     * The expression is sent to the browser and compiled there, which a content
+     * security policy without <code>unsafe-eval</code> does not allow, so the
+     * {@link CspMode} of the application reports or refuses the call.
+     * {@link #executeJs(Class)} runs JavaScript that is declared in Java and
+     * collected into the bundle instead, and sends no expression.
      *
      * @param expression
      *            the JavaScript expression to invoke
      * @param parameters
-     *            parameters to pass to the expression
+     *            parameters to pass to the expression, or <code>null</code> for
+     *            no parameters
      * @return a pending result that can be used to get a value returned from
      *         the expression
+     * @see #executeJs(Class)
      * @since 25.0
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode
      */
     public PendingJavaScriptResult executeJs(String expression,
-            Object... parameters) {
+            @Nullable Object @Nullable... parameters) {
+        CspViolationReporter.reportStringJavaScript();
+        return scheduleExecuteJs(expression,
+                parameters == null ? new @Nullable Object[0] : parameters);
+    }
 
-        // Add "this" as the last parameter
-        Object[] wrappedParameters;
-        if (parameters.length == 0) {
-            wrappedParameters = new Object[] { this };
-        } else {
-            wrappedParameters = Arrays.copyOf(parameters,
-                    parameters.length + 1);
-            wrappedParameters[parameters.length] = this;
-        }
+    /**
+     * Asynchronously runs the JavaScript that the given interface declares in
+     * the browser in the context of this element, through an implementation of
+     * the interface that this method answers with: calling a method of the
+     * implementation runs the JavaScript that the method declares, with the
+     * arguments of the call as its parameters.
+     * <p>
+     * The interface is annotated with {@link JsDefinition}, and each of its
+     * methods declares the JavaScript it runs with {@link JsExpression}:
+     *
+     * <pre>
+     * &#64;JsDefinition
+     * public interface GreeterJs extends Serializable {
+     *     &#64;JsExpression("window.alert($0)")
+     *     void showGreeting(String greeting);
+     * }
+     *
+     * element.executeJs(GreeterJs.class).showGreeting("Hello");
+     * </pre>
+     *
+     * The declared JavaScript runs the way an expression given to
+     * {@link #executeJs(String, Object...)} does: in an <code>async</code>
+     * JavaScript method, with this element available as <code>this</code> and
+     * the arguments of the call as <code>$0</code>, <code>$1</code>, and so on,
+     * after pending DOM updates, and deferred while the element is not attached
+     * or not visible. A method that returns {@link PendingJavaScriptResult} can
+     * be used to retrieve the <code>return</code> value the same way. A method
+     * that returns {@link JavaScriptResult} with a type argument, such as
+     * <code>JavaScriptResult&lt;Integer&gt;</code>, hands the value to its
+     * handlers already converted to that type.
+     * <p>
+     * What differs is that nothing about the JavaScript is decided at the call
+     * site: the build collects the declarations of every JavaScript definition
+     * into the bundle, and the client runs the collected function after looking
+     * it up by an identifier of the JavaScript itself. No expression is sent
+     * and none is compiled in the browser, so the call works under a content
+     * security policy without <code>unsafe-eval</code>, and what declared the
+     * JavaScript in Java is not sent to a production browser either.
+     * <p>
+     * The scheduled invocation carries the call as a {@link JsCall}, so a
+     * driver of the client side that can not run JavaScript can recognize it,
+     * or run it on its own implementation of the same interface.
+     * <p>
+     * Every method of the interface declares JavaScript and returns
+     * <code>void</code>, {@link JavaScriptResult} with a type argument that is
+     * known from the interface, or {@link PendingJavaScriptResult}. The type
+     * argument is known when it is a concrete type, such as
+     * <code>JavaScriptResult&lt;Integer&gt;</code>, or a type variable of an
+     * interface that the definition extends and binds to a concrete type, such
+     * as <code>T</code> in <code>JavaScriptResult&lt;T&gt;</code> when the
+     * definition extends <code>ValueJs&lt;Integer&gt;</code>. A type variable
+     * of the method itself, a wildcard or a raw {@link JavaScriptResult} does
+     * not say what to convert the value to, so such a method is refused. One
+     * that is implemented in Java instead - a <code>default</code> or a
+     * <code>static</code> method - is not what such an interface is for, so the
+     * interface is refused rather than partly run in the browser.
+     * <p>
+     * The interface is checked when the implementation is handed out, so one
+     * that can not work says so here rather than at the first call.
+     *
+     * @param <T>
+     *            the JavaScript definition type
+     * @param definitionType
+     *            the JavaScript definition, not <code>null</code>
+     * @return an implementation of the interface, to call the declared
+     *         JavaScript through, not <code>null</code>
+     * @throws IllegalArgumentException
+     *             if the type is not an interface, is not annotated with
+     *             {@link JsDefinition}, or has a method that can not be
+     *             answered
+     * @since 25.4
+     */
+    public <T> T executeJs(Class<T> definitionType) {
+        return JsDefinitionProxy.create(definitionType, this::scheduleJsCall);
+    }
+
+    private PendingJavaScriptResult scheduleExecuteJs(String expression,
+            @Nullable Object[] parameters) {
 
         // Wrap in a function that is applied with last parameter as "this"
         String wrappedExpression = "return (async function() { " + expression
                 + "}).apply($" + parameters.length + ")";
 
-        return scheduleJavaScriptInvocation(wrappedExpression,
-                wrappedParameters);
+        return scheduleJavaScriptInvocation(null, wrappedExpression,
+                withElementAsLastParameter(parameters));
+    }
+
+    /**
+     * Schedules a call made through a JavaScript definition. The parameters are
+     * the arguments of the call followed by this element, which the client
+     * applies the generated function to, so there is no expression to wrap: the
+     * function that the build generated is already the equivalent of the
+     * wrapping that {@link #scheduleExecuteJs(String, Object[])} does around an
+     * expression.
+     */
+    private PendingJavaScriptResult scheduleJsCall(JsCall call) {
+        return scheduleJavaScriptInvocation(call, call.getExpression(),
+                call.parametersFor(this));
+    }
+
+    private @Nullable Object[] withElementAsLastParameter(
+            @Nullable Object[] parameters) {
+        if (parameters.length == 0) {
+            return new Object[] { this };
+        }
+        var withElement = Arrays.copyOf(parameters, parameters.length + 1);
+        withElement[parameters.length] = this;
+        return withElement;
     }
 
     /**
@@ -1856,14 +2185,15 @@ public class Element extends Node<Element> {
      * @param expression
      *            the JavaScript expression to invoke
      * @param parameters
-     *            parameters to pass to the expression
+     *            parameters to pass to the expression, or <code>null</code> for
+     *            no parameters
      * @return a pending result that can be used to get a value returned from
      *         the expression
      * @since 2.0
      */
     @Deprecated
     public PendingJavaScriptResult executeJs(String expression,
-            Serializable[] parameters) {
+            @Nullable Serializable @Nullable [] parameters) {
         return executeJs(expression, (Object[]) parameters);
     }
 
@@ -1892,41 +2222,149 @@ public class Element extends Node<Element> {
      * function, {@code null}, or {@code undefined} (the latter being the
      * implicit value when there is no {@code return}). Returning any other
      * value, including a promise, is logged as an error on the client.
+     * <p>
+     * The browser compiles the expression from a string, which a Content
+     * Security Policy without <code>unsafe-eval</code> blocks. Use
+     * {@link #addJsInitializer(JsFunction)} with an initializer declared as a
+     * snippet to run nothing compiled from a string.
      *
      * @param expression
      *            the JavaScript expression to invoke, not <code>null</code>
      * @param parameters
-     *            parameters to pass to the expression
+     *            parameters to pass to the expression, or <code>null</code> for
+     *            no parameters
      * @return a registration that, when removed, invokes the cleanup callback
      *         on the client
      * @since 25.2
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode
      */
     public Registration addJsInitializer(String expression,
-            Object... parameters) {
+            @Nullable Object @Nullable... parameters) {
         Objects.requireNonNull(expression, "Expression cannot be null");
         return new ElementJsInitializerRegistration(getNode(), expression,
-                parameters == null ? new Object[0] : parameters);
+                parameters == null ? new @Nullable Object[0] : parameters);
+    }
+
+    /**
+     * Registers a JavaScript initializer that runs in the browser each time a
+     * client-side DOM node is created for this element, and whose returned
+     * cleanup callback is invoked when that DOM node is discarded or the
+     * returned registration is removed.
+     * <p>
+     * This works like {@link #addJsInitializer(String, Object...)}, but takes
+     * the initializer as a function rather than as an expression. Declared as a
+     * snippet by a {@link JsDefinition} interface, the function is in the
+     * frontend bundle, so nothing is compiled from a string in the browser and
+     * the initializer works under a Content Security Policy that does not allow
+     * <code>unsafe-eval</code>:
+     *
+     * <pre>
+     * &#64;JsDefinition
+     * public interface ListenJs extends Serializable {
+     *
+     *     &#64;JsExpression("""
+     *             const listener = () =&gt; this.classList.toggle($0);
+     *             this.addEventListener('click', listener);
+     *             return () =&gt; this.removeEventListener('click', listener);""")
+     *     JsFunction toggleOnClick(String className);
+     * }
+     *
+     * element.addJsInitializer(
+     *         JsSnippets.of(ListenJs.class).toggleOnClick("active"));
+     * </pre>
+     * <p>
+     * The function is called with this element as <code>this</code> and no
+     * arguments, so a function that declares runtime arguments, with
+     * {@link com.vaadin.flow.js.JsFunctionParameterNames} or
+     * {@link JsFunction#withArguments(String...)}, is refused. The arguments of
+     * the Java call that created the snippet are available as <code>$0</code>,
+     * <code>$1</code>, &hellip; in its expression. The function must return a
+     * cleanup function, <code>null</code> or <code>undefined</code>, and the
+     * initializer is run and cleaned up at the same moments as one added with
+     * {@link #addJsInitializer(String, Object...)}.
+     *
+     * @param initializer
+     *            the function to run on the element, not <code>null</code>
+     * @return a registration that, when removed, invokes the cleanup callback
+     *         on the client
+     * @throws IllegalArgumentException
+     *             if the initializer declares runtime arguments
+     * @since 25.4
+     */
+    @SuppressWarnings("removal")
+    public Registration addJsInitializer(JsFunction initializer) {
+        Objects.requireNonNull(initializer, "Initializer cannot be null");
+        // No separate check of the JsCall is needed: JsFunction.ofDeclaredCall
+        // stores the names in @JsFunctionParameterNames as the argument
+        // names, so this covers a snippet as well as JsFunction.of with
+        // withArguments
+        List<String> argumentNames = initializer.getArgumentNames();
+        if (!argumentNames.isEmpty()) {
+            throw new IllegalArgumentException("An initializer is called with"
+                    + " no arguments, but the function declares "
+                    + argumentNames
+                    + " with @JsFunctionParameterNames or withArguments."
+                    + " Declare the initializer without runtime arguments,"
+                    + " and pass the values it needs as arguments of the"
+                    + " snippet method or as captures.");
+        }
+        return new ElementJsInitializerRegistration(getNode(), initializer);
     }
 
     private PendingJavaScriptResult scheduleJavaScriptInvocation(
-            String expression, Object[] parameters) {
+            @Nullable JsCall jsCall, String expression,
+            @Nullable Object[] parameters) {
         StateNode node = getNode();
 
-        JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
-                parameters);
+        JavaScriptInvocation invocation = new JavaScriptInvocation(jsCall,
+                expression, parameters);
 
         PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
                 node, invocation);
 
-        node.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(node, context -> {
-                    if (!pending.isCanceled()) {
-                        context.getUI().getInternals()
-                                .addJavaScriptInvocation(pending);
-                    }
-                }));
+        node.runWhenAttached(ui -> {
+            // Counts the invocation if the node was not attached to any UI
+            // when it was scheduled, and there was no count to add it to
+            pending.countWhenAttached();
+            ui.getInternals().getStateTree().beforeClientResponse(node,
+                    new QueueJavaScriptInvocation(pending));
+        });
 
         return pending;
+    }
+
+    /**
+     * Queues a scheduled invocation for the client when a response is written
+     * for the tree of its owner, and keeps the invocation out of the count of
+     * undelivered invocations while no response is coming for it.
+     */
+    private static class QueueJavaScriptInvocation
+            implements DiscardAwareExecution {
+        private final PendingJavaScriptInvocation invocation;
+
+        private QueueJavaScriptInvocation(
+                PendingJavaScriptInvocation invocation) {
+            this.invocation = invocation;
+        }
+
+        @Override
+        public void accept(ExecutionContext context) {
+            if (invocation.isCanceled()) {
+                return;
+            }
+            context.getUI().getInternals().addJavaScriptInvocation(invocation);
+        }
+
+        @Override
+        public void executionDiscarded() {
+            invocation.stopCounting();
+        }
+
+        @Override
+        public void executionRestored() {
+            invocation.countWhenAttached();
+        }
     }
 
     /**
@@ -1981,11 +2419,16 @@ public class Element extends Node<Element> {
      *
      * @param visibleSignal
      *            the signal to bind, not <code>null</code>
+     * @return the binding, which can be used to react to updates
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setVisible(boolean)
      * @since 25.1
      */
+    // The signal value may be null. Signal<? extends @Nullable Boolean> would
+    // say so, but it would break overrides of this method and change the
+    // returned binding type, so the method is left unmarked instead
+    @NullUnmarked
     public SignalBinding<Boolean> bindVisible(Signal<Boolean> visibleSignal) {
         Objects.requireNonNull(visibleSignal, "Signal cannot be null");
         return getStateProvider().bindVisibleSignal(this, visibleSignal);
@@ -2040,11 +2483,16 @@ public class Element extends Node<Element> {
      *
      * @param enabledSignal
      *            the signal to bind, not <code>null</code>
+     * @return the binding, which can be used to react to updates
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setEnabled(boolean)
      * @since 25.1
      */
+    // The signal value may be null. Signal<? extends @Nullable Boolean> would
+    // say so, but it would break overrides of this method and change the
+    // returned binding type, so the method is left unmarked instead
+    @NullUnmarked
     public SignalBinding<Boolean> bindEnabled(Signal<Boolean> enabledSignal) {
         Objects.requireNonNull(enabledSignal, "Signal cannot be null");
         SignalBindingFeature feature = getNode()
@@ -2060,7 +2508,7 @@ public class Element extends Node<Element> {
         return binding;
     }
 
-    private void setEnabledInternal(final Boolean enabled) {
+    private void setEnabledInternal(final @Nullable Boolean enabled) {
         boolean booleanEnabled = enabled != null ? enabled : false;
         getNode().setEnabled(booleanEnabled);
 
@@ -2164,14 +2612,14 @@ public class Element extends Node<Element> {
      */
     public Element scrollIntoView(ScrollIntoViewOption... options) {
         ObjectNode json = ScrollIntoViewOption.buildOptions(options);
-
-        // Use setTimeout to work on newly created elements
+        ScrollIntoViewJs scroll = executeJs(ScrollIntoViewJs.class);
+        // No options is not the same call as an empty options object, so the
+        // browser is handed the one argument or none, as it was written here
         if (json == null) {
-            executeJs("setTimeout(() => this.scrollIntoView(), 0)");
+            scroll.scrollIntoView();
         } else {
-            executeJs("setTimeout(() => this.scrollIntoView($0), 0)", json);
+            scroll.scrollIntoView(json);
         }
-
         return getSelf();
     }
 
@@ -2188,13 +2636,128 @@ public class Element extends Node<Element> {
      * @since 24.0
      */
     @Deprecated(since = "25.0", forRemoval = true)
-    public Element scrollIntoView(ScrollOptions scrollOptions) {
-        // for an unknown reason, needs to be called deferred to work on a newly
-        // created element
-        String options = scrollOptions == null ? "" : scrollOptions.toJson();
-
-        executeJs("var el = this; setTimeout(function() {el.scrollIntoView("
-                + options + ");}, 0);");
+    public Element scrollIntoView(@Nullable ScrollOptions scrollOptions) {
+        ScrollIntoViewJs scroll = executeJs(ScrollIntoViewJs.class);
+        if (scrollOptions == null) {
+            scroll.scrollIntoView();
+        } else {
+            // The options are written as JavaScript by a class that is on its
+            // way out, and what the browser is sent is a value rather than an
+            // expression, so they are read back into the object they were
+            // built from
+            scroll.scrollIntoView(
+                    JacksonUtils.readTree(scrollOptions.toJson()));
+        }
         return getSelf();
+    }
+
+    /**
+     * The JavaScript behind {@link #callJsFunction(String, Object...)}, as a
+     * JavaScript definition for {@link #executeJs(Class)}.
+     * <p>
+     * One declaration serves every call, whatever the function is called and
+     * however many arguments it takes, so the bundle carries a single function
+     * for all of them and the browser is sent the name and the arguments of a
+     * call rather than JavaScript that names the function.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface CallFunctionJs extends Serializable {
+
+        /**
+         * Calls the named function on the element, with the element as
+         * <code>this</code> of a plain name and the property it is read from as
+         * <code>this</code> of a dotted one, which is how a function reached
+         * through a property is called in JavaScript.
+         *
+         * @param functionName
+         *            the name of the function to call, which may contain dots
+         *            to name a function on a property
+         * @param arguments
+         *            the arguments to pass to the function
+         * @return the pending result of the call, which answers with what the
+         *         function returned
+         */
+        @JsExpression("""
+                const path = $0.split('.');
+                const name = path.pop();
+                let target = this;
+                for (const step of path) {
+                    target = target[step];
+                }
+                return target[name](...$1);
+                """)
+        PendingJavaScriptResult callFunction(String functionName,
+                @Nullable Object... arguments);
+    }
+
+    /**
+     * The JavaScript behind {@link #scrollIntoView(ScrollIntoViewOption...)},
+     * as a JavaScript definition for {@link #executeJs(Class)}.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface ScrollIntoViewJs extends Serializable {
+
+        /**
+         * Scrolls the element into view the way the browser does by default,
+         * deferred so that it also works on an element that was created in the
+         * same response.
+         */
+        @JsExpression("setTimeout(() => this.scrollIntoView(), 0)")
+        void scrollIntoView();
+
+        /**
+         * Scrolls the element into view with the given options, deferred so
+         * that it also works on an element that was created in the same
+         * response.
+         *
+         * @param options
+         *            the options of the browser's <code>scrollIntoView</code>
+         *            function
+         */
+        @JsExpression("setTimeout(() => this.scrollIntoView($0), 0)")
+        void scrollIntoView(ObjectNode options);
+    }
+
+    /**
+     * JavaScript that Flow runs on an element, as a JavaScript definition for
+     * {@link #executeJs(Class)}.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface ElementJs extends Serializable {
+
+        /**
+         * Adds the CSS class to the element and removes it again when the
+         * animation it starts has ended.
+         *
+         * @param className
+         *            the CSS class name to flash
+         * @see Element#flashClass(String)
+         */
+        @JsExpression("window.Vaadin.Flow.flashClass(this, $0)")
+        void flashClass(String className);
+
+        /**
+         * Dispatches a <code>window-resize</code> event on the element whenever
+         * the browser window is resized, with the new browser window width and
+         * height (the viewport size, excluding scrollbars) as its
+         * <code>w</code> and <code>h</code> properties, so that a resize can be
+         * listened to on the element.
+         */
+        @JsExpression("""
+                const el = this;
+                window.addEventListener('resize', evt => {
+                    const event = new Event("window-resize");
+                    event.w = document.documentElement.clientWidth;
+                    event.h = document.documentElement.clientHeight;
+                    el.dispatchEvent(event);
+                });
+                """)
+        void forwardWindowResize();
     }
 }

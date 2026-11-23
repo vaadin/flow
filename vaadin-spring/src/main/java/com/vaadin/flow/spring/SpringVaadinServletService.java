@@ -53,6 +53,11 @@ public class SpringVaadinServletService extends VaadinServletService {
 
     static final String SPRING_BOOT_WEBPROPERTIES_CLASS = "org.springframework.boot.autoconfigure.web.WebProperties";
 
+    /**
+     * Names of the {@code TaskExecutor} beans that were candidates when more
+     * than one was found. Set means the choice is ambiguous, which
+     * {@link #getExecutor()} reports as an error.
+     */
     private Set<String> multipleExecutorCandidates;
 
     /**
@@ -78,8 +83,7 @@ public class SpringVaadinServletService extends VaadinServletService {
             throws ServiceException {
         Optional<Instantiator> spiInstantiator = super.loadInstantiators();
         List<Instantiator> springInstantiators = context
-                .getBeansOfType(Instantiator.class).values().stream()
-                .collect(Collectors.toList());
+                .getBeansOfType(Instantiator.class).values().stream().toList();
         if (spiInstantiator.isPresent() && !springInstantiators.isEmpty()) {
             throw new ServiceException(
                     "Cannot init VaadinService because there are multiple eligible "

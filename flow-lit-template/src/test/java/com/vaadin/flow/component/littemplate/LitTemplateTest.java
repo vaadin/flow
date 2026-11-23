@@ -18,7 +18,6 @@ package com.vaadin.flow.component.littemplate;
 import org.jsoup.Jsoup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.template.Id;
@@ -31,10 +30,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class LitTemplateTest {
 
-    private VaadinService service = Mockito.mock(VaadinService.class);
+    private VaadinService service = mock(VaadinService.class);
 
     @Tag("foo-bar")
     private static class TestLitTemplate extends LitTemplate {
@@ -111,10 +112,9 @@ class LitTemplateTest {
 
     @BeforeEach
     void setUp() {
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
     }
 
     @Test

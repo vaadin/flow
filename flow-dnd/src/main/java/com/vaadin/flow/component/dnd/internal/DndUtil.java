@@ -15,11 +15,16 @@
  */
 package com.vaadin.flow.component.dnd.internal;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.dnd.DragSource;
 import com.vaadin.flow.component.dnd.DropTarget;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.shared.Registration;
 
@@ -115,8 +120,8 @@ public class DndUtil {
      */
     public static <T extends Component> void updateDragSourceActivation(
             DragSource<T> dragSource) {
-        Command command = () -> dragSource.getDraggableElement().executeJs(
-                "window.Vaadin.Flow.dndConnector.updateDragSource(this)");
+        Command command = () -> dragSource.getDraggableElement()
+                .executeJs(DndJs.class).updateDragSource();
         runOnAttachBeforeResponse(dragSource.getDragSourceComponent(), command);
     }
 
@@ -134,8 +139,8 @@ public class DndUtil {
      */
     public static <T extends Component> void updateDropTargetActivation(
             DropTarget<T> dropTarget) {
-        Command command = () -> dropTarget.getElement().executeJs(
-                "window.Vaadin.Flow.dndConnector.updateDropTarget(this)");
+        Command command = () -> dropTarget.getElement().executeJs(DndJs.class)
+                .updateDropTarget();
 
         runOnAttachBeforeResponse(dropTarget.getDropTargetComponent(), command);
 
@@ -164,5 +169,45 @@ public class DndUtil {
      */
     public static void reportUsage() {
         UsageStatistics.markAsUsed("flow/generic-dnd", null);
+    }
+
+    /**
+     * What drag and drop asks of its client-side connector, as a JavaScript
+     * definition for {@link Element#executeJs(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface DndJs extends Serializable {
+
+        /**
+         * Activates the element as a drag source, or deactivates it when it is
+         * no longer draggable.
+         */
+        @JsExpression("window.Vaadin.Flow.dndConnector.updateDragSource(this)")
+        void updateDragSource();
+
+        /**
+         * Activates the element as a drop target, or deactivates it when it no
+         * longer accepts a drop.
+         */
+        @JsExpression("window.Vaadin.Flow.dndConnector.updateDropTarget(this)")
+        void updateDropTarget();
+
+        /**
+         * Sets the image shown while the element is dragged.
+         *
+         * @param dragImage
+         *            the component to show, or <code>null</code> for the image
+         *            the browser makes of the dragged element
+         * @param offsetX
+         *            where the pointer is in the image, horizontally
+         * @param offsetY
+         *            where the pointer is in the image, vertically
+         */
+        @JsExpression("window.Vaadin.Flow.dndConnector.setDragImage($0, $1, $2, this)")
+        void setDragImage(Component dragImage, int offsetX, int offsetY);
     }
 }

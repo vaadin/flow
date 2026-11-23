@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -22,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -39,6 +39,7 @@ import com.vaadin.flow.component.internal.AllowInert;
 import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEventHandler;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.DisabledUpdateMode;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectTools;
@@ -46,6 +47,8 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ClientCallableHandlers;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -61,6 +64,19 @@ import com.vaadin.flow.shared.JsonConstants;
  */
 public class PublishedServerEventHandlerRpcHandler
         extends AbstractRpcInvocationHandler {
+
+    /**
+     * Holds the result of looking up the Polymer template event handler, which
+     * is a property of the deployment. Without the holder a missing handler
+     * (the usual case) cannot be remembered, and the lookup would then scan the
+     * classpath with a {@link java.util.ServiceLoader} for every decoded RPC
+     * argument.
+     */
+    private record PolymerEventHandlerHolder(
+            DeprecatedPolymerPublishedEventHandler handler)
+            implements
+                Serializable {
+    }
 
     private static final Collection<RpcDecoder> DECODERS = loadDecoders();
 
@@ -162,8 +178,7 @@ public class PublishedServerEventHandlerRpcHandler
             Class<?> clazz, String methodName) {
         List<Method> methods = Stream.of(clazz.getDeclaredMethods())
                 .filter(method -> methodName.equals(method.getName()))
-                .filter(method -> hasMethodAnnotation(method))
-                .collect(Collectors.toList());
+                .filter(method -> hasMethodAnnotation(method)).toList();
         if (methods.size() > 1) {
             getLogger().error(String.format(
                     "Method conflict in event handler. Class '%s' contains "
@@ -199,16 +214,11 @@ public class PublishedServerEventHandlerRpcHandler
             try {
                 Object returnValue = invokeMethod(instance, method, args);
 
-                instance.getElement()
-                        .executeJs("this.$server['"
-                                + JsonConstants.RPC_PROMISE_CALLBACK_NAME
-                                + "']($0, true, $1)",
-                                Integer.valueOf(promiseId), returnValue);
+                instance.getElement().executeJs(PromiseJs.class)
+                        .resolve(promiseId, returnValue);
             } catch (RuntimeException e) {
-                instance.getElement()
-                        .executeJs("this.$server['"
-                                + JsonConstants.RPC_PROMISE_CALLBACK_NAME
-                                + "']($0, false)", Integer.valueOf(promiseId));
+                instance.getElement().executeJs(PromiseJs.class)
+                        .reject(promiseId);
 
                 throw e;
             }
@@ -314,11 +324,14 @@ public class PublishedServerEventHandlerRpcHandler
                     throw new IllegalStateException(
                             "Rpc handler may not be called for a detached component");
                 }
-                VaadinContext context = ui.get().getSession().getService()
-                        .getContext();
+                VaadinContext context = ui.get().getSessionOrThrow()
+                        .getService().getContext();
                 DeprecatedPolymerPublishedEventHandler handler = context
-                        .getAttribute(Lookup.class)
-                        .lookup(DeprecatedPolymerPublishedEventHandler.class);
+                        .getAttribute(PolymerEventHandlerHolder.class,
+                                () -> new PolymerEventHandlerHolder(context
+                                        .getAttribute(Lookup.class)
+                                        .lookup(DeprecatedPolymerPublishedEventHandler.class)))
+                        .handler();
                 if (handler != null && handler.isTemplateModelValue(instance,
                         argValue, convertedType)) {
                     return handler.getTemplateItem(instance, argValue,
@@ -330,8 +343,17 @@ public class PublishedServerEventHandlerRpcHandler
             if (decoder.isPresent()) {
                 try {
                     return decoder.get().decode(argValue, convertedType);
-                } catch (RpcDecodeException exception) {
-                    throw new IllegalArgumentException(exception);
+                } catch (RpcDecodeException
+                        | IllegalArgumentException exception) {
+                    // The decoders do not know the method, so name it here to
+                    // tell which of the client callables failed
+                    String msg = String.format("Class '%s' has the method '%s' "
+                            + "whose parameter %d of type '%s' cannot be "
+                            + "decoded from the received value: %s",
+                            method.getDeclaringClass().getName(),
+                            method.getName(), index, type.getName(),
+                            exception.getMessage());
+                    throw new IllegalArgumentException(msg, exception);
                 }
             }
             String msg = String.format("Class '%s' has the method '%s' "
@@ -411,5 +433,41 @@ public class PublishedServerEventHandlerRpcHandler
     private static Logger getLogger() {
         return LoggerFactory.getLogger(
                 PublishedServerEventHandlerRpcHandler.class.getName());
+    }
+
+    /**
+     * How the outcome of a server method reaches the promise the client is
+     * waiting on, as a JavaScript definition for
+     * {@link Element#executeJs(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface PromiseJs extends Serializable {
+
+        /**
+         * Settles the promise with what the method returned.
+         *
+         * @param promiseId
+         *            the promise the client is waiting on
+         * @param returnValue
+         *            what the method returned
+         */
+        @JsExpression("this.$server['" + JsonConstants.RPC_PROMISE_CALLBACK_NAME
+                + "']($0, true, $1)")
+        void resolve(int promiseId, Object returnValue);
+
+        /**
+         * Settles the promise with the failure of the method, which threw
+         * rather than returned.
+         *
+         * @param promiseId
+         *            the promise the client is waiting on
+         */
+        @JsExpression("this.$server['" + JsonConstants.RPC_PROMISE_CALLBACK_NAME
+                + "']($0, false)")
+        void reject(int promiseId);
     }
 }

@@ -29,7 +29,7 @@ class UpdateImportsWithFullCPScannerTest extends AbstractUpdateImportsTest {
     @Override
     protected FrontendDependenciesScanner getScanner(ClassFinder finder) {
         return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(true, finder, true, null, true);
+                .createScanner(true, finder, true, null, true, false);
     }
 
     @Test

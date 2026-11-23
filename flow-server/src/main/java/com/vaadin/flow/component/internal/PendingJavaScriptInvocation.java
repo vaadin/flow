@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.lang.invoke.SerializedLambda;
+import java.lang.reflect.Method;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -43,6 +46,19 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
 
     private boolean sentToBrowser = false;
     private boolean canceled = false;
+
+    /**
+     * The UI internals whose undelivered invocation count includes this
+     * invocation, or <code>null</code> if it is not counted, either because its
+     * owner is not attached to a UI or because it is no longer waiting to be
+     * sent.
+     * <p>
+     * Only ever set to the internals of the UI that the owner belongs to, so
+     * this reaches nothing that the owner does not reach anyway. That also
+     * makes it safe to serialize: an invocation restored with its UI keeps
+     * updating the count that was restored with it.
+     */
+    private UIInternals countedIn;
 
     /**
      * Creates a new pending invocation for the given owner node and invocation.
@@ -122,6 +138,7 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
             return false;
         }
         canceled = true;
+        stopCounting();
 
         if (errorHandler != null) {
             errorHandler.accept(EXECUTION_CANCELED);
@@ -135,10 +152,54 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
         return sentToBrowser;
     }
 
+    /**
+     * Counts this invocation as undelivered in the UI that its owner belongs
+     * to, unless it is already counted or no longer waiting to be sent.
+     * <p>
+     * An invocation is not counted when it is created, since its owner is not
+     * necessarily attached to a UI then, and an owner that is detached, or
+     * attached to a UI that has been closed since, has no count to be part of.
+     * It starts counting once the owner is attached, which is also when it
+     * starts being on its way to a client. Called by the framework when the
+     * owner is attached, and when the invocation is queued for a UI.
+     * 
+     * @since 25.3
+     */
+    public void countWhenAttached() {
+        if (countedIn != null || sentToBrowser || canceled) {
+            return;
+        }
+        countedIn = PendingJavaScriptInvocationUtil.invocationScheduled(this);
+    }
+
     // Non-private for testing purposes
     void setSentToBrowser() {
         assert !sentToBrowser;
         sentToBrowser = true;
+        stopCounting();
+    }
+
+    /**
+     * Stops counting this invocation as undelivered in the UI it was counted
+     * in, without otherwise changing its state.
+     * <p>
+     * Called when the invocation stops waiting to be sent, either because it
+     * has been sent or canceled, or because the framework discards it, for
+     * instance when its owner is detached. It is counted again through
+     * {@link #countWhenAttached()} if it ends up waiting to be sent again.
+     * 
+     * @since 25.3
+     */
+    public void stopCounting() {
+        if (countedIn == null) {
+            return;
+        }
+        if (countedIn.getSession() != null) {
+            countedIn.addUndeliveredJsInvocations(-1);
+        }
+        // A closed UI has no session to lock and its count is discarded with
+        // it, so there is nothing to update for one
+        countedIn = null;
     }
 
     @Override
@@ -163,8 +224,116 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
         }
 
         this.successHandler = combineHandlers(this.successHandler,
-                successHandler);
+                identifyIncompatibleHandler(successHandler));
         this.errorHandler = combineHandlers(this.errorHandler, errorHandler);
+    }
+
+    /**
+     * Wraps the handler so that an error caused by the handler having been
+     * compiled against Vaadin 24 or older names the class of the handler.
+     * <p>
+     * Code compiled against Vaadin 14-24 passes a
+     * {@code SerializableConsumer<elemental.json.JsonValue>}, which links to
+     * this method because of erasure. Exceptions not related to
+     * {@code elemental.json} are rethrown unchanged.
+     * <p>
+     * For a lambda or a method reference, the cast that fails is in a generated
+     * frame hidden from the stack trace, so the handler's class name is the
+     * only thing pointing at the code that registered it. For an anonymous or
+     * named handler class, the cast is in a bridge method whose frame is in the
+     * trace, so the wrapper mainly adds the explanation that the handler
+     * targets an older Vaadin version. When the JVM replaces the exception of a
+     * frequently failing cast with a pre-allocated one, there is neither a
+     * message nor a stack trace, so the class name is the only clue for any
+     * kind of handler. In that case, the handler's declared parameter type is
+     * inspected instead of the message, so that a handler written for
+     * {@link JsonNode}, including Flow's own internal handlers, never gets
+     * blamed.
+     * <p>
+     * A {@link NoClassDefFoundError} for {@code elemental.json} is only caught
+     * here for anonymous and named handler classes. For a lambda or a method
+     * reference, the JVM fails when linking the call site, so the error is
+     * thrown from the code calling {@code then} and never reaches the wrapper.
+     */
+    private static SerializableConsumer<JsonNode> identifyIncompatibleHandler(
+            SerializableConsumer<JsonNode> handler) {
+        return value -> {
+            try {
+                handler.accept(value);
+            } catch (ClassCastException e) {
+                boolean incompatible = e.getMessage() == null
+                        ? acceptsElementalJson(handler)
+                        : mentionsElementalJson(e);
+                if (!incompatible) {
+                    throw e;
+                }
+                ClassCastException identified = new ClassCastException(
+                        incompatibleHandlerMessage(handler));
+                identified.initCause(e);
+                throw identified;
+            } catch (NoClassDefFoundError e) {
+                if (!mentionsElementalJson(e)) {
+                    throw e;
+                }
+                NoClassDefFoundError identified = new NoClassDefFoundError(
+                        incompatibleHandlerMessage(handler));
+                identified.initCause(e);
+                throw identified;
+            }
+        };
+    }
+
+    private static boolean mentionsElementalJson(Throwable e) {
+        String message = e.getMessage();
+        // ClassCastException uses binary names (elemental.json.JsonValue),
+        // NoClassDefFoundError uses internal names (elemental/json/JsonValue)
+        return message != null && (message.contains("elemental.json.")
+                || message.contains("elemental/json/"));
+    }
+
+    /**
+     * Checks whether the handler declares an {@code elemental.json} type as the
+     * type it accepts. Only used after a failure, so the reflection is not paid
+     * for by handlers that work.
+     */
+    static boolean acceptsElementalJson(Object handler) {
+        Class<?> type = handler.getClass();
+        try {
+            if (type.isHidden()) {
+                // A serializable lambda or method reference describes its
+                // parameter types in its serialized form
+                Method writeReplace = type.getDeclaredMethod("writeReplace");
+                writeReplace.setAccessible(true);
+                SerializedLambda lambda = (SerializedLambda) writeReplace
+                        .invoke(handler);
+                return lambda.getInstantiatedMethodType()
+                        .contains("Lelemental/json/");
+            }
+            for (Method method : type.getDeclaredMethods()) {
+                if (method.getName().equals("accept") && !method.isBridge()
+                        && method.getParameterCount() == 1
+                        && method.getParameterTypes()[0].getName()
+                                .startsWith("elemental.json.")) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (ReflectiveOperationException | RuntimeException
+                | LinkageError e) {
+            // Unknown, so leave the original exception as it is
+            return false;
+        }
+    }
+
+    private static String incompatibleHandlerMessage(Object handler) {
+        return "The success handler " + handler.getClass().getName()
+                + " of a JavaScript invocation was compiled against Vaadin 24"
+                + " or older (it expects elemental.json.JsonValue) and is"
+                + " incompatible with this Vaadin version. If it comes from"
+                + " an add-on, upgrade the add-on to a version that supports"
+                + " Vaadin 25. If it is your own code, recompile it and use"
+                + " then(Class<T>, ...) or a handler taking"
+                + " tools.jackson.databind.JsonNode.";
     }
 
     private static <T> SerializableConsumer<T> combineHandlers(
@@ -174,8 +343,24 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
         } else if (second == null) {
             return first;
         } else {
+            // A handler that throws must not prevent the handlers added after
+            // it from running, since one of them may be completing a future
+            // that another thread is waiting for. Throwable is caught because
+            // handlers may also throw errors or checked exceptions sneakily,
+            // and every failure is rethrown or attached as suppressed.
             return value -> {
-                first.accept(value);
+                try {
+                    first.accept(value);
+                } catch (Throwable firstFailure) { // NOSONAR
+                    try {
+                        second.accept(value);
+                    } catch (Throwable secondFailure) { // NOSONAR
+                        if (secondFailure != firstFailure) {
+                            firstFailure.addSuppressed(secondFailure);
+                        }
+                    }
+                    throw firstFailure;
+                }
                 second.accept(value);
             };
         }

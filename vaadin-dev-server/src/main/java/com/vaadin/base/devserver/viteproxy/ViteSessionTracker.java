@@ -58,6 +58,13 @@ public class ViteSessionTracker {
     private final List<SessionCloseListener> listeners = new CopyOnWriteArrayList<>();
 
     /**
+     * Creates the tracker.
+     */
+    public ViteSessionTracker() {
+        // Default constructor
+    }
+
+    /**
      * Adds a listener that will be notified when an HTTP session is closed.
      *
      * @param listener

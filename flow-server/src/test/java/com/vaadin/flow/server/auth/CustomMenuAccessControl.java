@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.server.auth;
 
-public class CustomMenuAccessControl implements MenuAccessControl {
+class CustomMenuAccessControl implements MenuAccessControl {
 
     @Override
     public void setPopulateClientSideMenu(

@@ -1,0 +1,4 @@
+/* Unlayered, so it wins over the more specific rule in the theme layer */
+.layered {
+  color: rgb(0, 128, 0);
+}

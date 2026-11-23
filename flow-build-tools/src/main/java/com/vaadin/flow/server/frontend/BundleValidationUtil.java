@@ -52,6 +52,7 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.Mode;
+import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.server.webcomponent.WebComponentExporterTagExtractor;
@@ -69,6 +70,23 @@ import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 public final class BundleValidationUtil {
 
     private static final String FRONTEND_HASHES_STATS_KEY = "frontendHashes";
+
+    private static final String PWA_OFFLINE_PATH_STATS_KEY = "pwaOfflinePath";
+
+    private static final String PWA_OFFLINE_ENABLED_STATS_KEY = "pwaOfflineEnabled";
+
+    /**
+     * The offline path assumed for a bundle whose stats.json predates
+     * {@code pwaOfflinePath}. It is the value the platform default bundle is
+     * built with, so applications that leave
+     * {@link com.vaadin.flow.server.PWA#offlinePath()} at its default keep
+     * reusing that bundle instead of building their own.
+     */
+    private static final String DEFAULT_PWA_OFFLINE_PATH = "'.'";
+
+    private static final List<String> SERVICE_WORKER_FILES = List.of(
+            FrontendUtils.SERVICE_WORKER_SRC,
+            FrontendUtils.SERVICE_WORKER_SRC_JS);
 
     /**
      * Checks if an application needs a new frontend bundle.
@@ -264,9 +282,37 @@ public final class BundleValidationUtil {
         ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY)).remove(
                 FrontendUtils.GENERATED + FrontendUtils.COMMERCIAL_BANNER_JS);
 
+        if (jsDefinitionsChanged(options, statsJson)) {
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-changed-js-definitions", null);
+            return true;
+        }
+        // JavaScript definition file hash has already been checked
+        // removing it from hashes map to prevent other unnecessary checks
+        ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY))
+                .remove(FrontendUtils.GENERATED
+                        + FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+
+        if (customServiceWorkerChanged(options, statsJson,
+                frontendDependencies)) {
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-changed-service-worker", null);
+            return true;
+        }
+        // service worker hashes have already been checked, if needed.
+        // removing them from hashes map to prevent other unnecessary checks
+        ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY))
+                .remove(SERVICE_WORKER_FILES);
+
         if (!BundleValidationUtil.frontendImportsFound(statsJson, options)) {
             UsageStatistics.markAsUsed(
                     "flow/rebundle-reason-missing-frontend-import", null);
+            return true;
+        }
+
+        if (templateSourceMissingFromBundle(options)) {
+            UsageStatistics.markAsUsed("flow/rebundle-reason-missing-template",
+                    null);
             return true;
         }
 
@@ -285,6 +331,12 @@ public final class BundleValidationUtil {
             return true;
         }
 
+        if (pwaConfigurationChanged(options, statsJson, frontendDependencies)) {
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-changed-pwa-config", null);
+            return true;
+        }
+
         if (BundleValidationUtil.exportedWebComponents(statsJson,
                 options.getClassFinder())) {
             UsageStatistics.markAsUsed(
@@ -293,6 +345,78 @@ public final class BundleValidationUtil {
         }
 
         return false;
+    }
+
+    /**
+     * Checks that the bundle contains the template sources that cannot be
+     * copied into it without building it.
+     * <p>
+     * A template whose {@code @JsModule} points into an npm package is only
+     * available in {@code node_modules}, which npm install creates as part of a
+     * bundle build, so such a template can only come from the bundle when the
+     * bundle is reused. A template that lives in the project or in an add-on
+     * jar is always available and is copied on every build.
+     *
+     * @param options
+     *            the task options
+     * @return {@code true} if the bundle is missing a template source
+     */
+    private static boolean templateSourceMissingFromBundle(Options options)
+            throws IOException {
+        Map<String, String> templates;
+        try {
+            templates = TaskCopyTemplateFiles
+                    .getTemplateJsModules(options.getClassFinder());
+        } catch (ExecutionFailedException e) {
+            getLogger().warn(
+                    "Failed to scan the template classes, so a bundle build is required.",
+                    e);
+            return true;
+        }
+
+        for (Map.Entry<String, String> template : templates.entrySet()) {
+            String path = template.getKey().replaceFirst("^\\./", "");
+            if (templateSourceAvailableInProject(options, path)) {
+                continue;
+            }
+            if (!bundleHasFile(options, Constants.TEMPLATE_DIRECTORY + path)) {
+                getLogger().info(
+                        "The bundle is missing the template source '{}' used by '{}'.",
+                        template.getKey(), template.getValue());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the template source is available whether or not the bundle is
+     * built, which is the case for a template in the frontend folder and for
+     * one packaged in an add-on jar.
+     *
+     * @param options
+     *            the task options
+     * @param path
+     *            the {@code @JsModule} value without a leading {@code ./}
+     * @return {@code true} if the source does not depend on npm install
+     */
+    private static boolean templateSourceAvailableInProject(Options options,
+            String path) {
+        if (new File(options.getFrontendDirectory(), path).exists()) {
+            return true;
+        }
+        return FrontendBuildUtils.getJarResource(path,
+                options.getClassFinder()) != null;
+    }
+
+    private static boolean bundleHasFile(Options options, String filename)
+            throws IOException {
+        if (options.isProductionMode()) {
+            return ProdBundleUtils.hasBundleFile(options.getNpmFolder(),
+                    options.getClassFinder(), filename);
+        }
+        return DevBundleUtils.findBundleFile(options.getNpmFolder(),
+                options.getBuildDirectoryName(), filename) != null;
     }
 
     /**
@@ -361,7 +485,7 @@ public final class BundleValidationUtil {
                     .getPackages();
 
             Map<String, String> filteredApplicationDependencies = new ExclusionFilter(
-                    options.getClassFinder(),
+                    options,
                     options.isReactEnabled() && FrontendBuildUtils
                             .isReactModuleAvailable(options),
                     options.isNpmExcludeWebComponents())
@@ -383,16 +507,15 @@ public final class BundleValidationUtil {
             ((ObjectNode) packageJson.get(NodeUpdater.VAADIN_DEP_KEY))
                     .put(NodeUpdater.HASH_KEY, hash);
 
-            final JsonNode platformPinnedDependencies = nodeUpdater
-                    .getPlatformPinnedDependencies();
-            for (String key : JacksonUtils
-                    .getKeys(platformPinnedDependencies)) {
+            final JsonNode pinnedNpmDependencies = nodeUpdater
+                    .getPinnedNpmDependencies();
+            for (String key : JacksonUtils.getKeys(pinnedNpmDependencies)) {
                 // need to double check that not overriding a scanned
                 // dependency since add-ons should be able to downgrade
                 // version through exclusion
                 if (!filteredApplicationDependencies.containsKey(key)) {
-                    TaskUpdatePackages.pinPlatformDependency(packageJson,
-                            platformPinnedDependencies, key);
+                    TaskUpdatePackages.pinNpmDependency(packageJson,
+                            pinnedNpmDependencies, key);
                 }
             }
 
@@ -492,12 +615,10 @@ public final class BundleValidationUtil {
                 .stream()
                 // skip checking flow-frontend as it was used in previous
                 // versions as an alias for ./target/flow-frontend
-                .filter(pkg -> !"@vaadin/flow-frontend".equals(pkg))
-                .collect(Collectors.toList());
+                .filter(pkg -> !"@vaadin/flow-frontend".equals(pkg)).toList();
 
         List<String> missingFromBundle = dependenciesList.stream()
-                .filter(pkg -> !bundleModules.has(pkg))
-                .collect(Collectors.toList());
+                .filter(pkg -> !bundleModules.has(pkg)).toList();
 
         if (!missingFromBundle.isEmpty()) {
             for (String dependency : missingFromBundle) {
@@ -512,7 +633,7 @@ public final class BundleValidationUtil {
                 .filter(pkg -> !versionAccepted(
                         dependencies.get(pkg).asString(),
                         bundleModules.get(pkg).asString()))
-                .collect(Collectors.toList());
+                .toList();
 
         if (!missingFromBundle.isEmpty()) {
             for (String pkg : missingFromBundle) {
@@ -588,7 +709,7 @@ public final class BundleValidationUtil {
                 .filter(pkg -> !(dependencies.has(pkg)
                         && versionAccepted(dependencies.get(pkg).asString(),
                                 npmPackages.get(pkg))))
-                .collect(Collectors.toList());
+                .toList();
         if (!collect.isEmpty()) {
             collect.forEach(dependency -> getLogger().info("Dependency "
                     + dependency + " is missing from the bundle"));
@@ -670,14 +791,14 @@ public final class BundleValidationUtil {
                         ? importString.substring(0,
                                 importString.lastIndexOf("?"))
                         : importString)
-                .collect(Collectors.toList());
+                .toList();
         LinkedHashSet<String> uniqueImports = new LinkedHashSet<>(imports);
         ArrayNode statsBundle = statsJson.has("bundleImports")
                 ? (ArrayNode) statsJson.get("bundleImports")
                 : JacksonUtils.createArrayNode();
         final List<String> missingFromBundle = uniqueImports.stream().filter(
                 importString -> !arrayContainsString(statsBundle, importString))
-                .collect(Collectors.toList());
+                .toList();
 
         if (!missingFromBundle.isEmpty()) {
             for (String dependency : missingFromBundle) {
@@ -693,7 +814,7 @@ public final class BundleValidationUtil {
                 .map(importString -> importString
                         .substring(importString.indexOf(resourcePath)
                                 + resourcePath.length()))
-                .collect(Collectors.toList());
+                .toList();
 
         final List<String> projectImports = uniqueImports.stream()
                 .filter(importString -> importString
@@ -701,7 +822,7 @@ public final class BundleValidationUtil {
                         && !importString.contains(resourcePath))
                 .map(importString -> importString.substring(
                         FrontendUtils.FRONTEND_FOLDER_ALIAS.length()))
-                .collect(Collectors.toList());
+                .toList();
 
         final JsonNode frontendHashes = statsJson
                 .get(FRONTEND_HASHES_STATS_KEY);
@@ -808,6 +929,99 @@ public final class BundleValidationUtil {
         return false;
     }
 
+    /**
+     * Checks whether the bundle's service worker still matches the PWA
+     * configuration of the application.
+     * <p>
+     * Two parts of {@code @PWA} are compiled into the bundle and can only be
+     * changed by building a new one:
+     * {@link com.vaadin.flow.server.PWA#offline()} decides whether a service
+     * worker is built at all, and
+     * {@link com.vaadin.flow.server.PWA#offlinePath()} is baked into it as the
+     * {@code OFFLINE_PATH} constant.
+     */
+    private static boolean pwaConfigurationChanged(Options options,
+            JsonNode statsJson,
+            FrontendDependenciesScanner frontendDependencies) {
+        PwaConfiguration pwaConfiguration = frontendDependencies
+                .getPwaConfiguration();
+        if (pwaConfiguration == null || !pwaConfiguration.isOfflineEnabled()) {
+            // Without offline support the application unregisters the service
+            // worker instead of loading it, so a bundle that carries one is
+            // merely unused, never stale.
+            return false;
+        }
+        // A bundle whose stats.json predates this key does not say whether it
+        // was built with offline support, so it is assumed to have been: the
+        // platform default bundle, which is what most applications validate
+        // against, ships a service worker, and rebuilding every PWA
+        // application against it would cost more than the rare stale local
+        // bundle the assumption lets through.
+        boolean bundleHasServiceWorker = statsJson
+                .path(PWA_OFFLINE_ENABLED_STATS_KEY).booleanValue(true);
+        if (!bundleHasServiceWorker) {
+            getLogger().info(
+                    "The bundle was built without offline support, so it has no service worker to serve.");
+            return true;
+        }
+        String offlinePath = TaskUpdateSettingsFile
+                .getOfflinePath(pwaConfiguration, options.getNpmFolder());
+        JsonNode statsOfflinePath = statsJson.get(PWA_OFFLINE_PATH_STATS_KEY);
+        String bundleOfflinePath = statsOfflinePath == null
+                ? DEFAULT_PWA_OFFLINE_PATH
+                : statsOfflinePath.asString();
+        if (!offlinePath.equals(bundleOfflinePath)) {
+            getLogger().info(
+                    "The bundle's service worker uses offline path {}, but the application asks for {}.",
+                    bundleOfflinePath, offlinePath);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks whether the service worker in the frontend folder differs from the
+     * one the bundle was built with.
+     * <p>
+     * A {@code sw.ts} or {@code sw.js} in the frontend folder replaces the
+     * default service worker. It is built separately from the application's
+     * modules, so none of the import checks look at it, and adding, changing or
+     * removing it only reaches the application through a new bundle. Only that
+     * file is compared, not the modules it imports.
+     */
+    private static boolean customServiceWorkerChanged(Options options,
+            JsonNode statsJson,
+            FrontendDependenciesScanner frontendDependencies)
+            throws IOException {
+        PwaConfiguration pwaConfiguration = frontendDependencies
+                .getPwaConfiguration();
+        if (pwaConfiguration == null || !pwaConfiguration.isOfflineEnabled()) {
+            // Without offline support no service worker is built, so the
+            // bundle does not depend on its source.
+            return false;
+        }
+        JsonNode frontendHashes = statsJson.get(FRONTEND_HASHES_STATS_KEY);
+        List<String> faultyContent = new ArrayList<>();
+        for (String serviceWorkerFile : SERVICE_WORKER_FILES) {
+            File serviceWorker = new File(options.getFrontendDirectory(),
+                    serviceWorkerFile);
+            if (serviceWorker.exists()) {
+                compareFrontendHashes(frontendHashes, faultyContent,
+                        serviceWorkerFile,
+                        Files.readString(serviceWorker.toPath()));
+            } else if (frontendHashes.has(serviceWorkerFile)) {
+                getLogger().info("Detected deleted {} file", serviceWorkerFile);
+                return true;
+            }
+        }
+        if (!faultyContent.isEmpty()) {
+            logChangedFiles(faultyContent,
+                    "Detected changed content for frontend files:");
+            return true;
+        }
+        return false;
+    }
+
     private static boolean isCommercialBannerConditionChanged(Options options,
             JsonNode statsJson) throws IOException {
         final JsonNode frontendHashes = statsJson
@@ -842,6 +1056,38 @@ public final class BundleValidationUtil {
                         "Detected changed content for commercial banner file");
                 return true;
             }
+        }
+        return false;
+    }
+
+    /**
+     * Checks whether the JavaScript that the {@code @JsDefinition} interfaces,
+     * the {@code @EventData} values and the {@code @DomEvent} filters of the
+     * application declare differs from what the bundle was built with.
+     * <p>
+     * The functions are generated into the bundle, so a declaration that
+     * changed, a definition, an event data value or a filter that was added and
+     * a bundle built before any of them existed all mean that the bundle no
+     * longer contains what a call would look up, which shows up at runtime as a
+     * call that cannot be run.
+     */
+    private static boolean jsDefinitionsChanged(Options options,
+            JsonNode statsJson) {
+        JsonNode frontendHashes = statsJson.get(FRONTEND_HASHES_STATS_KEY);
+        String jsDefinitionsPath = FrontendUtils.GENERATED
+                + FrontendUtils.JS_DEFINITIONS_FILE_NAME;
+        String content = new TaskGenerateJsDefinitions(options)
+                .getFileContent();
+
+        List<String> faultyContent = new ArrayList<>();
+        compareFrontendHashes(frontendHashes, faultyContent, jsDefinitionsPath,
+                content);
+        if (!faultyContent.isEmpty()) {
+            // Either the declarations changed, or the bundle was built before
+            // they existed and carries none of their JavaScript
+            getLogger().info(
+                    "Detected JavaScript declared by the JavaScript definitions, event data or event filters that the bundle does not carry");
+            return true;
         }
         return false;
     }

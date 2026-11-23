@@ -1,0 +1,323 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+/**
+ * Static helpers for encoding and decoding JSON.
+ *
+ * TypeScript port of ClientJsonCodec.java.
+ *
+ * The `JacksonCodec` references in the member docs below stay code spans:
+ * `com.vaadin.flow.internal.JacksonCodec` is server-side and outside this
+ * port's scope, so there is no ported symbol for them to link to.
+ */
+
+import type { StateNode } from '../StateNode';
+import type { StateTree } from '../StateTree';
+import { describeMissingFunction, findDeclaredSnippet } from './DeclaredJavaScript';
+
+type JsFunction = (...args: unknown[]) => unknown;
+
+/**
+ * Creates the function exposed for a server return channel. Calling it forwards
+ * all of its arguments (as an array) to the supplied sender, which the Java
+ * caller wires (exception-guarded) to ServerConnector.sendReturnChannelMessage.
+ *
+ * Private in the Java source (`private static native`); kept module-local and
+ * exercised through the public `decodeWithTypeInfo` (`@v-return`) surface.
+ */
+function createReturnChannelCallback(sendMessage: (args: unknown[]) => void): JsFunction {
+  return (...args: unknown[]) => {
+    sendMessage(args);
+  };
+}
+
+/**
+ * Wraps `fn` in a function that prepends `captures` to the runtime arguments
+ * before delegating, while leaving `this` controlled by the caller.
+ * `Function.prototype.bind` would also pre-bind `this` to `undefined`, which
+ * prevents callers from setting `this` via `.call()` or `.apply()` on the
+ * resulting function.
+ *
+ * Private in the Java source (`private static native`); kept module-local and
+ * exercised through the public `decodeWithTypeInfo` (`@v-fn`) surface.
+ */
+function applyCaptures(fn: JsFunction, captures: ArrayLike<unknown>): JsFunction {
+  return function (this: unknown, ...callArgs: unknown[]): unknown {
+    const args = Array.from(captures).concat(callArgs);
+    return fn.apply(this, args);
+  };
+}
+
+/**
+ * Encodes a value for transport without type information. In JavaScript the JSON
+ * representation is used as-is; only `undefined`/`null` are normalized to null
+ * (the JVM-only conversions in the Java version are test scaffolding). Mirrors
+ * ClientJsonCodec.encodeWithoutTypeInfo.
+ *
+ * @param value - the value to encode
+ * @returns the value encoded as JSON
+ */
+export function encodeWithoutTypeInfo(value: unknown): unknown {
+  // undefined shouldn't go as undefined; encode it as null.
+  return value === null || value === undefined ? null : value;
+}
+
+/**
+ * Decodes a value encoded on the server using
+ * `JacksonCodec.encodeWithoutTypeInfo`. This is a no-op in JavaScript since the
+ * JSON representation can be used as-is (the JVM-only conversions in the Java
+ * version are test scaffolding). Mirrors ClientJsonCodec.decodeWithoutTypeInfo.
+ *
+ * @param json - the JSON value to convert
+ * @returns the decoded value
+ */
+export function decodeWithoutTypeInfo(json: unknown): unknown {
+  return json;
+}
+
+/**
+ * Decodes a value as a {@link StateNode} encoded on the server using
+ * `JacksonCodec.encodeWithTypeInfo` if it's possible. Otherwise returns `null`.
+ *
+ * It does the same as {@link decodeWithTypeInfo} for the encoded json value if
+ * the encoded object is a {@link StateNode} except it returns the node itself
+ * instead of a DOM element associated with it.
+ *
+ * @see {@link decodeWithTypeInfo}
+ * @param tree - the state tree to use for resolving nodes and elements
+ * @param json - the JSON value to decode
+ * @returns the decoded state node if any
+ */
+export function decodeStateNode(tree: StateTree, json: unknown): StateNode | null {
+  if (typeof json === 'object' && json !== null && !Array.isArray(json)) {
+    // Check for @v-node format
+    const nodeIdValue = (json as Record<string, unknown>)['@v-node'];
+    if (nodeIdValue !== undefined && nodeIdValue !== null) {
+      if (typeof nodeIdValue !== 'number') {
+        throw new Error(`@v-node value must be a number, got ${typeof nodeIdValue} in ${JSON.stringify(json)}`);
+      }
+      return tree.getNode(nodeIdValue);
+    }
+  }
+  return null;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Recursively decodes a JSON object, processing any nested `@v` references.
+ * Returns a native JS object that can store decoded values including DOM
+ * elements.
+ *
+ * Mirrors the Java, which writes each decoded value back into the incoming
+ * object and returns that same instance; a caller holding a reference to the
+ * input observes the decoded values in place.
+ *
+ * Private in Java; covered through the public `decodeWithTypeInfo` surface.
+ */
+function decodeObjectWithTypeInfo(tree: StateTree, jsonObject: Record<string, unknown>): Record<string, unknown> {
+  for (const key of Object.keys(jsonObject)) {
+    jsonObject[key] = decodeWithTypeInfo(tree, jsonObject[key]);
+  }
+  return jsonObject;
+}
+
+/**
+ * Recursively decodes a JSON array, processing any nested `@v` references.
+ *
+ * Private in Java; covered through the public `decodeWithTypeInfo` surface.
+ */
+function decodeArrayWithTypeInfo(tree: StateTree, jsonArray: unknown[]): unknown[] {
+  return jsonArray.map((value) => decodeWithTypeInfo(tree, value));
+}
+
+/**
+ * Evaluates a snippet declared by a JavaScript definition: the bundle has a
+ * function for it, which takes the captures and returns the value, so nothing
+ * is compiled from a string. Each decode evaluates it again, so every
+ * invocation that is passed the snippet gets a value of its own.
+ *
+ * A function missing from the bundle is reported when the value is called
+ * rather than when it is decoded, instead of failing the decoding of everything
+ * else the invocation is sent with. The error goes wherever the call is made:
+ * to the error channel of an invocation that calls the value, or only to the
+ * console when, for instance, an event listener calls it.
+ */
+export function evaluateDeclaredSnippet(functionId: string, captures: unknown[]): unknown {
+  const snippet = findDeclaredSnippet(functionId);
+  if (snippet === undefined) {
+    const message = describeMissingFunction(functionId);
+    return () => {
+      throw new Error(message);
+    };
+  }
+  return snippet(...captures);
+}
+
+function decodeJsFunction(tree: StateTree, fnObject: Record<string, unknown>, originalJson: string): unknown {
+  const capturesValue = fnObject.captures;
+  if (!Array.isArray(capturesValue)) {
+    throw new Error(`@v-fn 'captures' must be an array in ${originalJson}`);
+  }
+  const captures = capturesValue.map((capture) => decodeWithTypeInfo(tree, capture));
+
+  // A function declared by a JavaScript definition is named by the identifier
+  // of its function in the bundle instead of carrying a body
+  const id = fnObject.id;
+  if (id !== undefined) {
+    if (typeof id !== 'string') {
+      throw new Error(`@v-fn 'id' must be a string in ${originalJson}`);
+    }
+    return evaluateDeclaredSnippet(id, captures);
+  }
+
+  const body = fnObject.body;
+  if (typeof body !== 'string') {
+    throw new Error(`@v-fn 'body' must be a string in ${originalJson}`);
+  }
+
+  // Optional 'args' field: names of runtime parameters the manifested function
+  // should accept at call time, after the bound captures.
+  const argsValue = fnObject.args;
+  if (argsValue !== undefined && !Array.isArray(argsValue)) {
+    throw new Error(`@v-fn 'args' must be an array in ${originalJson}`);
+  }
+  // Each arg name must be a string (Java reads them with getString(i), which
+  // throws on a non-string); validate rather than silently coercing.
+  const argNames = ((argsValue as unknown[] | undefined) ?? []).map((argName) => {
+    if (typeof argName !== 'string') {
+      throw new Error(`@v-fn 'args' must contain only strings in ${originalJson}`);
+    }
+    return argName;
+  });
+
+  const paramsAndCode: string[] = [];
+  for (let i = 0; i < captures.length; i++) {
+    paramsAndCode.push(`$${i}`);
+  }
+  paramsAndCode.push(...argNames);
+  paramsAndCode.push(body);
+
+  // Manifests a server-sent JS function, mirroring the Java NativeFunction.
+  const fn = new Function(...paramsAndCode) as JsFunction;
+  return applyCaptures(fn, captures);
+}
+
+/**
+ * Returns a copy of the value where each `@v-node` reference to a state node
+ * that is not in the tree is replaced by null.
+ */
+function copyWithoutRemovedNodes(tree: StateTree, value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map((item) => copyWithoutRemovedNodes(tree, item));
+  }
+  if (!isPlainObject(value)) {
+    return value;
+  }
+  const nodeId = value['@v-node'];
+  if (typeof nodeId === 'number' && tree.getNode(nodeId) === null) {
+    return null;
+  }
+  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, copyWithoutRemovedNodes(tree, item)]));
+}
+
+/**
+ * Decodes a copy of a value encoded on the server, like
+ * {@link decodeWithTypeInfo}, with two differences:
+ * - A reference to a state node that is not in the tree decodes to null. It
+ *   does not throw.
+ * - The given value is not changed. Use this for a value that is decoded more
+ *   than once, for example the captures of an event listener, which are
+ *   decoded for every event.
+ *
+ * @param tree - the state tree to use for resolving nodes and elements
+ * @param json - the JSON value to decode
+ * @returns the decoded value
+ */
+export function decodeCopyWithTypeInfo(tree: StateTree, json: unknown): unknown {
+  return decodeWithTypeInfo(tree, copyWithoutRemovedNodes(tree, json));
+}
+
+/**
+ * Decodes a value encoded on the server using
+ * `JacksonCodec.encodeWithTypeInfo`: element references (`@v-node` → the DOM
+ * node), return channels (`@v-return` → a callback that messages the server),
+ * manifested functions (`@v-fn`, compiled from a body or evaluated from the
+ * bundle), and nested objects/arrays (decoded
+ * recursively); other values pass through unchanged. Mirrors
+ * ClientJsonCodec.decodeWithTypeInfo.
+ *
+ * @param tree - the state tree to use for resolving nodes and elements
+ * @param json - the JSON value to decode
+ * @returns the decoded value
+ */
+export function decodeWithTypeInfo(tree: StateTree, json: unknown): unknown {
+  if (isPlainObject(json)) {
+    // Check for @v-node format
+    const nodeIdValue = json['@v-node'];
+    if (nodeIdValue !== undefined && nodeIdValue !== null) {
+      if (typeof nodeIdValue !== 'number') {
+        throw new Error(`@v-node value must be a number, got ${typeof nodeIdValue} in ${JSON.stringify(json)}`);
+      }
+      // Mirror Java's non-null deref: tree.getNode(nodeId).getDomNode() throws
+      // if the node is missing, so use `!` (a TypeError on null) rather than
+      // `?.` (which would silently yield undefined).
+      return tree.getNode(nodeIdValue)!.getDomNode();
+    }
+
+    // Check for @v-return format
+    const returnArray = json['@v-return'];
+    if (returnArray !== undefined && returnArray !== null) {
+      if (!Array.isArray(returnArray)) {
+        throw new Error(`@v-return value must be an array, got ${typeof returnArray} in ${JSON.stringify(json)}`);
+      }
+      if (returnArray.length < 2) {
+        throw new Error(
+          `@v-return array must have at least 2 elements, got ${returnArray.length} in ${JSON.stringify(json)}`
+        );
+      }
+      const returnNodeId = returnArray[0] as number;
+      const channelId = returnArray[1] as number;
+      const serverConnector = tree.getRegistry().getServerConnector();
+      return createReturnChannelCallback((args) =>
+        serverConnector.sendReturnChannelMessage(returnNodeId, channelId, args)
+      );
+    }
+
+    // Check for @v-fn format
+    const fnValue = json['@v-fn'];
+    if (fnValue !== undefined && fnValue !== null) {
+      if (!isPlainObject(fnValue)) {
+        throw new Error(`@v-fn value must be an object, got ${typeof fnValue} in ${JSON.stringify(json)}`);
+      }
+      return decodeJsFunction(tree, fnValue, JSON.stringify(json));
+    }
+
+    // Check for unknown @v- types
+    for (const key of Object.keys(json)) {
+      if (key.startsWith('@v-')) {
+        throw new Error(`Unsupported @v type '${key}' in ${JSON.stringify(json)}`);
+      }
+    }
+
+    return decodeObjectWithTypeInfo(tree, json);
+  } else if (Array.isArray(json)) {
+    return decodeArrayWithTypeInfo(tree, json);
+  }
+  return decodeWithoutTypeInfo(json);
+}

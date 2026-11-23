@@ -4,13 +4,17 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.3-SNAPSHOT</version>
+    <version>25.4-SNAPSHOT</version>
   </parent>
 
   <artifactId>flow-dnd</artifactId>
   <packaging>jar</packaging>
   <name>Generic HTML 5 Drag and Drop support for Flow</name>
   <description>${project.name}</description>
+
+  <properties>
+    <jpms.module.name>com.vaadin.flow.component.dnd</jpms.module.name>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -43,6 +47,14 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-server</artifactId>
+      <version>${project.version}</version>
+      <classifier>tests</classifier>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

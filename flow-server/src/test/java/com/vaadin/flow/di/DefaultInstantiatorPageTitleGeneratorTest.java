@@ -15,12 +15,11 @@
  */
 package com.vaadin.flow.di;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.AdditionalAnswers;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.server.InitParameters;
@@ -30,8 +29,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-@NotThreadSafe
+@Isolated
 class DefaultInstantiatorPageTitleGeneratorTest {
     private ClassLoader contextClassLoader;
     private ClassLoader classLoader;
@@ -40,8 +43,8 @@ class DefaultInstantiatorPageTitleGeneratorTest {
     void init() throws ClassNotFoundException {
         contextClassLoader = Thread.currentThread().getContextClassLoader();
 
-        classLoader = Mockito.mock(ClassLoader.class);
-        Mockito.when(classLoader.loadClass(Mockito.any()))
+        classLoader = mock(ClassLoader.class);
+        when(classLoader.loadClass(any()))
                 .thenAnswer(AdditionalAnswers.delegatesTo(contextClassLoader));
         Thread.currentThread().setContextClassLoader(classLoader);
     }
@@ -53,7 +56,7 @@ class DefaultInstantiatorPageTitleGeneratorTest {
 
     @Test
     void getPageTitleGenerator_noProperty_returnsNull() {
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
                 service);
 
@@ -65,7 +68,7 @@ class DefaultInstantiatorPageTitleGeneratorTest {
             throws ClassNotFoundException {
         String customGeneratorClassName = "com.vaadin.flow.di.CustomPageTitleGenerator";
 
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
                 service) {
             @Override
@@ -77,12 +80,12 @@ class DefaultInstantiatorPageTitleGeneratorTest {
         PageTitleGenerator generator = defaultInstantiator
                 .getPageTitleGenerator();
         assertInstanceOf(CustomPageTitleGenerator.class, generator);
-        Mockito.verify(classLoader).loadClass(customGeneratorClassName);
+        verify(classLoader).loadClass(customGeneratorClassName);
     }
 
     @Test
     void getPageTitleGenerator_invalidType_throwsException() {
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
                 service) {
             @Override

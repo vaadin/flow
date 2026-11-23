@@ -123,4 +123,10 @@ public class ListDataProvider<T>
         this.filter = filter;
         refreshAll();
     }
+
+    @Override
+    public String toString() {
+        return super.toString() + "(" + backend.size() + " backend items"
+                + (getFilter() != null ? ", filtered" : "") + ")";
+    }
 }

@@ -15,12 +15,16 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -60,6 +64,9 @@ import com.vaadin.flow.signals.Signal;
  */
 public class SignalInput<T> extends Action.Input<T> {
 
+    private static final TriggerInputJs TRIGGER_INPUT_JS = JsSnippets
+            .of(TriggerInputJs.class);
+
     // Generates unique property-name suffixes; a long won't realistically
     // overflow. Class reload during devmode hotdeploy resets it, but the
     // matching SignalInput instances reload with it, so no live collision
@@ -96,10 +103,9 @@ public class SignalInput<T> extends Action.Input<T> {
     @Override
     public JsFunction toJs(Trigger trigger) {
         installEffectIfNeeded();
-        // $0 = the owner element (resolved to a DOM ref on the wire); $1 =
-        // the mirrored property name. Matches PropertyInput's shape — both
-        // read a property from a known element.
-        return JsFunction.of("return $0[$1]", owner.getElement(), propertyName);
+        // Matches PropertyInput's shape — both read a property from a known
+        // element.
+        return TRIGGER_INPUT_JS.readProperty(owner.getElement(), propertyName);
     }
 
     private void installEffectIfNeeded() {
@@ -108,7 +114,30 @@ public class SignalInput<T> extends Action.Input<T> {
         }
         installed = true;
         Element target = owner.getElement();
-        Signal.effect(owner, () -> target.executeJs("this[$0]=$1", propertyName,
-                signal.get()));
+        Signal.effect(owner, () -> target.executeJs(MirrorJs.class)
+                .setProperty(propertyName, signal.get()));
+    }
+
+    /**
+     * How the mirrored value reaches the element, as a JavaScript definition
+     * for {@link Element#executeJs(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface MirrorJs extends Serializable {
+
+        /**
+         * Writes the value of the signal to the property the trigger reads.
+         *
+         * @param propertyName
+         *            the name of the property to write
+         * @param value
+         *            the value the signal holds
+         */
+        @JsExpression("this[$0]=$1")
+        void setProperty(String propertyName, Object value);
     }
 }

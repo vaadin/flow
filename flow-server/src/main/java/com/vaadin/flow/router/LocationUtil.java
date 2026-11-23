@@ -90,11 +90,9 @@ public class LocationUtil {
     public static List<String> parsePathToSegments(String path,
             boolean removeExtraParts) {
         final String basePath;
-        int endIndex = path.indexOf(Location.QUERY_SEPARATOR);
-        if (removeExtraParts && endIndex >= 0) {
+        int endIndex = removeExtraParts ? queryOrFragmentIndex(path) : -1;
+        if (endIndex >= 0) {
             basePath = path.substring(0, endIndex);
-        } else if (removeExtraParts && path.contains("#")) {
-            basePath = path.substring(0, path.indexOf('#'));
         } else {
             basePath = path;
         }
@@ -145,7 +143,10 @@ public class LocationUtil {
         }
 
         int beginIndex = location.indexOf(Location.QUERY_SEPARATOR);
-        if (beginIndex < 0) {
+        int fragmentIndex = location.indexOf('#');
+        if (beginIndex < 0
+                || (fragmentIndex >= 0 && fragmentIndex < beginIndex)) {
+            // No query string at all, or the '?' is part of the fragment
             return QueryParameters.empty();
         }
         String query;
@@ -159,10 +160,24 @@ public class LocationUtil {
             query = null;
         }
         if (query == null) {
-            query = location.substring(beginIndex + 1);
+            int endIndex = fragmentIndex < 0 ? location.length()
+                    : fragmentIndex;
+            query = location.substring(beginIndex + 1, endIndex);
         }
 
         return QueryParameters.fromString(query);
+    }
+
+    private static int queryOrFragmentIndex(String path) {
+        int queryIndex = path.indexOf(Location.QUERY_SEPARATOR);
+        int fragmentIndex = path.indexOf('#');
+        if (queryIndex < 0) {
+            return fragmentIndex;
+        }
+        if (fragmentIndex < 0) {
+            return queryIndex;
+        }
+        return Math.min(queryIndex, fragmentIndex);
     }
 
     private static boolean hasIncorrectParentSegments(String path) {

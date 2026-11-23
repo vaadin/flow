@@ -26,13 +26,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,8 +49,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-@NotThreadSafe
+@Isolated
 class FeatureFlagsTest {
     @TempDir
     Path temporaryFolder;
@@ -67,8 +74,8 @@ class FeatureFlagsTest {
                 .toFile();
 
         context = new MockVaadinContext();
-        configuration = Mockito.mock(ApplicationConfiguration.class);
-        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        configuration = mock(ApplicationConfiguration.class);
+        when(configuration.isProductionMode()).thenReturn(false);
 
         context.setAttribute(ApplicationConfiguration.class, configuration);
 
@@ -153,13 +160,13 @@ class FeatureFlagsTest {
 
     @Test
     void setEnabledOnlyInDevelopmentMode() throws IOException {
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        when(configuration.isProductionMode()).thenReturn(true);
 
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
         ApplicationConfiguration conf = ApplicationConfiguration
                 .get(VaadinService.getCurrent().getContext());
-        Mockito.when(conf.isProductionMode()).thenReturn(true);
+        when(conf.isProductionMode()).thenReturn(true);
         assertThrows(IllegalStateException.class, () -> featureFlags
                 .setEnabled(TestFeatureFlagProvider.EXAMPLE.getId(), true));
     }
@@ -236,13 +243,11 @@ class FeatureFlagsTest {
         File flagsFile = new File(propertiesDir,
                 "another-" + PROPERTIES_FILENAME);
 
-        ResourceProvider resourceProvider = Mockito
-                .mock(ResourceProvider.class);
-        Mockito.when(
-                resourceProvider.getApplicationResource(PROPERTIES_FILENAME))
+        ResourceProvider resourceProvider = mock(ResourceProvider.class);
+        when(resourceProvider.getApplicationResource(PROPERTIES_FILENAME))
                 .thenReturn(flagsFile.toURI().toURL());
         Lookup lookup = context.getAttribute(Lookup.class);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
+        when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
 
         try {
@@ -378,8 +383,7 @@ class FeatureFlagsTest {
                         ApplicationRouteRegistry attribute = context
                                 .getAttribute(ApplicationRouteRegistry.class);
                         if (attribute == null) {
-                            attribute = Mockito
-                                    .mock(ApplicationRouteRegistry.class);
+                            attribute = mock(ApplicationRouteRegistry.class);
                             context.setAttribute(attribute);
                         }
                     }
@@ -400,10 +404,10 @@ class FeatureFlagsTest {
 
     @Test
     void propertiesFileCheckedForUnsupportedFeatureFlags() throws IOException {
-        Logger mockedLogger = Mockito.mock(Logger.class);
+        Logger mockedLogger = mock(Logger.class);
 
-        try (MockedStatic<LoggerFactory> context = Mockito
-                .mockStatic(LoggerFactory.class)) {
+        try (MockedStatic<LoggerFactory> context = mockStatic(
+                LoggerFactory.class)) {
             context.when(() -> LoggerFactory.getLogger(FeatureFlags.class))
                     .thenReturn(mockedLogger);
 
@@ -411,10 +415,10 @@ class FeatureFlagsTest {
                     "com.vaadin.experimental.unsupportedFeature=true\ncom.vaadin.experimental.exampleFeatureFlag=true\n");
             featureFlags.loadProperties();
 
-            Mockito.verify(mockedLogger, Mockito.never()).warn(
+            verify(mockedLogger, never()).warn(
                     "Unsupported feature flag is present: {}",
                     "com.vaadin.experimental.exampleFeatureFlag");
-            Mockito.verify(mockedLogger, Mockito.times(1)).warn(
+            verify(mockedLogger, times(1)).warn(
                     "Unsupported feature flag is present: {}",
                     "com.vaadin.experimental.unsupportedFeature");
         }
@@ -423,10 +427,10 @@ class FeatureFlagsTest {
     @Test
     void propertiesFileCheckForUnsupportedFeatureFlagsRanOnlyOnce()
             throws IOException {
-        Logger mockedLogger = Mockito.mock(Logger.class);
+        Logger mockedLogger = mock(Logger.class);
 
-        try (MockedStatic<LoggerFactory> context = Mockito
-                .mockStatic(LoggerFactory.class)) {
+        try (MockedStatic<LoggerFactory> context = mockStatic(
+                LoggerFactory.class)) {
             context.when(() -> LoggerFactory.getLogger(FeatureFlags.class))
                     .thenReturn(mockedLogger);
 
@@ -435,7 +439,7 @@ class FeatureFlagsTest {
             featureFlags.loadProperties();
             featureFlags.loadProperties();
 
-            Mockito.verify(mockedLogger, Mockito.times(1)).warn(
+            verify(mockedLogger, times(1)).warn(
                     "Unsupported feature flag is present: {}",
                     "com.vaadin.experimental.unsupportedFeature");
         }
@@ -443,15 +447,15 @@ class FeatureFlagsTest {
 
     @Test
     void systemPropertiesCheckedForUnsupportedFeatureFlags() {
-        Logger mockedLogger = Mockito.mock(Logger.class);
+        Logger mockedLogger = mock(Logger.class);
         String exampleProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
                 + "exampleFeatureFlag";
         String unsupportedProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
                 + "unsupportedFeature";
         var previousValue = System.getProperty(exampleProperty);
 
-        try (MockedStatic<LoggerFactory> mockedFactory = Mockito
-                .mockStatic(LoggerFactory.class)) {
+        try (MockedStatic<LoggerFactory> mockedFactory = mockStatic(
+                LoggerFactory.class)) {
             mockedFactory
                     .when(() -> LoggerFactory.getLogger(FeatureFlags.class))
                     .thenReturn(mockedLogger);
@@ -465,11 +469,11 @@ class FeatureFlagsTest {
 
             // We do not want warning message for valid flag name with either
             // prefix
-            Mockito.verify(mockedLogger, Mockito.never()).warn(
+            verify(mockedLogger, never()).warn(
                     "Unsupported feature flag is present: {}", exampleProperty);
             // We do want warning message for
             // vaadin.experimental.unsupportedFeature
-            Mockito.verify(mockedLogger, Mockito.times(1)).warn(
+            verify(mockedLogger, times(1)).warn(
                     "Unsupported feature flag is present: {}",
                     unsupportedProperty);
         } finally {
@@ -489,17 +493,16 @@ class FeatureFlagsTest {
     }
 
     private void mockResourcesLocation() {
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         VaadinService.setCurrent(service);
-        VaadinContext vaadinContext = Mockito.mock(VaadinContext.class);
-        Mockito.when(service.getContext()).thenReturn(vaadinContext);
+        VaadinContext vaadinContext = mock(VaadinContext.class);
+        when(service.getContext()).thenReturn(vaadinContext);
 
-        ApplicationConfiguration applicationConfiguration = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(vaadinContext.getAttribute(
-                Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
-                .thenReturn(applicationConfiguration);
-        Mockito.when(applicationConfiguration.getJavaResourceFolder())
+        ApplicationConfiguration applicationConfiguration = mock(
+                ApplicationConfiguration.class);
+        when(vaadinContext.getAttribute(eq(ApplicationConfiguration.class),
+                any())).thenReturn(applicationConfiguration);
+        when(applicationConfiguration.getJavaResourceFolder())
                 .thenReturn(propertiesDir);
 
     }

@@ -71,12 +71,13 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  * 
- * @since 24.3.22
+ * @since 9.0
  */
 public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     private static final String START_FAILURE = "Couldn't start dev server because";
 
+    /** Host the dev server is started on and proxied to. */
     public static final String DEV_SERVER_HOST = "http://127.0.0.1";
 
     private static final String FAILED_MSG = "\n------------------ Frontend compilation failed. ------------------\n\n";
@@ -111,26 +112,46 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
     private static final int DEFAULT_TIMEOUT = 120 * 1000;
 
+    /** The project folder the dev server process is started in. */
     private final File npmFolder;
+
+    /** The port the dev server listens on, 0 until it has been started. */
     private volatile int port;
+
+    /** The dev server process, or {@code null} when one was reused. */
     private final AtomicReference<Process> devServerProcess = new AtomicReference<>();
+
+    /** Whether an already running dev server may be reused. */
     private final boolean reuseDevServer;
+
+    /** File the port of a reusable dev server is recorded in. */
     private final File devServerPortFile;
 
+    /** The failure message of the last compilation, or {@code null}. */
     private AtomicReference<String> devServerFailure = new AtomicReference<>();
 
+    /** Completes once the dev server is up, or completes exceptionally. */
     private final CompletableFuture<Void> devServerStartFuture;
 
+    /**
+     * Holds a socket open for as long as this JVM uses the dev server, so that
+     * the dev server can stop itself when the JVM goes away.
+     */
     private final AtomicReference<DevServerWatchDog> watchDog = new AtomicReference<>();
 
+    /** Whether this runner attached to a dev server it did not start. */
     private boolean usingAlreadyStartedProcess = false;
 
+    /** The configuration the runner was created with. */
     private ApplicationConfiguration applicationConfiguration;
 
+    /** Locates the Node.js and npm executables used to start the server. */
     private FrontendTools frontendTools;
 
+    /** The output of the last failed compilation, or {@code null}. */
     private String failedOutput = null;
 
+    /** Blocks a request until an ongoing recompilation has finished. */
     private transient Runnable waitForRestart;
 
     /**
@@ -168,6 +189,13 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     }
 
+    /**
+     * Gets the tools used to locate the Node.js executable that runs the dev
+     * server.
+     *
+     * @return the frontend tools of this runner
+     * @since 24.8
+     */
     protected FrontendTools getFrontendTools() {
         return frontendTools;
     }
@@ -312,6 +340,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      * @param tools
      *            the frontend tools object
      * @return the list of commands to start the dev server
+     * @since 23.0
      */
     protected abstract List<String> getServerStartupCommand(
             FrontendTools tools);
@@ -323,6 +352,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      *            frontend tools metadata
      * @param environment
      *            the environment variables to use
+     * @since 9.0.3
      */
     protected void updateServerStartupEnvironment(FrontendTools frontendTools,
             Map<String, String> environment) {
@@ -364,6 +394,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      *
      * @return the restarting pattern, or {@code null} if restart monitoring is
      *         not used
+     * @since 24.2
      */
     protected Pattern getServerRestartingPattern() {
         return null;
@@ -381,6 +412,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      *
      * @return the restarted pattern, or {@code null} if restart monitoring is
      *         not used
+     * @since 24.2
      */
     protected Pattern getServerRestartedPattern() {
         return null;
@@ -398,7 +430,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
         List<String> command = getServerStartupCommand(frontendTools);
 
-        FrontendUtils.console(FrontendUtils.GREEN, START);
+        FrontendUtils.console(FrontendUtils.AnsiColor.GREEN, START);
         if (getLogger().isDebugEnabled()) {
             getLogger().debug(FrontendUtils.commandToString(
                     getProjectRoot().getAbsolutePath(), command));
@@ -470,10 +502,10 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      */
     protected void onDevServerCompilation(Result result) {
         if (result.isSuccess()) {
-            FrontendUtils.console(FrontendUtils.GREEN, SUCCEED_MSG);
+            FrontendUtils.console(FrontendUtils.AnsiColor.GREEN, SUCCEED_MSG);
             failedOutput = null;
         } else {
-            FrontendUtils.console(FrontendUtils.RED, FAILED_MSG);
+            FrontendUtils.console(FrontendUtils.AnsiColor.RED, FAILED_MSG);
             failedOutput = result.getOutput();
         }
     }
@@ -851,6 +883,16 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         }
     }
 
+    /**
+     * Copies the dev server response body to the response of the browser.
+     *
+     * @param outputStream
+     *            the stream to write to
+     * @param inputStream
+     *            the stream to read from
+     * @throws IOException
+     *             if reading or writing fails
+     */
     protected void writeStream(ServletOutputStream outputStream,
             InputStream inputStream) throws IOException {
         final byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];

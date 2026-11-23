@@ -15,11 +15,10 @@
  */
 package com.vaadin.flow.router;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.parallel.Isolated;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -27,26 +26,27 @@ import com.vaadin.flow.server.VaadinService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-@NotThreadSafe
+@Isolated
 class InternalServerErrorTest {
 
-    private BeforeEnterEvent event = Mockito.mock(BeforeEnterEvent.class);
+    private BeforeEnterEvent event = mock(BeforeEnterEvent.class);
 
-    private VaadinService service = Mockito.mock(VaadinService.class);
+    private VaadinService service = mock(VaadinService.class);
 
-    private DeploymentConfiguration configuration = Mockito
-            .mock(DeploymentConfiguration.class);
+    private DeploymentConfiguration configuration = mock(
+            DeploymentConfiguration.class);
 
     @BeforeEach
     void setUp() {
         VaadinService.setCurrent(service);
 
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
 
         Location location = new Location("bar");
-        Mockito.when(event.getLocation()).thenReturn(location);
+        when(event.getLocation()).thenReturn(location);
     }
 
     @AfterEach
@@ -56,7 +56,7 @@ class InternalServerErrorTest {
 
     @Test
     void productionMode_noWarningAndStacktrace() {
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        when(configuration.isProductionMode()).thenReturn(true);
 
         InternalServerError testInstance = new InternalServerError();
 
@@ -69,7 +69,7 @@ class InternalServerErrorTest {
 
     @Test
     void nonProductionMode_noLogBinding_showWaringAndStacktrace() {
-        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        when(configuration.isProductionMode()).thenReturn(false);
 
         InternalServerError testInstance = new InternalServerError() {
 
@@ -98,7 +98,7 @@ class InternalServerErrorTest {
 
     @Test
     void nonProductionMode_hasLogBinding_showStacktraceAndNoWarning() {
-        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        when(configuration.isProductionMode()).thenReturn(false);
 
         InternalServerError testInstance = new InternalServerError() {
 

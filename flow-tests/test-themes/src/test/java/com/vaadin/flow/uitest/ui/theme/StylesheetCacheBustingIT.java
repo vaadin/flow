@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
+import java.net.URI;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -22,7 +23,6 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -35,51 +35,41 @@ public class StylesheetCacheBustingIT extends ChromeBrowserTest {
     private static final Pattern HASH_PARAM_PATTERN = Pattern
             .compile("[?&]v-c=[0-9a-f]{8}");
 
+    /**
+     * The stylesheets declared on {@link AppShell}. Production mode omits the
+     * {@code data-id}/{@code data-file-path} attributes, so the links are
+     * identified by the path they resolve to instead. The test app uses the
+     * default servlet mapping, which makes {@code <base href>} the context root
+     * and these paths stable.
+     */
+    private static final List<String> APP_SHELL_STYLESHEET_PATHS = List.of(
+            "/aura/fake-aura.css", "/styles.css", "/relurl-test/styles.css");
+
     @Test
     public void stylesheetLinksHaveCacheBustingHash() {
-        getDriver()
-                .get(getRootURL() + "/view/" + CssLoadingView.class.getName());
-        waitForDevServer();
+        openCssLoadingView();
         Assume.assumeTrue(
                 "Skipping: cache-busting is only applied in production mode",
                 isProductionMode());
 
-        // Verify context:// stylesheet also has cache-busting hash
-        assertLinkHasHash("appShell-context://styles.css");
+        // Verify the context:// stylesheet has a cache-busting hash
+        assertStylesheetHasHash("/styles.css");
     }
 
     @Test
     public void allAppShellStylesheetLinksHaveCacheBustingHash() {
-        getDriver()
-                .get(getRootURL() + "/view/" + CssLoadingView.class.getName());
-        waitForDevServer();
+        openCssLoadingView();
         Assume.assumeTrue(
                 "Skipping: cache-busting is only applied in production mode",
                 isProductionMode());
 
-        List<WebElement> appShellLinks = getDriver().findElements(
-                By.cssSelector("link[rel='stylesheet'][data-id^='appShell-']"));
-        Assert.assertFalse("Expected at least one appShell stylesheet link",
-                appShellLinks.isEmpty());
+        APP_SHELL_STYLESHEET_PATHS.forEach(this::assertStylesheetHasHash);
+    }
 
-        for (WebElement link : appShellLinks) {
-            String href = link.getAttribute("href");
-            String dataId = link.getAttribute("data-id");
-
-            // Skip external URLs
-            if (href.startsWith("http://") || href.startsWith("https://")) {
-                String lowerHref = href.toLowerCase();
-                if (!lowerHref.contains("localhost")
-                        && !lowerHref.contains("127.0.0.1")) {
-                    continue;
-                }
-            }
-
-            Assert.assertTrue(
-                    "AppShell stylesheet link '" + dataId
-                            + "' should have ?v-c=<hash> but href was: " + href,
-                    HASH_PARAM_PATTERN.matcher(href).find());
-        }
+    private void openCssLoadingView() {
+        getDriver()
+                .get(getRootURL() + "/view/" + CssLoadingView.class.getName());
+        waitForDevServer();
     }
 
     private boolean isProductionMode() {
@@ -87,13 +77,29 @@ public class StylesheetCacheBustingIT extends ChromeBrowserTest {
                 .isEmpty();
     }
 
-    private void assertLinkHasHash(String dataId) {
-        WebElement link = findElement(
-                By.cssSelector("link[data-id='" + dataId + "']"));
-        String href = link.getAttribute("href");
-        Assert.assertTrue(
-                "@StyleSheet link '" + dataId
-                        + "' should contain ?v-c=<hash> but was: " + href,
-                HASH_PARAM_PATTERN.matcher(href).find());
+    private void assertStylesheetHasHash(String expectedPath) {
+        List<String> hrefs = getDriver()
+                .findElements(By.cssSelector("link[rel='stylesheet']")).stream()
+                .map(link -> link.getAttribute("href")).toList();
+        // getAttribute("href") returns the resolved absolute URL, so compare
+        // the path for equality rather than by suffix:
+        // '/relurl-test/styles.css'
+        // also ends with '/styles.css'
+        List<String> matches = hrefs.stream()
+                .filter(href -> expectedPath.equals(pathOf(href))).toList();
+
+        Assert.assertEquals("Expected exactly one stylesheet link with path "
+                + expectedPath + ", but page had " + hrefs, 1, matches.size());
+        Assert.assertTrue("@StyleSheet link '" + expectedPath
+                + "' should contain ?v-c=<hash> but was: " + matches.get(0),
+                HASH_PARAM_PATTERN.matcher(matches.get(0)).find());
+    }
+
+    private static String pathOf(String href) {
+        try {
+            return URI.create(href).getPath();
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 }

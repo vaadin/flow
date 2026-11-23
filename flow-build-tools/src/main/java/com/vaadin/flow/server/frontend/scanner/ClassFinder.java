@@ -15,18 +15,18 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.googlecode.gentyref.GenericTypeReflector;
 
 /**
  * Interface for annotated and subclass class searches.
@@ -105,6 +105,11 @@ public interface ClassFinder extends Serializable {
             return classLoader.getResource(name);
         }
 
+        @Override
+        public List<URL> getResources(String name) throws IOException {
+            return Collections.list(classLoader.getResources(name));
+        }
+
         @SuppressWarnings("unchecked")
         @Override
         public <T> Class<T> loadClass(String name)
@@ -116,8 +121,7 @@ public interface ClassFinder extends Serializable {
         @SuppressWarnings("unchecked")
         public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type) {
             return this.classes.stream()
-                    .filter(cl -> GenericTypeReflector.isSuperType(type, cl)
-                            && !type.equals(cl))
+                    .filter(cl -> type.isAssignableFrom(cl) && !type.equals(cl))
                     .map(cl -> (Class<T>) cl)
                     .collect(Collectors.toCollection(LinkedHashSet::new));
         }
@@ -157,6 +161,11 @@ public interface ClassFinder extends Serializable {
         @Override
         public URL getResource(String name) {
             return classFinder.getResource(name);
+        }
+
+        @Override
+        public List<URL> getResources(String name) throws IOException {
+            return classFinder.getResources(name);
         }
 
         @Override
@@ -208,6 +217,23 @@ public interface ClassFinder extends Serializable {
      * @return the resource
      */
     URL getResource(String name);
+
+    /**
+     * Get all resources with the given name from the classpath.
+     * <p>
+     * Unlike {@link #getResource(String)}, which returns only the first match,
+     * this returns the resource from every jar or folder providing it.
+     *
+     * @param name
+     *            the resource path
+     * @return all matching resources, never {@code null}
+     * @throws IOException
+     *             if the resources cannot be listed
+     * @since 25.3
+     */
+    default List<URL> getResources(String name) throws IOException {
+        return Collections.list(getClassLoader().getResources(name));
+    }
 
     /**
      * Load a class in the classloader.

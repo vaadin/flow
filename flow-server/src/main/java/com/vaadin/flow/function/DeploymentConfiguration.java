@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.CspMode;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.SessionLockCheckStrategy;
@@ -405,6 +406,23 @@ public interface DeploymentConfiguration
     }
 
     /**
+     * Returns the Content Security Policy mode of the application, which tells
+     * whether the application is meant to run under a strict, nonce-based
+     * policy.
+     * <p>
+     * The mode can be configured with the {@link InitParameters#CSP}
+     * configuration parameter. By default, it returns {@link CspMode#OFF}.
+     * <p>
+     * See {@link CspMode} for what each mode does.
+     *
+     * @return the Content Security Policy mode, never null
+     * @since 25.4
+     */
+    default CspMode getCspMode() {
+        return CspMode.OFF;
+    }
+
+    /**
      * Check if the React is enabled for the project, including React router
      * instead of Vaadin router.
      *
@@ -413,6 +431,19 @@ public interface DeploymentConfiguration
      */
     default boolean isReactEnabled() {
         return getBooleanProperty(InitParameters.REACT_ENABLE, true);
+    }
+
+    /**
+     * Checks whether the theme styles plain HTML elements, such as a
+     * <code>&lt;table&gt;</code>, across the whole application.
+     *
+     * @return {@code true} if HTML elements are themed, default is
+     *         {@code false}
+     * @see InitParameters#THEMED_HTML
+     * @since 25.3.1
+     */
+    default boolean isThemedHtml() {
+        return getBooleanProperty(InitParameters.THEMED_HTML, false);
     }
 
     /**

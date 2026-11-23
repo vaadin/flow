@@ -20,21 +20,23 @@ import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 class HierarchicalDataCommunicatorIndexPathResolutionTest
         extends AbstractHierarchicalDataCommunicatorTest {
+    private TreeData<Item> treeData;
     private HierarchicalDataCommunicator<Item> dataCommunicator;
 
     @BeforeEach
     void init() {
         super.init();
 
-        var treeData = new TreeData<Item>();
+        treeData = new TreeData<>();
         populateTreeData(treeData, 3, 2, 1);
 
         var dataGenerator = new CompositeDataGenerator<Item>();
@@ -139,6 +141,26 @@ class HierarchicalDataCommunicatorIndexPathResolutionTest
     }
 
     @Test
+    void expandedItemLostChildren_resolveIndexPath_resolvesToThatItem() {
+        dataCommunicator.expand(
+                Arrays.asList(new Item("Item 2"), new Item("Item 2-1")));
+        treeData.removeItem(new Item("Item 2-1-0"));
+        dataCommunicator.getDataProvider().refreshAll();
+
+        assertEquals(4, dataCommunicator.resolveIndexPath(-1, -1, -1, -1));
+        assertEquals(5, dataCommunicator.rootCache.getFlatSize());
+    }
+
+    @Test
+    void emptyDataProvider_resolveIndexPath_resolvesToZero() {
+        dataCommunicator.setDataProvider(
+                new TreeDataProvider<>(new TreeData<>()), null);
+
+        assertEquals(0, dataCommunicator.resolveIndexPath(-1, -1));
+        assertEquals(0, dataCommunicator.rootCache.getFlatSize());
+    }
+
+    @Test
     void setViewportRange_resolveIndexPage_entireRangeSentWhenSizeChanged() {
         dataCommunicator.expand(new Item("Item 0"));
         dataCommunicator.setViewportRange(2, 1);
@@ -147,11 +169,11 @@ class HierarchicalDataCommunicatorIndexPathResolutionTest
         assertArrayUpdateRange(2, 1);
         assertArrayUpdateItems("name", Map.of(2, "Item 2"));
 
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         dataCommunicator.resolveIndexPath(0);
         fakeClientCommunication();
-        Mockito.verifyNoInteractions(arrayUpdater, arrayUpdate);
+        verifyNoInteractions(arrayUpdater, arrayUpdate);
 
         dataCommunicator.resolveIndexPath(0, 0);
         fakeClientCommunication();

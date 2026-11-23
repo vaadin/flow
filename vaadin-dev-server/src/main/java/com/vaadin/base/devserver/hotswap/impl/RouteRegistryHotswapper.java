@@ -50,6 +50,13 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 public class RouteRegistryHotswapper implements VaadinHotswapper {
 
     /**
+     * Creates the hotswapper. It is found through the service loader.
+     */
+    public RouteRegistryHotswapper() {
+        // Default constructor
+    }
+
+    /**
      * Updates both application registry, to reflect provided class changes.
      * <p>
      *

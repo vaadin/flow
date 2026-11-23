@@ -30,6 +30,8 @@ import java.util.function.Consumer;
 
 import tools.jackson.databind.JsonNode;
 
+import com.vaadin.flow.component.internal.BundledEventData;
+import com.vaadin.flow.component.internal.PrebuiltEventData;
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
@@ -38,6 +40,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -68,6 +71,7 @@ public class ComponentEventBus implements Serializable {
 
         private ComponentEventListener<T> listener;
         private DomListenerRegistration domRegistration;
+        private Registration registration;
 
         public ListenerWrapper(ComponentEventListener<T> listener) {
             this.listener = listener;
@@ -168,7 +172,12 @@ public class ComponentEventBus implements Serializable {
         componentEventData.computeIfAbsent(eventType, t -> new ArrayList<>(1))
                 .add(wrapper);
 
-        return Registration.once(() -> removeListener(eventType, wrapper));
+        // The same registration instance is also used by
+        // ComponentEvent#unregisterListener so that removing the listener stays
+        // idempotent regardless of which way it is removed
+        wrapper.registration = Registration
+                .once(() -> removeListener(eventType, wrapper));
+        return wrapper.registration;
     }
 
     /**
@@ -234,13 +243,9 @@ public class ComponentEventBus implements Serializable {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private <T extends ComponentEvent<?>> void fireEventForListener(T event,
             ListenerWrapper<T> wrapper) {
-        Class<T> eventType = (Class<T>) event.getClass();
-        event.setUnregisterListenerCommand(() -> {
-            removeListener(eventType, wrapper);
-        });
+        event.setUnregisterListenerCommand(wrapper.registration::remove);
         wrapper.listener.onComponentEvent(event);
         event.setUnregisterListenerCommand(null);
     }
@@ -306,19 +311,26 @@ public class ComponentEventBus implements Serializable {
 
         registration.setDisabledUpdateMode(mode);
 
-        LinkedHashMap<String, Class<?>> eventDataExpressions = ComponentEventBusUtil
-                .getEventDataExpressions(eventType);
+        List<String> eventData = ComponentEventBusUtil
+                .getExpressionEventData(eventType);
+        if (AnnotationReader
+                .getAnnotationFor(eventType, PrebuiltEventData.class)
+                .isPresent()) {
+            ElementListenerMap.addEventDataWithoutCspReport(registration,
+                    eventData);
+        } else {
+            ElementListenerMap.addEventData(registration, eventData);
+        }
+        List<String> bundledEventData = ComponentEventBusUtil
+                .getBundledEventData(eventType);
+        if (!bundledEventData.isEmpty()) {
+            ElementListenerMap.addBundledEventData(registration,
+                    bundledEventData);
+        }
 
-        eventDataExpressions.forEach((expression, type) -> {
-            if (Component.class.isAssignableFrom(type)
-                    || type == Element.class) {
-                registration.addEventDataElement(expression);
-            } else {
-                registration.addEventData(expression);
-            }
-        });
-
-        if (!"".equals(filter)) {
+        if (BundledEventData.isBundledFilter(filter)) {
+            ElementListenerMap.setBundledFilter(registration, filter);
+        } else if (!"".equals(filter)) {
             registration.setFilter(filter);
         }
 

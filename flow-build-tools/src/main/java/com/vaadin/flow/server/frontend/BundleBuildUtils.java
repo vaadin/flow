@@ -33,6 +33,9 @@ import com.vaadin.flow.server.Constants;
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
 /**
+ * Utilities for building a frontend bundle from the files of an existing
+ * dev-bundle.
+ *
  * @since 25.1
  */
 public class BundleBuildUtils {
@@ -55,9 +58,9 @@ public class BundleBuildUtils {
     static void copyPackageLockFromBundle(Options options,
             FrontendTools frontendTools) {
         try {
-            if (FrontendBuildUtils.isPlatformMajorVersionUpdated(
-                    options.getClassFinder(), options.getNodeModulesFolder(),
-                    options.getNpmFolder(), options.getBuildDirectory())) {
+            if (FrontendBuildUtils.isPlatformMajorVersionUpdated(options,
+                    options.getNpmFolder(), options.getNodeModulesFolder(),
+                    options.getBuildDirectory())) {
                 getLogger().info(
                         "Platform version updated. Skipping bundle lock file copy.");
                 return;

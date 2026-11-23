@@ -1,0 +1,57 @@
+import { expect } from '@open-wc/testing';
+import {
+  endEagerDependencyLoading,
+  runWhenEagerDependenciesLoaded,
+  startEagerDependencyLoading
+} from '../../../../main/frontend/internal/client/EagerDependencyTracker';
+
+// Beyond the Java suite: the eager-dependency gate is a TypeScript-only split of
+// DependencyLoader, so it has no Java test class of its own; the Java coverage
+// lives in DependencyLoaderTest, ported in DependencyLoaderClassTests.
+describe('EagerDependencyTracker', () => {
+  // Every case below balances its own start/end calls, so the module counter is
+  // back at zero when it finishes.
+
+  it('runs the command immediately when no eager dependencies are loading', () => {
+    let ran = false;
+    runWhenEagerDependenciesLoaded(() => {
+      ran = true;
+    });
+    expect(ran).to.be.true;
+  });
+
+  it('defers the command until all eager dependencies have loaded', () => {
+    const order: string[] = [];
+    startEagerDependencyLoading();
+    runWhenEagerDependenciesLoaded(() => order.push('cmd'));
+    expect(order).to.deep.equal([]); // still loading
+
+    endEagerDependencyLoading();
+    expect(order).to.deep.equal(['cmd']);
+  });
+
+  it('only runs the queued commands when the count returns to zero', () => {
+    const order: string[] = [];
+    startEagerDependencyLoading();
+    startEagerDependencyLoading();
+    runWhenEagerDependenciesLoaded(() => order.push('a'));
+    runWhenEagerDependenciesLoaded(() => order.push('b'));
+
+    endEagerDependencyLoading();
+    expect(order).to.deep.equal([]); // one still loading
+    endEagerDependencyLoading();
+    expect(order).to.deep.equal(['a', 'b']);
+  });
+
+  it('runs commands queued by a command during the run (index loop)', () => {
+    const order: string[] = [];
+    startEagerDependencyLoading();
+    runWhenEagerDependenciesLoaded(() => {
+      order.push('first');
+      // Count is 0 during the run, so this runs immediately rather than queueing.
+      runWhenEagerDependenciesLoaded(() => order.push('nested-immediate'));
+    });
+    endEagerDependencyLoading();
+    expect(order).to.deep.equal(['first', 'nested-immediate']);
+  });
+});

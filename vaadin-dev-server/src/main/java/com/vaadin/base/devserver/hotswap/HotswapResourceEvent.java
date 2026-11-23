@@ -73,6 +73,11 @@ public class HotswapResourceEvent extends HotswapEvent {
                 changedResources, "Changed resources cannot be null"));
     }
 
+    /**
+     * Gets the resources that have changed.
+     *
+     * @return the changed resources, never {@code null}
+     */
     public Set<URI> getChangedResources() {
         return changedResources;
     }

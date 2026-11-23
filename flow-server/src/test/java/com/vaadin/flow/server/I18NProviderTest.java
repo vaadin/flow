@@ -24,11 +24,10 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.parallel.Isolated;
 
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
@@ -41,8 +40,9 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
-@NotThreadSafe
+@Isolated
 public class I18NProviderTest {
 
     private VaadinServletService service;
@@ -180,9 +180,8 @@ public class I18NProviderTest {
             }
         };
 
-        HttpServletRequest httpServletRequest = Mockito
-                .mock(HttpServletRequest.class);
-        HttpSession mockHttpSession = Mockito.mock(HttpSession.class);
+        HttpServletRequest httpServletRequest = mock(HttpServletRequest.class);
+        HttpSession mockHttpSession = mock(HttpSession.class);
         WrappedSession mockWrappedSession = new WrappedHttpSession(
                 mockHttpSession) {
             final ReentrantLock lock = new ReentrantLock();

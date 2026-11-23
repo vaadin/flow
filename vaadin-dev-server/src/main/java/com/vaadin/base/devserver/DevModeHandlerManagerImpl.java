@@ -50,7 +50,7 @@ import com.vaadin.flow.server.startup.VaadinInitializerException;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since 24.3.22
+ * @since 8.0
  */
 public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
@@ -74,6 +74,14 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
     private String applicationUrl;
     private boolean fullyStarted = false;
+
+    /**
+     * Creates the manager. Flow instantiates it when building the
+     * {@code Lookup}.
+     */
+    public DevModeHandlerManagerImpl() {
+        // Default constructor
+    }
 
     @Override
     public Class<?>[] getHandlesTypes() {

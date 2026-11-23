@@ -251,7 +251,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         assert devBundleFolder.exists() : "No dev-bundle folder created";
 
         Optional<String> vaadinVersion = FrontendBuildUtils
-                .getVaadinVersion(options.getClassFinder());
+                .getVaadinVersion(options);
         if (vaadinVersion.isPresent()) {
             ObjectNode vaadinObject = JacksonUtils.createObjectNode();
             vaadinObject.put("version", vaadinVersion.get());
