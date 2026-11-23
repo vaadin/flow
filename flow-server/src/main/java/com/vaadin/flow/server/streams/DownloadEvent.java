@@ -30,6 +30,7 @@ import com.vaadin.flow.internal.EncodeUtil;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.StreamRequestHandler;
 
 /**
  * Class containing meta-data for handling the requested client download.
@@ -46,14 +47,15 @@ public class DownloadEvent {
     private static final String INLINE = "inline";
     private static final String CONTENT_DISPOSITION = "Content-Disposition";
 
-    private VaadinRequest request;
-    private VaadinResponse response;
-    private VaadinSession session;
-    private Element owningElement;
+    private final VaadinRequest request;
+    private final VaadinResponse response;
+    private final VaadinSession session;
+    private final Element owningElement;
     private String fileName;
     private String contentType;
     private long contentLength = -1;
     private Exception exception;
+    private final DownloadDisposition disposition;
 
     public DownloadEvent(VaadinRequest request, VaadinResponse response,
             VaadinSession session, Element owningElement) {
@@ -61,6 +63,9 @@ public class DownloadEvent {
         this.response = response;
         this.session = session;
         this.owningElement = owningElement;
+        disposition = request == null ? null
+                : (DownloadDisposition) request.getAttribute(
+                        StreamRequestHandler.DISPOSITION_REQUEST_ATTRIBUTE);
     }
 
     /**
@@ -146,9 +151,16 @@ public class DownloadEvent {
      * <p>
      * If the Content-Disposition header has already been set, this method will
      * not override it.
+     * <p>
+     * The file name does not decide whether the content is saved or shown. When
+     * the resource the handler is registered with has a
+     * {@link DownloadDisposition}, that disposition is honored and the header
+     * is {@code inline} or {@code attachment} accordingly, with this file name.
+     * Without a disposition, the header is {@code attachment}.
      *
      * @param fileName
      *            the name to be assigned to the file
+     * @see DownloadDisposition
      */
     public void setFileName(String fileName) {
         if (fileName != null) {
@@ -164,12 +176,17 @@ public class DownloadEvent {
      * <p>
      * If the Content-Disposition header has already been set, this method will
      * not override it.
-     * 
+     * <p>
+     * When the resource the handler is registered with has a
+     * {@link DownloadDisposition}, that disposition is honored instead, so the
+     * header may be {@code attachment}.
+     *
+     * @see DownloadDisposition
      * @since 25.0
      */
     public void inline() {
         if (!response.containsHeader(CONTENT_DISPOSITION)) {
-            response.setHeader(CONTENT_DISPOSITION, INLINE);
+            response.setHeader(CONTENT_DISPOSITION, resolveType(INLINE));
         }
     }
 
@@ -186,9 +203,14 @@ public class DownloadEvent {
      * <p>
      * If the Content-Disposition header has already been set, this method will
      * not override it.
+     * <p>
+     * When the resource the handler is registered with has a
+     * {@link DownloadDisposition}, that disposition is honored instead, so the
+     * header may be {@code attachment} with the same file name.
      *
      * @param fileName
      *            the suggested name for the file if saved by the user
+     * @see DownloadDisposition
      * @since 25.0
      */
     public void inline(String fileName) {
@@ -202,8 +224,12 @@ public class DownloadEvent {
         String cleanedFileName = fileName == null ? null
                 : EncodeUtil.removeControlCharacters(fileName);
         response.setHeader(CONTENT_DISPOSITION,
-                buildContentDisposition(type, cleanedFileName));
+                buildContentDisposition(resolveType(type), cleanedFileName));
         this.fileName = cleanedFileName;
+    }
+
+    private String resolveType(String type) {
+        return disposition == null ? type : disposition.getHeaderValue();
     }
 
     private static String buildContentDisposition(String type,
