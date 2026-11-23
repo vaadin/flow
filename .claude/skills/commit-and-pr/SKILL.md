@@ -21,7 +21,7 @@ exact, no fluff.
 - Breaking changes: append `!` before the colon (`feat!`, `fix!`, `chore!`)
   - This includes a behaviour change that working application code can trip
     over: same API, but a different return value, default, timing, calling
-    context or thrown exception that existing callers rely on, so they have to
+    context or thrown exception that callers could reasonably depend on, so they have to
     change their code. A method that stops throwing a documented exception
     callers catch, replaces it with a different type, or now rejects valid
     input it used to accept is breaking
@@ -199,7 +199,7 @@ would hide that the author checked at all.
 | Flag | Icon | Look for |
 |---|---|---|
 | Breaking change | ⚠️ | a signature, default, thrown exception or contract that existing code depends on — the title gets `!` (see the subject line rules) |
-| Behaviour change | ⚠️ | same API, different outcome — including "it was wrong before"; the title gets `!` only when existing callers relied on the old outcome (see the subject line rules) |
+| Behaviour change | ⚠️ | same API, different outcome — including "it was wrong before"; the title gets `!` only when a reasonable caller could have depended on the old outcome (see the subject line rules) |
 | Public API | ⚠️ | additions, `protected` members that subclasses override, deprecations |
 | Security | 🔒 | authentication, authorization, permit lists, path matching, input trusted from the client |
 | Memory & leaks | 🧠 | anything held per UI, per session or per binder; who releases it |
@@ -324,7 +324,7 @@ Only when the change genuinely needs them, always after `How to test`:
 - Summary at most 3 sentences, no class or method names in it.
 - Every risk flag walked; non-empty ones at the top, the rest in one ✅ line.
 - Every behaviour change is in **Risks**, not only in the bullets.
-- The title has `!` when the change is breaking under the subject line rules, including a behaviour change existing callers relied on.
+- The title has `!` when the change is breaking under the subject line rules, including a behaviour change a reasonable caller could have depended on.
 - Issue link present when there is an issue, with the right relation.
 - No `## Checklist`, no footer, no AI attribution.
 - Open the pull request as a draft, and self-review before marking it ready.
