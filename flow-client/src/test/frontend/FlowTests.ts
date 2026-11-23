@@ -547,12 +547,16 @@ describe('Flow', () => {
   });
 
   [
-    { description: 'without a content type', headers: {} },
-    { description: 'with a JSON body', headers: { 'content-type': 'application/json' } }
-  ].forEach(({ description, headers }) => {
+    { description: 'without a content type', headers: {}, body: 'unable to connect' },
+    {
+      description: 'with a JSON body',
+      headers: { 'content-type': 'application/json' },
+      body: '{"status":500,"error":"Internal Server Error","path":"/"}'
+    }
+  ].forEach(({ description, headers, body }) => {
     it(`should show stub when navigating to server view and Flow initialization fails with an HTTP error ${description}`, async () => {
       server.addHandler('GET', /^.*\?v-r=init.*/, (req) => {
-        req.respond(500, headers, 'unable to connect');
+        req.respond(500, headers, body);
       });
       const flow = new Flow();
       const route = flow.serverSideRoutes[0];
@@ -579,7 +583,7 @@ describe('Flow', () => {
       const reportedError = consoleError.getCall(0).args[1];
       expect(reportedError).to.be.instanceOf(Error);
       expect(reportedError.message).to.contain('500');
-      expect(reportedError.message).to.contain('unable to connect');
+      expect(reportedError.message).to.contain(body);
 
       // @ts-ignore
       let onBeforeEnterReturns = view.onBeforeEnter(params, {});
