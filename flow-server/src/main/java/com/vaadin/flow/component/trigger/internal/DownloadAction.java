@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.io.Serializable;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
@@ -195,7 +194,7 @@ public class DownloadAction extends Action {
      * @since 25.4
      */
     @JsDefinition
-    public interface DownloadJs extends Serializable {
+    public interface DownloadJs extends JsSnippets {
 
         /**
          * An action that downloads from the URL of an input, next to the

@@ -173,6 +173,41 @@ public class ReflectTools implements Serializable {
     }
 
     /**
+     * Gets the public methods of the given type, like
+     * {@link Class#getMethods()}, but with each method read from the class that
+     * declares it.
+     * <p>
+     * A class keeps the methods it inherits as they were when it first listed
+     * them. Redefining the class that declares a method, as a hotswap does,
+     * refreshes the methods of that class but not the copies its subtypes hold,
+     * so the annotations of an inherited method would still be the ones from
+     * before the redefinition. Reading each method from its declaring class
+     * gives the current ones.
+     *
+     * @param type
+     *            the type to get the public methods of, not <code>null</code>
+     * @return the public methods of the type, not <code>null</code>
+     */
+    public static List<Method> getCurrentPublicMethods(Class<?> type) {
+        List<Method> methods = new ArrayList<>();
+        for (Method method : type.getMethods()) {
+            Class<?> declaringClass = method.getDeclaringClass();
+            if (declaringClass == type) {
+                methods.add(method);
+                continue;
+            }
+            try {
+                methods.add(declaringClass.getDeclaredMethod(method.getName(),
+                        method.getParameterTypes()));
+            } catch (NoSuchMethodException e) { // NOSONAR
+                // Only a redefinition between the two lookups can remove it
+                methods.add(method);
+            }
+        }
+        return methods;
+    }
+
+    /**
      * Returns the value of the java field.
      * <p>
      * Uses getter if present, otherwise tries to access even private fields

@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.io.Serializable;
-
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.clipboard.ClipboardPayload;
@@ -103,7 +101,7 @@ public class ReadFromClipboardAction extends PromiseAction<ClipboardPayload> {
      * @since 25.4
      */
     @JsDefinition
-    public interface ReadFromClipboardJs extends Serializable {
+    public interface ReadFromClipboardJs extends JsSnippets {
 
         /**
          * An action that reads the clipboard.

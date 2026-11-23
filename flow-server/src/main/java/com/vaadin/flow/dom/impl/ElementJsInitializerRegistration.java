@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.dom.impl;
 
-import java.io.Serializable;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
@@ -29,6 +28,7 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.server.Command;
@@ -191,7 +191,7 @@ public final class ElementJsInitializerRegistration implements Registration {
      * @since 25.4
      */
     @JsDefinition
-    public interface InitializerJs extends Serializable {
+    public interface InitializerJs extends JsInvokers {
 
         /**
          * Applies the initializer to the element and registers the cleanup

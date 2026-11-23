@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
@@ -44,7 +42,7 @@ import com.vaadin.flow.js.JsSnippets;
  * @since 25.4
  */
 @JsDefinition
-public interface TriggerJs extends Serializable {
+public interface TriggerJs extends JsSnippets {
 
     /**
      * An action that calls a return channel without a value.

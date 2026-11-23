@@ -369,7 +369,7 @@ public final class Clipboard implements Serializable {
      * @since 25.4
      */
     @JsDefinition
-    public interface PasteJs extends Serializable {
+    public interface PasteJs extends JsSnippets {
 
         /**
          * Event data that reads the pasted data of a MIME type. Optional

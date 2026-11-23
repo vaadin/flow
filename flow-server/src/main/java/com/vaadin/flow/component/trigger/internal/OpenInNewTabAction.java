@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.io.Serializable;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -244,7 +243,7 @@ public class OpenInNewTabAction extends Action {
      * @since 25.4
      */
     @JsDefinition
-    public interface OpenInNewTabJs extends Serializable {
+    public interface OpenInNewTabJs extends JsSnippets {
 
         /**
          * An action that opens the URL of an input in a new browser tab, unless
