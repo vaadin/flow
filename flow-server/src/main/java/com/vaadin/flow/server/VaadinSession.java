@@ -843,6 +843,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                             CurrentInstance.restoreInstances(oldCurrent);
                         }
                     }
+                    // Whatever is still not sent by now waits for a later
+                    // request, push or poll
+                    ui.getInternals().checkUndeliveredJavaScriptInvocations();
                 }
                 sessionScopedTransaction = null;
                 this.lastUnlocked = System.currentTimeMillis();
