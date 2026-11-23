@@ -27,6 +27,7 @@ import java.util.concurrent.Future;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -38,6 +39,8 @@ import com.vaadin.tests.util.TestUtil;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Isolated
@@ -179,5 +182,25 @@ class CurrentInstanceTest {
         ExecutorService service = Executors.newSingleThreadExecutor();
         Future<Void> future = service.submit(runnable);
         future.get();
+    }
+
+    @Test
+    void unlockAndRestoreInstances_unlockThrows_previousInstancesRestored() {
+        CurrentInstance.set(CurrentInstanceTest.class, this);
+        Map<Class<?>, CurrentInstance> previous = CurrentInstance
+                .getInstances();
+        UI ui = Mockito.mock(UI.class);
+        UI.setCurrent(ui);
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        IllegalStateException failure = new IllegalStateException();
+        Mockito.doThrow(failure).when(session).unlock();
+
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> CurrentInstance.unlockAndRestoreInstances(session,
+                        previous));
+
+        assertSame(failure, thrown);
+        assertNull(UI.getCurrent());
+        assertSame(this, CurrentInstance.get(CurrentInstanceTest.class));
     }
 }

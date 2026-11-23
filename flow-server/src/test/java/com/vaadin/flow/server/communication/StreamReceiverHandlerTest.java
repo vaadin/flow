@@ -303,6 +303,17 @@ class StreamReceiverHandlerTest {
         List<UI> inFailed = new ArrayList<>();
         doAnswer(i -> inFailed.add(UI.getCurrent())).when(streamVariable)
                 .streamingFailed(any());
+        when(session.hasLock()).thenReturn(false);
+        doAnswer(i -> when(session.hasLock()).thenReturn(true)).when(session)
+                .lock();
+        doAnswer(i -> when(session.hasLock()).thenReturn(false)).when(session)
+                .unlock();
+        List<UI> inErrorHandler = new ArrayList<>();
+        when(session.getErrorHandler()).thenAnswer(i -> {
+            assertTrue(session.hasLock());
+            inErrorHandler.add(UI.getCurrent());
+            return errorHandler;
+        });
 
         try {
             handler.doHandleXhrFilePost(session, request, response,
@@ -311,6 +322,8 @@ class StreamReceiverHandlerTest {
             verify(response)
                     .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
             assertEquals(List.of(ui), inFailed);
+            verify(errorHandler).error(any());
+            assertEquals(List.of(ui), inErrorHandler);
             assertNull(UI.getCurrent());
         } finally {
             CurrentInstance.clearAll();
@@ -433,6 +446,10 @@ class StreamReceiverHandlerTest {
                 .streamingStarted(any());
         doAnswer(i -> inCallbacks.add(UI.getCurrent())).when(streamVariable)
                 .streamingFinished(any());
+        when(streamVariable.listenProgress()).thenReturn(true);
+        List<UI> inProgress = new ArrayList<>();
+        doAnswer(i -> inProgress.add(UI.getCurrent())).when(streamVariable)
+                .onProgress(any());
         List<UI> inWrite = new ArrayList<>();
         outputStream = new OutputStream() {
             @Override
@@ -451,6 +468,8 @@ class StreamReceiverHandlerTest {
                     String.valueOf(uiId), expectedSecurityKey);
 
             assertEquals(List.of(ui, ui), inCallbacks);
+            assertFalse(inProgress.isEmpty());
+            assertTrue(inProgress.stream().allMatch(ui::equals));
             assertFalse(inWrite.isEmpty());
             assertTrue(inWrite.stream().allMatch(Objects::isNull));
             assertNull(UI.getCurrent());
