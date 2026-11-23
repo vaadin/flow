@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.io.Serializable;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -24,6 +23,7 @@ import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
@@ -155,8 +155,12 @@ public class OpenInNewTabAction extends Action {
      * default features ({@value #DEFAULT_FEATURES}). The handler is registered
      * as a stream resource scoped to the trigger host element, with the same
      * lifecycle as in {@link DownloadAction#DownloadAction(DownloadHandler)}.
-     * The browser shows the content only if the handler serves it inline;
-     * content served as an attachment is downloaded instead.
+     * The content is served inline, so that the browser shows it when it can,
+     * unless the handler calls
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#attachment(String)}
+     * or the deprecated
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
+     * itself. The handler itself is not changed.
      *
      * @param handler
      *            produces the response when the URL is fetched, not
@@ -165,7 +169,8 @@ public class OpenInNewTabAction extends Action {
      */
     public OpenInNewTabAction(DownloadHandler handler) {
         this(new DownloadHandlerInput(
-                Objects.requireNonNull(handler, "handler must not be null")),
+                Objects.requireNonNull(handler, "handler must not be null"),
+                DownloadDisposition.INLINE),
                 new LiteralInput<>(DEFAULT_FEATURES));
     }
 
@@ -234,9 +239,11 @@ public class OpenInNewTabAction extends Action {
      * {@link JsSnippets#of(Class)}.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
      */
     @JsDefinition
-    public interface OpenInNewTabJs extends Serializable {
+    public interface OpenInNewTabJs extends JsSnippets {
 
         /**
          * An action that opens the URL of an input in a new browser tab, unless

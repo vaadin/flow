@@ -48,7 +48,7 @@ public class ClassDownloadHandler
 
     private final Class<?> clazz;
     private final String resourceName;
-    private String fileName;
+    private final String fileName;
     private boolean rangeRequestsEnabled;
 
     /**
@@ -114,11 +114,7 @@ public class ClassDownloadHandler
             String resourceName = getUrlPostfix();
             downloadEvent.setContentType(resolveContentType(resourceName,
                     downloadEvent.getResponse()));
-            if (isInline()) {
-                downloadEvent.inline(resourceName);
-            } else {
-                downloadEvent.setFileName(resourceName);
-            }
+            downloadEvent.fileName(resourceName, isInline());
             transferContent(downloadEvent, inputStream, outputStream,
                     connection.getContentLengthLong(),
                     rangeRequestsEnabled

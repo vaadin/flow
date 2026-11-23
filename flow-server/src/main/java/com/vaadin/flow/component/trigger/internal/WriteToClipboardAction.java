@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.io.Serializable;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
@@ -252,9 +251,11 @@ public class WriteToClipboardAction extends PromiseAction<String> {
      * {@link JsSnippets#of(Class)}.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
      */
     @JsDefinition
-    public interface WriteToClipboardJs extends Serializable {
+    public interface WriteToClipboardJs extends JsSnippets {
 
         /**
          * An action that writes the values of the given inputs to the

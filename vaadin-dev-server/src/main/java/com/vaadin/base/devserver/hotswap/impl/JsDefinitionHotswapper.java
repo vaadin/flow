@@ -29,6 +29,7 @@ import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
@@ -73,6 +74,11 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * among the definitions the generated file names, which is every one a browser
  * can run.
  * <p>
+ * The methods of an interface that a definition extends, annotated or not, are
+ * generated as part of every definition that extends it. Redefining such an
+ * interface is handled the same way: the definitions the generated file names
+ * that extend it are written again or reported.
+ * <p>
  * For internal use only. May be renamed or removed in a future release.
  * 
  * @since 25.4
@@ -83,19 +89,21 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
     public void onClassesChange(HotswapClassEvent event) {
         Set<Class<?>> changed = event.getChangedClasses();
         List<Class<?>> definitions = new ArrayList<>(changed.stream()
-                .filter(type -> type.isAnnotationPresent(JsDefinition.class))
-                .toList());
+                .filter(JsDefinitionProxy::isDefinition).toList());
         List<Class<?>> snippetTypes = changed.stream()
                 .filter(JsDefinitionProxy::isApplicationSnippetType).toList();
-        if (definitions.isEmpty() && snippetTypes.isEmpty()) {
+        List<Class<?>> inheritedTypes = changed.stream()
+                .filter(JsDefinitionHotswapper::declaresJavaScript).toList();
+        if (definitions.isEmpty() && snippetTypes.isEmpty()
+                && inheritedTypes.isEmpty()) {
             return;
         }
 
         VaadinService service = event.getVaadinService();
         Options options = buildOptions(service);
 
-        for (Class<?> definition : findDefinitionsReturning(options,
-                snippetTypes)) {
+        for (Class<?> definition : findAffectedDefinitions(options,
+                snippetTypes, inheritedTypes)) {
             // Not redefined itself, so what was cached of it, such as the
             // identifiers of its functions, is not cleared after the
             // hotswappers run and would still be what the type declared before
@@ -128,22 +136,38 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
     }
 
     /**
-     * The definitions named by the generated file that have a method returning
-     * one of the given snippet types. A name that can not be loaded is skipped:
-     * it is a definition that is no longer on the class path.
+     * Checks whether the given type is an interface with JavaScript of its own
+     * or inherited, which is generated as part of the definitions that extend
+     * it, whether or not it is a definition itself.
      */
-    private static List<Class<?>> findDefinitionsReturning(Options options,
-            List<Class<?>> snippetTypes) {
-        if (snippetTypes.isEmpty()) {
+    private static boolean declaresJavaScript(Class<?> type) {
+        return type.isInterface() && ReflectTools.getCurrentPublicMethods(type)
+                .stream().anyMatch(method -> method
+                        .isAnnotationPresent(JsExpression.class));
+    }
+
+    /**
+     * The definitions named by the generated file that have a method returning
+     * one of the given snippet types or that extend one of the given
+     * interfaces. A name that can not be loaded is skipped: it is a definition
+     * that is no longer on the class path.
+     */
+    private static List<Class<?>> findAffectedDefinitions(Options options,
+            List<Class<?>> snippetTypes, List<Class<?>> inheritedTypes) {
+        if (snippetTypes.isEmpty() && inheritedTypes.isEmpty()) {
             return List.of();
         }
+        List<Class<?>> relatedTypes = new ArrayList<>(snippetTypes);
+        relatedTypes.addAll(inheritedTypes);
         List<Class<?>> definitions = new ArrayList<>();
         for (String name : TaskGenerateJsDefinitions
                 .findDefinitionNamesInGeneratedFile(options)) {
-            Class<?> definition = load(name, snippetTypes);
-            if (definition != null && Arrays.stream(definition.getMethods())
-                    .map(Method::getReturnType)
-                    .anyMatch(snippetTypes::contains)) {
+            Class<?> definition = load(name, relatedTypes);
+            if (definition != null && (Arrays.stream(definition.getMethods())
+                    .map(Method::getReturnType).anyMatch(snippetTypes::contains)
+                    || inheritedTypes.stream()
+                            .anyMatch(type -> type != definition
+                                    && type.isAssignableFrom(definition)))) {
                 definitions.add(definition);
             }
         }
@@ -151,15 +175,14 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
     }
 
     /**
-     * Loads a definition with the loader of one of the snippet types it may
-     * return, or with the context class loader, which is what loads the
-     * application when the definition comes from it and the snippet type from a
-     * library.
+     * Loads a definition with the loader of one of the types it may be related
+     * to, or with the context class loader, which is what loads the application
+     * when the definition comes from it and the related type from a library.
      */
-    private static Class<?> load(String name, List<Class<?>> snippetTypes) {
+    private static Class<?> load(String name, List<Class<?>> relatedTypes) {
         List<ClassLoader> loaders = new ArrayList<>();
         loaders.add(Thread.currentThread().getContextClassLoader());
-        snippetTypes.forEach(type -> loaders.add(type.getClassLoader()));
+        relatedTypes.forEach(type -> loaders.add(type.getClassLoader()));
         for (ClassLoader loader : loaders) {
             if (loader == null) {
                 continue;
