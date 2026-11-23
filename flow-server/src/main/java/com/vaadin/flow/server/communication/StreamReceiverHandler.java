@@ -107,6 +107,11 @@ public class StreamReceiverHandler implements Serializable {
 
     /**
      * Handle reception of incoming stream from the client.
+     * <p>
+     * The UI that owns the node of the stream receiver is made current only
+     * while the session is locked, for the {@link StreamVariable} callbacks and
+     * the error handler. The transfer itself, including writes to the
+     * receiver's output stream, runs without the lock and without a current UI.
      *
      * @param session
      *            The session for the request
@@ -117,7 +122,8 @@ public class StreamReceiverHandler implements Serializable {
      * @param streamReceiver
      *            the receiver containing the destination stream variable
      * @param uiId
-     *            id of the targeted ui
+     *            id of the UI the client targeted; not used, the UI is resolved
+     *            from the node of the stream receiver
      * @param securityKey
      *            security from the request that should match registered stream
      *            receiver id
