@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.dom;
 
-import java.io.Serializable;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -24,6 +23,7 @@ import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,7 +39,7 @@ class JsFunctionTest {
     }
 
     @JsDefinition
-    interface LoggerJs extends Serializable {
+    interface LoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value);")
         @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
@@ -57,14 +57,14 @@ class JsFunctionTest {
     }
 
     @JsDefinition
-    interface OtherLoggerJs extends Serializable {
+    interface OtherLoggerJs extends JsSnippets {
         @JsExpression("console.info($0, value);")
         @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
-    interface ConsoleJs extends Serializable {
+    interface ConsoleJs extends JsInvokers {
         @JsExpression("console.log($0);")
         void log(String message);
     }

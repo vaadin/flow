@@ -28,6 +28,7 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
@@ -828,5 +829,29 @@ class ReflectToolsTest {
             assertEquals(String.format(expectedError, cls.getName()),
                     re.getMessage());
         }
+    }
+
+    interface ParentType {
+        void inherited();
+
+        void overridden();
+    }
+
+    interface ChildType extends ParentType {
+        @Override
+        void overridden();
+
+        void own();
+    }
+
+    @Test
+    void getCurrentPublicMethods_sameMethodsAsGetMethods() {
+        // Each read from its declaring class, so an override has to replace
+        // the method it overrides rather than come along with it
+        List<Method> methods = ReflectTools
+                .getCurrentPublicMethods(ChildType.class);
+
+        assertEquals(ChildType.class.getMethods().length, methods.size());
+        assertEquals(Set.of(ChildType.class.getMethods()), Set.copyOf(methods));
     }
 }

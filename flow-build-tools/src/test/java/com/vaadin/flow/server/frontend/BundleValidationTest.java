@@ -50,6 +50,7 @@ import com.vaadin.flow.internal.Template;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.Mode;
@@ -3067,7 +3068,7 @@ class BundleValidationTest {
     }
 
     @JsDefinition
-    interface BundledJs {
+    interface BundledJs extends JsInvokers {
         @JsExpression("this.focus()")
         void focus();
     }
