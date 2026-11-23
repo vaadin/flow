@@ -181,7 +181,7 @@ public interface PushConfiguration extends Serializable {
  * @since 1.0
  */
 class PushConfigurationImpl implements PushConfiguration {
-    private UI ui;
+    private final UI ui;
     private PushConnectionFactory pushConnectionFactory;
 
     PushConfigurationImpl(UI ui) {
