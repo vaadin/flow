@@ -1027,7 +1027,10 @@ public class Element extends Node<Element> {
      * propagate the change back to the signal. After the callback, the signal
      * is re-consulted: if its value differs from what was being set (e.g., the
      * callback applied a transformation), the signal's updated value wins and
-     * the property is reverted to it.
+     * the property is reverted to it. This also applies when the callback
+     * leaves the signal unchanged, so the write callback must update the signal
+     * synchronously: otherwise, a client-side value is reverted to the current
+     * signal value until the signal changes.
      * <p>
      * Example of a read-only binding:
      *
