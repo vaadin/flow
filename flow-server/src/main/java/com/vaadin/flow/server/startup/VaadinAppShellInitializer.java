@@ -32,6 +32,9 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.CoreFeatureFlagProvider;
+import com.vaadin.experimental.DisabledFeatureException;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.BodySize;
@@ -47,6 +50,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 
@@ -88,6 +92,9 @@ public class VaadinAppShellInitializer
      *            this class.
      * @param context
      *            the {@link VaadinContext}.
+     * @throws DisabledFeatureException
+     *             if the {@link Push} annotation of the app shell selects a
+     *             transport whose feature flag is not enabled
      * @since 6.0
      */
     @SuppressWarnings("unchecked")
@@ -152,6 +159,30 @@ public class VaadinAppShellInitializer
                 String message = String.format(ERROR_HEADER_NO_SHELL, payload);
                 throw new InvalidApplicationConfigurationException(message);
             }
+        }
+
+        checkPushTransportEnabled(registry.getShell(), context);
+    }
+
+    /**
+     * Fails startup when the {@link Push} annotation of the app shell selects a
+     * transport behind a disabled feature flag. Otherwise every UI creation
+     * would fail with the same error, but only once a page is requested.
+     */
+    private static void checkPushTransportEnabled(
+            Class<? extends AppShellConfigurator> shell,
+            VaadinContext context) {
+        if (shell == null) {
+            return;
+        }
+        boolean usesServerSentEvents = Arrays
+                .stream(shell.getAnnotationsByType(Push.class))
+                .anyMatch(push -> push
+                        .transport() == Transport.SERVER_SENT_EVENTS);
+        if (usesServerSentEvents && !FeatureFlags.get(context)
+                .isEnabled(CoreFeatureFlagProvider.SSE_PUSH_TRANSPORT)) {
+            throw new DisabledFeatureException(
+                    CoreFeatureFlagProvider.SSE_PUSH_TRANSPORT);
         }
     }
 
