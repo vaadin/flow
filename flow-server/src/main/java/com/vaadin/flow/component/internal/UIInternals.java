@@ -657,13 +657,13 @@ public class UIInternals implements Serializable {
      * Logs a warning if an alarming number of JavaScript invocations scheduled
      * for the related UI are still waiting to be sent to the client.
      * <p>
-     * Called by the framework whenever the session lock is acquired. All
-     * invocations scheduled while holding the lock are sent when the response
-     * is written or pushed, so only invocations left over from earlier holds of
-     * the lock are an actual sign of invocations piling up. The warning is
+     * Called by the framework whenever the session lock is acquired, so that
+     * only invocations scheduled during earlier holds of the lock and not sent
+     * since are counted, rather than a single hold that schedules many
+     * invocations which are sent when its response is written. The warning is
      * logged at most once for the UI.
-     *
-     * @since 25.4
+     * <p>
+     * This method is meant for framework internal use.
      */
     public void checkUndeliveredJavaScriptInvocations() {
         PendingJavaScriptInvocationUtil.checkUndeliveredInvocations(this);

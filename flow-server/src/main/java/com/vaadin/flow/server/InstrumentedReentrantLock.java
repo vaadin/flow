@@ -184,7 +184,8 @@ class InstrumentedReentrantLock extends ReentrantLock {
     /*
      * Locking is hot enough that the events are only built, and the times only
      * measured, when somebody is there to receive them: an application that
-     * observes nothing pays for nothing.
+     * observes nothing pays for nothing. The check for undelivered JavaScript
+     * invocations always runs, but only reads a counter per UI.
      */
 
     private void lockAcquired(boolean fireRequested, boolean timeWait,
@@ -206,9 +207,10 @@ class InstrumentedReentrantLock extends ReentrantLock {
     }
 
     /*
-     * Everything scheduled during the previous hold of the lock has been sent
-     * by now, so this is where JavaScript invocations that keep piling up can
-     * be told apart from a single hold that schedules a lot of them.
+     * A request sends everything it scheduled in its response, so counting
+     * while invocations are scheduled warns about any large view built in one
+     * request. Invocations from earlier holds that are still unsent when the
+     * lock is taken again are the ones that may keep piling up.
      */
     private void checkUndeliveredJavaScriptInvocations() {
         VaadinSession currentSession = getSession();

@@ -56,10 +56,10 @@ final class PendingJavaScriptInvocationUtil {
      * <p>
      * The count is kept per UI rather than per state node, since a running
      * application has far more state nodes than UIs and even a single field on
-     * every node adds up. Nothing is logged here, since every invocation
-     * scheduled while holding the session lock is sent when the response is
-     * written or pushed, no matter how many there are. See
-     * {@link #checkUndeliveredInvocations(UIInternals)}.
+     * every node adds up. Nothing is logged here, since a request that
+     * schedules many invocations sends them all in its response. Only
+     * invocations still waiting when the session lock is acquired again are
+     * reported, see {@link #checkUndeliveredInvocations(UIInternals)}.
      *
      * @param invocation
      *            the invocation waiting to be sent, not <code>null</code>
