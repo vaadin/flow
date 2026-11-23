@@ -1,4 +1,6 @@
 import { expect } from '@open-wc/testing';
+import sinon from 'sinon';
+import { Console } from '../../../../../main/frontend/internal/client/Console';
 import { UIState } from '../../../../../main/frontend/internal/client/UILifecycle';
 import { ExecuteJavaScriptProcessor } from '../../../../../main/frontend/internal/client/flow/ExecuteJavaScriptProcessor';
 import { ExistingElementMap } from '../../../../../main/frontend/internal/client/ExistingElementMap';
@@ -230,6 +232,83 @@ describe('ExecuteJavaScriptProcessor', () => {
       await Promise.resolve();
 
       expect(resolved).to.eql(['answer']);
+    });
+
+    describe('an error in the function', () => {
+      let reported: unknown[];
+      let logged: unknown[];
+
+      beforeEach(() => {
+        reported = [];
+        logged = [];
+        sinon.stub(Console, 'reportStacktrace').callsFake((exception: unknown) => reported.push(exception));
+        sinon.stub(Console, 'error').callsFake((message: unknown) => logged.push(message));
+      });
+
+      afterEach(() => {
+        sinon.restore();
+      });
+
+      async function settle(): Promise<void> {
+        await Promise.resolve();
+        await Promise.resolve();
+      }
+
+      const throwing = (error: Error) => (): never => {
+        throw error;
+      };
+      const rejecting = (error: Error) => async () => Promise.reject(error);
+
+      [throwing, rejecting].forEach((definition) => {
+        it(`is reported when ${definition === throwing ? 'thrown' : 'rejected'} and the call is not subscribed to`, async () => {
+          const error = new Error('boom');
+          registerDefinition(GREETING, definition(error), 'ErrorJs.throwError');
+
+          run([{ tagName: 'div' }, greeting]);
+          await settle();
+
+          expect(reported).to.eql([error]);
+          expect(logged).to.eql([
+            'Exception is thrown while running ErrorJs.throwError. Stacktrace will be dumped separately.'
+          ]);
+        });
+      });
+
+      function runSubscribed(definition: DefinitionFunction): { resolved: unknown[]; errors: unknown[] } {
+        registerDefinition(VALUE, definition, 'ErrorJs.value');
+        const resolved: unknown[] = [];
+        const errors: unknown[] = [];
+        run([
+          { tagName: 'div' },
+          (returned: unknown) => resolved.push(returned),
+          (e: unknown) => errors.push(e),
+          value
+        ]);
+        return { resolved, errors };
+      }
+
+      it('is reported and sent to the error channel when thrown and the call is subscribed to', async () => {
+        const error = new Error('boom');
+        const { resolved, errors } = runSubscribed(throwing(error));
+        await settle();
+
+        expect(reported).to.eql([error]);
+        expect(logged).to.have.lengthOf(1);
+        expect(resolved).to.eql([]);
+        expect(errors).to.eql(['Error: boom']);
+      });
+
+      it('is only sent to the error channel when rejected and the call is subscribed to', async () => {
+        // The server may expect the rejection, as for a denied permission,
+        // and executeJs(String) does not log it either
+        const { resolved, errors } = runSubscribed(rejecting(new Error('boom')));
+        await settle();
+
+        expect(errors).to.eql(['Error: boom']);
+        expect(resolved).to.eql([]);
+        expect(reported).to.eql([]);
+        expect(logged).to.eql([]);
+      });
     });
 
     it('does not run a call whose parameters do not match the function', () => {

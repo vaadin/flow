@@ -19,7 +19,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -107,6 +106,6 @@ public class HistoryIT extends ChromeBrowserTest {
 
     private List<String> getStatusMessages() {
         return findElements(By.className("status")).stream()
-                .map(WebElement::getText).collect(Collectors.toList());
+                .map(WebElement::getText).toList();
     }
 }

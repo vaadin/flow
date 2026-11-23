@@ -27,6 +27,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import static com.vaadin.flow.server.frontend.NodeInstallation.LAST_USED_FILE;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NodeInstallationsTest {
@@ -44,6 +45,15 @@ class NodeInstallationsTest {
         NodeInstallation inUse = installation("node-v24.19.0", LONG_AGO);
         NodeInstallation stale = installation("node-v20.0.0", LONG_AGO);
         NodeInstallation recent = installation("node-v22.0.0", RECENTLY);
+        NodeInstallation reinstalling = installation("node-v21.0.0", LONG_AGO);
+        LockFile reinstallLock = new LockFile(
+                reinstalling.getInstallLockFile().toPath(), "test");
+        reinstallLock.acquire();
+        // Left behind by a build that died while installing
+        NodeInstallation interrupted = installation("node-v19.0.0", LONG_AGO);
+        Files.writeString(interrupted.getInstallLockFile().toPath(),
+                "1\nnot the command line of the process",
+                StandardCharsets.UTF_8);
 
         // The remains of an earlier removal, and neighbours in ~/.vaadin that
         // are none of our business
@@ -56,7 +66,12 @@ class NodeInstallationsTest {
         File offlineKey = new File(vaadinHome, "offlineKey");
         assertTrue(offlineKey.createNewFile());
 
-        NodeInstallations.removeUnused(vaadinHome, inUse);
+        try {
+            assertTimeoutPreemptively(Duration.ofSeconds(30),
+                    () -> NodeInstallations.removeUnused(vaadinHome, inUse));
+        } finally {
+            reinstallLock.release();
+        }
 
         assertFalse(exists(stale),
                 "An installation unused for over 6 months should be removed");
@@ -64,6 +79,10 @@ class NodeInstallationsTest {
                 "The installation in use should be kept even when stale");
         assertTrue(exists(recent),
                 "A recently used installation should be kept");
+        assertTrue(exists(reinstalling),
+                "An installation that another build is installing should be kept");
+        assertFalse(exists(interrupted),
+                "An installation whose install was abandoned should be removed when unused");
         assertFalse(remains.exists(),
                 "The remains of an earlier removal should be cleaned up");
         assertTrue(legacyNodeFolder.isDirectory(),

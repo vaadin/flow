@@ -15,11 +15,41 @@
  */
 
 /*
- * Client-side helpers for keyboard shortcuts, referenced from the listener
- * filters and the keydown delegate ShortcutRegistration sends. Provides the
- * popover/modal origin guards (#24974) and the delegate used when a shortcut
- * listens on a browser-only element.
+ * Client-side helpers for keyboard shortcuts, called by the declared listener
+ * filter and keydown delegate of ShortcutRegistration (ShortcutFilterJs and
+ * ShortcutJs). They get the keys, modifiers and options of a shortcut as data,
+ * so the JavaScript is the same for every shortcut. Also provides the
+ * popover/modal origin guards (#24974).
  */
+
+// The key and modifiers of a shortcut. Modifier names are those of
+// KeyboardEvent.getModifierState, separated by spaces.
+interface KeyCombination {
+  keys: string[];
+  requiredModifiers: string;
+  forbiddenModifiers: string;
+}
+
+// The options of the keydown listener filter of a shortcut.
+interface ListenerOptions extends KeyCombination {
+  // Whether the keydown has to originate from the popover/modal scope of the
+  // shortcut owner, located by ownerSelector, or for a null selector from the
+  // top level, outside any open popover/modal.
+  checkOwnerScope: boolean;
+  ownerSelector: string | null;
+  preventDefault: boolean;
+  stopPropagation: boolean;
+  resetFocus: boolean;
+}
+
+// The options of a keydown delegate.
+interface DelegateOptions extends KeyCombination {
+  // Whether a keydown from an open popover/modal inside the delegate element
+  // is ignored.
+  checkBoundary: boolean;
+  resetFocus: boolean;
+  allowDefault: boolean;
+}
 
 // A keydown clone re-dispatched by registerKeydownDelegate, carrying the
 // popover/modal scope the original event came from.
@@ -59,10 +89,24 @@ function originScope(event: RelayedKeyboardEvent): Element | null {
   return '_vaadinShortcutOriginScope' in event ? (event._vaadinShortcutOriginScope ?? null) : eventScope(event);
 }
 
+function splitModifiers(modifiers: string): string[] {
+  return modifiers.split(' ').filter((modifier) => modifier.length > 0);
+}
+
+// Whether the keydown is the key of the shortcut, given as a key code or a key
+// value, with exactly the modifiers the shortcut asks for.
+function matchesKeyCombination(event: KeyboardEvent, combination: KeyCombination): boolean {
+  return (
+    (combination.keys.includes(event.code) || combination.keys.includes(event.key)) &&
+    splitModifiers(combination.requiredModifiers).every((modifier) => event.getModifierState(modifier)) &&
+    !splitModifiers(combination.forbiddenModifiers).some((modifier) => event.getModifierState(modifier))
+  );
+}
+
 const $wnd = window as any;
 $wnd.Vaadin ??= {};
 $wnd.Vaadin.Flow ??= {};
-$wnd.Vaadin.Flow.shortcut = {
+const shortcut = {
   // Delegate path: suppress when an open popover/modal sits between the event
   // target and the boundary element the listener is attached to. Returns true
   // when the shortcut is allowed to fire. Fails open on error.
@@ -106,24 +150,57 @@ $wnd.Vaadin.Flow.shortcut = {
     }
   },
 
-  // Relays keydown events from a browser-only element (found by the JS locator)
-  // to the listenOn component. When the given matcher accepts the event a clone
-  // is re-dispatched to listenOn so the server-side shortcut listener fires.
-  // eslint-disable-next-line @typescript-eslint/max-params -- positional arguments of the delegate expression ShortcutRegistration sends
+  // Listener filter of a shortcut: true when the keydown is the shortcut and,
+  // when asked for, originates from the scope of the shortcut owner. Only a
+  // keydown that passes gets the side effects, so typing is not blocked.
+  matchKeydown(event: RelayedKeyboardEvent, options: ListenerOptions): boolean {
+    if (!matchesKeyCombination(event, options)) {
+      return false;
+    }
+    // Checked before the side effects, so that an event from a nested
+    // popover/modal is left untouched.
+    if (options.checkOwnerScope) {
+      const inScope =
+        options.ownerSelector === null
+          ? shortcut.eventInTopLevelScope(event)
+          : shortcut.eventInOwnerScope(event, options.ownerSelector);
+      if (!inScope) {
+        return false;
+      }
+    }
+    if (options.preventDefault) {
+      event.preventDefault();
+    }
+    if (options.stopPropagation) {
+      event.stopPropagation();
+    }
+    if (options.resetFocus) {
+      $wnd.Vaadin.Flow.resetFocus();
+    }
+    return true;
+  },
+
+  // Relays keydown events from a browser-only element, returned by
+  // locateDelegate called with listenOn as this, to the listenOn component.
+  // When a keydown is the shortcut, a clone is re-dispatched to listenOn so the
+  // server-side shortcut listener fires.
   registerKeydownDelegate(
-    listenOn: EventTarget,
-    delegate: EventTarget | null,
-    matches: (event: KeyboardEvent, delegate: EventTarget) => boolean,
-    resetFocus: boolean,
-    allowDefault: boolean
+    listenOn: Element,
+    locateDelegate: (this: Element) => EventTarget | null | undefined,
+    options: DelegateOptions
   ): void {
+    const delegate = locateDelegate.call(listenOn);
     if (!delegate) {
       throw new Error('Shortcut listenOn element not found with the given JS locator');
     }
     delegate.addEventListener('keydown', (event) => {
       const keyEvent = event as KeyboardEvent;
-      if (matches(keyEvent, delegate)) {
-        if (resetFocus) {
+      // The guard runs on the original event: the clone loses its origin.
+      if (
+        matchesKeyCombination(keyEvent, options) &&
+        (!options.checkBoundary || shortcut.eventWithinBoundary(keyEvent, delegate))
+      ) {
+        if (options.resetFocus) {
           $wnd.Vaadin.Flow.resetFocus();
         }
         const clone: RelayedKeyboardEvent = new (keyEvent.constructor as typeof KeyboardEvent)(keyEvent.type, keyEvent);
@@ -132,7 +209,7 @@ $wnd.Vaadin.Flow.shortcut = {
         // downstream owner-scope guard that the event came from this overlay.
         clone._vaadinShortcutOriginScope = eventScope(keyEvent);
         listenOn.dispatchEvent(clone);
-        if (!allowDefault) {
+        if (!options.allowDefault) {
           keyEvent.preventDefault();
         }
         keyEvent.stopPropagation();
@@ -140,6 +217,7 @@ $wnd.Vaadin.Flow.shortcut = {
     });
   }
 };
+$wnd.Vaadin.Flow.shortcut = shortcut;
 
 // Empty export to ensure TypeScript emits this as an ES module, which is
 // required for Vite to load it via import.

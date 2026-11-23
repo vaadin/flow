@@ -224,8 +224,9 @@ public class FrontendUtils {
 
     /**
      * File name of the generated file that registers the JavaScript of the
-     * {@code @JsDefinition} interfaces on the class path, so that the client
-     * can run a server-initiated call without compiling an expression.
+     * {@code JsInvokers} and {@code JsSnippets} interfaces on the class path,
+     * so that the client can run a server-initiated call without compiling an
+     * expression.
      * 
      * @since 25.4
      */

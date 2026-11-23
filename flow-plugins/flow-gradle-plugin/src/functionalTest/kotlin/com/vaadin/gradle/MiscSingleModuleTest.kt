@@ -899,6 +899,27 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         expect(true, buildResult.output) { buildResult.output.contains("!!!effective2.productionMode=true!!!") }
     }
 
+    @Test
+    fun testPluginEffectiveConfiguration_nodeFolderSystemPropertyOverridesBuildScript() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id 'com.vaadin.flow'
+            }
+            vaadin {
+                nodeFolder = '/from/build/script'
+            }
+            afterEvaluate {
+                println("!!!effective.nodeFolder=" + vaadin.effective.nodeFolder.getOrNull() + "!!!")
+            }
+        """.trimIndent()
+        )
+
+        val buildResult = testProject.build("help", "-Dvaadin.node.folder=/custom/node/bin")
+        expect(true, buildResult.output) { buildResult.output.contains("!!!effective.nodeFolder=/custom/node/bin!!!") }
+    }
+
     /**
      * Tests https://github.com/vaadin/flow/issues/22679
      * Verifies that vaadinBuildFrontend can propagate build info

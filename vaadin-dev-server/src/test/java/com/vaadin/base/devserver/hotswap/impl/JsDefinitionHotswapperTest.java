@@ -17,13 +17,21 @@ package com.vaadin.base.devserver.hotswap.impl;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.agent.ByteBuddyAgent;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import net.bytebuddy.dynamic.loading.ClassReloadingStrategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -31,17 +39,25 @@ import org.junit.jupiter.api.io.TempDir;
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsInvokers;
+import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.TaskGenerateJsDefinitions;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -49,15 +65,50 @@ import static org.mockito.Mockito.when;
 class JsDefinitionHotswapperTest {
 
     @JsDefinition
-    interface GreeterJs extends Serializable {
+    interface GreeterJs extends JsInvokers {
         @JsExpression("window.alert($0); this.focus()")
         void showGreeting(String greeting);
     }
 
     @JsDefinition
-    interface CounterJs extends Serializable {
+    interface CounterJs extends JsInvokers {
         @JsExpression("this.count = ($0 || 0) + 1")
         void count(Integer from);
+    }
+
+    @JsFunctionParameterNames({ "item" })
+    interface TemplateSnippet extends JsSnippet {
+    }
+
+    @JsDefinition
+    interface TemplateJs extends JsSnippets {
+        @JsExpression("return item.name + $0;")
+        TemplateSnippet label(String suffix);
+    }
+
+    // Only extended, so not a definition itself
+    interface ScrollableJs extends JsInvokers {
+        @JsExpression("this.scrollTop = $0")
+        void scrollTo(int top);
+    }
+
+    // What ScrollableJs is redefined to
+    interface EditedScrollableJs extends JsInvokers {
+        @JsExpression("this.scrollLeft = $0")
+        void scrollTo(int top);
+    }
+
+    @JsDefinition
+    interface ScrollingListJs extends ScrollableJs {
+        @JsExpression("this.scrollTop = this.scrollHeight")
+        void scrollToEnd();
+    }
+
+    // Annotations are not inherited, so it needs its own
+    @JsDefinition
+    interface DetailedListJs extends ScrollingListJs {
+        @JsExpression("this.dataset.detail = $0")
+        void showDetail(String detail);
     }
 
     static class NotADefinition {
@@ -213,6 +264,164 @@ class JsDefinitionHotswapperTest {
         classesChanged(GreeterJs.class);
 
         assertEquals(List.of(GreeterJs.class.getName()), hotswapper.reported);
+    }
+
+    @Test
+    void snippetTypeChanged_definitionsReturningItReportedAndCacheCleared()
+            throws IOException {
+        writeGeneratedDefinitionsFor(GreeterJs.class);
+        writeGeneratedDefinitionsFor(TemplateJs.class);
+        // What the file holds for the definition when the type declared
+        // other names than it does now
+        editGeneratedDefinitions("return function (item) {",
+                "return function (row) {");
+        // A definition that is no longer on the class path, which is skipped
+        Files.writeString(generatedFile().toPath(),
+                "window.Vaadin.Flow.jsDefinitionNames[\"gone\"] = \"com.example.GoneJs.run/0\";"
+                        + System.lineSeparator(),
+                StandardCharsets.UTF_8, StandardOpenOption.APPEND);
+        List<Class<?>> cleared = new ArrayList<>();
+        Registration registration = ReflectionCache
+                .addClearAllAction(cleared::add);
+
+        try {
+            classesChanged(TemplateSnippet.class);
+
+            assertEquals(List.of(TemplateJs.class.getName()),
+                    hotswapper.reported,
+                    "the definition returning the type now declares other JavaScript than the bundle carries");
+            assertTrue(cleared.contains(TemplateJs.class),
+                    "what was cached of the definition depends on the type: "
+                            + cleared);
+            assertFalse(cleared.contains(GreeterJs.class),
+                    "a definition not returning the type is left alone");
+        } finally {
+            registration.remove();
+        }
+    }
+
+    @Test
+    void snippetTypeChangedWithADefinitionReturningIt_reportedOnce()
+            throws IOException {
+        writeGeneratedDefinitionsFor(TemplateJs.class);
+        editGeneratedDefinitions("return function (item) {",
+                "return function (row) {");
+
+        classesChanged(TemplateSnippet.class, TemplateJs.class);
+
+        assertEquals(List.of(TemplateJs.class.getName()), hotswapper.reported);
+    }
+
+    @Test
+    void snippetTypeChanged_frontendDevServerRunning_definitionsReturningItApplied()
+            throws IOException {
+        writeGeneratedDefinitionsFor(TemplateJs.class);
+        editGeneratedDefinitions("return function (item) {",
+                "return function (row) {");
+        withFrontendDevServer();
+
+        classesChanged(TemplateSnippet.class);
+
+        assertTrue(hotswapper.reported.isEmpty(),
+                hotswapper.reported::toString);
+        assertTrue(
+                readGeneratedDefinitions().contains("return function (item) {"),
+                "what the browser reloads is called with the names the type declares now");
+    }
+
+    @Test
+    void extendedInterfaceChanged_definitionsExtendingItReported()
+            throws IOException {
+        writeGeneratedDefinitionsFor(GreeterJs.class);
+        writeGeneratedDefinitionsFor(ScrollingListJs.class);
+        // What the file holds when the extended interface declared other
+        // JavaScript than it does now
+        editGeneratedDefinitions("this.scrollTop = $0", "this.scrollLeft = $0");
+
+        List<Class<?>> cleared = new ArrayList<>();
+        Registration registration = ReflectionCache
+                .addClearAllAction(cleared::add);
+
+        try {
+            classesChanged(ScrollableJs.class);
+
+            assertEquals(List.of(ScrollingListJs.class.getName()),
+                    hotswapper.reported,
+                    "the definition extending the interface now declares other JavaScript than the bundle carries");
+            assertTrue(cleared.contains(ScrollingListJs.class),
+                    "what was cached of the definition depends on the interface: "
+                            + cleared);
+            assertFalse(cleared.contains(GreeterJs.class),
+                    "a definition not extending the interface is left alone");
+        } finally {
+            registration.remove();
+        }
+    }
+
+    @Test
+    void extendedInterfaceRedefinedInPlace_definitionsExtendingItSeeTheNewJavaScript()
+            throws IOException {
+        // Copies, so that the redefinition leaves the classes of the other
+        // cases alone. Defined without a code source, so a coverage agent does
+        // not add members that the redefinition would then remove.
+        Map<String, Class<?>> copies = new ByteBuddy()
+                .redefine(ScrollableJs.class).make()
+                .include(new ByteBuddy().redefine(ScrollingListJs.class).make())
+                .load(new URLClassLoader(new URL[0],
+                        getClass().getClassLoader()),
+                        ClassLoadingStrategy.Default.CHILD_FIRST)
+                .getAllLoaded().values().stream()
+                .collect(Collectors.toMap(Class::getName, type -> type));
+        Class<?> parent = copies.get(ScrollableJs.class.getName());
+        Class<?> definition = copies.get(ScrollingListJs.class.getName());
+        // What the bundle was built from, which also has the definition list
+        // its methods before the redefinition
+        writeGeneratedDefinitionsFor(definition);
+        new JsCall(definition, "scrollTo", List.of(1)).getFunctionId();
+
+        // In place, as the JVM redefines a class: the definition keeps the
+        // copies of the inherited methods it made before
+        ByteBuddyAgent.install();
+        new ByteBuddy().redefine(EditedScrollableJs.class)
+                .name(ScrollableJs.class.getName()).make()
+                .load(parent.getClassLoader(),
+                        ClassReloadingStrategy.fromInstalledAgent());
+        // Done by ReflectionCacheHotswapper before the hotswappers run
+        ReflectionCache.clearAll(parent);
+
+        // The loader of the application, which is what the definitions the
+        // generated file names are loaded with
+        Thread thread = Thread.currentThread();
+        ClassLoader contextClassLoader = thread.getContextClassLoader();
+        thread.setContextClassLoader(parent.getClassLoader());
+        try {
+            classesChanged(parent);
+        } finally {
+            thread.setContextClassLoader(contextClassLoader);
+        }
+
+        assertEquals(List.of(definition.getName()), hotswapper.reported,
+                "the definition now inherits other JavaScript than the bundle carries");
+        assertEquals(JsCall.functionId("this.scrollLeft = $0", 1, false),
+                new JsCall(definition, "scrollTo", List.of(1)).getFunctionId(),
+                "a call should name the function of the JavaScript the interface declares now");
+    }
+
+    @Test
+    void extendedDefinitionChanged_definitionsExtendingItReported()
+            throws IOException {
+        writeGeneratedDefinitionsFor(ScrollingListJs.class);
+        writeGeneratedDefinitionsFor(DetailedListJs.class);
+        editGeneratedDefinitions("this.scrollTop = this.scrollHeight",
+                "this.scrollTop = 0");
+
+        classesChanged(ScrollingListJs.class);
+
+        assertEquals(
+                Set.of(ScrollingListJs.class.getName(),
+                        DetailedListJs.class.getName()),
+                Set.copyOf(hotswapper.reported),
+                "an annotated interface carries its JavaScript into the definitions extending it too");
     }
 
     @Test

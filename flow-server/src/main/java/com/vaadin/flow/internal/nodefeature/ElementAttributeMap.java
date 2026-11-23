@@ -90,6 +90,7 @@ public class ElementAttributeMap extends NodeMap {
      *            the name of the attribute
      * @param signal
      *            the signal to bind, not <code>null</code>
+     * @return the binding, which can be used to react to updates
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             thrown when there is already an existing binding for the
      *             given attribute
@@ -99,6 +100,31 @@ public class ElementAttributeMap extends NodeMap {
             Signal<String> signal) {
         return bindSignal(owner, attribute, signal,
                 (element, value) -> doSet(attribute, value), null);
+    }
+
+    /**
+     * Binds the given signal to the presence of the given attribute. The
+     * attribute is set to an empty value while the signal value is {@code true}
+     * and removed while it is {@code false}.
+     *
+     * @param owner
+     *            the element owning the attribute, not <code>null</code>
+     * @param attribute
+     *            the name of the attribute
+     * @param signal
+     *            the signal to bind, not <code>null</code>
+     * @return the created binding
+     * @throws com.vaadin.flow.signals.BindingActiveException
+     *             thrown when there is already an existing binding for the
+     *             given attribute
+     * @since 25.4
+     */
+    public SignalBinding<Boolean> bindBooleanSignal(Element owner,
+            String attribute, Signal<Boolean> signal) {
+        return bindSignal(owner, attribute, signal,
+                (element, value) -> doSet(attribute,
+                        Boolean.TRUE.equals(value) ? "" : null),
+                null);
     }
 
     /**

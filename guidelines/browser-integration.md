@@ -47,7 +47,7 @@ anything else:
 
 For how an invocation is encoded, when it is actually sent, why an
 expression must not vary from call to call, and when to declare the
-JavaScript with `@JsDefinition` instead, see
+JavaScript in a `@JsDefinition` interface that extends `JsInvokers` instead, see
 [Wire Protocol](wire-protocol.md).
 
 - Values are passed as parameters rather than concatenated into the

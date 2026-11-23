@@ -18,7 +18,7 @@ package com.vaadin.flow.di;
 import com.vaadin.flow.router.PageTitleContext;
 import com.vaadin.flow.router.PageTitleGenerator;
 
-public class CustomPageTitleGenerator implements PageTitleGenerator {
+class CustomPageTitleGenerator implements PageTitleGenerator {
 
     @Override
     public String generatePageTitle(PageTitleContext context) {

@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterEach;
@@ -2955,7 +2954,7 @@ public class RouterTest extends RoutingTestBase {
         assertEquals(RouteParent.class, parenComponent.getClass());
 
         List<Class<?>> childClasses = parenComponent.getChildren()
-                .map(Object::getClass).collect(Collectors.toList());
+                .map(Object::getClass).toList();
         assertEquals(
                 Arrays.asList(RouterLink.class, ErrorTargetWithParent.class),
                 childClasses);
@@ -3334,29 +3333,28 @@ public class RouterTest extends RoutingTestBase {
         ui.navigate("base");
         assertEquals(MainLayout.class, getUIComponentClass());
 
-        List<Component> children = ui.getChildren()
-                .collect(Collectors.toList());
+        List<Component> children = ui.getChildren().toList();
         assertEquals(1, children.size());
         assertEquals(MainLayout.class, children.get(0).getClass());
-        children = children.get(0).getChildren().collect(Collectors.toList());
+        children = children.get(0).getChildren().toList();
         assertEquals(1, children.size());
         assertEquals(BaseLayout.class, children.get(0).getClass());
-        children = children.get(0).getChildren().collect(Collectors.toList());
+        children = children.get(0).getChildren().toList();
         assertTrue(children.isEmpty());
 
         ui.navigate("sub");
         assertEquals(MainLayout.class, getUIComponentClass());
 
-        children = ui.getChildren().collect(Collectors.toList());
+        children = ui.getChildren().toList();
         assertEquals(1, children.size());
         assertEquals(MainLayout.class, children.get(0).getClass());
-        children = children.get(0).getChildren().collect(Collectors.toList());
+        children = children.get(0).getChildren().toList();
         assertEquals(1, children.size());
         assertEquals(BaseLayout.class, children.get(0).getClass());
-        children = children.get(0).getChildren().collect(Collectors.toList());
+        children = children.get(0).getChildren().toList();
         assertEquals(1, children.size());
         assertEquals(SubLayout.class, children.get(0).getClass());
-        children = children.get(0).getChildren().collect(Collectors.toList());
+        children = children.get(0).getChildren().toList();
         assertTrue(children.isEmpty());
 
     }
@@ -3861,15 +3859,14 @@ public class RouterTest extends RoutingTestBase {
         NoRemoveLayout layout = (NoRemoveLayout) ui.getChildren().findFirst()
                 .get();
 
-        assertEquals(Arrays.asList(NoRemoveContent1.class), layout.getChildren()
-                .map(Component::getClass).collect(Collectors.toList()));
+        assertEquals(Arrays.asList(NoRemoveContent1.class),
+                layout.getChildren().map(Component::getClass).toList());
 
         ui.navigate(NoRemoveContent2.class);
 
         assertEquals(
                 Arrays.asList(NoRemoveContent1.class, NoRemoveContent2.class),
-                layout.getChildren().map(Component::getClass)
-                        .collect(Collectors.toList()));
+                layout.getChildren().map(Component::getClass).toList());
     }
 
     @Test // 5388
@@ -4077,10 +4074,9 @@ public class RouterTest extends RoutingTestBase {
         // ProcessEventsRotten
         // parent of ProcessEventsTwig will reroute, so ProcessEventsTwig and
         // ProcessEventsStick won't be created.
-        final List<String> expected = Stream
-                .concat(getProcessEventsTrunkChainNames("ProcessEventsRotten")
-                        .stream(), expectedOnReroute.stream())
-                .collect(Collectors.toList());
+        final List<String> expected = Stream.concat(
+                getProcessEventsTrunkChainNames("ProcessEventsRotten").stream(),
+                expectedOnReroute.stream()).toList();
         assertEventOrder(expected, null, expected, expectedOnReroute);
     }
 

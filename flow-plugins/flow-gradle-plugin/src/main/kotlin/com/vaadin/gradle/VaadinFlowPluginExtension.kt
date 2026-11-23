@@ -164,6 +164,9 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      * Example: "/usr/local/custom-node" or "C:\custom\node"
      *
      * Defaults to null (use default node resolution).
+     *
+     * Responds to the `-Pvaadin.node.folder` and `-Dvaadin.node.folder`
+     * properties.
      */
     public abstract val nodeFolder: Property<String>
 
@@ -541,9 +544,13 @@ public class PluginEffectiveConfiguration(
         extension.requireHomeNodeExec
             .convention(false)
 
-    public val nodeFolder: Property<String> =
+    public val nodeFolder: Provider<String> =
         extension.nodeFolder
             .convention(null as String?)
+            .overrideWithSystemProperty(
+                project,
+                "vaadin.${InitParameters.NODE_FOLDER}"
+            )
 
     public val eagerServerLoad: Provider<Boolean> = extension.eagerServerLoad
         .convention(false)
