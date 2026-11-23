@@ -473,9 +473,11 @@ class ElementEffectTest {
 
         ValueSignal<String> signal = new ValueSignal<>("initial");
         List<Boolean> lockedDuringRun = new ArrayList<>();
-        Signal.effect(ui, () -> {
+        List<Boolean> backgroundChanges = new ArrayList<>();
+        Signal.effect(ui, ctx -> {
             signal.get();
             lockedDuringRun.add(session.hasLock());
+            backgroundChanges.add(ctx.isBackgroundChange());
         });
         session.unlock();
         assertSame(ui, UI.getCurrent());
@@ -488,6 +490,8 @@ class ElementEffectTest {
 
         assertEquals(List.of(true, true), lockedDuringRun,
                 "Effect should run once more with the session lock held");
+        assertEquals(List.of(false, true), backgroundChanges,
+                "Change made without the session lock is a background change");
     }
 
     @Test

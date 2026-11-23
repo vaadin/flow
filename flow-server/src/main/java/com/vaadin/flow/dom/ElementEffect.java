@@ -32,7 +32,6 @@ import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableExecutor;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.server.ErrorEvent;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.DeniedSignalUsageException;
 import com.vaadin.flow.signals.EffectContext;
@@ -274,7 +273,7 @@ public final class ElementEffect implements Serializable {
                 .error(new ErrorEvent(e, elem.getNode()));
 
         SerializableExecutor uiDispatcher = command -> {
-            if (isRunningWithLock(ui)) {
+            if (ui.getInternals().isCurrentAndLocked()) {
                 // Run immediately if on the same UI
                 command.run();
             } else {
@@ -287,7 +286,7 @@ public final class ElementEffect implements Serializable {
                             // UI.getCurrent() is already set. In that case
                             // run directly instead of ui.access() which
                             // would only enqueue without executing.
-                            if (isRunningWithLock(ui)) {
+                            if (ui.getInternals().isCurrentAndLocked()) {
                                 command.run();
                             } else {
                                 ui.access(command::run);
@@ -313,16 +312,6 @@ public final class ElementEffect implements Serializable {
             effect.activate();
         }
         effect.setOwnerUI(ui);
-    }
-
-    /*
-     * The current UI alone is not enough: code that runs after a request has
-     * released the session lock, such as a request end listener, still has the
-     * UI of the request as the current UI.
-     */
-    private static boolean isRunningWithLock(UI ui) {
-        VaadinSession session = ui.getSession();
-        return UI.getCurrent() == ui && session != null && session.hasLock();
     }
 
     private void disableEffect() {

@@ -542,7 +542,7 @@ public abstract class VaadinService implements Serializable {
                 }
 
                 return task -> {
-                    if (UI.getCurrent() == owner) {
+                    if (owner.getInternals().isCurrentAndLocked()) {
                         task.run();
                     } else {
                         try {

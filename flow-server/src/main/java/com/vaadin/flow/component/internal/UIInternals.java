@@ -1353,6 +1353,21 @@ public class UIInternals implements Serializable {
         return session;
     }
 
+    /**
+     * Checks whether the current thread may use the related UI directly: the UI
+     * is the current UI and the current thread holds the lock of its session.
+     * <p>
+     * The current UI alone is not enough, as code that runs after a request has
+     * released the session lock, such as a request end listener, still has the
+     * UI of the request as the current UI.
+     *
+     * @return {@code true} if the related UI is the current UI and its session
+     *         is locked by the current thread, {@code false} otherwise
+     */
+    public boolean isCurrentAndLocked() {
+        return UI.getCurrent() == ui && session != null && session.hasLock();
+    }
+
     private static Logger getLogger() {
         return LoggerFactory.getLogger(UIInternals.class.getName());
     }

@@ -271,7 +271,8 @@ public class Effect implements Serializable {
         }
 
         if (ownerUI != null) {
-            invalidatedFromBackground = UI.getCurrent() != ownerUI;
+            invalidatedFromBackground = !ownerUI.getInternals()
+                    .isCurrentAndLocked();
         } else {
             invalidatedFromBackground = VaadinRequest.getCurrent() == null;
         }
