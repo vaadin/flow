@@ -25,7 +25,6 @@ import org.jspecify.annotations.Nullable;
 import com.vaadin.flow.function.SerializableExecutor;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.signals.SignalCommand;
-import com.vaadin.flow.signals.SignalEnvironment;
 import com.vaadin.flow.signals.function.TransactionTask;
 import com.vaadin.flow.signals.function.ValueSupplier;
 import com.vaadin.flow.signals.operations.SignalOperation;
@@ -529,15 +528,16 @@ public abstract class Transaction implements Serializable {
      * returning the values it first read, so a change made by someone else in
      * the meantime only becomes visible once the transaction no longer applies.
      * <p>
-     * The default implementation runs the task through the
-     * {@link SignalEnvironment#getDefaultEffectDispatcher() default effect
-     * dispatcher}.
+     * The default implementation runs the task right away in the current
+     * context. Only a transaction created with
+     * {@link #createWriteThrough(SerializableExecutor)} runs it through its
+     * executor.
      *
      * @param task
      *            the task to run, not <code>null</code>
      */
     public void runWithFreshReads(Runnable task) {
-        SignalEnvironment.getDefaultEffectDispatcher().execute(task);
+        task.run();
     }
 
     /**

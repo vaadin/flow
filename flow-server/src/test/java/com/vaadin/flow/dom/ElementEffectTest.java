@@ -558,6 +558,25 @@ class ElementEffectTest {
     }
 
     @Test
+    void effect_sharedSignalChangedInSessionTransaction_reRunsRightAway() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+        var ui = new MockUI(session);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> observed = new ArrayList<>();
+        Signal.effect(ui, () -> observed.add(signal.get()));
+
+        signal.set("changed");
+
+        assertEquals(List.of("initial", "changed"), observed);
+    }
+
+    @Test
     void effect_throwExceptionWhenRunningDirectly_delegatedToErrorHandler() {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);
