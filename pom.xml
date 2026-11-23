@@ -144,9 +144,13 @@
 
         <testListener>com.vaadin.flow.testutil.CurrentInstanceCleaner</testListener>
 
-        <!-- Skip these categories in validation, use -Pslow-tests to run them
-            and override slow-tests profile to add more categories -->
-        <excludedGroups>com.vaadin.flow.testcategory.SlowTests</excludedGroups>
+        <!-- Skip these categories in validation, use -Pslow-tests to run them.
+            Both excludedGroups and the slow-tests profile read
+            slowTestGroups. scripts/computeMatrix.js reads it from this pom
+            and flow-tests/pom.xml only, so override it there to add
+            categories the Slow Tests job runs -->
+        <slowTestGroups>com.vaadin.flow.testcategory.SlowTests</slowTestGroups>
+        <excludedGroups>${slowTestGroups}</excludedGroups>
         <failsafe.parallel>all</failsafe.parallel>
         <failsafe.threadCount>2</failsafe.threadCount>
         <failsafe.perCoreThreadCount>true</failsafe.perCoreThreadCount>
@@ -725,7 +729,7 @@
         <profile>
             <id>slow-tests</id>
             <properties>
-                <groups>com.vaadin.flow.testcategory.SlowTests</groups>
+                <groups>${slowTestGroups}</groups>
                 <excludedGroups/>
             </properties>
         </profile>
