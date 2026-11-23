@@ -36,9 +36,11 @@ import com.vaadin.flow.internal.CurrentInstance;
  * The current instances, such as the current {@link UI}, are restored to what
  * they were before locking right after the session is unlocked, so the handler
  * can set the current UI for the work it does with the lock held, and nothing
- * that runs after the unlock sees that UI as current. If the handler throws,
- * the UI it left current is made current again while the session
- * {@link ErrorHandler} handles the exception.
+ * that runs after the unlock sees that UI as current. If the handler or its
+ * {@link ResponseWriter} throws, the UI the handler left current is made
+ * current again while the session {@link ErrorHandler} and the
+ * {@link VaadinRequestInterceptor#handleException request interceptors} handle
+ * the exception, with the session locked.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -81,20 +83,27 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
                 return rejectOversizedRequest(response, e);
             }
             Optional<ResponseWriter> responseWriter;
+            UI handledUI;
             Map<Class<?>, CurrentInstance> instances = CurrentInstance
                     .getInstances();
             session.lock();
             try {
                 responseWriter = synchronizedHandleRequest(session, request,
                         response, requestBody);
+                handledUI = UI.getCurrent();
             } catch (IOException | RuntimeException e) {
-                rememberFailedUI(request);
+                rememberFailedUI(request, UI.getCurrent());
                 throw e;
             } finally {
                 CurrentInstance.unlockAndRestoreInstances(session, instances);
             }
             if (responseWriter.isPresent()) {
-                responseWriter.get().writeResponse();
+                try {
+                    responseWriter.get().writeResponse();
+                } catch (IOException | RuntimeException e) {
+                    rememberFailedUI(request, handledUI);
+                    throw e;
+                }
             }
             return responseWriter.isPresent();
         } else {
@@ -104,7 +113,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
             try {
                 return synchronizedHandleRequest(session, request, response);
             } catch (IOException | RuntimeException e) {
-                rememberFailedUI(request);
+                rememberFailedUI(request, UI.getCurrent());
                 throw e;
             } finally {
                 CurrentInstance.unlockAndRestoreInstances(session, instances);
@@ -117,8 +126,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      * handling in VaadinService, which makes this UI current again while it
      * holds the lock, so that the error handler still sees it.
      */
-    private static void rememberFailedUI(VaadinRequest request) {
-        UI ui = UI.getCurrent();
+    private static void rememberFailedUI(VaadinRequest request, UI ui) {
         if (ui != null) {
             request.setAttribute(VaadinService.FAILED_REQUEST_UI_ATTRIBUTE, ui);
         }

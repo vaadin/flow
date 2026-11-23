@@ -2296,8 +2296,7 @@ public abstract class VaadinService implements Serializable {
         if (vaadinSession != null) {
             vaadinSession.lock();
             if (request.getAttribute(
-                    FAILED_REQUEST_UI_ATTRIBUTE) instanceof UI failedUI
-                    && failedUI.getSession() == vaadinSession) {
+                    FAILED_REQUEST_UI_ATTRIBUTE) instanceof UI failedUI) {
                 UI.setCurrent(failedUI);
             }
         }
