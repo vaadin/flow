@@ -17,13 +17,13 @@
     "lit": "3.3.3",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "react-router": "8.5.1"
+    "react-router": "8.5.2"
   },
   "devDependencies": {
     "@babel/core": "7.29.13",
     "@babel/plugin-transform-react-jsx-development": "7.29.7",
     "@babel/preset-react": "7.29.7",
-    "@babel/types": "7.29.14",
+    "@babel/types": "7.29.15",
     "@preact/signals-react": "3.12.0",
     "@preact/signals-react-transform": "0.8.3",
     "@rolldown/plugin-babel": "0.3.1",
@@ -51,13 +51,13 @@
       "lit": "3.3.3",
       "react": "19.3.1",
       "react-dom": "19.3.1",
-      "react-router": "8.5.1"
+      "react-router": "8.5.2"
     },
     "devDependencies": {
       "@babel/core": "7.29.13",
       "@babel/plugin-transform-react-jsx-development": "7.29.7",
       "@babel/preset-react": "7.29.7",
-      "@babel/types": "7.29.14",
+      "@babel/types": "7.29.15",
       "@preact/signals-react": "3.12.0",
       "@preact/signals-react-transform": "0.8.3",
       "@rolldown/plugin-babel": "0.3.1",
@@ -77,6 +77,6 @@
       "vite": "8.3.8",
       "vite-plugin-checker": "1.0.0"
     },
-    "hash": "8bd156b17091b59fc9ffda317c79ea23b98fb27f9a766de948e555722ef5bad8"
+    "hash": "51c8d7592e471ca32d5d3ce7ac2392cda65dd628225d1558043c242096af6ca0"
   }
 }
