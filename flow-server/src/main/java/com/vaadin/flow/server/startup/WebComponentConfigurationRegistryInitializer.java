@@ -32,6 +32,7 @@ import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.internal.CustomElementNameValidator;
+import com.vaadin.flow.internal.PushUtil;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
@@ -89,8 +90,7 @@ public class WebComponentConfigurationRegistryInitializer
         Optional<Push> push = instance
                 .getEmbeddedApplicationAnnotation(Push.class);
         if (push.isPresent()) {
-            VaadinAppShellInitializer.checkPushTransportEnabled(push.get(),
-                    context);
+            PushUtil.checkTransportEnabled(push.get().transport(), context);
         }
     }
 

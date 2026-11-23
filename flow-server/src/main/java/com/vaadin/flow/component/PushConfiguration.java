@@ -19,9 +19,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Objects;
 
-import com.vaadin.experimental.CoreFeatureFlagProvider;
-import com.vaadin.experimental.DisabledFeatureException;
-import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.internal.PushUtil;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -282,17 +280,11 @@ class PushConfigurationImpl implements PushConfiguration {
      *            the transport to check
      */
     private void checkTransportEnabled(Transport transport) {
-        if (transport != Transport.SERVER_SENT_EVENTS) {
-            return;
-        }
         VaadinSession session = ui.getSession();
         VaadinService service = session == null ? VaadinService.getCurrent()
                 : session.getService();
-        if (service == null || !FeatureFlags.get(service.getContext())
-                .isEnabled(CoreFeatureFlagProvider.SSE_PUSH_TRANSPORT)) {
-            throw new DisabledFeatureException(
-                    CoreFeatureFlagProvider.SSE_PUSH_TRANSPORT);
-        }
+        PushUtil.checkTransportEnabled(transport,
+                service == null ? null : service.getContext());
     }
 
     @Override
