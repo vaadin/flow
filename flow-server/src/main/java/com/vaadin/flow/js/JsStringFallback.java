@@ -46,8 +46,9 @@ import java.lang.annotation.Target;
  * with as many parameters as there are captures. When the code then calls
  * {@code withArguments} on the function, the method declares the same names
  * with {@link JsFunctionParameterNames}; other names send the string again.
- * Methods that return snippets can not be in the same interface as methods that
- * run JavaScript, so these go into an interface of their own.
+ * Methods that return snippets go into an interface that extends
+ * {@link JsSnippets}, and methods that run JavaScript into one that extends
+ * {@link JsInvokers}.
  * <li>{@code DomListenerRegistration.setFilter(String)} and
  * {@code DomListenerRegistration.addEventData(String)}: the strings listed in
  * {@link #filters()} and {@link #eventData()}.
@@ -57,14 +58,14 @@ import java.lang.annotation.Target;
  * <pre>
  * &#64;JsDefinition
  * &#64;JsStringFallback(filters = "event.key === 'Escape'")
- * public interface AddonFallbacks {
+ * public interface AddonFallbacks extends JsInvokers {
  *     &#64;JsExpression("return this.scrollTop")
  *     PendingJavaScriptResult scrollTop();
  * }
  *
  * &#64;JsDefinition
  * &#64;JsStringFallback
- * public interface AddonFunctionFallbacks {
+ * public interface AddonFunctionFallbacks extends JsSnippets {
  *     &#64;JsExpression("this.title = $0")
  *     JsFunction setTitle(Object title);
  * }
