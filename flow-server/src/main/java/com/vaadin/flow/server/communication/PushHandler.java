@@ -15,7 +15,10 @@
  */
 package com.vaadin.flow.server.communication;
 
+import jakarta.servlet.ServletResponse;
+
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
@@ -34,6 +37,7 @@ import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
 import org.atmosphere.cpr.AtmosphereResourceImpl;
+import org.atmosphere.cpr.HeaderConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.core.JacksonException;
@@ -62,6 +66,7 @@ import com.vaadin.flow.server.dau.DauEnforcementException;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.flow.shared.communication.PushConstants;
 import com.vaadin.flow.shared.communication.PushMode;
 
 /**
@@ -74,6 +79,8 @@ import com.vaadin.flow.shared.communication.PushMode;
  * @since 1.0
  */
 public class PushHandler {
+
+    private static final String SSE_CONTENT_TYPE = "text/event-stream";
 
     private int longPollingSuspendTimeout = -1;
 
@@ -657,14 +664,44 @@ public class PushHandler {
                         "sendNotificationAndDisconnect called for resource no longer in scope");
                 return;
             }
-            resource.getResponse()
-                    .setContentType(JsonConstants.JSON_CONTENT_TYPE);
-            resource.getResponse().getWriter().write(notificationJson);
+            if (resource.transport() == TRANSPORT.SSE) {
+                writeServerSentEvent(resource, notificationJson);
+            } else {
+                resource.getResponse()
+                        .setContentType(JsonConstants.JSON_CONTENT_TYPE);
+                resource.getResponse().getWriter().write(notificationJson);
+            }
             resource.resume();
         } catch (Exception e) {
             getLogger().trace("Failed to send critical notification to client",
                     e);
         }
+    }
+
+    /**
+     * Writes the message as a server-sent event, so that the client's
+     * {@code EventSource} receives it.
+     * <p>
+     * Atmosphere's SSE interceptor only adds the event framing to writes on a
+     * suspended resource, and a notification is usually sent before the
+     * resource is suspended. The event is therefore written to the container
+     * response, past Atmosphere's interceptors, with the length prefix that
+     * Atmosphere's message size tracking would otherwise add.
+     */
+    private static void writeServerSentEvent(AtmosphereResource resource,
+            String message) throws IOException {
+        String data = message;
+        if (Boolean.parseBoolean(resource.getRequest()
+                .getHeader(HeaderConfig.X_ATMOSPHERE_TRACKMESSAGESIZE))) {
+            data = message.length()
+                    + String.valueOf(PushConstants.MESSAGE_DELIMITER) + message;
+        }
+        ServletResponse response = resource.getResponse().getResponse();
+        response.setContentType(SSE_CONTENT_TYPE);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        PrintWriter writer = response.getWriter();
+        writer.write("data:" + data + "\n\n");
+        writer.flush();
     }
 
     private static Logger getLogger() {
