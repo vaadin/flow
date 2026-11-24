@@ -135,6 +135,14 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
      * run right away when the component's UI is the current UI, and otherwise
      * through {@link com.vaadin.flow.component.UI#access}.
      * <p>
+     * An exception thrown by the effect function is reported to the session's
+     * error handler, not thrown to the caller. When the effect is created
+     * before the component is attached, this also applies to a
+     * {@link MissingSignalUsageException} for a first run that reads no signal,
+     * and attaching the rest of the component tree continues. In development
+     * mode, the reported exception has the location where the effect was
+     * created as a suppressed exception.
+     * <p>
      * Example of usage:
      *
      * <pre>
@@ -174,6 +182,14 @@ public interface Signal<T extends @Nullable Object> extends Serializable {
      * {@link com.vaadin.flow.component.UI#access}. The action receives an
      * {@link EffectContext} providing information about why the effect is
      * running (initial render, effect owner's request, or background change).
+     * <p>
+     * An exception thrown by the effect function is reported to the session's
+     * error handler, not thrown to the caller. When the effect is created
+     * before the component is attached, this also applies to a
+     * {@link MissingSignalUsageException} for a first run that reads no signal,
+     * and attaching the rest of the component tree continues. In development
+     * mode, the reported exception has the location where the effect was
+     * created as a suppressed exception.
      * <p>
      * Example of usage:
      *

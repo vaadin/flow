@@ -49,6 +49,7 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.DeniedSignalUsageException;
 import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.function.EffectAction;
 import com.vaadin.flow.signals.local.ListSignal;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedListSignal;
@@ -59,6 +60,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -641,7 +643,7 @@ class ElementEffectTest {
         CurrentInstance.clearAll();
         withComponentTrackerEnabled(developmentMode, () -> {
             TestComponent component = new TestComponent();
-            Signal.effect(component, () -> {
+            createEffect(component, () -> {
                 // no signal read
             });
             TestComponent sibling = new TestComponent();
@@ -669,8 +671,7 @@ class ElementEffectTest {
                     exception.getClass());
             if (developmentMode) {
                 assertEquals(1, exception.getSuppressed().length);
-                assertCreatedIn(exception.getSuppressed()[0],
-                        "effect_notAttached_noSignalRead_reportedOnAttachWithCreationSiteInDevelopmentMode");
+                assertCreatedInCreateEffect(exception.getSuppressed()[0]);
             } else {
                 assertEquals(0, exception.getSuppressed().length);
             }
@@ -701,6 +702,10 @@ class ElementEffectTest {
 
         assertEquals(1, count.get(),
                 "Effect should run while the component is attached");
+        assertSame(ui, currentUI.get(),
+                "First run should have the UI as the current UI");
+        assertNull(UI.getCurrent(),
+                "Current UI should be restored after the first run");
 
         // A later change from outside the UI runs the effect in the UI
         session.unlock();
@@ -759,7 +764,7 @@ class ElementEffectTest {
         withComponentTrackerEnabled(true, () -> {
             TestComponent component = new TestComponent();
             ValueSignal<Void> dependency = new ValueSignal<>(null);
-            Signal.effect(component, () -> {
+            createEffect(component, () -> {
                 dependency.get();
                 throw new RuntimeException("Expected exception");
             });
@@ -777,8 +782,7 @@ class ElementEffectTest {
             Throwable[] suppressed = events.get(0).getThrowable()
                     .getSuppressed();
             assertEquals(1, suppressed.length);
-            assertCreatedIn(suppressed[0],
-                    "effect_notAttached_throwsOnAttach_creationSiteAddedToReportedError");
+            assertCreatedInCreateEffect(suppressed[0]);
         });
     }
 
@@ -796,12 +800,17 @@ class ElementEffectTest {
         }
     }
 
-    private static void assertCreatedIn(Throwable creationSite,
-            String testMethodName) {
+    // Creates the effect in its own method, so that the creation site can be
+    // told apart from the attach site, which is not inside this method
+    private static void createEffect(Component owner, EffectAction action) {
+        Signal.effect(owner, action);
+    }
+
+    private static void assertCreatedInCreateEffect(Throwable creationSite) {
         assertTrue(
                 Arrays.stream(creationSite.getStackTrace())
                         .anyMatch(element -> element.getMethodName()
-                                .equals(testMethodName)),
+                                .equals("createEffect")),
                 "Creation site should point at the code that created the effect");
     }
 

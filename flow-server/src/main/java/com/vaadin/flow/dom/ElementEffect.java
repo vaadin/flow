@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -32,6 +33,7 @@ import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableExecutor;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.shared.Registration;
@@ -205,6 +207,14 @@ public final class ElementEffect implements Serializable {
      * the element's UI is the current UI, and otherwise through
      * {@link UI#access}.
      * <p>
+     * An exception thrown by the effect function is reported to the session's
+     * error handler, not thrown to the caller. When the effect is created
+     * before the element is attached, this also applies to a
+     * {@link MissingSignalUsageException} for a first run that reads no signal,
+     * and attaching the rest of the component tree continues. In development
+     * mode, the reported exception has the location where the effect was
+     * created as a suppressed exception.
+     * <p>
      * Example of usage:
      *
      * <pre>
@@ -247,6 +257,14 @@ public final class ElementEffect implements Serializable {
      * by the effect owner's requests, and updates triggered by background
      * changes (such as a background thread or another user modifying a shared
      * signal).
+     * <p>
+     * An exception thrown by the effect function is reported to the session's
+     * error handler, not thrown to the caller. When the effect is created
+     * before the element is attached, this also applies to a
+     * {@link MissingSignalUsageException} for a first run that reads no signal,
+     * and attaching the rest of the component tree continues. In development
+     * mode, the reported exception has the location where the effect was
+     * created as a suppressed exception.
      * <p>
      * Example of usage:
      *
@@ -390,15 +408,25 @@ public final class ElementEffect implements Serializable {
             // First attach of an effect that was not run before attach: run
             // it synchronously as part of attaching, like activate() does
             // below, rather than through the UI dispatcher, which would defer
-            // the run when attaching outside of the UI's own thread context.
-            // Changes from other threads, also during the first run, still go
-            // through the UI dispatcher.
+            // the run when attaching outside of the UI's own thread context
+            // (e.g. in VaadinSession.access()). The UI is made current for the
+            // run, as for runs through the UI dispatcher. Changes from other
+            // threads, also during the first run, still go through the UI
+            // dispatcher.
             Thread[] attachingThread = { Thread.currentThread() };
             SerializableExecutor firstRunDispatcher = command -> {
-                if (attachingThread[0] == Thread.currentThread()) {
+                if (attachingThread[0] != Thread.currentThread()) {
+                    uiDispatcher.execute(command);
+                } else if (UI.getCurrent() == ui) {
                     command.run();
                 } else {
-                    uiDispatcher.execute(command);
+                    Map<Class<?>, CurrentInstance> previous = CurrentInstance
+                            .setCurrent(ui);
+                    try {
+                        command.run();
+                    } finally {
+                        CurrentInstance.restoreInstances(previous);
+                    }
                 }
             };
             try {
