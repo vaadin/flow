@@ -64,7 +64,7 @@ public class PushRequestHandler
         implements RequestHandler, SessionExpiredHandler {
 
     private AtmosphereFramework atmosphere;
-    private PushHandler pushHandler;
+    private final PushHandler pushHandler;
 
     /**
      * Creates an instance connected to the given service.
