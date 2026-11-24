@@ -1063,15 +1063,22 @@ public final class BundleValidationUtil {
     }
 
     /**
-     * Checks whether the JavaScript that the {@code @JsDefinition} interfaces,
-     * the {@code @EventData} values and the {@code @DomEvent} filters of the
-     * application declare differs from what the bundle was built with.
+     * Checks whether the bundle lacks JavaScript that the {@code @JsDefinition}
+     * interfaces, the {@code @EventData} values and the {@code @DomEvent}
+     * filters of the application declare.
      * <p>
      * The functions are generated into the bundle, so a declaration that
      * changed, a definition, an event data value or a filter that was added and
-     * a bundle built before any of them existed all mean that the bundle no
-     * longer contains what a call would look up, which shows up at runtime as a
+     * a bundle built before any of them existed all mean that the bundle does
+     * not contain what a call would look up, which shows up at runtime as a
      * call that cannot be run.
+     * <p>
+     * When the stats of the bundle list the identifiers of the functions it
+     * registers, the bundle is accepted if it registers every function the
+     * application needs. A bundle that carries more, such as one built with
+     * more definitions or before one was removed, is still accepted. A bundle
+     * whose stats do not list them is accepted only if it was built from the
+     * same generated file.
      */
     private static boolean jsDefinitionsChanged(Options options,
             JsonNode statsJson) {

@@ -17,14 +17,24 @@ package com.vaadin.flow.testnpmonlyfeatures.nobuildmojo;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 
+import com.vaadin.flow.component.trigger.internal.TriggerJs;
+import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class NoAppBundleIT extends ChromeBrowserTest {
@@ -58,6 +68,40 @@ public class NoAppBundleIT extends ChromeBrowserTest {
                 new File(baseDir, "types.d.ts").exists());
         Assert.assertFalse("No tsconfig should be created",
                 new File(baseDir, "tsconfig.json").exists());
+    }
+
+    @Test
+    public void prebuiltBundleStatsListFunctionIds() throws Exception {
+        Set<String> ids;
+        try (InputStream stats = getClass().getClassLoader()
+                .getResourceAsStream(
+                        Constants.PROD_BUNDLE_JAR_PATH + "config/stats.json")) {
+            Assert.assertNotNull("The pre-built bundle should have stats.json",
+                    stats);
+            JsonNode functionIds = JacksonUtils
+                    .readTree(new String(stats.readAllBytes(),
+                            StandardCharsets.UTF_8))
+                    .get("jsDefinitionFunctionIds");
+            Assert.assertTrue(
+                    "The stats should list the functions of the bundle",
+                    functionIds instanceof ArrayNode);
+            ids = JacksonUtils.<JsonNode> stream((ArrayNode) functionIds)
+                    .map(JsonNode::asString).collect(Collectors.toSet());
+        }
+
+        // A definition of Flow, which this application has too
+        String flowId = JsCall.functionId(TriggerJs.class
+                .getMethod("callChannel", ReturnChannelRegistration.class));
+        Assert.assertTrue("The stats should list the function " + flowId,
+                ids.contains(flowId));
+        // PrebuiltOnlyJs of test-prod-bundle, which this application does not
+        // have. That the application still uses the bundle shows that a bundle
+        // with more functions than the application needs is accepted.
+        String prebuiltOnlyId = JsCall.functionId("window.prebuiltOnly = $0", 1,
+                false);
+        Assert.assertTrue(
+                "The stats should list the function " + prebuiltOnlyId,
+                ids.contains(prebuiltOnlyId));
     }
 
     @Test
