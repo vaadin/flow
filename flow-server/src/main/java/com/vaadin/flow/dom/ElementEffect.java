@@ -411,8 +411,8 @@ public final class ElementEffect implements Serializable {
             // the run when attaching outside of the UI's own thread context
             // (e.g. in VaadinSession.access()). The UI is made current for the
             // run, as for runs through the UI dispatcher. Changes from other
-            // threads, also during the first run, still go through the UI
-            // dispatcher.
+            // threads, also during the first run, and all later changes go
+            // through the UI dispatcher.
             Thread[] attachingThread = { Thread.currentThread() };
             SerializableExecutor firstRunDispatcher = command -> {
                 if (attachingThread[0] != Thread.currentThread()) {
@@ -429,18 +429,31 @@ public final class ElementEffect implements Serializable {
                     }
                 }
             };
+            // Create the effect without running it, so that the field is set
+            // before the first run: a detach or re-attach caused by that run
+            // then passivates or reactivates this effect instead of being
+            // missed.
+            Runnable[] firstRun = new Runnable[1];
+            Effect newEffect = new Effect(this::executeAction,
+                    command -> firstRun[0] = command);
+            newEffect.setDispatcher(firstRunDispatcher);
+            newEffect.setOwnerUI(ui);
+            effect = newEffect;
             try {
-                effect = new Effect(this::executeAction, firstRunDispatcher);
+                firstRunDispatcher.execute(firstRun[0]);
             } catch (MissingSignalUsageException e) {
                 // Reported like other effect failures on attach, so that it
                 // does not abort attaching the rest of the tree
+                newEffect.dispose();
+                if (effect == newEffect) {
+                    effect = null;
+                }
                 addCreationSite(e);
                 uiErrorHandler.accept(e, owner);
                 return;
             } finally {
                 attachingThread[0] = null;
             }
-            effect.setDispatcher(uiDispatcher);
         } else if (effect == null) {
             // First attach for the already-attached path (effect not yet
             // created): create the Effect directly with the UI dispatcher so
@@ -454,6 +467,12 @@ public final class ElementEffect implements Serializable {
             effect.activate();
         }
         effect.setOwnerUI(ui);
+        if (!owner.getNode().isAttached()) {
+            // The run above detached the owner. The detach happened before
+            // this method returned the cleanup that disables the effect, so
+            // nothing disabled it.
+            effect.passivate();
+        }
     }
 
     private void disableEffect() {

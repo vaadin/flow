@@ -856,6 +856,63 @@ class ElementEffectTest {
     }
 
     @Test
+    void effect_notAttached_firstRunDetachesOwner_effectDisabled() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        AtomicInteger count = new AtomicInteger();
+        Signal.effect(component, () -> {
+            signal.get();
+            if (count.incrementAndGet() == 1) {
+                component.removeFromParent();
+            }
+        });
+
+        TestComponent parent = new TestComponent();
+        parent.getElement().appendChild(component.getElement());
+        MockUI ui = new MockUI();
+        ui.add(parent);
+        assertEquals(1, count.get(), "Effect should be run on attach");
+        assertFalse(component.isAttached());
+
+        signal.set("changed");
+        assertEquals(1, count.get(),
+                "Effect should not be run while its owner is detached");
+
+        ui.add(component);
+        assertEquals(2, count.get(),
+                "Effect should re-run on reattach because signal changed while detached");
+    }
+
+    @Test
+    void effect_notAttached_firstRunReattachesOwner_effectRunsOncePerChange() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        AtomicInteger count = new AtomicInteger();
+        MockUI ui = new MockUI();
+        Signal.effect(component, () -> {
+            signal.get();
+            if (count.incrementAndGet() == 1) {
+                ui.remove(component);
+                ui.add(component);
+            }
+        });
+
+        ui.add(component);
+        int countAfterAttach = count.get();
+
+        signal.set("changed");
+        assertEquals(countAfterAttach + 1, count.get(),
+                "Effect should run once per change");
+
+        ui.remove(component);
+        signal.set("detached");
+        assertEquals(countAfterAttach + 1, count.get(),
+                "Effect should not be run after detach");
+    }
+
+    @Test
     void effect_reattachedViaMoveToNewUI_detachDoesNotThrow() {
         // Reproduces #24973: UIInternals.moveToNewUI (used for
         // @PreserveOnRefresh) re-attaches an element via
