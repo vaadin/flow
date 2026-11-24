@@ -2102,6 +2102,7 @@ public class Element extends Node<Element> {
         return JsDefinitionProxy.create(definitionType, this::scheduleJsCall);
     }
 
+    @SuppressForbidden
     private PendingJavaScriptResult scheduleExecuteJs(String expression,
             Object[] parameters) {
 
@@ -2109,8 +2110,8 @@ public class Element extends Node<Element> {
         String wrappedExpression = "return (async function() { " + expression
                 + "}).apply($" + parameters.length + ")";
 
-        return scheduleJavaScriptInvocation(null, wrappedExpression,
-                withElementAsLastParameter(parameters));
+        return scheduleJavaScriptInvocation(new JavaScriptInvocation(
+                wrappedExpression, withElementAsLastParameter(parameters)));
     }
 
     /**
@@ -2122,8 +2123,8 @@ public class Element extends Node<Element> {
      * expression.
      */
     private PendingJavaScriptResult scheduleJsCall(JsCall call) {
-        return scheduleJavaScriptInvocation(call, call.getExpression(),
-                call.parametersFor(this));
+        return scheduleJavaScriptInvocation(new JavaScriptInvocation(call,
+                call.getExpression(), call.parametersFor(this)));
     }
 
     private Object[] withElementAsLastParameter(Object[] parameters) {
@@ -2197,6 +2198,7 @@ public class Element extends Node<Element> {
      * @throws CspViolationException
      *             in the {@link CspMode#STRICT} Content Security Policy mode
      */
+    @SuppressForbidden
     public Registration addJsInitializer(String expression,
             Object... parameters) {
         Objects.requireNonNull(expression, "Expression cannot be null");
@@ -2271,11 +2273,8 @@ public class Element extends Node<Element> {
     }
 
     private PendingJavaScriptResult scheduleJavaScriptInvocation(
-            @Nullable JsCall jsCall, String expression, Object[] parameters) {
+            JavaScriptInvocation invocation) {
         StateNode node = getNode();
-
-        JavaScriptInvocation invocation = new JavaScriptInvocation(jsCall,
-                expression, parameters);
 
         PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
                 node, invocation);

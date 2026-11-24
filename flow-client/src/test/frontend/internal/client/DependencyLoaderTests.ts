@@ -11,6 +11,11 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 // eager counter never leaks between cases.
 const active: Array<{ completeAll(): void }> = [];
 
+// A case may replace Function to act like a page without unsafe-eval. Restored
+// afterwards, also when the case ends with a timeout, so that later suites can
+// compile strings again.
+const originalFunction = globalThis.Function;
+
 const eventLoader = new ResourceLoader(testRegistry({ SystemErrorHandler: { handleError: () => {} } }), false);
 
 function makeRegistry() {
@@ -58,6 +63,7 @@ function makeRegistry() {
 // com.vaadin.client.GwtDependencyLoaderTest.
 describe('DependencyLoader (class)', () => {
   afterEach(() => {
+    globalThis.Function = originalFunction;
     active.splice(0, active.length).forEach((registry) => registry.completeAll());
   });
 
@@ -151,7 +157,6 @@ describe('DependencyLoader (class)', () => {
     };
     const registry = testRegistry({ SystemErrorHandler: { handleError: () => {} }, StateTree: {} });
     registry.register('ResourceLoader', new ResourceLoader(registry, false));
-    const originalFunction = globalThis.Function;
     const compiled: string[] = [];
     globalThis.Function = function (...args: string[]) {
       compiled.push(args.join(','));
@@ -163,7 +168,6 @@ describe('DependencyLoader (class)', () => {
       );
       await new Promise<void>((resolve) => runWhenEagerDependenciesLoaded(resolve));
     } finally {
-      globalThis.Function = originalFunction;
       delete snippets['import-fn'];
     }
     expect(compiled).to.eql([]);

@@ -5,7 +5,9 @@
 # call one: suppress that call with
 # com.vaadin.flow.internal.SuppressForbidden on its method or class.
 
-# Modules that do not depend on flow-server cannot call them
+# Modules that do not depend on flow-server cannot call them. As a missing class
+# is then ignored everywhere, StringJavaScriptSignaturesTest in flow-server
+# checks that every signature still matches a class, method or constructor
 @ignoreMissingClasses
 
 @defaultMessage Sends JavaScript as a string, which a strict Content Security Policy blocks. Declare it in a @JsDefinition interface and call it through executeJs(Class) or JsSnippets.of(Class)
@@ -18,6 +20,7 @@ com.vaadin.flow.component.page.Page#executeJs(java.lang.String,java.io.Serializa
 com.vaadin.flow.dom.JsFunction#of(java.lang.String,java.lang.Object[])
 com.vaadin.flow.component.page.Page#addDynamicImport(java.lang.String)
 com.vaadin.flow.dom.Element#addJsInitializer(java.lang.String,java.lang.Object[])
+com.vaadin.flow.dom.impl.ElementJsInitializerRegistration#<init>(com.vaadin.flow.internal.StateNode,java.lang.String,java.lang.Object[])
 com.vaadin.flow.component.Shortcuts#setShortcutListenOnElement(java.lang.String,com.vaadin.flow.component.Component)
 
 @defaultMessage Adds event data as a string, which the browser compiles unless it is a property path. Use addEventDataPath(...) or addEventDataElementPath(...) for a property path, or a DomEventData from a @JsDefinition interface
