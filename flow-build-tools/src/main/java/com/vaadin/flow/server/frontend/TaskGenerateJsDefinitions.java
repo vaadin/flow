@@ -207,7 +207,9 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     }
 
     /**
-     * Renders the file for the definitions and event types on the class path.
+     * Renders the file for the definitions and event types on the class path,
+     * or, for an optimized production bundle, for those of them the application
+     * can reach and those of Flow's own jar.
      *
      * @return the content of the file and the functions it registers
      */
