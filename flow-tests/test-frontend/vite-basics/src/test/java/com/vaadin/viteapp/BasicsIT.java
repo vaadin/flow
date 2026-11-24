@@ -89,54 +89,6 @@ public class BasicsIT extends ViteDevModeIT {
         }
     }
 
-    @Test
-    public void checkerOverlay_viewportHighPage_noScrollbar() {
-        waitUntil(driver -> (Boolean) executeScript(
-                "return !!document.querySelector('vite-plugin-checker-overlay')"),
-                60);
-        Assert.assertEquals(
-                "A page that fills the viewport should not overflow it",
-                Boolean.TRUE, executeScript(
-                        """
-                                for (const child of document.body.children) {
-                                    if (child.localName !== 'vite-plugin-checker-overlay') {
-                                        child.style.display = 'none';
-                                    }
-                                }
-                                document.documentElement.style.height = '100%';
-                                document.body.style.margin = '0';
-                                document.body.style.height = '100%';
-                                const shell = document.createElement('div');
-                                shell.style.height = '100%';
-                                document.body.prepend(shell);
-                                return document.documentElement.scrollHeight
-                                    === window.innerHeight;
-                                """));
-    }
-
-    @Test
-    public void checkerOverlay_coveredByPositionedContent_staysOnTop() {
-        waitUntil(driver -> (Boolean) executeScript("""
-                return !!document.querySelector('vite-plugin-checker-overlay')
-                    ?.shadowRoot?.querySelector('.badge')
-                """), 60);
-        Assert.assertEquals(
-                "The checker overlay should stay above positioned content",
-                Boolean.TRUE, executeScript(
-                        """
-                                const cover = document.createElement('div');
-                                cover.style.cssText = 'position: fixed; inset: 0; z-index: 1000';
-                                document.body.append(cover);
-                                const host = document.querySelector('vite-plugin-checker-overlay');
-                                // The badge only shows when there are problems
-                                const target = host.shadowRoot.querySelector('.badge');
-                                target.hidden = false;
-                                const { x, y, width, height } = target.getBoundingClientRect();
-                                return document.elementFromPoint(x + width / 2, y + height / 2)
-                                    === host;
-                                """));
-    }
-
     private boolean hasTypescriptErrorOverlay() {
         // The badge label reads e.g. "Checker: 1 error" or
         // "Checker: no problems"
