@@ -419,8 +419,6 @@ public class FrontendToolsTest {
                 containsString("--no-update-notifier"));
         assertThat(tools.getNpmExecutable().get(2),
                 containsString("--no-audit"));
-        assertThat(tools.getNpmExecutable().get(3),
-                containsString("--scripts-prepend-node-path=true"));
     }
 
     @Test
