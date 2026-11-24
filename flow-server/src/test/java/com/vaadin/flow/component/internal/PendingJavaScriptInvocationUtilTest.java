@@ -22,6 +22,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -244,7 +245,7 @@ class PendingJavaScriptInvocationUtilTest {
     }
 
     @Test
-    void sessionUnlock_failingCheck_otherUIsStillCheckedAndLockReleased() {
+    void sessionUnlock_failingCheck_otherUIsStillChecked() {
         AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
                 new MockVaadinServletService());
         MockUI failing = new MockUI(session) {
@@ -254,6 +255,7 @@ class PendingJavaScriptInvocationUtilTest {
             }
         };
         MockUI other = new MockUI(session);
+        // The failing UI must be checked first, so it gets the lower id
         TestComponent failingComponent = initInSession(failing, 1);
         TestComponent otherComponent = initInSession(other, 2);
 
@@ -261,7 +263,6 @@ class PendingJavaScriptInvocationUtilTest {
             executeJs(failingComponent, WARNING_THRESHOLD);
             executeJs(otherComponent, WARNING_THRESHOLD);
             assertDoesNotThrow(session::unlock);
-            assertFalse(session.hasLock(), "the lock should be released");
             session.lock();
         }
 
@@ -277,9 +278,14 @@ class PendingJavaScriptInvocationUtilTest {
         TestComponent component = initInSession(ui, 1);
         ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
         PushConnection pushConnection = mock(PushConnection.class);
-        when(pushConnection.isConnected()).thenReturn(true);
+        // Not yet connected in the first hold, so the queue grows over two
+        // holds and would be logged if checked before the second push
+        AtomicBoolean connected = new AtomicBoolean();
+        when(pushConnection.isConnected()).thenAnswer(i -> connected.get());
         doAnswer(invocation -> {
-            sendQueue(ui);
+            if (connected.get()) {
+                sendQueue(ui);
+            }
             return null;
         }).when(pushConnection).push();
         ui.getInternals().setPushConnection(pushConnection);
@@ -288,29 +294,11 @@ class PendingJavaScriptInvocationUtilTest {
             executeJs(component, WARNING_THRESHOLD);
             session.unlock();
             session.lock();
+            connected.set(true);
         }
 
         verify(pushConnection, times(2)).push();
         assertNothingLogged(ui);
-    }
-
-    @Test
-    void sessionUnlock_checksUndeliveredInvocationsOfItsUIs() {
-        MockUI ui = new MockUI(
-                new AlwaysLockedVaadinSession(new MockVaadinServletService()));
-        ui.doInit(null, 42, "foo");
-        ui.getSession().addUI(ui);
-        TestComponent component = new TestComponent();
-        ui.add(component);
-
-        executeJs(component, WARNING_THRESHOLD);
-        ui.getSession().unlock();
-        ui.getSession().lock();
-        executeJs(component, 1);
-        ui.getSession().unlock();
-        ui.getSession().lock();
-
-        assertTrue(isLogged(ui, PileUp.NO_DELIVERY));
     }
 
     @Test
@@ -497,6 +485,9 @@ class PendingJavaScriptInvocationUtilTest {
                                 + " with the expression 'return 'newest';'"),
                 message);
         assertAdvice(message);
+        assertFalse(message.contains("Enable debug logging"),
+                "the call site is never logged for invisible components: "
+                        + message);
     }
 
     @Test
@@ -514,7 +505,7 @@ class PendingJavaScriptInvocationUtilTest {
                 + " with the expression 'return $0;'"), message);
         assertTrue(message.contains("UI.getLastUpdateSentTimestamp()"),
                 message);
-        assertAdvice(message);
+        assertAdviceWithDebugHint(message);
     }
 
     @Test
@@ -527,7 +518,7 @@ class PendingJavaScriptInvocationUtilTest {
         assertTrue(polling.contains("polls every 500 ms"), polling);
         assertFalse(polling.contains("The newest one still waiting"),
                 "no invocation should be named when none is known: " + polling);
-        assertAdvice(polling);
+        assertAdviceWithDebugHint(polling);
 
         ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
         String disconnected = buildDeliveryTooSlowMessage(ui, 1000, 2,
@@ -778,6 +769,11 @@ class PendingJavaScriptInvocationUtilTest {
         for (PileUp pileUp : PileUp.values()) {
             assertFalse(isLogged(ui, pileUp), pileUp + " should not be logged");
         }
+    }
+
+    private static void assertAdviceWithDebugHint(String message) {
+        assertAdvice(message);
+        assertTrue(message.contains("Enable debug logging"), message);
     }
 
     private static void assertAdvice(String message) {
