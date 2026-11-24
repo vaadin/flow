@@ -175,6 +175,7 @@ public class DataCommunicator<T> implements Serializable {
     public static final class Filter<F> implements Serializable {
 
         // Serializability of filter is up to the application
+        @SuppressWarnings("java:S1948")
         private final F filterObject;
 
         private final boolean notifyOnChange;
