@@ -99,6 +99,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     public static final String LIVE_RELOAD_PORT_ATTR = "livereload.port";
     private static final String CONTENT_SECURITY_POLICY_HEADER = "Content-Security-Policy";
     private static final String CSP_SELF = "'self'";
+    private static final String CSP_DATA = "data:";
 
     // Not static: a SecureRandom in a static field would be created at build
     // time in native images that initialize classes at build time (Quarkus)
@@ -276,7 +277,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private String createCspNonce() {
         byte[] bytes = new byte[16];
         nonceRandom.nextBytes(bytes);
-        return Base64.getEncoder().encodeToString(bytes);
+        // Padding is not needed since the nonce is only compared as a string
+        return Base64.getEncoder().withoutPadding().encodeToString(bytes);
     }
 
     private static ContentSecurityPolicy createDefaultContentSecurityPolicy(
@@ -284,14 +286,15 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // 'strict-dynamic' trusts the scripts that nonced scripts load, such
         // as the chunks of the bundle. connect-src also covers push. Workers
         // need their own directive since script-src only allows nonced
-        // scripts.
+        // scripts. connect-src allows data: because vaadin-icon fetches the
+        // src of SvgIcon, which can be a data: URL.
         return new ContentSecurityPolicy().setDirective("default-src", CSP_SELF)
                 .setDirective("script-src", "'nonce-" + nonce + "'",
                         "'strict-dynamic'")
                 .setDirective("style-src", CSP_SELF, "'unsafe-inline'")
-                .setDirective("img-src", CSP_SELF, "data:")
-                .setDirective("font-src", CSP_SELF, "data:")
-                .setDirective("connect-src", CSP_SELF)
+                .setDirective("img-src", CSP_SELF, CSP_DATA)
+                .setDirective("font-src", CSP_SELF, CSP_DATA)
+                .setDirective("connect-src", CSP_SELF, CSP_DATA)
                 .setDirective("worker-src", CSP_SELF)
                 .setDirective("object-src", "'none'")
                 .setDirective("base-uri", CSP_SELF);
@@ -436,16 +439,21 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private void redirectToOldBrowserPageWhenNeeded(Document indexDocument) {
-        // The CSS Custom Highlight API needs Firefox 140 (ESR), Chrome 105 or
-        // Safari 17.2, and light-dark() needs Firefox 120, Chrome 123 or Safari
+        // Intl.Locale#getWeekInfo needs Firefox 153 (ESR), Chrome 130 or
+        // Safari 17, and light-dark() needs Firefox 120, Chrome 123 or Safari
         // 17.5. Together they match the build target in vite.generated.ts
-        // without turning away Chrome that is a few versions behind.
-        addScript(indexDocument, """
-                if (typeof Highlight !== "function"
-                        || !CSS.supports("color", "light-dark(red, red)")) {
-                    window.location.search='v-r=oldbrowser';
-                }
-                """);
+        // without turning away Chrome that is a few versions behind. The
+        // script is not transpiled, so it must parse in the old browsers it
+        // turns away.
+        addScript(indexDocument,
+                """
+                        if (typeof Intl === "undefined"
+                                || typeof Intl.Locale !== "function"
+                                || typeof Intl.Locale.prototype.getWeekInfo !== "function"
+                                || !CSS.supports("color", "light-dark(red, red)")) {
+                            window.location.search='v-r=oldbrowser';
+                        }
+                        """);
     }
 
     private void catchErrorsInDevMode(Document indexDocument) {

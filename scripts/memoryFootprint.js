@@ -28,6 +28,7 @@
  */
 const fs = require('fs');
 const path = require('path');
+const { formatValue, formatDifference } = require('./prCommentFormat');
 
 // Starts the pull request comment, so that each run updates the one comment
 // instead of adding another
@@ -72,14 +73,6 @@ function readMeasurements(dir) {
   return measurements;
 }
 
-function formatValue(value, unit) {
-  const number = value.toLocaleString('en-US');
-  if (unit === 'bytes') {
-    return `${number} B`;
-  }
-  return unit ? `${number} ${unit}` : number;
-}
-
 /**
  * The difference from base to head, in bold and colored green when the
  * footprint shrinks and red when it grows.
@@ -102,11 +95,7 @@ function formatChange(hasBase, base, head, unit) {
   if (!isChange(base, head, unit)) {
     return `${sign}${formatValue(Math.abs(difference), unit)} (ignored)`;
   }
-  const percent = ((Math.abs(difference) / base) * 100).toFixed(1);
-  const color = difference > 0 ? 'red' : 'green';
-  // GitHub colors text only in math, where \textbf keeps the spaces. The
-  // percentage stays outside, as Markdown would unescape the \% math needs
-  return `$\\color{${color}}\\textbf{${sign}${formatValue(Math.abs(difference), unit)}}$ (${sign}${percent}%)`;
+  return formatDifference(base, head, unit);
 }
 
 /**

@@ -19,7 +19,9 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.server.streams.AbstractDownloadHandler;
+import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
@@ -33,13 +35,12 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * Video video = new Video();
  * video.addSource("/intro.webm", "video/webm");
  * video.addSource("/intro.mp4", "video/mp4");
- * video.setControlsVisible(true);
  * video.setPoster("/intro-poster.jpg");
  * </pre>
  *
- * The element has no controls of its own until
- * {@link #setControlsVisible(boolean)} is called, so a player that the visitor
- * is meant to start needs that call. Give the player a size through
+ * The browser's playback controls are shown by default; hide them with
+ * {@link #setControlsVisible(boolean)} for a video that the application drives
+ * itself, such as a muted background video. Give the player a size through
  * {@link #setWidth(String)} and {@link #setHeight(String)}; without one, the
  * page reflows once the video dimensions are known, unless a
  * {@link #setPoster(String) poster} fixes the size earlier.
@@ -54,10 +55,16 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 @Tag(Tag.VIDEO)
 public class Video extends Media {
 
+    static {
+        UsageStatistics.markAsUsed("flow/Video", null);
+    }
+
+    private static final String PLAYS_INLINE_ATTRIBUTE = "playsinline";
     private static final String POSTER_ATTRIBUTE = "poster";
 
     /**
-     * Creates a video player without any source.
+     * Creates a video player without any source. The browser's playback
+     * controls are shown.
      */
     public Video() {
         super();
@@ -65,7 +72,7 @@ public class Video extends Media {
 
     /**
      * Creates a video player that plays the first of the given sources the
-     * browser can decode.
+     * browser can decode. The browser's playback controls are shown.
      *
      * @param sources
      *            the same recording in one or more file formats
@@ -97,10 +104,12 @@ public class Video extends Media {
      * callback serves. This is the version to use for an image the application
      * produces itself, rather than one that is served from a URL of its own.
      * <p>
-     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
-     * for pre-defined download handlers, created by factory methods in
-     * {@link DownloadHandler}, as well as for other
-     * {@link AbstractDownloadHandler} implementations.
+     * The content is served inline, so that the browser shows it: a file name
+     * the handler gives with
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#fileName(String)}, as
+     * the built-in handlers do, is sent with a
+     * <code>Content-Disposition: inline</code> header. A handler that asks for
+     * <code>attachment</code> itself keeps that choice.
      * <p>
      * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
      * that the poster is still served when the video, or one of its ancestors,
@@ -114,13 +123,10 @@ public class Video extends Media {
      * @see #setPoster(String)
      */
     public void setPoster(DownloadHandler downloadHandler) {
-        if (downloadHandler instanceof AbstractDownloadHandler<?> handler) {
-            // change disposition to inline in pre-defined handlers,
-            // where it is 'attachment' by default
-            handler.inline();
-        }
         getElement().setAttribute(POSTER_ATTRIBUTE,
-                downloadHandler.allowDisabled());
+                new StreamResourceRegistry.ElementStreamResource(
+                        downloadHandler.allowDisabled(), getElement(),
+                        DownloadDisposition.INLINE));
     }
 
     /**
@@ -132,5 +138,30 @@ public class Video extends Media {
      */
     public @Nullable String getPoster() {
         return getElement().getAttribute(POSTER_ATTRIBUTE);
+    }
+
+    /**
+     * Sets whether the video plays inside the page rather than in full screen.
+     * Desktop browsers always play inline, but Safari on iPhone opens the video
+     * in full screen when playback starts, and does not
+     * {@link #setAutoplay(boolean) autoplay} it at all, unless this is set. A
+     * background video or any other player that is meant to stay part of the
+     * page needs it.
+     *
+     * @param playsInline
+     *            <code>true</code> to play the video inside the page
+     */
+    public void setPlaysInline(boolean playsInline) {
+        getElement().setAttribute(PLAYS_INLINE_ATTRIBUTE, playsInline);
+    }
+
+    /**
+     * Gets whether the video plays inside the page rather than in full screen.
+     *
+     * @return <code>true</code> if the video plays inside the page
+     * @see #setPlaysInline(boolean)
+     */
+    public boolean isPlaysInline() {
+        return getElement().hasAttribute(PLAYS_INLINE_ATTRIBUTE);
     }
 }

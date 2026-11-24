@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1123,7 +1122,7 @@ class ShortcutRegistrationTest {
     }
 
     @JsDefinition
-    public interface LocatorJs extends Serializable {
+    public interface LocatorJs extends JsSnippets {
 
         @JsExpression("return this.overlay;")
         JsFunction locateOverlay();

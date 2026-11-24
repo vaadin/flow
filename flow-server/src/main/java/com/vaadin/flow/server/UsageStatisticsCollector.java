@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -73,6 +74,24 @@ class UsageStatisticsCollector implements Serializable {
         addKotlinUsageStatistics(routeDataList);
         addFrontendToolUsageStatistics(configuration);
         addThemeAnnotationUsageStatistics(service);
+        addCspModeUsageStatistics(configuration);
+    }
+
+    /**
+     * Reports the configured {@link CspMode} as a {@code flow/csp-<mode>}
+     * entry, also when it is {@link CspMode#OFF}, so that the share of
+     * applications using each mode can be measured.
+     *
+     * @param configuration
+     *            the deployment configuration to read the mode from
+     */
+    private static void addCspModeUsageStatistics(
+            DeploymentConfiguration configuration) {
+        // A mocked configuration returns null instead of the default OFF
+        CspMode mode = Objects.requireNonNullElse(configuration.getCspMode(),
+                CspMode.OFF);
+        UsageStatistics.markAsUsed(
+                "flow/csp-" + mode.name().toLowerCase(Locale.ROOT), null);
     }
 
     /**
