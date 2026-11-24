@@ -8,8 +8,11 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.junit.Before;
 import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.TimeoutException;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -22,14 +25,25 @@ public abstract class AbstractReloadIT extends ChromeBrowserTest {
     @Before
     @Override
     public void checkIfServerAvailable() {
-        waitUntil(driver -> {
-            try {
-                super.checkIfServerAvailable();
-                return true;
-            } catch (Exception e) {
-                return false;
-            }
-        });
+        // Redeploying takes longer than the ten seconds the single argument
+        // waitUntil allows.
+        AtomicReference<RuntimeException> lastFailure = new AtomicReference<>();
+        try {
+            waitUntil(driver -> {
+                try {
+                    super.checkIfServerAvailable();
+                    return true;
+                } catch (RuntimeException e) {
+                    lastFailure.set(e);
+                    return false;
+                }
+            }, 60);
+        } catch (TimeoutException e) {
+            // Report why the server was unreachable, not just that waiting
+            // for it timed out.
+            RuntimeException failure = lastFailure.get();
+            throw failure == null ? e : failure;
+        }
     }
 
     protected void reloadAndWait() {
