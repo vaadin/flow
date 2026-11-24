@@ -61,6 +61,21 @@ describe('DefaultRegistry', () => {
     expect(registry.getApplicationConfiguration()).to.equal(config); // final -> same instance
   });
 
+  it('reports the connection terminated only while the current UI lifecycle is stopped', () => {
+    const registry = makeRegistry();
+    const connection = new ApplicationConnection(registry);
+    registry.getUILifecycle().setState(UIState.RUNNING);
+    expect(connection.isTerminated()).to.be.false;
+
+    registry.getUILifecycle().setState(UIState.TERMINATED);
+    expect(connection.isTerminated()).to.be.true;
+
+    // E.g. an exported web component resynchronizing its session runs a new UI.
+    registry.reset();
+    registry.getUILifecycle().setState(UIState.RUNNING);
+    expect(connection.isTerminated()).to.be.false;
+  });
+
   it('announces on the client events when the current UI lifecycle stops', () => {
     const registry = makeRegistry();
     let terminations = 0;

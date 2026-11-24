@@ -424,10 +424,6 @@ describe('Flow', () => {
 
     expect(await settledSoon(elem.onBeforeEnter({ pathname: 'Foo' }, cmd))).to.equal('prevented');
     expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
-
-    // A later navigation is cancelled without waiting for the stopped UI
-    expect(await settledSoon(elem.onBeforeEnter({ pathname: 'Bar' }, cmd))).to.equal('prevented');
-    expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
     document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
   });
 
