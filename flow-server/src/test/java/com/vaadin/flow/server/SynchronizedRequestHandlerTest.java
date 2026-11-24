@@ -119,7 +119,7 @@ class SynchronizedRequestHandlerTest {
                 FailedUIRequestException.class,
                 () -> handler.handleRequest(session, mock(VaadinRequest.class),
                         mock(VaadinResponse.class)));
-        assertSame(failure, thrown.getFailure());
+        assertSame(failure, thrown.getCause());
         assertSame(ui, thrown.getUI());
         assertFalse(session.hasLock());
         assertNull(UI.getCurrent());
@@ -182,7 +182,7 @@ class SynchronizedRequestHandlerTest {
                 FailedUIRequestException.class,
                 () -> outer.handleRequest(session, mock(VaadinRequest.class),
                         mock(VaadinResponse.class)));
-        assertSame(failure, thrown.getFailure());
+        assertSame(failure, thrown.getCause());
         assertSame(ui, thrown.getUI());
     }
 

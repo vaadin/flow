@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server;
 
+import java.util.Objects;
+
 import com.vaadin.flow.component.UI;
 
 /**
@@ -27,17 +29,25 @@ import com.vaadin.flow.component.UI;
  * UI current again while it holds the session lock. Other code that calls
  * {@link SynchronizedRequestHandler#handleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
  * directly can catch this exception and handle the original exception from
- * {@link #getFailure()}.
- *
- * @since 25.5
+ * {@link #getCause()}.
  */
 public final class FailedUIRequestException extends RuntimeException {
 
     private final transient UI ui;
 
-    FailedUIRequestException(Exception failure, UI ui) {
-        super(failure);
-        this.ui = ui;
+    /**
+     * Creates a new exception for the given failure and UI.
+     *
+     * @param failure
+     *            the exception that made the request handler fail, not
+     *            <code>null</code>
+     * @param ui
+     *            the UI that was current when the request handler failed, not
+     *            <code>null</code>
+     */
+    public FailedUIRequestException(Exception failure, UI ui) {
+        super(Objects.requireNonNull(failure, "failure must not be null"));
+        this.ui = Objects.requireNonNull(ui, "ui must not be null");
     }
 
     /**
@@ -45,8 +55,9 @@ public final class FailedUIRequestException extends RuntimeException {
      *
      * @return the exception, not <code>null</code>
      */
-    public Exception getFailure() {
-        return (Exception) getCause();
+    @Override
+    public synchronized Exception getCause() {
+        return (Exception) super.getCause();
     }
 
     /**

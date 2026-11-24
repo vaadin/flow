@@ -74,7 +74,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      * in a {@link FailedUIRequestException}, so that {@link VaadinService} can
      * show the error for that UI. A caller that handles the exception itself
      * can get the original exception with
-     * {@link FailedUIRequestException#getFailure()}.
+     * {@link FailedUIRequestException#getCause()}.
      */
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,

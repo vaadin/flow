@@ -361,6 +361,9 @@ public class PushHandler {
             try (SessionLockScope lock = SessionLockScope.lock(session)
                     .onUnlockFailure(PushHandler::logUnlockFailure)) {
                 UI ui = null;
+                // The catch blocks of the try-with-resources statement would
+                // run after the session is unlocked, but the error handling
+                // needs the lock.
                 try {
                     ui = service.findUI(vaadinRequest);
                     assert UI.getCurrent() == ui;
