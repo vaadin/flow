@@ -84,6 +84,7 @@ import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -2795,13 +2796,13 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @JsDefinition
-    interface ResultJs extends Serializable {
+    interface ResultJs extends JsInvokers {
         @JsExpression("return this.value;")
         PendingJavaScriptResult readValue();
     }
 
     @JsDefinition
-    interface TestJs extends Serializable {
+    interface TestJs extends JsInvokers {
         @JsExpression("this.method($0)")
         void method(String value);
 
@@ -2888,7 +2889,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @JsDefinition
-    interface InitializerSnippetsJs extends Serializable {
+    interface InitializerSnippetsJs extends JsSnippets {
         @JsExpression("""
                 this.classList.add($0);
                 return () => this.classList.remove($0);""")

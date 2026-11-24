@@ -17,6 +17,8 @@ package com.vaadin.flow.component.download;
 
 /**
  * Where the browser puts the content of a {@link Download}.
+ * 
+ * @since 25.4
  */
 public enum DownloadTarget {
 

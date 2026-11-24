@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>flow-project</artifactId>
-  <version>25.4-SNAPSHOT</version>
+  <version>25.5-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Flow</name>
   <url>https://vaadin.com/flow</url>
@@ -142,7 +142,7 @@
     <jetty.version>12.1.15</jetty.version>
     <properties-maven-plugin.version>1.4.0</properties-maven-plugin.version>
     <build-helper-maven-plugin.version>3.8.0</build-helper-maven-plugin.version>
-    <maven.version>3.10.1</maven.version>
+    <maven.version>3.10.2</maven.version>
     <maven-plugin-annotations.version>3.16.0</maven-plugin-annotations.version>
     <jandex.plugin.version>3.6.1</jandex.plugin.version>
     <!-- The Jandex index format that the plugin writes, set apart from the
@@ -206,9 +206,13 @@
          Failsafe runs in parallel. -->
     <vaadin.test.quietOutput>true</vaadin.test.quietOutput>
 
-    <!-- Skip these categories in validation, use -Pslow-tests to run them
-            and override slow-tests profile to add more categories -->
-    <excludedGroups>com.vaadin.flow.testcategory.SlowTests</excludedGroups>
+    <!-- Skip these categories in validation, use -Pslow-tests to run them.
+            Both excludedGroups and the slow-tests profile read
+            slowTestGroups. scripts/computeMatrix.js reads it from this pom
+            and flow-tests/pom.xml only, so override it there to add
+            categories the Slow Tests job runs -->
+    <slowTestGroups>com.vaadin.flow.testcategory.SlowTests</slowTestGroups>
+    <excludedGroups>${slowTestGroups}</excludedGroups>
     <failsafe.parallel>all</failsafe.parallel>
     <failsafe.threadCount>2</failsafe.threadCount>
     <failsafe.perCoreThreadCount>true</failsafe.perCoreThreadCount>
@@ -282,7 +286,7 @@
       <dependency>
         <groupId>com.vaadin</groupId>
         <artifactId>license-checker</artifactId>
-        <version>3.1.4</version>
+        <version>3.1.5</version>
       </dependency>
 
       <!-- Test dependencies -->
@@ -777,7 +781,7 @@
             <path>
               <groupId>com.google.errorprone</groupId>
               <artifactId>error_prone_core</artifactId>
-              <version>2.52.0</version>
+              <version>2.53.0</version>
             </path>
             <path>
               <groupId>com.uber.nullaway</groupId>
@@ -1001,7 +1005,7 @@
     <profile>
       <id>slow-tests</id>
       <properties>
-        <groups>com.vaadin.flow.testcategory.SlowTests</groups>
+        <groups>${slowTestGroups}</groups>
         <excludedGroups/>
       </properties>
     </profile>

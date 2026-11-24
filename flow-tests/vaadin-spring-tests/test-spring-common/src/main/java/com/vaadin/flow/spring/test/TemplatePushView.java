@@ -25,6 +25,10 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
@@ -34,6 +38,16 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 @JsModule("./TemplatePushView.js")
 @Tag("template-push-view")
 public class TemplatePushView extends PolymerTemplate<TemplateModel> {
+
+    @JsDefinition
+    public interface LabelJs extends JsInvokers {
+
+        @JsExpression("$0.setText = function(text) {$0.innerText=text;}")
+        void addSetTextFunction(Element label);
+
+        @JsExpression("$0.innerText='from execJS'")
+        void setTextFromExecJs(Element label);
+    }
 
     @Id
     private NativeLabel label;
@@ -59,8 +73,8 @@ public class TemplatePushView extends PolymerTemplate<TemplateModel> {
         execJsTest.addClickListener(e -> {
             new Thread(new ExecJS(ui)).start();
         });
-        ui.getPage().executeJs(
-                "$0.setText = function(text) {$0.innerText=text;}", label);
+        ui.getPage().executeJs(LabelJs.class)
+                .addSetTextFunction(label.getElement());
         callFunctionTest.addClickListener(e -> {
             new Thread(new CallFunction(ui)).start();
         });
@@ -111,7 +125,8 @@ public class TemplatePushView extends PolymerTemplate<TemplateModel> {
 
         @Override
         protected void execute(UI ui) {
-            ui.getPage().executeJs("$0.innerText='from execJS'", label);
+            ui.getPage().executeJs(LabelJs.class)
+                    .setTextFromExecJs(label.getElement());
         }
 
     }
