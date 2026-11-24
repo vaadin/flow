@@ -17,7 +17,6 @@ package com.vaadin.flow.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -32,7 +31,9 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.internal.BundledEventData;
@@ -88,12 +89,31 @@ public final class JsStringFallbacks {
      * @param eventData
      *            the declared event data values
      */
-    public record Fallbacks(Map<String, Method> calls,
-            Map<String, Method> functions, Set<String> filters,
+    public record Fallbacks(Map<String, DeclaredMethod> calls,
+            Map<String, DeclaredMethod> functions, Set<String> filters,
             Set<String> eventData) {
 
         private static final Fallbacks NONE = new Fallbacks(Map.of(), Map.of(),
                 Set.of(), Set.of());
+    }
+
+    /**
+     * A method that stands in for strings, with the {@link JsStringFallback}
+     * interface it is called through. That is not the class declaring the
+     * method when the interface inherits it, and only a call through the
+     * interface runs the function the bundle has for the string.
+     *
+     * @param definitionType
+     *            the fallback interface
+     * @param method
+     *            the method, declared or inherited by the interface
+     */
+    public record DeclaredMethod(Class<?> definitionType, Method method) {
+
+        private JsCall call(Object[] arguments) {
+            return new JsCall(definitionType, method.getName(),
+                    Arrays.asList(arguments));
+        }
     }
 
     private JsStringFallbacks() {
@@ -113,13 +133,14 @@ public final class JsStringFallbacks {
      */
     public static Fallbacks collectFallbacks(
             Collection<Class<?>> definitionTypes) {
-        Map<String, Method> calls = new HashMap<>();
-        Map<String, Method> functions = new HashMap<>();
+        Map<String, DeclaredMethod> calls = new HashMap<>();
+        Map<String, DeclaredMethod> functions = new HashMap<>();
         Set<String> filters = new HashSet<>();
         Set<String> eventData = new HashSet<>();
         for (Class<?> definitionType : definitionTypes) {
             boolean snippets = checkFallbackDefinition(definitionType);
-            Map<String, Method> byFunctionId = snippets ? functions : calls;
+            Map<String, DeclaredMethod> byFunctionId = snippets ? functions
+                    : calls;
             for (Method method : collectDeclaredMethods(definitionType)) {
                 // A string is found by what it sends: its text and its argument
                 // or capture count. The names of a function are only known
@@ -133,10 +154,13 @@ public final class JsStringFallbacks {
                                 method.getParameterCount(), false)
                         : JsCall.functionId(expression,
                                 method.getParameterCount(), method.isVarArgs());
-                Method previous = byFunctionId.putIfAbsent(key, method);
-                if (previous != null && !previous.equals(method)) {
+                DeclaredMethod previous = byFunctionId.putIfAbsent(key,
+                        new DeclaredMethod(definitionType, method));
+                // Two fallback interfaces may inherit the same method
+                if (previous != null && !previous.method().equals(method)) {
                     throw new IllegalArgumentException("Methods "
-                            + describe(previous) + " and " + describe(method)
+                            + describe(previous.method()) + " and "
+                            + describe(method)
                             + " declare the same JavaScript with the same"
                             + " parameter count, so a string could not tell"
                             + " which of them it stands for. Keep one of them");
@@ -164,19 +188,16 @@ public final class JsStringFallbacks {
      * @return the declared call to send instead, or <code>null</code> if the
      *         application declared nothing for the string, or the mode does not
      *         report string JavaScript
-     * @throws IllegalStateException
-     *             if the list the build wrote names a class that can not be
-     *             loaded or no longer fits
      */
     public static @Nullable JsCall findDeclaredCall(String expression,
             @Nullable Object[] parameters) {
         Fallbacks current = getFallbacks();
-        Method method = (current == null) ? null
-                : current.calls().get(JsCall.functionId(expression,
-                        parameters.length, false));
-        return (method == null) ? null
-                : new JsCall(method.getDeclaringClass(), method.getName(),
-                        Arrays.asList(parameters));
+        if (current == null || current.calls().isEmpty()) {
+            return null;
+        }
+        DeclaredMethod method = current.calls()
+                .get(JsCall.functionId(expression, parameters.length, false));
+        return (method == null) ? null : method.call(parameters);
     }
 
     /**
@@ -191,20 +212,17 @@ public final class JsStringFallbacks {
      * @return the call to create the declared function with, or
      *         <code>null</code> if the application declared nothing for the
      *         body, or the mode does not report string JavaScript
-     * @throws IllegalStateException
-     *             if the list the build wrote names a class that can not be
-     *             loaded or no longer fits
      */
     public static @Nullable JsCall findDeclaredFunction(String body,
             @Nullable Object[] captures) {
         Fallbacks current = getFallbacks();
+        if (current == null || current.functions().isEmpty()) {
+            return null;
+        }
         // Found without names, which withArguments adds after this
-        Method method = (current == null) ? null
-                : current.functions().get(JsCall.snippetFunctionId(body,
-                        List.of(), captures.length, false));
-        return (method == null) ? null
-                : new JsCall(method.getDeclaringClass(), method.getName(),
-                        Arrays.asList(captures));
+        DeclaredMethod method = current.functions().get(JsCall
+                .snippetFunctionId(body, List.of(), captures.length, false));
+        return (method == null) ? null : method.call(captures);
     }
 
     /**
@@ -234,30 +252,20 @@ public final class JsStringFallbacks {
     public static boolean isDeclaredEventData(String eventData) {
         Fallbacks current = getFallbacks();
         // The bundle has one function for a value, mapped to an element or not
-        return current != null && current.eventData()
-                .contains(BundledEventData.getExpression(eventData));
+        return current != null && !current.eventData().isEmpty()
+                && current.eventData()
+                        .contains(BundledEventData.getExpression(eventData));
     }
 
     /**
      * Reads the list again for a service, after a class change updated it while
-     * the application runs. A list that does not fit is logged rather than
-     * thrown, since no call is being made, and the next call that is matched
-     * reports it again.
+     * the application runs.
      *
      * @param service
      *            the service, not <code>null</code>
      */
     public static void reloadFallbacks(VaadinService service) {
-        fallbacks.remove(service);
-        try {
-            fallbacks.put(service, loadFallbacks(service));
-        } catch (RuntimeException e) {
-            LoggerFactory.getLogger(JsStringFallbacks.class).warn(
-                    "The changed @JsStringFallback interfaces can not stand in"
-                            + " for JavaScript sent as a string, so calls that"
-                            + " would match them fail until this is fixed",
-                    e);
-        }
+        fallbacks.put(service, loadFallbacks(service));
     }
 
     /**
@@ -276,6 +284,13 @@ public final class JsStringFallbacks {
 
     /**
      * Reads the interfaces the build listed for the application of a service.
+     * <p>
+     * What can not be used is logged rather than thrown: the list is read for
+     * any string, also one that no fallback declares, so an exception would
+     * make every string call fail. A class that can not be loaded, such as an
+     * interface deleted or renamed while the application runs, is left out. A
+     * list that no longer fits is not used at all, so strings are reported as
+     * if nothing was declared.
      */
     private static Fallbacks loadFallbacks(VaadinService service) {
         ClassLoader classLoader = service.getClassLoader();
@@ -286,24 +301,35 @@ public final class JsStringFallbacks {
             }
             JsonNode names = JacksonUtils.getMapper().readTree(list);
             for (JsonNode name : names) {
-                definitionTypes.add(
-                        Class.forName(name.asString(), false, classLoader));
+                try {
+                    definitionTypes.add(
+                            Class.forName(name.asString(), false, classLoader));
+                } catch (ClassNotFoundException | LinkageError e) {
+                    getLogger().warn("{} names {}, which can not be loaded, so"
+                            + " it is left out. The build that wrote the list"
+                            + " saw other classes than the application has",
+                            RESOURCE, name.asString(), e);
+                }
             }
-        } catch (IOException e) {
-            throw new UncheckedIOException("Could not read " + RESOURCE, e);
-        } catch (ClassNotFoundException e) {
-            throw new IllegalStateException(RESOURCE
-                    + " names a class that is not on the classpath: "
-                    + e.getMessage()
-                    + ". The build that wrote it saw other classes than the"
-                    + " application has", e);
+        } catch (IOException | JacksonException e) {
+            getLogger().warn("Could not read {}, so no JavaScript sent as a"
+                    + " string is matched against @JsStringFallback"
+                    + " interfaces", RESOURCE, e);
+            return Fallbacks.NONE;
         }
         try {
             return collectFallbacks(definitionTypes);
         } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("An interface listed in " + RESOURCE
-                    + " no longer fits what the build checked", e);
+            getLogger().warn("An interface listed in {} no longer fits what"
+                    + " the build checked, so no JavaScript sent as a string"
+                    + " is matched against @JsStringFallback interfaces"
+                    + " until this is fixed", RESOURCE, e);
+            return Fallbacks.NONE;
         }
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(JsStringFallbacks.class);
     }
 
     /**

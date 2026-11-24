@@ -73,21 +73,26 @@ public final class CspViolationReporter {
             This call site has now logged %d different reports, so further \
             ones from it are not logged.""".formatted(MAX_LOGGED_PER_CALL_SITE);
 
-    // The first JavaScript that each call site reported, to tell when a call
-    // site sends different strings. Bounded by the number of call sites, for
-    // each service
-    private static final Map<VaadinService, Map<String, String>> firstJavaScript = Collections
+    // The different JavaScript that each call site reported, up to
+    // VARYING_JAVASCRIPT_COUNT, to tell when a call site builds its string from
+    // changing values. Bounded by the number of call sites, for each service
+    private static final Map<VaadinService, Map<String, Set<String>>> sentJavaScript = Collections
             .synchronizedMap(new WeakHashMap<>());
 
+    // A helper that sends a few constant strings from one line is fine, since
+    // each of them can be declared; this many is taken as a changing string
+    private static final int VARYING_JAVASCRIPT_COUNT = 5;
+
     private static final String VARYING_JAVASCRIPT = """
-            This call site has sent different JavaScript before, so the string \
-            is probably built from values that change. A declaration matches \
-            one exact string only, so @JsStringFallback does not support \
+            This call site has sent %d or more different JavaScript strings, so \
+            the string is probably built from values that change. A declaration \
+            matches one exact string only, so @JsStringFallback does not support \
             strings like this. In your own code, declare the JavaScript once \
             and pass the changing values as parameters ($0, $1, ...). For an \
             add-on, the add-on itself has to change: ask its maintainers to \
             pass the values as parameters or to use a @JsDefinition.
-            """;
+            """
+            .formatted(VARYING_JAVASCRIPT_COUNT);
 
     private CspViolationReporter() {
         // Only static helpers
@@ -542,10 +547,17 @@ public final class CspViolationReporter {
         }
         if (javaScript != null) {
             message += javaScript.describeFix(suggestMethodName(stack), stack);
-            String first = firstJavaScript
+            Set<String> sent = sentJavaScript
                     .computeIfAbsent(service, k -> new ConcurrentHashMap<>())
-                    .putIfAbsent(getCallSite(stack), javaScript.key());
-            if (first != null && !first.equals(javaScript.key())) {
+                    .computeIfAbsent(getCallSite(stack), k -> new HashSet<>());
+            boolean varying;
+            synchronized (sent) {
+                if (sent.size() < VARYING_JAVASCRIPT_COUNT) {
+                    sent.add(javaScript.key());
+                }
+                varying = sent.size() >= VARYING_JAVASCRIPT_COUNT;
+            }
+            if (varying) {
                 message += "\n" + VARYING_JAVASCRIPT;
             }
         }

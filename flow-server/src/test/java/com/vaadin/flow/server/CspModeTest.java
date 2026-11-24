@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -522,26 +523,30 @@ class CspModeTest {
     }
 
     @Test
-    void strict_callSiteSendingDifferentStrings_messageSaysOneDeclarationMatchesOneString() {
+    void strict_callSiteSendingManyDifferentStrings_messageSaysOneDeclarationMatchesOneString() {
         setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
 
         // One call site, as for an add-on that concatenates a value into the
-        // expression
-        String first = assertThrows(CspViolationException.class,
-                () -> executeJsOnUi("return 'orange'")).getMessage();
-        String same = assertThrows(CspViolationException.class,
-                () -> executeJsOnUi("return 'orange'")).getMessage();
-        String different = assertThrows(CspViolationException.class,
-                () -> executeJsOnUi("return 'blue'")).getMessage();
+        // expression. A few different strings, as from a helper called with
+        // constants, can each be declared, so they get no hint
+        List<String> messages = new ArrayList<>();
+        for (String color : List.of("orange", "orange", "blue", "green", "red",
+                "black")) {
+            messages.add(assertThrows(CspViolationException.class,
+                    () -> executeJsOnUi("return '" + color + "'"))
+                    .getMessage());
+        }
 
-        assertFalse(first.contains("sent different JavaScript before"), first);
-        assertFalse(same.contains("sent different JavaScript before"), same);
-        assertTrue(different.contains("sent different JavaScript before"),
-                different);
+        String hint = "different JavaScript strings, so the string is probably built";
+        for (String message : messages.subList(0, 5)) {
+            assertFalse(message.contains(hint), message);
+        }
+        String varying = messages.get(5);
+        assertTrue(varying.contains(hint), varying);
         assertTrue(
-                different.contains(
+                varying.contains(
                         "@JsStringFallback does not support strings like this"),
-                different);
+                varying);
     }
 
     @Test

@@ -109,6 +109,17 @@ class JsStringFallbacksTest {
     }
 
     @JsDefinition
+    interface BlurJs extends JsInvokers {
+        @JsExpression("this.blur()")
+        void blur();
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    interface InheritingFallbacks extends BlurJs {
+    }
+
+    @JsDefinition
     @JsStringFallback
     interface OverloadedFallbacks extends JsInvokers {
         @JsExpression("console.log('text', $0)")
@@ -214,18 +225,49 @@ class JsStringFallbacksTest {
     }
 
     @Test
-    void strict_listNamesMissingClass_throwsNamingIt() throws IOException {
+    void strict_inheritedMethod_sendsCallThroughFallbackInterface()
+            throws Exception {
         setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
-        listFallbacks("[\"com.example.RemovedFallbacks\"]");
+        listFallbacks("[\"" + InheritingFallbacks.class.getName() + "\"]");
 
+        ui.getElement().executeJs("this.blur()");
+
+        // Only a call through the marked interface names the function the
+        // bundle has for the string
+        JsCall call = ui.onlyScheduledJsCall();
+        assertEquals(InheritingFallbacks.class, call.definitionType());
+        assertEquals(JsStringFallbacks.functionId(InheritingFallbacks.class,
+                BlurJs.class.getMethod("blur")), call.getFunctionId());
+    }
+
+    @Test
+    void strict_listNamesMissingClass_otherFallbacksStillMatch()
+            throws IOException {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        // As after an interface is deleted while the application runs
+        listFallbacks("[\"com.example.RemovedFallbacks\", \""
+                + FocusFallbacks.class.getName() + "\"]");
+
+        ui.getElement().executeJs("this.focus()");
+
+        assertEquals(FocusFallbacks.class,
+                ui.onlyScheduledJsCall().definitionType());
+    }
+
+    @Test
+    void listNoLongerFits_stringsAreReportedAsIfNothingWasDeclared()
+            throws IOException {
+        listFallbacks("[\"" + AddonFallbacks.class.getName() + "\", \""
+                + DuplicateFallbacks.class.getName() + "\"]");
+
+        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
         Element element = ui.getElement();
-        IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
+        assertThrows(CspViolationException.class,
                 () -> element.executeJs("return this.scrollTop"));
 
-        assertTrue(
-                exception.getMessage().contains("com.example.RemovedFallbacks"),
-                exception.getMessage());
+        setup.getDeploymentConfiguration().setCspMode(CspMode.WARN);
+        element.executeJs("return this.scrollTop");
+        assertNull(ui.onlyScheduledInvocation().getJsCall());
     }
 
     @Test
