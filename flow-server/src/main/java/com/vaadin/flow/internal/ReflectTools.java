@@ -69,6 +69,8 @@ public class ReflectTools implements Serializable {
     static final String CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR = "Unable to create an instance of '%s'. Make sure the class has a public no-arg constructor.";
     static final String CREATE_INSTANCE_FAILED_LOCAL_CLASS = "Cannot instantiate local class '%s'. Move class declaration outside the method.";
     static final String CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION = "Unable to create an instance of '%s'. The constructor threw an exception.";
+    static final String CREATE_INSTANCE_FAILED_NO_NON_PRIVATE_NOARG_CONSTRUCTOR = "Unable to create an instance of '%s'. Make sure the class has a no-arg constructor that is not private.";
+    static final String CREATE_INSTANCE_FAILED_INACCESSIBLE_CONSTRUCTOR = "Unable to create an instance of '%s'. Its module does not open the package '%s' to Vaadin. Make the class and its no-arg constructor public, or open the package in module-info.java.";
 
     private static final Predicate<Method> IS_SYNTHETIC = Method::isSynthetic;
 
@@ -168,6 +170,41 @@ public class ReflectTools implements Serializable {
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     * Gets the public methods of the given type, like
+     * {@link Class#getMethods()}, but with each method read from the class that
+     * declares it.
+     * <p>
+     * A class keeps the methods it inherits as they were when it first listed
+     * them. Redefining the class that declares a method, as a hotswap does,
+     * refreshes the methods of that class but not the copies its subtypes hold,
+     * so the annotations of an inherited method would still be the ones from
+     * before the redefinition. Reading each method from its declaring class
+     * gives the current ones.
+     *
+     * @param type
+     *            the type to get the public methods of, not <code>null</code>
+     * @return the public methods of the type, not <code>null</code>
+     */
+    public static List<Method> getCurrentPublicMethods(Class<?> type) {
+        List<Method> methods = new ArrayList<>();
+        for (Method method : type.getMethods()) {
+            Class<?> declaringClass = method.getDeclaringClass();
+            if (declaringClass == type) {
+                methods.add(method);
+                continue;
+            }
+            try {
+                methods.add(declaringClass.getDeclaredMethod(method.getName(),
+                        method.getParameterTypes()));
+            } catch (NoSuchMethodException e) { // NOSONAR
+                // Only a redefinition between the two lookups can remove it
+                methods.add(method);
+            }
+        }
+        return methods;
     }
 
     /**
@@ -527,6 +564,65 @@ public class ReflectTools implements Serializable {
      */
     public static <T> T createInstance(Class<T> cls) {
         return createProxyInstance(cls, cls);
+    }
+
+    /**
+     * Creates an instance of the given class with its no-arg constructor, also
+     * when the class or the constructor is not public.
+     * <p>
+     * Unlike {@link #createInstance(Class)}, a package-private or protected
+     * no-arg constructor, or a public constructor of a non-public class, is
+     * made accessible and used, the same way dependency injection containers
+     * do. A private no-arg constructor is not used, since it usually means the
+     * class is not meant to be instantiated. A class without a usable no-arg
+     * constructor is created with its public varargs constructor, like in
+     * {@link #createInstance(Class)}, when it has one.
+     * <p>
+     * Catches all exceptions which might occur and wraps them in a
+     * {@link IllegalArgumentException} with a descriptive error message hinting
+     * of what might be wrong with the class that could not be instantiated.
+     *
+     * @param <T>
+     *            the instance type
+     * @param cls
+     *            the class to instantiate
+     * @return an instance of the class
+     * @throws IllegalArgumentException
+     *             if class instance creation fails, for example when the
+     *             constructor is not public and the package of the class is in
+     *             a named module that does not open it to Vaadin
+     * @since 25.4
+     */
+    public static <T> T createInstanceWithAccessibleConstructor(Class<T> cls) {
+        checkClassAccessibility(cls);
+        Constructor<T> constructor;
+        try {
+            constructor = cls.getDeclaredConstructor();
+        } catch (NoSuchMethodException e) {
+            constructor = null;
+        }
+        if (constructor == null
+                || Modifier.isPrivate(constructor.getModifiers())) {
+            boolean hasVarArgsConstructor = Stream.of(cls.getConstructors())
+                    .anyMatch(ctor -> ctor.getParameterCount() == 1
+                            && ctor.isVarArgs());
+            if (hasVarArgsConstructor) {
+                return createInstance(cls);
+            }
+            throw new IllegalArgumentException(String.format(
+                    CREATE_INSTANCE_FAILED_NO_NON_PRIVATE_NOARG_CONSTRUCTOR,
+                    cls.getName()));
+        }
+        if (!constructor.trySetAccessible()) {
+            throw new IllegalArgumentException(String.format(
+                    CREATE_INSTANCE_FAILED_INACCESSIBLE_CONSTRUCTOR,
+                    cls.getName(), cls.getPackageName()));
+        }
+        try {
+            return constructor.newInstance();
+        } catch (Exception e) {
+            throw convertInstantiationException(e, cls);
+        }
     }
 
     /**

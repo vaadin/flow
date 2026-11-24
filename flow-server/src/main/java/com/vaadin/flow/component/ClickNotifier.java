@@ -170,7 +170,7 @@ public interface ClickNotifier<T extends Component> extends Serializable {
      * For internal use only. May be renamed or removed in a future release.
      */
     @JsDefinition
-    interface ClickFiltersJs extends Serializable {
+    interface ClickFiltersJs extends JsSnippets {
 
         /**
          * Accepts a click whose click count, the <code>detail</code> of the

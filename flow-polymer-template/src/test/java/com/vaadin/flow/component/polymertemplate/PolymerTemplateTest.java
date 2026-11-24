@@ -209,11 +209,16 @@ class PolymerTemplateTest extends HasCurrentService {
 
     }
 
+    // Has the tag of TemplateChild but is not a component, so it maps no tag
+    // to a sub-template rather than colliding with TemplateChild
+    @Tag("child-template")
+    interface TaggedNonComponent {
+    }
+
     @Tag("parent-inject-child")
     @Uses(TestPolymerTemplate.class)
     @Uses(TemplateChild.class)
-    // Not a component, so it maps no tag to a sub-template
-    @Uses(ModelClass.class)
+    @Uses(TaggedNonComponent.class)
     private static class BundledTemplateInTemplate
             extends PolymerTemplate<ModelClass> {
 

@@ -36,12 +36,15 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.DevBundleUtils;
 import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
@@ -50,6 +53,7 @@ import com.vaadin.flow.internal.Template;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.Mode;
@@ -1112,16 +1116,19 @@ class BundleValidationTest {
     }
 
     static Stream<Arguments> modesAndBundledFunctions() {
-        // What the stats say the bundle registers: the function the
-        // application needs among others, and only others
+        // What the stats say the bundle registers: the functions the
+        // application needs among others, and only one of them among others
+        String alsoBundled = JsCall.functionId("this.blur()", 0, false);
         return modes()
                 .flatMap(mode -> Stream.of(
                         Arguments.of(mode,
-                                List.of("another function",
+                                List.of("another function", alsoBundled,
                                         JsCall.functionId("this.focus()", 0,
                                                 false)),
                                 false),
-                        Arguments.of(mode, List.of("another function"), true)));
+                        Arguments.of(mode,
+                                List.of("another function", alsoBundled),
+                                true)));
     }
 
     @ParameterizedTest
@@ -1129,7 +1136,7 @@ class BundleValidationTest {
     void bundleListsFunctions_rebuildOnlyWhenOneIsMissing(Mode mode,
             List<String> bundledFunctionIds, boolean expectedNeedsBuild) {
         setupMode(mode);
-        doReturn(Set.of(BundledJs.class)).when(finder)
+        doReturn(Set.of(BundledJs.class, AlsoBundledJs.class)).when(finder)
                 .getAnnotatedClasses(JsDefinition.class);
         doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
 
@@ -1140,14 +1147,27 @@ class BundleValidationTest {
                 FrontendUtils.GENERATED
                         + FrontendUtils.JS_DEFINITIONS_FILE_NAME,
                 "not the hash of what the interfaces declare");
-        ArrayNode functionIds = stats.putArray("jsDefinitionFunctionIds");
+        ArrayNode functionIds = stats
+                .putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
         bundledFunctionIds.forEach(functionIds::add);
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, mode);
+        Logger logger = Mockito.spy(Logger.class);
+        boolean needsBuild;
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
+            loggerFactory.when(
+                    () -> LoggerFactory.getLogger(BundleValidationUtil.class))
+                    .thenReturn(logger);
+            needsBuild = BundleValidationUtil.needsBuild(options, depScanner,
+                    mode);
+        }
 
         assertEquals(expectedNeedsBuild, needsBuild);
+        // A developer has to know which class to look at, and only that one
+        Mockito.verify(logger, Mockito.times(expectedNeedsBuild ? 1 : 0)).info(
+                Mockito.contains("the bundle does not carry"),
+                Mockito.eq(BundledJs.class.getName()));
     }
 
     @ParameterizedTest
@@ -3067,9 +3087,15 @@ class BundleValidationTest {
     }
 
     @JsDefinition
-    interface BundledJs {
+    interface BundledJs extends JsInvokers {
         @JsExpression("this.focus()")
         void focus();
+    }
+
+    @JsDefinition
+    interface AlsoBundledJs extends JsInvokers {
+        @JsExpression("this.blur()")
+        void blur();
     }
 
     @LoadDependenciesOnStartup
