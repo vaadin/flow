@@ -532,6 +532,39 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @Test
+    void byteCodeScanner_rendersDefinitionsOfEveryFlowModule() {
+        // A definition in the jar of another Flow module, such as flow-dnd,
+        // is carried whether reached or not, as a pre-built bundle has to
+        // serve every application that uses the module. The test classes
+        // stand in for the jar of flow-dnd here.
+        FrontendDependenciesScanner scanner = mock(
+                FrontendDependenciesScanner.class);
+        when(scanner.getClasses()).thenReturn(Set.of());
+        Options optimized = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(LoggerJs.class)) {
+                    @Override
+                    public <T> Class<T> loadClass(String name)
+                            throws ClassNotFoundException {
+                        if ("com.vaadin.flow.component.dnd.DragSource"
+                                .equals(name)) {
+                            return super.loadClass(
+                                    TaskGenerateJsDefinitionsTest.class
+                                            .getName());
+                        }
+                        return super.loadClass(name);
+                    }
+                }, null).withFrontendDirectory(frontendFolder)
+                .withProductionMode(true).useByteCodeScanner(true)
+                .withFrontendDependenciesScanner(scanner);
+
+        Set<String> functionIds = TaskGenerateJsDefinitions.collectFunctionIds(
+                new TaskGenerateJsDefinitions(optimized).getFileContent());
+
+        assertTrue(functionIds.containsAll(collectDeclaredIds(LoggerJs.class)),
+                "a definition of a Flow module is carried: " + functionIds);
+    }
+
+    @Test
     void byteCodeScanner_developmentMode_rendersEveryDefinition() {
         FrontendDependenciesScanner scanner = mock(
                 FrontendDependenciesScanner.class);
