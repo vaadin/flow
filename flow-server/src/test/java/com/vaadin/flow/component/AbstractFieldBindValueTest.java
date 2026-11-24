@@ -16,6 +16,8 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -381,6 +383,45 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
         });
 
         assertThrows(RuntimeException.class, () -> input.setValue("bar"));
+    }
+
+    @Test
+    void bindValue_writeCallbackThrowsAfterSignalUpdate_eventsStillFired() {
+        TestInput input = new TestInput();
+        UI.getCurrent().add(input);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        input.bindValue(signal, value -> {
+            signal.set(value.toUpperCase());
+            throw new RuntimeException("test");
+        });
+
+        List<String> events = new ArrayList<>();
+        input.addValueChangeListener(event -> events
+                .add(event.getOldValue() + " -> " + event.getValue()));
+
+        assertThrows(RuntimeException.class, () -> input.setValue("bar"));
+        assertEquals("BAR", input.getValue());
+        assertEquals(List.of("foo -> BAR"), events);
+
+        // signal changes keep firing events after the failed write
+        signal.set("baz");
+        assertEquals(List.of("foo -> BAR", "BAR -> baz"), events);
+    }
+
+    @Test
+    void bindValue_transformingCallback_clientValueChangeEventFromClient() {
+        TestInput input = new TestInput();
+        UI.getCurrent().add(input);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        input.bindValue(signal, v -> signal.set(v.toUpperCase()));
+
+        List<String> events = new ArrayList<>();
+        input.addValueChangeListener(event -> events.add(event.getOldValue()
+                + " -> " + event.getValue() + " " + event.isFromClient()));
+
+        input.setModelValue("bar", true);
+        assertEquals("BAR", input.getValue());
+        assertEquals(List.of("foo -> BAR true"), events);
     }
 
     @Test

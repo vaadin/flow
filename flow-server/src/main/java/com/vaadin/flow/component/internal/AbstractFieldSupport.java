@@ -66,6 +66,7 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
 
     private boolean valueSetFromSignal;
     private boolean writeCallbackInProgress;
+    private boolean valueSetFromSignalDuringWrite;
 
     /**
      * Creates a new field support.
@@ -286,6 +287,7 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
              * fires a single event with the original old value once the
              * callback has completed.
              */
+            valueSetFromSignalDuringWrite = true;
             return;
         }
 
@@ -296,8 +298,11 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
                 SignalBindingFeature feature = featureOpt.get();
                 if (component.isAttached()
                         && feature.hasBinding(SignalBindingFeature.VALUE)) {
+                    boolean wasWriteCallbackInProgress = writeCallbackInProgress;
+                    boolean wasValueSetFromSignalDuringWrite = valueSetFromSignalDuringWrite;
+                    writeCallbackInProgress = true;
+                    valueSetFromSignalDuringWrite = false;
                     try {
-                        writeCallbackInProgress = true;
                         feature.updateSignalByWriteCallback(
                                 SignalBindingFeature.VALUE, oldValue, newValue,
                                 valueEquals, revertedToValue -> {
@@ -306,8 +311,18 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
                                     bufferedValue = revertedToValue;
                                     applyValue(revertedToValue);
                                 });
+                    } catch (RuntimeException e) {
+                        if (valueSetFromSignalDuringWrite
+                                && !valueEquals.test(bufferedValue, oldValue)) {
+                            // the signal changed before the callback threw,
+                            // so the field shows a new value to report
+                            ComponentUtil.fireEvent(component,
+                                    createValueChange(oldValue, fromClient));
+                        }
+                        throw e;
                     } finally {
-                        writeCallbackInProgress = false;
+                        writeCallbackInProgress = wasWriteCallbackInProgress;
+                        valueSetFromSignalDuringWrite = wasValueSetFromSignalDuringWrite;
                     }
                     if (valueEquals.test(bufferedValue, oldValue)) {
                         // no need to fire value change event when the signal

@@ -222,7 +222,6 @@ public class SignalBindingFeature extends ServerSideFeature {
                     "Ignoring the value for the signal binding '{}' since the bound signal cannot hold it.",
                     key, e);
             revertCallback.accept(signal.peek());
-            // no need to fire event since the signal value didn't change
             return false;
         }
 
@@ -231,7 +230,6 @@ public class SignalBindingFeature extends ServerSideFeature {
         if (!valueEquals.test(signalValue, newValue)) {
             // Signal value differs, revert
             revertCallback.accept(signalValue);
-            // no need to fire event, signal change triggered that
             return false;
         }
         return true;
