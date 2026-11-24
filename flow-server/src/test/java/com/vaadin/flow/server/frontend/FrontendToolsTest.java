@@ -33,6 +33,7 @@ import java.util.zip.ZipOutputStream;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.compress.utils.Lists;
@@ -52,6 +53,7 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 import com.vaadin.flow.testcategory.SlowTests;
+import com.vaadin.flow.testutil.FrontendStubs;
 
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 import static com.vaadin.flow.testutil.FrontendStubs.resetFrontendToolsNodeCache;
@@ -206,11 +208,16 @@ public class FrontendToolsTest {
         archiveFile.createNewFile();
         Path tempArchive = archiveFile.toPath();
 
+        // Make sure the fake node executable responds to --version command
+        FrontendStubs.ToolStubInfo stubNode = FrontendStubs.ToolStubInfo
+                .builder(FrontendStubs.Tool.NODE).withVersion(version).build();
+
         if (platform.getArchiveExtension().equals("zip")) {
             try (ZipOutputStream zipOutputStream = new ZipOutputStream(
                     Files.newOutputStream(tempArchive))) {
                 zipOutputStream
                         .putNextEntry(new ZipEntry(prefix + "/" + nodeExec));
+                zipOutputStream.write(stubNode.getScript().getBytes());
                 zipOutputStream.closeEntry();
                 zipOutputStream.putNextEntry(
                         new ZipEntry(prefix + "/node_modules/npm/bin/npm"));
@@ -226,9 +233,13 @@ public class FrontendToolsTest {
             try (OutputStream fo = Files.newOutputStream(tempArchive);
                     OutputStream gzo = new GzipCompressorOutputStream(fo);
                     ArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
-                o.putArchiveEntry(o.createArchiveEntry(
-                        new File(prefix + "/bin/" + nodeExec),
-                        prefix + "/bin/" + nodeExec));
+                TarArchiveEntry nodeExecutableEntry = (TarArchiveEntry) o
+                        .createArchiveEntry(
+                                new File(prefix + "/bin/" + nodeExec),
+                                prefix + "/bin/" + nodeExec);
+                nodeExecutableEntry.setSize(stubNode.getScript().length());
+                o.putArchiveEntry(nodeExecutableEntry);
+                o.writeUtf8(stubNode.getScript());
                 o.closeArchiveEntry();
                 o.putArchiveEntry(o.createArchiveEntry(
                         new File(prefix + "/bin/npm"), prefix + "/bin/npm"));
@@ -333,15 +344,13 @@ public class FrontendToolsTest {
         assertThat(tools.getNodeExecutable(), not(containsString(baseDir)));
 
         // Running npm using node and npm-cli.js script by default
-        assertEquals(5, tools.getNpmExecutable().size());
+        assertEquals(4, tools.getNpmExecutable().size());
         assertThat(tools.getNpmExecutable().get(0), containsString("node"));
         assertThat(tools.getNpmExecutable().get(1), containsString("npm"));
         assertThat(tools.getNpmExecutable().get(2),
                 containsString("--no-update-notifier"));
         assertThat(tools.getNpmExecutable().get(3),
                 containsString("--no-audit"));
-        assertThat(tools.getNpmExecutable().get(4),
-                containsString("--scripts-prepend-node-path=true"));
     }
 
     @Test
