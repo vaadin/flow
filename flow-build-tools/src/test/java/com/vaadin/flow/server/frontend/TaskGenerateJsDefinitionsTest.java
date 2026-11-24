@@ -106,6 +106,13 @@ class TaskGenerateJsDefinitionsTest {
         void showGreeting();
     }
 
+    // The same JavaScript as GreeterJs, under a name that sorts after it
+    @JsDefinition
+    public interface GreeterTwinJs extends JsInvokers {
+        @JsExpression(GREETING_EXPRESSION)
+        void greet(String greeting);
+    }
+
     // Only extended, so it does not need the annotation
     public interface ScrollableJs extends JsInvokers {
         @JsExpression(SCROLL_EXPRESSION)
@@ -575,9 +582,12 @@ class TaskGenerateJsDefinitionsTest {
                 .map(BundledEventData::getFunctionId)
                 .forEach(id -> expected.put(id, OffsetEvent.class.getName()));
 
+        // A function declared twice is one function, named after the
+        // definition that sorts first
         TaskGenerateJsDefinitions.Rendered rendered = TaskGenerateJsDefinitions
-                .render(List.of(GreeterJs.class, StopperJs.class,
-                        TemplateJs.class), List.of(OffsetEvent.class), false);
+                .render(List.of(GreeterTwinJs.class, GreeterJs.class,
+                        StopperJs.class, TemplateJs.class),
+                        List.of(OffsetEvent.class), false);
 
         assertEquals(expected, rendered.functionIds());
     }

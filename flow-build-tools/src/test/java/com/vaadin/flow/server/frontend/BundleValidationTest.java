@@ -1115,16 +1115,19 @@ class BundleValidationTest {
     }
 
     static Stream<Arguments> modesAndBundledFunctions() {
-        // What the stats say the bundle registers: the function the
-        // application needs among others, and only others
+        // What the stats say the bundle registers: the functions the
+        // application needs among others, and only one of them among others
+        String alsoBundled = JsCall.functionId("this.blur()", 0, false);
         return modes()
                 .flatMap(mode -> Stream.of(
                         Arguments.of(mode,
-                                List.of("another function",
+                                List.of("another function", alsoBundled,
                                         JsCall.functionId("this.focus()", 0,
                                                 false)),
                                 false),
-                        Arguments.of(mode, List.of("another function"), true)));
+                        Arguments.of(mode,
+                                List.of("another function", alsoBundled),
+                                true)));
     }
 
     @ParameterizedTest
@@ -1132,7 +1135,7 @@ class BundleValidationTest {
     void bundleListsFunctions_rebuildOnlyWhenOneIsMissing(Mode mode,
             List<String> bundledFunctionIds, boolean expectedNeedsBuild) {
         setupMode(mode);
-        doReturn(Set.of(BundledJs.class)).when(finder)
+        doReturn(Set.of(BundledJs.class, AlsoBundledJs.class)).when(finder)
                 .getAnnotatedClasses(JsDefinition.class);
         doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
 
@@ -1160,7 +1163,7 @@ class BundleValidationTest {
         }
 
         assertEquals(expectedNeedsBuild, needsBuild);
-        // A developer has to know which class to look at
+        // A developer has to know which class to look at, and only that one
         Mockito.verify(logger, Mockito.times(expectedNeedsBuild ? 1 : 0)).info(
                 Mockito.contains("the bundle does not carry"),
                 Mockito.eq(BundledJs.class.getName()));
@@ -3086,6 +3089,12 @@ class BundleValidationTest {
     interface BundledJs extends JsInvokers {
         @JsExpression("this.focus()")
         void focus();
+    }
+
+    @JsDefinition
+    interface AlsoBundledJs extends JsInvokers {
+        @JsExpression("this.blur()")
+        void blur();
     }
 
     @LoadDependenciesOnStartup
