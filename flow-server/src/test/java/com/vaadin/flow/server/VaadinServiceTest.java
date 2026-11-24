@@ -387,6 +387,37 @@ public class VaadinServiceTest {
     }
 
     @Test
+    public void serviceDestroy_twoListenersThrow_oneRethrownWithOtherSuppressed()
+            throws ServiceException {
+        VaadinService service = createService();
+
+        RuntimeException first = new RuntimeException("first");
+        RuntimeException second = new RuntimeException("second");
+        TestServiceDestroyListener listener = new TestServiceDestroyListener();
+
+        service.addServiceDestroyListener(event -> {
+            throw first;
+        });
+        service.addServiceDestroyListener(event -> {
+            throw second;
+        });
+        service.addServiceDestroyListener(listener);
+
+        RuntimeException thrown = assertThrows(RuntimeException.class,
+                service::destroy);
+
+        // Listener order is not guaranteed
+        Assert.assertTrue(
+                "Expected one of the listener exceptions but got " + thrown,
+                thrown == first || thrown == second);
+        RuntimeException other = thrown == first ? second : first;
+        Assert.assertArrayEquals(new Throwable[] { other },
+                thrown.getSuppressed());
+        Assert.assertEquals("ServiceDestroyListener not called exactly once", 1,
+                listener.callCount);
+    }
+
+    @Test
     public void captionIsSetToACriticalNotification() {
         String notification = createCriticalNotification("foobar", "message",
                 "details", "url");
