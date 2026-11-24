@@ -26,6 +26,7 @@ import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
+import com.vaadin.flow.signals.shared.SharedValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -408,14 +409,40 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("foo");
         input.bindValue(signal, v -> signal.set(v.toUpperCase()));
 
+        AtomicReference<String> eventOldValue = new AtomicReference<>();
         AtomicReference<String> eventValue = new AtomicReference<>();
         AtomicInteger counter = new AtomicInteger(0);
         input.addValueChangeListener(event -> {
+            eventOldValue.set(event.getOldValue());
             eventValue.set(event.getValue());
             counter.incrementAndGet();
         });
 
         input.setValue("bar");
+        assertEquals("foo", eventOldValue.get());
+        assertEquals("BAR", eventValue.get());
+        assertEquals(1, counter.get());
+    }
+
+    @Test
+    void bindValue_transformingCallbackInTransaction_valueChangeEventTriggered() {
+        TestInput input = new TestInput();
+        UI.getCurrent().add(input);
+        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
+        input.bindValue(signal, v -> signal.set(v.toUpperCase()));
+
+        AtomicReference<String> eventOldValue = new AtomicReference<>();
+        AtomicReference<String> eventValue = new AtomicReference<>();
+        AtomicInteger counter = new AtomicInteger(0);
+        input.addValueChangeListener(event -> {
+            eventOldValue.set(event.getOldValue());
+            eventValue.set(event.getValue());
+            counter.incrementAndGet();
+        });
+
+        Signal.runInTransaction(() -> input.setValue("bar"));
+        assertEquals("BAR", input.getValue());
+        assertEquals("foo", eventOldValue.get());
         assertEquals("BAR", eventValue.get());
         assertEquals(1, counter.get());
     }
