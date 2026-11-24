@@ -205,7 +205,7 @@
                 <configuration>
                   <executable>${project.build.directory}/${project.artifactId}</executable>
                   <arguments>
-                    <argument>-Dvaadin.csp=${vaadin.csp}</argument>
+                    <argument>-Dvaadin.contentSecurityPolicy=${vaadin.contentSecurityPolicy}</argument>
                   </arguments>
                   <async>true</async>
                   <asyncDestroyOnShutdown>true</asyncDestroyOnShutdown>
