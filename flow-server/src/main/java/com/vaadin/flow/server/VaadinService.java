@@ -2417,7 +2417,7 @@ public abstract class VaadinService implements Serializable {
                 if (exception == null) {
                     exception = e;
                 } else {
-                    e.addSuppressed(e);
+                    exception.addSuppressed(e);
                 }
             }
         }
