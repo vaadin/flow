@@ -56,7 +56,7 @@ public enum Transport {
      */
     SERVER_SENT_EVENTS("sse");
 
-    private String identifier;
+    private final String identifier;
 
     private Transport(String identifier) {
         this.identifier = identifier;
