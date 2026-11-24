@@ -13,28 +13,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
-
-import jakarta.servlet.http.HttpServletRequest;
+package com.vaadin.flow.test.cspoff.push;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 
-import org.apache.commons.io.IOUtils;
-
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
-@Route("com.vaadin.flow.uitest.ui.TrackMessageSizeView")
-@Push(transport = Transport.LONG_POLLING)
+@Route("track-message-size")
 public class TrackMessageSizeView extends Div {
 
     public static final String LOG_ELEMENT_ID = "logId";
@@ -71,6 +66,14 @@ public class TrackMessageSizeView extends Div {
 
     }
 
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        // Spring Boot only accepts @Push on the AppShellConfigurator
+        UI ui = attachEvent.getUI();
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+        ui.getPushConfiguration().setTransport(Transport.LONG_POLLING);
+    }
+
     private String buildTestCase() {
         // Could maybe express the cases in java and generate JS?
         return "testSequence(['a', 'b'], ['1|a1|b', '']);\n"
@@ -91,15 +94,9 @@ public class TrackMessageSizeView extends Div {
     }
 
     private String findMethodImplementation() {
-        String filename = "/VAADIN/static/push/vaadinPush.js";
-
-        VaadinRequest request = VaadinRequest.getCurrent();
-
-        HttpServletRequest httpServletRequest = ((VaadinServletRequest) request)
-                .getHttpServletRequest();
-
-        String jsPath = httpServletRequest.getRequestURL().toString()
-                .replace(httpServletRequest.getRequestURI(), filename);
+        // Read from the flow-push JAR: the URL of the current request is not
+        // the page URL when the view is created during a UIDL request
+        String jsPath = "/META-INF/resources/VAADIN/static/push/vaadinPush.js";
 
         String content = getFileContent(jsPath);
 
@@ -128,19 +125,14 @@ public class TrackMessageSizeView extends Div {
 
     }
 
-    private String getFileContent(String filename) {
-        URL url = null;
-        try {
-            url = new URL(filename);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            return url != null
-                    ? IOUtils.toString(url, StandardCharsets.UTF_8.name())
+    private String getFileContent(String resource) {
+        try (InputStream in = TrackMessageSizeView.class
+                .getResourceAsStream(resource)) {
+            return in != null
+                    ? new String(in.readAllBytes(), StandardCharsets.UTF_8)
                     : null;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 

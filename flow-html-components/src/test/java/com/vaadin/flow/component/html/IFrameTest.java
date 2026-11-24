@@ -26,11 +26,14 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry.ElementStreamResource;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
@@ -39,7 +42,6 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.eq;
@@ -108,15 +110,16 @@ class IFrameTest extends ComponentTest {
 
         new TestIFrame().setSrc(lambda);
 
-        ArgumentCaptor<DownloadHandler> captor = ArgumentCaptor
-                .forClass(DownloadHandler.class);
+        ArgumentCaptor<AbstractStreamResource> captor = ArgumentCaptor
+                .forClass(AbstractStreamResource.class);
         verify(element).setAttribute(eq("src"), captor.capture());
         assertEquals(DisabledUpdateMode.ALWAYS,
-                captor.getValue().getDisabledUpdateMode());
+                ((ElementStreamResource) captor.getValue())
+                        .getElementRequestHandler().getDisabledUpdateMode());
     }
 
     @Test
-    void downloadHandler_isSetToInline() {
+    void downloadHandler_servedInline() throws Exception {
         Element element = mock(Element.class);
         class TestIFrame extends IFrame {
             public TestIFrame(DownloadHandler downloadHandler) {
@@ -128,12 +131,18 @@ class IFrameTest extends ComponentTest {
                 return element;
             }
         }
-        // dummy handler
-        InputStreamDownloadHandler handler = DownloadHandler
-                .fromInputStream(event -> DownloadResponse.error(500));
-        assertFalse(handler.isInline());
+        InputStreamDownloadHandler handler = DownloadHandler.fromInputStream(
+                event -> DownloadResponse.error(500), "page.html");
         new TestIFrame(handler);
-        assertTrue(handler.isInline());
+
+        ArgumentCaptor<AbstractStreamResource> captor = ArgumentCaptor
+                .forClass(AbstractStreamResource.class);
+        verify(element).setAttribute(eq("src"), captor.capture());
+        assertEquals(DownloadDisposition.INLINE,
+                ((ElementStreamResource) captor.getValue()).getDisposition());
+        assertEquals("attachment; filename=\"page.html\"",
+                AssertUtils.servedContentDisposition(handler),
+                "The given handler must not be changed");
     }
 
     @Test

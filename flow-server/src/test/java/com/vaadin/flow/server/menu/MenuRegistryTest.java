@@ -39,6 +39,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 
@@ -615,6 +616,30 @@ class MenuRegistryTest {
     }
 
     @Test
+    void collectMenuItemsTree_routeParentIsNotARoute_viewIsRootAndWarningNamesParent() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(TreeDashboard.class, TreeLayoutParentView.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        // TreeLayoutParentView is not used by any other test, as the
+        // warned-once state is kept across menu builds
+        List<String> warnings = collectWarningsOfTwoTreeBuilds();
+        assertEquals(1, warnings.size(),
+                "Expected one warning, got " + warnings);
+        assertTrue(
+                warnings.get(0).contains(TreeLayoutParentView.class.getName())
+                        && warnings.get(0)
+                                .contains(TreeMainLayout.class.getName())
+                        && warnings.get(0).contains("not a registered route"),
+                warnings.get(0));
+
+        List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
+
+        assertEquals(List.of("/", "/layout-parent"), collectRoutes(tree));
+    }
+
+    @Test
     void collectMenuItemsTree_menuParent_overridesRouteHierarchy() {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
@@ -727,7 +752,12 @@ class MenuRegistryTest {
         }
         return Mockito.mockingDetails(logger).getInvocations().stream().filter(
                 invocation -> invocation.getMethod().getName().equals("warn"))
-                .map(invocation -> (String) invocation.getArgument(0)).toList();
+                .map(invocation -> {
+                    Object[] arguments = invocation.getArguments();
+                    return MessageFormatter.arrayFormat((String) arguments[0],
+                            Arrays.copyOfRange(arguments, 1, arguments.length))
+                            .getMessage();
+                }).toList();
     }
 
     private static List<String> collectRoutes(List<AvailableViewInfo> infos) {
@@ -1130,6 +1160,18 @@ class MenuRegistryTest {
     @RouteParent(resolver = OrgParentResolver.class)
     @Menu(title = "Projects", order = 4)
     public static class TreeProject extends Component {
+    }
+
+    @Tag("div")
+    public static class TreeMainLayout extends Component
+            implements RouterLayout {
+    }
+
+    @Tag("div")
+    @Route("layout-parent")
+    @RouteParent(TreeMainLayout.class)
+    @Menu(title = "Layout parent", order = 6)
+    public static class TreeLayoutParentView extends Component {
     }
 
     public static class OrgParentResolver implements RouteParentResolver {
