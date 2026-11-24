@@ -79,9 +79,10 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
  * <p>
  * A production build that uses the bytecode scanner renders only the
  * definitions and event types that the scanner reaches from the entry points of
- * the application, together with those of Flow itself, the same way it collects
- * {@code @JsModule}. A class that is only used through reflection is reached by
- * naming it in {@code @Uses} on a class that is reached.
+ * the application, together with those of Flow's own jar (the one that holds
+ * {@link JsDefinition}), the same way it collects {@code @JsModule}. A class
+ * that is only used through reflection is reached by naming it in {@code @Uses}
+ * on a class that is reached.
  * <p>
  * The snippet registry also holds the {@link EventData} values and the
  * {@link DomEvent#filter()} of the {@link DomEvent} classes on the class path
