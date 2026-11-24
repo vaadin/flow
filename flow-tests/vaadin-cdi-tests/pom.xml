@@ -139,7 +139,7 @@
           <systemPropertyVariables>
             <!-- ArchiveProvider turns it into a context parameter of each
                  deployment, as the containers take no shared JVM options -->
-            <vaadin.csp>${vaadin.csp}</vaadin.csp>
+            <vaadin.contentSecurityPolicy>${vaadin.contentSecurityPolicy}</vaadin.contentSecurityPolicy>
           </systemPropertyVariables>
         </configuration>
       </plugin>
