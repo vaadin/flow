@@ -27,7 +27,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -148,20 +147,6 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
     private final Options options;
 
-    // A class of each jar of Flow that declares JavaScript, by name, as
-    // flow-build-tools does not depend on most of them. A definition that is
-    // added to one of these jars is carried without a change here; a new jar
-    // that declares JavaScript has to be added.
-    private static final List<String> FLOW_MODULE_CLASSES = List.of(
-            // flow-server
-            JsDefinition.class.getName(),
-            // flow-html-components
-            "com.vaadin.flow.component.html.Div",
-            // flow-dnd
-            "com.vaadin.flow.component.dnd.DragSource",
-            // flow-polymer-template
-            "com.vaadin.flow.component.polymertemplate.PolymerTemplate");
-
     TaskGenerateJsDefinitions(Options options) {
         this.options = options;
     }
@@ -195,27 +180,24 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     /**
      * What an optimized bundle carries the JavaScript of: the classes the
      * bytecode scanner reaches from the entry points of the application, and
-     * every class of the jars of Flow that declare JavaScript. Flow calls some
-     * of its definitions from request handlers that no entry point leads to,
-     * and a pre-built bundle has to carry what any application that uses Flow
-     * may call, such as the JavaScript of drag and drop.
+     * every class of Flow's own jar. Flow calls some of its definitions from
+     * request handlers that no entry point leads to, and its own JavaScript is
+     * what the framework needs to work.
      */
     private Predicate<Class<?>> createNeededFilter(ClassFinder classFinder) {
         Set<String> reached = options.getFrontendDependenciesScanner()
                 .getClasses();
-        Set<URL> flowLocations = new HashSet<>();
-        for (String className : FLOW_MODULE_CLASSES) {
-            try {
-                URL location = findLocation(classFinder.loadClass(className));
-                if (location != null) {
-                    flowLocations.add(location);
-                }
-            } catch (ClassNotFoundException e) {
-                // The module is not on the class path, so it declares nothing
-            }
+        URL flowLocation;
+        try {
+            flowLocation = findLocation(
+                    classFinder.loadClass(JsDefinition.class.getName()));
+        } catch (ClassNotFoundException e) {
+            // Nothing can declare a definition without the annotation
+            flowLocation = null;
         }
+        URL flow = flowLocation;
         return type -> reached.contains(type.getName())
-                || flowLocations.contains(findLocation(type));
+                || Objects.equals(flow, findLocation(type));
     }
 
     private static URL findLocation(Class<?> type) {
