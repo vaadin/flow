@@ -1527,15 +1527,15 @@ public class DataCommunicator<T> implements Serializable {
             newActiveKeyOrder.addAll(activation.getActiveKeys());
             sizeRecheckNeeded |= activation.isSizeRecheckNeeded();
 
-            // Pick existing items from the current list
-            Range overlap = partitionWith[1].offsetBy(-activeStart);
-            if (overlap.getStart() < 0) {
-                // If getStart is negative there is no data and empty Activation
-                // needs to be returned
-                return Activation.empty();
+            // Pick existing items from the current list. The overlap is empty
+            // when both the previous and the requested range are empty, and
+            // its position can then be anywhere, e.g. when the client asks for
+            // rows beyond the end of a data set that was just emptied.
+            if (!partitionWith[1].isEmpty()) {
+                Range overlap = partitionWith[1].offsetBy(-activeStart);
+                newActiveKeyOrder.addAll(activeKeyOrder
+                        .subList(overlap.getStart(), overlap.getEnd()));
             }
-            newActiveKeyOrder.addAll(activeKeyOrder.subList(overlap.getStart(),
-                    overlap.getEnd()));
 
             activation = activate(partitionWith[2]);
             newActiveKeyOrder.addAll(activation.getActiveKeys());

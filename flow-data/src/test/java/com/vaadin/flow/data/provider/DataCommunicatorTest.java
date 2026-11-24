@@ -537,6 +537,30 @@ public class DataCommunicatorTest {
 
     @ParameterizedTest
     @ValueSource(booleans = { true, false })
+    void staleViewportBeyondEmptiedData_noIndexOutOfBounds(
+            boolean dataProviderWithParallelStream) {
+        this.dataProviderWithParallelStream = dataProviderWithParallelStream;
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        dataCommunicator.setViewportRange(0, 50);
+        fakeClientCommunication();
+
+        dataCommunicator.setDataProvider(
+                DataProvider.ofCollection(new ArrayList<Item>()), null);
+        fakeClientCommunication();
+
+        // The client scrolled before it received the empty data set and
+        // requests a range that no longer exists
+        dataCommunicator.setViewportRange(50, 50);
+        fakeClientCommunication();
+
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        dataCommunicator.setViewportRange(0, 50);
+        fakeClientCommunication();
+        assertEquals(Range.withLength(0, 50), lastSet);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
     void setSizeCallback_usedForDataSize(
             boolean dataProviderWithParallelStream) {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
