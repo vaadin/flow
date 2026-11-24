@@ -76,8 +76,8 @@ import java.lang.annotation.Target;
  * exact string, and the bundle can only hold strings that are known when the
  * application is built. Such a string has to be fixed in the code that sends
  * it, by passing the values as parameters ({@code $0}, {@code $1}, ...) or by
- * using a {@link JsDefinition}. The report for a call site that sends different
- * strings says so.
+ * using a {@link JsDefinition}. The report for a call site that sends many
+ * different strings says so.
  * <p>
  * JavaScript that only the browser refuses is not supported either, since Flow
  * does not run it: an inline event handler attribute, such as {@code onclick},

@@ -319,7 +319,10 @@ public final class JsStringFallbacks {
         }
         try {
             return collectFallbacks(definitionTypes);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | LinkageError
+                | TypeNotPresentException e) {
+            // The two errors come from a method that names a type that is
+            // gone, which is only resolved when the methods are read
             getLogger().warn("An interface listed in {} no longer fits what"
                     + " the build checked, so no JavaScript sent as a string"
                     + " is matched against @JsStringFallback interfaces"

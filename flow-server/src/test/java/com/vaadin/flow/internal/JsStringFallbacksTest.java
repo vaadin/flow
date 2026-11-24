@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -117,6 +118,11 @@ class JsStringFallbacksTest {
     @JsDefinition
     @JsStringFallback
     interface InheritingFallbacks extends BlurJs {
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    interface OtherInheritingFallbacks extends BlurJs {
     }
 
     @JsDefinition
@@ -254,11 +260,17 @@ class JsStringFallbacksTest {
                 ui.onlyScheduledJsCall().definitionType());
     }
 
-    @Test
-    void listNoLongerFits_stringsAreReportedAsIfNothingWasDeclared()
-            throws IOException {
-        listFallbacks("[\"" + AddonFallbacks.class.getName() + "\", \""
-                + DuplicateFallbacks.class.getName() + "\"]");
+    @ParameterizedTest
+    @ValueSource(strings = { "not json", "UNFIT" })
+    void listUnreadableOrNoLongerFits_stringsAreReportedAsIfNothingWasDeclared(
+            String list) throws IOException {
+        // Two interfaces that declare the same JavaScript, which the build
+        // refuses
+        listFallbacks(
+                "UNFIT".equals(list)
+                        ? "[\"" + AddonFallbacks.class.getName() + "\", \""
+                                + DuplicateFallbacks.class.getName() + "\"]"
+                        : list);
 
         setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
         Element element = ui.getElement();
@@ -383,6 +395,21 @@ class JsStringFallbacksTest {
         assertNull(function.getDeclaredCall());
         assertEquals("return value * 2", function.getBody());
         assertEquals(List.of("other"), function.getArgumentNames());
+    }
+
+    @Test
+    void collectFallbacks_twoFallbacksInheritingSameMethod_callThroughEither() {
+        JsStringFallbacks.Fallbacks fallbacks = JsStringFallbacks
+                .collectFallbacks(List.of(InheritingFallbacks.class,
+                        OtherInheritingFallbacks.class));
+
+        Class<?> definitionType = fallbacks.calls()
+                .get(JsCall.functionId("this.blur()", 0, false))
+                .definitionType();
+        assertTrue(
+                definitionType == InheritingFallbacks.class
+                        || definitionType == OtherInheritingFallbacks.class,
+                definitionType::getName);
     }
 
     @Test
