@@ -42,8 +42,7 @@ import com.vaadin.flow.internal.SessionLockScope;
  * the exception, with the session locked. For this, an exception thrown while a
  * UI is current leaves
  * {@link #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)} wrapped
- * in an unchecked exception that has the original exception as its cause and
- * that {@link VaadinService} unwraps.
+ * in a {@link FailedUIRequestException} that {@link VaadinService} unwraps.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -72,9 +71,10 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      * {@inheritDoc}
      * <p>
      * If handling fails while a UI is current, the exception is thrown wrapped
-     * in an unchecked exception that has the original exception as its cause,
-     * so that {@link VaadinService} can show the error for that UI. See the
-     * class description.
+     * in a {@link FailedUIRequestException}, so that {@link VaadinService} can
+     * show the error for that UI. A caller that handles the exception itself
+     * can get the original exception with
+     * {@link FailedUIRequestException#getFailure()}.
      */
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,

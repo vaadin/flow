@@ -24,9 +24,14 @@ import com.vaadin.flow.component.UI;
  * The handler restores the current instances when it unlocks the session, so
  * the UI is no longer current when the exception reaches the error handling in
  * {@link VaadinService}. The error handling unwraps the exception and makes the
- * UI current again while it holds the session lock.
+ * UI current again while it holds the session lock. Other code that calls
+ * {@link SynchronizedRequestHandler#handleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
+ * directly can catch this exception and handle the original exception from
+ * {@link #getFailure()}.
+ *
+ * @since 25.4
  */
-class FailedUIRequestException extends RuntimeException {
+public class FailedUIRequestException extends RuntimeException {
 
     private final transient UI ui;
 
@@ -40,16 +45,17 @@ class FailedUIRequestException extends RuntimeException {
      *
      * @return the exception, not <code>null</code>
      */
-    Exception getFailure() {
+    public Exception getFailure() {
         return (Exception) getCause();
     }
 
     /**
      * Gets the UI that was current when the request handler failed.
      *
-     * @return the UI, not <code>null</code>
+     * @return the UI, or <code>null</code> if this exception has been
+     *         deserialized
      */
-    UI getUI() {
+    public UI getUI() {
         return ui;
     }
 }
