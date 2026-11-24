@@ -13,17 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.test.cspoff.dependencies;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.test.cspoff.AbstractCspOffIT;
+import com.vaadin.flow.test.cspoff.TestFor;
+import com.vaadin.testbench.BrowserTest;
 
-public class ExecJavaScriptIT extends ChromeBrowserTest {
-    @Test
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@TestFor(ExecJavaScriptView.class)
+public class ExecJavaScriptIT extends AbstractCspOffIT {
+    @BrowserTest
     public void testExecuteJavaScript() {
         open();
 
@@ -32,36 +36,37 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
 
         getButton("swapButton").click();
 
-        Assert.assertEquals(focusText, getButton("alertButton").getText());
-        Assert.assertEquals(alertText, getButton("focusButton").getText());
+        Assertions.assertEquals(focusText, getButton("alertButton").getText());
+        Assertions.assertEquals(alertText, getButton("focusButton").getText());
 
         getButton("createButton").click();
 
         WebElement findElement = findElement(By.className("newInput"));
-        Assert.assertEquals("Value from js", findElement.getAttribute("value"));
+        Assertions.assertEquals("Value from js",
+                findElement.getAttribute("value"));
     }
 
-    @Test
+    @BrowserTest
     public void testElementExecuteJavaScriptWithAwait() {
         open();
         getButton("elementAwaitButton").click();
         WebElement result = waitUntil(
                 d -> findElement(By.id("elementAwaitResult")));
-        Assert.assertEquals("Element execute JS await result: 42",
+        Assertions.assertEquals("Element execute JS await result: 42",
                 result.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testPageExecuteJavaScriptWithAwait() {
         open();
         getButton("pageAwaitButton").click();
         WebElement result = waitUntil(
                 d -> findElement(By.id("pageAwaitResult")));
-        Assert.assertEquals("Page execute JS await result: 72",
+        Assertions.assertEquals("Page execute JS await result: 72",
                 result.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testVariadicJsDefinition() {
         open();
 
@@ -71,10 +76,10 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
         // function collects the ones that follow the fixed parameter
         WebElement result = waitUntil(
                 d -> findElement(By.id("variadicResult")));
-        Assert.assertEquals("Variadic call: a-1-true-b", result.getText());
+        Assertions.assertEquals("Variadic call: a-1-true-b", result.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testVariadicJsDefinitionWithoutTrailingArguments() {
         open();
 
@@ -82,10 +87,10 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
 
         WebElement result = waitUntil(
                 d -> findElement(By.id("variadicResult")));
-        Assert.assertEquals("Variadic call: a", result.getText());
+        Assertions.assertEquals("Variadic call: a", result.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testCallFunctionWithArguments() {
         open();
 
@@ -94,10 +99,10 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
         // The name of the function and the arguments are sent, and the
         // browser looks the function up on the element
         WebElement result = waitUntil(d -> findElement(By.id("callResult")));
-        Assert.assertEquals("Function call: a-1-true", result.getText());
+        Assertions.assertEquals("Function call: a-1-true", result.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testCallFunctionThroughProperty() {
         open();
 
@@ -106,35 +111,36 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
         // The property the function is read from is its this, so the label it
         // reads is the one of the connector rather than of the element
         WebElement result = waitUntil(d -> findElement(By.id("callResult")));
-        Assert.assertEquals("Function call: connector!", result.getText());
+        Assertions.assertEquals("Function call: connector!", result.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testCallFunctionThatIsNotThere() {
         open();
 
         getButton("callMissingButton").click();
 
         WebElement result = waitUntil(d -> findElement(By.id("callResult")));
-        Assert.assertEquals("Function call: failed", result.getText());
+        Assertions.assertEquals("Function call: failed", result.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testBeanSerialization() {
         open();
 
         getButton("beanButton").click();
 
         WebElement result = waitUntil(d -> findElement(By.id("beanResult")));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "simple: name=TestBean, value=42, active=true | nested: title=Outer, inner.name=Inner, inner.value=100",
                 result.getText());
 
         WebElement status = waitUntil(d -> findElement(By.id("beanStatus")));
-        Assert.assertEquals("Bean serialization completed", status.getText());
+        Assertions.assertEquals("Bean serialization completed",
+                status.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testBeanReturnValue() {
         open();
 
@@ -142,31 +148,32 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
 
         WebElement result = waitUntil(
                 d -> findElement(By.id("returnBeanResult")));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "Returned: title=ReturnedNested, simple.name=InnerReturned, simple.value=777, simple.active=true",
                 result.getText());
 
         WebElement status = waitUntil(
                 d -> findElement(By.id("returnBeanStatus")));
-        Assert.assertEquals("Bean returned", status.getText());
+        Assertions.assertEquals("Bean returned", status.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testListSerialization() {
         open();
 
         getButton("listButton").click();
 
         WebElement result = waitUntil(d -> findElement(By.id("listResult")));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "List: [0]: name=FirstItem, value=10, active=true | [1]: name=SecondItem, value=20, active=false | [2]: name=ThirdItem, value=30, active=true",
                 result.getText());
 
         WebElement status = waitUntil(d -> findElement(By.id("listStatus")));
-        Assert.assertEquals("List serialization completed", status.getText());
+        Assertions.assertEquals("List serialization completed",
+                status.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testListReturnValue() {
         open();
 
@@ -174,14 +181,14 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
 
         WebElement result = waitUntil(
                 d -> findElement(By.id("returnListResult")));
-        Assert.assertEquals("Returned list with 2 items", result.getText());
+        Assertions.assertEquals("Returned list with 2 items", result.getText());
 
         WebElement status = waitUntil(
                 d -> findElement(By.id("returnListStatus")));
-        Assert.assertEquals("List returned", status.getText());
+        Assertions.assertEquals("List returned", status.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testMapSerialization() {
         open();
 
@@ -191,20 +198,26 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
         String resultText = result.getText();
 
         // Verify Map prefix and all entries are present
-        Assert.assertTrue("Should start with 'Map: '",
-                resultText.startsWith("Map: "));
-        Assert.assertTrue("Should contain 'first' key", resultText
-                .contains("first: name=FirstKey, value=100, active=true"));
-        Assert.assertTrue("Should contain 'second' key", resultText
-                .contains("second: name=SecondKey, value=200, active=false"));
-        Assert.assertTrue("Should contain 'third' key", resultText
-                .contains("third: name=ThirdKey, value=300, active=true"));
+        assertTrue(resultText.startsWith("Map: "), "Should start with 'Map: '");
+        assertTrue(
+                resultText.contains(
+                        "first: name=FirstKey, value=100, active=true"),
+                "Should contain 'first' key");
+        assertTrue(
+                resultText.contains(
+                        "second: name=SecondKey, value=200, active=false"),
+                "Should contain 'second' key");
+        assertTrue(
+                resultText.contains(
+                        "third: name=ThirdKey, value=300, active=true"),
+                "Should contain 'third' key");
 
         WebElement status = waitUntil(d -> findElement(By.id("mapStatus")));
-        Assert.assertEquals("Map serialization completed", status.getText());
+        Assertions.assertEquals("Map serialization completed",
+                status.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testMapReturnValue() {
         open();
 
@@ -212,14 +225,15 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
 
         WebElement result = waitUntil(
                 d -> findElement(By.id("returnMapResult")));
-        Assert.assertEquals("Returned map with 2 entries", result.getText());
+        Assertions.assertEquals("Returned map with 2 entries",
+                result.getText());
 
         WebElement status = waitUntil(
                 d -> findElement(By.id("returnMapStatus")));
-        Assert.assertEquals("Map returned", status.getText());
+        Assertions.assertEquals("Map returned", status.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testComponentArraySerialization() {
         open();
 
@@ -230,20 +244,20 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
         String resultText = result.getText();
 
         // Should contain component objects for both components
-        Assert.assertTrue("Should contain Component Array prefix",
-                resultText.startsWith("Component Array: "));
-        Assert.assertTrue("Should contain first component object",
-                resultText.contains("[0]: component object"));
-        Assert.assertTrue("Should contain second component object",
-                resultText.contains("[1]: component object"));
+        assertTrue(resultText.startsWith("Component Array: "),
+                "Should contain Component Array prefix");
+        assertTrue(resultText.contains("[0]: component object"),
+                "Should contain first component object");
+        assertTrue(resultText.contains("[1]: component object"),
+                "Should contain second component object");
 
         WebElement status = waitUntil(
                 d -> findElement(By.id("componentArrayStatus")));
-        Assert.assertEquals("Component array serialization completed",
+        Assertions.assertEquals("Component array serialization completed",
                 status.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testBeanWithComponentSerialization() {
         open();
 
@@ -254,20 +268,20 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
         String resultText = result.getText();
 
         // Should contain bean data and component object
-        Assert.assertTrue("Should contain bean name",
-                resultText.contains("name=TestBeanComponent"));
-        Assert.assertTrue("Should contain bean value",
-                resultText.contains("value=123"));
-        Assert.assertTrue("Should contain component object",
-                resultText.contains("component=object"));
+        assertTrue(resultText.contains("name=TestBeanComponent"),
+                "Should contain bean name");
+        assertTrue(resultText.contains("value=123"),
+                "Should contain bean value");
+        assertTrue(resultText.contains("component=object"),
+                "Should contain component object");
 
         WebElement status = waitUntil(
                 d -> findElement(By.id("beanWithComponentStatus")));
-        Assert.assertEquals("Bean with component serialization completed",
+        Assertions.assertEquals("Bean with component serialization completed",
                 status.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testClientCallableBeanParameter() {
         open();
 
@@ -275,16 +289,17 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
 
         WebElement result = waitUntil(
                 d -> findElement(By.id("clientCallableBeanResult")));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "ClientCallable Bean: name=ClientCallableTest, value=99, active=true",
                 result.getText());
 
         WebElement status = waitUntil(
                 d -> findElement(By.id("clientCallableBeanStatus")));
-        Assert.assertEquals("ClientCallable bean handled", status.getText());
+        Assertions.assertEquals("ClientCallable bean handled",
+                status.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testClientCallableListParameter() {
         open();
 
@@ -292,16 +307,17 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
 
         WebElement result = waitUntil(
                 d -> findElement(By.id("clientCallableListResult")));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "ClientCallable List: [0]: name=Item1, value=111, active=true | [1]: name=Item2, value=222, active=false",
                 result.getText());
 
         WebElement status = waitUntil(
                 d -> findElement(By.id("clientCallableListStatus")));
-        Assert.assertEquals("ClientCallable list handled", status.getText());
+        Assertions.assertEquals("ClientCallable list handled",
+                status.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testClientCallableNestedBeanParameter() {
         open();
 
@@ -309,17 +325,17 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
 
         WebElement result = waitUntil(
                 d -> findElement(By.id("clientCallableNestedResult")));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "ClientCallable Nested: title=ClientCallableNested, simple.name=NestedInner, simple.value=333, simple.active=false",
                 result.getText());
 
         WebElement status = waitUntil(
                 d -> findElement(By.id("clientCallableNestedStatus")));
-        Assert.assertEquals("ClientCallable nested bean handled",
+        Assertions.assertEquals("ClientCallable nested bean handled",
                 status.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testClientCallableReturnBean() {
         open();
 
@@ -327,16 +343,16 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
 
         WebElement result = waitUntil(
                 d -> findElement(By.id("returnBeanResult")));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "Returned Bean: name=ReturnedBean, value=777, active=true",
                 result.getText());
 
         WebElement status = waitUntil(
                 d -> findElement(By.id("returnBeanStatus")));
-        Assert.assertEquals("Bean returned successfully", status.getText());
+        Assertions.assertEquals("Bean returned successfully", status.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testClientCallableReturnBeanList() {
         open();
 
@@ -344,16 +360,16 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
 
         WebElement result = waitUntil(
                 d -> findElement(By.id("returnListResult")));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "Returned List: [0]: name=ListItem1, value=111, active=true | [1]: name=ListItem2, value=222, active=false | [2]: name=ListItem3, value=333, active=true",
                 result.getText());
 
         WebElement status = waitUntil(
                 d -> findElement(By.id("returnListStatus")));
-        Assert.assertEquals("List returned successfully", status.getText());
+        Assertions.assertEquals("List returned successfully", status.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testClientCallableReturnNestedBean() {
         open();
 
@@ -361,17 +377,17 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
 
         WebElement result = waitUntil(
                 d -> findElement(By.id("returnNestedResult")));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "Returned Nested: title=ReturnedNested, simple.name=ReturnedInner, simple.value=999, simple.active=false",
                 result.getText());
 
         WebElement status = waitUntil(
                 d -> findElement(By.id("returnNestedStatus")));
-        Assert.assertEquals("Nested bean returned successfully",
+        Assertions.assertEquals("Nested bean returned successfully",
                 status.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testClientCallableReturnIntegerList() {
         open();
 
@@ -379,12 +395,12 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
 
         WebElement result = waitUntil(
                 d -> findElement(By.id("returnIntegerListResult")));
-        Assert.assertEquals("Returned Integer List: 100, 200, 300",
+        Assertions.assertEquals("Returned Integer List: 100, 200, 300",
                 result.getText());
 
         WebElement status = waitUntil(
                 d -> findElement(By.id("returnIntegerListStatus")));
-        Assert.assertEquals("Integer list returned successfully",
+        Assertions.assertEquals("Integer list returned successfully",
                 status.getText());
     }
 
