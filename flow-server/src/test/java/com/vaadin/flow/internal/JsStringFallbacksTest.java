@@ -17,19 +17,23 @@ package com.vaadin.flow.internal;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.annotation.AnnotationDescription;
+import net.bytebuddy.description.type.TypeDescription;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -260,25 +264,64 @@ class JsStringFallbacksTest {
                 ui.onlyScheduledJsCall().definitionType());
     }
 
+    static List<String> unusableLists() {
+        return List.of("not json",
+                // Two interfaces that declare the same JavaScript, which the
+                // build refuses
+                "[\"" + AddonFallbacks.class.getName() + "\", \""
+                        + DuplicateFallbacks.class.getName() + "\"]");
+    }
+
     @ParameterizedTest
-    @ValueSource(strings = { "not json", "UNFIT" })
+    @MethodSource("unusableLists")
     void listUnreadableOrNoLongerFits_stringsAreReportedAsIfNothingWasDeclared(
             String list) throws IOException {
-        // Two interfaces that declare the same JavaScript, which the build
-        // refuses
-        listFallbacks(
-                "UNFIT".equals(list)
-                        ? "[\"" + AddonFallbacks.class.getName() + "\", \""
-                                + DuplicateFallbacks.class.getName() + "\"]"
-                        : list);
+        listFallbacks(list);
 
+        assertReportedAsUndeclared("return this.scrollTop");
+    }
+
+    @Test
+    void listedMethodNamesMissingType_stringsAreReportedAsIfNothingWasDeclared()
+            throws IOException {
+        // As after a type that a fallback method takes is deleted while the
+        // application runs: the interface loads, its methods do not
+        String name = "com.example.MissingTypeFallbacks";
+        // Generated, but not saved where the class loader finds it
+        TypeDescription missingType = new ByteBuddy().makeInterface()
+                .name("com.example.MissingType").make().getTypeDescription();
+        new ByteBuddy().makeInterface(JsInvokers.class).name(name)
+                .annotateType(
+                        AnnotationDescription.Builder.ofType(JsDefinition.class)
+                                .build(),
+                        AnnotationDescription.Builder
+                                .ofType(JsStringFallback.class).build())
+                .defineMethod("focus", void.class,
+                        Modifier.PUBLIC | Modifier.ABSTRACT)
+                .withParameter(missingType).withoutCode()
+                .annotateMethod(
+                        AnnotationDescription.Builder.ofType(JsExpression.class)
+                                .define("value", "this.focus()").build())
+                .make().saveIn(resources);
+        listFallbacks("[\"" + name + "\"]");
+
+        assertReportedAsUndeclared("this.focus()", "unused");
+    }
+
+    private void assertReportedAsUndeclared(String expression,
+            Object... parameters) {
         setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
         Element element = ui.getElement();
         assertThrows(CspViolationException.class,
-                () -> element.executeJs("return this.scrollTop"));
+                () -> element.executeJs(expression, parameters));
+        // Reading the list again after a class change does not throw either
+        assertDoesNotThrow(
+                () -> JsStringFallbacks.reloadFallbacks(setup.getService()));
+        assertThrows(CspViolationException.class,
+                () -> element.executeJs(expression, parameters));
 
         setup.getDeploymentConfiguration().setCspMode(CspMode.WARN);
-        element.executeJs("return this.scrollTop");
+        element.executeJs(expression, parameters);
         assertNull(ui.onlyScheduledInvocation().getJsCall());
     }
 
