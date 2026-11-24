@@ -32,6 +32,7 @@ import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -209,12 +210,19 @@ class JsCallTest {
     }
 
     @Test
-    void getFunctionId_methodInheritedByStringFallback_isTheFallbackFunction() {
+    void getFunctionId_methodInheritedByStringFallback_isTheFallbackFunction()
+            throws NoSuchMethodException {
+        String functionId = new JsCall(ScrollFallbacks.class, "scrollTo",
+                List.of(1)).getFunctionId();
+
+        assertEquals(
+                JsStringFallbacks.functionId(ScrollFallbacks.class,
+                        ScrollableJs.class.getMethod("scrollTo", int.class)),
+                functionId);
         // Generated to also see the element after the arguments, so it must
         // not run the plain function of the interface it is inherited from
         assertNotEquals(JsCall.functionId("this.scrollTop = $0", 1, false),
-                new JsCall(ScrollFallbacks.class, "scrollTo", List.of(1))
-                        .getFunctionId());
+                functionId);
     }
 
     @Test
