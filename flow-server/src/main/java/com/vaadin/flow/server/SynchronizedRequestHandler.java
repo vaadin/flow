@@ -39,7 +39,11 @@ import com.vaadin.flow.internal.SessionLockScope;
  * {@link ResponseWriter} throws, the UI the handler left current is made
  * current again while the session {@link ErrorHandler} and the
  * {@link VaadinRequestInterceptor#handleException request interceptors} handle
- * the exception, with the session locked.
+ * the exception, with the session locked. For this, an exception thrown while a
+ * UI is current leaves
+ * {@link #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)} wrapped
+ * in an unchecked exception that has the original exception as its cause and
+ * that {@link VaadinService} unwraps.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -89,16 +93,14 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
                             response, requestBody);
                     handledUI = UI.getCurrent();
                 } catch (IOException | RuntimeException e) {
-                    rememberFailedUI(request, UI.getCurrent());
-                    throw e;
+                    throw withFailedUI(e, UI.getCurrent());
                 }
             }
             if (responseWriter.isPresent()) {
                 try {
                     responseWriter.get().writeResponse();
                 } catch (IOException | RuntimeException e) {
-                    rememberFailedUI(request, handledUI);
-                    throw e;
+                    throw withFailedUI(e, handledUI);
                 }
             }
             return responseWriter.isPresent();
@@ -108,8 +110,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
                     return synchronizedHandleRequest(session, request,
                             response);
                 } catch (IOException | RuntimeException e) {
-                    rememberFailedUI(request, UI.getCurrent());
-                    throw e;
+                    throw withFailedUI(e, UI.getCurrent());
                 }
             }
         }
@@ -117,13 +118,18 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
 
     /*
      * The current instances are restored before the exception reaches the error
-     * handling in VaadinService, which makes this UI current again while it
-     * holds the lock, so that the error handler still sees it.
+     * handling in VaadinService, which unwraps it and makes the UI current
+     * again while it holds the lock, so that the error handler still sees it.
      */
-    private static void rememberFailedUI(VaadinRequest request, UI ui) {
-        if (ui != null) {
-            request.setAttribute(VaadinService.FAILED_REQUEST_UI_ATTRIBUTE, ui);
+    private static RuntimeException withFailedUI(Exception failure, UI ui)
+            throws IOException {
+        if (ui != null && !(failure instanceof FailedUIRequestException)) {
+            return new FailedUIRequestException(failure, ui);
         }
+        if (failure instanceof IOException ioException) {
+            throw ioException;
+        }
+        return (RuntimeException) failure;
     }
 
     /**

@@ -15,12 +15,16 @@
  */
 package com.vaadin.flow.internal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinSession;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -46,6 +50,23 @@ class SessionLockScopeTest {
                 lock::close);
 
         assertSame(failure, thrown);
+        assertNull(UI.getCurrent());
+        assertSame(this, CurrentInstance.get(SessionLockScopeTest.class));
+    }
+
+    @Test
+    void close_unlockThrowsWithFailureHandler_handlerGetsFailureAndPreviousInstancesRestored() {
+        CurrentInstance.set(SessionLockScopeTest.class, this);
+        VaadinSession session = mock(VaadinSession.class);
+        IllegalStateException failure = new IllegalStateException();
+        doThrow(failure).when(session).unlock();
+        List<RuntimeException> handled = new ArrayList<>();
+        SessionLockScope lock = SessionLockScope.lock(session, mock(UI.class))
+                .onUnlockFailure(handled::add);
+
+        lock.close();
+
+        assertEquals(List.of(failure), handled);
         assertNull(UI.getCurrent());
         assertSame(this, CurrentInstance.get(SessionLockScopeTest.class));
     }

@@ -156,15 +156,6 @@ public abstract class VaadinService implements Serializable {
     private static final String REQUEST_FAILURE_ATTRIBUTE = VaadinService.class
             .getName() + ".requestFailure";
 
-    /*
-     * The UI that was current when a request handler failed with the session
-     * locked. The handler restores the current instances when it unlocks, so
-     * this lets the error handling make the UI current again once it holds the
-     * lock.
-     */
-    static final String FAILED_REQUEST_UI_ATTRIBUTE = VaadinService.class
-            .getName() + ".failedRequestUI";
-
     /**
      * Should never be used directly, always use
      * {@link #getDeploymentConfiguration()}.
@@ -2281,24 +2272,29 @@ public abstract class VaadinService implements Serializable {
 
         } catch (final SessionExpiredException e) {
             handleSessionExpired(request, response);
+        } catch (final FailedUIRequestException e) {
+            recordRequestFailure(request, e.getFailure());
+            handleExceptionDuringRequest(request, response, vaadinSession,
+                    e.getFailure(), e.getUI());
         } catch (final Exception e) {
             recordRequestFailure(request, e);
-            handleExceptionDuringRequest(request, response, vaadinSession, e);
+            handleExceptionDuringRequest(request, response, vaadinSession, e,
+                    null);
         } finally {
             requestEnd(request, response, vaadinSession);
         }
     }
 
+    /*
+     * The failed UI is the UI that was current when the request handler failed.
+     * It is made current again while the error is handled, as the handler
+     * restored the current instances when it unlocked the session.
+     */
     private void handleExceptionDuringRequest(VaadinRequest request,
-            VaadinResponse response, VaadinSession vaadinSession, Exception t)
-            throws ServiceException {
-        SessionLockScope lock = vaadinSession == null ? null
-                : SessionLockScope.lock(vaadinSession);
-        if (lock != null && request.getAttribute(
-                FAILED_REQUEST_UI_ATTRIBUTE) instanceof UI failedUI) {
-            UI.setCurrent(failedUI);
-        }
-        try (lock) {
+            VaadinResponse response, VaadinSession vaadinSession, Exception t,
+            UI failedUI) throws ServiceException {
+        try (SessionLockScope lock = lockForErrorHandling(vaadinSession,
+                failedUI)) {
             try {
                 vaadinRequestInterceptors
                         .forEach(requestInterceptor -> requestInterceptor
@@ -2339,6 +2335,15 @@ public abstract class VaadinService implements Serializable {
             }
         }
 
+    }
+
+    private static SessionLockScope lockForErrorHandling(VaadinSession session,
+            UI failedUI) {
+        if (session == null) {
+            return null;
+        }
+        return failedUI == null ? SessionLockScope.lock(session)
+                : SessionLockScope.lock(session, failedUI);
     }
 
     /**

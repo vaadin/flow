@@ -97,7 +97,7 @@ class SynchronizedRequestHandlerTest {
     }
 
     @Test
-    void handleRequest_handlerSetsCurrentUIAndThrows_previousInstancesRestoredAfterUnlock()
+    void handleRequest_handlerSetsCurrentUIAndThrows_failureWrappedWithUIAndPreviousInstancesRestored()
             throws Exception {
         MockVaadinSession session = new MockVaadinSession();
         UI ui = session.runWithLock(() -> new MockUI(session));
@@ -114,11 +114,12 @@ class SynchronizedRequestHandlerTest {
             }
         };
 
-        assertSame(failure,
-                assertThrows(IllegalStateException.class,
-                        () -> handler.handleRequest(session,
-                                mock(VaadinRequest.class),
-                                mock(VaadinResponse.class))));
+        FailedUIRequestException thrown = assertThrows(
+                FailedUIRequestException.class,
+                () -> handler.handleRequest(session, mock(VaadinRequest.class),
+                        mock(VaadinResponse.class)));
+        assertSame(failure, thrown.getFailure());
+        assertSame(ui, thrown.getUI());
         assertFalse(session.hasLock());
         assertNull(UI.getCurrent());
         assertSame(session, VaadinSession.getCurrent());

@@ -303,17 +303,23 @@ class VaadinServletServiceTest {
         CurrentInstance.clearAll();
         AtomicReference<UI> ui = new AtomicReference<>();
         List<UI> inErrorHandler = new ArrayList<>();
+        List<Throwable> errors = new ArrayList<>();
         service.getRequestHandlers().clear();
         service.getRequestHandlers()
                 .add(new FailingUIRequestHandler(failingPart, session -> {
-                    session.setErrorHandler(
-                            event -> inErrorHandler.add(UI.getCurrent()));
+                    session.setErrorHandler(event -> {
+                        inErrorHandler.add(UI.getCurrent());
+                        errors.add(event.getThrowable());
+                    });
                     // Like VaadinService.findUI, sets the UI as current
                     ui.set(new MockUI(session));
                 }));
         List<UI> inRequestEnd = new ArrayList<>();
-        service.getEventBus().addListener(RequestEndedEvent.class,
-                event -> inRequestEnd.add(UI.getCurrent()));
+        List<Exception> failures = new ArrayList<>();
+        service.getEventBus().addListener(RequestEndedEvent.class, event -> {
+            inRequestEnd.add(UI.getCurrent());
+            failures.add(event.getFailure().orElseThrow());
+        });
 
         assertThrows(ServiceException.class,
                 () -> service.handleRequest(createVaadinRequest(),
@@ -321,6 +327,10 @@ class VaadinServletServiceTest {
 
         assertEquals(List.of(ui.get()), inErrorHandler);
         assertEquals(Collections.singletonList(null), inRequestEnd);
+        // The error handling and the event get the handler's own exception
+        assertEquals(1, errors.size());
+        assertEquals("BOOM", errors.get(0).getMessage());
+        assertEquals(errors, failures);
     }
 
     private VaadinRequest createVaadinRequest() throws Exception {

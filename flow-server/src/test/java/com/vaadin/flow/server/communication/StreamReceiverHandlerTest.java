@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -118,6 +119,8 @@ class StreamReceiverHandlerTest {
     private String requestCharacterEncoding;
     private String xFilenameHeader;
 
+    private final List<UI> inErrorHandler = new ArrayList<>();
+
     @BeforeEach
     void setup() throws Exception {
         contentLength = "6";
@@ -141,7 +144,25 @@ class StreamReceiverHandlerTest {
                 .thenAnswer(invocationOnMock -> outputStream);
         when(response.getOutputStream()).thenReturn(responseOutput);
 
-        when(session.getErrorHandler()).thenReturn(mock(ErrorHandler.class));
+        trackSessionLock();
+        when(session.getErrorHandler()).thenAnswer(i -> {
+            assertTrue(session.hasLock());
+            inErrorHandler.add(UI.getCurrent());
+            return errorHandler;
+        });
+    }
+
+    @AfterEach
+    void clearCurrentInstances() {
+        CurrentInstance.clearAll();
+    }
+
+    private void trackSessionLock() {
+        when(session.hasLock()).thenReturn(false);
+        doAnswer(i -> when(session.hasLock()).thenReturn(true)).when(session)
+                .lock();
+        doAnswer(i -> when(session.hasLock()).thenReturn(false)).when(session)
+                .unlock();
     }
 
     private void mockReceiverAndRegistry() {
@@ -278,6 +299,8 @@ class StreamReceiverHandlerTest {
         when(uiInternals.getStateTree()).thenReturn(stateTree);
         when(stateTree.getNodeById(anyInt())).thenReturn(stateNode);
         when(session.getUIById(uiId)).thenReturn(ui);
+        when(stateNode.getOwner()).thenReturn(stateTree);
+        when(stateTree.getUI()).thenReturn(ui);
     }
 
     @Test
@@ -298,36 +321,19 @@ class StreamReceiverHandlerTest {
 
         doThrow(RuntimeException.class).when(outputStream).write(any(),
                 anyInt(), anyInt());
-        when(stateNode.getOwner()).thenReturn(stateTree);
-        when(stateTree.getUI()).thenReturn(ui);
         List<UI> inFailed = new ArrayList<>();
         doAnswer(i -> inFailed.add(UI.getCurrent())).when(streamVariable)
                 .streamingFailed(any());
-        when(session.hasLock()).thenReturn(false);
-        doAnswer(i -> when(session.hasLock()).thenReturn(true)).when(session)
-                .lock();
-        doAnswer(i -> when(session.hasLock()).thenReturn(false)).when(session)
-                .unlock();
-        List<UI> inErrorHandler = new ArrayList<>();
-        when(session.getErrorHandler()).thenAnswer(i -> {
-            assertTrue(session.hasLock());
-            inErrorHandler.add(UI.getCurrent());
-            return errorHandler;
-        });
 
-        try {
-            handler.doHandleXhrFilePost(session, request, response,
-                    streamReceiver, stateNode, 1);
+        handler.doHandleXhrFilePost(session, request, response, streamReceiver,
+                stateNode, 1);
 
-            verify(response)
-                    .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
-            assertEquals(List.of(ui), inFailed);
-            verify(errorHandler).error(any());
-            assertEquals(List.of(ui), inErrorHandler);
-            assertNull(UI.getCurrent());
-        } finally {
-            CurrentInstance.clearAll();
-        }
+        verify(response)
+                .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+        assertEquals(List.of(ui), inFailed);
+        verify(errorHandler).error(any());
+        assertEquals(List.of(ui), inErrorHandler);
+        assertNull(UI.getCurrent());
     }
 
     @ParameterizedTest
@@ -335,37 +341,20 @@ class StreamReceiverHandlerTest {
     void nodeDetached_errorHandlerCalledWithLockAndUI(boolean multipart)
             throws IOException {
         when(stateNode.isAttached()).thenReturn(false);
-        when(stateNode.getOwner()).thenReturn(stateTree);
-        when(stateTree.getUI()).thenReturn(ui);
-        when(session.hasLock()).thenReturn(false);
-        doAnswer(i -> when(session.hasLock()).thenReturn(true)).when(session)
-                .lock();
-        doAnswer(i -> when(session.hasLock()).thenReturn(false)).when(session)
-                .unlock();
-        List<UI> inErrorHandler = new ArrayList<>();
-        when(session.getErrorHandler()).thenAnswer(i -> {
-            assertTrue(session.hasLock());
-            inErrorHandler.add(UI.getCurrent());
-            return errorHandler;
-        });
 
-        try {
-            if (multipart) {
-                parts = List.of(createPart(createInputStream("foobar"),
-                        "text/plain", "foobar.txt", 6));
-                handler.doHandleMultipartFileUpload(session, request, response,
-                        streamReceiver, stateNode);
-            } else {
-                handler.doHandleXhrFilePost(session, request, response,
-                        streamReceiver, stateNode, 1);
-            }
-
-            verify(errorHandler).error(any());
-            assertEquals(List.of(ui), inErrorHandler);
-            assertNull(UI.getCurrent());
-        } finally {
-            CurrentInstance.clearAll();
+        if (multipart) {
+            parts = List.of(createPart(createInputStream("foobar"),
+                    "text/plain", "foobar.txt", 6));
+            handler.doHandleMultipartFileUpload(session, request, response,
+                    streamReceiver, stateNode);
+        } else {
+            handler.doHandleXhrFilePost(session, request, response,
+                    streamReceiver, stateNode, 1);
         }
+
+        verify(errorHandler).error(any());
+        assertEquals(List.of(ui), inErrorHandler);
+        assertNull(UI.getCurrent());
     }
 
     @Test
@@ -437,8 +426,6 @@ class StreamReceiverHandlerTest {
     @Test
     void handleRequest_uiIsCurrentOnlyInStreamVariableCallbacks()
             throws IOException {
-        when(stateNode.getOwner()).thenReturn(stateTree);
-        when(stateTree.getUI()).thenReturn(ui);
         // The UI comes from the node's owner, not from the request's UI id
         UI uiById = mock(UI.class);
         when(session.getUIById(uiId)).thenReturn(uiById);
@@ -464,19 +451,15 @@ class StreamReceiverHandlerTest {
             }
         };
 
-        try {
-            handler.handleRequest(session, request, response, streamReceiver,
-                    String.valueOf(uiId), expectedSecurityKey);
+        handler.handleRequest(session, request, response, streamReceiver,
+                String.valueOf(uiId), expectedSecurityKey);
 
-            assertEquals(List.of(ui, ui), inCallbacks);
-            assertFalse(inProgress.isEmpty());
-            assertTrue(inProgress.stream().allMatch(ui::equals));
-            assertFalse(inWrite.isEmpty());
-            assertTrue(inWrite.stream().allMatch(Objects::isNull));
-            assertNull(UI.getCurrent());
-        } finally {
-            CurrentInstance.clearAll();
-        }
+        assertEquals(List.of(ui, ui), inCallbacks);
+        assertFalse(inProgress.isEmpty());
+        assertTrue(inProgress.stream().allMatch(ui::equals));
+        assertFalse(inWrite.isEmpty());
+        assertTrue(inWrite.stream().allMatch(Objects::isNull));
+        assertNull(UI.getCurrent());
     }
 
     @Test

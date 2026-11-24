@@ -16,6 +16,7 @@
 package com.vaadin.flow.internal;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinSession;
@@ -37,6 +38,7 @@ public final class SessionLockScope implements AutoCloseable {
 
     private final VaadinSession session;
     private final Map<Class<?>, CurrentInstance> instances;
+    private Consumer<RuntimeException> unlockFailureHandler;
 
     private SessionLockScope(VaadinSession session,
             Map<Class<?>, CurrentInstance> instances) {
@@ -79,13 +81,37 @@ public final class SessionLockScope implements AutoCloseable {
     }
 
     /**
+     * Sets a handler for an exception thrown when {@link #close()} unlocks the
+     * session. The handler gets the exception instead of it being thrown from
+     * {@link #close()}, for code that can only log such a failure, e.g. because
+     * the session error handler would need the lock.
+     *
+     * @param unlockFailureHandler
+     *            the handler for an exception thrown by unlocking the session,
+     *            not <code>null</code>
+     * @return this scope, for chaining
+     */
+    public SessionLockScope onUnlockFailure(
+            Consumer<RuntimeException> unlockFailureHandler) {
+        this.unlockFailureHandler = unlockFailureHandler;
+        return this;
+    }
+
+    /**
      * Unlocks the session and then makes the instances that were current before
-     * locking the only current instances, also when unlocking fails.
+     * locking the only current instances, also when unlocking fails. An
+     * exception thrown by unlocking is passed to the handler set with
+     * {@link #onUnlockFailure(Consumer)}, or thrown if there is none.
      */
     @Override
     public void close() {
         try {
             session.unlock();
+        } catch (RuntimeException e) {
+            if (unlockFailureHandler == null) {
+                throw e;
+            }
+            unlockFailureHandler.accept(e);
         } finally {
             CurrentInstance.clearAll();
             CurrentInstance.restoreInstances(instances);
