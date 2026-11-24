@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -536,12 +537,13 @@ public class DataCommunicatorTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = { true, false })
-    void staleViewportBeyondEmptiedData_noIndexOutOfBounds(
-            boolean dataProviderWithParallelStream) {
+    @CsvSource({ "true, 0, 50", "false, 0, 50", "true, 50, 0", "false, 50, 0" })
+    void staleViewportAfterDataEmptied_noIndexOutOfBounds(
+            boolean dataProviderWithParallelStream, int viewportStart,
+            int staleViewportStart) {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
         dataCommunicator.setDataProvider(createDataProvider(), null);
-        dataCommunicator.setViewportRange(0, 50);
+        dataCommunicator.setViewportRange(viewportStart, 50);
         fakeClientCommunication();
 
         dataCommunicator.setDataProvider(
@@ -550,8 +552,11 @@ public class DataCommunicatorTest {
 
         // The client scrolled before it received the empty data set and
         // requests a range that no longer exists
-        dataCommunicator.setViewportRange(50, 50);
+        lastSet = null;
+        dataCommunicator.setViewportRange(staleViewportStart, 50);
         fakeClientCommunication();
+        assertTrue(lastSet == null || lastSet.isEmpty(),
+                "Expected no items for the stale range, got " + lastSet);
 
         dataCommunicator.setDataProvider(createDataProvider(), null);
         dataCommunicator.setViewportRange(0, 50);
