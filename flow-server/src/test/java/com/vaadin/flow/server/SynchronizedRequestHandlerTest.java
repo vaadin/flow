@@ -126,6 +126,33 @@ class SynchronizedRequestHandlerTest {
         assertSame(session, VaadinSession.getCurrent());
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void handleRequest_handlerThrowsWithoutCurrentUI_originalExceptionThrownUnwrapped(
+            boolean ioException) {
+        MockVaadinSession session = new MockVaadinSession();
+        CurrentInstance.clearAll();
+        Exception failure = ioException ? new IOException("BOOM")
+                : new IllegalStateException("BOOM");
+        SynchronizedRequestHandler handler = new SynchronizedRequestHandler() {
+            @Override
+            public boolean synchronizedHandleRequest(VaadinSession session,
+                    VaadinRequest request, VaadinResponse response)
+                    throws IOException {
+                if (failure instanceof IOException io) {
+                    throw io;
+                }
+                throw (RuntimeException) failure;
+            }
+        };
+
+        assertSame(failure,
+                assertThrows(Exception.class,
+                        () -> handler.handleRequest(session,
+                                mock(VaadinRequest.class),
+                                mock(VaadinResponse.class))));
+    }
+
     @Test
     void handleRequest_nestedHandlerSetsCurrentUIAndThrows_failureWrappedOnce()
             throws Exception {

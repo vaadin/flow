@@ -29,9 +29,9 @@ import com.vaadin.flow.component.UI;
  * directly can catch this exception and handle the original exception from
  * {@link #getFailure()}.
  *
- * @since 25.4
+ * @since 25.5
  */
-public class FailedUIRequestException extends RuntimeException {
+public final class FailedUIRequestException extends RuntimeException {
 
     private final transient UI ui;
 
@@ -51,6 +51,10 @@ public class FailedUIRequestException extends RuntimeException {
 
     /**
      * Gets the UI that was current when the request handler failed.
+     * <p>
+     * The session of the UI is not locked when this exception is thrown, so
+     * lock it, for example with
+     * {@link UI#access(com.vaadin.flow.server.Command)}, before using the UI.
      *
      * @return the UI, or <code>null</code> if this exception has been
      *         deserialized
