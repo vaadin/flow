@@ -26,15 +26,21 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.tests.util.MockUI;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -51,6 +57,8 @@ class RouteNotFoundErrorTest {
     void setErrorParameter_productionMode_pathContainRoutesTemplate_renderedElementHasNoRoutes() {
 
         RouteNotFoundError page = new RouteNotFoundError();
+        // A reused view instance must drop a mark from an earlier render
+        RouteUtil.setNoRoutesPage(page, true);
         BeforeEnterEvent event = createEvent(true);
 
         ErrorParameter<NotFoundException> param = new ErrorParameter<NotFoundException>(
@@ -85,11 +93,14 @@ class RouteNotFoundErrorTest {
         }
 
         assertThat(page.getElement().toString(), not(containsString("bar")));
+        assertFalse(RouteUtil.isNoRoutesPage(page));
     }
 
     @Test
     void setErrorParameter_devMode_noRoutes() {
         RouteNotFoundError page = new RouteNotFoundError();
+        MockUI ui = new MockUI();
+        ui.add(page);
         BeforeEnterEvent event = createEvent(false);
 
         ErrorParameter<NotFoundException> param = new ErrorParameter<>(
@@ -120,6 +131,14 @@ class RouteNotFoundErrorTest {
 
         assertThat(page.getElement().toString(),
                 containsString("No views found"));
+        assertFalse(RouteUtil.isNoRoutesPage(page),
+                "The page is marked only once Copilot has taken over");
+
+        List<PendingJavaScriptInvocation> invocations = ui
+                .dumpPendingJsInvocations();
+        invocations.get(invocations.size() - 1)
+                .complete(JacksonUtils.nullNode());
+        assertTrue(RouteUtil.isNoRoutesPage(page));
     }
 
     private BeforeEnterEvent createEvent(boolean productionMode) {
