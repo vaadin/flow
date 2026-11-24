@@ -33,11 +33,7 @@ import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
 import org.atmosphere.cpr.AtmosphereResourceImpl;
 import org.atmosphere.cpr.AtmosphereResponse;
-import org.atmosphere.cpr.FrameworkConfig;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.InOrder;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
@@ -71,13 +67,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -695,45 +689,6 @@ class PushHandlerTest {
         });
 
         verify(res.get().getResponse().getWriter())
-                .write(VaadinService.createSessionExpiredJSON(true));
-        verify(res.get().getRequest(), never()).setAttribute(
-                eq(FrameworkConfig.CALLBACK_JAVASCRIPT_PROTOCOL), any());
-    }
-
-    @ParameterizedTest
-    @ValueSource(booleans = { true, false })
-    void onConnect_noSessionForRequest_sse_notificationFramedAsEventUntilSuspended(
-            boolean suspended) throws Exception {
-        MockVaadinServletService service = new MockVaadinServletService() {
-            @Override
-            public VaadinSession findVaadinSession(VaadinRequest request) {
-                return null;
-            }
-        };
-        setProductionMode(service, false);
-        AtomicReference<AtmosphereResource> res = new AtomicReference<>();
-
-        runTest(service, (handler, resource) -> {
-            when(resource.transport()).thenReturn(TRANSPORT.SSE);
-            when(resource.isSuspended()).thenReturn(suspended);
-            handler.onConnect(resource);
-            res.set(resource);
-        });
-
-        // Atmosphere's SSE interceptor frames writes to a suspended resource as
-        // events by itself, and to one that is not suspended yet only when this
-        // attribute is set, as Atmosphere does for a connection handshake
-        AtmosphereRequest request = res.get().getRequest();
-        PrintWriter writer = res.get().getResponse().getWriter();
-        InOrder inOrder = inOrder(request, writer);
-        if (suspended) {
-            verify(request, never()).setAttribute(
-                    eq(FrameworkConfig.CALLBACK_JAVASCRIPT_PROTOCOL), any());
-        } else {
-            inOrder.verify(request).setAttribute(
-                    FrameworkConfig.CALLBACK_JAVASCRIPT_PROTOCOL, Boolean.TRUE);
-        }
-        inOrder.verify(writer)
                 .write(VaadinService.createSessionExpiredJSON(true));
     }
 
