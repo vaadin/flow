@@ -23,6 +23,9 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 
 @Route("")
@@ -41,6 +44,14 @@ public class MainView extends Div {
     public static final String OUTSIDE_RESULT = "outsideResult";
     public static final String FORCED_LIGHT = "forcedLight";
     public static final String FORCED_DARK = "forcedDark";
+
+    @JsDefinition
+    public interface MainJs extends JsInvokers {
+
+        @JsExpression(OUTSIDE_RESULT
+                + ".innerText = window.packageOutsideNpm() + ' - ' + window.package2OutsideNpm();")
+        void showOutsideResult();
+    }
 
     public MainView() {
         Image img = new Image("themes/vite-production/images/plant.png",
@@ -62,8 +73,7 @@ public class MainView extends Div {
 
         NativeButton checkOutsideJs = new NativeButton("Check outside JS",
                 e -> {
-                    getElement().executeJs(OUTSIDE_RESULT
-                            + ".innerText = window.packageOutsideNpm() + ' - ' + window.package2OutsideNpm();");
+                    getElement().executeJs(MainJs.class).showOutsideResult();
                 });
         checkOutsideJs.setId(OUTSIDE);
         add(checkOutsideJs);

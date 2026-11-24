@@ -52,7 +52,7 @@ import com.vaadin.flow.dom.JsFunction;
  *
  * <pre>
  * &#64;JsDefinition
- * public interface ShareJs extends Serializable {
+ * public interface ShareJs extends JsSnippets {
  *
  *     &#64;JsExpression("""
  *             event.preventDefault();
@@ -87,7 +87,7 @@ import com.vaadin.flow.dom.JsFunction;
  *
  * <pre>
  * &#64;JsDefinition
- * public interface ClickJs extends Serializable {
+ * public interface ClickJs extends JsInvokers {
  *
  *     &#64;JsExpression("this.addEventListener('click', $0);")
  *     void onClick(JsFunction listener);

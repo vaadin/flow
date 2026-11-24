@@ -582,6 +582,25 @@ public class IndexHtmlRequestHandlerTest {
         assertEquals("", initialUidlScript.attr("initial"));
     }
 
+    @Test
+    public void oldBrowserCheck_usesOnlySyntaxThatOldBrowsersParse()
+            throws IOException {
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        Document document = Jsoup
+                .parse(responseOutput.toString(StandardCharsets.UTF_8));
+
+        Element oldBrowserCheck = findScript(
+                document.head().getElementsByTag("script"), "v-r=oldbrowser");
+        assertNotNull(oldBrowserCheck);
+        // The check is not transpiled, and a syntax error would keep the
+        // browsers it is meant for from being redirected
+        String script = oldBrowserCheck.data();
+        for (String newerSyntax : List.of("?.", "??", "=>", "`")) {
+            assertFalse(script.contains(newerSyntax), script);
+        }
+    }
+
     private static Element findScript(Elements scripts, String needle) {
         for (Element script : scripts) {
             if (script.toString().contains(needle)) {

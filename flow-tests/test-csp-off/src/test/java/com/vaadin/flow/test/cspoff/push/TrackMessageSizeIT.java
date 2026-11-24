@@ -13,20 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.test.cspoff.push;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.test.cspoff.AbstractCspOffIT;
+import com.vaadin.flow.test.cspoff.TestFor;
+import com.vaadin.testbench.BrowserTest;
 
-public class TrackMessageSizeIT extends ChromeBrowserTest {
+@TestFor(TrackMessageSizeView.class)
+public class TrackMessageSizeIT extends AbstractCspOffIT {
 
-    @Test
+    @BrowserTest
     public void runTests() {
         open();
-        Assert.assertEquals("All tests run",
+        Assertions.assertEquals("All tests run",
                 this.findElement(By.id("logId")).getText());
     }
 }

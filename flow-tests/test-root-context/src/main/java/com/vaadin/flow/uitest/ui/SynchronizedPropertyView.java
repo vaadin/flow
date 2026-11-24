@@ -22,11 +22,31 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.SynchronizedPropertyView", layout = ViewTestLayout.class)
 public class SynchronizedPropertyView extends AbstractDivView {
+
+    @JsDefinition
+    public interface ShimJs extends JsInvokers {
+        //@formatter:off
+        @JsExpression("var input = document.createElement('input');"
+          + "input.setAttribute('type', 'number');"
+          + "input.setAttribute('value', '123');"
+
+            // This is true only on IE11, and is fixed below:
+          + "if (input.value != input.valueAsNumber) {"
+          + "    Object.defineProperty(Object.getPrototypeOf(input), 'valueAsNumber', {"
+          + "        get: function () { return parseInt(this.value, 10); }"
+          + "    });"
+          + "}")
+        //@formatter:on
+        void shimValueAsNumber();
+    }
 
     @Tag("input")
     public static class InputSync extends Component {
@@ -149,19 +169,7 @@ public class SynchronizedPropertyView extends AbstractDivView {
      * {@link #addSyncMultipleProperties()}
      */
     private void valueAsNumberShimForIE11() {
-        getPage().executeJs(
-        //@formatter:off
-        "var input = document.createElement('input');"
-      + "input.setAttribute('type', 'number');"
-      + "input.setAttribute('value', '123');"
-
-        // This is true only on IE11, and is fixed below:
-      + "if (input.value != input.valueAsNumber) {"
-      + "    Object.defineProperty(Object.getPrototypeOf(input), 'valueAsNumber', {"
-      + "        get: function () { return parseInt(this.value, 10); }"
-      + "    });"
-      + "}");
-        //@formatter:on
+        getPage().executeJs(ShimJs.class).shimValueAsNumber();
     }
 
 }
