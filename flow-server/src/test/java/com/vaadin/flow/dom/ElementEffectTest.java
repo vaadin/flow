@@ -715,6 +715,44 @@ class ElementEffectTest {
     }
 
     @Test
+    void effect_notAttached_changedFromOtherThreadDuringFirstRun_runsAgainInUI() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        List<String> values = new ArrayList<>();
+        Signal.effect(component, () -> {
+            values.add(signal.get());
+            if (values.size() == 1) {
+                Thread thread = new Thread(() -> signal.set("changed"));
+                thread.start();
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    throw new AssertionError(e);
+                }
+                // Dispatch the change while the first run is still going on
+                service.executor.flush();
+            }
+        });
+
+        VaadinService.setCurrent(service);
+        var session = new MockVaadinSession(service);
+        session.lock();
+        var ui = new MockUI(session);
+        UI.setCurrent(null);
+        ui.add(component);
+        session.unlock();
+
+        service.flushExecutorAndAccessTasks(session);
+        assertEquals(List.of("initial", "changed"), values);
+
+        signal.set("later");
+        service.flushExecutorAndAccessTasks(session);
+        assertEquals(List.of("initial", "changed", "later"), values,
+                "Effect should keep reacting to changes");
+    }
+
+    @Test
     void effect_notAttached_throwsOnAttach_creationSiteAddedToReportedError()
             throws Exception {
         CurrentInstance.clearAll();

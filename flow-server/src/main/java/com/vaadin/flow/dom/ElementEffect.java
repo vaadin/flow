@@ -32,6 +32,7 @@ import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableExecutor;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.DeniedSignalUsageException;
@@ -357,20 +358,26 @@ public final class ElementEffect implements Serializable {
                 // Run immediately if on the same UI
                 command.run();
             } else {
+                // Guard against detach while waiting for the lock. Checked
+                // only once the lock is held: a change from another thread
+                // during the first run is dispatched before the effect field
+                // is assigned, and dropping it would leave the effect stuck.
+                Command guarded = () -> {
+                    if (effect != null) {
+                        command.run();
+                    }
+                };
                 SignalEnvironment.getDefaultEffectDispatcher().execute(() -> {
                     try {
-                        // Guard against detach while waiting for lock
-                        if (effect != null) {
-                            // In test environments, the effect dispatcher
-                            // may run tasks on the test thread where
-                            // UI.getCurrent() is already set. In that case
-                            // run directly instead of ui.access() which
-                            // would only enqueue without executing.
-                            if (UI.getCurrent() == ui) {
-                                command.run();
-                            } else {
-                                ui.access(command::run);
-                            }
+                        // In test environments, the effect dispatcher may run
+                        // tasks on the test thread where UI.getCurrent() is
+                        // already set. In that case run directly instead of
+                        // ui.access() which would only enqueue without
+                        // executing.
+                        if (UI.getCurrent() == ui) {
+                            guarded.execute();
+                        } else {
+                            ui.access(guarded);
                         }
                     } catch (UIDetachedException e) {
                         // Effect was concurrently disabled -> nothing do to
