@@ -182,6 +182,15 @@ export class ApplicationConnection implements PublishedClient {
     );
   }
 
+  /**
+   * Checks if the UI has stopped, for example after an "Internal error" reply.
+   *
+   * @returns true if the UI is terminated, false otherwise
+   */
+  isTerminated(): boolean {
+    return this.#registry.getUILifecycle().isTerminated();
+  }
+
   // The members the JSNI blocks publish, in the order publishJavascriptMethods
   // publishes them, followed by the development-mode block's. Java declares
   // getDomElementByNodeId, getNodeId and addDomSetListener among its helpers

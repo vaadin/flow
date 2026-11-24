@@ -431,6 +431,23 @@ describe('Flow', () => {
     document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
   });
 
+  it('should cancel a server navigation when the UI stopped while the client started', async () => {
+    stubServerRemoteFunction('foobar-12345');
+    server.addHandler('GET', /^.*\?v-r=init.*/, (req) => {
+      req.respond(
+        200,
+        { 'content-type': 'application/json' },
+        createInitResponse('foobar-12345').replace('"timings": [],', `"timings": [], "meta": ${internalErrorMeta},`)
+      );
+    });
+    const elem: any = await new Flow().serverSideRoutes[0].action({ pathname: 'Foo' });
+    const cmd = { prevent: () => 'prevented' };
+
+    expect(await settledSoon(elem.onBeforeEnter({ pathname: 'Foo' }, cmd))).to.equal('prevented');
+    expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
+    document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
+  });
+
   it('should let a `server->client` navigation leave when the UI stops before the server answers it', async () => {
     failingEvent = 'ui-leave-navigation';
     stubServerRemoteFunction('foobar-12345');
@@ -728,6 +745,10 @@ describe('Flow', () => {
   });
 });
 
+// The meta of an "Internal error" reply, which stops the UI
+const internalErrorMeta =
+  '{"appError":{"caption":"Internal error","url":null,"message":"Please notify the administrator.","details":null,"querySelector":null}}';
+
 // What the promise resolves to, or 'pending' if it does not settle soon
 function settledSoon<T>(promise: Promise<T>): Promise<T | 'pending'> {
   return Promise.race([promise, new Promise<'pending'>((resolve) => setTimeout(() => resolve('pending'), 500))]);
@@ -785,7 +806,7 @@ function stubServerRemoteFunction(
         req.respond(
           200,
           { 'content-type': 'application/json' },
-          '{"changes":{},"resources":{},"locales":{},"meta":{"appError":{"caption":"Internal error","url":null,"message":"Please notify the administrator.","details":null,"querySelector":null}},"syncId":-1}'
+          `{"changes":{},"resources":{},"locales":{},"meta":${internalErrorMeta},"syncId":-1}`
         );
         return;
       } else if (rpc.event === 'ui-navigate') {

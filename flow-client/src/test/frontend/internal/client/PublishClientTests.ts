@@ -18,6 +18,7 @@ const events = new ClientEvents();
 function fakeConnectionStubs() {
   return {
     isActive: sinon.stub().returns(true),
+    isTerminated: sinon.stub().returns(true),
     getDomElementByNodeId: sinon.stub().returns(null),
     getNodeId: sinon.stub().returns(7),
     addDomSetListener: sinon.stub(),
@@ -72,6 +73,7 @@ describe('publishClient', () => {
     expect(client.exportedWebComponents).to.deep.equal(['my-component']);
 
     expect(client.isActive()).to.be.true;
+    expect(client.isTerminated()).to.be.true;
     expect(client.getUIId()).to.equal(3);
     expect(client.resolveUri('foo')).to.equal('/resolved');
     expect(stubs.resolveUri.calledWith('foo')).to.be.true;

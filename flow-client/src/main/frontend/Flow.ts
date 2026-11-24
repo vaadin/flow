@@ -72,6 +72,12 @@ function getClients() {
     .map((id) => $wnd.Vaadin.Flow.clients[id]);
 }
 
+// Whether the UI has stopped, e.g. after an "Internal error": the server
+// answers no more navigations.
+function isUiTerminated(): boolean {
+  return getClients().some((client) => client.isTerminated?.());
+}
+
 function sendEvent(eventName: string, data: any) {
   getClients().forEach((client) => client.sendEventMessage(ROOT_NODE_ID, eventName, data));
 }
@@ -96,10 +102,6 @@ export class Flow {
 
   // flag used to inform Testbench whether a server route is in progress
   private isActive = false;
-
-  // Set when the UI has stopped, e.g. after an "Internal error": the server
-  // answers no more navigations.
-  private uiTerminated = false;
 
   // Settles the server round trip in progress when the UI stops, as no answer
   // will come for it.
@@ -242,7 +244,7 @@ export class Flow {
   private async flowLeave(ctx: NavigationParameters, cmd?: PreventCommands): Promise<any> {
     // server -> server, viewing offline stub, or browser is offline
     const { connectionState } = $wnd.Vaadin;
-    if (this.pathname === ctx.pathname || !this.isFlowClientLoaded() || connectionState.offline || this.uiTerminated) {
+    if (this.pathname === ctx.pathname || !this.isFlowClientLoaded() || connectionState.offline || isUiTerminated()) {
       return Promise.resolve({});
     }
     // 'server -> client'
@@ -289,7 +291,7 @@ export class Flow {
           this.loadingFinished();
         };
 
-        if (this.uiTerminated) {
+        if (isUiTerminated()) {
           // A stopped UI cannot show the route
           serverConnected(true);
           return;
@@ -438,11 +440,9 @@ export class Flow {
         const initializing = getClients().reduce((prev, client) => prev || client.isActive(), false);
         if (!initializing) {
           clearInterval(intervalId);
+          // A UI that stopped before this point is seen by isUiTerminated()
           getClients().forEach((client) =>
-            client.events?.addEventListener('vaadin-ui-terminated', () => {
-              this.uiTerminated = true;
-              this.settleRoundTrip?.();
-            })
+            client.events?.addEventListener('vaadin-ui-terminated', () => this.settleRoundTrip?.())
           );
           resolve();
         }
