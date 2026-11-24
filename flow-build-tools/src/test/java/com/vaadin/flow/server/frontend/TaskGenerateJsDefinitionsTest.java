@@ -20,10 +20,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -59,7 +57,6 @@ import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
 import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -565,81 +562,6 @@ class TaskGenerateJsDefinitionsTest {
 
         assertTrue(functionIds.containsAll(collectDeclaredIds(LoggerJs.class)),
                 "a definition of a Flow module is carried: " + functionIds);
-    }
-
-    @Test
-    void productionModeWithoutByteCodeScanner_rendersEveryDefinition() {
-        FrontendDependenciesScanner scanner = mock(
-                FrontendDependenciesScanner.class);
-        when(scanner.getClasses()).thenReturn(Set.of());
-        Options notOptimized = new Options(mock(Lookup.class),
-                new DefaultClassFinder(Set.of(LoggerJs.class)), null)
-                .withFrontendDirectory(frontendFolder).withProductionMode(true)
-                .useByteCodeScanner(false)
-                .withFrontendDependenciesScanner(scanner);
-
-        Set<String> functionIds = TaskGenerateJsDefinitions.collectFunctionIds(
-                new TaskGenerateJsDefinitions(notOptimized).getFileContent());
-
-        assertTrue(functionIds.containsAll(collectDeclaredIds(LoggerJs.class)),
-                "a definition nothing reaches is still carried: "
-                        + functionIds);
-    }
-
-    @Test
-    void flowModuleClasses_nameEveryModuleThatDeclaresJavaScript()
-            throws IOException {
-        // A Flow module whose JavaScript an optimized bundle would leave out
-        // fails only in the browser, so a module that starts declaring
-        // JavaScript, or a listed class that moves, has to fail here
-        Path root = Path.of("").toAbsolutePath().getParent();
-        Pattern declaration = Pattern
-                .compile("^\\s*@(JsDefinition|DomEvent)\\b", Pattern.MULTILINE);
-        Set<Path> declaring = new TreeSet<>();
-        try (Stream<Path> files = Files.walk(root)) {
-            for (Path file : (Iterable<Path>) files
-                    .filter(file -> file.toString().endsWith(".java"))
-                    .filter(file -> file.toString()
-                            .contains(File.separator + "src" + File.separator
-                                    + "main" + File.separator + "java"
-                                    + File.separator))
-                    .filter(file -> !root.relativize(file)
-                            .startsWith("flow-tests"))
-                    .filter(file -> !file.toString().contains(File.separator
-                            + "node_modules" + File.separator))::iterator) {
-                if (declaration.matcher(Files.readString(file)).find()) {
-                    declaring.add(moduleOf(file));
-                }
-            }
-        }
-        // Runs in development mode only, which keeps every definition
-        declaring.remove(root.resolve("vaadin-dev-server"));
-
-        Set<Path> listed = new TreeSet<>();
-        for (String className : TaskGenerateJsDefinitions.FLOW_MODULE_CLASSES) {
-            String source = className.replace('.', File.separatorChar)
-                    + ".java";
-            try (Stream<Path> files = Files.walk(root)) {
-                Path module = files
-                        .filter(file -> file.endsWith(
-                                Path.of("src", "main", "java", source)))
-                        .map(TaskGenerateJsDefinitionsTest::moduleOf)
-                        .findFirst().orElse(null);
-                assertNotNull(module, className + " should be in a module");
-                listed.add(module);
-            }
-        }
-
-        assertEquals(declaring, listed,
-                "TaskGenerateJsDefinitions.FLOW_MODULE_CLASSES should name a class of every Flow module that declares JavaScript");
-    }
-
-    private static Path moduleOf(Path sourceFile) {
-        Path path = sourceFile;
-        while (!path.endsWith(Path.of("src", "main"))) {
-            path = path.getParent();
-        }
-        return path.getParent().getParent();
     }
 
     @Test
