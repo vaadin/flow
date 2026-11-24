@@ -9,7 +9,6 @@ import org.junit.experimental.categories.Category;
 import org.openqa.selenium.TimeoutException;
 
 import com.vaadin.flow.testcategory.PushTests;
-import com.vaadin.flow.testutil.AbstractBrowserConsoleTest;
 
 /**
  * Checks that push keeps working after the push connection has been idle for
