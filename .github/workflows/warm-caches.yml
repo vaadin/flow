@@ -43,9 +43,11 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # The same flags validation.yml sets, for the same reason: a 403 from Central
+  # The same flags validation.yml uses, for the same reason: a 403 from Central
   # is retried rather than failing the build outright, and the public groups on
-  # repository.jboss.org are read from Central. See the note there.
+  # repository.jboss.org are read from Central. See the note there. This
+  # workflow checks out the commit its own definition comes from, so the
+  # settings file is always there and -gs can be passed unconditionally.
   MAVEN_ARGS: >-
     -gs ${{ github.workspace }}/.github/maven/settings.xml
     -Daether.connector.http.retryHandler.count=3

@@ -501,6 +501,9 @@ jobs:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
+          # Full history only where the step below actually diffs. tomee is
+          # ungated, so cloning the whole repository for it buys nothing.
+          fetch-depth: ${{ matrix.profile == 'tomee' && 1 || 0 }}
       # Points MAVEN_ARGS at the CI settings only when the checked-out commit
       # has them: a pull request runs this workflow from its merge commit but
       # checks out its head, and Maven refuses a -gs file that does not exist.
@@ -510,9 +513,6 @@ jobs:
           if [ -f "$settings" ]; then
             echo "MAVEN_ARGS=-gs $settings $MAVEN_ARGS" >> "$GITHUB_ENV"
           fi
-          # Full history only where the step below actually diffs. tomee is
-          # ungated, so cloning the whole repository for it buys nothing.
-          fetch-depth: ${{ matrix.profile == 'tomee' && 1 || 0 }}
       - name: Decide whether to run
         # Same gating as gradle-tests below: a push or a manual run has nothing
         # to compare against, and a gate that cannot tell what changed has to
@@ -699,6 +699,8 @@ jobs:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
+          # Full history only where the step below actually diffs.
+          fetch-depth: ${{ matrix.ungated && 1 || 0 }}
       # Points MAVEN_ARGS at the CI settings only when the checked-out commit
       # has them: a pull request runs this workflow from its merge commit but
       # checks out its head, and Maven refuses a -gs file that does not exist.
@@ -708,8 +710,6 @@ jobs:
           if [ -f "$settings" ]; then
             echo "MAVEN_ARGS=-gs $settings $MAVEN_ARGS" >> "$GITHUB_ENV"
           fi
-          # Full history only where the step below actually diffs.
-          fetch-depth: ${{ matrix.ungated && 1 || 0 }}
       - name: Decide whether to run
         # Same gating as cdi-tests: a push or a manual run has nothing to
         # compare against, and a gate that cannot tell what changed has to run
@@ -860,6 +860,7 @@ jobs:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
+          fetch-depth: 0  # Full history required to diff against the merge base
       # Points MAVEN_ARGS at the CI settings only when the checked-out commit
       # has them: a pull request runs this workflow from its merge commit but
       # checks out its head, and Maven refuses a -gs file that does not exist.
@@ -869,7 +870,6 @@ jobs:
           if [ -f "$settings" ]; then
             echo "MAVEN_ARGS=-gs $settings $MAVEN_ARGS" >> "$GITHUB_ENV"
           fi
-          fetch-depth: 0  # Full history required to diff against the merge base
       - name: Decide whether to run
         # An ignore list rather than an allow list. The job runs `gradlew
         # build`, and check dependsOn functionalTest, so it also builds the
@@ -1192,16 +1192,17 @@ jobs:
         if: ${{ env.SONAR_TOKEN != '' }}
         with:
           ref: ${{env._HEAD_SHA}}
+          fetch-depth: 0  # Full history required for SonarCloud PR analysis
       # Points MAVEN_ARGS at the CI settings only when the checked-out commit
       # has them: a pull request runs this workflow from its merge commit but
       # checks out its head, and Maven refuses a -gs file that does not exist.
       - name: Use CI Maven settings
+        if: ${{ env.SONAR_TOKEN != '' }}
         run: |
           settings="$GITHUB_WORKSPACE/.github/maven/settings.xml"
           if [ -f "$settings" ]; then
             echo "MAVEN_ARGS=-gs $settings $MAVEN_ARGS" >> "$GITHUB_ENV"
           fi
-          fetch-depth: 0  # Full history required for SonarCloud PR analysis
       - name: Set up JDK
         if: ${{ env.SONAR_TOKEN != '' }}
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
@@ -1392,6 +1393,7 @@ jobs:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
+          fetch-depth: 0
       # Points MAVEN_ARGS at the CI settings only when the checked-out commit
       # has them: a pull request runs this workflow from its merge commit but
       # checks out its head, and Maven refuses a -gs file that does not exist.
@@ -1401,7 +1403,6 @@ jobs:
           if [ -f "$settings" ]; then
             echo "MAVEN_ARGS=-gs $settings $MAVEN_ARGS" >> "$GITHUB_ENV"
           fi
-          fetch-depth: 0
       # The base build and the apicmp build each run npm install in
       # flow-client, flow-polymer2lit and vaadin-dev-server. Without a warm
       # ~/.npm those six installs dominate the job and exhaust its timeout.
