@@ -118,7 +118,7 @@ public class DataCommunicator<T> implements Serializable {
     private SerializableComparator<T> inMemorySorting;
 
     private Registration dataProviderUpdateRegistration;
-    private HashSet<T> updatedData = new HashSet<>();
+    private final HashSet<T> updatedData = new HashSet<>();
     private FlushRequest flushRequest;
     private FlushRequest flushUpdatedDataRequest;
     private boolean flushInProgress = false;
@@ -175,9 +175,9 @@ public class DataCommunicator<T> implements Serializable {
     public static final class Filter<F> implements Serializable {
 
         // Serializability of filter is up to the application
-        private F filterObject;
+        private final F filterObject;
 
-        private boolean notifyOnChange;
+        private final boolean notifyOnChange;
 
         /**
          * Creates the filter object and sets it notify item count change
