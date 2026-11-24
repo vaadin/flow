@@ -25,15 +25,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
+import org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
@@ -87,7 +91,36 @@ public class SpringBootAutoConfiguration {
      */
     @Bean
     public ServletContextInitializer contextInitializer() {
-        return new VaadinServletContextInitializer(context);
+        return new VaadinServletContextInitializer(context, context
+                .getBeanProvider(VaadinAsyncStartup.class).getIfAvailable());
+    }
+
+    /**
+     * Creates the asynchronous startup that runs the Vaadin servlet context
+     * initialization on another thread, when {@code vaadin.async-startup} is
+     * enabled.
+     * <p>
+     * Picks the executor the same way as Spring Boot's deferred JPA bootstrap:
+     * the only {@link AsyncTaskExecutor} bean, or else the one named
+     * {@code applicationTaskExecutor}. Without either, the initialization runs
+     * on a thread of its own.
+     *
+     * @param taskExecutors
+     *            the task executor beans by name
+     * @return the asynchronous startup
+     */
+    @Bean
+    @ConditionalOnBooleanProperty("vaadin.async-startup")
+    VaadinAsyncStartup vaadinAsyncStartup(
+            Map<String, AsyncTaskExecutor> taskExecutors) {
+        AsyncTaskExecutor executor = taskExecutors.size() == 1
+                ? taskExecutors.values().iterator().next()
+                : taskExecutors.get(
+                        TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME);
+        if (executor == null) {
+            executor = new SimpleAsyncTaskExecutor("vaadin-startup-");
+        }
+        return new VaadinAsyncStartup(executor);
     }
 
     /**

@@ -175,6 +175,14 @@ public class VaadinConfigurationProperties {
     private boolean devmodeCaching = true;
 
     /**
+     * Runs the Vaadin servlet context initialization, which scans the class
+     * path for routes and other annotated classes, on another thread while
+     * Spring creates the application's beans. Startup waits for it before the
+     * web server accepts requests.
+     */
+    private boolean asyncStartup = false;
+
+    /**
      * Frontend related properties, bound from {@code vaadin.frontend.*}.
      *
      * @since 24.0.5
@@ -595,6 +603,35 @@ public class VaadinConfigurationProperties {
      */
     public void setDevmodeCaching(boolean devmodeCaching) {
         this.devmodeCaching = devmodeCaching;
+    }
+
+    /**
+     * Returns whether the Vaadin servlet context initialization runs on another
+     * thread while Spring creates the application's beans.
+     *
+     * @return {@code true} if the initialization runs asynchronously,
+     *         {@code false} otherwise
+     */
+    public boolean isAsyncStartup() {
+        return asyncStartup;
+    }
+
+    /**
+     * Sets whether the Vaadin servlet context initialization runs on another
+     * thread while Spring creates the application's beans.
+     * <p>
+     * The application's beans must not read what the initialization produces,
+     * such as the registered routes, while they are created: it may still be
+     * running then. Application runners, listeners of the
+     * {@code ApplicationReadyEvent} and requests see it finished.
+     *
+     * @param asyncStartup
+     *            {@code true} to run the initialization asynchronously,
+     *            {@code false} to run it on the thread that starts the servlet
+     *            context
+     */
+    public void setAsyncStartup(boolean asyncStartup) {
+        this.asyncStartup = asyncStartup;
     }
 
     /**

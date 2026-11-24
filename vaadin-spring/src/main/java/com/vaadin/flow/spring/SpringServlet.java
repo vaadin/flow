@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring;
 
+import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -103,6 +104,19 @@ public class SpringServlet extends VaadinServlet {
     public SpringServlet(ApplicationContext context, boolean rootMapping) {
         this.context = context;
         this.rootMapping = rootMapping;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * When the servlet context is initialized asynchronously
+     * ({@code vaadin.async-startup}), waits for that initialization to finish
+     * first.
+     */
+    @Override
+    public void init(ServletConfig servletConfig) throws ServletException {
+        VaadinAsyncStartup.await(servletConfig.getServletContext());
+        super.init(servletConfig);
     }
 
     @Override

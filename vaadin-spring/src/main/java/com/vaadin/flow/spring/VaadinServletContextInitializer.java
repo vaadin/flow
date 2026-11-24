@@ -43,6 +43,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
@@ -113,6 +114,7 @@ public class VaadinServletContextInitializer
 
     private static boolean devModeCachingEnabled;
     private ApplicationContext appContext;
+    private final @Nullable VaadinAsyncStartup asyncStartup;
     private ResourceLoader customLoader;
     private MetadataReaderFactory metadataReaderFactory;
 
@@ -240,9 +242,24 @@ public class VaadinServletContextInitializer
     private static class CompositeServletContextListener
             implements ServletContextListener, Serializable {
         private final List<FailFastServletContextListener> listeners = new ArrayList<>();
+        private final transient @Nullable VaadinAsyncStartup asyncStartup;
+
+        private CompositeServletContextListener(
+                @Nullable VaadinAsyncStartup asyncStartup) {
+            this.asyncStartup = asyncStartup;
+        }
 
         @Override
         public void contextInitialized(ServletContextEvent event) {
+            if (asyncStartup == null) {
+                initializeListeners(event);
+            } else {
+                asyncStartup.submit(event.getServletContext(),
+                        () -> initializeListeners(event));
+            }
+        }
+
+        private void initializeListeners(ServletContextEvent event) {
             long start = System.nanoTime();
 
             listeners.forEach(listener -> listener.contextInitialized(event));
@@ -255,6 +272,9 @@ public class VaadinServletContextInitializer
 
         @Override
         public void contextDestroyed(ServletContextEvent event) {
+            if (asyncStartup != null) {
+                asyncStartup.awaitIgnoringFailure();
+            }
             listeners.forEach(listener -> listener.contextDestroyed(event));
         }
 
@@ -747,7 +767,24 @@ public class VaadinServletContextInitializer
      *            the application context
      */
     public VaadinServletContextInitializer(ApplicationContext context) {
+        this(context, null);
+    }
+
+    /**
+     * Creates a new {@link ServletContextInitializer} instance that runs the
+     * servlet context initialization through the given asynchronous startup, or
+     * on the calling thread when it is {@code null}.
+     *
+     * @param context
+     *            the application context
+     * @param asyncStartup
+     *            the asynchronous startup to run the initialization through, or
+     *            {@code null} to run it on the calling thread
+     */
+    VaadinServletContextInitializer(ApplicationContext context,
+            @Nullable VaadinAsyncStartup asyncStartup) {
         appContext = context;
+        this.asyncStartup = asyncStartup;
 
         String neverScanProperty = appContext.getEnvironment()
                 .getProperty("vaadin.blocked-packages");
@@ -841,7 +878,8 @@ public class VaadinServletContextInitializer
 
     private CompositeServletContextListener createCompositeListener(
             VaadinServletContext context) {
-        CompositeServletContextListener compositeListener = new CompositeServletContextListener();
+        CompositeServletContextListener compositeListener = new CompositeServletContextListener(
+                asyncStartup);
 
         compositeListener.addListener(new LookupInitializerListener());
 
