@@ -18,6 +18,7 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.io.Serializable;
 
+import org.atmosphere.cpr.ApplicationConfig;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
@@ -95,17 +96,20 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
     /**
      * Checks whether a WebSocket connection was opened at the push path itself.
      * Atmosphere can also register its WebSocket endpoint for paths below the
-     * push path, but the push client never connects to those. The path below
-     * the push path is the path info of a WebSocket request, which is empty or
-     * {@code null} for the push path itself.
+     * push path, but the push client never connects to those. When the push
+     * path is configured as the JSR 356 mapping path, Atmosphere passes the
+     * path below it as the path info of a WebSocket request, which is
+     * {@code null}, empty or {@code /} for the push path itself.
      *
      * @param resource
      *            the resource to check
-     * @return {@code true} if the resource is not a WebSocket connection, or is
-     *         one opened at the push path
+     * @return {@code false} if the resource is a WebSocket connection opened
+     *         below the configured push path, {@code true} otherwise
      */
     private static boolean isPushPath(AtmosphereResource resource) {
-        if (resource.transport() != AtmosphereResource.TRANSPORT.WEBSOCKET) {
+        if (resource.transport() != AtmosphereResource.TRANSPORT.WEBSOCKET
+                || resource.getAtmosphereConfig().getInitParameter(
+                        ApplicationConfig.JSR356_MAPPING_PATH) == null) {
             return true;
         }
         String pathInfo = resource.getRequest().getPathInfo();
