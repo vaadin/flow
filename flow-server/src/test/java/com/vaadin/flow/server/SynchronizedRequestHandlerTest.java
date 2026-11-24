@@ -187,6 +187,17 @@ class SynchronizedRequestHandlerTest {
     }
 
     @Test
+    void failedUIRequestException_nullFailureOrUI_throws() {
+        UI ui = new MockUI();
+        IOException failure = new IOException("failure");
+
+        assertThrows(NullPointerException.class,
+                () -> new FailedUIRequestException(null, ui));
+        assertThrows(NullPointerException.class,
+                () -> new FailedUIRequestException(failure, null));
+    }
+
+    @Test
     void getRequestBody_underLimit_readsBody() throws Exception {
         String body = "a".repeat(1000);
         assertEquals(body, SynchronizedRequestHandler
