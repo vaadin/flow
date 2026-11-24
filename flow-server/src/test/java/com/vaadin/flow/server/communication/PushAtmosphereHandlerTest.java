@@ -23,12 +23,17 @@ import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinServletService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class PushAtmosphereHandlerTest {
@@ -85,6 +90,31 @@ class PushAtmosphereHandlerTest {
         // response shouldn't contain async
         assertEquals("{\"meta\":{\"async\":true,\"sessionExpired\":true}}",
                 responseContent, "Invalid response");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "", "/" })
+    void webSocketAtPushPath_handled(String pathInfo) throws Exception {
+        when(resource.transport())
+                .thenReturn(AtmosphereResource.TRANSPORT.WEBSOCKET);
+        when(request.getPathInfo()).thenReturn(pathInfo);
+
+        writeSessionExpiredAsync("GET");
+
+        verify(resource, never()).close();
+    }
+
+    @Test
+    void webSocketBelowPushPath_closedWithoutHandling() throws Exception {
+        when(resource.transport())
+                .thenReturn(AtmosphereResource.TRANSPORT.WEBSOCKET);
+        when(request.getPathInfo()).thenReturn("/other");
+        when(request.getMethod()).thenReturn("GET");
+
+        atmosphereHandler.onRequest(resource);
+
+        verify(resource).close();
+        verifyNoInteractions(printWriter);
     }
 
 }

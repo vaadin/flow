@@ -73,11 +73,43 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
 
         AtmosphereRequest req = resource.getRequest();
 
+        if (!isPushPath(resource)) {
+            getLogger().debug(
+                    "Closing WebSocket connection opened at {} instead of the push path",
+                    req.getRequestURI());
+            try {
+                resource.close();
+            } catch (IOException e) {
+                getLogger().debug("Failed to close WebSocket connection", e);
+            }
+            return;
+        }
+
         if (req.getMethod().equalsIgnoreCase("GET")) {
             onConnect(resource);
         } else if (req.getMethod().equalsIgnoreCase("POST")) {
             onMessage(resource);
         }
+    }
+
+    /**
+     * Checks whether a WebSocket connection was opened at the push path itself.
+     * Atmosphere can also register its WebSocket endpoint for paths below the
+     * push path, but the push client never connects to those. The path below
+     * the push path is the path info of a WebSocket request, which is empty or
+     * {@code null} for the push path itself.
+     *
+     * @param resource
+     *            the resource to check
+     * @return {@code true} if the resource is not a WebSocket connection, or is
+     *         one opened at the push path
+     */
+    private static boolean isPushPath(AtmosphereResource resource) {
+        if (resource.transport() != AtmosphereResource.TRANSPORT.WEBSOCKET) {
+            return true;
+        }
+        String pathInfo = resource.getRequest().getPathInfo();
+        return pathInfo == null || pathInfo.isEmpty() || pathInfo.equals("/");
     }
 
     /**
