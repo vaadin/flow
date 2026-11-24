@@ -122,11 +122,11 @@ public class VaadinServletConfiguration {
      * @since 24.0
      */
     public static class RootExcludeHandler extends SimpleUrlHandlerMapping {
-        private List<String> excludeUrls;
-        private AntPathMatcher matcher;
-        private UrlPathHelper urlPathHelper = new UrlPathHelper();
-        private HandlerMapping resourceHandlerMapping;
-        private String forwardingServletName;
+        private final List<String> excludeUrls;
+        private final AntPathMatcher matcher;
+        private final UrlPathHelper urlPathHelper = new UrlPathHelper();
+        private final HandlerMapping resourceHandlerMapping;
+        private final String forwardingServletName;
 
         /**
          * Creates the handler mapping.
@@ -146,9 +146,9 @@ public class VaadinServletConfiguration {
                 HandlerMapping resourceHandlerMapping) {
             this.excludeUrls = excludeUrls;
             this.resourceHandlerMapping = resourceHandlerMapping;
-            if (vaadinForwardingController instanceof VaadinForwardingController forwardingController) {
-                forwardingServletName = forwardingController.servletName;
-            }
+            forwardingServletName = vaadinForwardingController instanceof VaadinForwardingController forwardingController
+                    ? forwardingController.servletName
+                    : null;
             matcher = new AntPathMatcher();
 
             setOrder(Ordered.LOWEST_PRECEDENCE - 1);
@@ -253,7 +253,7 @@ public class VaadinServletConfiguration {
                 ClassUtils.getShortNameAsProperty(SpringServlet.class));
     }
 
-    private static class VaadinForwardingController
+    private static final class VaadinForwardingController
             extends ServletForwardingController {
         private final String servletName;
 
