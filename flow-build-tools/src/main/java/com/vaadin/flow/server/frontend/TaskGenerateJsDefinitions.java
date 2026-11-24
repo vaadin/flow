@@ -152,7 +152,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     // flow-build-tools does not depend on most of them. A definition that is
     // added to one of these jars is carried without a change here; a new jar
     // that declares JavaScript has to be added.
-    private static final List<String> FLOW_MODULE_CLASSES = List.of(
+    static final List<String> FLOW_MODULE_CLASSES = List.of(
             // flow-server
             JsDefinition.class.getName(),
             // flow-html-components
