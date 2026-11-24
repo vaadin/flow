@@ -301,14 +301,10 @@ public final class JsStringFallbacks {
             }
             JsonNode names = JacksonUtils.getMapper().readTree(list);
             for (JsonNode name : names) {
-                try {
-                    definitionTypes.add(
-                            Class.forName(name.asString(), false, classLoader));
-                } catch (ClassNotFoundException | LinkageError e) {
-                    getLogger().warn("{} names {}, which can not be loaded, so"
-                            + " it is left out. The build that wrote the list"
-                            + " saw other classes than the application has",
-                            RESOURCE, name.asString(), e);
+                Class<?> definitionType = loadListedClass(name.asString(),
+                        classLoader);
+                if (definitionType != null) {
+                    definitionTypes.add(definitionType);
                 }
             }
         } catch (IOException | JacksonException e) {
@@ -328,6 +324,18 @@ public final class JsStringFallbacks {
                     + " is matched against @JsStringFallback interfaces"
                     + " until this is fixed", RESOURCE, e);
             return Fallbacks.NONE;
+        }
+    }
+
+    private static @Nullable Class<?> loadListedClass(String name,
+            ClassLoader classLoader) {
+        try {
+            return Class.forName(name, false, classLoader);
+        } catch (ClassNotFoundException | LinkageError e) {
+            getLogger().warn("{} names {}, which can not be loaded, so it is"
+                    + " left out. The build that wrote the list saw other"
+                    + " classes than the application has", RESOURCE, name, e);
+            return null;
         }
     }
 
