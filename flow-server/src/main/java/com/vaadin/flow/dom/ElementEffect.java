@@ -200,7 +200,9 @@ public final class ElementEffect implements Serializable {
      * Creates a Signal effect that is owned by a given element. The effect is
      * enabled when the element is attached and automatically disabled when it
      * is detached. The effect function is not run before the element is
-     * attached. If the element is already attached, it is run right away.
+     * attached. If the element is already attached, it is run right away when
+     * the element's UI is the current UI, and otherwise through
+     * {@link UI#access}.
      * <p>
      * Example of usage:
      *
@@ -237,11 +239,13 @@ public final class ElementEffect implements Serializable {
      * The effect is enabled when the element is attached and automatically
      * disabled when it is detached. The effect function is not run before the
      * element is attached. If the element is already attached, it is run right
-     * away. The effect action receives an {@link EffectContext} providing
-     * information about why the effect is running, allowing the callback to
-     * distinguish between the initial execution, updates triggered by the
-     * effect owner's requests, and updates triggered by background changes
-     * (such as a background thread or another user modifying a shared signal).
+     * away when the element's UI is the current UI, and otherwise through
+     * {@link UI#access}. The effect action receives an {@link EffectContext}
+     * providing information about why the effect is running, allowing the
+     * callback to distinguish between the initial execution, updates triggered
+     * by the effect owner's requests, and updates triggered by background
+     * changes (such as a background thread or another user modifying a shared
+     * signal).
      * <p>
      * Example of usage:
      *
