@@ -172,12 +172,13 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      *            each function the file registers, by the identifier of the
      *            function, in the order of the file
      * @param names
-     *            what a message about a call names each function by, by its
-     *            identifier, as the file registers it; empty when the file
-     *            registers no names
+     *            what a message about a call may name each function by, by its
+     *            identifier: one name per declaration, in the order of the
+     *            file, so the last is the one the file registers; empty when
+     *            the file registers no names
      */
     record Rendered(String content, Map<String, String> functionIds,
-            Map<String, String> names) {
+            Map<String, List<String>> names) {
     }
 
     /**
@@ -201,7 +202,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             rendered.functionIds().keySet().forEach(functionIds::add);
             if (!rendered.names().isEmpty()) {
                 ObjectNode names = ids.putObject(NAMES_KEY);
-                rendered.names().forEach(names::put);
+                rendered.names().forEach((id, declared) -> names.put(id,
+                        declared.get(declared.size() - 1)));
             }
             writeIfChanged(functionIdsFile, JacksonUtils.toFileJson(ids));
         } catch (IOException exception) {
@@ -298,7 +300,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
         List<String> lines = new ArrayList<>(renderHeader(withNames));
         Map<String, String> functionIds = new LinkedHashMap<>();
-        Map<String, String> names = new LinkedHashMap<>();
+        Map<String, List<String>> names = new LinkedHashMap<>();
         for (RenderedFunction function : functions) {
             lines.addAll(Arrays
                     .asList(function.text().split(System.lineSeparator())));
@@ -307,8 +309,9 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             functionIds.putIfAbsent(function.id(), function.declaredBy());
             if (function.name() != null) {
                 // The file assigns the name of each, so the last one is what
-                // a browser has
-                names.put(function.id(), function.name());
+                // a browser has, and any of them is right for the function
+                names.computeIfAbsent(function.id(), id -> new ArrayList<>())
+                        .add(function.name());
             }
         }
         lines.addAll(FOOTER);

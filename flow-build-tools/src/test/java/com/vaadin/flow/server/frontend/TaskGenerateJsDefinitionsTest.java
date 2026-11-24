@@ -601,6 +601,37 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @Test
+    void render_developmentMode_listsTheNamesOfEveryFunction() {
+        TaskGenerateJsDefinitions.Rendered rendered = TaskGenerateJsDefinitions
+                .render(List.of(GreeterTwinJs.class, GreeterJs.class),
+                        List.of(OffsetEvent.class), true);
+
+        String greeting = JsCall.functionId(GREETING_EXPRESSION, 1, false);
+        // Declared twice, so named after both, the one the file assigns last
+        // at the end
+        List<String> greetingNames = List.of(
+                GreeterJs.class.getName() + ".showGreeting/1",
+                GreeterTwinJs.class.getName() + ".greet/1");
+        assertEquals(greetingNames, rendered.names().get(greeting));
+        String content = rendered.content();
+        assertTrue(
+                content.indexOf("] = \"" + greetingNames.get(1)
+                        + "\";") > content.indexOf(
+                                "] = \"" + greetingNames.get(0) + "\";"),
+                "the file should assign the last name last: " + content);
+        BundledEventData.getBundledEventData(OffsetEvent.class)
+                .forEach(
+                        eventData -> assertEquals(
+                                List.of(OffsetEvent.class.getName()
+                                        + " @EventData(\""
+                                        + BundledEventData.getExpression(
+                                                eventData)
+                                        + "\")"),
+                                rendered.names().get(BundledEventData
+                                        .getFunctionId(eventData))));
+    }
+
+    @Test
     void execute_writesTheFunctionIdsNextToTheFile()
             throws ExecutionFailedException, IOException {
         task.execute();

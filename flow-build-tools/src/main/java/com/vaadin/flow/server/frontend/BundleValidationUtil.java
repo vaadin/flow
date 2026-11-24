@@ -1081,10 +1081,11 @@ public final class BundleValidationUtil {
      * application needs. A bundle that carries more, such as one built with
      * more definitions or before one was removed, is still accepted. Outside
      * production mode, each of those functions also has to be registered under
-     * the name the application gives it, so that a message about a call does
-     * not name a definition or method that was renamed. A bundle whose stats do
-     * not list the identifiers is accepted only if it was built from the same
-     * generated file.
+     * a name that the application gives it, so that a message about a call does
+     * not name a definition or method that was renamed. A bundle whose stats
+     * list the identifiers but no names is rebuilt there. A bundle whose stats
+     * do not list the identifiers is accepted only if it was built from the
+     * same generated file.
      */
     private static boolean jsDefinitionsChanged(Options options,
             JsonNode statsJson) {
@@ -1118,15 +1119,17 @@ public final class BundleValidationUtil {
             }
             // The identifier leaves out what a development bundle names a
             // function by in a message about a call, so a renamed definition
-            // would otherwise keep its old name there
+            // would otherwise keep its old name there. A function that more
+            // than one class declares may be named after any of them, as which
+            // one the bundle names depends on what it was built with.
             JsonNode bundledNames = statsJson
                     .get(JS_DEFINITION_NAMES_STATS_KEY);
             Set<String> renamedIn = new TreeSet<>();
-            rendered.names().forEach((id, name) -> {
+            rendered.names().forEach((id, names) -> {
                 JsonNode bundledName = bundledNames == null ? null
                         : bundledNames.get(id);
                 if (bundledName == null
-                        || !name.equals(bundledName.asString())) {
+                        || !names.contains(bundledName.asString())) {
                     renamedIn.add(rendered.functionIds().get(id));
                 }
             });
