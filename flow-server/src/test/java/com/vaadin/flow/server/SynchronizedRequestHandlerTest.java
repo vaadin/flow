@@ -16,6 +16,7 @@
 package com.vaadin.flow.server;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -123,6 +124,39 @@ class SynchronizedRequestHandlerTest {
         assertFalse(session.hasLock());
         assertNull(UI.getCurrent());
         assertSame(session, VaadinSession.getCurrent());
+    }
+
+    @Test
+    void handleRequest_nestedHandlerSetsCurrentUIAndThrows_failureWrappedOnce()
+            throws Exception {
+        MockVaadinSession session = new MockVaadinSession();
+        UI ui = session.runWithLock(() -> new MockUI(session));
+        CurrentInstance.clearAll();
+        IllegalStateException failure = new IllegalStateException("BOOM");
+        SynchronizedRequestHandler inner = new SynchronizedRequestHandler() {
+            @Override
+            public boolean synchronizedHandleRequest(VaadinSession session,
+                    VaadinRequest request, VaadinResponse response) {
+                UI.setCurrent(ui);
+                throw failure;
+            }
+        };
+        SynchronizedRequestHandler outer = new SynchronizedRequestHandler() {
+            @Override
+            public boolean synchronizedHandleRequest(VaadinSession session,
+                    VaadinRequest request, VaadinResponse response)
+                    throws IOException {
+                UI.setCurrent(ui);
+                return inner.handleRequest(session, request, response);
+            }
+        };
+
+        FailedUIRequestException thrown = assertThrows(
+                FailedUIRequestException.class,
+                () -> outer.handleRequest(session, mock(VaadinRequest.class),
+                        mock(VaadinResponse.class)));
+        assertSame(failure, thrown.getFailure());
+        assertSame(ui, thrown.getUI());
     }
 
     @Test

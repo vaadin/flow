@@ -34,6 +34,8 @@ import org.atmosphere.cpr.AtmosphereResourceEvent;
 import org.atmosphere.cpr.AtmosphereResourceImpl;
 import org.atmosphere.cpr.AtmosphereResponse;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
@@ -149,9 +151,10 @@ class PushHandlerTest {
         verify(connection).resendLastResponse();
     }
 
-    @Test
-    void callWithUi_handlingFails_requestEndedEventReportsFailureWithoutCurrentUI()
-            throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void callWithUi_handlingFails_requestEndedEventReportsFailureWithoutCurrentUI(
+            boolean unlockFails) throws Exception {
         AtomicReference<UI> currentUi = new AtomicReference<>();
         AtomicReference<VaadinSession> currentSession = new AtomicReference<>();
         MockVaadinServletService service = new MockVaadinServletService() {
@@ -167,7 +170,17 @@ class PushHandlerTest {
                 return currentUi.get();
             }
         };
-        MockVaadinSession session = new MockVaadinSession(service);
+        AtomicBoolean failUnlock = new AtomicBoolean();
+        MockVaadinSession session = new MockVaadinSession(service) {
+            @Override
+            public void unlock() {
+                super.unlock();
+                if (failUnlock.get()) {
+                    // An unlock failure is logged, not thrown
+                    throw new IllegalStateException("unlock");
+                }
+            }
+        };
         currentSession.set(session);
         session.runWithLock(() -> {
             currentUi.set(new MockUI(session));
@@ -190,6 +203,7 @@ class PushHandlerTest {
             currentInListener.set(UI.getCurrent());
         });
         IllegalStateException failure = new IllegalStateException("BOOM");
+        failUnlock.set(unlockFails);
 
         new PushHandler(service).callWithUi(resource, (r, ui) -> {
             throw failure;

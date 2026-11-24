@@ -68,6 +68,14 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
         void writeResponse() throws IOException;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * If handling fails while a UI is current, the exception is thrown wrapped
+     * in an unchecked exception that has the original exception as its cause,
+     * so that {@link VaadinService} can show the error for that UI. See the
+     * class description.
+     */
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
