@@ -53,8 +53,8 @@ import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.CspMode;
-import com.vaadin.flow.server.CspViolationException;
+import com.vaadin.flow.server.ContentSecurityPolicyMode;
+import com.vaadin.flow.server.ContentSecurityPolicyViolationException;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.tests.util.MockUI;
@@ -175,9 +175,11 @@ class JsStringFallbacksTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = CspMode.class, names = { "WARN", "STRICT" })
-    void reportingMode_matchingElementCall_sendsDeclaredCall(CspMode mode) {
-        setup.getDeploymentConfiguration().setCspMode(mode);
+    @EnumSource(value = ContentSecurityPolicyMode.class, names = { "WARN",
+            "STRICT" })
+    void reportingMode_matchingElementCall_sendsDeclaredCall(
+            ContentSecurityPolicyMode mode) {
+        setup.getDeploymentConfiguration().setContentSecurityPolicyMode(mode);
 
         ui.getElement().executeJs("return this.scrollTop");
 
@@ -189,7 +191,8 @@ class JsStringFallbacksTest {
 
     @Test
     void strict_nullParameterArray_matchesDeclaredCallWithoutParameters() {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
 
         ui.getElement().executeJs("return this.scrollTop", (Object[]) null);
         JsCall elementCall = ui.onlyScheduledJsCall();
@@ -204,7 +207,8 @@ class JsStringFallbacksTest {
 
     @Test
     void strict_matchingPageCall_sendsDeclaredCallWithParameters() {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
 
         ui.getPage().executeJs("document.title = $0 + ' (' + $1 + ')'", "Inbox",
                 3);
@@ -216,18 +220,20 @@ class JsStringFallbacksTest {
 
     @Test
     void strict_otherTextOrParameterCount_isRefused() {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
 
         Element element = ui.getElement();
-        assertThrows(CspViolationException.class,
+        assertThrows(ContentSecurityPolicyViolationException.class,
                 () -> element.executeJs("return  this.scrollTop"));
-        assertThrows(CspViolationException.class,
+        assertThrows(ContentSecurityPolicyViolationException.class,
                 () -> element.executeJs("return this.scrollTop", 1));
     }
 
     @Test
     void off_matchingCall_sendsString() {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.OFF);
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.OFF);
 
         ui.getElement().executeJs("return this.scrollTop");
 
@@ -237,7 +243,8 @@ class JsStringFallbacksTest {
     @Test
     void strict_inheritedMethod_sendsCallThroughFallbackInterface()
             throws Exception {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
         listFallbacks("[\"" + InheritingFallbacks.class.getName() + "\"]");
 
         ui.getElement().executeJs("this.blur()");
@@ -253,7 +260,8 @@ class JsStringFallbacksTest {
     @Test
     void strict_listNamesMissingClass_otherFallbacksStillMatch()
             throws IOException {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
         // As after an interface is deleted while the application runs
         listFallbacks("[\"com.example.RemovedFallbacks\", \""
                 + FocusFallbacks.class.getName() + "\"]");
@@ -310,24 +318,27 @@ class JsStringFallbacksTest {
 
     private void assertReportedAsUndeclared(String expression,
             Object... parameters) {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
         Element element = ui.getElement();
-        assertThrows(CspViolationException.class,
+        assertThrows(ContentSecurityPolicyViolationException.class,
                 () -> element.executeJs(expression, parameters));
         // Reading the list again after a class change does not throw either
         assertDoesNotThrow(
                 () -> JsStringFallbacks.reloadFallbacks(setup.getService()));
-        assertThrows(CspViolationException.class,
+        assertThrows(ContentSecurityPolicyViolationException.class,
                 () -> element.executeJs(expression, parameters));
 
-        setup.getDeploymentConfiguration().setCspMode(CspMode.WARN);
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.WARN);
         element.executeJs(expression, parameters);
         assertNull(ui.onlyScheduledInvocation().getJsCall());
     }
 
     @Test
     void strict_reloadAfterListChanged_matchesTheNewList() throws IOException {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
         ui.getElement().executeJs("return this.scrollTop");
         ui.dumpPendingJsInvocations();
         listFallbacks("[\"" + FocusFallbacks.class.getName() + "\"]");
@@ -338,13 +349,14 @@ class JsStringFallbacksTest {
         assertEquals(FocusFallbacks.class,
                 ui.onlyScheduledJsCall().definitionType());
         Element element = ui.getElement();
-        assertThrows(CspViolationException.class,
+        assertThrows(ContentSecurityPolicyViolationException.class,
                 () -> element.executeJs("return this.scrollTop"));
     }
 
     @Test
     void strict_matchingFunctionBody_usesDeclaredFunction() {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
 
         JsFunction function = JsFunction.of("this.title = $0", "tip");
 
@@ -357,13 +369,14 @@ class JsStringFallbacksTest {
             ui.getElement().addJsInitializer("this.title = $0", "tip");
             ui.getPage().addDynamicImport(IMPORT);
         });
-        assertThrows(CspViolationException.class,
+        assertThrows(ContentSecurityPolicyViolationException.class,
                 () -> JsFunction.of("this.title = $0"));
     }
 
     @Test
     void strict_matchingFilterAndEventData_useBundledFunctions() {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
         DomListenerRegistration registration = ui.getElement()
                 .addEventListener("keydown", event -> {
                 });
@@ -380,10 +393,11 @@ class JsStringFallbacksTest {
                             .get(JsonConstants.EVENT_SETTINGS_FUNCTION)
                             .asString());
         }
-        assertThrows(CspViolationException.class,
+        assertThrows(ContentSecurityPolicyViolationException.class,
                 () -> registration.setFilter("event.key === 'Enter'"));
-        assertThrows(CspViolationException.class, () -> registration
-                .addEventData("event.target.value.length + 1"));
+        assertThrows(ContentSecurityPolicyViolationException.class,
+                () -> registration
+                        .addEventData("event.target.value.length + 1"));
     }
 
     private static JsonNode eventSettings(Element element, String eventType) {
@@ -402,7 +416,8 @@ class JsStringFallbacksTest {
 
     @Test
     void strict_functionWithDeclaredNames_withTheSameArguments_usesDeclaredFunction() {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
 
         JsFunction function = JsFunction.of("return value * 2")
                 .withArguments("value");
@@ -414,11 +429,12 @@ class JsStringFallbacksTest {
 
     @Test
     void strict_functionWithoutDeclaredNames_withArguments_isRefusedWithTheNames() {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
         JsFunction function = JsFunction.of("this.title = $0", "tip");
 
-        CspViolationException exception = assertThrows(
-                CspViolationException.class,
+        ContentSecurityPolicyViolationException exception = assertThrows(
+                ContentSecurityPolicyViolationException.class,
                 () -> function.withArguments("event"));
 
         assertTrue(
@@ -430,7 +446,8 @@ class JsStringFallbacksTest {
     @Test
     @SuppressWarnings("removal")
     void warn_functionWithOtherNames_withArguments_sendsTheString() {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.WARN);
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.WARN);
 
         JsFunction function = JsFunction.of("return value * 2")
                 .withArguments("other");

@@ -48,7 +48,7 @@ import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.ConstantPoolKey;
-import com.vaadin.flow.internal.CspViolationReporter;
+import com.vaadin.flow.internal.ContentSecurityPolicyViolationReporter;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.JsStringFallbacks;
@@ -437,7 +437,8 @@ public class ElementListenerMap extends NodeMap {
             List<String> reported = compiled.stream()
                     .filter(ElementListenerMap::isCompiledByClient).toList();
             if (!reported.isEmpty()) {
-                CspViolationReporter.reportStringEventData(reported);
+                ContentSecurityPolicyViolationReporter
+                        .reportStringEventData(reported);
             }
 
             if (!declared.isEmpty()) {
@@ -450,7 +451,8 @@ public class ElementListenerMap extends NodeMap {
             return this;
         }
 
-        private void addEventDataWithoutCspReport(List<String> eventData) {
+        private void addEventDataWithoutContentSecurityPolicyReport(
+                List<String> eventData) {
             requireEventData(eventData);
 
             appendEventData(eventData);
@@ -536,7 +538,8 @@ public class ElementListenerMap extends NodeMap {
                     // bundle
                     return updateFilter(new BundledExpressionEntry(filter));
                 }
-                CspViolationReporter.reportStringFilter(filter);
+                ContentSecurityPolicyViolationReporter
+                        .reportStringFilter(filter);
             }
             return updateFilter(
                     filter == null ? null : new ExpressionEntry(filter));
@@ -1066,9 +1069,11 @@ public class ElementListenerMap extends NodeMap {
      * @param eventData
      *            the event data, not <code>null</code> and not containing
      *            <code>null</code>
-     * @throws com.vaadin.flow.server.CspViolationException
-     *             in the {@link com.vaadin.flow.server.CspMode#STRICT} Content
-     *             Security Policy mode, if any value is compiled by the browser
+     * @throws com.vaadin.flow.server.ContentSecurityPolicyViolationException
+     *             in the
+     *             {@link com.vaadin.flow.server.ContentSecurityPolicyMode#STRICT}
+     *             Content Security Policy mode, if any value is compiled by the
+     *             browser
      * @since 25.4
      */
     @SuppressWarnings("deprecation")
@@ -1098,13 +1103,13 @@ public class ElementListenerMap extends NodeMap {
      *            containing <code>null</code>
      * @since 25.4
      */
-    public static void addEventDataWithoutCspReport(
+    public static void addEventDataWithoutContentSecurityPolicyReport(
             DomListenerRegistration registration, List<String> eventData) {
         if (!(registration instanceof DomEventListenerWrapper wrapper)) {
             throw new IllegalArgumentException(
                     "The registration must be one returned by an ElementListenerMap");
         }
-        wrapper.addEventDataWithoutCspReport(eventData);
+        wrapper.addEventDataWithoutContentSecurityPolicyReport(eventData);
     }
 
     /**

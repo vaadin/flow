@@ -1,6 +1,6 @@
 # test-csp-strict
 
-Integration tests for the `csp=strict` setting: a production-mode Spring Boot
+Integration tests for the `contentSecurityPolicy=strict` setting: a production-mode Spring Boot
 application where Vaadin sends its nonce-based `Content-Security-Policy`
 header, the browser enforces it, and the string-based JavaScript APIs throw.
 

@@ -22,15 +22,15 @@ import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
-import com.vaadin.flow.internal.CspViolationReporter;
+import com.vaadin.flow.internal.ContentSecurityPolicyViolationReporter;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
-import com.vaadin.flow.server.CspMode;
-import com.vaadin.flow.server.CspViolationException;
+import com.vaadin.flow.server.ContentSecurityPolicyMode;
+import com.vaadin.flow.server.ContentSecurityPolicyViolationException;
 
 /**
  * A JavaScript function value with captured parameters that can be passed to
@@ -113,10 +113,11 @@ public final class JsFunction implements JsSnippet {
      * <p>
      * The function is compiled in the browser from its body, which a content
      * security policy without <code>unsafe-eval</code> does not allow, so the
-     * {@link CspMode} of the application reports or refuses it. A function
-     * declared by a method of a {@link JsSnippets} interface is collected into
-     * the bundle instead, and the browser is sent only its identifier and the
-     * captures. The class documentation shows how to declare one.
+     * {@link ContentSecurityPolicyMode} of the application reports or refuses
+     * it. A function declared by a method of a {@link JsSnippets} interface is
+     * collected into the bundle instead, and the browser is sent only its
+     * identifier and the captures. The class documentation shows how to declare
+     * one.
      *
      * @param body
      *            the JavaScript function body, with captures referenced as
@@ -127,9 +128,10 @@ public final class JsFunction implements JsSnippet {
      * @return a new {@code JsFunction} instance
      * @throws IllegalArgumentException
      *             if any capture has a type that cannot be sent to the client
-     * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode,
-     *             unless the string is declared in an interface marked with
+     * @throws ContentSecurityPolicyViolationException
+     *             in the {@link ContentSecurityPolicyMode#STRICT} Content
+     *             Security Policy mode, unless the string is declared in an
+     *             interface marked with
      *             {@link com.vaadin.flow.js.JsStringFallback}
      */
     public static JsFunction of(String body, @Nullable Object... captures) {
@@ -144,7 +146,8 @@ public final class JsFunction implements JsSnippet {
             return new JsFunction(body, fallback, declared.captures,
                     declared.argumentNames);
         }
-        CspViolationReporter.reportStringFunction(body, captures.length);
+        ContentSecurityPolicyViolationReporter.reportStringFunction(body,
+                captures.length);
         @Nullable
         Object[] copy = captures.clone();
         // Dry-run encode each capture so unsupported types fail fast. Mirrors
@@ -224,10 +227,10 @@ public final class JsFunction implements JsSnippet {
      *             if this function is declared by a {@link JsSnippets}
      *             interface, which declares its arguments with
      *             {@link JsFunctionParameterNames}
-     * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode,
-     *             if {@link #of(String, Object...)} used a function declared in
-     *             an interface marked with
+     * @throws ContentSecurityPolicyViolationException
+     *             in the {@link ContentSecurityPolicyMode#STRICT} Content
+     *             Security Policy mode, if {@link #of(String, Object...)} used
+     *             a function declared in an interface marked with
      *             {@link com.vaadin.flow.js.JsStringFallback} that does not
      *             declare the same names with {@link JsFunctionParameterNames}
      */
@@ -239,8 +242,8 @@ public final class JsFunction implements JsSnippet {
             if (names.equals(this.argumentNames)) {
                 return this;
             }
-            CspViolationReporter.reportStringFunction(body, captures.size(),
-                    names);
+            ContentSecurityPolicyViolationReporter.reportStringFunction(body,
+                    captures.size(), names);
             return new JsFunction(body, null, captures, names);
         }
         if (declaredCall != null) {

@@ -274,7 +274,7 @@ public final class JsStringFallbacks {
      * they are.
      */
     private static @Nullable Fallbacks getFallbacks() {
-        if (!CspViolationReporter.isEnabled()) {
+        if (!ContentSecurityPolicyViolationReporter.isEnabled()) {
             return null;
         }
         // Enabled means there is a service with a configuration
