@@ -75,6 +75,7 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -553,6 +554,34 @@ class VaadinServiceTest {
 
         assertThrows(RuntimeException.class, service::destroy);
 
+        assertEquals(1, listener.callCount,
+                "ServiceDestroyListener not called exactly once");
+    }
+
+    @Test
+    void serviceDestroy_twoListenersThrow_oneRethrownWithOtherSuppressed() {
+        VaadinService service = createService();
+
+        RuntimeException first = new RuntimeException("first");
+        RuntimeException second = new RuntimeException("second");
+        TestServiceDestroyListener listener = new TestServiceDestroyListener();
+
+        service.addServiceDestroyListener(event -> {
+            throw first;
+        });
+        service.addServiceDestroyListener(event -> {
+            throw second;
+        });
+        service.addServiceDestroyListener(listener);
+
+        RuntimeException thrown = assertThrows(RuntimeException.class,
+                service::destroy);
+
+        // Listener order is not guaranteed
+        assertTrue(thrown == first || thrown == second,
+                "Expected one of the listener exceptions but got " + thrown);
+        RuntimeException other = thrown == first ? second : first;
+        assertArrayEquals(new Throwable[] { other }, thrown.getSuppressed());
         assertEquals(1, listener.callCount,
                 "ServiceDestroyListener not called exactly once");
     }
