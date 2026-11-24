@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.test.dom;
+package com.vaadin.flow.test.cspoff.dom;
 
 import java.util.concurrent.atomic.AtomicReference;
 
