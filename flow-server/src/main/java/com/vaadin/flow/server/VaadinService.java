@@ -72,6 +72,7 @@ import com.vaadin.flow.i18n.TranslationFileRequestHandler;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.LocaleUtil;
+import com.vaadin.flow.internal.SessionLockScope;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
 import com.vaadin.flow.router.internal.RouteUtil;
@@ -2291,16 +2292,13 @@ public abstract class VaadinService implements Serializable {
     private void handleExceptionDuringRequest(VaadinRequest request,
             VaadinResponse response, VaadinSession vaadinSession, Exception t)
             throws ServiceException {
-        Map<Class<?>, CurrentInstance> instances = CurrentInstance
-                .getInstances();
-        if (vaadinSession != null) {
-            vaadinSession.lock();
-            if (request.getAttribute(
-                    FAILED_REQUEST_UI_ATTRIBUTE) instanceof UI failedUI) {
-                UI.setCurrent(failedUI);
-            }
+        SessionLockScope lock = vaadinSession == null ? null
+                : SessionLockScope.lock(vaadinSession);
+        if (lock != null && request.getAttribute(
+                FAILED_REQUEST_UI_ATTRIBUTE) instanceof UI failedUI) {
+            UI.setCurrent(failedUI);
         }
-        try {
+        try (lock) {
             try {
                 vaadinRequestInterceptors
                         .forEach(requestInterceptor -> requestInterceptor
@@ -2338,11 +2336,6 @@ public abstract class VaadinService implements Serializable {
             } else {
                 // Re-throw other exceptions
                 throw new ServiceException(t);
-            }
-        } finally {
-            if (vaadinSession != null) {
-                CurrentInstance.unlockAndRestoreInstances(vaadinSession,
-                        instances);
             }
         }
 

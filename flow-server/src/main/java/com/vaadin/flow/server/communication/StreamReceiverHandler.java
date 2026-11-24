@@ -30,14 +30,13 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.internal.SessionLockScope;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.server.ErrorEvent;
@@ -163,30 +162,6 @@ public class StreamReceiverHandler implements Serializable {
         }
     }
 
-    /*
-     * The UI is current only while the session is locked, so that code running
-     * during the unlocked transfer, such as writes to the receiver's output
-     * stream, does not take the UI to be safe to access.
-     */
-    private static Map<Class<?>, CurrentInstance> lockWithUI(
-            VaadinSession session, UI ui) {
-        Map<Class<?>, CurrentInstance> instances = CurrentInstance
-                .getInstances();
-        session.lock();
-        UI.setCurrent(ui);
-        return instances;
-    }
-
-    private static Map<Class<?>, CurrentInstance> lockWithUI(
-            VaadinSession session, StateNode node) {
-        Map<Class<?>, CurrentInstance> instances = CurrentInstance
-                .getInstances();
-        session.lock();
-        // The owner of the node is read with the lock held
-        UI.setCurrent(getUI(node));
-        return instances;
-    }
-
     private static UI getUI(StateNode node) {
         if (node != null && node.getOwner() instanceof StateTree tree) {
             return tree.getUI();
@@ -196,11 +171,10 @@ public class StreamReceiverHandler implements Serializable {
 
     private static void callErrorHandler(VaadinSession session, StateNode node,
             Exception exception) {
-        Map<Class<?>, CurrentInstance> instances = lockWithUI(session, node);
-        try {
+        try (SessionLockScope lock = SessionLockScope.lock(session)) {
+            // The owner of the node is read with the lock held
+            UI.setCurrent(getUI(node));
             session.getErrorHandler().error(new ErrorEvent(exception));
-        } finally {
-            CurrentInstance.unlockAndRestoreInstances(session, instances);
         }
     }
 
@@ -237,13 +211,7 @@ public class StreamReceiverHandler implements Serializable {
                     "IO Exception during file upload, fired as StreamingErrorEvent",
                     exception);
         } catch (Exception exception) {
-            Map<Class<?>, CurrentInstance> instances = lockWithUI(session,
-                    owner);
-            try {
-                session.getErrorHandler().error(new ErrorEvent(exception));
-            } finally {
-                CurrentInstance.unlockAndRestoreInstances(session, instances);
-            }
+            callErrorHandler(session, owner, exception);
         }
         sendUploadResponse(response, success);
     }
@@ -412,13 +380,8 @@ public class StreamReceiverHandler implements Serializable {
             // close
             getLogger().debug("Exception closing inputStream", ioe);
         } catch (UploadException e) {
-            Map<Class<?>, CurrentInstance> errorInstances = lockWithUI(session,
-                    ui);
-            try {
+            try (SessionLockScope lock = SessionLockScope.lock(session, ui)) {
                 session.getErrorHandler().error(new ErrorEvent(e));
-            } finally {
-                CurrentInstance.unlockAndRestoreInstances(session,
-                        errorInstances);
             }
         }
         return false;
@@ -481,11 +444,8 @@ public class StreamReceiverHandler implements Serializable {
 
     private void cleanStreamVariable(VaadinSession session,
             StreamReceiver streamReceiver, UI ui) {
-        Map<Class<?>, CurrentInstance> instances = lockWithUI(session, ui);
-        try {
+        try (SessionLockScope lock = SessionLockScope.lock(session, ui)) {
             session.getResourceRegistry().unregisterResource(streamReceiver);
-        } finally {
-            CurrentInstance.unlockAndRestoreInstances(session, instances);
         }
     }
 
@@ -506,13 +466,10 @@ public class StreamReceiverHandler implements Serializable {
         boolean success = false;
         try {
             boolean listenProgress;
-            Map<Class<?>, CurrentInstance> instances = lockWithUI(session, ui);
-            try {
+            try (SessionLockScope lock = SessionLockScope.lock(session, ui)) {
                 streamVariable.streamingStarted(startedEvent);
                 out = streamVariable.getOutputStream();
                 listenProgress = streamVariable.listenProgress();
-            } finally {
-                CurrentInstance.unlockAndRestoreInstances(session, instances);
             }
 
             // Gets the output target stream
@@ -551,13 +508,8 @@ public class StreamReceiverHandler implements Serializable {
             out.close();
             StreamVariable.StreamingEndEvent event = new StreamingEndEventImpl(
                     filename, type, totalBytes);
-            Map<Class<?>, CurrentInstance> endInstances = lockWithUI(session,
-                    ui);
-            try {
+            try (SessionLockScope lock = SessionLockScope.lock(session, ui)) {
                 streamVariable.streamingFinished(event);
-            } finally {
-                CurrentInstance.unlockAndRestoreInstances(session,
-                        endInstances);
             }
             success = true;
         } catch (UploadInterruptedException | IOException e) {
@@ -585,12 +537,9 @@ public class StreamReceiverHandler implements Serializable {
             StreamVariable streamVariable, OutputStream out, long totalBytes,
             final Exception exception) {
         tryToCloseStream(out);
-        Map<Class<?>, CurrentInstance> instances = lockWithUI(session, ui);
-        try {
+        try (SessionLockScope lock = SessionLockScope.lock(session, ui)) {
             streamVariable.streamingFailed(new StreamingErrorEventImpl(filename,
                     type, contentLength, totalBytes, exception));
-        } finally {
-            CurrentInstance.unlockAndRestoreInstances(session, instances);
         }
     }
 
@@ -603,11 +552,8 @@ public class StreamReceiverHandler implements Serializable {
         // events are sent in intervals, or at the end of the file.
         if (lastStreamingEvent + getProgressEventInterval() <= now
                 || bytesReadToBuffer <= 0) {
-            Map<Class<?>, CurrentInstance> instances = lockWithUI(session, ui);
-            try {
+            try (SessionLockScope lock = SessionLockScope.lock(session, ui)) {
                 streamVariable.onProgress(progressEvent);
-            } finally {
-                CurrentInstance.unlockAndRestoreInstances(session, instances);
             }
             return now;
         }

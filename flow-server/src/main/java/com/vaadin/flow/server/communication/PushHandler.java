@@ -42,6 +42,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.SessionLockScope;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.RequestBodyTooLargeException;
@@ -358,9 +359,7 @@ public class PushHandler {
             cleanDisconnectedUuidBuffer(resource);
 
             UI ui = null;
-            Map<Class<?>, CurrentInstance> instances = CurrentInstance
-                    .getInstances();
-            session.lock();
+            SessionLockScope lock = SessionLockScope.lock(session);
             try {
                 ui = service.findUI(vaadinRequest);
                 assert UI.getCurrent() == ui;
@@ -398,7 +397,7 @@ public class PushHandler {
                 service.recordRequestFailure(vaadinRequest, e);
                 callErrorHandler(session, e);
             } finally {
-                unlockAndRestore(session, instances);
+                unlock(lock);
             }
         } finally {
             try {
@@ -522,9 +521,7 @@ public class PushHandler {
         }
 
         UI ui;
-        Map<Class<?>, CurrentInstance> instances = CurrentInstance
-                .getInstances();
-        session.lock();
+        SessionLockScope lock = SessionLockScope.lock(session);
         try {
             VaadinSession.setCurrent(session);
             // Sets UI.currentInstance
@@ -598,20 +595,18 @@ public class PushHandler {
         } catch (final Exception e) {
             callErrorHandler(session, e);
         } finally {
-            unlockAndRestore(session, instances);
+            unlock(lock);
         }
         return session;
     }
 
     /*
-     * findUI sets the current UI while the lock is held. Code that runs after
-     * the unlock, such as the request end callbacks, must not see a current UI
-     * without holding its session lock.
+     * Not closed with try-with-resources, as the catch blocks call the error
+     * handler, which needs the lock. An unlock failure is only logged.
      */
-    private static void unlockAndRestore(VaadinSession session,
-            Map<Class<?>, CurrentInstance> instances) {
+    private static void unlock(SessionLockScope lock) {
         try {
-            CurrentInstance.unlockAndRestoreInstances(session, instances);
+            lock.close();
         } catch (Exception e) {
             getLogger().warn("Error while unlocking session", e);
             // can't call ErrorHandler, we (hopefully) don't have a lock

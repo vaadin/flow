@@ -142,6 +142,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.internal\\.CustomElementNameValidator",
                 "com\\.vaadin\\.flow\\.internal\\.CspViolationReporter",
                 "com\\.vaadin\\.flow\\.internal\\.StackTraceUtil",
+                "com\\.vaadin\\.flow\\.internal\\.SessionLockScope",
                 "com\\.vaadin\\.flow\\.router\\.HighlightActions",
                 "com\\.vaadin\\.flow\\.router\\.HighlightConditions",
                 "com\\.vaadin\\.flow\\.router\\.ParameterDeserializer",

@@ -19,13 +19,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Serializable;
-import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.SessionLockScope;
 
 /**
  * RequestHandler which takes care of locking and unlocking of the VaadinSession
@@ -84,18 +83,15 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
             }
             Optional<ResponseWriter> responseWriter;
             UI handledUI;
-            Map<Class<?>, CurrentInstance> instances = CurrentInstance
-                    .getInstances();
-            session.lock();
-            try {
-                responseWriter = synchronizedHandleRequest(session, request,
-                        response, requestBody);
-                handledUI = UI.getCurrent();
-            } catch (IOException | RuntimeException e) {
-                rememberFailedUI(request, UI.getCurrent());
-                throw e;
-            } finally {
-                CurrentInstance.unlockAndRestoreInstances(session, instances);
+            try (SessionLockScope lock = SessionLockScope.lock(session)) {
+                try {
+                    responseWriter = synchronizedHandleRequest(session, request,
+                            response, requestBody);
+                    handledUI = UI.getCurrent();
+                } catch (IOException | RuntimeException e) {
+                    rememberFailedUI(request, UI.getCurrent());
+                    throw e;
+                }
             }
             if (responseWriter.isPresent()) {
                 try {
@@ -107,16 +103,14 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
             }
             return responseWriter.isPresent();
         } else {
-            Map<Class<?>, CurrentInstance> instances = CurrentInstance
-                    .getInstances();
-            session.lock();
-            try {
-                return synchronizedHandleRequest(session, request, response);
-            } catch (IOException | RuntimeException e) {
-                rememberFailedUI(request, UI.getCurrent());
-                throw e;
-            } finally {
-                CurrentInstance.unlockAndRestoreInstances(session, instances);
+            try (SessionLockScope lock = SessionLockScope.lock(session)) {
+                try {
+                    return synchronizedHandleRequest(session, request,
+                            response);
+                } catch (IOException | RuntimeException e) {
+                    rememberFailedUI(request, UI.getCurrent());
+                    throw e;
+                }
             }
         }
     }
