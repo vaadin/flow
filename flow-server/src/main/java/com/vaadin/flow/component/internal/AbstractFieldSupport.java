@@ -312,8 +312,15 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
                                     applyValue(revertedToValue);
                                 });
                     } catch (RuntimeException e) {
-                        fireChangeIfSignalChangedDuringWrite(oldValue,
-                                fromClient);
+                        // set by the nested setValue run by the binding effect
+                        // while the callback was running
+                        if (valueSetFromSignalDuringWrite // NOSONAR
+                                && !valueEquals.test(bufferedValue, oldValue)) {
+                            // the signal changed before the callback threw,
+                            // so the field shows a new value to report
+                            ComponentUtil.fireEvent(component,
+                                    createValueChange(oldValue, fromClient));
+                        }
                         throw e;
                     } finally {
                         writeCallbackInProgress = wasWriteCallbackInProgress;
@@ -329,23 +336,6 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
         }
         ComponentUtil.fireEvent(component,
                 createValueChange(oldValue, fromClient));
-    }
-
-    /*
-     * Called when the write callback throws. The flag is set by the nested
-     * setValue run by the binding effect while the callback was running, which
-     * is why the check lives in its own method instead of next to the place
-     * where the flag is reset before the callback.
-     */
-    private void fireChangeIfSignalChangedDuringWrite(T oldValue,
-            boolean fromClient) {
-        if (valueSetFromSignalDuringWrite
-                && !valueEquals.test(bufferedValue, oldValue)) {
-            // the signal changed before the callback threw, so the field
-            // shows a new value to report
-            ComponentUtil.fireEvent(component,
-                    createValueChange(oldValue, fromClient));
-        }
     }
 
     private boolean applyValue(T value) {

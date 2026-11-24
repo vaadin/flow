@@ -18,6 +18,7 @@ package com.vaadin.flow.component;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -406,6 +407,50 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
         // signal changes keep firing events after the failed write
         signal.set("baz");
         assertEquals(List.of("foo -> BAR", "BAR -> baz"), events);
+    }
+
+    @Test
+    void bindValue_writeCallbackThrowsAfterSignalRestored_noEvent() {
+        TestInput input = new TestInput();
+        UI.getCurrent().add(input);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        input.bindValue(signal, value -> {
+            signal.set("X");
+            signal.set("foo");
+            throw new RuntimeException("test");
+        });
+
+        List<String> events = new ArrayList<>();
+        input.addValueChangeListener(event -> events
+                .add(event.getOldValue() + " -> " + event.getValue()));
+
+        assertThrows(RuntimeException.class, () -> input.setValue("bar"));
+        assertEquals("foo", input.getValue());
+        assertEquals(List.of(), events);
+    }
+
+    @Test
+    void bindValue_writeCallbackCallsSetValue_singleEventPerWrite() {
+        TestInput input = new TestInput();
+        UI.getCurrent().add(input);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        AtomicBoolean nested = new AtomicBoolean();
+        input.bindValue(signal, value -> {
+            if (nested.compareAndSet(false, true)) {
+                input.setValue("x");
+            }
+            signal.set(value.toUpperCase());
+        });
+
+        List<String> events = new ArrayList<>();
+        input.addValueChangeListener(event -> events
+                .add(event.getOldValue() + " -> " + event.getValue()));
+
+        input.setValue("bar");
+        assertEquals("BAR", input.getValue());
+        assertEquals("foo -> BAR", events.get(events.size() - 1));
+        assertEquals(1,
+                events.stream().filter(e -> e.endsWith(" -> BAR")).count());
     }
 
     @Test
