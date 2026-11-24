@@ -240,10 +240,10 @@ public class PushRequestHandler
                     vaadinServletConfig.getServletName());
         }
 
-        // Atmosphere registers this many WebSocket endpoints: the mapping path
-        // itself, then the mapping path followed by one, two, ... path
-        // parameters. The push client only connects to the mapping path, so
-        // one is enough, but zero registers no endpoint at all
+        // The push client only connects to the push path itself. Atmosphere
+        // builds differ in how they count this value: upstream Atmosphere
+        // registers no WebSocket endpoint at all for 0, while every build
+        // registers one at the push path for 1
         atmosphere.addInitParameter(
                 ApplicationConfig.JSR356_PATH_MAPPING_LENGTH, "1");
 
