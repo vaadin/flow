@@ -732,8 +732,34 @@ class PushHandlerTest {
         String data = trackMessageSize ? json.length() + "|" + json : json;
         assertEquals("data:" + data + "\n\n", written.toString());
         verify(containerResponse).setContentType("text/event-stream");
+        verify(containerResponse).setCharacterEncoding("UTF-8");
         verify(res.get().getResponse(), never()).getWriter();
         verify(res.get()).resume();
+    }
+
+    @Test
+    void onConnect_noSessionForRequest_suspendedSse_notificationWrittenThroughAtmosphere()
+            throws Exception {
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinSession findVaadinSession(VaadinRequest request) {
+                return null;
+            }
+        };
+        setProductionMode(service, false);
+        AtomicReference<AtmosphereResource> res = new AtomicReference<>();
+
+        runTest(service, (handler, resource) -> {
+            when(resource.transport()).thenReturn(TRANSPORT.SSE);
+            when(resource.isSuspended()).thenReturn(true);
+            handler.onConnect(resource);
+            res.set(resource);
+        });
+
+        // Atmosphere frames writes to an open connection itself
+        verify(res.get().getResponse().getWriter())
+                .write(VaadinService.createSessionExpiredJSON(true));
+        verify(res.get().getResponse(), never()).getResponse();
     }
 
     @Test

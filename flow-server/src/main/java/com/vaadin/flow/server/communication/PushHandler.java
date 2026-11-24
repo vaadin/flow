@@ -664,7 +664,8 @@ public class PushHandler {
                         "sendNotificationAndDisconnect called for resource no longer in scope");
                 return;
             }
-            if (resource.transport() == TRANSPORT.SSE) {
+            if (resource.transport() == TRANSPORT.SSE
+                    && !resource.isSuspended()) {
                 writeServerSentEvent(resource, notificationJson);
             } else {
                 resource.getResponse()
@@ -682,11 +683,13 @@ public class PushHandler {
      * Writes the message as a server-sent event, so that the client's
      * {@code EventSource} receives it.
      * <p>
-     * Atmosphere's SSE interceptor only adds the event framing to writes on a
-     * suspended resource, and a notification is usually sent before the
-     * resource is suspended. The event is therefore written to the container
-     * response, past Atmosphere's interceptors, with the length prefix that
-     * Atmosphere's message size tracking would otherwise add.
+     * Only for a resource that is not suspended yet, for example when the
+     * connection is rejected right away. Atmosphere's SSE interceptor adds the
+     * event framing only to writes on a suspended resource, so the event is
+     * written to the container response, past Atmosphere's interceptors, with
+     * the length prefix that Atmosphere's message size tracking would otherwise
+     * add. Writes to an open connection go through Atmosphere, which frames
+     * them.
      */
     private static void writeServerSentEvent(AtmosphereResource resource,
             String message) throws IOException {
