@@ -27,7 +27,8 @@ import com.vaadin.flow.js.JsInvokers;
 @JsDefinition
 public interface PrebuiltOnlyJs extends JsInvokers {
 
-    // NoAppBundleIT of test-prod-bundle-no-plugin looks for this function
+    // PrebuiltBundleStatsTest of test-prod-bundle-no-plugin looks for this
+    // function
     @JsExpression("window.prebuiltOnly = $0")
     void mark(String value);
 }
