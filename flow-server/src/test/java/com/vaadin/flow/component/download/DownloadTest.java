@@ -15,27 +15,46 @@
  */
 package com.vaadin.flow.component.download;
 
+import java.net.URI;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.trigger.internal.DownloadAction;
+import com.vaadin.flow.component.trigger.internal.OpenInNewTabAction;
 import com.vaadin.flow.component.trigger.internal.TriggerInputJs;
 import com.vaadin.flow.component.trigger.internal.TriggerTestUtil;
+import com.vaadin.flow.dom.DisabledUpdateMode;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.StreamResourceRegistry.ElementStreamResource;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.streams.DownloadDisposition;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
+import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class DownloadTest {
@@ -46,6 +65,7 @@ class DownloadTest {
 
     private UI ui;
     private TestButton button;
+    private StreamResourceRegistry registry;
 
     @BeforeEach
     void setUp() {
@@ -53,15 +73,16 @@ class DownloadTest {
         // The mock session has no resource registry by default; install a
         // real one so a DownloadHandler can be registered.
         VaadinSession session = ui.getSessionOrThrow();
-        when(session.getResourceRegistry())
-                .thenReturn(new StreamResourceRegistry(session));
+        registry = new StreamResourceRegistry(session);
+        when(session.getResourceRegistry()).thenReturn(registry);
         button = new TestButton();
         ui.getElement().appendChild(button.getElement());
     }
 
     @Test
     void startHandler_clickStartsDownloadOfRegisteredResource() {
-        Download.onClick(button, event -> event.getOutputStream().write(1));
+        Download.onClick(button, event -> {
+        });
 
         JsFunction installFn = singleInstallFn();
         assertTrue(installFn.getCaptures().contains("click"),
@@ -70,7 +91,59 @@ class DownloadTest {
         JsFunction action = actionOf(installFn);
         assertEquals("download",
                 snippetOf(DownloadAction.DownloadJs.class, action));
-        resourceUri(action);
+        assertEquals(DownloadDisposition.ATTACHMENT,
+                registeredResource(action).getDisposition(),
+                "A saved file should be served as an attachment");
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void startHandlerInNewTab_clickOpensRegisteredResourceInline(
+            boolean allowDisabled) throws Exception {
+        InputStreamDownloadHandler handler = DownloadHandler.fromInputStream(
+                event -> DownloadResponse.error(500), "invoice.pdf");
+
+        Download.onClick(button,
+                allowDisabled ? handler.allowDisabled() : handler,
+                DownloadTarget.NEW_TAB);
+
+        JsFunction action = actionOf(singleInstallFn());
+        assertEquals("openInNewTab",
+                snippetOf(OpenInNewTabAction.OpenInNewTabJs.class, action));
+        assertEquals(DownloadDisposition.INLINE,
+                registeredResource(action).getDisposition());
+        assertEquals("attachment; filename=\"invoice.pdf\"",
+                servedContentDisposition(handler, button.getElement()),
+                "The handler should keep serving an attachment elsewhere");
+        if (allowDisabled) {
+            assertEquals(DisabledUpdateMode.ALWAYS,
+                    registeredResource(action).getElementRequestHandler()
+                            .getDisabledUpdateMode(),
+                    "The content should still be served when the button is disabled");
+        }
+    }
+
+    @Test
+    void startUrl_clickStartsDownloadOfGivenUrl() {
+        Download.onClick(button, "/files/a.bin");
+
+        JsFunction action = actionOf(singleInstallFn());
+        assertEquals("download",
+                snippetOf(DownloadAction.DownloadJs.class, action));
+        assertEquals("/files/a.bin", ((JsFunction) action.getCaptures().get(0))
+                .getCaptures().get(0));
+    }
+
+    @Test
+    void startUrlInNewTab_clickOpensGivenUrl() {
+        Download.onClick(button, "/files/terms.html", DownloadTarget.NEW_TAB);
+
+        JsFunction action = actionOf(singleInstallFn());
+        assertEquals("openInNewTab",
+                snippetOf(OpenInNewTabAction.OpenInNewTabJs.class, action));
+        assertEquals("/files/terms.html",
+                ((JsFunction) action.getCaptures().get(0)).getCaptures()
+                        .get(0));
     }
 
     @Test
@@ -105,6 +178,20 @@ class DownloadTest {
                 "Removal should emit the dispose invocation");
     }
 
+    @Test
+    void removeNewTabRegistration_handlerNoLongerServed() {
+        Registration registration = Download.onClick(button,
+                event -> event.getOutputStream().write(1),
+                DownloadTarget.NEW_TAB);
+        URI uri = URI.create(resourceUri(actionOf(singleInstallFn())));
+        assertTrue(registry.getResource(uri).isPresent());
+
+        registration.remove();
+
+        assertFalse(registry.getResource(uri).isPresent(),
+                "Removing the registration should unregister the handler");
+    }
+
     private static String resourceUri(JsFunction action) {
         Object uri = ((JsFunction) action.getCaptures().get(0)).getCaptures()
                 .get(0);
@@ -113,6 +200,24 @@ class DownloadTest {
                         && s.startsWith("VAADIN/dynamic/resource/"),
                 "Expected a Vaadin dynamic-resource URI, got: " + uri);
         return (String) uri;
+    }
+
+    private ElementStreamResource registeredResource(JsFunction action) {
+        URI uri = URI.create(resourceUri(action));
+        return (ElementStreamResource) registry.getResource(uri).orElseThrow();
+    }
+
+    private static String servedContentDisposition(DownloadHandler handler,
+            Element owner) throws Exception {
+        VaadinResponse response = mock(VaadinResponse.class);
+        AtomicReference<String> header = new AtomicReference<>();
+        doAnswer(invocation -> {
+            header.set(invocation.getArgument(1));
+            return null;
+        }).when(response).setHeader(eq("Content-Disposition"), any());
+        handler.handleRequest(mock(VaadinRequest.class), response,
+                mock(VaadinSession.class), owner);
+        return header.get();
     }
 
     private JsFunction singleInstallFn() {

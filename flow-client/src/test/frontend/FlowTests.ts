@@ -582,44 +582,53 @@ describe('Flow', () => {
     expect(onBeforeLeaveReturns).to.equal(undefined);
   });
 
-  it('should show stub when navigating to server view and Flow initialization fails due to network error', async () => {
-    server.addHandler('GET', /^.*\?v-r=init.*/, (req) => {
-      req.respond(500, {}, 'unable to connect');
+  [
+    { description: 'without a content type', headers: {}, body: 'unable to connect' },
+    {
+      description: 'with a JSON body',
+      headers: { 'content-type': 'application/json' },
+      body: '{"status":500,"error":"Internal Server Error","path":"/"}'
+    }
+  ].forEach(({ description, headers, body }) => {
+    it(`should show stub when navigating to server view and Flow initialization fails with an HTTP error ${description}`, async () => {
+      server.addHandler('GET', /^.*\?v-r=init.*/, (req) => {
+        req.respond(500, headers, body);
+      });
+      const flow = new Flow();
+      const route = flow.serverSideRoutes[0];
+      const params: NavigationParameters = {
+        pathname: 'Foo/Bar.baz',
+        search: ''
+      };
+
+      await $wnd.Vaadin.connectionIndicator.updateComplete;
+      const indicator = $wnd.document.querySelector('.v-loading-indicator');
+
+      const consoleError = sinon.stub(console, 'error');
+      const view = await route.action(params);
+      expect(view).not.to.be.null;
+      expect(view.localName).to.equal('iframe');
+      expect(view.getAttribute('src')).to.equal('./offline-stub.html');
+
+      expect(indicator.getAttribute('style')).to.equal('display: none');
+
+      // The stub replaces the view without a trace of why, so the failure has
+      // to reach the console: the reported error carries the status and body of
+      // the failed init request, which is the only clue to what went wrong.
+      sinon.assert.calledOnce(consoleError);
+      const reportedError = consoleError.getCall(0).args[1];
+      expect(reportedError).to.be.instanceOf(Error);
+      expect(reportedError.message).to.contain('500');
+      expect(reportedError.message).to.contain(body);
+
+      // @ts-ignore
+      let onBeforeEnterReturns = view.onBeforeEnter(params, {});
+      expect(onBeforeEnterReturns).to.equal(undefined);
+
+      // @ts-ignore
+      let onBeforeLeaveReturns = view.onBeforeLeave(params, {});
+      expect(onBeforeLeaveReturns).to.deep.equal(undefined);
     });
-    const flow = new Flow();
-    const route = flow.serverSideRoutes[0];
-    const params: NavigationParameters = {
-      pathname: 'Foo/Bar.baz',
-      search: ''
-    };
-
-    await $wnd.Vaadin.connectionIndicator.updateComplete;
-    const indicator = $wnd.document.querySelector('.v-loading-indicator');
-
-    const consoleError = sinon.stub(console, 'error');
-    const view = await route.action(params);
-    expect(view).not.to.be.null;
-    expect(view.localName).to.equal('iframe');
-    expect(view.getAttribute('src')).to.equal('./offline-stub.html');
-
-    expect(indicator.getAttribute('style')).to.equal('display: none');
-
-    // The stub replaces the view without a trace of why, so the failure has
-    // to reach the console: the reported error carries the status and body of
-    // the failed init request, which is the only clue to what went wrong.
-    sinon.assert.calledOnce(consoleError);
-    const reportedError = consoleError.getCall(0).args[1];
-    expect(reportedError).to.be.instanceOf(Error);
-    expect(reportedError.message).to.contain('500');
-    expect(reportedError.message).to.contain('unable to connect');
-
-    // @ts-ignore
-    let onBeforeEnterReturns = view.onBeforeEnter(params, {});
-    expect(onBeforeEnterReturns).to.equal(undefined);
-
-    // @ts-ignore
-    let onBeforeLeaveReturns = view.onBeforeLeave(params, {});
-    expect(onBeforeLeaveReturns).to.deep.equal(undefined);
   });
 
   it('should retry navigation when back online', async () => {

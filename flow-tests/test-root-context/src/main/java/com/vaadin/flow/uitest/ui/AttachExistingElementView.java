@@ -23,11 +23,24 @@ import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.ShadowRoot;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.AttachExistingElementView", layout = ViewTestLayout.class)
 public class AttachExistingElementView extends AbstractDivView {
+
+    @JsDefinition
+    public interface ChildrenJs extends JsInvokers {
+        @JsExpression("$0.appendChild(document.createElement('label'));")
+        void appendLabel(ShadowRoot shadowRoot);
+
+        @JsExpression("$0.appendChild(document.createElement('span')); $0.appendChild(document.createElement('label'));"
+                + "$0.appendChild(document.createElement('h1'));")
+        void appendSpanLabelAndHeader(Element element);
+    }
 
     private NativeLabel attachedLabel;
 
@@ -76,13 +89,10 @@ public class AttachExistingElementView extends AbstractDivView {
                         new NonExistingElementCallback())));
 
         add(div);
-        getPage().executeJs("$0.appendChild(document.createElement('label'));",
-                shadowRoot);
+        getPage().executeJs(ChildrenJs.class).appendLabel(shadowRoot);
 
-        getPage().executeJs(
-                "$0.appendChild(document.createElement('span')); $0.appendChild(document.createElement('label'));"
-                        + "$0.appendChild(document.createElement('h1'));",
-                getElement());
+        getPage().executeJs(ChildrenJs.class)
+                .appendSpanLabelAndHeader(getElement());
     }
 
     private void handleLabel(Element label) {

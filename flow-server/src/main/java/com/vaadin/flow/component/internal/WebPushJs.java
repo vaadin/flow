@@ -15,12 +15,11 @@
  */
 package com.vaadin.flow.component.internal;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 
 /**
  * What web push asks of the browser, as a JavaScript definition for
@@ -37,7 +36,7 @@ import com.vaadin.flow.js.JsExpression;
  * @since 25.4
  */
 @JsDefinition
-public interface WebPushJs extends Serializable {
+public interface WebPushJs extends JsInvokers {
 
     /**
      * Checks whether the service worker has a push subscription.

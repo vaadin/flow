@@ -25,6 +25,7 @@ import java.util.Optional;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.ElementRequestHandler;
 
 /**
@@ -155,21 +156,94 @@ public class StreamResourceRegistry implements Serializable {
     }
 
     /**
-     * Internal wrapper class for wrapping {@link ElementRequestHandler}
-     * instances as {@link AbstractStreamResource} compatible instances.
+     * Wraps an {@link ElementRequestHandler} as an
+     * {@link AbstractStreamResource}, owned by an element.
+     * <p>
+     * Register it with
+     * {@link Element#setAttribute(String, AbstractStreamResource)} or
+     * {@link #registerResource(AbstractStreamResource)}. For a
+     * {@link com.vaadin.flow.server.streams.DownloadHandler}, the resource can
+     * also say whether the browser should show the content or save it, see
+     * {@link #setDisposition(DownloadDisposition)}:
      *
-     * For internal use only. May be renamed or removed in a future release.
+     * <pre>
+     * getElement().setAttribute("src", new ElementStreamResource(handler,
+     *         getElement(), DownloadDisposition.INLINE));
+     * </pre>
      * 
      * @since 24.8
      */
     public static class ElementStreamResource extends AbstractStreamResource {
         private final ElementRequestHandler elementRequestHandler;
         private final Element owner;
+        private DownloadDisposition disposition;
 
         public ElementStreamResource(
                 ElementRequestHandler elementRequestHandler, Element owner) {
+            this(elementRequestHandler, owner, null);
+        }
+
+        /**
+         * Creates a resource that serves the content of a download handler with
+         * the given disposition. The disposition applies when the handler gives
+         * only a file name; a handler that asks for inline or attachment itself
+         * keeps its choice, see {@link #setDisposition(DownloadDisposition)}.
+         *
+         * @param elementRequestHandler
+         *            the handler to serve, not {@code null}
+         * @param owner
+         *            the element that owns the resource, not {@code null}
+         * @param disposition
+         *            how the content is served, or {@code null} to let the
+         *            handler decide
+         * @see #setDisposition(DownloadDisposition)
+         * @since 25.4
+         */
+        public ElementStreamResource(
+                ElementRequestHandler elementRequestHandler, Element owner,
+                DownloadDisposition disposition) {
             this.elementRequestHandler = elementRequestHandler;
             this.owner = owner;
+            this.disposition = disposition;
+        }
+
+        /**
+         * Gets how the content of a download handler is served from this
+         * resource.
+         *
+         * @return the disposition, or {@code null} if the handler decides
+         * @since 25.4
+         */
+        public DownloadDisposition getDisposition() {
+            return disposition;
+        }
+
+        /**
+         * Sets how the content of a download handler is served from this
+         * resource: shown in the browser or saved as a file. Whether content is
+         * shown or saved depends on where it is used, so the code that
+         * registers the handler decides, and the handler itself is not changed.
+         * The disposition decides the type of the {@code Content-Disposition}
+         * header when the handler gives only a file name, with
+         * {@link com.vaadin.flow.server.streams.DownloadEvent#fileName(String)},
+         * which the built-in handlers do. A handler that asks for a type
+         * itself, for example with
+         * {@link com.vaadin.flow.server.streams.DownloadEvent#attachment(String)}
+         * or
+         * {@link com.vaadin.flow.server.streams.DownloadEvent#inline(String)},
+         * or sets the header directly on the response, keeps its own choice.
+         * <p>
+         * The value can be changed while the resource is registered, and
+         * applies to the requests that arrive after that. The URL of the
+         * resource does not change.
+         *
+         * @param disposition
+         *            how the content is served, or {@code null} to let the
+         *            handler decide
+         * @since 25.4
+         */
+        public void setDisposition(DownloadDisposition disposition) {
+            this.disposition = disposition;
         }
 
         public ElementRequestHandler getElementRequestHandler() {

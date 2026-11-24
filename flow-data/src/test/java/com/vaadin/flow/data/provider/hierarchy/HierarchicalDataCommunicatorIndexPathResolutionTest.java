@@ -29,13 +29,14 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 class HierarchicalDataCommunicatorIndexPathResolutionTest
         extends AbstractHierarchicalDataCommunicatorTest {
+    private TreeData<Item> treeData;
     private HierarchicalDataCommunicator<Item> dataCommunicator;
 
     @BeforeEach
     void init() {
         super.init();
 
-        var treeData = new TreeData<Item>();
+        treeData = new TreeData<>();
         populateTreeData(treeData, 3, 2, 1);
 
         var dataGenerator = new CompositeDataGenerator<Item>();
@@ -137,6 +138,26 @@ class HierarchicalDataCommunicatorIndexPathResolutionTest
         assertEquals(2,
                 dataCommunicator.resolveIndexPath(-100, -100, -100, -100));
         assertEquals(6, dataCommunicator.rootCache.getFlatSize());
+    }
+
+    @Test
+    void expandedItemLostChildren_resolveIndexPath_resolvesToThatItem() {
+        dataCommunicator.expand(
+                Arrays.asList(new Item("Item 2"), new Item("Item 2-1")));
+        treeData.removeItem(new Item("Item 2-1-0"));
+        dataCommunicator.getDataProvider().refreshAll();
+
+        assertEquals(4, dataCommunicator.resolveIndexPath(-1, -1, -1, -1));
+        assertEquals(5, dataCommunicator.rootCache.getFlatSize());
+    }
+
+    @Test
+    void emptyDataProvider_resolveIndexPath_resolvesToZero() {
+        dataCommunicator.setDataProvider(
+                new TreeDataProvider<>(new TreeData<>()), null);
+
+        assertEquals(0, dataCommunicator.resolveIndexPath(-1, -1));
+        assertEquals(0, dataCommunicator.rootCache.getFlatSize());
     }
 
     @Test

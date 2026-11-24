@@ -20,11 +20,26 @@ import com.vaadin.flow.component.page.History.HistoryStateChangeHandler;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.FragmentLinkView", layout = ViewTestLayout.class)
 public class FragmentLinkView extends AbstractDivView {
+
+    @JsDefinition
+    public interface HashChangeJs extends JsInvokers {
+        @JsExpression("var i = 0;"
+                + "window.addEventListener('hashchange', function(event) {"
+                + "var x = document.createElement('span');"
+                + "x.textContent = ' ' + i;" + "i++;"
+                + "x.class = 'hashchange';"
+                + "document.getElementById('placeholder').appendChild(x);},"
+                + " false);")
+        void logHashChanges();
+    }
 
     public FragmentLinkView() {
         Element bodyElement = getElement();
@@ -67,13 +82,7 @@ public class FragmentLinkView extends AbstractDivView {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         Page page = attachEvent.getUI().getPage();
-        page.executeJs("var i = 0;"
-                + "window.addEventListener('hashchange', function(event) {"
-                + "var x = document.createElement('span');"
-                + "x.textContent = ' ' + i;" + "i++;"
-                + "x.class = 'hashchange';"
-                + "document.getElementById('placeholder').appendChild(x);},"
-                + " false);");
+        page.executeJs(HashChangeJs.class).logHashChanges();
 
         HistoryStateChangeHandler current = page.getHistory()
                 .getHistoryStateChangeHandler();

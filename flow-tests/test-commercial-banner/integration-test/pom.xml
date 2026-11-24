@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-test-commercial-banner</artifactId>
-    <version>25.4-SNAPSHOT</version>
+    <version>25.5-SNAPSHOT</version>
   </parent>
   <artifactId>flow-test-commercial-banner-it</artifactId>
 
@@ -46,6 +46,9 @@
         <configuration>
           <container>
             <containerId>jetty12x</containerId>
+            <systemProperties>
+              <vaadin.csp>${vaadin.csp}</vaadin.csp>
+            </systemProperties>
           </container>
           <configuration>
             <type>standalone</type>
