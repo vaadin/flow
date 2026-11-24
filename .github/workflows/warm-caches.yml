@@ -42,6 +42,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # Read the public groups on repository.jboss.org from Central, as
+  # validation.yml does. See the note there.
+  MAVEN_ARGS: >-
+    -gs ${{ github.workspace }}/.github/maven/settings.xml
+
 jobs:
   # Kept apart from the Gradle warm so that one failing cannot discard what the
   # other resolved: the step that saves a cache only runs on a successful job.

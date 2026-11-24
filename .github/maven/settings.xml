@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Global Maven settings for CI, passed with -gs in MAVEN_ARGS so that every
+     mvn a workflow starts, including the ones tests fork, reads it. The user
+     settings setup-java writes still apply on top.
+
+     Some JBoss parent poms the wildfly-maven-plugin pulls in declare the public
+     groups on repository.jboss.org and list them ahead of Maven Central for a
+     few BOMs. When that host is slow or answers 503, every such artifact waits
+     through the resolver's retries before falling back to Central, which costs
+     the JBoss EAP dev loop job 7 to 11 minutes of its test budget. Everything
+     the build resolves through them is also on Central, so they are read from
+     Central instead. A mirror matches repository ids, not hosts: the list holds
+     every id the build's dependency poms give those groups under. -->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
+  <mirrors>
+    <mirror>
+      <id>jboss-public-via-central</id>
+      <mirrorOf>jboss-public-repository-group,jboss-public-repository,jboss,JBoss-Archive,nexus,public-jboss,public-jboss-plugins</mirrorOf>
+      <url>https://repo.maven.apache.org/maven2</url>
+    </mirror>
+  </mirrors>
+</settings>
