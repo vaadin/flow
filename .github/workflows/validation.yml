@@ -42,13 +42,14 @@ env:
   # transient. connectionMaxTtl keeps the 25 seconds the wagon property was
   # meant to set, against a resolver default of 300.
   #
-  # The global settings file reads the public repository groups on
-  # repository.jboss.org from Central instead. JBoss parent poms the wildfly-maven-plugin pulls in list that host ahead of
-  # Central for some BOMs, and when it answers 503 the retries above held the
-  # JBoss EAP dev loop job for up to 11 minutes before its tests started. The
-  # path is absolute because tests fork mvn from module directories.
+  # Each job that runs mvn adds -gs .github/maven/settings.xml to this in its
+  # "Use CI Maven settings" step. That file reads the public repository groups
+  # on repository.jboss.org from Central instead. JBoss parent poms the
+  # wildfly-maven-plugin pulls in list that host ahead of Central for some
+  # BOMs, and when it answers 503 the retries above held the JBoss EAP dev loop
+  # job for up to 11 minutes before its tests started. The path is absolute
+  # because tests fork mvn from module directories.
   MAVEN_ARGS: >-
-    -gs ${{ github.workspace }}/.github/maven/settings.xml
     -Daether.connector.http.retryHandler.count=3
     -Daether.connector.http.retryHandler.serviceUnavailable=429,500,502,503,504,403
     -Daether.connector.http.connectionMaxTtl=25
@@ -132,6 +133,15 @@ jobs:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
+      # Points MAVEN_ARGS at the CI settings only when the checked-out commit
+      # has them: a pull request runs this workflow from its merge commit but
+      # checks out its head, and Maven refuses a -gs file that does not exist.
+      - name: Use CI Maven settings
+        run: |
+          settings="$GITHUB_WORKSPACE/.github/maven/settings.xml"
+          if [ -f "$settings" ]; then
+            echo "MAVEN_ARGS=-gs $settings $MAVEN_ARGS" >> "$GITHUB_ENV"
+          fi
       - uses: ./.github/actions/setup-frontend-tools
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
@@ -229,6 +239,15 @@ jobs:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
+      # Points MAVEN_ARGS at the CI settings only when the checked-out commit
+      # has them: a pull request runs this workflow from its merge commit but
+      # checks out its head, and Maven refuses a -gs file that does not exist.
+      - name: Use CI Maven settings
+        run: |
+          settings="$GITHUB_WORKSPACE/.github/maven/settings.xml"
+          if [ -f "$settings" ]; then
+            echo "MAVEN_ARGS=-gs $settings $MAVEN_ARGS" >> "$GITHUB_ENV"
+          fi
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
@@ -339,6 +358,15 @@ jobs:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
+      # Points MAVEN_ARGS at the CI settings only when the checked-out commit
+      # has them: a pull request runs this workflow from its merge commit but
+      # checks out its head, and Maven refuses a -gs file that does not exist.
+      - name: Use CI Maven settings
+        run: |
+          settings="$GITHUB_WORKSPACE/.github/maven/settings.xml"
+          if [ -f "$settings" ]; then
+            echo "MAVEN_ARGS=-gs $settings $MAVEN_ARGS" >> "$GITHUB_ENV"
+          fi
       - uses: ./.github/actions/setup-frontend-tools
         with:
           pnpm: true
@@ -473,6 +501,15 @@ jobs:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
+      # Points MAVEN_ARGS at the CI settings only when the checked-out commit
+      # has them: a pull request runs this workflow from its merge commit but
+      # checks out its head, and Maven refuses a -gs file that does not exist.
+      - name: Use CI Maven settings
+        run: |
+          settings="$GITHUB_WORKSPACE/.github/maven/settings.xml"
+          if [ -f "$settings" ]; then
+            echo "MAVEN_ARGS=-gs $settings $MAVEN_ARGS" >> "$GITHUB_ENV"
+          fi
           # Full history only where the step below actually diffs. tomee is
           # ungated, so cloning the whole repository for it buys nothing.
           fetch-depth: ${{ matrix.profile == 'tomee' && 1 || 0 }}
@@ -662,6 +699,15 @@ jobs:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
+      # Points MAVEN_ARGS at the CI settings only when the checked-out commit
+      # has them: a pull request runs this workflow from its merge commit but
+      # checks out its head, and Maven refuses a -gs file that does not exist.
+      - name: Use CI Maven settings
+        run: |
+          settings="$GITHUB_WORKSPACE/.github/maven/settings.xml"
+          if [ -f "$settings" ]; then
+            echo "MAVEN_ARGS=-gs $settings $MAVEN_ARGS" >> "$GITHUB_ENV"
+          fi
           # Full history only where the step below actually diffs.
           fetch-depth: ${{ matrix.ungated && 1 || 0 }}
       - name: Decide whether to run
@@ -814,6 +860,15 @@ jobs:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
+      # Points MAVEN_ARGS at the CI settings only when the checked-out commit
+      # has them: a pull request runs this workflow from its merge commit but
+      # checks out its head, and Maven refuses a -gs file that does not exist.
+      - name: Use CI Maven settings
+        run: |
+          settings="$GITHUB_WORKSPACE/.github/maven/settings.xml"
+          if [ -f "$settings" ]; then
+            echo "MAVEN_ARGS=-gs $settings $MAVEN_ARGS" >> "$GITHUB_ENV"
+          fi
           fetch-depth: 0  # Full history required to diff against the merge base
       - name: Decide whether to run
         # An ignore list rather than an allow list. The job runs `gradlew
@@ -1026,6 +1081,15 @@ jobs:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
+      # Points MAVEN_ARGS at the CI settings only when the checked-out commit
+      # has them: a pull request runs this workflow from its merge commit but
+      # checks out its head, and Maven refuses a -gs file that does not exist.
+      - name: Use CI Maven settings
+        run: |
+          settings="$GITHUB_WORKSPACE/.github/maven/settings.xml"
+          if [ -f "$settings" ]; then
+            echo "MAVEN_ARGS=-gs $settings $MAVEN_ARGS" >> "$GITHUB_ENV"
+          fi
       # No global pnpm: Flow installs the pnpm it needs itself, and
       # FrontendToolsTest installs an old global pnpm and expects to find it,
       # which fails when pnpm/action-setup puts a current one first on PATH.
@@ -1128,6 +1192,15 @@ jobs:
         if: ${{ env.SONAR_TOKEN != '' }}
         with:
           ref: ${{env._HEAD_SHA}}
+      # Points MAVEN_ARGS at the CI settings only when the checked-out commit
+      # has them: a pull request runs this workflow from its merge commit but
+      # checks out its head, and Maven refuses a -gs file that does not exist.
+      - name: Use CI Maven settings
+        run: |
+          settings="$GITHUB_WORKSPACE/.github/maven/settings.xml"
+          if [ -f "$settings" ]; then
+            echo "MAVEN_ARGS=-gs $settings $MAVEN_ARGS" >> "$GITHUB_ENV"
+          fi
           fetch-depth: 0  # Full history required for SonarCloud PR analysis
       - name: Set up JDK
         if: ${{ env.SONAR_TOKEN != '' }}
@@ -1319,6 +1392,15 @@ jobs:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
+      # Points MAVEN_ARGS at the CI settings only when the checked-out commit
+      # has them: a pull request runs this workflow from its merge commit but
+      # checks out its head, and Maven refuses a -gs file that does not exist.
+      - name: Use CI Maven settings
+        run: |
+          settings="$GITHUB_WORKSPACE/.github/maven/settings.xml"
+          if [ -f "$settings" ]; then
+            echo "MAVEN_ARGS=-gs $settings $MAVEN_ARGS" >> "$GITHUB_ENV"
+          fi
           fetch-depth: 0
       # The base build and the apicmp build each run npm install in
       # flow-client, flow-polymer2lit and vaadin-dev-server. Without a warm
