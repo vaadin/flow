@@ -21,7 +21,9 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -30,6 +32,8 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
@@ -42,6 +46,7 @@ import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
@@ -538,19 +543,18 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @Test
-    void viteConfig_listsFunctionIdsWithTheSamePattern() throws IOException {
-        // The stats of a bundle list its functions with this pattern, and the
-        // bundle check reads the generated file with the Java one
+    void viteConfig_copiesTheFunctionIdsIntoTheStats() throws IOException {
+        // The stats of a bundle list its functions from the file this task
+        // writes, and the bundle check reads them under this key
         try (InputStream config = getClass().getClassLoader()
                 .getResourceAsStream("vite.generated.ts")) {
             assertNotNull(config, "vite.generated.ts is on the class path");
             String content = new String(config.readAllBytes(),
                     StandardCharsets.UTF_8);
-            assertTrue(content.contains("/"
-                    + TaskGenerateJsDefinitions.FUNCTION_ID.pattern() + "/gm"),
-                    "vite.generated.ts should use the pattern "
-                            + TaskGenerateJsDefinitions.FUNCTION_ID.pattern());
-            // and the bundle check reads them under this key of the stats
+            assertTrue(content.contains("'"
+                    + TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME + "'"),
+                    "vite.generated.ts should read "
+                            + TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME);
             String key = BundleValidationUtil.JS_DEFINITION_FUNCTION_IDS_STATS_KEY;
             assertTrue(
                     Pattern.compile("^\\s+" + key + ",$", Pattern.MULTILINE)
@@ -560,20 +564,39 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @Test
-    void collectFunctionIds_everyFunctionRegistry() {
-        String content = TaskGenerateJsDefinitions.renderFileContent(
-                List.of(GreeterJs.class, StopperJs.class, TemplateJs.class),
-                List.of(OffsetEvent.class), true);
-
-        Set<String> expected = Stream
-                .of(GreeterJs.class, StopperJs.class, TemplateJs.class)
-                .flatMap(definition -> Stream.of(definition.getMethods()))
-                .map(JsCall::functionId).collect(Collectors.toSet());
+    void render_listsEveryFunctionWithWhatDeclaresIt() {
+        Map<String, String> expected = new HashMap<>();
+        Stream.of(GreeterJs.class, StopperJs.class, TemplateJs.class)
+                .forEach(definition -> Stream.of(definition.getMethods())
+                        .forEach(method -> expected.put(
+                                JsCall.functionId(method),
+                                definition.getName())));
         BundledEventData.getBundledEventData(OffsetEvent.class).stream()
-                .map(BundledEventData::getFunctionId).forEach(expected::add);
+                .map(BundledEventData::getFunctionId)
+                .forEach(id -> expected.put(id, OffsetEvent.class.getName()));
 
-        assertEquals(expected,
-                TaskGenerateJsDefinitions.collectFunctionIds(content));
+        TaskGenerateJsDefinitions.Rendered rendered = TaskGenerateJsDefinitions
+                .render(List.of(GreeterJs.class, StopperJs.class,
+                        TemplateJs.class), List.of(OffsetEvent.class), false);
+
+        assertEquals(expected, rendered.functionIds());
+    }
+
+    @Test
+    void execute_writesTheFunctionIdsNextToTheFile()
+            throws ExecutionFailedException, IOException {
+        task.execute();
+
+        File idsFile = new File(new File(frontendFolder, GENERATED),
+                TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME);
+        List<String> ids = JacksonUtils
+                .<JsonNode> stream((ArrayNode) JacksonUtils.getMapper()
+                        .readTree(Files.readString(idsFile.toPath())))
+                .map(JsonNode::asString).toList();
+        assertEquals(List.copyOf(task.render().functionIds().keySet()), ids);
+        assertTrue(
+                ids.contains(JsCall.functionId(GREETING_EXPRESSION, 1, false)),
+                "the ids should list the declared functions: " + ids);
     }
 
     @Test

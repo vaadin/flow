@@ -143,6 +143,7 @@ const hasCommercialBanner = existsSync(commercialBannerComponent);
 // built with.
 const jsDefinitionsFile = path.resolve(frontendFolder, settings.generatedFolder, 'vaadin-js-definitions.js');
 const hasJsDefinitions = existsSync(jsDefinitionsFile);
+const jsDefinitionIdsFile = path.resolve(frontendFolder, settings.generatedFolder, 'vaadin-js-definition-ids.json');
 
 // The browsers that Vaadin supports: Chrome, Edge and Firefox evergreen at the
 // versions current at release, Firefox 153 ESR, and Safari 17 in its latest
@@ -348,22 +349,20 @@ function statsExtracterPlugin(): PluginOption {
         const fileBuffer = readFileSync(commercialBannerComponent, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
         frontendFiles[settings.generatedFolder + '/commercial-banner.js'] = createHash('sha256').update(fileBuffer, 'utf8').digest('hex');
       }
-      // The identifier of a function is a hash of its JavaScript, so listing
-      // them lets a build tell whether the bundle carries every function it
-      // needs, even when the bundle carries more. The pattern is the one
-      // TaskGenerateJsDefinitions reads the generated file with.
-      const jsDefinitionFunctionIds: string[] = [];
       if (hasJsDefinitions) {
         const fileBuffer = readFileSync(jsDefinitionsFile, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
         frontendFiles[settings.generatedFolder + '/vaadin-js-definitions.js'] = createHash('sha256')
           .update(fileBuffer, 'utf8')
           .digest('hex');
-        const functionId =
-          /^window\.Vaadin\.Flow\.(?:jsDefinitions|jsDefinitionsWithExecutionContext|jsSnippets)\["([^"]*)"\] = /gm;
-        for (const match of fileBuffer.matchAll(functionId)) {
-          jsDefinitionFunctionIds.push(match[1]);
-        }
       }
+      // The identifier of a function is a hash of its JavaScript, so listing
+      // them lets a build tell whether the bundle carries every function it
+      // needs, even when the bundle carries more. TaskGenerateJsDefinitions
+      // writes them next to the file it generates. Without the list, the
+      // build compares the whole file instead.
+      const jsDefinitionFunctionIds: string[] | undefined = existsSync(jsDefinitionIdsFile)
+        ? JSON.parse(readFileSync(jsDefinitionIdsFile, { encoding: 'utf-8' }))
+        : undefined;
 
       const themeJsonContents: Record<string, string> = {};
       const themesFolder = path.resolve(jarResourcesFolder, 'themes');

@@ -36,6 +36,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -1146,10 +1148,22 @@ class BundleValidationTest {
         bundledFunctionIds.forEach(functionIds::add);
         setupFrontendUtilsMock(stats);
 
-        boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, mode);
+        Logger logger = Mockito.spy(Logger.class);
+        boolean needsBuild;
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
+            loggerFactory.when(
+                    () -> LoggerFactory.getLogger(BundleValidationUtil.class))
+                    .thenReturn(logger);
+            needsBuild = BundleValidationUtil.needsBuild(options, depScanner,
+                    mode);
+        }
 
         assertEquals(expectedNeedsBuild, needsBuild);
+        // A developer has to know which class to look at
+        Mockito.verify(logger, Mockito.times(expectedNeedsBuild ? 1 : 0)).info(
+                Mockito.contains("the bundle does not carry"),
+                Mockito.eq(BundledJs.class.getName()));
     }
 
     @ParameterizedTest

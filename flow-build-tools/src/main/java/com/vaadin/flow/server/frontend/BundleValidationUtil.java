@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -1085,8 +1086,8 @@ public final class BundleValidationUtil {
         JsonNode frontendHashes = statsJson.get(FRONTEND_HASHES_STATS_KEY);
         String jsDefinitionsPath = FrontendUtils.GENERATED
                 + FrontendUtils.JS_DEFINITIONS_FILE_NAME;
-        String content = new TaskGenerateJsDefinitions(options)
-                .getFileContent();
+        TaskGenerateJsDefinitions.Rendered rendered = new TaskGenerateJsDefinitions(
+                options).render();
 
         JsonNode bundledIds = statsJson
                 .get(JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
@@ -1098,12 +1099,16 @@ public final class BundleValidationUtil {
             Set<String> bundled = new HashSet<>(
                     JacksonUtils.stream((ArrayNode) bundledIds)
                             .map(JsonNode::asString).toList());
-            List<String> missing = TaskGenerateJsDefinitions
-                    .collectFunctionIds(content).stream()
-                    .filter(id -> !bundled.contains(id)).toList();
-            if (!missing.isEmpty()) {
+            Set<String> missingFrom = new TreeSet<>();
+            rendered.functionIds().forEach((id, declaredBy) -> {
+                if (!bundled.contains(id)) {
+                    missingFrom.add(declaredBy);
+                }
+            });
+            if (!missingFrom.isEmpty()) {
                 getLogger().info(
-                        "Detected JavaScript declared by the JavaScript definitions, event data or event filters that the bundle does not carry");
+                        "Detected JavaScript that the bundle does not carry, declared by: {}",
+                        String.join(", ", missingFrom));
                 return true;
             }
             return false;
@@ -1113,7 +1118,7 @@ public final class BundleValidationUtil {
         // is compared by the whole file
         List<String> faultyContent = new ArrayList<>();
         compareFrontendHashes(frontendHashes, faultyContent, jsDefinitionsPath,
-                content);
+                rendered.content());
         if (!faultyContent.isEmpty()) {
             // Either the declarations changed, or the bundle was built before
             // they existed and carries none of their JavaScript
