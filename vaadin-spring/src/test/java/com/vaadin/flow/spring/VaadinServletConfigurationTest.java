@@ -54,12 +54,27 @@ class VaadinServletConfigurationTest {
         assertNull(createRootMapping().getHandler(createRequest()));
     }
 
+    @Test
+    void customForwardingController_noVaadinServletRegistered_requestStillHandled()
+            throws Exception {
+        Controller customController = (request, response) -> null;
+
+        HandlerExecutionChain chain = createRootMapping(customController)
+                .getHandler(createRequest());
+
+        assertSame(customController, chain.getHandler());
+    }
+
     private RootExcludeHandler createRootMapping() {
+        return createRootMapping(forwardingController);
+    }
+
+    private RootExcludeHandler createRootMapping(Controller controller) {
         StaticWebApplicationContext context = new StaticWebApplicationContext();
         context.setServletContext(servletContext);
         context.refresh();
         RootExcludeHandler mapping = new RootExcludeHandler(List.of(),
-                forwardingController, null);
+                controller, null);
         mapping.setApplicationContext(context);
         return mapping;
     }
