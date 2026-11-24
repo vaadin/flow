@@ -454,6 +454,10 @@ public final class ElementEffect implements Serializable {
             } finally {
                 attachingThread[0] = null;
             }
+            if (effect != newEffect) {
+                // Closed by its own first run
+                return;
+            }
         } else if (effect == null) {
             // First attach for the already-attached path (effect not yet
             // created): create the Effect directly with the UI dispatcher so

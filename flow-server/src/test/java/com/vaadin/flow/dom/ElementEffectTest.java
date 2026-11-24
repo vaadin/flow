@@ -900,16 +900,62 @@ class ElementEffectTest {
         });
 
         ui.add(component);
-        int countAfterAttach = count.get();
+        assertEquals(1, count.get(), "Effect should run once on attach");
 
         signal.set("changed");
-        assertEquals(countAfterAttach + 1, count.get(),
-                "Effect should run once per change");
+        assertEquals(2, count.get(), "Effect should run once per change");
 
         ui.remove(component);
         signal.set("detached");
-        assertEquals(countAfterAttach + 1, count.get(),
-                "Effect should not be run after detach");
+        assertEquals(2, count.get(), "Effect should not be run after detach");
+    }
+
+    @Test
+    void effect_notAttached_firstRunRemovesEffect_attachCompletes() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        AtomicInteger count = new AtomicInteger();
+        Registration[] registration = new Registration[1];
+        registration[0] = Signal.effect(component, () -> {
+            signal.get();
+            count.incrementAndGet();
+            registration[0].remove();
+        });
+
+        MockUI ui = new MockUI();
+        ui.add(component);
+        assertEquals(1, count.get(), "Effect should be run on attach");
+        assertTrue(component.isAttached());
+
+        signal.set("changed");
+        assertEquals(1, count.get(), "Effect should not be run after remove");
+    }
+
+    @Test
+    void effect_notAttached_noSignalRead_reportedAgainOnReattach() {
+        CurrentInstance.clearAll();
+        TestComponent component = new TestComponent();
+        Signal.effect(component, () -> {
+            // no signal read
+        });
+
+        VaadinService.setCurrent(service);
+        var session = new MockVaadinSession(service);
+        session.lock();
+        var ui = new MockUI(session);
+        var events = new ArrayList<ErrorEvent>();
+        session.setErrorHandler(events::add);
+        ui.add(component);
+        assertEquals(1, events.size());
+
+        ui.remove(component);
+        ui.add(component);
+
+        assertEquals(2, events.size(),
+                "First run should be retried on the next attach");
+        assertEquals(MissingSignalUsageException.class,
+                events.get(1).getThrowable().getClass());
     }
 
     @Test
