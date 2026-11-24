@@ -351,15 +351,13 @@ class FrontendToolsTest {
         assertThat(tools.getNodeExecutable(), not(containsString(baseDir)));
 
         // Running npm using node and npm-cli.js script by default
-        assertEquals(5, tools.getNpmExecutable().size());
+        assertEquals(4, tools.getNpmExecutable().size());
         assertThat(tools.getNpmExecutable().get(0), containsString("node"));
         assertThat(tools.getNpmExecutable().get(1), containsString("npm"));
         assertThat(tools.getNpmExecutable().get(2),
                 containsString("--no-update-notifier"));
         assertThat(tools.getNpmExecutable().get(3),
                 containsString("--no-audit"));
-        assertThat(tools.getNpmExecutable().get(4),
-                containsString("--scripts-prepend-node-path=true"));
     }
 
     @Test
