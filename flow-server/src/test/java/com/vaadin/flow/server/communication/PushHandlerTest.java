@@ -696,6 +696,8 @@ class PushHandlerTest {
 
         verify(res.get().getResponse().getWriter())
                 .write(VaadinService.createSessionExpiredJSON(true));
+        verify(res.get().getRequest(), never()).setAttribute(
+                eq(FrameworkConfig.CALLBACK_JAVASCRIPT_PROTOCOL), any());
     }
 
     @ParameterizedTest
@@ -718,8 +720,9 @@ class PushHandlerTest {
             res.set(resource);
         });
 
-        // Atmosphere frames writes to a suspended resource as SSE events by
-        // itself, and to one that is not suspended yet only with the attribute
+        // Atmosphere's SSE interceptor frames writes to a suspended resource as
+        // events by itself, and to one that is not suspended yet only when this
+        // attribute is set, as Atmosphere does for a connection handshake
         AtmosphereRequest request = res.get().getRequest();
         PrintWriter writer = res.get().getResponse().getWriter();
         InOrder inOrder = inOrder(request, writer);
