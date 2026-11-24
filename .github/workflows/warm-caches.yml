@@ -44,8 +44,10 @@ concurrency:
 
 env:
   # The same flags validation.yml sets, for the same reason: a 403 from Central
-  # is retried rather than failing the build outright. See the note there.
+  # is retried rather than failing the build outright, and repository.jboss.org
+  # is read from Central. See the note there.
   MAVEN_ARGS: >-
+    -gs ${{ github.workspace }}/.github/maven/settings.xml
     -Daether.connector.http.retryHandler.count=3
     -Daether.connector.http.retryHandler.serviceUnavailable=429,500,502,503,504,403
     -Daether.connector.http.connectionMaxTtl=25
