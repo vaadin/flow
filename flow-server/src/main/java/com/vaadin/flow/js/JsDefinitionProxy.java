@@ -253,11 +253,6 @@ public final class JsDefinitionProxy {
                 .map(JsCall::functionId).toList();
     }
 
-    private static List<String> collectDeclaredNames(Class<?> definitionType) {
-        return Stream.of(definitionType.getMethods()).map(Method::getName)
-                .sorted().toList();
-    }
-
     /**
      * Checks whether the given type is a JavaScript definition, an interface
      * annotated with {@link JsDefinition}, which the build collects the
