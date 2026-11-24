@@ -551,8 +551,9 @@ class TaskGenerateJsDefinitionsTest {
 
     @Test
     void viteConfig_copiesTheFunctionIdsIntoTheStats() throws IOException {
-        // The stats of a bundle list its functions from the file this task
-        // writes, and the bundle check reads them under this key
+        // The stats of a bundle list its functions and their names from the
+        // file this task writes, and the bundle check reads them under these
+        // keys
         try (InputStream config = getClass().getClassLoader()
                 .getResourceAsStream("vite.generated.ts")) {
             assertNotNull(config, "vite.generated.ts is on the class path");
@@ -562,11 +563,16 @@ class TaskGenerateJsDefinitionsTest {
                     + TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME + "'"),
                     "vite.generated.ts should read "
                             + TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME);
-            String key = BundleValidationUtil.JS_DEFINITION_FUNCTION_IDS_STATS_KEY;
-            assertTrue(
-                    Pattern.compile("^\\s+" + key + ",$", Pattern.MULTILINE)
-                            .matcher(content).find(),
-                    "vite.generated.ts should write the stats key " + key);
+            for (String line : List.of(
+                    BundleValidationUtil.JS_DEFINITION_FUNCTION_IDS_STATS_KEY
+                            + ": jsDefinitionIds."
+                            + TaskGenerateJsDefinitions.FUNCTION_IDS_KEY + ",",
+                    BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY
+                            + ": jsDefinitionIds."
+                            + TaskGenerateJsDefinitions.NAMES_KEY + ",")) {
+                assertTrue(content.contains(line),
+                        "vite.generated.ts should write " + line);
+            }
         }
     }
 
@@ -590,6 +596,8 @@ class TaskGenerateJsDefinitionsTest {
                         List.of(OffsetEvent.class), false);
 
         assertEquals(expected, rendered.functionIds());
+        assertTrue(rendered.names().isEmpty(),
+                "a production file names nothing: " + rendered.names());
     }
 
     @Test
@@ -599,14 +607,20 @@ class TaskGenerateJsDefinitionsTest {
 
         File idsFile = new File(new File(frontendFolder, GENERATED),
                 TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME);
+        JsonNode written = JacksonUtils.getMapper()
+                .readTree(Files.readString(idsFile.toPath()));
         List<String> ids = JacksonUtils
-                .<JsonNode> stream((ArrayNode) JacksonUtils.getMapper()
-                        .readTree(Files.readString(idsFile.toPath())))
+                .<JsonNode> stream((ArrayNode) written
+                        .get(TaskGenerateJsDefinitions.FUNCTION_IDS_KEY))
                 .map(JsonNode::asString).toList();
         assertEquals(List.copyOf(task.render().functionIds().keySet()), ids);
-        assertTrue(
-                ids.contains(JsCall.functionId(GREETING_EXPRESSION, 1, false)),
+        String greeting = JsCall.functionId(GREETING_EXPRESSION, 1, false);
+        assertTrue(ids.contains(greeting),
                 "the ids should list the declared functions: " + ids);
+        // Written for development, so with what a message names each by
+        assertEquals(GreeterJs.class.getName() + ".showGreeting/1",
+                written.get(TaskGenerateJsDefinitions.NAMES_KEY).get(greeting)
+                        .asString());
     }
 
     @Test

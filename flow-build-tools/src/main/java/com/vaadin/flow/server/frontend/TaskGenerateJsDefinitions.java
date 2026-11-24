@@ -39,6 +39,7 @@ import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.DomEvent;
@@ -132,11 +133,18 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
     /**
      * The file next to the generated one that lists the identifiers of the
-     * functions it registers, which vite.generated.ts copies into the stats of
-     * a bundle. It lists what a browser can run and nothing of what declared
-     * it, as the bundle does.
+     * functions it registers, under {@value #FUNCTION_IDS_KEY}, which
+     * vite.generated.ts copies into the stats of a bundle. A file written for a
+     * development bundle also has the names the generated file registers, by
+     * identifier, under {@value #NAMES_KEY}. Like the bundle, a file written
+     * for production lists what a browser can run and nothing of what declared
+     * it.
      */
     static final String FUNCTION_IDS_FILE_NAME = "vaadin-js-definition-ids.json";
+
+    static final String FUNCTION_IDS_KEY = "functionIds";
+
+    static final String NAMES_KEY = "names";
 
     // Writing this file again while the application runs replaces it in the
     // browser that has it: everything above only writes into the registry, so
@@ -163,15 +171,22 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      *            the binary name of the class that declares the JavaScript of
      *            each function the file registers, by the identifier of the
      *            function, in the order of the file
+     * @param names
+     *            what a message about a call names each function by, by its
+     *            identifier, as the file registers it; empty when the file
+     *            registers no names
      */
-    record Rendered(String content, Map<String, String> functionIds) {
+    record Rendered(String content, Map<String, String> functionIds,
+            Map<String, String> names) {
     }
 
     /**
      * One function the file registers: its identifier, the binary name of the
-     * class that declares its JavaScript and what it is written as.
+     * class that declares its JavaScript, the name it registers for it or
+     * <code>null</code> when it registers none, and what it is written as.
      */
-    private record RenderedFunction(String id, String declaredBy, String text) {
+    private record RenderedFunction(String id, String declaredBy, String name,
+            String text) {
     }
 
     @Override
@@ -181,10 +196,14 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                 FUNCTION_IDS_FILE_NAME);
         try {
             writeIfChanged(getGeneratedFile(), rendered.content());
-            ArrayNode functionIds = JacksonUtils.createArrayNode();
+            ObjectNode ids = JacksonUtils.createObjectNode();
+            ArrayNode functionIds = ids.putArray(FUNCTION_IDS_KEY);
             rendered.functionIds().keySet().forEach(functionIds::add);
-            writeIfChanged(functionIdsFile,
-                    JacksonUtils.toFileJson(functionIds));
+            if (!rendered.names().isEmpty()) {
+                ObjectNode names = ids.putObject(NAMES_KEY);
+                rendered.names().forEach(names::put);
+            }
+            writeIfChanged(functionIdsFile, JacksonUtils.toFileJson(ids));
         } catch (IOException exception) {
             throw new ExecutionFailedException("Error writing '"
                     + getGeneratedFile() + "' or '" + functionIdsFile + "'",
@@ -279,16 +298,22 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
         List<String> lines = new ArrayList<>(renderHeader(withNames));
         Map<String, String> functionIds = new LinkedHashMap<>();
+        Map<String, String> names = new LinkedHashMap<>();
         for (RenderedFunction function : functions) {
             lines.addAll(Arrays
                     .asList(function.text().split(System.lineSeparator())));
             // The identifier is a hash of the JavaScript, so a function
             // declared twice is one function, which the first one names
             functionIds.putIfAbsent(function.id(), function.declaredBy());
+            if (function.name() != null) {
+                // The file assigns the name of each, so the last one is what
+                // a browser has
+                names.put(function.id(), function.name());
+            }
         }
         lines.addAll(FOOTER);
         return new Rendered(String.join(System.lineSeparator(), lines),
-                functionIds);
+                functionIds, names);
     }
 
     /**
@@ -358,6 +383,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             }
             functions.add(new RenderedFunction(functionId,
                     eventTypeOf.get(functionId),
+                    withNames ? declaredBy.get(functionId) : null,
                     String.join(System.lineSeparator(), lines)));
         });
         return functions;
@@ -703,6 +729,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                         functionId, quote(nameOf(definition, method))));
             }
             functions.add(new RenderedFunction(rawId, definition.getName(),
+                    withNames ? nameOf(definition, method) : null,
                     String.join(System.lineSeparator(), function)));
         }
         return functions;
