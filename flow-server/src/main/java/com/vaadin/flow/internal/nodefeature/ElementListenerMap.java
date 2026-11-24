@@ -48,7 +48,7 @@ import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.ConstantPoolKey;
-import com.vaadin.flow.internal.CspViolationReporter;
+import com.vaadin.flow.internal.ContentSecurityPolicyViolationReporter;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.ParameterizedConstantPoolKey;
@@ -56,7 +56,7 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.server.CspViolationException;
+import com.vaadin.flow.server.ContentSecurityPolicyViolationException;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -431,8 +431,9 @@ public class ElementListenerMap extends NodeMap {
             if (eventData.stream()
                     .anyMatch(ElementListenerMap::isCompiledByClient)) {
                 try {
-                    CspViolationReporter.reportStringJavaScript();
-                } catch (CspViolationException e) {
+                    ContentSecurityPolicyViolationReporter
+                            .reportStringJavaScript();
+                } catch (ContentSecurityPolicyViolationException e) {
                     // The listener is already registered, and must not stay
                     // without the refused data
                     remove();
@@ -447,7 +448,8 @@ public class ElementListenerMap extends NodeMap {
             return this;
         }
 
-        private void addEventDataWithoutCspReport(List<String> eventData) {
+        private void addEventDataWithoutContentSecurityPolicyReport(
+                List<String> eventData) {
             requireEventData(eventData);
 
             appendEventData(eventData);
@@ -529,8 +531,9 @@ public class ElementListenerMap extends NodeMap {
         public DomListenerRegistration setFilter(String filter) {
             if (filter != null && !isPropertyPath(filter)) {
                 try {
-                    CspViolationReporter.reportStringJavaScript();
-                } catch (CspViolationException e) {
+                    ContentSecurityPolicyViolationReporter
+                            .reportStringJavaScript();
+                } catch (ContentSecurityPolicyViolationException e) {
                     // The listener is already registered, and would otherwise
                     // receive every event that the refused filter should block
                     remove();
@@ -1065,9 +1068,11 @@ public class ElementListenerMap extends NodeMap {
      * @param eventData
      *            the event data, not <code>null</code> and not containing
      *            <code>null</code>
-     * @throws com.vaadin.flow.server.CspViolationException
-     *             in the {@link com.vaadin.flow.server.CspMode#STRICT} Content
-     *             Security Policy mode, if any value is compiled by the browser
+     * @throws com.vaadin.flow.server.ContentSecurityPolicyViolationException
+     *             in the
+     *             {@link com.vaadin.flow.server.ContentSecurityPolicyMode#STRICT}
+     *             Content Security Policy mode, if any value is compiled by the
+     *             browser
      * @since 25.4
      */
     @SuppressWarnings("deprecation")
@@ -1097,13 +1102,13 @@ public class ElementListenerMap extends NodeMap {
      *            containing <code>null</code>
      * @since 25.4
      */
-    public static void addEventDataWithoutCspReport(
+    public static void addEventDataWithoutContentSecurityPolicyReport(
             DomListenerRegistration registration, List<String> eventData) {
         if (!(registration instanceof DomEventListenerWrapper wrapper)) {
             throw new IllegalArgumentException(
                     "The registration must be one returned by an ElementListenerMap");
         }
-        wrapper.addEventDataWithoutCspReport(eventData);
+        wrapper.addEventDataWithoutContentSecurityPolicyReport(eventData);
     }
 
     /**
