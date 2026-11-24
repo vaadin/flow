@@ -52,7 +52,9 @@ public class QueryParameters implements Serializable {
      * <p>
      * The parameters keep the iteration order of the given map, so use an
      * ordered map such as {@link LinkedHashMap} to control the order in which
-     * they appear in {@link #getQueryString()}.
+     * they appear in {@link #getQueryString()}. Maps without a defined order,
+     * such as the ones created by {@code Map.of}, may give a different order in
+     * each JVM run.
      *
      * @param parameters
      *            the parameter map
@@ -79,6 +81,12 @@ public class QueryParameters implements Serializable {
     /**
      * Creates parameters from full representation, where each parameter name
      * may correspond to multiple values.
+     * <p>
+     * The parameters keep the iteration order of the given map, so use an
+     * ordered map such as {@link LinkedHashMap} to control the order in which
+     * they appear in {@link #getQueryString()}. Maps without a defined order,
+     * such as the ones created by {@code Map.of}, may give a different order in
+     * each JVM run.
      *
      * @param parameters
      *            query parameters map
@@ -98,6 +106,12 @@ public class QueryParameters implements Serializable {
     /**
      * Creates parameters from simple representation, where each parameter name
      * corresponds to a single value.
+     * <p>
+     * The parameters keep the iteration order of the given map, so use an
+     * ordered map such as {@link LinkedHashMap} to control the order in which
+     * they appear in {@link #getQueryString()}. Maps without a defined order,
+     * such as the ones created by {@code Map.of}, may give a different order in
+     * each JVM run.
      *
      * @param parameters
      *            query parameters map
