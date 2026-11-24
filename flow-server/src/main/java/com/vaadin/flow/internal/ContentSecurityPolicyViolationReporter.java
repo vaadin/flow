@@ -26,8 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.CspMode;
-import com.vaadin.flow.server.CspViolationException;
+import com.vaadin.flow.server.ContentSecurityPolicyMode;
+import com.vaadin.flow.server.ContentSecurityPolicyViolationException;
 import com.vaadin.flow.server.VaadinService;
 
 /**
@@ -35,18 +35,20 @@ import com.vaadin.flow.server.VaadinService;
  * the browser compiles with <code>new Function</code> and a strict Content
  * Security Policy without <code>unsafe-eval</code> blocks.
  * <p>
- * What happens depends on the {@link CspMode} of the current service: nothing
- * in {@link CspMode#OFF}, a warning logged once per call site and detail in
- * {@link CspMode#WARN}, and a {@link CspViolationException} in
- * {@link CspMode#STRICT}. Every string-based call is reported, including the
- * ones that Vaadin itself makes. Both the warning and the exception carry a
- * stack trace that starts at the API and leads to the code that called it.
+ * What happens depends on the {@link ContentSecurityPolicyMode} of the current
+ * service: nothing in {@link ContentSecurityPolicyMode#OFF}, a warning logged
+ * once per call site and detail in {@link ContentSecurityPolicyMode#WARN}, and
+ * a {@link ContentSecurityPolicyViolationException} in
+ * {@link ContentSecurityPolicyMode#STRICT}. Every string-based call is
+ * reported, including the ones that Vaadin itself makes. Both the warning and
+ * the exception carry a stack trace that starts at the API and leads to the
+ * code that called it.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  * 
  * @since 25.4
  */
-public final class CspViolationReporter {
+public final class ContentSecurityPolicyViolationReporter {
 
     private static final String MESSAGE = "JavaScript is sent to the browser as a string, which the browser has to compile and a Content Security Policy without 'unsafe-eval' blocks. The stack trace leads from the API to the code that called it.";
 
@@ -55,7 +57,7 @@ public final class CspViolationReporter {
     private static final Map<VaadinService, Set<String>> warnedCalls = Collections
             .synchronizedMap(new WeakHashMap<>());
 
-    private CspViolationReporter() {
+    private ContentSecurityPolicyViolationReporter() {
         // Only static helpers
     }
 
@@ -69,8 +71,8 @@ public final class CspViolationReporter {
      * what is reported, e.g. when a component reports from an action that runs
      * before the client response.
      *
-     * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} mode
+     * @throws ContentSecurityPolicyViolationException
+     *             in the {@link ContentSecurityPolicyMode#STRICT} mode
      */
     public static void reportStringJavaScript() {
         reportStringJavaScriptWithDetail(null);
@@ -91,8 +93,8 @@ public final class CspViolationReporter {
      * @param detail
      *            a short description of what is reported, e.g. the path of the
      *            option that has the JavaScript, not <code>null</code>
-     * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} mode
+     * @throws ContentSecurityPolicyViolationException
+     *             in the {@link ContentSecurityPolicyMode#STRICT} mode
      */
     public static void reportStringJavaScript(String detail) {
         Objects.requireNonNull(detail, "The detail must not be null");
@@ -101,9 +103,10 @@ public final class CspViolationReporter {
 
     /**
      * Checks whether string JavaScript is reported for the current service,
-     * i.e. whether its {@link CspMode} is {@link CspMode#WARN} or
-     * {@link CspMode#STRICT}. A caller that does extra work to collect what it
-     * reports, e.g. to find the detail for
+     * i.e. whether its {@link ContentSecurityPolicyMode} is
+     * {@link ContentSecurityPolicyMode#WARN} or
+     * {@link ContentSecurityPolicyMode#STRICT}. A caller that does extra work
+     * to collect what it reports, e.g. to find the detail for
      * {@link #reportStringJavaScript(String)}, can skip that work when this
      * returns <code>false</code>.
      *
@@ -111,40 +114,44 @@ public final class CspViolationReporter {
      *         <code>false</code> if they are ignored
      */
     public static boolean isEnabled() {
-        return isEnabled(getCspMode(VaadinService.getCurrent()));
+        return isEnabled(
+                getContentSecurityPolicyMode(VaadinService.getCurrent()));
     }
 
-    private static boolean isEnabled(CspMode mode) {
-        return (mode == CspMode.WARN) || (mode == CspMode.STRICT);
+    private static boolean isEnabled(ContentSecurityPolicyMode mode) {
+        return (mode == ContentSecurityPolicyMode.WARN)
+                || (mode == ContentSecurityPolicyMode.STRICT);
     }
 
-    private static CspMode getCspMode(VaadinService service) {
+    private static ContentSecurityPolicyMode getContentSecurityPolicyMode(
+            VaadinService service) {
         // No service outside of a request or UI.access, e.g. for a component
         // built in a background thread before it is attached, and no
         // configuration for a service created with the no-argument
         // constructor: there is no mode to apply then
         DeploymentConfiguration configuration = (service == null) ? null
                 : service.getDeploymentConfiguration();
-        return (configuration == null) ? CspMode.OFF
-                : configuration.getCspMode();
+        return (configuration == null) ? ContentSecurityPolicyMode.OFF
+                : configuration.getContentSecurityPolicyMode();
     }
 
     private static void reportStringJavaScriptWithDetail(String detail) {
         VaadinService service = VaadinService.getCurrent();
-        CspMode mode = getCspMode(service);
+        ContentSecurityPolicyMode mode = getContentSecurityPolicyMode(service);
         if (!isEnabled(mode)) {
             return;
         }
 
         String message = (detail == null) ? MESSAGE
                 : (MESSAGE + " The JavaScript is in \"" + detail + "\".");
-        CspViolationException violation = new CspViolationException(message);
+        ContentSecurityPolicyViolationException violation = new ContentSecurityPolicyViolationException(
+                message);
         StackTraceElement[] stack = violation.getStackTrace();
         // Start the trace at the API rather than at the two methods of this
         // class
         violation.setStackTrace(Arrays.copyOfRange(stack, 2, stack.length));
 
-        if (mode == CspMode.STRICT) {
+        if (mode == ContentSecurityPolicyMode.STRICT) {
             throw violation;
         }
         String callSite = getCallSite(violation.getStackTrace());
@@ -153,8 +160,9 @@ public final class CspViolationReporter {
         if (warnedCalls
                 .computeIfAbsent(service, k -> ConcurrentHashMap.newKeySet())
                 .add(key)) {
-            LoggerFactory.getLogger(CspViolationReporter.class).warn(message,
-                    violation);
+            LoggerFactory
+                    .getLogger(ContentSecurityPolicyViolationReporter.class)
+                    .warn(message, violation);
         }
     }
 
