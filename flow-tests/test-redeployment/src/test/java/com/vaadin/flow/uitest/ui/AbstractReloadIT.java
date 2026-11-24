@@ -15,11 +15,29 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import org.junit.Before;
 import org.openqa.selenium.StaleElementReferenceException;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public abstract class AbstractReloadIT extends ChromeBrowserTest {
+
+    // Tests in this module routinely recompile classes, which causes Spring
+    // Boot DevTools to restart Tomcat. A previous test's restart can still be
+    // in progress when the next test starts, so wait until the server is
+    // reachable instead of failing on the first refused connection.
+    @Before
+    @Override
+    public void checkIfServerAvailable() {
+        waitUntil(driver -> {
+            try {
+                super.checkIfServerAvailable();
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        });
+    }
 
     protected void reloadAndWait() {
         String viewId = getViewId();
