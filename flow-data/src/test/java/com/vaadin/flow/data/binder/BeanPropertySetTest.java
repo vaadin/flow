@@ -22,6 +22,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -569,5 +570,21 @@ class BeanPropertySetTest {
         childName.getSetter().get().accept(bean, "child");
         assertEquals("child", childName.getGetter().apply(bean));
         assertEquals("parent", name.getGetter().apply(bean));
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    void beanClassInPackageNotOpened_getterFailsWithHint() {
+        // the JDK's Path implementation lives in a package that is neither
+        // exported nor opened, so its accessors cannot be made accessible
+        Path bean = Path.of("file.txt");
+        PropertySet<Object> set = BeanPropertySet.get((Class) bean.getClass());
+        ValueProvider<Object, ?> getter = set.getProperty("fileName").get()
+                .getGetter();
+
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class, () -> getter.apply(bean));
+        assertTrue(exception.getMessage().contains("does not open the package '"
+                + bean.getClass().getPackageName() + "'"));
     }
 }

@@ -548,29 +548,35 @@ public class BeanPropertySet<T> implements PropertySet<T> {
                 && readMethod.getDeclaringClass() != Object.class;
     }
 
-    // S3011: bean types do not need to be public, e.g. a data class nested
-    // in a view, so their public accessors are not accessible as such
-    @SuppressWarnings("java:S3011")
     private static Object invokeWrapExceptions(Method method, Object target,
             Object... parameters) {
         try {
-            try {
-                return method.invoke(target, parameters);
-            } catch (IllegalAccessException e) {
-                if (!method.trySetAccessible()) {
-                    Class<?> type = method.getDeclaringClass();
-                    throw new IllegalStateException(String.format(
-                            "Unable to access '%s' of '%s'. Its module does "
-                                    + "not open the package '%s' to Vaadin. "
-                                    + "Make the class public, or open the "
-                                    + "package in module-info.java.",
-                            method.getName(), type.getName(),
-                            type.getPackageName()), e);
-                }
-                return method.invoke(target, parameters);
-            }
+            return method.invoke(target, parameters);
+        } catch (IllegalAccessException e) {
+            makeAccessible(method, e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            return method.invoke(target, parameters);
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    // S3011: bean types do not need to be public, e.g. a data class nested
+    // in a view, so their public accessors are not accessible as such
+    @SuppressWarnings("java:S3011")
+    private static void makeAccessible(Method method,
+            IllegalAccessException cause) {
+        if (!method.trySetAccessible()) {
+            Class<?> type = method.getDeclaringClass();
+            throw new IllegalStateException(String.format(
+                    "Unable to access '%s' of '%s'. Its module does not open "
+                            + "the package '%s' to Vaadin. Make the class "
+                            + "public, or open the package in module-info.java.",
+                    method.getName(), type.getName(), type.getPackageName()),
+                    cause);
         }
     }
 
