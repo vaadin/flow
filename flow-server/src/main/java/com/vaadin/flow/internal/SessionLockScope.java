@@ -59,9 +59,7 @@ public final class SessionLockScope implements AutoCloseable {
         Map<Class<?>, CurrentInstance> instances = CurrentInstance
                 .getInstances();
         session.lock();
-        if (VaadinSession.getCurrent() != session) {
-            VaadinSession.setCurrent(session);
-        }
+        VaadinSession.setCurrent(session);
         return new SessionLockScope(session, instances);
     }
 

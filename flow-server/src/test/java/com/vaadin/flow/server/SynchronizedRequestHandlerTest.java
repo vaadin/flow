@@ -142,7 +142,9 @@ class SynchronizedRequestHandlerTest {
             }
         };
         UI ui = session.runWithLock(() -> new MockUI(session));
+        UI previousUI = session.runWithLock(() -> new MockUI(session));
         CurrentInstance.clearAll();
+        UI.setCurrent(previousUI);
         VaadinRequest request = mock(VaadinRequest.class);
         when(request.getService()).thenReturn(session.getService());
         when(request.getReader())
@@ -177,7 +179,9 @@ class SynchronizedRequestHandlerTest {
                         mock(VaadinResponse.class)));
         assertSame(failure, thrown.getCause());
         assertSame(ui, thrown.getUI());
-        assertNull(UI.getCurrent());
+        assertFalse(session.hasLock());
+        assertSame(previousUI, UI.getCurrent());
+        assertNull(VaadinSession.getCurrent());
     }
 
     @ParameterizedTest
