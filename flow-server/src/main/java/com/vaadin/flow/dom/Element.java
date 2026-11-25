@@ -65,6 +65,7 @@ import com.vaadin.flow.internal.DiscardAwareExecution;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
@@ -2063,13 +2064,23 @@ public class Element extends Node<Element> {
      * @since 25.0
      * @throws ContentSecurityPolicyViolationException
      *             in the {@link ContentSecurityPolicyMode#STRICT} Content
-     *             Security Policy mode
+     *             Security Policy mode, unless the string is declared in an
+     *             interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
     public PendingJavaScriptResult executeJs(String expression,
             @Nullable Object @Nullable... parameters) {
-        ContentSecurityPolicyViolationReporter.reportStringJavaScript();
-        return scheduleExecuteJs(expression,
-                parameters == null ? new @Nullable Object[0] : parameters);
+        @Nullable
+        Object[] arguments = parameters == null ? new @Nullable Object[0]
+                : parameters;
+        JsCall fallback = JsStringFallbacks.findDeclaredCall(expression,
+                arguments);
+        if (fallback != null) {
+            return scheduleJsCall(fallback);
+        }
+        ContentSecurityPolicyViolationReporter.reportStringExecuteJs(expression,
+                arguments.length);
+        return scheduleExecuteJs(expression, arguments);
     }
 
     /**
@@ -2245,7 +2256,9 @@ public class Element extends Node<Element> {
      * @since 25.2
      * @throws ContentSecurityPolicyViolationException
      *             in the {@link ContentSecurityPolicyMode#STRICT} Content
-     *             Security Policy mode
+     *             Security Policy mode, unless the string is declared in an
+     *             interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
     public Registration addJsInitializer(String expression,
             @Nullable Object @Nullable... parameters) {
