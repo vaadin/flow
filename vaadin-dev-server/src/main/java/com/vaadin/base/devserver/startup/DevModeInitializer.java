@@ -57,6 +57,7 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JBossVfsUtil;
+import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
@@ -172,6 +173,29 @@ public class DevModeInitializer implements Serializable {
     }
 
     /**
+     * Gets the folder that the development mode build writes the files to that
+     * the server reads back from the class path, such as the list of
+     * {@code @JsStringFallback} interfaces. It is in the folder the build tool
+     * puts resources into, {@code target/classes} for Maven and
+     * {@code build/resources/main} for Gradle, since only that one is on the
+     * class path of the running application.
+     *
+     * @param configuration
+     *            the configuration of the application, not <code>null</code>
+     * @return the folder, not <code>null</code>
+     */
+    public static File getServletResourceOutputDirectory(
+            AbstractConfiguration configuration) {
+        File resources = configuration.getOutputResourceFolder();
+        if (resources == null) {
+            // No project folder to find it in: the Maven layout, relative to
+            // where the application runs
+            resources = new File(configuration.getBuildFolder(), "classes");
+        }
+        return new File(resources, VAADIN_SERVLET_RESOURCES);
+    }
+
+    /**
      * Initialize the devmode server if not in production mode or compatibility
      * mode.
      *
@@ -243,8 +267,7 @@ public class DevModeInitializer implements Serializable {
         options.withBuildResultFolders(
                 Paths.get(target.getPath(), "classes", VAADIN_WEBAPP_RESOURCES)
                         .toFile(),
-                Paths.get(target.getPath(), "classes", VAADIN_SERVLET_RESOURCES)
-                        .toFile());
+                getServletResourceOutputDirectory(config));
 
         // If we are missing either the base or generated package json
         // files generate those

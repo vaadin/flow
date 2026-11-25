@@ -143,6 +143,7 @@ const hasCommercialBanner = existsSync(commercialBannerComponent);
 // built with.
 const jsDefinitionsFile = path.resolve(frontendFolder, settings.generatedFolder, 'vaadin-js-definitions.js');
 const hasJsDefinitions = existsSync(jsDefinitionsFile);
+const jsDefinitionIdsFile = path.resolve(frontendFolder, settings.generatedFolder, 'vaadin-js-definition-ids.json');
 
 // The browsers that Vaadin supports: Chrome, Edge and Firefox evergreen at the
 // versions current at release, Firefox 153 ESR, and Safari 17 in its latest
@@ -354,6 +355,17 @@ function statsExtracterPlugin(): PluginOption {
           .update(fileBuffer, 'utf8')
           .digest('hex');
       }
+      // The identifier of a function is a hash of its JavaScript, so listing
+      // them lets a build tell whether the bundle carries every function it
+      // needs, even when the bundle carries more. TaskGenerateJsDefinitions
+      // writes them next to the file it generates, with the names that a
+      // development bundle gives them. Without the list, the build compares
+      // the whole file instead.
+      const jsDefinitionIds: { functionIds?: string[]; names?: Record<string, string> } = existsSync(
+        jsDefinitionIdsFile
+      )
+        ? JSON.parse(readFileSync(jsDefinitionIdsFile, { encoding: 'utf-8' }))
+        : {};
 
       const themeJsonContents: Record<string, string> = {};
       const themesFolder = path.resolve(jarResourcesFolder, 'themes');
@@ -381,6 +393,8 @@ function statsExtracterPlugin(): PluginOption {
         npmModules: npmModuleAndVersion,
         bundleImports: generatedImports,
         frontendHashes: frontendFiles,
+        jsDefinitionFunctionIds: jsDefinitionIds.functionIds,
+        jsDefinitionNames: jsDefinitionIds.names,
         themeJsonContents: themeJsonContents,
         pwaOfflinePath: settings.offlinePath,
         pwaOfflineEnabled: settings.offlineEnabled,
