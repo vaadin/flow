@@ -51,6 +51,7 @@ import com.vaadin.flow.data.validator.IntegerRangeValidator;
 import com.vaadin.flow.data.validator.NotEmptyValidator;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.tests.data.bean.NonPublicBeans;
 import com.vaadin.flow.tests.data.bean.Person;
 import com.vaadin.flow.tests.data.bean.Sex;
 
@@ -2973,6 +2974,21 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         // Check that invalid record writing fails
         ageField.setValue("invalid value");
         assertThrows(ValidationException.class, () -> binder.writeRecord());
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    void readRecord_writeRecord_nonPublicRecord() throws ValidationException {
+        Binder<Object> binder = new Binder<>(
+                (Class) NonPublicBeans.RECORD_TYPE);
+        TestTextField nameField = new TestTextField();
+        binder.forField(nameField).bind("name");
+
+        binder.readBean(NonPublicBeans.newRecord("test"));
+        assertEquals("test", nameField.getValue());
+
+        nameField.setValue("foo");
+        assertEquals(NonPublicBeans.newRecord("foo"), binder.writeRecord());
     }
 
     private TestTextField createNullRejectingFieldWithEmptyValue(

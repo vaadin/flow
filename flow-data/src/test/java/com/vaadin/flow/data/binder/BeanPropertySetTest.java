@@ -41,6 +41,7 @@ import com.vaadin.flow.internal.BeanUtil;
 import com.vaadin.flow.tests.data.bean.Address;
 import com.vaadin.flow.tests.data.bean.Country;
 import com.vaadin.flow.tests.data.bean.FatherAndSon;
+import com.vaadin.flow.tests.data.bean.NonPublicBeans;
 import com.vaadin.flow.tests.data.bean.Sex;
 import com.vaadin.flow.tests.server.ClassesSerializableUtils;
 
@@ -549,5 +550,24 @@ class BeanPropertySetTest {
         assertEquals("something", defs.get(3).getName());
         assertEquals(String.class, defs.get(3).getType());
 
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    void nonPublicBeanClass_getterAndSetterWork() {
+        Object bean = NonPublicBeans.newBeanWithChild();
+        PropertySet<Object> set = BeanPropertySet
+                .get((Class) NonPublicBeans.BEAN_TYPE);
+
+        PropertyDefinition<Object, Object> name = (PropertyDefinition) set
+                .getProperty("name").get();
+        name.getSetter().get().accept(bean, "parent");
+        assertEquals("parent", name.getGetter().apply(bean));
+
+        PropertyDefinition<Object, Object> childName = (PropertyDefinition) set
+                .getProperty("child.name").get();
+        childName.getSetter().get().accept(bean, "child");
+        assertEquals("child", childName.getGetter().apply(bean));
+        assertEquals("parent", name.getGetter().apply(bean));
     }
 }

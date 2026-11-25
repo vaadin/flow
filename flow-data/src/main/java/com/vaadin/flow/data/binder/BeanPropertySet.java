@@ -548,10 +548,20 @@ public class BeanPropertySet<T> implements PropertySet<T> {
                 && readMethod.getDeclaringClass() != Object.class;
     }
 
+    // S3011: bean types do not need to be public, e.g. a data class nested
+    // in a view, so their public accessors are not accessible as such
+    @SuppressWarnings("java:S3011")
     private static Object invokeWrapExceptions(Method method, Object target,
             Object... parameters) {
         try {
-            return method.invoke(target, parameters);
+            try {
+                return method.invoke(target, parameters);
+            } catch (IllegalAccessException e) {
+                if (!method.trySetAccessible()) {
+                    throw e;
+                }
+                return method.invoke(target, parameters);
+            }
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
