@@ -48,6 +48,7 @@ import com.vaadin.flow.tests.server.ClassesSerializableUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -584,7 +585,12 @@ class BeanPropertySetTest {
 
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class, () -> getter.apply(bean));
-        assertTrue(exception.getMessage().contains("does not open the package '"
-                + bean.getClass().getPackageName() + "'"));
+        assertEquals(String.format(
+                "Unable to access 'getFileName' of '%s'. Its module does not "
+                        + "open the package '%s' to Vaadin. Make the class "
+                        + "public, or open the package in module-info.java.",
+                bean.getClass().getName(), bean.getClass().getPackageName()),
+                exception.getMessage());
+        assertInstanceOf(IllegalAccessException.class, exception.getCause());
     }
 }
