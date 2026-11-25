@@ -358,11 +358,14 @@ function statsExtracterPlugin(): PluginOption {
       // The identifier of a function is a hash of its JavaScript, so listing
       // them lets a build tell whether the bundle carries every function it
       // needs, even when the bundle carries more. TaskGenerateJsDefinitions
-      // writes them next to the file it generates. Without the list, the
-      // build compares the whole file instead.
-      const jsDefinitionFunctionIds: string[] | undefined = existsSync(jsDefinitionIdsFile)
+      // writes them next to the file it generates, with the names that a
+      // development bundle gives them. Without the list, the build compares
+      // the whole file instead.
+      const jsDefinitionIds: { functionIds?: string[]; names?: Record<string, string> } = existsSync(
+        jsDefinitionIdsFile
+      )
         ? JSON.parse(readFileSync(jsDefinitionIdsFile, { encoding: 'utf-8' }))
-        : undefined;
+        : {};
 
       const themeJsonContents: Record<string, string> = {};
       const themesFolder = path.resolve(jarResourcesFolder, 'themes');
@@ -390,7 +393,8 @@ function statsExtracterPlugin(): PluginOption {
         npmModules: npmModuleAndVersion,
         bundleImports: generatedImports,
         frontendHashes: frontendFiles,
-        jsDefinitionFunctionIds,
+        jsDefinitionFunctionIds: jsDefinitionIds.functionIds,
+        jsDefinitionNames: jsDefinitionIds.names,
         themeJsonContents: themeJsonContents,
         pwaOfflinePath: settings.offlinePath,
         pwaOfflineEnabled: settings.offlineEnabled,

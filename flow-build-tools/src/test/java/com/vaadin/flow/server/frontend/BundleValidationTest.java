@@ -1150,6 +1150,16 @@ class BundleValidationTest {
         ArrayNode functionIds = stats
                 .putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
         bundledFunctionIds.forEach(functionIds::add);
+        if (mode == Mode.DEVELOPMENT_BUNDLE) {
+            // A development bundle names its functions as the application
+            // does, a production bundle names none
+            ObjectNode names = stats.putObject(
+                    BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY);
+            names.put(JsCall.functionId("this.focus()", 0, false),
+                    BundledJs.class.getName() + ".focus/0");
+            names.put(JsCall.functionId("this.blur()", 0, false),
+                    AlsoBundledJs.class.getName() + ".blur/0");
+        }
         setupFrontendUtilsMock(stats);
 
         Logger logger = Mockito.spy(Logger.class);
@@ -1168,6 +1178,62 @@ class BundleValidationTest {
         Mockito.verify(logger, Mockito.times(expectedNeedsBuild ? 1 : 0)).info(
                 Mockito.contains("the bundle does not carry"),
                 Mockito.eq(BundledJs.class.getName()));
+    }
+
+    static Stream<Arguments> namesOfTheFocusFunction() {
+        // What the stats of a development bundle name the function of
+        // BundledJs by: what it was named before a rename, nothing, or no
+        // names at all for any function
+        return Stream.of(
+                Arguments.of(BundledJs.class.getName() + ".oldFocus/0", true),
+                Arguments.of(null, true), Arguments.of(null, false));
+    }
+
+    @ParameterizedTest
+    @MethodSource("namesOfTheFocusFunction")
+    void developmentBundleNamesAFunctionDifferently_rebuild(
+            String bundledFocusName, boolean statsHaveNames) {
+        setupMode(Mode.DEVELOPMENT_BUNDLE);
+        doReturn(Set.of(BundledJs.class, AlsoBundledJs.class)).when(finder)
+                .getAnnotatedClasses(JsDefinition.class);
+        doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
+
+        ObjectNode stats = getBasicStats();
+        ArrayNode functionIds = stats
+                .putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
+        String focus = JsCall.functionId("this.focus()", 0, false);
+        String blur = JsCall.functionId("this.blur()", 0, false);
+        functionIds.add(focus);
+        functionIds.add(blur);
+        // The same JavaScript, so the identifier is the same and only the
+        // name a message gives differs
+        if (statsHaveNames) {
+            ObjectNode names = stats.putObject(
+                    BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY);
+            if (bundledFocusName != null) {
+                names.put(focus, bundledFocusName);
+            }
+            names.put(blur, AlsoBundledJs.class.getName() + ".blur/0");
+        }
+        setupFrontendUtilsMock(stats);
+
+        Logger logger = Mockito.spy(Logger.class);
+        boolean needsBuild;
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
+            loggerFactory.when(
+                    () -> LoggerFactory.getLogger(BundleValidationUtil.class))
+                    .thenReturn(logger);
+            needsBuild = BundleValidationUtil.needsBuild(options, depScanner,
+                    mode);
+        }
+
+        assertTrue(needsBuild,
+                "a bundle that names a function by what was renamed should be rebuilt");
+        Mockito.verify(logger).info(Mockito.contains("names differently"),
+                Mockito.eq(statsHaveNames ? BundledJs.class.getName()
+                        : AlsoBundledJs.class.getName() + ", "
+                                + BundledJs.class.getName()));
     }
 
     @ParameterizedTest

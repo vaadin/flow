@@ -1,6 +1,6 @@
 # test-csp-strict-spring-security
 
-Integration tests for the `csp=strict` setting in an application that also
+Integration tests for the `contentSecurityPolicy=strict` setting in an application that also
 uses Spring Security, where Spring Security is configured with a
 `Content-Security-Policy` of its own.
 

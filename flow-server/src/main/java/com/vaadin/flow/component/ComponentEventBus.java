@@ -318,8 +318,8 @@ public class ComponentEventBus implements Serializable {
         if (AnnotationReader
                 .getAnnotationFor(eventType, PrebuiltEventData.class)
                 .isPresent()) {
-            ElementListenerMap.addEventDataWithoutCspReport(registration,
-                    eventData);
+            ElementListenerMap.addEventDataWithoutContentSecurityPolicyReport(
+                    registration, eventData);
         } else {
             ElementListenerMap.addEventData(registration, eventData);
         }
