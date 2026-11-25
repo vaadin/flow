@@ -214,21 +214,34 @@ class BundleUtilsTest {
         verifyNoInteractions(logger);
     }
 
+    @Test
+    void checkJsFunctionsBundled_serviceWithoutConfiguration_logsNothing() {
+        Logger logger = mock(Logger.class);
+
+        runCheck(logger, null, true,
+                () -> BundleUtils.checkJsFunctionsBundled(UnlistedJs.class,
+                        () -> List.of("dead")));
+
+        verifyNoInteractions(logger);
+    }
+
     /**
-     * Runs the given checks with a current service in the given mode, stats
-     * that list the given functions or none, and the given logger for
-     * BundleUtils.
+     * Runs the given checks with a current service in the given mode, or
+     * without a configuration when the mode is <code>null</code>, stats that
+     * list the given functions or none, and the given logger for BundleUtils.
      */
-    private static void runCheck(Logger logger, boolean productionMode,
+    private static void runCheck(Logger logger, Boolean productionMode,
             boolean statsListFunctions, Runnable checks) {
         ObjectNode statsJson = JacksonUtils.createObjectNode();
         if (statsListFunctions) {
             statsJson.putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
                     .add("f00d").add("beef");
         }
-        DeploymentConfiguration configuration = mock(
-                DeploymentConfiguration.class);
-        when(configuration.isProductionMode()).thenReturn(productionMode);
+        DeploymentConfiguration configuration = null;
+        if (productionMode != null) {
+            configuration = mock(DeploymentConfiguration.class);
+            when(configuration.isProductionMode()).thenReturn(productionMode);
+        }
         VaadinService service = mock(VaadinService.class);
         when(service.getDeploymentConfiguration()).thenReturn(configuration);
         try (MockedStatic<BundleUtils> bundleUtils = mockStatic(
