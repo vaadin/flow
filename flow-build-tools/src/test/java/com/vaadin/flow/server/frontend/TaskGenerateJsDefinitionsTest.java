@@ -17,17 +17,23 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
@@ -61,6 +67,7 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -101,6 +108,13 @@ class TaskGenerateJsDefinitionsTest {
 
         @JsExpression("window.alert('Hello')")
         void showGreeting();
+    }
+
+    // The same JavaScript as GreeterJs, under a name that sorts after it
+    @JsDefinition
+    public interface GreeterTwinJs extends JsInvokers {
+        @JsExpression(GREETING_EXPRESSION)
+        void greet(String greeting);
     }
 
     // Only extended, so it does not need the annotation
@@ -537,6 +551,111 @@ class TaskGenerateJsDefinitionsTest {
         assertTrue(content.contains("window.Vaadin.Flow.jsSnippets[\""
                 + BundledEventData.getFunctionId(INHERITING_EXPRESSION)
                 + "\"]"), content);
+    }
+
+    @Test
+    void viteConfig_copiesTheFunctionIdsIntoTheStats() throws IOException {
+        // The stats of a bundle list its functions and their names from the
+        // file this task writes, and the bundle check reads them under these
+        // keys
+        try (InputStream config = getClass().getClassLoader()
+                .getResourceAsStream("vite.generated.ts")) {
+            assertNotNull(config, "vite.generated.ts is on the class path");
+            String content = new String(config.readAllBytes(),
+                    StandardCharsets.UTF_8);
+            assertTrue(content.contains("'"
+                    + TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME + "'"),
+                    "vite.generated.ts should read "
+                            + TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME);
+            for (String line : List.of(
+                    BundleValidationUtil.JS_DEFINITION_FUNCTION_IDS_STATS_KEY
+                            + ": jsDefinitionIds."
+                            + TaskGenerateJsDefinitions.FUNCTION_IDS_KEY + ",",
+                    BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY
+                            + ": jsDefinitionIds."
+                            + TaskGenerateJsDefinitions.NAMES_KEY + ",")) {
+                assertTrue(content.contains(line),
+                        "vite.generated.ts should write " + line);
+            }
+        }
+    }
+
+    @Test
+    void render_listsEveryFunctionWithWhatDeclaresIt() {
+        Map<String, String> expected = new HashMap<>();
+        Stream.of(GreeterJs.class, StopperJs.class, TemplateJs.class)
+                .forEach(definition -> Stream.of(definition.getMethods())
+                        .forEach(method -> expected.put(
+                                JsCall.functionId(method),
+                                definition.getName())));
+        BundledEventData.getBundledEventData(OffsetEvent.class).stream()
+                .map(BundledEventData::getFunctionId)
+                .forEach(id -> expected.put(id, OffsetEvent.class.getName()));
+
+        // A function declared twice is one function, named after the
+        // definition that sorts first
+        TaskGenerateJsDefinitions.Rendered rendered = TaskGenerateJsDefinitions
+                .render(List.of(GreeterTwinJs.class, GreeterJs.class,
+                        StopperJs.class, TemplateJs.class),
+                        List.of(OffsetEvent.class), false);
+
+        assertEquals(expected, rendered.functionIds());
+        assertTrue(rendered.names().isEmpty(),
+                "a production file names nothing: " + rendered.names());
+    }
+
+    @Test
+    void render_developmentMode_listsTheNamesOfEveryFunction() {
+        TaskGenerateJsDefinitions.Rendered rendered = TaskGenerateJsDefinitions
+                .render(List.of(GreeterTwinJs.class, GreeterJs.class),
+                        List.of(OffsetEvent.class), true);
+
+        String greeting = JsCall.functionId(GREETING_EXPRESSION, 1, false);
+        // Declared twice, so named after both, the one the file assigns last
+        // at the end
+        List<String> greetingNames = List.of(
+                GreeterJs.class.getName() + ".showGreeting/1",
+                GreeterTwinJs.class.getName() + ".greet/1");
+        assertEquals(greetingNames, rendered.names().get(greeting));
+        String content = rendered.content();
+        assertTrue(
+                content.indexOf("] = \"" + greetingNames.get(1)
+                        + "\";") > content.indexOf(
+                                "] = \"" + greetingNames.get(0) + "\";"),
+                "the file should assign the last name last: " + content);
+        BundledEventData.getBundledEventData(OffsetEvent.class)
+                .forEach(
+                        eventData -> assertEquals(
+                                List.of(OffsetEvent.class.getName()
+                                        + " @EventData(\""
+                                        + BundledEventData.getExpression(
+                                                eventData)
+                                        + "\")"),
+                                rendered.names().get(BundledEventData
+                                        .getFunctionId(eventData))));
+    }
+
+    @Test
+    void execute_writesTheFunctionIdsNextToTheFile()
+            throws ExecutionFailedException, IOException {
+        task.execute();
+
+        File idsFile = new File(new File(frontendFolder, GENERATED),
+                TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME);
+        JsonNode written = JacksonUtils.getMapper()
+                .readTree(Files.readString(idsFile.toPath()));
+        List<String> ids = JacksonUtils
+                .<JsonNode> stream((ArrayNode) written
+                        .get(TaskGenerateJsDefinitions.FUNCTION_IDS_KEY))
+                .map(JsonNode::asString).toList();
+        assertEquals(List.copyOf(task.render().functionIds().keySet()), ids);
+        String greeting = JsCall.functionId(GREETING_EXPRESSION, 1, false);
+        assertTrue(ids.contains(greeting),
+                "the ids should list the declared functions: " + ids);
+        // Written for development, so with what a message names each by
+        assertEquals(GreeterJs.class.getName() + ".showGreeting/1",
+                written.get(TaskGenerateJsDefinitions.NAMES_KEY).get(greeting)
+                        .asString());
     }
 
     @Test
@@ -1096,6 +1215,28 @@ class TaskGenerateJsDefinitionsTest {
                     + "\"] = function () {"), content);
             assertTrue(content.contains(expression), content);
         }
+    }
+
+    @Test
+    void render_listsTheFunctionsOfStringFallbacksWithWhatDeclaresThem()
+            throws Exception {
+        Map<String, String> expected = new HashMap<>();
+        expected.put(
+                JsStringFallbacks.functionId(InheritedFocusFallbacks.class,
+                        InheritedFocusFallbacks.class.getMethod("focus")),
+                InheritedFocusFallbacks.class.getName());
+        Stream.of("event.key === 'Escape'", "event.target.value.trim().length")
+                .forEach(expression -> expected.put(
+                        BundledEventData.getFunctionId(expression),
+                        EventFallbacks.class.getName()));
+
+        // A bundle is checked against these, so one without the functions of
+        // the fallbacks would be taken as carrying everything
+        TaskGenerateJsDefinitions.Rendered rendered = TaskGenerateJsDefinitions
+                .render(List.of(InheritedFocusFallbacks.class,
+                        EventFallbacks.class), List.of(), false);
+
+        assertEquals(expected, rendered.functionIds());
     }
 
     @Test
