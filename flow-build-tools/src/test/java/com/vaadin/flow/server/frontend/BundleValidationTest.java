@@ -1205,8 +1205,7 @@ class BundleValidationTest {
                 FrontendUtils.GENERATED
                         + FrontendUtils.JS_DEFINITIONS_FILE_NAME,
                 "not the hash of what the interfaces declare");
-        stats.putArray(
-                BundleValidationUtil.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
+        stats.putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
                 .add(JsCall.functionId("this.blur()", 0, false));
         setupFrontendUtilsMock(stats);
 
