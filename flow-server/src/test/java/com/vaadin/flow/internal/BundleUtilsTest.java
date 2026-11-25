@@ -38,7 +38,7 @@ import com.vaadin.flow.server.VaadinService;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
@@ -180,6 +180,9 @@ class BundleUtilsTest {
     interface UnlistedJs {
     }
 
+    interface NoConfigurationJs {
+    }
+
     @Test
     void checkJsFunctionsBundled_productionMode_logsErrorOnceForMissingFunction() {
         Logger logger = mock(Logger.class);
@@ -195,7 +198,8 @@ class BundleUtilsTest {
                     () -> List.of("f00d", "dead"));
         });
 
-        verify(logger, times(1)).error(anyString(),
+        // Says how to get the class into the bundle
+        verify(logger, times(1)).error(contains("@Uses({}.class)"),
                 eq(MissingJs.class.getName()), eq("MissingJs"),
                 eq("MissingJs"));
     }
@@ -218,9 +222,8 @@ class BundleUtilsTest {
     void checkJsFunctionsBundled_serviceWithoutConfiguration_logsNothing() {
         Logger logger = mock(Logger.class);
 
-        runCheck(logger, null, true,
-                () -> BundleUtils.checkJsFunctionsBundled(UnlistedJs.class,
-                        () -> List.of("dead")));
+        runCheck(logger, null, true, () -> BundleUtils.checkJsFunctionsBundled(
+                NoConfigurationJs.class, () -> List.of("dead")));
 
         verifyNoInteractions(logger);
     }
