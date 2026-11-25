@@ -411,6 +411,7 @@ function invokeJavaScript(
 
   try {
     // The last entry is the expression; the rest are parameter names.
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval -- the string executeJs, remove with it
     const fn = new Function(...parameterNamesAndCode) as (this: object, ...args: unknown[]) => unknown;
     fn.apply(context, parameters);
   } catch (exception) {

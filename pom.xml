@@ -114,7 +114,7 @@
     <!-- Dependencies -->
     <spring.boot.version>4.2.0</spring.boot.version>
     <jakarta.ee.version>11.0.0</jakarta.ee.version>
-    <hibernate.validator.version>9.1.6.Final</hibernate.validator.version>
+    <hibernate.validator.version>9.2.0.Final</hibernate.validator.version>
     <slf4j.version>2.0.20</slf4j.version>
     <polymer.version>2.6.1</polymer.version>
     <jackson.version>3.1.8</jackson.version>
@@ -175,6 +175,8 @@
          jar sets it following the naming rule in CONVENTIONS.md (Build &
          Dependencies). Empty means no entry. -->
     <jpms.module.name/>
+
+    <forbiddenapis.version>3.11</forbiddenapis.version>
 
     <!-- OSGi -->
     <!-- Note: the parserVersion value is set by build-helper-maven-plugin -->
@@ -926,6 +928,31 @@
             <id>make-index</id>
             <goals>
               <goal>jandex</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!-- Reports calls of the APIs that send JavaScript as a string in the
+             main classes, so that Flow itself keeps working with a strict
+             Content Security Policy. flow-tests sets forbiddenapis.skip,
+             because its test applications call these APIs on purpose. -->
+        <groupId>de.thetaphi</groupId>
+        <artifactId>forbiddenapis</artifactId>
+        <version>${forbiddenapis.version}</version>
+        <configuration>
+          <signaturesFiles>
+            <signaturesFile>${maven.multiModuleProjectDirectory}/forbidden-apis/string-javascript.txt</signaturesFile>
+          </signaturesFiles>
+          <suppressAnnotations>
+            <suppressAnnotation>com.vaadin.flow.internal.SuppressForbidden</suppressAnnotation>
+          </suppressAnnotations>
+        </configuration>
+        <executions>
+          <execution>
+            <id>string-javascript</id>
+            <goals>
+              <goal>check</goal>
             </goals>
           </execution>
         </executions>
