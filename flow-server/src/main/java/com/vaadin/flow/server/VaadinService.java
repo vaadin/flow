@@ -2272,16 +2272,14 @@ public abstract class VaadinService implements Serializable {
 
         } catch (final SessionExpiredException e) {
             handleSessionExpired(request, response);
-        } catch (final Exception e) {
-            Exception failure = e;
-            UI failedUI = null;
-            if (e instanceof FailedUIRequestException failedUIRequest) {
-                failure = failedUIRequest.getCause();
-                failedUI = failedUIRequest.getUI();
-            }
-            recordRequestFailure(request, failure);
+        } catch (final FailedUIRequestException e) {
+            recordRequestFailure(request, e.getCause());
             handleExceptionDuringRequest(request, response, vaadinSession,
-                    failure, failedUI);
+                    e.getCause(), e.getUI());
+        } catch (final Exception e) {
+            recordRequestFailure(request, e);
+            handleExceptionDuringRequest(request, response, vaadinSession, e,
+                    null);
         } finally {
             requestEnd(request, response, vaadinSession);
         }

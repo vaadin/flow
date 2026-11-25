@@ -361,9 +361,11 @@ public class PushHandler {
             try (SessionLockScope lock = SessionLockScope.lock(session)
                     .onUnlockFailure(PushHandler::logUnlockFailure)) {
                 UI ui = null;
-                // The catch blocks of the try-with-resources statement would
-                // run after the session is unlocked, but the error handling
-                // needs the lock.
+                /*
+                 * The catch blocks of the try-with-resources statement would
+                 * run after the session is unlocked, but the error handling
+                 * needs the lock.
+                 */
                 try {
                     ui = service.findUI(vaadinRequest);
                     assert UI.getCurrent() == ui;
@@ -385,12 +387,12 @@ public class PushHandler {
                     AtmosphereResource errorResource = resource;
                     if (ui != null
                             && ui.getInternals().getPushConnection() != null) {
-                        // We MUST use the opened push connection if there is
-                        // one.
-                        // Otherwise we will write the response to the wrong
-                        // request
-                        // when using streaming (the client -> server request
-                        // instead of the opened push channel)
+                        /*
+                         * We MUST use the opened push connection if there is
+                         * one. Otherwise we will write the response to the
+                         * wrong request when using streaming (the client ->
+                         * server request instead of the opened push channel)
+                         */
                         errorResource = ((AtmospherePushConnection) ui
                                 .getInternals().getPushConnection())
                                 .getResource();
