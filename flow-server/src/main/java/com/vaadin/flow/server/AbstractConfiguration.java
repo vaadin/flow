@@ -209,7 +209,9 @@ public interface AbstractConfiguration extends Serializable {
      * Only available in development mode.
      * <p>
      * For Maven this is typically {@code target/classes/} and for Gradle -
-     * {@code build/resources/main/}.
+     * {@code build/resources/main/}. When the build folder is not configured,
+     * as in a Gradle project before the Vaadin plugin has written its build
+     * info file, the Gradle resources folder is found from the classpath.
      *
      * @return the folder inside build folder where resources are placed, or
      *         {@code null} if the project folder is unknown.
@@ -226,10 +228,16 @@ public interface AbstractConfiguration extends Serializable {
         if (gradleOutputResources.exists()) {
             // Gradle
             return gradleOutputResources;
-        } else {
-            // Maven
-            return new File(buildFolder, "classes/");
         }
+        // Gradle without the build info file, which is what names the build
+        // folder: read it from the classpath instead of assuming target/
+        File gradleResourcesFromClasspath = FileIOUtils
+                .getGradleResourceFolderFromClasspath();
+        if (gradleResourcesFromClasspath != null) {
+            return gradleResourcesFromClasspath;
+        }
+        // Maven
+        return new File(buildFolder, "classes/");
     }
 
     /**
