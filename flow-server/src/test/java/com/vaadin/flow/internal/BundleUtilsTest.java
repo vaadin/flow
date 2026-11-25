@@ -182,16 +182,19 @@ class BundleUtilsTest {
 
     @Test
     void checkJsFunctionsBundled_productionMode_logsErrorOnceForMissingFunction() {
-        Logger logger = mockCheck(true, true);
+        Logger logger = mock(Logger.class);
 
-        BundleUtils.checkJsFunctionsBundled(CarriedJs.class,
-                () -> List.of("f00d"));
-        verifyNoInteractions(logger);
+        runCheck(logger, true, true, () -> {
+            BundleUtils.checkJsFunctionsBundled(CarriedJs.class,
+                    () -> List.of("f00d"));
+            verifyNoInteractions(logger);
 
-        BundleUtils.checkJsFunctionsBundled(MissingJs.class,
-                () -> List.of("f00d", "dead"));
-        BundleUtils.checkJsFunctionsBundled(MissingJs.class,
-                () -> List.of("f00d", "dead"));
+            BundleUtils.checkJsFunctionsBundled(MissingJs.class,
+                    () -> List.of("f00d", "dead"));
+            BundleUtils.checkJsFunctionsBundled(MissingJs.class,
+                    () -> List.of("f00d", "dead"));
+        });
+
         verify(logger, times(1)).error(anyString(),
                 eq(MissingJs.class.getName()), eq("MissingJs"),
                 eq("MissingJs"));
@@ -201,39 +204,44 @@ class BundleUtilsTest {
     @CsvSource({ "false, true", "true, false" })
     void checkJsFunctionsBundled_developmentModeOrUnlistedFunctions_logsNothing(
             boolean productionMode, boolean statsListFunctions) {
-        Logger logger = mockCheck(productionMode, statsListFunctions);
+        Logger logger = mock(Logger.class);
 
-        BundleUtils.checkJsFunctionsBundled(
-                productionMode ? UnlistedJs.class : DevelopmentJs.class,
-                () -> List.of("dead"));
+        runCheck(logger, productionMode, statsListFunctions,
+                () -> BundleUtils.checkJsFunctionsBundled(
+                        productionMode ? UnlistedJs.class : DevelopmentJs.class,
+                        () -> List.of("dead")));
 
         verifyNoInteractions(logger);
     }
 
-    private Logger mockCheck(boolean productionMode,
-            boolean statsListFunctions) {
+    /**
+     * Runs the given checks with a current service in the given mode, stats
+     * that list the given functions or none, and the given logger for
+     * BundleUtils.
+     */
+    private static void runCheck(Logger logger, boolean productionMode,
+            boolean statsListFunctions, Runnable checks) {
         ObjectNode statsJson = JacksonUtils.createObjectNode();
         if (statsListFunctions) {
             statsJson.putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
                     .add("f00d").add("beef");
         }
-        MockedStatic<BundleUtils> bundleUtils = mockStatic(BundleUtils.class,
-                CALLS_REAL_METHODS);
-        bundleUtils.when(BundleUtils::loadStatsJson).thenReturn(statsJson);
-        closeOnTearDown.add(bundleUtils);
-        Logger logger = mock(Logger.class);
-        MockedStatic<LoggerFactory> loggerFactory = mockStatic(
-                LoggerFactory.class);
-        loggerFactory.when(() -> LoggerFactory.getLogger(BundleUtils.class))
-                .thenReturn(logger);
-        closeOnTearDown.add(loggerFactory);
         DeploymentConfiguration configuration = mock(
                 DeploymentConfiguration.class);
         when(configuration.isProductionMode()).thenReturn(productionMode);
         VaadinService service = mock(VaadinService.class);
         when(service.getDeploymentConfiguration()).thenReturn(configuration);
-        VaadinService.setCurrent(service);
-        closeOnTearDown.add(CurrentInstance::clearAll);
-        return logger;
+        try (MockedStatic<BundleUtils> bundleUtils = mockStatic(
+                BundleUtils.class, CALLS_REAL_METHODS);
+                MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                        LoggerFactory.class)) {
+            bundleUtils.when(BundleUtils::loadStatsJson).thenReturn(statsJson);
+            loggerFactory.when(() -> LoggerFactory.getLogger(BundleUtils.class))
+                    .thenReturn(logger);
+            VaadinService.setCurrent(service);
+            checks.run();
+        } finally {
+            CurrentInstance.clearAll();
+        }
     }
 }
