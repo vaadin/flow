@@ -94,15 +94,16 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
                 return rejectOversizedRequest(response, e);
             }
             Optional<ResponseWriter> responseWriter;
-            UI handledUI;
+            UI handledUI = null;
             try (SessionLockScope lock = SessionLockScope.lock(session)) {
                 try {
                     responseWriter = synchronizedHandleRequest(session, request,
                             response, requestBody);
+                } finally {
                     handledUI = UI.getCurrent();
-                } catch (IOException | RuntimeException e) {
-                    throw withFailedUI(e, UI.getCurrent());
                 }
+            } catch (IOException | RuntimeException e) {
+                throw withFailedUI(e, handledUI);
             }
             if (responseWriter.isPresent()) {
                 try {
@@ -113,21 +114,26 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
             }
             return responseWriter.isPresent();
         } else {
+            UI handledUI = null;
             try (SessionLockScope lock = SessionLockScope.lock(session)) {
                 try {
                     return synchronizedHandleRequest(session, request,
                             response);
-                } catch (IOException | RuntimeException e) {
-                    throw withFailedUI(e, UI.getCurrent());
+                } finally {
+                    handledUI = UI.getCurrent();
                 }
+            } catch (IOException | RuntimeException e) {
+                throw withFailedUI(e, handledUI);
             }
         }
     }
 
     /*
-     * The current instances are restored before the exception reaches the error
-     * handling in VaadinService, which unwraps it and makes the UI current
-     * again while it holds the lock, so that the error handler still sees it.
+     * The UI is the one that was current when the handler returned or threw, so
+     * a failure from unlocking the session is wrapped with it too. The current
+     * instances are restored before the exception reaches the error handling in
+     * VaadinService, which unwraps it and makes the UI current again while it
+     * holds the lock, so that the error handler still sees it.
      */
     private static RuntimeException withFailedUI(Exception failure, UI ui)
             throws IOException {

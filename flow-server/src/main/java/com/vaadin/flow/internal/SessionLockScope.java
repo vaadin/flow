@@ -28,9 +28,9 @@ import com.vaadin.flow.server.VaadinSession;
  * Code that sets the current UI for work it does with the session lock held
  * uses this so that no code runs with a current UI without holding the lock of
  * its session: the current instances that were in place before locking are
- * restored right after unlocking, also when unlocking fails. The session stays
- * current until it is unlocked, as the access tasks that unlocking runs rely on
- * it.
+ * restored right after unlocking, also when unlocking fails. The locked session
+ * is current until it is unlocked, as deadlock detection and the access tasks
+ * that unlocking runs rely on it.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -47,8 +47,8 @@ public final class SessionLockScope implements AutoCloseable {
     }
 
     /**
-     * Locks the given session, remembering the current instances so that
-     * {@link #close()} can restore them.
+     * Locks the given session and makes it the current session, remembering the
+     * current instances so that {@link #close()} can restore them.
      *
      * @param session
      *            the session to lock, not <code>null</code>
@@ -59,12 +59,15 @@ public final class SessionLockScope implements AutoCloseable {
         Map<Class<?>, CurrentInstance> instances = CurrentInstance
                 .getInstances();
         session.lock();
+        if (VaadinSession.getCurrent() != session) {
+            VaadinSession.setCurrent(session);
+        }
         return new SessionLockScope(session, instances);
     }
 
     /**
-     * Locks the given session and makes the given UI current until the scope is
-     * closed.
+     * Locks the given session and makes it and the given UI current until the
+     * scope is closed.
      *
      * @param session
      *            the session to lock, not <code>null</code>

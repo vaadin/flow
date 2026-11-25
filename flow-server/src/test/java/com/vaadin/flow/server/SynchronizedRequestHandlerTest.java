@@ -128,6 +128,60 @@ class SynchronizedRequestHandlerTest {
 
     @ParameterizedTest
     @ValueSource(booleans = { false, true })
+    void handleRequest_unlockThrowsWithCurrentUI_failureWrappedWithUIAndPreviousInstancesRestored(
+            boolean readAndWriteOutsideSessionLock) throws Exception {
+        IllegalStateException failure = new IllegalStateException("BOOM");
+        AtomicBoolean failUnlock = new AtomicBoolean();
+        MockVaadinSession session = new MockVaadinSession() {
+            @Override
+            public void unlock() {
+                super.unlock();
+                if (failUnlock.getAndSet(false)) {
+                    throw failure;
+                }
+            }
+        };
+        UI ui = session.runWithLock(() -> new MockUI(session));
+        CurrentInstance.clearAll();
+        VaadinRequest request = mock(VaadinRequest.class);
+        when(request.getService()).thenReturn(session.getService());
+        when(request.getReader())
+                .thenReturn(new BufferedReader(new StringReader("")));
+        SynchronizedRequestHandler handler = new SynchronizedRequestHandler() {
+            @Override
+            public boolean synchronizedHandleRequest(VaadinSession session,
+                    VaadinRequest request, VaadinResponse response) {
+                UI.setCurrent(ui);
+                failUnlock.set(true);
+                return true;
+            }
+
+            @Override
+            public Optional<ResponseWriter> synchronizedHandleRequest(
+                    VaadinSession session, VaadinRequest request,
+                    VaadinResponse response, String requestBody) {
+                UI.setCurrent(ui);
+                failUnlock.set(true);
+                return Optional.empty();
+            }
+
+            @Override
+            public boolean isReadAndWriteOutsideSessionLock() {
+                return readAndWriteOutsideSessionLock;
+            }
+        };
+
+        FailedUIRequestException thrown = assertThrows(
+                FailedUIRequestException.class,
+                () -> handler.handleRequest(session, request,
+                        mock(VaadinResponse.class)));
+        assertSame(failure, thrown.getCause());
+        assertSame(ui, thrown.getUI());
+        assertNull(UI.getCurrent());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
     void handleRequest_handlerThrowsWithoutCurrentUI_originalExceptionThrownUnwrapped(
             boolean ioException) {
         MockVaadinSession session = new MockVaadinSession();

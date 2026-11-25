@@ -39,6 +39,19 @@ class SessionLockScopeTest {
     }
 
     @Test
+    void lock_otherSessionCurrent_lockedSessionCurrentUntilClosed() {
+        VaadinSession previous = mock(VaadinSession.class);
+        VaadinSession session = mock(VaadinSession.class);
+        VaadinSession.setCurrent(previous);
+
+        try (SessionLockScope lock = SessionLockScope.lock(session)) {
+            assertSame(session, VaadinSession.getCurrent());
+        }
+
+        assertSame(previous, VaadinSession.getCurrent());
+    }
+
+    @Test
     void close_unlockThrows_previousInstancesRestored() {
         CurrentInstance.set(SessionLockScopeTest.class, this);
         VaadinSession session = mock(VaadinSession.class);
