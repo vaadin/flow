@@ -17,13 +17,27 @@ package com.vaadin.flow.test.dom;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 
 @Route("u-i-element")
 public class UIElementView extends Div {
 
+    @JsDefinition
+    public interface ChildJs extends JsInvokers {
+
+        @JsExpression("""
+                var newElement = document.createElement('div');
+                newElement.className='body-child';
+                this.appendChild(newElement);
+                """)
+        void appendChild();
+    }
+
     public UIElementView() {
-        getElement().executeJs(getJs());
+        attachElement();
 
         NativeButton attachElement = new NativeButton("Attach Element via JS",
                 event -> attachElement());
@@ -31,12 +45,6 @@ public class UIElementView extends Div {
     }
 
     private void attachElement() {
-        getElement().executeJs(getJs());
-    }
-
-    private String getJs() {
-        return "var newElement = document.createElement('div');"
-                + "newElement.className='body-child';"
-                + "this.appendChild(newElement);";
+        getElement().executeJs(ChildJs.class).appendChild();
     }
 }

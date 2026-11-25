@@ -35,4 +35,4 @@ com.vaadin.flow.dom.DomListenerRegistration#setFilter(java.lang.String)
 com.vaadin.flow.component.internal.UIInternals$JavaScriptInvocation#<init>(java.lang.String,java.lang.Object[])
 
 @defaultMessage Adds event data without the check of the strict Content Security Policy mode. Only for the keys of data that client code sends itself, such as @PrebuiltEventData
-com.vaadin.flow.internal.nodefeature.ElementListenerMap#addEventDataWithoutCspReport(com.vaadin.flow.dom.DomListenerRegistration,java.util.List)
+com.vaadin.flow.internal.nodefeature.ElementListenerMap#addEventDataWithoutContentSecurityPolicyReport(com.vaadin.flow.dom.DomListenerRegistration,java.util.List)
