@@ -1180,6 +1180,41 @@ class BundleValidationTest {
                 Mockito.eq(BundledJs.class.getName()));
     }
 
+    static Stream<Arguments> reachedDefinitions() {
+        // The bundle carries the function of AlsoBundledJs only, so it is
+        // rebuilt only when BundledJs is reached
+        return Stream.of(
+                Arguments.of(Set.of(AlsoBundledJs.class.getName()), false),
+                Arguments.of(Set.of(BundledJs.class.getName(),
+                        AlsoBundledJs.class.getName()), true));
+    }
+
+    @ParameterizedTest
+    @MethodSource("reachedDefinitions")
+    void optimizedProductionBundle_rebuildOnlyWhenAReachedDefinitionIsMissing(
+            Set<String> reached, boolean expectedNeedsBuild) {
+        setupMode(Mode.PRODUCTION_PRECOMPILED_BUNDLE);
+        options.useByteCodeScanner(true);
+        when(depScanner.getClasses()).thenReturn(reached);
+        doReturn(Set.of(BundledJs.class, AlsoBundledJs.class)).when(finder)
+                .getAnnotatedClasses(JsDefinition.class);
+        doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
+
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
+                FrontendUtils.GENERATED
+                        + FrontendUtils.JS_DEFINITIONS_FILE_NAME,
+                "not the hash of what the interfaces declare");
+        stats.putArray(
+                BundleValidationUtil.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
+                .add(JsCall.functionId("this.blur()", 0, false));
+        setupFrontendUtilsMock(stats);
+
+        assertEquals(expectedNeedsBuild,
+                BundleValidationUtil.needsBuild(options, depScanner, mode),
+                "only a reached definition whose function the bundle lacks should make it be rebuilt");
+    }
+
     static Stream<Arguments> namesOfTheFocusFunction() {
         // What the stats of a development bundle name the function of
         // BundledJs by: what it was named before a rename, nothing, or no

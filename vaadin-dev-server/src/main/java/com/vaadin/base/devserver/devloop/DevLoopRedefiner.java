@@ -71,6 +71,7 @@ import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.theme.Theme;
 
@@ -1471,6 +1472,22 @@ final class DevLoopRedefiner {
             for (Method method : ReflectTools.getCurrentPublicMethods(type)) {
                 if (method.isAnnotationPresent(JsExpression.class)) {
                     imports.add("jsdefinition:" + fingerprintOf(method));
+                }
+            }
+            // A fallback interface also puts the filters and event data it
+            // lists into the bundle, and its calls are generated apart from
+            // other calls, so marking or unmarking it changes their functions
+            JsStringFallback fallback = type
+                    .getAnnotation(JsStringFallback.class);
+            if (fallback != null) {
+                imports.add("jsstringfallback");
+                for (String filter : fallback.filters()) {
+                    imports.add("eventfilter:"
+                            + BundledEventData.getFunctionId(filter));
+                }
+                for (String eventData : fallback.eventData()) {
+                    imports.add("eventdata:"
+                            + BundledEventData.getFunctionId(eventData));
                 }
             }
         }

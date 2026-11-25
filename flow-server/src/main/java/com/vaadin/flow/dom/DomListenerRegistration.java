@@ -76,7 +76,8 @@ public interface DomListenerRegistration extends Registration {
      * @throws ContentSecurityPolicyViolationException
      *             in the {@link ContentSecurityPolicyMode#STRICT} Content
      *             Security Policy mode, unless the expression is a property
-     *             path
+     *             path or is listed in
+     *             {@link com.vaadin.flow.js.JsStringFallback#eventData()}
      * @see #addEventDataElementPath(String) for mapping an element
      * @see #mapEventTargetElement() to map the {@code event.target} to an
      *      element
@@ -192,7 +193,9 @@ public interface DomListenerRegistration extends Registration {
      * @return this registration, for chaining
      * @throws ContentSecurityPolicyViolationException
      *             in the {@link ContentSecurityPolicyMode#STRICT} Content
-     *             Security Policy mode, unless the filter is a property path
+     *             Security Policy mode, unless the filter is a property path or
+     *             is listed in
+     *             {@link com.vaadin.flow.js.JsStringFallback#filters()}
      */
     DomListenerRegistration setFilter(String filter);
 

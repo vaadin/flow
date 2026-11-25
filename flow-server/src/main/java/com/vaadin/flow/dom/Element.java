@@ -65,6 +65,7 @@ import com.vaadin.flow.internal.DiscardAwareExecution;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
@@ -2063,13 +2064,23 @@ public class Element extends Node<Element> {
      * @since 25.0
      * @throws ContentSecurityPolicyViolationException
      *             in the {@link ContentSecurityPolicyMode#STRICT} Content
-     *             Security Policy mode
+     *             Security Policy mode, unless the string is declared in an
+     *             interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
     public PendingJavaScriptResult executeJs(String expression,
             @Nullable Object @Nullable... parameters) {
-        ContentSecurityPolicyViolationReporter.reportStringJavaScript();
-        return scheduleExecuteJs(expression,
-                parameters == null ? new @Nullable Object[0] : parameters);
+        @Nullable
+        Object[] arguments = parameters == null ? new @Nullable Object[0]
+                : parameters;
+        JsCall fallback = JsStringFallbacks.findDeclaredCall(expression,
+                arguments);
+        if (fallback != null) {
+            return scheduleJsCall(fallback);
+        }
+        ContentSecurityPolicyViolationReporter.reportStringExecuteJs(expression,
+                arguments.length);
+        return scheduleExecuteJs(expression, arguments);
     }
 
     /**
@@ -2105,12 +2116,15 @@ public class Element extends Node<Element> {
      * handlers already converted to that type.
      * <p>
      * What differs is that nothing about the JavaScript is decided at the call
-     * site: the build collects the declarations of every JavaScript definition
+     * site: the build collects the declarations of the JavaScript definitions
      * into the bundle, and the client runs the collected function after looking
-     * it up by an identifier of the JavaScript itself. No expression is sent
-     * and none is compiled in the browser, so the call works under a content
-     * security policy without <code>unsafe-eval</code>, and what declared the
-     * JavaScript in Java is not sent to a production browser either.
+     * it up by an identifier of the JavaScript itself. An optimized production
+     * build collects only the definitions it can reach from the entry points of
+     * the application; see {@link JsDefinition} for how to keep one that it
+     * does not reach. No expression is sent and none is compiled in the
+     * browser, so the call works under a content security policy without
+     * <code>unsafe-eval</code>, and what declared the JavaScript in Java is not
+     * sent to a production browser either.
      * <p>
      * The scheduled invocation carries the call as a {@link JsCall}, so a
      * driver of the client side that can not run JavaScript can recognize it,
@@ -2245,7 +2259,9 @@ public class Element extends Node<Element> {
      * @since 25.2
      * @throws ContentSecurityPolicyViolationException
      *             in the {@link ContentSecurityPolicyMode#STRICT} Content
-     *             Security Policy mode
+     *             Security Policy mode, unless the string is declared in an
+     *             interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
     public Registration addJsInitializer(String expression,
             @Nullable Object @Nullable... parameters) {

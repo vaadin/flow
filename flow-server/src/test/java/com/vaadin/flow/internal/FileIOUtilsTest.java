@@ -126,6 +126,46 @@ class FileIOUtilsTest {
         assertNull(FileIOUtils.getProjectFolderFromClasspath(url));
     }
 
+    @Test
+    void gradleResourceFolderFromClassesFolder(@TempDir File projectFolder)
+            throws Exception {
+        Files.createFile(new File(projectFolder, "build.gradle").toPath());
+        // Gradle puts the classes folder first on the classpath
+        URL url = gradleOutputFolder(projectFolder, "build/classes/java/main/");
+        File resources = new File(projectFolder, "build/resources/main");
+        Files.createDirectories(resources.toPath());
+
+        assertEquals(resources, FileIOUtils.getGradleResourceFolder(url));
+    }
+
+    @Test
+    void gradleResourceFolderInCustomBuildFolder(@TempDir File projectFolder)
+            throws Exception {
+        Files.createFile(new File(projectFolder, "build.gradle.kts").toPath());
+        URL url = gradleOutputFolder(projectFolder, "out/resources/main/");
+
+        assertEquals(new File(projectFolder, "out/resources/main"),
+                FileIOUtils.getGradleResourceFolder(url));
+    }
+
+    @Test
+    void noGradleResourceFolderWhenItDoesNotExist(@TempDir File projectFolder)
+            throws Exception {
+        Files.createFile(new File(projectFolder, "build.gradle").toPath());
+        URL url = gradleOutputFolder(projectFolder, "build/classes/java/main/");
+
+        assertNull(FileIOUtils.getGradleResourceFolder(url));
+    }
+
+    @Test
+    void noGradleResourceFolderForMavenClassesFolder(
+            @TempDir File projectFolder) throws Exception {
+        Files.createFile(new File(projectFolder, "pom.xml").toPath());
+        URL url = gradleOutputFolder(projectFolder, "target/classes/");
+
+        assertNull(FileIOUtils.getGradleResourceFolder(url));
+    }
+
     private static URL gradleOutputFolder(File projectFolder,
             String relativePath) throws Exception {
         File outputFolder = new File(projectFolder, relativePath);
