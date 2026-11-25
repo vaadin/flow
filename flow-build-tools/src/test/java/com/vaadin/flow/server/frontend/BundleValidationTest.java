@@ -30,7 +30,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -1180,14 +1179,22 @@ class BundleValidationTest {
                 Mockito.eq(BundledJs.class.getName()));
     }
 
-    @Test
-    void optimizedProductionBundle_unreachedDefinitionMissing_noRebuild() {
+    static Stream<Arguments> reachedDefinitions() {
+        // The bundle carries the function of AlsoBundledJs only, so it is
+        // rebuilt only when BundledJs is reached
+        return Stream.of(
+                Arguments.of(Set.of(AlsoBundledJs.class.getName()), false),
+                Arguments.of(Set.of(BundledJs.class.getName(),
+                        AlsoBundledJs.class.getName()), true));
+    }
+
+    @ParameterizedTest
+    @MethodSource("reachedDefinitions")
+    void optimizedProductionBundle_rebuildOnlyWhenAReachedDefinitionIsMissing(
+            Set<String> reached, boolean expectedNeedsBuild) {
         setupMode(Mode.PRODUCTION_PRECOMPILED_BUNDLE);
         options.useByteCodeScanner(true);
-        // Only AlsoBundledJs is reached, so BundledJs, whose function the
-        // bundle does not carry, is not needed
-        when(depScanner.getClasses())
-                .thenReturn(Set.of(AlsoBundledJs.class.getName()));
+        when(depScanner.getClasses()).thenReturn(reached);
         doReturn(Set.of(BundledJs.class, AlsoBundledJs.class)).when(finder)
                 .getAnnotatedClasses(JsDefinition.class);
         doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
@@ -1202,8 +1209,9 @@ class BundleValidationTest {
                 .add(JsCall.functionId("this.blur()", 0, false));
         setupFrontendUtilsMock(stats);
 
-        assertFalse(BundleValidationUtil.needsBuild(options, depScanner, mode),
-                "a definition the application does not reach should not make a bundle that lacks it be rebuilt");
+        assertEquals(expectedNeedsBuild,
+                BundleValidationUtil.needsBuild(options, depScanner, mode),
+                "only a reached definition whose function the bundle lacks should make it be rebuilt");
     }
 
     static Stream<Arguments> namesOfTheFocusFunction() {
