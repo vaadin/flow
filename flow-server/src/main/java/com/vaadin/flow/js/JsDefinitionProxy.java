@@ -52,6 +52,7 @@ import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
@@ -247,10 +248,14 @@ public final class JsDefinitionProxy {
         return snippets ? Kind.SNIPPETS : Kind.CALLS;
     }
 
+    // The identifiers a call through the definition sends, which for a method
+    // that stands in for a string call differ from those of its JavaScript
     private static List<String> collectFunctionIds(Class<?> definitionType) {
         return Stream.of(definitionType.getMethods()).filter(
                 method -> method.isAnnotationPresent(JsExpression.class))
-                .map(JsCall::functionId).toList();
+                .map(method -> JsStringFallbacks.functionId(definitionType,
+                        method))
+                .toList();
     }
 
     /**

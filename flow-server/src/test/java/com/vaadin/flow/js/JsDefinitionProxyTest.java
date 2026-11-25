@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +50,7 @@ import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
@@ -869,6 +871,31 @@ class JsDefinitionProxyTest {
                             JsCall.functionId(TemplateJs.class.getMethod("join",
                                     String[].class))),
                     captureCheckedIds(bundleUtils, TemplateJs.class));
+        }
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    public interface FocusFallbacks extends JsInvokers {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
+    @Test
+    void create_stringFallback_checksTheIdsTheCallSends()
+            throws NoSuchMethodException {
+        try (MockedStatic<BundleUtils> bundleUtils = mockStatic(
+                BundleUtils.class, CALLS_REAL_METHODS)) {
+            JsDefinitionProxy.create(FocusFallbacks.class, call -> null);
+
+            // The build registers the function under the identifier of a
+            // string fallback, not under that of its JavaScript
+            Method focus = FocusFallbacks.class.getMethod("focus");
+            String fallbackId = JsStringFallbacks
+                    .functionId(FocusFallbacks.class, focus);
+            assertNotEquals(JsCall.functionId(focus), fallbackId);
+            assertEquals(Set.of(fallbackId),
+                    captureCheckedIds(bundleUtils, FocusFallbacks.class));
         }
     }
 
