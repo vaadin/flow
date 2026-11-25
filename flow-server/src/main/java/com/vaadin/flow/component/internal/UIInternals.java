@@ -85,6 +85,7 @@ import com.vaadin.flow.internal.streams.ActiveTransfer;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
@@ -157,24 +158,32 @@ public class UIInternals implements Serializable {
          * @since 25.0
          */
         public JavaScriptInvocation(String expression, Object... parameters) {
-            this((JsCall) null, expression, parameters);
+            this(expression, parameters, (JsCall) null);
         }
 
         /**
          * Creates a new invocation for the given call, whose expression and
-         * parameters the caller has already resolved.
+         * parameters the caller has already resolved. Use
+         * {@link #JavaScriptInvocation(String, Object...)} for plain
+         * JavaScript.
          *
          * @param jsCall
-         *            the call that this invocation performs, or
-         *            <code>null</code> if the invocation is plain JavaScript
+         *            the call that this invocation performs, not
+         *            <code>null</code>
          * @param expression
          *            the expression to invoke
          * @param parameters
          *            a list of parameters to use when invoking the script
          * @since 25.4
          */
-        public JavaScriptInvocation(@Nullable JsCall jsCall, String expression,
+        public JavaScriptInvocation(JsCall jsCall, String expression,
                 Object... parameters) {
+            this(expression, parameters,
+                    Objects.requireNonNull(jsCall, "jsCall"));
+        }
+
+        private JavaScriptInvocation(String expression, Object[] parameters,
+                @Nullable JsCall jsCall) {
             /*
              * To ensure attached elements are actually attached, the parameters
              * won't be serialized until the phase the UIDL message is created.
@@ -1495,7 +1504,12 @@ public class UIInternals implements Serializable {
         // the imports of a @Uses target are only loaded through its own chunk
         for (Uses uses : AnnotationReader.getAnnotationsFor(componentClass,
                 Uses.class)) {
-            collectProductionChunkIds(uses.value(), chunkIds, visited);
+            // Only components have chunks of their own
+            if (Component.class.isAssignableFrom(uses.value())) {
+                collectProductionChunkIds(
+                        uses.value().asSubclass(Component.class), chunkIds,
+                        visited);
+            }
         }
     }
 
@@ -2463,7 +2477,7 @@ public class UIInternals implements Serializable {
      * @since 25.4
      */
     @JsDefinition
-    public interface TitleJs extends Serializable {
+    public interface TitleJs extends JsInvokers {
 
         /**
          * What setting the title does, shared by the plain call and the one
@@ -2513,7 +2527,7 @@ public class UIInternals implements Serializable {
      * @since 25.4
      */
     @JsDefinition
-    public interface ChunkJs extends Serializable {
+    public interface ChunkJs extends JsSnippets {
 
         /**
          * Declares the function that loads a chunk, for

@@ -30,6 +30,7 @@ import java.util.function.Consumer;
 
 import tools.jackson.databind.JsonNode;
 
+import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.component.internal.PrebuiltEventData;
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
@@ -39,6 +40,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.SuppressForbidden;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.shared.Registration;
 
@@ -282,6 +284,9 @@ public class ComponentEventBus implements Serializable {
      * @param wrapper
      *            the listener that is being registered
      */
+    // Applies the event data and filter strings of the annotations, which
+    // the browser compiles unless they are property paths or bundled
+    @SuppressForbidden
     private <T extends ComponentEvent<?>> void addDomTrigger(Class<T> eventType,
             com.vaadin.flow.component.DomEvent annotation,
             ListenerWrapper<T> wrapper) {
@@ -315,8 +320,8 @@ public class ComponentEventBus implements Serializable {
         if (AnnotationReader
                 .getAnnotationFor(eventType, PrebuiltEventData.class)
                 .isPresent()) {
-            ElementListenerMap.addEventDataWithoutCspReport(registration,
-                    eventData);
+            ElementListenerMap.addEventDataWithoutContentSecurityPolicyReport(
+                    registration, eventData);
         } else {
             ElementListenerMap.addEventData(registration, eventData);
         }
@@ -327,7 +332,9 @@ public class ComponentEventBus implements Serializable {
                     bundledEventData);
         }
 
-        if (!"".equals(filter)) {
+        if (BundledEventData.isBundledFilter(filter)) {
+            ElementListenerMap.setBundledFilter(registration, filter);
+        } else if (!"".equals(filter)) {
             registration.setFilter(filter);
         }
 

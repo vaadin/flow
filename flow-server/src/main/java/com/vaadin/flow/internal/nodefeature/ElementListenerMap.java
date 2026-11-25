@@ -48,11 +48,13 @@ import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.ConstantPoolKey;
-import com.vaadin.flow.internal.CspViolationReporter;
+import com.vaadin.flow.internal.ContentSecurityPolicyViolationReporter;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.ParameterizedConstantPoolKey;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.SuppressForbidden;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.js.JsCall;
@@ -125,7 +127,8 @@ public class ElementListenerMap extends NodeMap {
     }
 
     /**
-     * An {@link com.vaadin.flow.component.EventData} value that the build has
+     * An {@link com.vaadin.flow.component.EventData} value or a
+     * {@link com.vaadin.flow.component.DomEvent#filter()} that the build has
      * put into the bundle as a function. The key is the expression, as for an
      * {@link ExpressionEntry}, but the client is sent the identifier of the
      * function instead of compiling the expression, see
@@ -135,6 +138,13 @@ public class ElementListenerMap extends NodeMap {
      * {@link JsonConstants#MAP_STATE_NODE_EVENT_DATA}, as for an expression,
      * and the client is also told to map what the function returns.
      * <p>
+     * An entry can have a side effect, as a {@link SnippetEntry} can: for
+     * <code>event.preventDefault()</code> on a listener with a bundled filter,
+     * the client runs the function of the filter and calls the method of the
+     * event when it returns a truthy value. The key is then the conditional
+     * expression that an {@link ExpressionEntry} filter would have, such as
+     * <code>(filter) &amp;&amp; event.preventDefault()</code>.
+     * <p>
      * When the bundle has no function for the identifier, for example because
      * the class that declares the value changed after the build, the client
      * compiles the key as it does for an {@link ExpressionEntry}, without the
@@ -143,10 +153,28 @@ public class ElementListenerMap extends NodeMap {
      * rather than sent with no value for the key.
      *
      * @param key
-     *            the expression, with the prefix of a mapped value if it has
-     *            one
+     *            the key that the client sends the value under and compiles
+     *            when the bundle has no function for it, not <code>null</code>
+     * @param bundled
+     *            the event data or filter that the function of the bundle is
+     *            made of, with the prefix of a mapped value if it has one, not
+     *            <code>null</code>
+     * @param sideEffect
+     *            the name of the method of the event that the client calls when
+     *            the function returns a truthy value, or <code>null</code> if
+     *            there is no side effect
      */
-    private record BundledExpressionEntry(String key) implements Entry {
+    private record BundledExpressionEntry(String key, String bundled,
+            @Nullable String sideEffect) implements Entry {
+
+        private BundledExpressionEntry(String bundled) {
+            this(bundled, bundled, null);
+        }
+
+        private BundledExpressionEntry withSideEffect(String method) {
+            return new BundledExpressionEntry(
+                    "(" + key + ") && event." + method + "()", bundled, method);
+        }
     }
 
     /**
@@ -268,13 +296,17 @@ public class ElementListenerMap extends NodeMap {
          *         object for a snippet, not <code>null</code>
          */
         public JsonNode toJson() {
-            if (entry instanceof BundledExpressionEntry(String key)) {
+            if (entry instanceof BundledExpressionEntry bundled) {
                 ObjectNode json = JacksonUtils.createObjectNode();
                 json.put(JsonConstants.EVENT_SETTINGS_FUNCTION,
-                        BundledEventData.getFunctionId(key));
+                        BundledEventData.getFunctionId(bundled.bundled()));
                 json.set(JsonConstants.EVENT_SETTINGS_DEBOUNCE,
                         debounceToJson());
-                if (BundledEventData.isMappedToElement(key)) {
+                if (bundled.sideEffect() != null) {
+                    json.put(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT,
+                            bundled.sideEffect());
+                }
+                if (BundledEventData.isMappedToElement(bundled.bundled())) {
                     json.put(JsonConstants.EVENT_SETTINGS_MAP_ELEMENT, true);
                 }
                 return json;
@@ -393,19 +425,35 @@ public class ElementListenerMap extends NodeMap {
 
         private DomListenerRegistration addEventData(List<String> eventData) {
             requireEventData(eventData);
-            if (eventData.stream()
-                    .anyMatch(ElementListenerMap::isCompiledByClient)) {
-                CspViolationReporter.reportStringJavaScript();
+            // What the application declared as a fallback is in the bundle
+            List<String> declared = eventData.stream()
+                    .filter(value -> isCompiledByClient(value)
+                            && JsStringFallbacks.isDeclaredEventData(value))
+                    .toList();
+            // Keeps the given list, which appendEventData stores as it is
+            List<String> compiled = declared.isEmpty() ? eventData
+                    : eventData.stream()
+                            .filter(value -> !declared.contains(value))
+                            .toList();
+            List<String> reported = compiled.stream()
+                    .filter(ElementListenerMap::isCompiledByClient).toList();
+            if (!reported.isEmpty()) {
+                ContentSecurityPolicyViolationReporter
+                        .reportStringEventData(reported);
             }
 
-            appendEventData(eventData);
+            if (!declared.isEmpty()) {
+                addBundledEventData(declared);
+            }
+            appendEventData(compiled);
 
             listenerMap.updateEventSettings(type);
 
             return this;
         }
 
-        private void addEventDataWithoutCspReport(List<String> eventData) {
+        private void addEventDataWithoutContentSecurityPolicyReport(
+                List<String> eventData) {
             requireEventData(eventData);
 
             appendEventData(eventData);
@@ -486,7 +534,13 @@ public class ElementListenerMap extends NodeMap {
         @Override
         public DomListenerRegistration setFilter(String filter) {
             if (filter != null && !isPropertyPath(filter)) {
-                CspViolationReporter.reportStringJavaScript();
+                if (JsStringFallbacks.isDeclaredFilter(filter)) {
+                    // What the application declared as a fallback is in the
+                    // bundle
+                    return updateFilter(new BundledExpressionEntry(filter));
+                }
+                ContentSecurityPolicyViolationReporter
+                        .reportStringFilter(filter);
             }
             return updateFilter(
                     filter == null ? null : new ExpressionEntry(filter));
@@ -510,7 +564,11 @@ public class ElementListenerMap extends NodeMap {
         @Override
         public String getFilter() {
             // A declared filter has no expression to return
-            return filter instanceof ExpressionEntry(String key) ? key : null;
+            return switch (filter) {
+            case ExpressionEntry(String key) -> key;
+            case BundledExpressionEntry bundled -> bundled.bundled();
+            case null, default -> null;
+            };
         }
 
         boolean matchesFilter(JsonNode eventData) {
@@ -774,10 +832,17 @@ public class ElementListenerMap extends NodeMap {
      * <ul>
      * <li>For a filter expression, for example <code>event.key ===
      * 'Enter'</code>, the entry is the expression <code>(event.key ===
-     * 'Enter') &amp;&amp; event.preventDefault()</code>.</li>
-     * <li>For a declared filter, the entry runs the filter and has the method
-     * as its side effect. Nothing is made from strings, so no JavaScript is
-     * compiled in the browser.</li>
+     * 'Enter') &amp;&amp; event.preventDefault()</code>. When the filter is a
+     * property path, the client reads that expression without compiling it. The
+     * client recognizes the expression by its exact form, with
+     * <code>CONDITIONAL_SIDE_EFFECT</code> in
+     * <code>SimpleElementBindingStrategy.ts</code>, so the two must be changed
+     * together. Otherwise the client compiles the expression again, which a
+     * Content Security Policy without <code>unsafe-eval</code> blocks.</li>
+     * <li>For a declared filter, or a filter that the build has put into the
+     * bundle, the entry runs the filter and has the method as its side effect.
+     * Nothing is made from strings, so no JavaScript is compiled in the
+     * browser.</li>
      * </ul>
      *
      * @param expression
@@ -802,8 +867,7 @@ public class ElementListenerMap extends NodeMap {
         case ExpressionEntry(String key) ->
             new ExpressionEntry("(" + key + ") && event." + method + "()");
         case SnippetEntry snippet -> snippet.withSideEffect(method);
-        case BundledExpressionEntry bundled -> throw new IllegalStateException(
-                "Event data from the bundle is never the filter of a listener");
+        case BundledExpressionEntry bundled -> bundled.withSideEffect(method);
         };
     }
 
@@ -1006,12 +1070,15 @@ public class ElementListenerMap extends NodeMap {
      * @param eventData
      *            the event data, not <code>null</code> and not containing
      *            <code>null</code>
-     * @throws com.vaadin.flow.server.CspViolationException
-     *             in the {@link com.vaadin.flow.server.CspMode#STRICT} Content
-     *             Security Policy mode, if any value is compiled by the browser
+     * @throws com.vaadin.flow.server.ContentSecurityPolicyViolationException
+     *             in the
+     *             {@link com.vaadin.flow.server.ContentSecurityPolicyMode#STRICT}
+     *             Content Security Policy mode, if any value is compiled by the
+     *             browser
      * @since 25.4
      */
     @SuppressWarnings("deprecation")
+    @SuppressForbidden
     public static void addEventData(DomListenerRegistration registration,
             List<String> eventData) {
         Objects.requireNonNull(registration, "Registration cannot be null");
@@ -1038,13 +1105,13 @@ public class ElementListenerMap extends NodeMap {
      *            containing <code>null</code>
      * @since 25.4
      */
-    public static void addEventDataWithoutCspReport(
+    public static void addEventDataWithoutContentSecurityPolicyReport(
             DomListenerRegistration registration, List<String> eventData) {
         if (!(registration instanceof DomEventListenerWrapper wrapper)) {
             throw new IllegalArgumentException(
                     "The registration must be one returned by an ElementListenerMap");
         }
-        wrapper.addEventDataWithoutCspReport(eventData);
+        wrapper.addEventDataWithoutContentSecurityPolicyReport(eventData);
     }
 
     /**
@@ -1070,6 +1137,33 @@ public class ElementListenerMap extends NodeMap {
                     "The registration must be one returned by an ElementListenerMap");
         }
         wrapper.addBundledEventData(eventData);
+    }
+
+    /**
+     * Sets a {@link com.vaadin.flow.component.DomEvent#filter()} that the build
+     * has put into the bundle as a function as the filter of a registration of
+     * this map, like {@link DomListenerRegistration#setFilter(String)} but
+     * without reporting it as JavaScript sent as a string, see
+     * {@link BundledEventData#isBundledFilter(String)}. The client runs the
+     * function of the bundle instead of compiling the filter, and sends the
+     * result under the filter, so {@link DomListenerRegistration#getFilter()}
+     * returns the filter as before.
+     *
+     * @param registration
+     *            a registration returned by
+     *            {@link #add(String, DomEventListener)}, not <code>null</code>
+     * @param filter
+     *            the filter, not <code>null</code>
+     * @since 25.4
+     */
+    public static void setBundledFilter(DomListenerRegistration registration,
+            String filter) {
+        if (!(registration instanceof DomEventListenerWrapper wrapper)) {
+            throw new IllegalArgumentException(
+                    "The registration must be one returned by an ElementListenerMap");
+        }
+        Objects.requireNonNull(filter, "The filter must not be null");
+        wrapper.updateFilter(new BundledExpressionEntry(filter));
     }
 
     /**

@@ -57,7 +57,11 @@ import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsInvokers;
+import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -362,6 +366,7 @@ class VaadinQuarkusNativeProcessorTest {
         Indexer indexer = new Indexer();
         indexer.indexClass(GreeterJs.class);
         indexer.indexClass(Greeter.class);
+        indexer.indexClass(UnannotatedJs.class);
         Index jsIndex = indexer.complete();
         List<NativeImageProxyDefinitionBuildItem> proxies = new ArrayList<>();
         List<ReflectiveClassBuildItem> reflective = new ArrayList<>();
@@ -371,17 +376,20 @@ class VaadinQuarkusNativeProcessorTest {
                 reflective::add);
 
         // Only an interface can be implemented by a JDK proxy, so the
-        // annotated class has to be left out of both registrations.
+        // annotated class has to be left out of both registrations, and an
+        // interface without the annotation is not a definition.
         assertEquals(List.of(List.of(GreeterJs.class.getName())),
                 proxies.stream()
                         .map(NativeImageProxyDefinitionBuildItem::getClasses)
                         .toList(),
                 "Should register the annotated interface as a proxy definition");
-        assertEquals(Set.of(GreeterJs.class.getName()),
+        assertEquals(
+                Set.of(GreeterJs.class.getName(), JsInvokers.class.getName()),
                 reflective.stream()
                         .flatMap(item -> item.getClassNames().stream())
                         .collect(Collectors.toSet()),
-                "Should register the annotated interface for reflection");
+                "Should register the annotated interface and the interfaces it"
+                        + " extends for reflection");
         assertTrue(
                 reflective.stream()
                         .allMatch(ReflectiveClassBuildItem::isMethods),
@@ -402,12 +410,50 @@ class VaadinQuarkusNativeProcessorTest {
                 }, reflective::add);
 
         assertEquals(
-                Set.of(SimpleDtoJs.class.getName(), ValueJs.class.getName()),
+                Set.of(SimpleDtoJs.class.getName(), ValueJs.class.getName(),
+                        JsInvokers.class.getName()),
                 reflective.stream()
                         .flatMap(item -> item.getClassNames().stream())
                         .collect(Collectors.toSet()),
                 "Should register the inherited interface, whose generic return"
                         + " type is resolved by reflection");
+    }
+
+    @Test
+    void testRegisterJsDefinitionProxies_registersReturnedSnippetTypes()
+            throws IOException {
+        Indexer indexer = new Indexer();
+        indexer.indexClass(TemplatesJs.class);
+        indexer.indexClass(BaseTemplatesJs.class);
+        indexer.indexClass(ItemTemplate.class);
+        indexer.indexClass(BaseTemplate.class);
+        indexer.indexClass(UnusedTemplate.class);
+        Index jsIndex = indexer.complete();
+        List<NativeImageProxyDefinitionBuildItem> proxies = new ArrayList<>();
+        List<ReflectiveClassBuildItem> reflective = new ArrayList<>();
+
+        processor.registerJsDefinitionProxies(
+                new CombinedIndexBuildItem(jsIndex, jsIndex), proxies::add,
+                reflective::add);
+
+        // The snippet type is returned by an inherited method. JsFunction is
+        // a class that Flow creates itself, and a snippet type no definition
+        // returns is never implemented.
+        assertEquals(
+                Set.of(TemplatesJs.class.getName(),
+                        ItemTemplate.class.getName()),
+                proxies.stream().flatMap(item -> item.getClasses().stream())
+                        .collect(Collectors.toSet()),
+                "Should register the returned snippet type as a proxy");
+        // The check that a snippet type declares no methods sees the
+        // inherited ones only if the interfaces it extends are registered too
+        Set<String> reflectiveNames = reflective.stream()
+                .flatMap(item -> item.getClassNames().stream())
+                .collect(Collectors.toSet());
+        assertTrue(reflectiveNames.contains(ItemTemplate.class.getName()),
+                "Should register the snippet type for reflection");
+        assertTrue(reflectiveNames.contains(BaseTemplate.class.getName()),
+                "Should register the interfaces the snippet type extends for reflection");
     }
 
     @Test
@@ -467,7 +513,7 @@ class VaadinQuarkusNativeProcessorTest {
     // Only an interface can be implemented by the JDK proxy the definitions
     // are used through, so an annotated class is not one of them
     @JsDefinition
-    public interface GreeterJs {
+    public interface GreeterJs extends JsInvokers {
         void greet(String name);
     }
 
@@ -475,15 +521,37 @@ class VaadinQuarkusNativeProcessorTest {
     public static class Greeter {
     }
 
+    public interface UnannotatedJs extends JsInvokers {
+        void greet(String name);
+    }
+
     public interface ValueJs<T> {
         JavaScriptResult<T> readValue();
     }
 
     @JsDefinition
-    public interface SimpleDtoJs extends ValueJs<SimpleDto> {
+    public interface SimpleDtoJs extends JsInvokers, ValueJs<SimpleDto> {
         JavaScriptResult<List<OtherDto>> readOthers();
 
         JavaScriptResult<ObjectNode> readNode();
+    }
+
+    public interface BaseTemplate extends JsSnippet {
+    }
+
+    public interface ItemTemplate extends BaseTemplate {
+    }
+
+    public interface UnusedTemplate extends JsSnippet {
+    }
+
+    public interface BaseTemplatesJs {
+        ItemTemplate status(String label);
+    }
+
+    @JsDefinition
+    public interface TemplatesJs extends JsSnippets, BaseTemplatesJs {
+        JsFunction format(String pattern);
     }
 
     public static class CustomException extends RuntimeException {

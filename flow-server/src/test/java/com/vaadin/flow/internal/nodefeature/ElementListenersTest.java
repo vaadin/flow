@@ -162,12 +162,12 @@ public class ElementListenersTest
     }
 
     @Test
-    void addEventDataWithoutCspReport_addsKeysLikeAddEventData() {
+    void addEventDataWithoutContentSecurityPolicyReport_addsKeysLikeAddEventData() {
         DomListenerRegistration registration = ns.add("eventType", noOp)
                 .addEventData("data1");
 
-        ElementListenerMap.addEventDataWithoutCspReport(registration,
-                List.of("data1", "data2"));
+        ElementListenerMap.addEventDataWithoutContentSecurityPolicyReport(
+                registration, List.of("data1", "data2"));
 
         assertEquals(Set.of("data1", "data2"), getExpressions("eventType"));
     }
@@ -377,7 +377,7 @@ public class ElementListenersTest
     }
 
     @JsDefinition
-    public interface EventJs extends Serializable {
+    public interface EventJs extends JsSnippets {
         @JsExpression("return element.closest($0).tagName;")
         DomEventData<String> closestTag(String selector);
 
@@ -544,6 +544,44 @@ public class ElementListenersTest
         assertFalse(settings.has(JsonConstants.EVENT_SETTINGS_CAPTURES));
         // The server reads the value under the expression, as before
         assertEquals(Set.of(expression), ns.getExpressions("foo"));
+    }
+
+    @Test
+    void bundledFilterWithPreventDefault_functionOfTheBundleWithSideEffect() {
+        String filter = "event.button === 0";
+        String conditional = "(" + filter + ") && event.preventDefault()";
+        AtomicInteger notified = new AtomicInteger();
+        DomListenerRegistration registration = ns.add("click",
+                event -> notified.incrementAndGet());
+        ElementListenerMap.setBundledFilter(registration, filter);
+        registration.preventDefault();
+
+        ObjectNode settings = eventSettings(ns, "click");
+
+        String functionId = BundledEventData.getFunctionId(filter);
+        assertEquals(Set.of(filter, conditional),
+                Set.copyOf(JacksonUtils.getKeys(settings)));
+        assertEquals(functionId, settings.get(filter)
+                .get(JsonConstants.EVENT_SETTINGS_FUNCTION).asString());
+        assertEquals("true", settings.get(filter)
+                .get(JsonConstants.EVENT_SETTINGS_DEBOUNCE).toString());
+        assertFalse(settings.get(filter)
+                .has(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT));
+        // The key is what the client compiles when the bundle has no function
+        assertEquals(functionId, settings.get(conditional)
+                .get(JsonConstants.EVENT_SETTINGS_FUNCTION).asString());
+        assertEquals("preventDefault", settings.get(conditional)
+                .get(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT).asString());
+        assertEquals(filter, registration.getFilter());
+
+        // The value of the filter is sent under the filter, as before
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put(filter, false);
+        ns.fireEvent(new DomEvent(new Element("element"), "click", eventData));
+        assertEquals(0, notified.get());
+        eventData.put(filter, true);
+        ns.fireEvent(new DomEvent(new Element("element"), "click", eventData));
+        assertEquals(1, notified.get());
     }
 
     @Test

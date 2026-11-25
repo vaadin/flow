@@ -224,6 +224,37 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
       expect(harness.collectedNodes).to.have.length(1);
     });
 
+    ['preventDefault', 'stopPropagation'].forEach((method) => {
+      it(`calls ${method} only when a property path filter passes, without compiling it`, () => {
+        const filter = 'element.dataset.armed';
+        let parentCalls = 0;
+        const countParentCall = (): void => {
+          parentCalls += 1;
+        };
+        document.body.addEventListener('click', countParentCall);
+        try {
+          bindWithClickExpressions({ [filter]: true, [`(${filter}) && event.${method}()`]: false });
+
+          const notMatching = new MouseEvent('click', { bubbles: true, cancelable: true });
+          element.dispatchEvent(notMatching);
+          (element as HTMLElement).dataset.armed = 'yes';
+          const matching = new MouseEvent('click', { bubbles: true, cancelable: true });
+          element.dispatchEvent(matching);
+
+          if (method === 'preventDefault') {
+            expect(notMatching.defaultPrevented).to.be.false;
+            expect(matching.defaultPrevented).to.be.true;
+          } else {
+            // Only the event that did not match reaches the parent
+            expect(parentCalls).to.equal(1);
+          }
+          expect(harness.collectedNodes).to.have.length(1);
+        } finally {
+          document.body.removeEventListener('click', countParentCall);
+        }
+      });
+    });
+
     it('calls stopPropagation without compiling it', () => {
       let parentCalls = 0;
       const countParentCall = (): void => {
@@ -240,6 +271,23 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
       } finally {
         document.body.removeEventListener('click', countParentCall);
       }
+    });
+
+    it('runs declared event data and a declared filter without compiling them', () => {
+      snippets()['data-id'] = (prefix) => (event) => `${prefix as string} ${event.type}`;
+      snippets()['filter-id'] = (name) => (_event, target) => target.hasAttribute(name as string);
+      bindWithClickSettings({
+        '@data': { f: 'data-id', d: false, c: ['declared'] },
+        '@filter': { f: 'filter-id', d: [[200, 'leading']], c: ['id'] }
+      });
+
+      element.click();
+      expect(harness.collectedNodes).to.have.length(0);
+
+      element.setAttribute('id', 'set');
+      element.click();
+      expect(harness.collectedNodes).to.have.length(1);
+      expect(harness.collectedEventData[0]).to.include({ '@data': 'declared click' });
     });
 
     it('runs the function from the bundle for an expression key with snippet settings', () => {
@@ -291,7 +339,7 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
       expect(harness.collectedNodes).to.have.length(0);
       expect(reported).to.have.length(1);
       expect(reported[0]).to.be.instanceOf(EvalError);
-      expect(errors[0]).to.contain(`@EventData value "${expression}"`);
+      expect(errors[0]).to.contain(`@EventData value or @DomEvent filter "${expression}"`);
       expect(errors[0]).to.contain('the event is not sent');
     });
   });
@@ -314,7 +362,7 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
       console.warn = originalWarn;
     }
     expect(warnings).to.have.length(1);
-    expect(warnings[0]).to.contain(`@EventData value "${expression}"`);
+    expect(warnings[0]).to.contain(`@EventData value or @DomEvent filter "${expression}"`);
   });
 
   it('compiles a bundled expression missing from the bundle and warns once', () => {
@@ -337,7 +385,21 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
       { [expression]: 'click compiled' }
     ]);
     expect(warnings).to.have.length(1);
-    expect(warnings[0]).to.contain(`@EventData value "${expression}"`);
+    expect(warnings[0]).to.contain(`@EventData value or @DomEvent filter "${expression}"`);
+  });
+
+  it('compiles a side effect conditional on a filter that is not a property path', () => {
+    const filter = 'element.dataset.armed === "yes"';
+    bindWithClickExpressions({ [filter]: true, [`(${filter}) && event.preventDefault()`]: false });
+
+    const notMatching = new MouseEvent('click', { bubbles: true, cancelable: true });
+    element.dispatchEvent(notMatching);
+    (element as HTMLElement).dataset.armed = 'yes';
+    const matching = new MouseEvent('click', { bubbles: true, cancelable: true });
+    element.dispatchEvent(matching);
+
+    expect(notMatching.defaultPrevented).to.be.false;
+    expect(matching.defaultPrevented).to.be.true;
   });
 
   it('runs a declared snippet with its captures, the event and the element', () => {
