@@ -670,13 +670,25 @@ class TaskGenerateJsDefinitionsTest {
         Options optimized = new Options(mock(Lookup.class),
                 new DefaultClassFinder(Set.of(GreeterJs.class, LoggerJs.class,
                         OffsetEvent.class, InheritingOffsetEvent.class,
-                        MprPushStateJs.class)),
+                        MprPushStateJs.class, TitleFallbacks.class,
+                        EventFallbacks.class)),
                 null).withFrontendDirectory(frontendFolder)
                 .withProductionMode(true).useByteCodeScanner(true)
                 .withFrontendDependenciesScanner(scanner);
 
         Set<String> functionIds = new TaskGenerateJsDefinitions(optimized)
                 .render().functionIds().keySet();
+
+        // Found by the string an add-on sends, not through a reference, so
+        // carried whether reached or not, with their filters and event data
+        Set<String> fallbackIds = TaskGenerateJsDefinitions
+                .render(List.of(TitleFallbacks.class, EventFallbacks.class),
+                        List.of(), false)
+                .functionIds().keySet();
+        assertTrue(fallbackIds.size() >= 3, "fallback ids: " + fallbackIds);
+        assertTrue(functionIds.containsAll(fallbackIds),
+                "string fallbacks are carried whether reached or not: "
+                        + functionIds);
 
         assertTrue(functionIds.containsAll(collectDeclaredIds(GreeterJs.class)),
                 "a reached definition is carried: " + functionIds);

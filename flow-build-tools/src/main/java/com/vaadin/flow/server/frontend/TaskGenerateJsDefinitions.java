@@ -359,7 +359,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     /**
      * Renders the file for the definitions and event types on the class path,
      * or, for an optimized production bundle, for those of them the application
-     * can reach and those of Flow's own jar.
+     * can reach, those of Flow's own jar and the {@link JsStringFallback}
+     * interfaces.
      *
      * @return the content of the file and the functions it registers
      */
@@ -389,10 +390,13 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
     /**
      * What an optimized bundle carries the JavaScript of: the classes the
-     * bytecode scanner reaches from the entry points of the application, and
-     * every class of Flow's own jar. Flow calls some of its definitions from
-     * request handlers that no entry point leads to, and its own JavaScript is
-     * what the framework needs to work.
+     * bytecode scanner reaches from the entry points of the application, every
+     * class of Flow's own jar, and every {@link JsStringFallback} interface.
+     * Flow calls some of its definitions from request handlers that no entry
+     * point leads to, and its own JavaScript is what the framework needs to
+     * work. A fallback interface is found by the string an add-on sends rather
+     * than through a class reference, and the server is told about all of them,
+     * so the bundle has to carry their functions too.
      */
     private Predicate<Class<?>> createNeededFilter(ClassFinder classFinder) {
         Set<String> reached = options.getFrontendDependenciesScanner()
@@ -407,6 +411,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         }
         URL flow = flowLocation;
         return type -> reached.contains(type.getName())
+                || type.isAnnotationPresent(JsStringFallback.class)
                 || Objects.equals(flow, findLocation(type));
     }
 
