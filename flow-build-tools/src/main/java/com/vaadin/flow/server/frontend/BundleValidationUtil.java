@@ -74,6 +74,8 @@ public final class BundleValidationUtil {
 
     static final String JS_DEFINITION_FUNCTION_IDS_STATS_KEY = "jsDefinitionFunctionIds";
 
+    static final String JS_DEFINITION_NAMES_STATS_KEY = "jsDefinitionNames";
+
     private static final String PWA_OFFLINE_PATH_STATS_KEY = "pwaOfflinePath";
 
     private static final String PWA_OFFLINE_ENABLED_STATS_KEY = "pwaOfflineEnabled";
@@ -1077,8 +1079,12 @@ public final class BundleValidationUtil {
      * When the stats of the bundle list the identifiers of the functions it
      * registers, the bundle is accepted if it registers every function the
      * application needs. A bundle that carries more, such as one built with
-     * more definitions or before one was removed, is still accepted. A bundle
-     * whose stats do not list them is accepted only if it was built from the
+     * more definitions or before one was removed, is still accepted. Outside
+     * production mode, each of those functions also has to be registered under
+     * a name that the application gives it, so that a message about a call does
+     * not name a definition or method that was renamed. A bundle whose stats
+     * list the identifiers but no names is rebuilt there. A bundle whose stats
+     * do not list the identifiers is accepted only if it was built from the
      * same generated file.
      */
     private static boolean jsDefinitionsChanged(Options options,
@@ -1109,6 +1115,28 @@ public final class BundleValidationUtil {
                 getLogger().info(
                         "Detected JavaScript that the bundle does not carry, declared by: {}",
                         String.join(", ", missingFrom));
+                return true;
+            }
+            // The identifier leaves out what a development bundle names a
+            // function by in a message about a call, so a renamed definition
+            // would otherwise keep its old name there. A function that more
+            // than one class declares may be named after any of them, as which
+            // one the bundle names depends on what it was built with.
+            JsonNode bundledNames = statsJson
+                    .get(JS_DEFINITION_NAMES_STATS_KEY);
+            Set<String> renamedIn = new TreeSet<>();
+            rendered.names().forEach((id, names) -> {
+                JsonNode bundledName = bundledNames == null ? null
+                        : bundledNames.get(id);
+                if (bundledName == null
+                        || !names.contains(bundledName.asString())) {
+                    renamedIn.add(rendered.functionIds().get(id));
+                }
+            });
+            if (!renamedIn.isEmpty()) {
+                getLogger().info(
+                        "Detected JavaScript that the bundle names differently, declared by: {}",
+                        String.join(", ", renamedIn));
                 return true;
             }
             return false;

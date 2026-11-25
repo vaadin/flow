@@ -74,22 +74,24 @@ class UsageStatisticsCollector implements Serializable {
         addKotlinUsageStatistics(routeDataList);
         addFrontendToolUsageStatistics(configuration);
         addThemeAnnotationUsageStatistics(service);
-        addCspModeUsageStatistics(configuration);
+        addContentSecurityPolicyModeUsageStatistics(configuration);
     }
 
     /**
-     * Reports the configured {@link CspMode} as a {@code flow/csp-<mode>}
-     * entry, also when it is {@link CspMode#OFF}, so that the share of
-     * applications using each mode can be measured.
+     * Reports the configured {@link ContentSecurityPolicyMode} as a
+     * {@code flow/csp-<mode>} entry, also when it is
+     * {@link ContentSecurityPolicyMode#OFF}, so that the share of applications
+     * using each mode can be measured.
      *
      * @param configuration
      *            the deployment configuration to read the mode from
      */
-    private static void addCspModeUsageStatistics(
+    private static void addContentSecurityPolicyModeUsageStatistics(
             DeploymentConfiguration configuration) {
         // A mocked configuration returns null instead of the default OFF
-        CspMode mode = Objects.requireNonNullElse(configuration.getCspMode(),
-                CspMode.OFF);
+        ContentSecurityPolicyMode mode = Objects.requireNonNullElse(
+                configuration.getContentSecurityPolicyMode(),
+                ContentSecurityPolicyMode.OFF);
         UsageStatistics.markAsUsed(
                 "flow/csp-" + mode.name().toLowerCase(Locale.ROOT), null);
     }

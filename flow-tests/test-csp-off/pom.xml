@@ -12,7 +12,7 @@
   <description>Integration tests for the APIs that send JavaScript to the
     browser as a string, such as executeJs(String), JsFunction.of and string
     event filters. Those APIs throw in the strict Content Security Policy mode
-    that the other test modules use, so this module runs with csp=off.
+    that the other test modules use, so this module runs with contentSecurityPolicy=off.
     Otherwise the setup is the one of test-default: Spring Boot, dev mode and
     JUnit 6 (Jupiter).</description>
 
@@ -109,12 +109,12 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>${spring.boot.version}</version>
-        <!-- A fixed value instead of the ${vaadin.csp} that the flow-tests
-             parent passes, so that -Dvaadin.csp=... for the whole suite does not
+        <!-- A fixed value instead of the ${vaadin.contentSecurityPolicy} that the flow-tests
+             parent passes, so that -Dvaadin.contentSecurityPolicy=... for the whole suite does not
              change the one setting this module is about -->
         <configuration>
           <systemPropertyVariables>
-            <vaadin.csp>off</vaadin.csp>
+            <vaadin.contentSecurityPolicy>off</vaadin.contentSecurityPolicy>
           </systemPropertyVariables>
         </configuration>
         <executions>

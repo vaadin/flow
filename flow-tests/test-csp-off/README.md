@@ -18,11 +18,11 @@ string:
 annotations too, but the build puts them into the bundle, so they work in the
 strict mode and are tested in the other modules.
 
-All other `flow-tests` modules run with `csp=strict`: the `vaadin.csp` property
+All other `flow-tests` modules run with `contentSecurityPolicy=strict`: the `vaadin.contentSecurityPolicy` property
 of the `flow-tests` POM sets it, and the parent passes it to the application as
-a system property. In that mode these APIs throw a `CspViolationException`. This
+a system property. In that mode these APIs throw a `ContentSecurityPolicyViolationException`. This
 module passes `off` to the application instead, a fixed value that
-`-Dvaadin.csp=...` does not change, so it is the one place where they still
+`-Dvaadin.contentSecurityPolicy=...` does not change, so it is the one place where they still
 run.
 
 The rest of the setup is the one of [test-default](../test-default/README.md):
