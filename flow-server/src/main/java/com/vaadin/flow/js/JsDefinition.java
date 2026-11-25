@@ -51,9 +51,11 @@ import com.vaadin.flow.dom.JsFunction;
  * only the definitions it can reach from the entry points of the application,
  * the same way it collects {@code @JsModule}: a definition is reached when a
  * reached class refers to it, such as by passing it to
- * {@link Element#executeJs(Class)}. A definition that is only used through
- * reflection, or from code that no route or other entry point leads to, is left
- * out of that bundle, and a call to it fails in the browser. Name it in
+ * {@link Element#executeJs(Class)}. The definitions in the flow-server jar and
+ * those annotated with {@link JsStringFallback} are always collected. Any other
+ * definition that is only used through reflection, or from code that no route
+ * or other entry point leads to, is left out of that bundle, and a call to it
+ * fails in the browser. Name it in
  * {@link com.vaadin.flow.component.dependency.Uses} on a class that is reached
  * to keep it. Development mode collects every definition.
  * <p>
