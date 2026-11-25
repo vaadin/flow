@@ -558,7 +558,14 @@ public class BeanPropertySet<T> implements PropertySet<T> {
                 return method.invoke(target, parameters);
             } catch (IllegalAccessException e) {
                 if (!method.trySetAccessible()) {
-                    throw e;
+                    Class<?> type = method.getDeclaringClass();
+                    throw new IllegalStateException(String.format(
+                            "Unable to access '%s' of '%s'. Its module does "
+                                    + "not open the package '%s' to Vaadin. "
+                                    + "Make the class public, or open the "
+                                    + "package in module-info.java.",
+                            method.getName(), type.getName(),
+                            type.getPackageName()), e);
                 }
                 return method.invoke(target, parameters);
             }
