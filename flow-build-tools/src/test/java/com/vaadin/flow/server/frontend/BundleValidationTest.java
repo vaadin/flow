@@ -30,6 +30,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -1177,6 +1178,32 @@ class BundleValidationTest {
         Mockito.verify(logger, Mockito.times(expectedNeedsBuild ? 1 : 0)).info(
                 Mockito.contains("the bundle does not carry"),
                 Mockito.eq(BundledJs.class.getName()));
+    }
+
+    @Test
+    void optimizedProductionBundle_unreachedDefinitionMissing_noRebuild() {
+        setupMode(Mode.PRODUCTION_PRECOMPILED_BUNDLE);
+        options.useByteCodeScanner(true);
+        // Only AlsoBundledJs is reached, so BundledJs, whose function the
+        // bundle does not carry, is not needed
+        when(depScanner.getClasses())
+                .thenReturn(Set.of(AlsoBundledJs.class.getName()));
+        doReturn(Set.of(BundledJs.class, AlsoBundledJs.class)).when(finder)
+                .getAnnotatedClasses(JsDefinition.class);
+        doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
+
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
+                FrontendUtils.GENERATED
+                        + FrontendUtils.JS_DEFINITIONS_FILE_NAME,
+                "not the hash of what the interfaces declare");
+        stats.putArray(
+                BundleValidationUtil.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
+                .add(JsCall.functionId("this.blur()", 0, false));
+        setupFrontendUtilsMock(stats);
+
+        assertFalse(BundleValidationUtil.needsBuild(options, depScanner, mode),
+                "a definition the application does not reach should not make a bundle that lacks it be rebuilt");
     }
 
     static Stream<Arguments> namesOfTheFocusFunction() {
