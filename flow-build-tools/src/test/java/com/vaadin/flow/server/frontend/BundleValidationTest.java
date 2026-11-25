@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -35,9 +36,12 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.DevBundleUtils;
@@ -45,6 +49,10 @@ import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Template;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.Mode;
@@ -61,6 +69,7 @@ import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.internal.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 import static com.vaadin.flow.server.Constants.PROD_BUNDLE_JAR_PATH;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
@@ -1103,6 +1112,127 @@ class BundleValidationTest {
 
         assertTrue(needsBuild,
                 "JavaScript declared by a JavaScript definition that the bundle was not built with should trigger a rebuild, whether the bundle carries another version of it or none at all");
+    }
+
+    static Stream<Arguments> modesAndBundledFunctions() {
+        // What the stats say the bundle registers: the functions the
+        // application needs among others, and only one of them among others
+        String alsoBundled = JsCall.functionId("this.blur()", 0, false);
+        return modes()
+                .flatMap(mode -> Stream.of(
+                        Arguments.of(mode,
+                                List.of("another function", alsoBundled,
+                                        JsCall.functionId("this.focus()", 0,
+                                                false)),
+                                false),
+                        Arguments.of(mode,
+                                List.of("another function", alsoBundled),
+                                true)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("modesAndBundledFunctions")
+    void bundleListsFunctions_rebuildOnlyWhenOneIsMissing(Mode mode,
+            List<String> bundledFunctionIds, boolean expectedNeedsBuild) {
+        setupMode(mode);
+        doReturn(Set.of(BundledJs.class, AlsoBundledJs.class)).when(finder)
+                .getAnnotatedClasses(JsDefinition.class);
+        doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
+
+        ObjectNode stats = getBasicStats();
+        // The whole file differs, as the bundle was built with more
+        // definitions than the application has
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
+                FrontendUtils.GENERATED
+                        + FrontendUtils.JS_DEFINITIONS_FILE_NAME,
+                "not the hash of what the interfaces declare");
+        ArrayNode functionIds = stats.putArray(
+                BundleValidationUtil.JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
+        bundledFunctionIds.forEach(functionIds::add);
+        if (mode == Mode.DEVELOPMENT_BUNDLE) {
+            // A development bundle names its functions as the application
+            // does, a production bundle names none
+            ObjectNode names = stats.putObject(
+                    BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY);
+            names.put(JsCall.functionId("this.focus()", 0, false),
+                    BundledJs.class.getName() + ".focus/0");
+            names.put(JsCall.functionId("this.blur()", 0, false),
+                    AlsoBundledJs.class.getName() + ".blur/0");
+        }
+        setupFrontendUtilsMock(stats);
+
+        Logger logger = Mockito.spy(Logger.class);
+        boolean needsBuild;
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
+            loggerFactory.when(
+                    () -> LoggerFactory.getLogger(BundleValidationUtil.class))
+                    .thenReturn(logger);
+            needsBuild = BundleValidationUtil.needsBuild(options, depScanner,
+                    mode);
+        }
+
+        assertEquals(expectedNeedsBuild, needsBuild);
+        // A developer has to know which class to look at, and only that one
+        Mockito.verify(logger, Mockito.times(expectedNeedsBuild ? 1 : 0)).info(
+                Mockito.contains("the bundle does not carry"),
+                Mockito.eq(BundledJs.class.getName()));
+    }
+
+    static Stream<Arguments> namesOfTheFocusFunction() {
+        // What the stats of a development bundle name the function of
+        // BundledJs by: what it was named before a rename, nothing, or no
+        // names at all for any function
+        return Stream.of(
+                Arguments.of(BundledJs.class.getName() + ".oldFocus/0", true),
+                Arguments.of(null, true), Arguments.of(null, false));
+    }
+
+    @ParameterizedTest
+    @MethodSource("namesOfTheFocusFunction")
+    void developmentBundleNamesAFunctionDifferently_rebuild(
+            String bundledFocusName, boolean statsHaveNames) {
+        setupMode(Mode.DEVELOPMENT_BUNDLE);
+        doReturn(Set.of(BundledJs.class, AlsoBundledJs.class)).when(finder)
+                .getAnnotatedClasses(JsDefinition.class);
+        doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
+
+        ObjectNode stats = getBasicStats();
+        ArrayNode functionIds = stats.putArray(
+                BundleValidationUtil.JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
+        String focus = JsCall.functionId("this.focus()", 0, false);
+        String blur = JsCall.functionId("this.blur()", 0, false);
+        functionIds.add(focus);
+        functionIds.add(blur);
+        // The same JavaScript, so the identifier is the same and only the
+        // name a message gives differs
+        if (statsHaveNames) {
+            ObjectNode names = stats.putObject(
+                    BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY);
+            if (bundledFocusName != null) {
+                names.put(focus, bundledFocusName);
+            }
+            names.put(blur, AlsoBundledJs.class.getName() + ".blur/0");
+        }
+        setupFrontendUtilsMock(stats);
+
+        Logger logger = Mockito.spy(Logger.class);
+        boolean needsBuild;
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
+            loggerFactory.when(
+                    () -> LoggerFactory.getLogger(BundleValidationUtil.class))
+                    .thenReturn(logger);
+            needsBuild = BundleValidationUtil.needsBuild(options, depScanner,
+                    mode);
+        }
+
+        assertTrue(needsBuild,
+                "a bundle that names a function by what was renamed should be rebuilt");
+        Mockito.verify(logger).info(Mockito.contains("names differently"),
+                Mockito.eq(statsHaveNames ? BundledJs.class.getName()
+                        : AlsoBundledJs.class.getName() + ", "
+                                + BundledJs.class.getName()));
     }
 
     @ParameterizedTest
@@ -3019,6 +3149,18 @@ class BundleValidationTest {
                         ? new File(temporaryFolder, q.getArgument(0).toString())
                                 .toURI().toURL()
                         : null);
+    }
+
+    @JsDefinition
+    interface BundledJs extends JsInvokers {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
+    @JsDefinition
+    interface AlsoBundledJs extends JsInvokers {
+        @JsExpression("this.blur()")
+        void blur();
     }
 
     @LoadDependenciesOnStartup
