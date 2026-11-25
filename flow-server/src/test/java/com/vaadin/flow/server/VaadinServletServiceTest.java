@@ -303,12 +303,14 @@ class VaadinServletServiceTest {
         CurrentInstance.clearAll();
         AtomicReference<UI> ui = new AtomicReference<>();
         List<UI> inErrorHandler = new ArrayList<>();
+        List<Boolean> lockedInErrorHandler = new ArrayList<>();
         List<Throwable> errors = new ArrayList<>();
         service.getRequestHandlers().clear();
         service.getRequestHandlers()
                 .add(new FailingUIRequestHandler(failingPart, session -> {
                     session.setErrorHandler(event -> {
                         inErrorHandler.add(UI.getCurrent());
+                        lockedInErrorHandler.add(session.hasLock());
                         errors.add(event.getThrowable());
                     });
                     // Like VaadinService.findUI, sets the UI as current
@@ -326,6 +328,7 @@ class VaadinServletServiceTest {
                         mock(VaadinResponse.class)));
 
         assertEquals(List.of(ui.get()), inErrorHandler);
+        assertEquals(List.of(true), lockedInErrorHandler);
         assertEquals(Collections.singletonList(null), inRequestEnd);
         // The error handling and the event get the handler's own exception
         assertEquals(1, errors.size());

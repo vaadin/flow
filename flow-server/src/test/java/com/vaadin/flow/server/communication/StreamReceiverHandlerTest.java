@@ -121,6 +121,8 @@ class StreamReceiverHandlerTest {
 
     private final List<UI> inErrorHandler = new ArrayList<>();
 
+    private final List<Boolean> lockedInErrorHandler = new ArrayList<>();
+
     @BeforeEach
     void setup() throws Exception {
         contentLength = "6";
@@ -145,11 +147,12 @@ class StreamReceiverHandlerTest {
         when(response.getOutputStream()).thenReturn(responseOutput);
 
         trackSessionLock();
-        when(session.getErrorHandler()).thenAnswer(i -> {
-            assertTrue(session.hasLock());
+        when(session.getErrorHandler()).thenReturn(errorHandler);
+        doAnswer(i -> {
+            lockedInErrorHandler.add(session.hasLock());
             inErrorHandler.add(UI.getCurrent());
-            return errorHandler;
-        });
+            return null;
+        }).when(errorHandler).error(any());
     }
 
     @AfterEach
@@ -333,6 +336,7 @@ class StreamReceiverHandlerTest {
         assertEquals(List.of(ui), inFailed);
         verify(errorHandler).error(any());
         assertEquals(List.of(ui), inErrorHandler);
+        assertEquals(List.of(true), lockedInErrorHandler);
         assertNull(UI.getCurrent());
     }
 
@@ -354,6 +358,7 @@ class StreamReceiverHandlerTest {
 
         verify(errorHandler).error(any());
         assertEquals(List.of(ui), inErrorHandler);
+        assertEquals(List.of(true), lockedInErrorHandler);
         assertNull(UI.getCurrent());
     }
 
