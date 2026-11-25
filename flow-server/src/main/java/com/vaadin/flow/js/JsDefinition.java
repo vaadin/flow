@@ -47,6 +47,16 @@ import com.vaadin.flow.dom.JsFunction;
  * them without this annotation is refused, since its JavaScript would be
  * missing from the bundle.
  * <p>
+ * A production build that optimizes the bundle, which is the default, collects
+ * only the definitions it can reach from the entry points of the application,
+ * the same way it collects {@code @JsModule}: a definition is reached when a
+ * reached class refers to it, such as by passing it to
+ * {@link Element#executeJs(Class)}. A definition that is only used through
+ * reflection, or from code that no route or other entry point leads to, is left
+ * out of that bundle, and a call to it fails in the browser. Name it in
+ * {@link com.vaadin.flow.component.dependency.Uses} on a class that is reached
+ * to keep it. Development mode collects every definition.
+ * <p>
  * The annotation, rather than the marker interface, is what the interface is
  * found by, since a servlet container is not required to report the interfaces
  * that extend a type listed in <code>&#64;HandlesTypes</code>, while it does
