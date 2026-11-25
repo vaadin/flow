@@ -16,19 +16,21 @@ procedure in [README.md](README.md) and the permutation policy in
 
 | Target | ITs |
 |---|---|
-| test-default | 371 |
-| ?UNMAPPED? | 32 |
-| test-embedding | 26 |
+| test-default | 368 |
+| ?UNMAPPED? | 33 |
+| test-embedding | 27 |
 | test-production | 23 |
 | test-vaadin-router | 22 |
 | test-devloop(keep) | 21 |
 | test-spring-security | 21 |
+| test-csp-strict(keep) | 14 |
 | test-themes | 14 |
 | test-contextpath | 13 |
+| test-csp-off(keep) | 10 |
 | test-dev-bundle | 9 |
 | test-livereload | 9 |
 | test-plain-servlet | 9 |
-| test-pwa | 8 |
+| test-pwa | 9 |
 | test-redeployment | 5 |
 | test-custom-frontend-directory | 4 |
 | test-bun | 3 |
@@ -36,6 +38,7 @@ procedure in [README.md](README.md) and the permutation policy in
 | test-pnpm | 3 |
 | (benchmark, keep) | 2 |
 | test-commercial-banner(keep) | 1 |
+| test-csp-strict-spring-security(keep) | 1 |
 | test-fault-tolerance(keep) | 1 |
 | test-multi-war(keep) | 1 |
 | test-no-theme | 1 |
@@ -43,7 +46,7 @@ procedure in [README.md](README.md) and the permutation policy in
 | test-plain-spring | 1 |
 | test-push-startup(keep) | 1 |
 | test-tailwind | 1 |
-| **TOTAL** | **606** |
+| **TOTAL** | **631** |
 
 ## Mapping (grouped by target module, then feature)
 
@@ -64,6 +67,7 @@ procedure in [README.md](README.md) and the permutation policy in
 
 | IT | from | type |
 |---|---|---|
+| AbstractBrowserIT | test-util-junit6 | ? |
 | AbstractCdiIT | vaadin-quarkus-tests/common-test-code | ? |
 | AbstractChromeIT | vaadin-quarkus-tests/common-test-code | ? |
 | AddonsIT | vaadin-quarkus-tests/common-test-code | ? |
@@ -138,6 +142,55 @@ procedure in [README.md](README.md) and the permutation policy in
 | SubContextNoEndingSlashIT | test-router-custom-context | move |
 | SubContextSubPathIT | test-router-custom-context | move |
 
+### → test-csp-off(keep)
+
+
+**`csp`**
+
+| IT | from | type |
+|---|---|---|
+| AbstractCspOffIT | test-csp-off | keep |
+| DomEventFilterIT | test-csp-off | keep |
+| DynamicDependencyIT | test-csp-off | keep |
+| EventDataExpressionIT | test-csp-off | keep |
+| ExecJavaScriptIT | test-csp-off | keep |
+| JavaScriptReturnValueIT | test-csp-off | keep |
+| JsFunctionIT | test-csp-off | keep |
+| JsInitializerIT | test-csp-off | keep |
+| ShortcutLocatorIT | test-csp-off | keep |
+| TrackMessageSizeIT | test-csp-off | keep |
+
+### → test-csp-strict(keep)
+
+
+**`csp`**
+
+| IT | from | type |
+|---|---|---|
+| AbstractCspStrictIT | test-csp-strict | keep |
+| AbstractPushIT | test-csp-strict | keep |
+| ClickIT | test-csp-strict | keep |
+| DataUrlFetchIT | test-csp-strict | keep |
+| DeclaredJsIT | test-csp-strict | keep |
+| EmbeddedWebComponentIT | test-csp-strict | keep |
+| FocusIT | test-csp-strict | keep |
+| LazyChunkIT | test-csp-strict | keep |
+| LongPollingPushIT | test-csp-strict | keep |
+| NavigationIT | test-csp-strict | keep |
+| PolicyIT | test-csp-strict | keep |
+| PushIT | test-csp-strict | keep |
+| ShortcutIT | test-csp-strict | keep |
+| StringJsIT | test-csp-strict | keep |
+
+### → test-csp-strict-spring-security(keep)
+
+
+**`csp`**
+
+| IT | from | type |
+|---|---|---|
+| SpringSecurityPolicyIT | test-csp-strict-spring-security | keep |
+
 ### → test-custom-frontend-directory
 
 
@@ -180,12 +233,12 @@ procedure in [README.md](README.md) and the permutation policy in
 | DisabledImageDownloadHandlerIT | test-default | done |
 | DnDAbsolutePositioningIT | test-default | done |
 | DnDIT | test-default | done |
-| DomEventFilterIT | test-default | done |
 | DomEventStopPropagationAndPreventDefaultIT | test-default | done |
 | DownloadHandlerIT | test-default | done |
 | ElementInnerHtmlIT | test-default | done |
 | ElementRemoveItselfIT | test-default | done |
 | EnabledIT | test-default | done |
+| EventDataCapturesIT | test-default | done |
 | EventListenersIT | test-default | done |
 | EventTargetIT | test-default | done |
 | ExceptionStacktraceIT | test-default | done |
@@ -251,7 +304,6 @@ procedure in [README.md](README.md) and the permutation policy in
 | StaticHtmlIT | test-root-context | move |
 | TableSpanGridIT | test-root-context | move |
 | TimingInfoReportedIT | test-root-context | move |
-| TrackMessageSizeIT | test-root-context | move |
 
 **`components`**
 
@@ -271,13 +323,9 @@ procedure in [README.md](README.md) and the permutation policy in
 | DependenciesLoadingAnnotationsIT | test-root-context | move |
 | DependenciesLoadingPageApiIT | test-root-context | move |
 | DirectoryImportIT | test-root-context | move |
-| DynamicDependencyIT | test-root-context | move |
-| ExecJavaScriptIT | test-root-context | move |
 | ExternalJavaScriptIT | test-root-context | move |
 | HistoryIT | test-root-context | move |
-| JavaScriptReturnValueIT | test-root-context | move |
 | JsApiGetByIdIT | test-root-context | move |
-| JsFunctionIT | test-root-context | move |
 | JsInitializerIT | test-root-context | move |
 | PlainScriptViaJavaScriptIT | test-root-context | move |
 | RuntimeJavaScriptModuleIT | test-root-context | move |
@@ -323,6 +371,7 @@ procedure in [README.md](README.md) and the permutation policy in
 | ClientCallableIT | vaadin-spring-tests/test-spring-native | move |
 | DomEventIT | vaadin-spring-tests/test-spring-native | move |
 | FocusIT | vaadin-spring-tests/test-spring-native | move |
+| JsDefinitionIT | vaadin-spring-tests/test-spring-native | move |
 | LitIT | vaadin-spring-tests/test-spring-native | move |
 | MainViewIT | vaadin-spring-tests/test-spring-native | move |
 | PushIT | vaadin-spring-tests/test-spring-native | move |
@@ -455,6 +504,7 @@ procedure in [README.md](README.md) and the permutation policy in
 | PushWithRequireJSIT | test-root-context | move |
 | ReconnectLongPollingIT | test-root-context | move |
 | ReconnectWebsocketIT | test-root-context | move |
+| ReconnectWebsocketXhrIT | test-root-context | move |
 | RedirectToPushIT | test-root-context | move |
 | SendMultibyteCharactersLongPollingIT | test-root-context | move |
 | SendMultibyteCharactersWebSocketIT | test-root-context | move |
@@ -678,6 +728,7 @@ procedure in [README.md](README.md) and the permutation policy in
 
 | IT | from | type |
 |---|---|---|
+| AttachedCountIT | test-embedding/embedding-test-assets | move |
 | BrowserDetailsIT | test-embedding/embedding-test-assets | move |
 | DefaultValueInitializationIT | test-embedding/embedding-test-assets | move |
 | ElementSizeIT | test-embedding/embedding-test-assets | move |
@@ -893,6 +944,7 @@ procedure in [README.md](README.md) and the permutation policy in
 | MainIT | test-frontend/vite-pwa-disabled-offline | move |
 | MainIT | test-frontend/vite-pwa-production | move |
 | PwaTestIT | test-pwa | move |
+| ServiceWorkerUpdateIT | test-pwa | move |
 | MainIT | test-pwa-disabled-offline | move |
 | WebPushIT | test-webpush | move |
 

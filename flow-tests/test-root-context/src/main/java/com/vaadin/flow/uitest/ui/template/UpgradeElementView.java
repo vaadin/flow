@@ -21,11 +21,21 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 @Route("com.vaadin.flow.uitest.ui.template.UpgradeElementView")
 public class UpgradeElementView extends AbstractDivView {
+
+    @JsDefinition
+    public interface UpgradeJs extends JsInvokers {
+        @JsExpression("if ( !window.upgradeElementDefined ) "
+                + "{customElements.define(window.MyTemplate.is, window.MyTemplate);}")
+        void defineElement();
+    }
 
     @Tag("upgrade-element")
     @JsModule("./UpgradeElement.js")
@@ -44,9 +54,7 @@ public class UpgradeElementView extends AbstractDivView {
         template.setId("template");
 
         NativeButton button = createButton("Upgrade element", "upgrade",
-                event -> getPage()
-                        .executeJs("if ( !window.upgradeElementDefined ) "
-                                + "{customElements.define(window.MyTemplate.is, window.MyTemplate);}"));
+                event -> getPage().executeJs(UpgradeJs.class).defineElement());
         add(template, button);
     }
 }
