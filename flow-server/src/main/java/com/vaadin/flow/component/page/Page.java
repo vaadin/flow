@@ -41,6 +41,7 @@ import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ContentSecurityPolicyViolationReporter;
 import com.vaadin.flow.internal.CssBundler;
+import com.vaadin.flow.internal.SuppressForbidden;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
@@ -611,6 +612,7 @@ public class Page implements Serializable {
      *             in the {@link ContentSecurityPolicyMode#STRICT} Content
      *             Security Policy mode
      */
+    @SuppressForbidden
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
         ContentSecurityPolicyViolationReporter.reportStringJavaScript();
@@ -634,6 +636,7 @@ public class Page implements Serializable {
      * @since 2.0
      */
     @Deprecated
+    @SuppressForbidden
     public PendingJavaScriptResult executeJs(String expression,
             Serializable[] parameters) {
         return executeJs(expression, (Object[]) parameters);
