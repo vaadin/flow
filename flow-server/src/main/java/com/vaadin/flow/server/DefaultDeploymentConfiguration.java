@@ -45,6 +45,12 @@ public class DefaultDeploymentConfiguration
 
     public static final String NOT_PRODUCTION_MODE_INFO = "\nVaadin is running in DEVELOPMENT mode - do not use for production deployments.";
 
+    private static final String STRICT_CONTENT_SECURITY_POLICY_DEVELOPMENT_MODE_INFO = """
+            Content Security Policy mode is 'strict', but the \
+            Content-Security-Policy header is only sent in production mode. \
+            In development mode, only the server-side checks are active. \
+            Test a production build before relying on the policy.""";
+
     private static final String DEPLOYMENT_WARNINGS = "Following issues were discovered with deployment configuration:";
 
     public static final String WARNING_XSRF_PROTECTION_DISABLED = "WARNING: Cross-site request forgery protection is disabled!";
@@ -472,6 +478,10 @@ public class DefaultDeploymentConfiguration
                 ContentSecurityPolicyMode.OFF,
                 value -> parseEnum(ContentSecurityPolicyMode.class,
                         InitParameters.CONTENT_SECURITY_POLICY, value));
+        if (contentSecurityPolicyMode == ContentSecurityPolicyMode.STRICT
+                && !productionMode) {
+            info.add(STRICT_CONTENT_SECURITY_POLICY_DEVELOPMENT_MODE_INFO);
+        }
     }
 
     /**

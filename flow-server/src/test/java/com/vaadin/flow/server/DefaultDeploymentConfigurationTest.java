@@ -17,18 +17,23 @@ package com.vaadin.flow.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
@@ -43,8 +48,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -387,6 +395,43 @@ class DefaultDeploymentConfigurationTest {
         DefaultDeploymentConfiguration config = createDeploymentConfig(init);
 
         assertEquals(expected, config.getContentSecurityPolicyMode());
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "strict, false, true", "strict, true, false",
+            "warn, false, false" })
+    void contentSecurityPolicyMode_startupInfo_mentionsMissingHeaderOnlyForStrictInDevelopmentMode(
+            String mode, boolean productionMode, boolean expectNote)
+            throws Exception {
+        Properties init = new Properties();
+        init.put(InitParameters.CONTENT_SECURITY_POLICY, mode);
+        init.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
+                String.valueOf(productionMode));
+        Logger logger = mock(Logger.class);
+        when(logger.isInfoEnabled()).thenReturn(true);
+        when(logger.isWarnEnabled()).thenReturn(true);
+        Field logging = DefaultDeploymentConfiguration.class
+                .getDeclaredField("logging");
+        logging.setAccessible(true);
+        ((AtomicBoolean) logging.get(null)).set(true);
+
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class, CALLS_REAL_METHODS)) {
+            loggerFactory
+                    .when(() -> LoggerFactory.getLogger(
+                            DefaultDeploymentConfiguration.class.getName()))
+                    .thenReturn(logger);
+            createDeploymentConfig(init);
+        }
+
+        // Info messages are merged into the warning when there are warnings
+        ArgumentCaptor<String> message = ArgumentCaptor.forClass(String.class);
+        verify(logger, atMost(1)).info(message.capture());
+        verify(logger, atMost(1)).warn(message.capture());
+        String logged = String.join("\n", message.getAllValues());
+        assertTrue(logged.contains("Vaadin is running in"), logged);
+        assertEquals(expectNote,
+                logged.contains("Content-Security-Policy header"), logged);
     }
 
     @Test
