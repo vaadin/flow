@@ -41,7 +41,9 @@ import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ContentSecurityPolicyViolationReporter;
 import com.vaadin.flow.internal.CssBundler;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
@@ -439,10 +441,19 @@ public class Page implements Serializable {
      * @since 2.1
      * @throws ContentSecurityPolicyViolationException
      *             in the {@link ContentSecurityPolicyMode#STRICT} Content
-     *             Security Policy mode
+     *             Security Policy mode, unless the string is declared in an
+     *             interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
     public void addDynamicImport(String expression) {
-        ContentSecurityPolicyViolationReporter.reportStringJavaScript();
+        JsCall fallback = JsStringFallbacks.findDeclaredFunction(expression,
+                new Object[0]);
+        if (fallback != null) {
+            addDynamicImport(JsFunction.ofDeclaredCall(fallback));
+            return;
+        }
+        ContentSecurityPolicyViolationReporter
+                .reportStringDynamicImport(expression);
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
     }
 
@@ -609,14 +620,22 @@ public class Page implements Serializable {
      * @since 25.0
      * @throws ContentSecurityPolicyViolationException
      *             in the {@link ContentSecurityPolicyMode#STRICT} Content
-     *             Security Policy mode
+     *             Security Policy mode, unless the string is declared in an
+     *             interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
-        ContentSecurityPolicyViolationReporter.reportStringJavaScript();
-        return ui.getInternals()
-                .addJavaScriptInvocation(new JavaScriptInvocation(expression,
-                        parameters == null ? new Object[0] : parameters));
+        Object[] arguments = parameters == null ? new Object[0] : parameters;
+        JsCall fallback = JsStringFallbacks.findDeclaredCall(expression,
+                arguments);
+        if (fallback != null) {
+            return ui.getInternals().addJavaScriptInvocation(fallback);
+        }
+        ContentSecurityPolicyViolationReporter.reportStringExecuteJs(expression,
+                arguments.length);
+        return ui.getInternals().addJavaScriptInvocation(
+                new JavaScriptInvocation(expression, arguments));
     }
 
     /**
