@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
@@ -51,7 +49,7 @@ public class RequestWebNotificationPermissionAction extends Action {
      * For internal use only. May be renamed or removed in a future release.
      */
     @JsDefinition
-    public interface RequestWebNotificationPermissionJs extends Serializable {
+    public interface RequestWebNotificationPermissionJs extends JsSnippets {
 
         /**
          * An action that asks the browser for permission to show notifications.

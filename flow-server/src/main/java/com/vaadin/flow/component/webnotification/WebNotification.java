@@ -31,6 +31,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.signals.Signal;
 
@@ -301,7 +302,7 @@ public final class WebNotification implements Serializable {
      * definition for {@link Element#executeJs(Class)}.
      */
     @JsDefinition
-    public interface WebNotificationJs extends Serializable {
+    public interface WebNotificationJs extends JsInvokers {
 
         /**
          * Shows a notification, reporting clicks, closing and failures through
