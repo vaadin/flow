@@ -86,13 +86,18 @@ import com.vaadin.flow.shared.Registration;
  * The browser does not tell the server when a tab is closed. A closed tab can
  * not be told apart from a tab that navigated to another page and returns
  * later, or from a tab that is being reloaded. A browser tab is therefore
- * destroyed only when no UI of the tab has sent a heartbeat for the same time
- * that it takes to close an inactive UI (three missed heartbeats, see
- * {@link com.vaadin.flow.function.DeploymentConfiguration#getHeartbeatInterval()}),
- * or when the session is destroyed. The check runs at the end of a request to
- * the session, so a browser tab can stay around for longer. Use
- * {@link #addDestroyListener(SerializableConsumer)} to release resources held
- * by the tab.
+ * destroyed when its last UI has been closed and no new UI has been loaded in
+ * the tab within one heartbeat interval (see
+ * {@link com.vaadin.flow.function.DeploymentConfiguration#getHeartbeatInterval()}).
+ * A UI is closed when the browser reports that its page is unloaded, unless it
+ * shows a {@code @PreserveOnRefresh} route, or when it has missed three
+ * heartbeats. A browser tab is also destroyed when no UI of the tab has sent a
+ * heartbeat for that long, and when the session is destroyed. These checks run
+ * at the end of a request to the session, so a browser tab can stay around for
+ * longer, until the session expires if no other tab of the session sends
+ * requests. When heartbeats are disabled, browser tabs are only destroyed with
+ * the session. Use {@link #addDestroyListener(SerializableConsumer)} to release
+ * resources held by the tab.
  * <p>
  * The browser tab is stored in the {@link VaadinSession} and all its methods
  * require the session to be locked, like the session attributes.
@@ -109,6 +114,10 @@ public final class BrowserTab implements Serializable {
     private final List<SerializableConsumer<BrowserTab>> destroyListeners = new ArrayList<>();
 
     private long lastActiveTimestamp;
+
+    // When the cleanup first found the last UI of the tab closed, or -1 while
+    // the tab has an open UI
+    private long closedTimestamp = -1;
 
     // Set when the destroy listeners start running, so that the browser tab
     // is no longer handed out or changed while they read its attributes
@@ -280,8 +289,9 @@ public final class BrowserTab implements Serializable {
     }
 
     /**
-     * Adds a listener that is run when this browser tab is destroyed, either
-     * because none of its UIs has been active for the heartbeat timeout or
+     * Adds a listener that is run when this browser tab is destroyed, because
+     * its last UI was closed and no new UI was loaded in the tab in time,
+     * because none of its UIs has been active for the heartbeat timeout, or
      * because the session is destroyed. The listener receives the destroyed
      * browser tab, whose attributes can still be read, but not changed, while
      * the listeners run. Use the given browser tab rather than
@@ -303,17 +313,65 @@ public final class BrowserTab implements Serializable {
     }
 
     /**
-     * Destroys the browser tabs of the given session that have no open UI and
-     * whose UIs have not been active for the given time.
+     * Records the last heartbeat of the UIs of the given session in their
+     * browser tabs, and when the last UI of a browser tab was first found
+     * closed. Call this before closed UIs are removed from the session, so that
+     * they still count.
+     *
+     * @param session
+     *            the session to clean up, locked
+     * @param now
+     *            the current time in milliseconds
+     */
+    static void updateTabActivity(VaadinSession session, long now) {
+        Registry registry = session.getAttribute(Registry.class);
+        if (registry == null) {
+            return;
+        }
+        Set<BrowserTab> openTabs = new HashSet<>();
+        Set<BrowserTab> closedTabs = new HashSet<>();
+        for (UI ui : session.getUIs()) {
+            BrowserTab tab = findTab(session, ui);
+            if (tab != null) {
+                tab.lastActiveTimestamp = Math.max(tab.lastActiveTimestamp,
+                        ui.getInternals().getLastHeartbeatTimestamp());
+                if (ui.isClosing()) {
+                    closedTabs.add(tab);
+                } else {
+                    openTabs.add(tab);
+                }
+            }
+        }
+        for (BrowserTab tab : registry.tabs.values()) {
+            if (openTabs.contains(tab)) {
+                tab.closedTimestamp = -1;
+            } else if (tab.closedTimestamp < 0 && closedTabs.contains(tab)) {
+                tab.closedTimestamp = now;
+            }
+        }
+    }
+
+    /**
+     * Destroys the browser tabs of the given session that have no open UI, and
+     * either whose UIs have not been active for the given time or whose last UI
+     * was closed longer ago than the given grace period. Call this after closed
+     * UIs are removed from the session, so that their detach listeners still
+     * get the browser tab of the UI.
      *
      * @param session
      *            the session to clean up, locked
      * @param timeoutMillis
      *            the time without activity after which a browser tab is
-     *            destroyed, or a negative number to keep browser tabs until the
-     *            session is destroyed
+     *            destroyed
+     * @param closedGraceMillis
+     *            the time after the last UI of a browser tab was closed, during
+     *            which a new UI can still continue the browser tab
+     * @param now
+     *            the current time in milliseconds
+     * @see #updateTabActivity(VaadinSession, long)
      */
-    static void destroyInactiveTabs(VaadinSession session, long timeoutMillis) {
+    static void destroyInactiveTabs(VaadinSession session, long timeoutMillis,
+            long closedGraceMillis, long now) {
         Registry registry = session.getAttribute(Registry.class);
         if (registry == null) {
             return;
@@ -321,21 +379,15 @@ public final class BrowserTab implements Serializable {
         Set<BrowserTab> openTabs = new HashSet<>();
         for (UI ui : session.getUIs()) {
             BrowserTab tab = findTab(session, ui);
-            if (tab != null) {
-                tab.lastActiveTimestamp = Math.max(tab.lastActiveTimestamp,
-                        ui.getInternals().getLastHeartbeatTimestamp());
-                if (!ui.isClosing()) {
-                    openTabs.add(tab);
-                }
+            if (tab != null && !ui.isClosing()) {
+                openTabs.add(tab);
             }
         }
-        if (timeoutMillis < 0) {
-            return;
-        }
-        long now = System.currentTimeMillis();
         for (BrowserTab tab : new ArrayList<>(registry.tabs.values())) {
-            if (!openTabs.contains(tab)
-                    && now - tab.lastActiveTimestamp >= timeoutMillis) {
+            boolean inactive = now - tab.lastActiveTimestamp >= timeoutMillis;
+            boolean closed = tab.closedTimestamp >= 0
+                    && now - tab.closedTimestamp >= closedGraceMillis;
+            if (!openTabs.contains(tab) && (inactive || closed)) {
                 registry.tabs.remove(tab.id);
                 tab.destroy();
             }

@@ -108,7 +108,7 @@ class BrowserTabTest {
         // An open UI that never used the tab also keeps it, by window name
         removeUI(ui);
         UI reloadedUI = addUI("tab-a");
-        BrowserTab.destroyInactiveTabs(session, 0);
+        cleanup(0, 0);
 
         assertEquals(0, destroyed.get());
         assertSame(tab, BrowserTab.get(reloadedUI));
@@ -133,13 +133,12 @@ class BrowserTabTest {
         // A closing UI, like the one being reloaded, does not keep the tab,
         // but its recent heartbeat does until the timeout
         ui.close();
-        BrowserTab.destroyInactiveTabs(session, 60_000);
+        cleanup(60_000, 60_000);
         removeUI(ui);
-        BrowserTab.destroyInactiveTabs(session, 60_000);
-        BrowserTab.destroyInactiveTabs(session, -1);
+        cleanup(60_000, 60_000);
         assertEquals(0, destroyed.get());
 
-        BrowserTab.destroyInactiveTabs(session, 0);
+        cleanup(0, 60_000);
         assertEquals(1, destroyed.get());
         assertThrows(IllegalStateException.class,
                 () -> tab.getAttribute("key"));
@@ -149,6 +148,35 @@ class BrowserTabTest {
                 () -> tab.addDestroyListener(t -> {
                 }));
         assertNotSame(tab, BrowserTab.get(addUI("tab-a")));
+    }
+
+    @Test
+    void destroyInactiveTabs_lastUIClosed_tabIsDestroyedAfterGracePeriod() {
+        UI ui = addUI("tab-a");
+        BrowserTab tab = BrowserTab.get(ui);
+        AtomicInteger destroyed = new AtomicInteger();
+        tab.addDestroyListener(destroyedTab -> destroyed.incrementAndGet());
+
+        // The grace period starts when the cleanup first sees the last UI
+        // closed, and the closed UI is removed in the same cleanup
+        long closedAt = System.currentTimeMillis();
+        ui.close();
+        cleanup(60_000, 60_000, closedAt);
+        removeUI(ui);
+        assertEquals(0, destroyed.get());
+
+        // A UI loaded in the tab within the grace period, as after a reload,
+        // ends the grace period, so that closing that UI starts a new one
+        long reloadedAt = closedAt + 20_000;
+        UI reloadedUI = addUI("tab-a");
+        cleanup(60_000, 0, reloadedAt);
+        reloadedUI.close();
+        cleanup(60_000, 10_000, reloadedAt);
+        removeUI(reloadedUI);
+        assertEquals(0, destroyed.get());
+
+        cleanup(60_000, 0, reloadedAt);
+        assertEquals(1, destroyed.get());
     }
 
     @Test
@@ -187,6 +215,16 @@ class BrowserTabTest {
         ui.getInternals().setExtendedClientDetails(details);
         session.addUI(ui);
         return ui;
+    }
+
+    private void cleanup(long timeoutMillis, long closedGraceMillis) {
+        cleanup(timeoutMillis, closedGraceMillis, System.currentTimeMillis());
+    }
+
+    private void cleanup(long timeoutMillis, long closedGraceMillis, long now) {
+        BrowserTab.updateTabActivity(session, now);
+        BrowserTab.destroyInactiveTabs(session, timeoutMillis,
+                closedGraceMillis, now);
     }
 
     private void removeUI(UI ui) {

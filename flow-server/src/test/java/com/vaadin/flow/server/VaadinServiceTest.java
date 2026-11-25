@@ -1040,16 +1040,51 @@ class VaadinServiceTest {
                     tab -> reloadedTabDestroyed.incrementAndGet());
             reloadedUI.getInternals().setLastHeartbeatTimestamp(now - 25_000);
             reloadedUI.close();
-            // A UI closed as inactive in this pass takes its tab along
+            // A UI closed as inactive in this pass takes its tab along, after
+            // the UI has been detached with its tab still available
             UI inactiveUI = addUI(session, 2);
             inactiveUI.getInternals().setLastHeartbeatTimestamp(now - 35_000);
-            BrowserTab.get(inactiveUI).addDestroyListener(
+            BrowserTab inactiveTab = BrowserTab.get(inactiveUI);
+            inactiveTab.addDestroyListener(
                     tab -> inactiveTabDestroyed.incrementAndGet());
+            List<BrowserTab> tabsOnDetach = new ArrayList<>();
+            inactiveUI.addDetachListener(
+                    event -> tabsOnDetach.add(BrowserTab.get(inactiveUI)));
 
             service.cleanupSession(session);
 
             assertEquals(0, reloadedTabDestroyed.get());
             assertEquals(1, inactiveTabDestroyed.get());
+            assertEquals(List.of(inactiveTab), tabsOnDetach);
+        } finally {
+            session.unlock();
+        }
+    }
+
+    @Test
+    void cleanupSession_heartbeatDisabled_browserTabIsKept() {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setHeartbeatInterval(0);
+        MockVaadinServletService service = new MockVaadinServletService(
+                configuration);
+        WrappedSession wrappedSession = mock(WrappedSession.class);
+        MockVaadinSession session = new MockVaadinSession(service) {
+            @Override
+            public WrappedSession getSession() {
+                return wrappedSession;
+            }
+        };
+        AtomicInteger destroyed = new AtomicInteger();
+        session.lock();
+        try {
+            UI closedUI = addUI(session, 1);
+            BrowserTab.get(closedUI)
+                    .addDestroyListener(tab -> destroyed.incrementAndGet());
+            closedUI.close();
+
+            service.cleanupSession(session);
+
+            assertEquals(0, destroyed.get());
         } finally {
             session.unlock();
         }
