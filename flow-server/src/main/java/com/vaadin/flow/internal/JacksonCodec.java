@@ -51,8 +51,8 @@ import com.vaadin.flow.js.JsSnippet;
  * <li>{@link Component} (encoded as a reference to the root element)
  * <li>{@link JsFunction} (encoded as a JS function literal that closes over its
  * captured parameters on the client, or for one declared by a
- * {@link com.vaadin.flow.js.JsDefinition JsDefinition} interface as the
- * identifier of the function in the bundle and the captured parameters)
+ * {@link com.vaadin.flow.js.JsSnippets JsSnippets} interface as the identifier
+ * of the function in the bundle and the captured parameters)
  * <li>an implementation of an interface that extends {@link JsSnippet}, which
  * {@link com.vaadin.flow.js.JsSnippets JsSnippets} hands out (encoded like a
  * declared {@link JsFunction})
@@ -148,11 +148,11 @@ public class JacksonCodec {
     }
 
     /**
-     * Encodes a snippet that a {@link com.vaadin.flow.js.JsDefinition
-     * JsDefinition} interface declares, a {@link JsFunction} or one of a type
-     * that a component or an application declares. The bundle has the
-     * JavaScript and the parameter names, so all the client needs is which
-     * function to call with the captures.
+     * Encodes a snippet that a {@link com.vaadin.flow.js.JsSnippets JsSnippets}
+     * interface declares, a {@link JsFunction} or one of a type that a
+     * component or an application declares. The bundle has the JavaScript and
+     * the parameter names, so all the client needs is which function to call
+     * with the captures.
      */
     private static JsonNode encodeDeclaredSnippet(JsCall declaredCall) {
         ObjectMapper mapper = JacksonUtils.getMapper();

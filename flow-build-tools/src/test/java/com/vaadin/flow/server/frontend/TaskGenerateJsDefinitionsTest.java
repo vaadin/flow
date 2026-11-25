@@ -17,17 +17,23 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
@@ -40,11 +46,14 @@ import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.shared.JsonConstants;
@@ -54,6 +63,7 @@ import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
 import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -62,6 +72,12 @@ import static org.mockito.Mockito.mock;
 class TaskGenerateJsDefinitionsTest {
 
     private static final String GREETING_EXPRESSION = "window.alert({ text: $0, kind: 'greeting' })";
+
+    private static final String SCROLL_EXPRESSION = "this.scrollTop = $0";
+
+    private static final String SCROLL_TO_END_EXPRESSION = "this.scrollTop = this.scrollHeight";
+
+    private static final String SCROLL_OVERRIDE_EXPRESSION = "this.scrollTop = $0 * 2";
 
     private static final String COUNT_EXPRESSION = "this.count = ($0 || 0) + 1";
 
@@ -82,7 +98,7 @@ class TaskGenerateJsDefinitionsTest {
     private static final String NAMES_REGISTRY = "window.Vaadin.Flow.jsDefinitionNames = window.Vaadin.Flow.jsDefinitionNames || {};";
 
     @JsDefinition
-    public interface GreeterJs extends Serializable {
+    public interface GreeterJs extends JsInvokers {
         @JsExpression(GREETING_EXPRESSION)
         void showGreeting(String greeting);
 
@@ -90,8 +106,34 @@ class TaskGenerateJsDefinitionsTest {
         void showGreeting();
     }
 
+    // The same JavaScript as GreeterJs, under a name that sorts after it
     @JsDefinition
-    public interface LoggerJs extends Serializable {
+    public interface GreeterTwinJs extends JsInvokers {
+        @JsExpression(GREETING_EXPRESSION)
+        void greet(String greeting);
+    }
+
+    // Only extended, so it does not need the annotation
+    public interface ScrollableJs extends JsInvokers {
+        @JsExpression(SCROLL_EXPRESSION)
+        void scrollTo(int top);
+    }
+
+    @JsDefinition
+    public interface ScrollingListJs extends ScrollableJs {
+        @JsExpression(SCROLL_TO_END_EXPRESSION)
+        void scrollToEnd();
+    }
+
+    @JsDefinition
+    public interface OverridingListJs extends ScrollableJs {
+        @Override
+        @JsExpression(SCROLL_OVERRIDE_EXPRESSION)
+        void scrollTo(int top);
+    }
+
+    @JsDefinition
+    public interface LoggerJs extends JsSnippets {
         @JsExpression(LOG_EXPRESSION)
         @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
@@ -105,43 +147,43 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @JsDefinition
-    public interface TemplateJs extends Serializable {
+    public interface TemplateJs extends JsSnippets {
         @JsExpression(TEMPLATE_EXPRESSION)
         TemplateSnippet label(String prefix);
     }
 
     @JsDefinition
-    public interface EventJs extends Serializable {
+    public interface EventJs extends JsSnippets {
         @JsExpression(KEY_EXPRESSION)
         DomEventFilter isKey(String key);
     }
 
     @JsDefinition
-    public interface InvalidNameJs extends Serializable {
+    public interface InvalidNameJs extends JsSnippets {
         @JsExpression(LOG_EXPRESSION)
         @JsFunctionParameterNames("class")
         JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
-    public interface CounterJs extends Serializable {
+    public interface CounterJs extends JsInvokers {
         @JsExpression(COUNT_EXPRESSION)
         void count(Integer from);
     }
 
     @JsDefinition
-    public interface NothingJs extends Serializable {
+    public interface NothingJs extends JsInvokers {
         void notDeclared();
     }
 
     @JsDefinition
-    public interface ShouterJs extends Serializable {
+    public interface ShouterJs extends JsInvokers {
         @JsExpression(SHOUT_EXPRESSION)
         void shout(String greeting, Object... names);
     }
 
     @JsDefinition
-    public interface StopperJs extends Serializable {
+    public interface StopperJs extends JsInvokers {
         @JsExpression(GREETING_EXPRESSION)
         @JsWithExecutionContext
         void stop(String greeting);
@@ -244,6 +286,42 @@ class TaskGenerateJsDefinitionsTest {
                         + JsCall.functionId("window.alert('Hello')", 0, false)
                         + "\"] = async function () {"),
                 "the overload that takes no arguments is another function: "
+                        + content);
+    }
+
+    @Test
+    void inheritedMethods_areCollectedWithTheDefinition() {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(ScrollingListJs.class), false);
+
+        assertTrue(
+                content.contains("window.Vaadin.Flow.jsDefinitions[\""
+                        + JsCall.functionId(SCROLL_EXPRESSION, 1, false)
+                        + "\"] = async function ($0) {"),
+                "a method inherited from an interface without the annotation should be collected with the definition: "
+                        + content);
+        assertTrue(
+                content.contains("window.Vaadin.Flow.jsDefinitions[\""
+                        + JsCall.functionId(SCROLL_TO_END_EXPRESSION, 0, false)
+                        + "\"] = async function () {"),
+                "the method the definition declares itself should be collected too: "
+                        + content);
+    }
+
+    @Test
+    void overriddenMethod_collectsTheJavaScriptOfTheOverride() {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(OverridingListJs.class), false);
+
+        assertTrue(
+                content.contains(JsCall.functionId(SCROLL_OVERRIDE_EXPRESSION,
+                        1, false)),
+                "the override declares what runs through the sub-interface: "
+                        + content);
+        assertFalse(
+                content.contains(
+                        JsCall.functionId(SCROLL_EXPRESSION, 1, false)),
+                "what the override replaces is not part of the sub-interface: "
                         + content);
     }
 
@@ -469,6 +547,111 @@ class TaskGenerateJsDefinitionsTest {
         assertTrue(content.contains("window.Vaadin.Flow.jsSnippets[\""
                 + BundledEventData.getFunctionId(INHERITING_EXPRESSION)
                 + "\"]"), content);
+    }
+
+    @Test
+    void viteConfig_copiesTheFunctionIdsIntoTheStats() throws IOException {
+        // The stats of a bundle list its functions and their names from the
+        // file this task writes, and the bundle check reads them under these
+        // keys
+        try (InputStream config = getClass().getClassLoader()
+                .getResourceAsStream("vite.generated.ts")) {
+            assertNotNull(config, "vite.generated.ts is on the class path");
+            String content = new String(config.readAllBytes(),
+                    StandardCharsets.UTF_8);
+            assertTrue(content.contains("'"
+                    + TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME + "'"),
+                    "vite.generated.ts should read "
+                            + TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME);
+            for (String line : List.of(
+                    BundleValidationUtil.JS_DEFINITION_FUNCTION_IDS_STATS_KEY
+                            + ": jsDefinitionIds."
+                            + TaskGenerateJsDefinitions.FUNCTION_IDS_KEY + ",",
+                    BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY
+                            + ": jsDefinitionIds."
+                            + TaskGenerateJsDefinitions.NAMES_KEY + ",")) {
+                assertTrue(content.contains(line),
+                        "vite.generated.ts should write " + line);
+            }
+        }
+    }
+
+    @Test
+    void render_listsEveryFunctionWithWhatDeclaresIt() {
+        Map<String, String> expected = new HashMap<>();
+        Stream.of(GreeterJs.class, StopperJs.class, TemplateJs.class)
+                .forEach(definition -> Stream.of(definition.getMethods())
+                        .forEach(method -> expected.put(
+                                JsCall.functionId(method),
+                                definition.getName())));
+        BundledEventData.getBundledEventData(OffsetEvent.class).stream()
+                .map(BundledEventData::getFunctionId)
+                .forEach(id -> expected.put(id, OffsetEvent.class.getName()));
+
+        // A function declared twice is one function, named after the
+        // definition that sorts first
+        TaskGenerateJsDefinitions.Rendered rendered = TaskGenerateJsDefinitions
+                .render(List.of(GreeterTwinJs.class, GreeterJs.class,
+                        StopperJs.class, TemplateJs.class),
+                        List.of(OffsetEvent.class), false);
+
+        assertEquals(expected, rendered.functionIds());
+        assertTrue(rendered.names().isEmpty(),
+                "a production file names nothing: " + rendered.names());
+    }
+
+    @Test
+    void render_developmentMode_listsTheNamesOfEveryFunction() {
+        TaskGenerateJsDefinitions.Rendered rendered = TaskGenerateJsDefinitions
+                .render(List.of(GreeterTwinJs.class, GreeterJs.class),
+                        List.of(OffsetEvent.class), true);
+
+        String greeting = JsCall.functionId(GREETING_EXPRESSION, 1, false);
+        // Declared twice, so named after both, the one the file assigns last
+        // at the end
+        List<String> greetingNames = List.of(
+                GreeterJs.class.getName() + ".showGreeting/1",
+                GreeterTwinJs.class.getName() + ".greet/1");
+        assertEquals(greetingNames, rendered.names().get(greeting));
+        String content = rendered.content();
+        assertTrue(
+                content.indexOf("] = \"" + greetingNames.get(1)
+                        + "\";") > content.indexOf(
+                                "] = \"" + greetingNames.get(0) + "\";"),
+                "the file should assign the last name last: " + content);
+        BundledEventData.getBundledEventData(OffsetEvent.class)
+                .forEach(
+                        eventData -> assertEquals(
+                                List.of(OffsetEvent.class.getName()
+                                        + " @EventData(\""
+                                        + BundledEventData.getExpression(
+                                                eventData)
+                                        + "\")"),
+                                rendered.names().get(BundledEventData
+                                        .getFunctionId(eventData))));
+    }
+
+    @Test
+    void execute_writesTheFunctionIdsNextToTheFile()
+            throws ExecutionFailedException, IOException {
+        task.execute();
+
+        File idsFile = new File(new File(frontendFolder, GENERATED),
+                TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME);
+        JsonNode written = JacksonUtils.getMapper()
+                .readTree(Files.readString(idsFile.toPath()));
+        List<String> ids = JacksonUtils
+                .<JsonNode> stream((ArrayNode) written
+                        .get(TaskGenerateJsDefinitions.FUNCTION_IDS_KEY))
+                .map(JsonNode::asString).toList();
+        assertEquals(List.copyOf(task.render().functionIds().keySet()), ids);
+        String greeting = JsCall.functionId(GREETING_EXPRESSION, 1, false);
+        assertTrue(ids.contains(greeting),
+                "the ids should list the declared functions: " + ids);
+        // Written for development, so with what a message names each by
+        assertEquals(GreeterJs.class.getName() + ".showGreeting/1",
+                written.get(TaskGenerateJsDefinitions.NAMES_KEY).get(greeting)
+                        .asString());
     }
 
     @Test
@@ -769,6 +952,22 @@ class TaskGenerateJsDefinitionsTest {
 
     private static int countOf(String content, String value) {
         return content.split(Pattern.quote(value), -1).length - 1;
+    }
+
+    @Test
+    void getFileContent_scansDefinitionsOfBothKinds() {
+        Options scanning = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(GreeterJs.class, LoggerJs.class)),
+                null).withFrontendDirectory(frontendFolder)
+                .withProductionMode(true);
+
+        String content = new TaskGenerateJsDefinitions(scanning)
+                .getFileContent();
+
+        assertEquals(
+                TaskGenerateJsDefinitions.renderFileContent(
+                        List.of(GreeterJs.class, LoggerJs.class), false),
+                content);
     }
 
     @Test

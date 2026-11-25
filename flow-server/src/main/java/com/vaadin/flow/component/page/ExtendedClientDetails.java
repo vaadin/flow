@@ -42,6 +42,7 @@ import com.vaadin.flow.component.webshare.WebShareSupport;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 
 /**
  * Provides extended information about the web browser, such as screen
@@ -739,7 +740,7 @@ public class ExtendedClientDetails implements Serializable {
      * @since 25.4
      */
     @JsDefinition
-    public interface ClientDetailsJs extends Serializable {
+    public interface ClientDetailsJs extends JsInvokers {
 
         /**
          * Reads what the browser reports about itself, which is the same set of

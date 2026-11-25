@@ -60,6 +60,7 @@ import com.vaadin.flow.router.RouteReference;
 import com.vaadin.flow.router.internal.ParameterInfo;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.AbstractConfiguration;
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -386,6 +387,11 @@ public class MenuRegistry {
                         .map(RouteReference::navigationTarget)
                         .filter(parent -> RouteUtil.hasExplicitRouteParent(
                                 navigationTarget) || !isIndexRoute(parent));
+            } catch (InvalidRouteConfigurationException e) {
+                warnOnce(navigationTarget, "route-parent",
+                        "{} Showing {} as a root menu entry.", e.getMessage(),
+                        navigationTarget.getName(), e);
+                return Optional.empty();
             } catch (RuntimeException e) {
                 // The menu has no route parameters to offer, so a resolver
                 // that requires one fails here. Treat that as "no parent"

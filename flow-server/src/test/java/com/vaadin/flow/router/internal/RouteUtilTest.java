@@ -29,6 +29,7 @@ import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -1347,10 +1348,41 @@ class RouteUtilTest {
     }
 
     @Test
+    void getRouteHierarchy_resolverReturningRegisteredParent_resolvesWithRegistry() {
+        withRegistry(
+                registry -> assertEquals(
+                        List.of(OrgView.class, ProjectView.class),
+                        targets(RouteUtil.getRouteHierarchy(registry,
+                                ProjectView.class,
+                                new RouteParameters(Map.of("orgId", "acme",
+                                        "projectId", "42"))))),
+                OrgView.class, ProjectView.class);
+    }
+
+    @Test
     void getRouteParent_resolverReturningEmpty_marksRoot() {
         // RootResolver returns empty -> RootResolvedView is its own root
         assertFalse(RouteUtil.getRouteParent(null, RootResolvedView.class,
                 RouteParameters.empty()).isPresent());
+    }
+
+    @ParameterizedTest
+    @ValueSource(classes = { LayoutParentView.class,
+            LayoutResolvedParentView.class })
+    void getRouteHierarchy_parentIsNotARoute_throwsNamingRouteAndParent(
+            Class<? extends Component> target) {
+        RouteParameters parameters = RouteParameters.empty();
+        withRegistry(registry -> {
+            InvalidRouteConfigurationException exception = assertThrows(
+                    InvalidRouteConfigurationException.class, () -> RouteUtil
+                            .getRouteHierarchy(registry, target, parameters));
+            assertTrue(exception.getMessage().contains(target.getName()),
+                    exception.getMessage());
+            assertTrue(
+                    exception.getMessage()
+                            .contains(MainLayoutParent.class.getName()),
+                    exception.getMessage());
+        }, target);
     }
 
     @SafeVarargs
@@ -1509,6 +1541,32 @@ class RouteUtilTest {
     @Route("root-resolved")
     @RouteParent(resolver = RootResolver.class)
     public static class RootResolvedView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    public static class MainLayoutParent extends Component
+            implements RouterLayout {
+    }
+
+    @Tag(Tag.DIV)
+    @Route("layout-parent")
+    @RouteParent(MainLayoutParent.class)
+    public static class LayoutParentView extends Component {
+    }
+
+    public static class LayoutParentResolver implements RouteParentResolver {
+        @Override
+        public Optional<RouteReference> resolveParent(
+                RouteParentContext context) {
+            return Optional.of(new RouteReference(MainLayoutParent.class,
+                    RouteParameters.empty()));
+        }
+    }
+
+    @Tag(Tag.DIV)
+    @Route("layout-resolved-parent")
+    @RouteParent(resolver = LayoutParentResolver.class)
+    public static class LayoutResolvedParentView extends Component {
     }
 
     private static class MockRouteTarget extends RouteTarget {
