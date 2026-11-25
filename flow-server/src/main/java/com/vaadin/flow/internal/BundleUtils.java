@@ -200,6 +200,11 @@ public final class BundleUtils {
      * <p>
      * Checks a class once, and only in production mode with a bundle whose
      * stats list the functions it registers.
+     * <p>
+     * Calls that a {@code @JsStringFallback} interface stands in for are not
+     * checked: the build always keeps those interfaces in the bundle, as they
+     * are found by the string an add-on sends rather than through a class
+     * reference, so naming them in {@code @Uses} would not help.
      *
      * @param declaringType
      *            the JavaScript definition or event type that declares the
