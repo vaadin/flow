@@ -64,7 +64,7 @@ import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ContentSecurityPolicy;
-import com.vaadin.flow.server.CspMode;
+import com.vaadin.flow.server.ContentSecurityPolicyMode;
 import com.vaadin.flow.server.DevToolsToken;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.InitParameters;
@@ -152,8 +152,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                     indexDocument);
         }
 
-        if (config.getCspMode() == CspMode.STRICT) {
-            String nonce = createCspNonce();
+        if (config
+                .getContentSecurityPolicyMode() == ContentSecurityPolicyMode.STRICT) {
+            String nonce = createContentSecurityPolicyNonce();
             indexHtmlResponse.setContentSecurityPolicy(nonce,
                     createDefaultContentSecurityPolicy(nonce));
         }
@@ -259,7 +260,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         // The dev server and dev tools need eval, so the policy is only sent
         // in production mode
-        if (config.getCspMode() == CspMode.STRICT
+        if (config
+                .getContentSecurityPolicyMode() == ContentSecurityPolicyMode.STRICT
                 && config.isProductionMode()) {
             applyContentSecurityPolicy(indexHtmlResponse);
         }
@@ -274,7 +276,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         return true;
     }
 
-    private String createCspNonce() {
+    private String createContentSecurityPolicyNonce() {
         byte[] bytes = new byte[16];
         nonceRandom.nextBytes(bytes);
         // Padding is not needed since the nonce is only compared as a string
@@ -313,10 +315,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                             + "the policy through "
                             + "IndexHtmlResponse.getContentSecurityPolicy() "
                             + "in an IndexHtmlRequestListener instead.",
-                    CONTENT_SECURITY_POLICY_HEADER, InitParameters.CSP));
+                    CONTENT_SECURITY_POLICY_HEADER,
+                    InitParameters.CONTENT_SECURITY_POLICY));
         }
         // Both are created for the strict mode, which the caller checks
-        String nonce = Objects.requireNonNull(indexHtmlResponse.getCspNonce());
+        String nonce = Objects.requireNonNull(
+                indexHtmlResponse.getContentSecurityPolicyNonce());
         ContentSecurityPolicy policy = Objects
                 .requireNonNull(indexHtmlResponse.getContentSecurityPolicy());
         // Done after the listeners have run so that every script in the page
@@ -439,16 +443,21 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private void redirectToOldBrowserPageWhenNeeded(Document indexDocument) {
-        // The CSS Custom Highlight API needs Firefox 140 (ESR), Chrome 105 or
-        // Safari 17.2, and light-dark() needs Firefox 120, Chrome 123 or Safari
+        // Intl.Locale#getWeekInfo needs Firefox 153 (ESR), Chrome 130 or
+        // Safari 17, and light-dark() needs Firefox 120, Chrome 123 or Safari
         // 17.5. Together they match the build target in vite.generated.ts
-        // without turning away Chrome that is a few versions behind.
-        addScript(indexDocument, """
-                if (typeof Highlight !== "function"
-                        || !CSS.supports("color", "light-dark(red, red)")) {
-                    window.location.search='v-r=oldbrowser';
-                }
-                """);
+        // without turning away Chrome that is a few versions behind. The
+        // script is not transpiled, so it must parse in the old browsers it
+        // turns away.
+        addScript(indexDocument,
+                """
+                        if (typeof Intl === "undefined"
+                                || typeof Intl.Locale !== "function"
+                                || typeof Intl.Locale.prototype.getWeekInfo !== "function"
+                                || !CSS.supports("color", "light-dark(red, red)")) {
+                            window.location.search='v-r=oldbrowser';
+                        }
+                        """);
     }
 
     private void catchErrorsInDevMode(Document indexDocument) {

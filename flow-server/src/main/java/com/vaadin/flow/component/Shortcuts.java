@@ -16,7 +16,7 @@
 package com.vaadin.flow.component;
 
 import com.vaadin.flow.dom.JsFunction;
-import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.shared.Registration;
 
@@ -169,7 +169,7 @@ public final class Shortcuts {
      * @since 6.0.2
      * @deprecated The browser compiles the locator from a string. Use
      *             {@link #setShortcutListenOnElementLocator(JsFunction, Component)}
-     *             with a function declared in a {@link JsDefinition} interface.
+     *             with a function declared in a {@link JsSnippets} interface.
      */
     @Deprecated(since = "25.4", forRemoval = true)
     public static Registration setShortcutListenOnElement(
@@ -195,13 +195,13 @@ public final class Shortcuts {
      * <p>
      * The function is called without arguments and with the element of the
      * listen-on component as {@code this}, and returns the element to listen
-     * on. Declare it in a {@link JsDefinition} interface, so that the browser
+     * on. Declare it in a {@link JsSnippets} interface, so that the browser
      * does not compile it from a string, which also works with a Content
      * Security Policy that does not allow {@code unsafe-eval}:
      *
      * <pre>
      * &#64;JsDefinition
-     * public interface OverlayJs extends Serializable {
+     * public interface OverlayJs extends JsSnippets {
      *
      *     &#64;JsExpression("return this.$.overlay;")
      *     JsFunction locateOverlay();

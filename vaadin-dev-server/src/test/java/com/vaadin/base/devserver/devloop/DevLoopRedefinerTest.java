@@ -18,7 +18,6 @@ package com.vaadin.base.devserver.devloop;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -47,7 +46,9 @@ import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.theme.Theme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -175,7 +176,7 @@ class DevLoopRedefinerTest {
     }
 
     @JsDefinition
-    interface GreeterJs extends Serializable {
+    interface GreeterJs extends JsInvokers {
         @JsExpression("window.alert($0)")
         void showGreeting(String greeting);
 
@@ -184,34 +185,34 @@ class DevLoopRedefinerTest {
     }
 
     @JsDefinition
-    interface LoggerJs extends Serializable {
+    interface LoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value)")
         @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
-    interface RenamedParameterLoggerJs extends Serializable {
+    interface RenamedParameterLoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value)")
         @JsFunctionParameterNames("message")
         JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
-    interface UnwrappedLoggerJs extends Serializable {
+    interface UnwrappedLoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value)")
         JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
-    interface InvalidNameLoggerJs extends Serializable {
+    interface InvalidNameLoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value)")
         @JsFunctionParameterNames("class")
         JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
-    interface EditedGreeterJs extends Serializable {
+    interface EditedGreeterJs extends JsInvokers {
         @JsExpression("window.alert('edited ' + $0)")
         void showGreeting(String greeting);
     }
@@ -264,6 +265,27 @@ class DevLoopRedefinerTest {
                 .frontendDependencies(RenamedParameterLoggerJs.class));
         assertNotEquals(imports,
                 DevLoopRedefiner.frontendDependencies(UnwrappedLoggerJs.class));
+    }
+
+    // Only extended by definitions, so not annotated
+    interface ScrollableJs extends JsInvokers {
+        @JsExpression("this.scrollTop = $0")
+        void scrollTo(int top);
+    }
+
+    interface EditedScrollableJs extends JsInvokers {
+        @JsExpression("this.scrollLeft = $0")
+        void scrollTo(int top);
+    }
+
+    @Test
+    void frontendDependencies_seesTheJavaScriptOfAnExtendedInterface() {
+        // Its methods are generated as part of every definition extending it,
+        // so editing what it declares changes what the browser has to run
+        assertNotEquals(
+                DevLoopRedefiner.frontendDependencies(ScrollableJs.class),
+                DevLoopRedefiner
+                        .frontendDependencies(EditedScrollableJs.class));
     }
 
     @JsFunctionParameterNames({ "html", "item" })

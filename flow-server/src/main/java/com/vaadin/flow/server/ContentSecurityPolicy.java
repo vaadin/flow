@@ -39,8 +39,8 @@ import com.vaadin.flow.internal.ToStringBuilder;
  * as given, so keywords need their quotes, for example {@code "'self'"} or
  * {@code "'none'"}.
  * <p>
- * In the {@link CspMode#STRICT} mode, Vaadin creates the policy for each index
- * HTML response and exposes it through
+ * In the {@link ContentSecurityPolicyMode#STRICT} mode, Vaadin creates the
+ * policy for each index HTML response and exposes it through
  * {@link com.vaadin.flow.server.communication.IndexHtmlResponse#getContentSecurityPolicy()},
  * so that an
  * {@link com.vaadin.flow.server.communication.IndexHtmlRequestListener} can

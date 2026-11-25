@@ -22,15 +22,14 @@ import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
-import com.vaadin.flow.internal.CspViolationReporter;
+import com.vaadin.flow.internal.ContentSecurityPolicyViolationReporter;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
-import com.vaadin.flow.server.CspMode;
-import com.vaadin.flow.server.CspViolationException;
+import com.vaadin.flow.server.ContentSecurityPolicyMode;
+import com.vaadin.flow.server.ContentSecurityPolicyViolationException;
 
 /**
  * A JavaScript function value with captured parameters that can be passed to
@@ -61,13 +60,13 @@ import com.vaadin.flow.server.CspViolationException;
  * A function created with {@link #of(String, Object...)} is compiled in the
  * browser from its body, which a content security policy that does not allow
  * <code>unsafe-eval</code> forbids. A function can instead be declared as a
- * {@link JsSnippet} by a method of a {@link JsDefinition} interface, whose
+ * {@link JsSnippet} by a method of a {@link JsSnippets} interface, whose
  * JavaScript the build collects into the bundle, so the browser is sent the
  * identifier of the function and the captures rather than a body:
  *
  * <pre>
  * &#64;JsDefinition
- * public interface LoggerJs extends Serializable {
+ * public interface LoggerJs extends JsSnippets {
  *
  *     &#64;JsExpression("console.log($0, value);")
  *     &#64;JsFunctionParameterNames("value")
@@ -75,7 +74,7 @@ import com.vaadin.flow.server.CspViolationException;
  * }
  *
  * &#64;JsDefinition
- * public interface ClickJs extends Serializable {
+ * public interface ClickJs extends JsInvokers {
  *
  *     &#64;JsExpression("this.addEventListener('click', () =&gt; $0('clicked'));")
  *     void onClick(JsFunction handler);
@@ -113,10 +112,11 @@ public final class JsFunction implements JsSnippet {
      * <p>
      * The function is compiled in the browser from its body, which a content
      * security policy without <code>unsafe-eval</code> does not allow, so the
-     * {@link CspMode} of the application reports or refuses it. A function
-     * declared by a method of a {@link JsDefinition} interface is collected
-     * into the bundle instead, and the browser is sent only its identifier and
-     * the captures. The class documentation shows how to declare one.
+     * {@link ContentSecurityPolicyMode} of the application reports or refuses
+     * it. A function declared by a method of a {@link JsSnippets} interface is
+     * collected into the bundle instead, and the browser is sent only its
+     * identifier and the captures. The class documentation shows how to declare
+     * one.
      *
      * @param body
      *            the JavaScript function body, with captures referenced as
@@ -127,13 +127,14 @@ public final class JsFunction implements JsSnippet {
      * @return a new {@code JsFunction} instance
      * @throws IllegalArgumentException
      *             if any capture has a type that cannot be sent to the client
-     * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode
+     * @throws ContentSecurityPolicyViolationException
+     *             in the {@link ContentSecurityPolicyMode#STRICT} Content
+     *             Security Policy mode
      */
     public static JsFunction of(String body, @Nullable Object... captures) {
         Objects.requireNonNull(body, "body");
         Objects.requireNonNull(captures, "captures");
-        CspViolationReporter.reportStringJavaScript();
+        ContentSecurityPolicyViolationReporter.reportStringJavaScript();
         @Nullable
         Object[] copy = captures.clone();
         // Dry-run encode each capture so unsupported types fail fast. Mirrors
@@ -149,7 +150,7 @@ public final class JsFunction implements JsSnippet {
     }
 
     /**
-     * Creates the function that a call of a method of a {@link JsDefinition}
+     * Creates the function that a call of a method of a {@link JsSnippets}
      * interface declares, which the build collects into the bundle.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
@@ -178,8 +179,8 @@ public final class JsFunction implements JsSnippet {
     }
 
     /**
-     * Gets the call of a {@link JsDefinition} method that declared this
-     * function, which names the function of the bundle it runs.
+     * Gets the call of a {@link JsSnippets} method that declared this function,
+     * which names the function of the bundle it runs.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      *
@@ -210,14 +211,14 @@ public final class JsFunction implements JsSnippet {
      * @return a new {@code JsFunction} with the given argument names
      * @throws IllegalStateException
      *             if argument names have already been set on this instance, or
-     *             if this function is declared by a {@link JsDefinition}
+     *             if this function is declared by a {@link JsSnippets}
      *             interface, which declares its arguments with
      *             {@link JsFunctionParameterNames}
      */
     public JsFunction withArguments(String... argumentNames) {
         if (declaredCall != null) {
             throw new IllegalStateException(
-                    "The arguments of a function declared by a @JsDefinition"
+                    "The arguments of a function declared by a JsSnippets"
                             + " interface are declared with @JsFunctionParameterNames,"
                             + " as they are part of the JavaScript in the bundle");
         }
@@ -233,20 +234,20 @@ public final class JsFunction implements JsSnippet {
      *
      * @return the body string
      * @throws IllegalStateException
-     *             if this function is declared by a {@link JsDefinition}
+     *             if this function is declared by a {@link JsSnippets}
      *             interface, whose JavaScript is in the bundle rather than in
      *             the function
      * @deprecated The body is what the client compiles the function from, and a
-     *             function declared by a {@link JsDefinition} interface, which
-     *             is not compiled from a string, has none. The body of a
-     *             function created with {@link #of(String, Object...)} is the
-     *             one passed to it.
+     *             function declared by a {@link JsSnippets} interface, which is
+     *             not compiled from a string, has none. The body of a function
+     *             created with {@link #of(String, Object...)} is the one passed
+     *             to it.
      */
     @Deprecated(since = "25.4", forRemoval = true)
     public String getBody() {
         if (body == null) {
             throw new IllegalStateException(
-                    "A function declared by a @JsDefinition interface has no"
+                    "A function declared by a JsSnippets interface has no"
                             + " body, as its JavaScript is in the bundle");
         }
         return body;
@@ -254,7 +255,7 @@ public final class JsFunction implements JsSnippet {
 
     /**
      * The captured values, in declaration order. For a function declared by a
-     * {@link JsDefinition} interface, these are the arguments of the call that
+     * {@link JsSnippets} interface, these are the arguments of the call that
      * declared it.
      *
      * @return an unmodifiable list of captures
@@ -267,7 +268,7 @@ public final class JsFunction implements JsSnippet {
      * The names of the runtime arguments declared via
      * {@link #withArguments(String...)}, or with
      * {@link JsFunctionParameterNames} for a function declared by a
-     * {@link JsDefinition} interface, in positional order.
+     * {@link JsSnippets} interface, in positional order.
      *
      * @return an unmodifiable list of argument names; empty if none were
      *         declared

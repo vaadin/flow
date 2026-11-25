@@ -416,10 +416,11 @@ class VaadinServiceTest {
     @ParameterizedTest
     @CsvSource({ "OFF, flow/csp-off", "WARN, flow/csp-warn",
             "STRICT, flow/csp-strict" })
-    void cspMode_modeReported(CspMode mode, String expectedKey) {
+    void contentSecurityPolicyMode_modeReported(ContentSecurityPolicyMode mode,
+            String expectedKey) {
         UsageStatistics.resetEntries();
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
-        configuration.setCspMode(mode);
+        configuration.setContentSecurityPolicyMode(mode);
         MockVaadinServletService service = new MockVaadinServletService(
                 configuration, false);
 
@@ -441,7 +442,8 @@ class VaadinServiceTest {
 
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         configuration.setProductionMode(true);
-        configuration.setCspMode(CspMode.STRICT);
+        configuration
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
         configuration.setApplicationOrSystemProperty(
                 InitParameters.SERVLET_PARAMETER_ENABLE_PNPM, "true");
         VaadinServiceInitListener initListener = event -> {

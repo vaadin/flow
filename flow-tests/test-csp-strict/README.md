@@ -1,6 +1,6 @@
 # test-csp-strict
 
-Integration tests for the `csp=strict` setting: a production-mode Spring Boot
+Integration tests for the `contentSecurityPolicy=strict` setting: a production-mode Spring Boot
 application where Vaadin sends its nonce-based `Content-Security-Policy`
 header, the browser enforces it, and the string-based JavaScript APIs throw.
 
@@ -25,7 +25,7 @@ mvn verify -pl flow-tests/test-csp-strict \
 |---|---|---|
 | The policy header, a nonce on every script, a new nonce per response, a view rendered under the policy | `csp.PolicyView` | `PolicyIT` |
 | A `data:` URL fetched in the browser, as `vaadin-icon` does for an `SvgIcon` | `csp.DataUrlFetchView` | `DataUrlFetchIT` |
-| JavaScript run through a `@JsDefinition` | `js.DeclaredJsView` | `DeclaredJsIT` |
+| JavaScript run through a `JsInvokers` interface | `js.DeclaredJsView` | `DeclaredJsIT` |
 | `executeJs(String)` throws in Java, trace leads to the caller | `js.StringJsView` | `StringJsIT` |
 | Framework JavaScript: focus, page title | `dom.FocusView` | `FocusIT` |
 | Navigation through a router link | `routing.NavigationView` | `NavigationIT` |

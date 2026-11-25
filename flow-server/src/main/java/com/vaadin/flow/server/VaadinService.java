@@ -1509,6 +1509,7 @@ public abstract class VaadinService implements Serializable {
      *            the session to set the lock check strategy for, not
      *            {@code null}
      * @see VaadinSession#checkHasLock()
+     * @since 25.4
      */
     protected void applySessionLockCheckStrategy(VaadinSession session) {
         SessionLockCheckStrategy sessionLockCheckStrategy = getDeploymentConfiguration()
