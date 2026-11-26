@@ -23,8 +23,12 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import tools.jackson.databind.JsonNode;
@@ -892,19 +896,36 @@ class ComponentEventBusTest {
         }
     }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void addListener_bundledFilterOnly_checkedInTheBundle() {
+    @DomEvent("data-event")
+    public static class DataOnlyEvent extends ComponentEvent<Component> {
+        public DataOnlyEvent(Component source, boolean fromClient,
+                @EventData(OFFSET) double offset) { // NOSONAR
+            super(source, fromClient);
+        }
+    }
+
+    static Stream<Arguments> eventsWithOneBundledFunction() {
+        // Either a bundled filter or bundled event data is enough to check
+        // the event type, and only its own function is checked
+        return Stream.of(Arguments.of(FilterOnlyEvent.class, BUTTON_FILTER),
+                Arguments.of(DataOnlyEvent.class, OFFSET));
+    }
+
+    @ParameterizedTest
+    @MethodSource("eventsWithOneBundledFunction")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    void addListener_bundledFilterOrEventDataOnly_checkedInTheBundle(
+            Class eventType, String expression) {
         try (MockedStatic<BundleUtils> bundleUtils = mockStatic(
                 BundleUtils.class, CALLS_REAL_METHODS)) {
-            new TestComponent().addListener(FilterOnlyEvent.class, event -> {
+            new TestComponent().addListener(eventType, event -> {
             });
 
             ArgumentCaptor<Supplier<Collection<String>>> ids = ArgumentCaptor
                     .forClass(Supplier.class);
-            bundleUtils.verify(() -> BundleUtils.checkJsFunctionsBundled(
-                    eq(FilterOnlyEvent.class), ids.capture()));
-            assertEquals(Set.of(BundledEventData.getFunctionId(BUTTON_FILTER)),
+            bundleUtils.verify(() -> BundleUtils
+                    .checkJsFunctionsBundled(eq(eventType), ids.capture()));
+            assertEquals(Set.of(BundledEventData.getFunctionId(expression)),
                     Set.copyOf(ids.getValue().get()));
         }
     }
