@@ -35,6 +35,8 @@ import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -322,18 +324,27 @@ class LaunchTest {
     }
 
     /**
-     * HotswapAgent's ProxyPlugin regenerates the JDK proxy class of a redefined
-     * interface through jdk.internal.loader. Without the open, a method added
-     * to such an interface throws AbstractMethodError on the proxy until a
-     * restart.
+     * The app JVM gets every package the IntelliJ and VS Code plugins open for
+     * a HotswapAgent launch, so code that hot reloads from the IDE also hot
+     * reloads under the dev loop. jdk.internal.loader is the one a failure was
+     * traced to: HotswapAgent's ProxyPlugin regenerates the JDK proxy class of
+     * a redefined interface through it, and without it a method added to such
+     * an interface throws AbstractMethodError on the proxy until a restart.
      */
-    @Test
-    void jvmFlags_openJdkInternalLoaderForProxyRegeneration(@TempDir Path repo)
+    @ParameterizedTest
+    @ValueSource(strings = { "java.base/sun.nio.ch", "java.base/java.lang",
+            "java.base/java.lang.reflect", "java.base/java.io",
+            "java.base/sun.security.action", "java.desktop/java.beans",
+            "java.desktop/com.sun.beans",
+            "java.desktop/com.sun.beans.introspect",
+            "java.desktop/com.sun.beans.util",
+            "java.base/jdk.internal.loader" })
+    void jvmFlags_openWhatTheIdePluginsOpen(String target, @TempDir Path repo)
             throws IOException {
         List<String> flags = launchWithAgents(repo).jvmFlags(text -> {
         });
 
-        int open = flags.indexOf("java.base/jdk.internal.loader=ALL-UNNAMED");
+        int open = flags.indexOf(target + "=ALL-UNNAMED");
         assertTrue(open > 0, flags.toString());
         assertEquals("--add-opens", flags.get(open - 1), flags.toString());
     }

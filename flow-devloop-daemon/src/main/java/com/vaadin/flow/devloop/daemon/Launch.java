@@ -90,16 +90,19 @@ final class Launch {
             .compile("[\\s|]+");
 
     /**
-     * The packages HotswapAgent reflects into. {@code jdk.internal.loader} is
-     * for its ProxyPlugin, which clears the JDK's proxy class cache after an
-     * interface is redefined: without it the plugin fails, the stale proxy
-     * class stays, and calling a method added to the interface - for example
-     * through an {@code executeJs(Class)} proxy - throws
-     * {@code AbstractMethodError} until the application is restarted.
+     * The packages opened to HotswapAgent and its plugins.
+     * {@code jdk.internal.loader} is for its ProxyPlugin, which clears the
+     * JDK's proxy class cache after an interface is redefined: without it the
+     * plugin fails, the stale proxy class stays, and calling a method added to
+     * the interface - for example through an {@code executeJs(Class)} proxy -
+     * throws {@code AbstractMethodError} until the application is restarted.
      * <p>
      * The list includes every package the Vaadin IntelliJ and VS Code plugins
      * open when they launch an application with HotswapAgent, so that the same
      * code runs under the dev loop the way it runs from the IDE.
+     * {@code sun.nio.ch}, {@code sun.security.action} and the
+     * {@code com.sun.beans} packages are here only for that parity: no dev-loop
+     * failure has been traced to their absence.
      */
     private static final List<String> ADD_OPENS = List.of("java.base/java.lang",
             "java.base/java.lang.reflect", "java.base/java.io",
