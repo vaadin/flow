@@ -40,9 +40,31 @@ public class QueuedHistoryUpdateIT extends AbstractDefaultIT {
         $(NativeButtonElement.class)
                 .id(QueuedHistoryUpdateView.UPDATE_BUTTON_ID).click();
 
+        assertOnlyUpdatesWithCallbackEntered();
+    }
+
+    @BrowserTest
+    public void leaveToClientRoute_queuedHistoryUpdatesAreApplied() {
+        leaveToClientRoute();
+    }
+
+    @BrowserTest
+    public void afterLeavingToClientRoute_historyUpdatesAreAppliedAgain() {
+        leaveToClientRoute();
+
+        getDriver().navigate().back();
+        waitForElementPresent(By.id(QueuedHistoryUpdateView.UPDATE_BUTTON_ID));
+        waitForEntered(QueuedHistoryUpdateView.ROUTE);
+        $(NativeButtonElement.class)
+                .id(QueuedHistoryUpdateView.UPDATE_BUTTON_ID).click();
+
+        assertOnlyUpdatesWithCallbackEntered();
+    }
+
+    private void assertOnlyUpdatesWithCallbackEntered() {
         int rounds = QueuedHistoryUpdateView.ROUNDS;
-        waitUntil(driver -> driver.getCurrentUrl()
-                .endsWith(QueuedHistoryUpdateView.ROUTE + "?second=" + rounds));
+        waitForUrl(QueuedHistoryUpdateView.ROUTE + "?second=" + rounds,
+                "Expected the queued history updates to be applied");
         checkLogsForErrors();
 
         // An update without callback that wrongly reaches the server is
@@ -57,8 +79,7 @@ public class QueuedHistoryUpdateIT extends AbstractDefaultIT {
                 "Only the updates with callback should enter the view");
     }
 
-    @BrowserTest
-    public void leaveToClientRoute_queuedHistoryUpdateIsApplied() {
+    private void leaveToClientRoute() {
         open();
         waitForEntered(QueuedHistoryUpdateView.ROUTE);
 
@@ -66,25 +87,18 @@ public class QueuedHistoryUpdateIT extends AbstractDefaultIT {
                 .click();
 
         waitForElementPresent(By.id("react"));
-        String expectedUrl = getRootURL() + "/"
-                + QueuedHistoryUpdateView.CLIENT_ROUTE + "?updated";
+        waitForUrl(QueuedHistoryUpdateView.CLIENT_ROUTE + "?updated=3",
+                "Expected the history updates queued after leaving to the client route to be applied");
+        checkLogsForErrors();
+    }
+
+    private void waitForUrl(String path, String message) {
+        String expectedUrl = getRootURL() + "/" + path;
         try {
             waitUntil(driver -> expectedUrl.equals(driver.getCurrentUrl()));
         } catch (TimeoutException e) {
-            fail("Expected the history update queued after leaving to the client route to be applied, URL: "
-                    + getDriver().getCurrentUrl());
+            fail(message + ", URL: " + getDriver().getCurrentUrl());
         }
-        checkLogsForErrors();
-
-        // History updates from the server still work after coming back
-        getDriver().navigate().back();
-        waitForElementPresent(By.id(QueuedHistoryUpdateView.UPDATE_BUTTON_ID));
-        $(NativeButtonElement.class)
-                .id(QueuedHistoryUpdateView.UPDATE_BUTTON_ID).click();
-        waitUntil(driver -> driver.getCurrentUrl()
-                .endsWith(QueuedHistoryUpdateView.ROUTE + "?second="
-                        + QueuedHistoryUpdateView.ROUNDS));
-        checkLogsForErrors();
     }
 
     private void waitForEntered(String location) {

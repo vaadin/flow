@@ -319,7 +319,12 @@ function useQueuedNavigate(
                 navigateInProgress = true;
             }
             navigate(navigateArgs.to, navigateArgs.opts);
-            setNavigateQueueLength(navigateQueue.length);
+            if (mounted.current) {
+                setNavigateQueueLength(navigateQueue.length);
+            } else {
+                // Without re-renders nothing else triggers the next dequeue
+                dequeueNavigationAfterCurrentTask();
+            }
         };
         blockingNavigate();
     }, [navigate, setNavigateQueueLength]);

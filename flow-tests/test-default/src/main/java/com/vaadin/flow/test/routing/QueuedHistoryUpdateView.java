@@ -59,7 +59,9 @@ public class QueuedHistoryUpdateView extends Div
                     History history = getUI().orElseThrow().getPage()
                             .getHistory();
                     history.pushState(null, CLIENT_ROUTE, true);
-                    history.replaceState(null, CLIENT_ROUTE + "?updated");
+                    history.replaceState(null, CLIENT_ROUTE + "?updated=1");
+                    history.replaceState(null, CLIENT_ROUTE + "?updated=2");
+                    history.replaceState(null, CLIENT_ROUTE + "?updated=3");
                 });
         leave.setId(LEAVE_BUTTON_ID);
 
