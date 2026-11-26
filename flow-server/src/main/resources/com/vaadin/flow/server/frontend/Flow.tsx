@@ -286,6 +286,14 @@ function useQueuedNavigate(
     const navigate = useNavigate();
     const navigateQueue = useRef<NavigateOpts[]>([]).current;
     const [navigateQueueLength, setNavigateQueueLength] = useState(0);
+    const mounted = useRef<boolean>(true);
+
+    useEffect(() => {
+        mounted.current = true;
+        return () => {
+            mounted.current = false;
+        };
+    }, []);
 
     const dequeueNavigation = useCallback(() => {
         if (navigateQueue.length === 0) {
@@ -305,7 +313,11 @@ function useQueuedNavigate(
                 waitReference.current = undefined;
             }
             skipServer.current = !navigateArgs.callback;
-            navigateInProgress = true;
+            // Once Flow is unmounted, no blocker effect is left to reset the
+            // shared flag, which would stop the queue of the next Flow instance
+            if (mounted.current) {
+                navigateInProgress = true;
+            }
             navigate(navigateArgs.to, navigateArgs.opts);
             setNavigateQueueLength(navigateQueue.length);
         };

@@ -75,6 +75,16 @@ public class QueuedHistoryUpdateIT extends AbstractDefaultIT {
                     + getDriver().getCurrentUrl());
         }
         checkLogsForErrors();
+
+        // History updates from the server still work after coming back
+        getDriver().navigate().back();
+        waitForElementPresent(By.id(QueuedHistoryUpdateView.UPDATE_BUTTON_ID));
+        $(NativeButtonElement.class)
+                .id(QueuedHistoryUpdateView.UPDATE_BUTTON_ID).click();
+        waitUntil(driver -> driver.getCurrentUrl()
+                .endsWith(QueuedHistoryUpdateView.ROUTE + "?second="
+                        + QueuedHistoryUpdateView.ROUNDS));
+        checkLogsForErrors();
     }
 
     private void waitForEntered(String location) {
