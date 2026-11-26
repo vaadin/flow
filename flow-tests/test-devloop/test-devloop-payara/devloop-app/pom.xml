@@ -214,7 +214,7 @@
               <value>-Dvaadin.frontend.hotdeploy=false</value>
             </option>
             <option>
-              <value>-Dvaadin.csp=${vaadin.csp}</value>
+              <value>-Dvaadin.contentSecurityPolicy=${vaadin.contentSecurityPolicy}</value>
             </option>
           </javaCommandLineOptions>
         </configuration>

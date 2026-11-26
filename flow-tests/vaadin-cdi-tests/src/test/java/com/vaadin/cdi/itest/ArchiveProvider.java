@@ -57,19 +57,19 @@ public class ArchiveProvider {
                 .addAsWebInfResource(EmptyAsset.INSTANCE,
                         ArchivePaths.create("beans.xml"))
                 .addClasses(Counter.class, CounterFilter.class);
-        addCspMode(archive);
+        addContentSecurityPolicyMode(archive);
         return applyContainerConfigurations(archive, pom);
     }
 
     /**
-     * Passes the {@code vaadin.csp} system property of the test JVM to the
-     * deployment as a {@code csp} context parameter. The containers run in
-     * their own JVM, and each takes its JVM options in a different way. A web
-     * fragment in a library JAR is used because some tests add their own
-     * {@code web.xml}.
+     * Passes the {@code vaadin.contentSecurityPolicy} system property of the
+     * test JVM to the deployment as a {@code contentSecurityPolicy} context
+     * parameter. The containers run in their own JVM, and each takes its JVM
+     * options in a different way. A web fragment in a library JAR is used
+     * because some tests add their own {@code web.xml}.
      */
-    private static void addCspMode(WebArchive archive) {
-        String cspMode = System.getProperty("vaadin.csp");
+    private static void addContentSecurityPolicyMode(WebArchive archive) {
+        String cspMode = System.getProperty("vaadin.contentSecurityPolicy");
         if (cspMode == null || cspMode.isBlank()) {
             return;
         }
@@ -83,7 +83,7 @@ public class ArchiveProvider {
                     <param-value>%s</param-value>
                   </context-param>
                 </web-fragment>
-                """.formatted(InitParameters.CSP, cspMode);
+                """.formatted(InitParameters.CONTENT_SECURITY_POLICY, cspMode);
         archive.addAsLibrary(
                 ShrinkWrap.create(JavaArchive.class, "vaadin-csp-mode.jar")
                         .addAsManifestResource(new StringAsset(webFragment),
