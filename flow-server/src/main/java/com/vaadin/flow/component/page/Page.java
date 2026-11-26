@@ -42,6 +42,7 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ContentSecurityPolicyViolationReporter;
 import com.vaadin.flow.internal.CssBundler;
 import com.vaadin.flow.internal.JsStringFallbacks;
+import com.vaadin.flow.internal.SuppressForbidden;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
@@ -626,6 +627,7 @@ public class Page implements Serializable {
      *             interface marked with
      *             {@link com.vaadin.flow.js.JsStringFallback}
      */
+    @SuppressForbidden
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
         Object[] arguments = parameters == null ? new Object[0] : parameters;
@@ -655,6 +657,7 @@ public class Page implements Serializable {
      * @since 2.0
      */
     @Deprecated
+    @SuppressForbidden
     public PendingJavaScriptResult executeJs(String expression,
             Serializable[] parameters) {
         return executeJs(expression, (Object[]) parameters);

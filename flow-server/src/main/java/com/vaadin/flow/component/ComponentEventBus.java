@@ -42,6 +42,7 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.SuppressForbidden;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.shared.Registration;
 
@@ -285,6 +286,9 @@ public class ComponentEventBus implements Serializable {
      * @param wrapper
      *            the listener that is being registered
      */
+    // Applies the event data and filter strings of the annotations, which
+    // the browser compiles unless they are property paths or bundled
+    @SuppressForbidden
     private <T extends ComponentEvent<?>> void addDomTrigger(Class<T> eventType,
             com.vaadin.flow.component.DomEvent annotation,
             ListenerWrapper<T> wrapper) {
