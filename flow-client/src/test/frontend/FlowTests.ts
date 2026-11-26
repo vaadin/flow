@@ -427,19 +427,33 @@ describe('Flow', () => {
     document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
   });
 
-  it('should navigate on the server when only an exported web component on the page has stopped', async () => {
+  it('should keep navigating on the server when only an exported web component on the page stops', async () => {
     stubServerRemoteFunction('foobar-12345');
     mockInitResponse('foobar-12345');
-    const elem: any = await new Flow().serverSideRoutes[0].action({ pathname: 'Foo' });
-    $wnd.Vaadin.Flow.clients.embedded = {
-      isActive: () => false,
-      isTerminated: () => true,
-      sendEventMessage: () => {}
+    let embeddedTerminated = false;
+    const embedded = {
+      // Busy until the main client is published, so that the router waits for it
+      isActive: () => !$wnd.Vaadin.Flow.clients.foobar,
+      isTerminated: () => embeddedTerminated,
+      sendEventMessage: () => {},
+      events: new EventTarget()
     };
+    const flow = new Flow();
+    $wnd.Vaadin.Flow.clients.embedded = embedded;
+    const elem: any = await flow.serverSideRoutes[0].action({ pathname: 'Foo' });
     const cmd = { prevent: () => 'prevented' };
+    // The view itself is not compared, as chai cannot print it when it differs
+    const shown = (result: unknown) => (result === elem ? 'view' : String(result));
 
-    expect(await settledSoon(elem.onBeforeEnter({ pathname: 'Foo' }, cmd))).to.equal(elem);
-    expect(elem.children.length).to.equal(1);
+    // Stops while the navigation waits for the server
+    const navigation = elem.onBeforeEnter({ pathname: 'Foo' }, cmd);
+    embeddedTerminated = true;
+    embedded.events.dispatchEvent(new CustomEvent('vaadin-ui-terminated'));
+    expect(shown(await settledSoon(navigation))).to.equal('view');
+
+    // Has stopped before the next navigation starts
+    const leave = { prevent: () => 'prevented', continue: () => 'continued' };
+    expect(await settledSoon(elem.onBeforeLeave({ pathname: 'Lorem' }, leave))).to.equal('continued');
   });
 
   it('should cancel a server navigation when the UI stopped while the client started', async () => {
