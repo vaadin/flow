@@ -21,6 +21,9 @@ import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 
 /**
@@ -32,6 +35,13 @@ public class DomEventView extends Div {
 
     public static final String FIRE_ID = "fire";
     public static final String RESULT_ID = "result";
+
+    @JsDefinition
+    public interface FireJs extends JsInvokers {
+
+        @JsExpression("this.dispatchEvent(new CustomEvent('native-event', {detail: {name: $0, count: $1}}))")
+        void fire(String name, int count);
+    }
 
     public static class Detail {
         private String name;
@@ -77,9 +87,8 @@ public class DomEventView extends Div {
                 event -> result.setText(event.getDetail().getName() + " "
                         + event.getDetail().getCount()));
         NativeButton fire = new NativeButton("Fire the event",
-                event -> getElement().executeJs(
-                        "this.dispatchEvent(new CustomEvent('native-event', {detail: {name: $0, count: $1}}))",
-                        "native", 3));
+                event -> getElement().executeJs(FireJs.class).fire("native",
+                        3));
         fire.setId(FIRE_ID);
         add(fire, result);
     }

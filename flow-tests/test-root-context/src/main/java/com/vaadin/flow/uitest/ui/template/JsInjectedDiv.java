@@ -18,12 +18,21 @@ package com.vaadin.flow.uitest.ui.template;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 
 @JsModule("./divConnector.js")
 public class JsInjectedDiv extends Div {
 
+    @JsDefinition
+    public interface ConnectorJs extends JsInvokers {
+        @JsExpression("window.divConnector.jsFunction(this)")
+        void connect();
+    }
+
     public JsInjectedDiv() {
-        getElement().executeJs("window.divConnector.jsFunction(this)");
+        getElement().executeJs(ConnectorJs.class).connect();
     }
 
     @ClientCallable

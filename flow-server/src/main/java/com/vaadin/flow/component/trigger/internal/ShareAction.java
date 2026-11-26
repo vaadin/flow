@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.io.Serializable;
-
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.dom.JsFunction;
@@ -153,9 +151,11 @@ public class ShareAction extends PromiseAction<Void> {
      * {@link JsSnippets#of(Class)}.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
      */
     @JsDefinition
-    public interface ShareJs extends Serializable {
+    public interface ShareJs extends JsSnippets {
 
         /**
          * An action that opens the share sheet with the values of the given

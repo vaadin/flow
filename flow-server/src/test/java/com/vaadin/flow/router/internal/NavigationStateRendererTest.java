@@ -62,6 +62,7 @@ import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.menu.MenuRegistry;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -469,7 +470,8 @@ class NavigationStateRendererTest {
                 }
 
                 @Override
-                public <T> T executeJs(Class<T> definitionType) {
+                public <T extends JsInvokers> T executeJs(
+                        Class<T> definitionType) {
                     // The details are asked for through declared JavaScript
                     jsInvoked.set(true);
                     return super.executeJs(definitionType);
