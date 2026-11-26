@@ -1,4 +1,5 @@
 import { expect } from '@open-wc/testing';
+import { ClientEvents } from '../../../../main/frontend/internal/client/ClientEvents';
 import { UILifecycle, UIState } from '../../../../main/frontend/internal/client/UILifecycle';
 
 // Ported from com.vaadin.client.UILifecycleTest.
@@ -80,5 +81,18 @@ describe('UILifecycle', () => {
       lifecycle.setState(UIState.TERMINATED);
       expect(count).to.equal(1);
     });
+  });
+
+  it('announces vaadin-ui-terminated on the client events once the handlers ran on termination', () => {
+    const events = new ClientEvents();
+    const lifecycle = new UILifecycle(events);
+    const log: string[] = [];
+    lifecycle.addHandler((event) => log.push(`handler:${event.getUiLifecycle().getState()}`));
+    events.addEventListener('vaadin-ui-terminated', () => log.push('terminated'));
+
+    lifecycle.setState(UIState.RUNNING);
+    expect(log).to.deep.equal(['handler:RUNNING']);
+    lifecycle.setState(UIState.TERMINATED);
+    expect(log).to.deep.equal(['handler:RUNNING', 'handler:TERMINATED', 'terminated']);
   });
 });

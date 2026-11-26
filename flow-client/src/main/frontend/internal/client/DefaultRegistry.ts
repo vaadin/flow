@@ -75,7 +75,7 @@ export class DefaultRegistry extends Registry {
     this.set(TOKEN.URIResolver, new URIResolver(this));
     this.set(TOKEN.DependencyLoader, new DependencyLoader(this));
     this.set(TOKEN.SystemErrorHandler, new SystemErrorHandler(this));
-    this.setResettable(TOKEN.UILifecycle, () => this.#createUILifecycle());
+    this.setResettable(TOKEN.UILifecycle, () => new UILifecycle(this.getClientEvents()));
     this.set(TOKEN.StateTree, new StateTree(this));
     this.set(TOKEN.RequestResponseTracker, new RequestResponseTracker(this));
     this.set(TOKEN.MessageHandler, new MessageHandler(this));
@@ -109,18 +109,5 @@ export class DefaultRegistry extends Registry {
    */
   setApplicationConnection(connection: ApplicationConnection): void {
     this.set(TOKEN.ApplicationConnection, connection);
-  }
-
-  // Announces on the client events when the UI stops, so that page scripts
-  // waiting for a reply from the server, like the router in Flow.ts, stop
-  // waiting. A lifecycle replaced by a reset no longer speaks for the UI.
-  #createUILifecycle(): UILifecycle {
-    const lifecycle = new UILifecycle();
-    lifecycle.addHandler((event) => {
-      if (event.getUiLifecycle().isTerminated() && this.getUILifecycle() === lifecycle) {
-        this.getClientEvents().dispatchEvent(new CustomEvent<null>('vaadin-ui-terminated'));
-      }
-    });
-    return lifecycle;
   }
 }

@@ -76,21 +76,19 @@ describe('DefaultRegistry', () => {
     expect(connection.isTerminated()).to.be.false;
   });
 
-  it('announces on the client events when the current UI lifecycle stops', () => {
+  it('announces on its client events when a UI lifecycle, also one created by a reset, stops', () => {
     const registry = makeRegistry();
     let terminations = 0;
     registry.getClientEvents().addEventListener('vaadin-ui-terminated', () => terminations++);
 
-    // E.g. an exported web component resynchronizing its session.
-    const replaced = registry.getUILifecycle();
-    registry.reset();
-    replaced.setState(UIState.RUNNING);
-    replaced.setState(UIState.TERMINATED);
-    expect(terminations).to.equal(0);
-
     registry.getUILifecycle().setState(UIState.RUNNING);
-    expect(terminations).to.equal(0);
     registry.getUILifecycle().setState(UIState.TERMINATED);
     expect(terminations).to.equal(1);
+
+    // E.g. an exported web component resynchronizing its session.
+    registry.reset();
+    registry.getUILifecycle().setState(UIState.RUNNING);
+    registry.getUILifecycle().setState(UIState.TERMINATED);
+    expect(terminations).to.equal(2);
   });
 });

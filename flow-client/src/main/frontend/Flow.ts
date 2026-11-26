@@ -72,9 +72,10 @@ function getClients() {
     .map((id) => $wnd.Vaadin.Flow.clients[id]);
 }
 
-// Whether the UI has stopped, e.g. after an "Internal error": the server
-// answers no more navigations.
-function isUiTerminated(): boolean {
+// Whether the UI of any client on the page has stopped, e.g. after an
+// "Internal error". Navigation events go to every client (see sendEvent), so a
+// stopped one leaves the navigation without an answer.
+function isAnyClientTerminated(): boolean {
   return getClients().some((client) => client.isTerminated?.());
 }
 
@@ -244,7 +245,12 @@ export class Flow {
   private async flowLeave(ctx: NavigationParameters, cmd?: PreventCommands): Promise<any> {
     // server -> server, viewing offline stub, or browser is offline
     const { connectionState } = $wnd.Vaadin;
-    if (this.pathname === ctx.pathname || !this.isFlowClientLoaded() || connectionState.offline || isUiTerminated()) {
+    if (
+      this.pathname === ctx.pathname ||
+      !this.isFlowClientLoaded() ||
+      connectionState.offline ||
+      isAnyClientTerminated()
+    ) {
       return Promise.resolve({});
     }
     // 'server -> client'
@@ -291,7 +297,7 @@ export class Flow {
           this.loadingFinished();
         };
 
-        if (isUiTerminated()) {
+        if (isAnyClientTerminated()) {
           // A stopped UI cannot show the route
           serverConnected(true);
           return;
@@ -440,7 +446,7 @@ export class Flow {
         const initializing = getClients().reduce((prev, client) => prev || client.isActive(), false);
         if (!initializing) {
           clearInterval(intervalId);
-          // A UI that stopped before this point is seen by isUiTerminated()
+          // A UI that stopped before this point is seen by isAnyClientTerminated()
           getClients().forEach((client) =>
             client.events?.addEventListener('vaadin-ui-terminated', () => this.settleRoundTrip?.())
           );

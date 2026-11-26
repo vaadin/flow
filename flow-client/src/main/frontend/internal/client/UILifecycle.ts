@@ -21,6 +21,7 @@
 // twice is notified twice, and one removal detaches one registration.
 
 import type { EventRemover } from '../EventRemover';
+import type { ClientEvents } from './ClientEvents';
 
 /** The lifecycle state of a UI; the order defines the allowed forward transitions. */
 export const UIState = {
@@ -49,6 +50,19 @@ export class UILifecycle {
   // added twice, and one removal detaches one registration.
   readonly #handlers: StateChangeHandler[] = [];
 
+  readonly #clientEvents: ClientEvents | undefined;
+
+  /**
+   * Creates a lifecycle in the {@link UIState.INITIALIZING} state.
+   *
+   * @param clientEvents - the client events to announce `vaadin-ui-terminated`
+   *          on when the UI stops, so that page scripts waiting for a reply
+   *          from the server stop waiting; none if not given
+   */
+  constructor(clientEvents?: ClientEvents) {
+    this.#clientEvents = clientEvents;
+  }
+
   /**
    * Gets the state of the UI.
    *
@@ -64,7 +78,9 @@ export class UILifecycle {
    * Only allows state changes in one direction: {@link UIState.INITIALIZING}
    * -\> {@link UIState.RUNNING} -\> {@link UIState.TERMINATED}.
    *
-   * Changing the state fires a {@link StateChangeEvent}.
+   * Changing the state fires a {@link StateChangeEvent}. Moving to
+   * {@link UIState.TERMINATED} also dispatches `vaadin-ui-terminated` on the
+   * client events given to the constructor, after the handlers have run.
    *
    * @param state - the new UI state
    */
@@ -77,6 +93,9 @@ export class UILifecycle {
     // Iterate a copy, as SimpleEventBus does, so a handler added or removed
     // during dispatch does not change who is notified for this event.
     [...this.#handlers].forEach((handler) => handler(event));
+    if (state === UIState.TERMINATED) {
+      this.#clientEvents?.dispatchEvent(new CustomEvent<null>('vaadin-ui-terminated'));
+    }
   }
 
   /**
