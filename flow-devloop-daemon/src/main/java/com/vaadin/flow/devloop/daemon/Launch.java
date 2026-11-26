@@ -96,11 +96,18 @@ final class Launch {
      * class stays, and calling a method added to the interface - for example
      * through an {@code executeJs(Class)} proxy - throws
      * {@code AbstractMethodError} until the application is restarted.
+     * <p>
+     * The list includes every package the Vaadin IntelliJ and VS Code plugins
+     * open when they launch an application with HotswapAgent, so that the same
+     * code runs under the dev loop the way it runs from the IDE.
      */
     private static final List<String> ADD_OPENS = List.of("java.base/java.lang",
             "java.base/java.lang.reflect", "java.base/java.io",
             "java.base/java.util", "java.base/jdk.internal.loader",
-            "java.desktop/java.beans");
+            "java.base/sun.nio.ch", "java.base/sun.security.action",
+            "java.desktop/java.beans", "java.desktop/com.sun.beans",
+            "java.desktop/com.sun.beans.introspect",
+            "java.desktop/com.sun.beans.util");
 
     /**
      * Where each module is told to write its classpath, <em>relative</em> on
