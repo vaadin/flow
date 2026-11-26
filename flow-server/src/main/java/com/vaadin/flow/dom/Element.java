@@ -2092,18 +2092,26 @@ public class Element extends Node<Element> {
      * arguments of the call as its parameters.
      * <p>
      * The interface is annotated with {@link JsDefinition}, which is what the
-     * build finds it by, extends {@link JsInvokers}, and each of its methods
-     * declares the JavaScript it runs with {@link JsExpression}:
+     * build finds it by, and extends {@link JsInvokers}. Each of its methods
+     * declares the JavaScript it runs with {@link JsExpression}, or leaves the
+     * annotation out to call the method of the same name on this element, with
+     * the arguments of the call:
      *
      * <pre>
      * &#64;JsDefinition
      * public interface GreeterJs extends JsInvokers {
      *     &#64;JsExpression("window.alert($0)")
      *     void showGreeting(String greeting);
+     *
+     *     // Runs return this.showPopover();
+     *     void showPopover();
      * }
      *
      * element.executeJs(GreeterJs.class).showGreeting("Hello");
      * </pre>
+     *
+     * See {@link JsCall#declaredExpression(java.lang.reflect.Method)} for which
+     * methods call the element method and the JavaScript they run.
      *
      * The declared JavaScript runs the way an expression given to
      * {@link #executeJs(String, Object...)} does: in an <code>async</code>
@@ -2125,7 +2133,9 @@ public class Element extends Node<Element> {
      * does not reach. No expression is sent and none is compiled in the
      * browser, so the call works under a content security policy without
      * <code>unsafe-eval</code>, and what declared the JavaScript in Java is not
-     * sent to a production browser either.
+     * sent to a production browser either. A method without
+     * {@link JsExpression} is the exception: the JavaScript it runs is a call
+     * of the method of the same name, so that name is in the bundle.
      * <p>
      * The scheduled invocation carries the call as a {@link JsCall}, so a
      * driver of the client side that can not run JavaScript can recognize it,
@@ -2156,8 +2166,9 @@ public class Element extends Node<Element> {
      *         JavaScript through, not <code>null</code>
      * @throws IllegalArgumentException
      *             if the type is not an interface, is not annotated with
-     *             {@link JsDefinition}, also extends {@link JsSnippets}, or has
-     *             a method that can not be answered
+     *             {@link JsDefinition}, also extends {@link JsSnippets}, has a
+     *             method that can not be answered, or has a method that
+     *             declares no JavaScript
      * @since 25.4
      */
     public <T extends JsInvokers> T executeJs(Class<T> definitionType) {

@@ -901,7 +901,9 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * one function per method that declares JavaScript, registered under the
      * identifier of that function, which is what the server sends. The name of
      * the interface and of the method are not in it, so a browser is not told
-     * what declared the JavaScript it runs.
+     * what declared the JavaScript it runs. The exception is a method without
+     * {@code @JsExpression}, whose JavaScript is a call of the method of the
+     * same name on the element, so its name is in the function.
      * <p>
      * Package private: whether a file carries what an interface declares is
      * answered by {@link #findMissingFromGeneratedFile(Options, Collection)},
