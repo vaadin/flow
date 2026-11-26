@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jspecify.annotations.Nullable;
@@ -26,8 +27,10 @@ import org.jspecify.annotations.Nullable;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableExecutor;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.DeniedSignalUsageException;
 import com.vaadin.flow.signals.EffectContext;
@@ -255,7 +258,46 @@ public class Effect implements Serializable {
                 }
                 return false;
             }
+
+            @Override
+            public boolean runWithFreshReads(Runnable task) {
+                return runInNextAccess(task);
+            }
         };
+    }
+
+    /*
+     * While a session is locked, shared signals are read through a
+     * session-scoped transaction that is cleared before each pending access
+     * task. Running the task as a new access thus lets it see changes that the
+     * current access doesn't show. The access runs before the response is
+     * written, so the effect's update is sent in the same round trip.
+     *
+     * The task runs with the current UI as the current UI if that UI is still
+     * in the session, so that the effect runs right away in that access instead
+     * of being queued once more. The access is queued on the session rather
+     * than on the UI so that it still runs if the UI is closed in the meantime.
+     */
+    private static boolean runInNextAccess(Runnable task) {
+        VaadinSession session = VaadinSession.getCurrent();
+        if (session == null || !session.hasLock()) {
+            return false;
+        }
+        UI ui = UI.getCurrent();
+        session.access(() -> {
+            if (ui != null && ui.getSession() == session) {
+                Map<Class<?>, CurrentInstance> old = CurrentInstance
+                        .setCurrent(ui);
+                try {
+                    task.run();
+                } finally {
+                    CurrentInstance.restoreInstances(old);
+                }
+            } else {
+                task.run();
+            }
+        });
+        return true;
     }
 
     private boolean onDependencyChange(boolean immediate) {

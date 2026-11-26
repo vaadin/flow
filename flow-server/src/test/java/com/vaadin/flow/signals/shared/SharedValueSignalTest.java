@@ -33,6 +33,7 @@ import com.vaadin.flow.signals.SignalCommand.SetCommand;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
 import com.vaadin.flow.signals.impl.Transaction;
+import com.vaadin.flow.signals.impl.TransientListener;
 import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 import com.vaadin.flow.signals.operations.CancelableOperation;
@@ -435,6 +436,42 @@ public class SharedValueSignalTest extends SignalTestBase {
 
         signal.set("update");
         assertEquals(List.of("update"), notified);
+    }
+
+    @Test
+    void usageTracking_changeHiddenByExplicitTransaction_listenerNotifiedFromFreshReadContext() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        SharedValueSignal<String> other = new SharedValueSignal<>("other");
+        List<String> notified = new ArrayList<>();
+        List<Runnable> freshReadTasks = new ArrayList<>();
+
+        Transaction.runInTransaction(() -> {
+            // Two signals so that the listener goes through a combined usage
+            Usage usage = UsageTracker.track(() -> {
+                signal.get();
+                other.get();
+            });
+            Signal.runWithoutTransaction(() -> signal.set("hidden"));
+
+            usage.onNextChange(new TransientListener() {
+                @Override
+                public boolean invoke(boolean immediate) {
+                    notified.add(signal.peek());
+                    return false;
+                }
+
+                @Override
+                public boolean runWithFreshReads(Runnable task) {
+                    freshReadTasks.add(task);
+                    return true;
+                }
+            });
+        }, Transaction.Type.WRITE_THROUGH);
+        assertEquals(List.of(), notified);
+        assertEquals(1, freshReadTasks.size());
+
+        freshReadTasks.get(0).run();
+        assertEquals(List.of("hidden"), notified);
     }
 
     @Test

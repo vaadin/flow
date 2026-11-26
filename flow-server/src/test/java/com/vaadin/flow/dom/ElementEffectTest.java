@@ -43,8 +43,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.DeniedSignalUsageException;
 import com.vaadin.flow.signals.Signal;
-import com.vaadin.flow.signals.impl.UsageTracker;
-import com.vaadin.flow.signals.impl.UsageTracker.Usage;
+import com.vaadin.flow.signals.impl.Effect;
 import com.vaadin.flow.signals.local.ListSignal;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedListSignal;
@@ -561,7 +560,36 @@ class ElementEffectTest {
     }
 
     @Test
-    void usage_sharedSignalChangeHiddenBySessionTransactionWithoutUI_listenerRunsInNextAccess() {
+    void effect_readsComputedOfSharedSignalUpdatedOutsideSessionTransaction_reRunsBeforeResponse() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+        var ui = new MockUI(session);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        Signal<Integer> length = Signal.computed(() -> signal.get().length());
+        // Primes the session transaction with the cached value 7
+        length.peek();
+        // Another thread changes the signal and caches the new value 8
+        Signal.runWithoutTransaction(() -> {
+            signal.set("changed!");
+            length.peek();
+        });
+
+        List<Integer> observed = new ArrayList<>();
+        Signal.effect(ui, () -> observed.add(length.get()));
+        assertEquals(List.of(7), observed);
+
+        service.runPendingAccessTasks(session);
+
+        assertEquals(List.of(7, 8), observed);
+    }
+
+    @Test
+    void effect_sharedSignalChangeHiddenBySessionTransactionWithoutUI_reRunsInNextAccess() {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);
 
@@ -570,23 +598,20 @@ class ElementEffectTest {
         VaadinSession.setCurrent(session);
 
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
-        Usage usage = UsageTracker.track(signal::get);
+        signal.peek();
         Signal.runWithoutTransaction(() -> signal.set("changed"));
 
-        List<String> notified = new ArrayList<>();
-        usage.onNextChange(immediate -> {
-            notified.add(signal.peek());
-            return false;
-        });
-        assertEquals(List.of(), notified);
+        List<String> observed = new ArrayList<>();
+        new Effect(() -> observed.add(signal.get()), Runnable::run);
+        assertEquals(List.of("initial"), observed);
 
         service.runPendingAccessTasks(session);
 
-        assertEquals(List.of("changed"), notified);
+        assertEquals(List.of("initial", "changed"), observed);
     }
 
     @Test
-    void usage_uiClosedBeforeHiddenSharedSignalChangeDelivered_listenerStillRuns() {
+    void effect_uiClosedBeforeHiddenSharedSignalChangeDelivered_stillReRuns() {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);
 
@@ -597,26 +622,25 @@ class ElementEffectTest {
         UI.setCurrent(ui);
 
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
-        Usage usage = UsageTracker.track(signal::get);
+        signal.peek();
         Signal.runWithoutTransaction(() -> signal.set("changed"));
 
-        List<String> notified = new ArrayList<>();
-        AtomicReference<UI> currentUI = new AtomicReference<>();
-        usage.onNextChange(immediate -> {
-            notified.add(signal.peek());
+        List<String> observed = new ArrayList<>();
+        AtomicReference<UI> currentUI = new AtomicReference<>(ui);
+        new Effect(() -> {
+            observed.add(signal.get());
             currentUI.set(UI.getCurrent());
-            return false;
-        });
+        }, Runnable::run);
         session.removeUI(ui);
 
         service.runPendingAccessTasks(session);
 
-        assertEquals(List.of("changed"), notified);
+        assertEquals(List.of("initial", "changed"), observed);
         assertNull(currentUI.get());
     }
 
     @Test
-    void usage_listenerRemovedBeforeHiddenSharedSignalChangeDelivered_isNotAdded() {
+    void effect_disposedBeforeHiddenSharedSignalChangeDelivered_doesNotReRun() {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);
 
@@ -625,19 +649,16 @@ class ElementEffectTest {
         VaadinSession.setCurrent(session);
 
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
-        Usage usage = UsageTracker.track(signal::get);
+        signal.peek();
         Signal.runWithoutTransaction(() -> signal.set("changed"));
 
-        List<String> notified = new ArrayList<>();
-        usage.onNextChange(immediate -> {
-            notified.add(signal.peek());
-            return true;
-        }).remove();
+        List<String> observed = new ArrayList<>();
+        new Effect(() -> observed.add(signal.get()), Runnable::run).dispose();
 
         service.runPendingAccessTasks(session);
         Signal.runWithoutTransaction(() -> signal.set("again"));
 
-        assertEquals(List.of(), notified);
+        assertEquals(List.of("initial"), observed);
     }
 
     @Test

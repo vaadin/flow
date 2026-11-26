@@ -39,4 +39,26 @@ public interface TransientListener extends Serializable {
      *         <code>false</code> to stop invoking the listener
      */
     boolean invoke(boolean immediate);
+
+    /**
+     * Runs the given task in a context where the current transaction doesn't
+     * hide changes that were submitted to a signal tree after the transaction
+     * started reading from it. A transaction with repeatable reads keeps
+     * returning the values it first read, so a change made by someone else in
+     * the meantime only becomes visible once the transaction no longer applies.
+     * A usage uses this to add the listener again from such a context so that
+     * the listener learns about that change.
+     * <p>
+     * The default implementation doesn't run the task and returns
+     * <code>false</code>. The usage then only invokes the listener for changes
+     * that happen after the listener was added.
+     *
+     * @param task
+     *            the task to run, not <code>null</code>
+     * @return <code>true</code> if the task has been run or will be run,
+     *         <code>false</code> if this listener has no context for running it
+     */
+    default boolean runWithFreshReads(Runnable task) {
+        return false;
+    }
 }
