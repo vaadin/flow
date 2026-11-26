@@ -114,6 +114,27 @@ class PageTest {
                 MenuJs::showPopover);
     }
 
+    @JsDefinition
+    interface ToggleJs extends JsInvokers {
+        void toggleAttribute(String name);
+
+        void toggleAttribute(String name, boolean force);
+    }
+
+    @Test
+    void executeJsWithDefinition_overloadsWithoutExpression_namedOnce() {
+        Page page = new MockUI().getPage();
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> page.executeJs(ToggleJs.class));
+
+        assertTrue(
+                exception.getMessage()
+                        .contains(" has toggleAttribute without @JsExpression"),
+                exception.getMessage());
+    }
+
     private static <T extends JsInvokers> void assertRefusedForThePageButRunOnAnElement(
             Class<T> definition, SerializableConsumer<T> showPopover) {
         MockUI mockUI = new MockUI();

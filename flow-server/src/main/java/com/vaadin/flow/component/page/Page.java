@@ -604,7 +604,7 @@ public class Page implements Serializable {
                 .filter(method -> !method
                         .isAnnotationPresent(JsExpression.class)
                         && JsCall.declaredExpression(method) != null)
-                .map(Method::getName).sorted().toList();
+                .map(Method::getName).distinct().sorted().toList();
     }
 
     // When updating JavaDocs here, keep in sync with Element.executeJavaScript
