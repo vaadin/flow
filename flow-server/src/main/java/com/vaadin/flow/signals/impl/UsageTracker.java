@@ -70,11 +70,6 @@ public class UsageTracker {
                             public boolean invoke(boolean immediate) {
                                 return onChange(immediate);
                             }
-
-                            @Override
-                            public boolean runWithFreshReads(Runnable task) {
-                                return listener.runWithFreshReads(task);
-                            }
                         };
                         // Register outside the leaf lock: onNextChange acquires
                         // the dependency's tree lock.
@@ -150,9 +145,9 @@ public class UsageTracker {
          * Registers a listener that will be invoked the next time there's a
          * change to the used value. If this usage already has changes, then the
          * listener is invoked immediately. If the value has been changed in a
-         * way that the current transaction doesn't show yet, then the listener
-         * may instead be invoked later from a context where the change is
-         * visible, see {@link TransientListener#runWithFreshReads(Runnable)}.
+         * way that the current transaction doesn't show, then the listener is
+         * instead added again once that transaction has ended, see
+         * {@link Transaction#runAfterEnd(Runnable)}.
          *
          * @param listener
          *            the listener to use, not <code>null</code>

@@ -253,11 +253,6 @@ public class CachedSignal<T extends @Nullable Object>
                         }
                         return listenToNext;
                     }
-
-                    @Override
-                    public boolean runWithFreshReads(Runnable task) {
-                        return listener.runWithFreshReads(task);
-                    }
                 };
 
                 Registration superCleanup = superUsage

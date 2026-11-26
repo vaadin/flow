@@ -39,7 +39,6 @@ import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
-import com.vaadin.flow.signals.function.ContextualEffectAction;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedListSignal;
@@ -78,76 +77,18 @@ class EffectTest extends SignalTestBase {
     }
 
     @Test
-    void changeHiddenByTransaction_defaultFreshReadDispatcher_reRunsAsBackgroundChange() {
-        TestExecutor freshReadDispatcher = useTestEffectDispatcher();
+    void changeHiddenByTransaction_effectCreatedInTransaction_reRunsWhenTransactionEnds() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         List<String> observed = new ArrayList<>();
 
         Transaction.runInTransaction(() -> {
             signal.peek();
             Signal.runWithoutTransaction(() -> signal.set("hidden"));
-            new Effect(
-                    ctx -> observed
-                            .add(signal.get() + ":" + ctx.isBackgroundChange()),
-                    Runnable::run);
-        }, Transaction.Type.WRITE_THROUGH);
-        assertEquals(List.of("initial:false"), observed);
-
-        freshReadDispatcher.runPendingTasks();
-        assertEquals(List.of("initial:false", "hidden:true"), observed);
-    }
-
-    @Test
-    void changeHiddenByTransaction_customFreshReadDispatcher_isUsed() {
-        TestExecutor defaultDispatcher = useTestEffectDispatcher();
-        List<Runnable> freshReadTasks = new ArrayList<>();
-        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
-        List<String> observed = new ArrayList<>();
-
-        Transaction.runInTransaction(() -> {
-            signal.peek();
-            Signal.runWithoutTransaction(() -> signal.set("hidden"));
-            new Effect(ctx -> observed.add(signal.get()), Runnable::run,
-                    freshReadTasks::add);
+            new Effect(() -> observed.add(signal.get()), Runnable::run);
+            assertEquals(List.of("initial"), observed);
         }, Transaction.Type.WRITE_THROUGH);
 
-        defaultDispatcher.runPendingTasks();
-        assertEquals(List.of("initial"), observed);
-
-        assertEquals(1, freshReadTasks.size());
-        freshReadTasks.get(0).run();
         assertEquals(List.of("initial", "hidden"), observed);
-    }
-
-    @Test
-    void changeHiddenByTransaction_immediateFreshReadDispatcher_reRunsOnLaterChange() {
-        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
-        List<String> observed = new ArrayList<>();
-
-        Transaction.runInTransaction(() -> {
-            signal.peek();
-            Signal.runWithoutTransaction(() -> signal.set("hidden"));
-            new Effect(ctx -> observed.add(signal.get()), Runnable::run,
-                    Runnable::run);
-        }, Transaction.Type.WRITE_THROUGH);
-        assertEquals(List.of("initial"), observed);
-
-        signal.set("update");
-        assertEquals(List.of("initial", "update"), observed);
-    }
-
-    @Test
-    @SuppressWarnings("NullAway")
-    void nullFreshReadDispatcher_throws() {
-        var dependency = createDependency();
-        ContextualEffectAction action = ctx -> dependency.get();
-
-        assertThrows(NullPointerException.class,
-                () -> new Effect(action, Runnable::run, null));
-
-        Effect effect = new Effect(action, Runnable::run, Runnable::run);
-        assertThrows(NullPointerException.class,
-                () -> effect.setFreshReadDispatcher(null));
     }
 
     @Test

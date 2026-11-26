@@ -34,7 +34,6 @@ import com.vaadin.flow.signals.SignalCommand.SetCommand;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
 import com.vaadin.flow.signals.impl.Transaction;
-import com.vaadin.flow.signals.impl.TransientListener;
 import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 import com.vaadin.flow.signals.operations.CancelableOperation;
@@ -420,7 +419,7 @@ public class SharedValueSignalTest extends SignalTestBase {
     }
 
     @Test
-    void usageTracking_changeHiddenByExplicitTransaction_listensForLaterChanges() {
+    void usageTracking_changeHiddenByExplicitTransaction_listenerNotifiedWhenTransactionEnds() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         List<String> notified = new ArrayList<>();
 
@@ -432,147 +431,73 @@ public class SharedValueSignalTest extends SignalTestBase {
                 notified.add(signal.peek());
                 return false;
             });
+            assertEquals(List.of(), notified);
         }, Transaction.Type.WRITE_THROUGH);
-        assertEquals(List.of(), notified);
 
-        signal.set("update");
-        assertEquals(List.of("update"), notified);
-    }
-
-    @Test
-    void usageTracking_changeHiddenByExplicitTransaction_listenerNotifiedFromFreshReadContext() {
-        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
-        SharedValueSignal<String> other = new SharedValueSignal<>("other");
-        List<String> notified = new ArrayList<>();
-        List<Runnable> freshReadTasks = new ArrayList<>();
-
-        Transaction.runInTransaction(() -> {
-            // Two signals so that the listener goes through a combined usage
-            Usage usage = UsageTracker.track(() -> {
-                signal.get();
-                other.get();
-            });
-            Signal.runWithoutTransaction(() -> signal.set("hidden"));
-
-            usage.onNextChange(new TransientListener() {
-                @Override
-                public boolean invoke(boolean immediate) {
-                    notified.add(signal.peek());
-                    return false;
-                }
-
-                @Override
-                public boolean runWithFreshReads(Runnable task) {
-                    freshReadTasks.add(task);
-                    return true;
-                }
-            });
-        }, Transaction.Type.WRITE_THROUGH);
-        assertEquals(List.of(), notified);
-        assertEquals(1, freshReadTasks.size());
-
-        freshReadTasks.get(0).run();
         assertEquals(List.of("hidden"), notified);
     }
 
     @Test
-    void usageTracking_freshReadTaskRunsWhileChangeStillHidden_doesNotDeferAgain() {
+    void usageTracking_changeStillHiddenByOuterTransaction_listenerNotifiedWhenOuterEnds() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         List<String> notified = new ArrayList<>();
-        List<Runnable> freshReadTasks = new ArrayList<>();
+
+        Transaction.runInTransaction(() -> {
+            signal.peek();
+            Signal.runWithoutTransaction(() -> signal.set("hidden"));
+
+            Transaction.runInTransaction(() -> {
+                UsageTracker.track(signal::get).onNextChange(immediate -> {
+                    notified.add(signal.peek());
+                    return false;
+                });
+            }, Transaction.Type.WRITE_THROUGH);
+            assertEquals(List.of(), notified);
+        }, Transaction.Type.WRITE_THROUGH);
+
+        assertEquals(List.of("hidden"), notified);
+    }
+
+    @Test
+    void usageTracking_listenerRemovedBeforeTransactionEnds_isNotAdded() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> notified = new ArrayList<>();
 
         Transaction.runInTransaction(() -> {
             Usage usage = UsageTracker.track(signal::get);
             Signal.runWithoutTransaction(() -> signal.set("hidden"));
 
-            usage.onNextChange(new TransientListener() {
-                @Override
-                public boolean invoke(boolean immediate) {
-                    notified.add(signal.peek());
-                    return false;
-                }
-
-                @Override
-                public boolean runWithFreshReads(Runnable task) {
-                    freshReadTasks.add(task);
-                    return true;
-                }
-            });
-            // Still hidden here, so the listener just waits for later changes
-            freshReadTasks.get(0).run();
+            usage.onNextChange(immediate -> {
+                notified.add(signal.peek());
+                return true;
+            }).remove();
         }, Transaction.Type.WRITE_THROUGH);
+        signal.set("again");
 
-        signal.set("update");
-
-        assertEquals(1, freshReadTasks.size());
-        assertEquals(List.of("update"), notified);
+        assertEquals(List.of(), notified);
     }
 
     @Test
-    void usageTracking_listenerRemovedAfterFreshReadTaskRuns_notNotifiedAgain() {
+    void usageTracking_listenerRemovedAfterTransactionEnds_notNotifiedAgain() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         List<String> notified = new ArrayList<>();
-        List<Runnable> freshReadTasks = new ArrayList<>();
         List<Registration> registrations = new ArrayList<>();
 
         Transaction.runInTransaction(() -> {
             Usage usage = UsageTracker.track(signal::get);
             Signal.runWithoutTransaction(() -> signal.set("hidden"));
 
-            registrations.add(usage.onNextChange(new TransientListener() {
-                @Override
-                public boolean invoke(boolean immediate) {
-                    notified.add(signal.peek());
-                    return true;
-                }
-
-                @Override
-                public boolean runWithFreshReads(Runnable task) {
-                    freshReadTasks.add(task);
-                    return true;
-                }
+            registrations.add(usage.onNextChange(immediate -> {
+                notified.add(signal.peek());
+                return true;
             }));
         }, Transaction.Type.WRITE_THROUGH);
-
-        freshReadTasks.forEach(Runnable::run);
         assertEquals(List.of("hidden"), notified);
 
         registrations.get(0).remove();
         signal.set("again");
 
         assertEquals(List.of("hidden"), notified);
-    }
-
-    @Test
-    void usageTracking_listenerRemovedBeforeFreshReadTaskRuns_isNotAdded() {
-        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
-        List<String> notified = new ArrayList<>();
-        List<Runnable> freshReadTasks = new ArrayList<>();
-
-        Transaction.runInTransaction(() -> {
-            Usage usage = UsageTracker.track(signal::get);
-            Signal.runWithoutTransaction(() -> signal.set("hidden"));
-
-            usage.onNextChange(new TransientListener() {
-                @Override
-                public boolean invoke(boolean immediate) {
-                    notified.add(signal.peek());
-                    return true;
-                }
-
-                @Override
-                public boolean runWithFreshReads(Runnable task) {
-                    freshReadTasks.add(task);
-                    return true;
-                }
-            }).remove();
-        }, Transaction.Type.WRITE_THROUGH);
-
-        freshReadTasks.forEach(Runnable::run);
-        signal.set("again");
-
-        assertEquals(1, freshReadTasks.size());
-        assertEquals(List.of(), notified);
     }
 
     @Test

@@ -755,13 +755,45 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     /**
      * Clears the session-scoped transaction so that the next signal operation
-     * will create a fresh transaction with up-to-date values.
+     * will create a fresh transaction with up-to-date values. Signal listeners
+     * that the transaction has deferred because it hid a change are released,
+     * see {@link #runSessionScopedTransactionEndTasks()}.
      * <p>
      * The session lock must be held when calling this method.
      */
     void clearSessionScopedTransaction() {
         assert hasLock();
+        runSessionScopedTransactionEndTasks();
         sessionScopedTransaction = null;
+    }
+
+    /**
+     * Releases the signal listeners that the session-scoped transaction has
+     * deferred because it kept returning an old value after another thread
+     * changed a shared signal. The listeners are added again outside the
+     * transaction and without a current UI, so that they see the change as a
+     * change made by another thread at this moment. An effect of a UI in this
+     * session then queues an access task that is run before the lock is
+     * released.
+     * <p>
+     * The session lock must be held when calling this method.
+     */
+    void runSessionScopedTransactionEndTasks() {
+        assert hasLock();
+        Transaction transaction = sessionScopedTransaction;
+        if (transaction == null) {
+            return;
+        }
+        Map<Class<?>, CurrentInstance> oldInstances = CurrentInstance
+                .getInstances();
+        CurrentInstance.clearAll();
+        CurrentInstance.setCurrent(this);
+        try {
+            Transaction.runWithoutTransaction(transaction::runEndTasks);
+        } finally {
+            CurrentInstance.clearAll();
+            CurrentInstance.restoreInstances(oldInstances);
+        }
     }
 
     /**
@@ -844,7 +876,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                         }
                     }
                 }
-                sessionScopedTransaction = null;
+                clearSessionScopedTransaction();
                 this.lastUnlocked = System.currentTimeMillis();
             }
         } finally {

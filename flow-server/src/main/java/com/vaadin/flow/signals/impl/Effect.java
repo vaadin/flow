@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jspecify.annotations.Nullable;
@@ -56,7 +55,6 @@ public class Effect implements Serializable {
             .withInitial(() -> new LinkedList<>());
 
     private SerializableExecutor dispatcher;
-    private SerializableExecutor freshReadDispatcher;
     private final List<Registration> registrations = new ArrayList<>();
     private final List<UsageTracker.Usage> usages = new ArrayList<>();
 
@@ -151,42 +149,7 @@ public class Effect implements Serializable {
      */
     public Effect(ContextualEffectAction action,
             SerializableExecutor dispatcher) {
-        this(action, dispatcher,
-                SignalEnvironment.getDefaultEffectDispatcher()::execute);
-    }
-
-    /**
-     * Creates a context-aware signal effect with the given action, a custom
-     * dispatcher and a custom dispatcher for changes that a transaction hides.
-     * <p>
-     * A transaction with repeatable reads keeps returning the values it first
-     * read, so a change that is made outside the transaction in the meantime
-     * isn't visible to the effect while the transaction applies. The effect
-     * uses the fresh read dispatcher to start listening again from a context
-     * where the change is visible, and is then run again for that change with
-     * {@link EffectContext#isBackgroundChange()} returning <code>true</code>.
-     * The fresh read dispatcher must thus run its tasks outside the transaction
-     * that is current when it is invoked, e.g. on another thread or after the
-     * transaction has ended. A dispatcher that runs the task right away means
-     * that the effect only reacts to changes made after that.
-     *
-     * @see SignalEnvironment#getDefaultEffectDispatcher()
-     *
-     * @param action
-     *            the context-aware action to use, not <code>null</code>
-     * @param dispatcher
-     *            the dispatcher to use when handling changes, not
-     *            <code>null</code>
-     * @param freshReadDispatcher
-     *            the dispatcher to use for handling changes that the current
-     *            transaction hides, not <code>null</code>
-     */
-    public Effect(ContextualEffectAction action,
-            SerializableExecutor dispatcher,
-            SerializableExecutor freshReadDispatcher) {
         assert action != null;
-        this.freshReadDispatcher = Objects.requireNonNull(freshReadDispatcher,
-                "Fresh read dispatcher cannot be null");
         this.action = () -> {
             try {
                 EffectContext ctx = new EffectContext(firstRun,
@@ -284,45 +247,18 @@ public class Effect implements Serializable {
     private TransientListener createChangeListener(boolean[] changeHandled) {
         // avoid lambda to allow proper deserialization
         return new TransientListener() {
-            /*
-             * Set while the listener is added again from a new access to
-             * deliver a change that was made outside the original context's
-             * transaction, typically by another thread, and that the original
-             * context thus didn't show.
-             */
-            private boolean deliveringHiddenChange;
-
             @Override
             public boolean invoke(boolean immediate) {
                 if (!changeHandled[0]) {
                     changeHandled[0] = true;
-                    return onDependencyChange(immediate,
-                            deliveringHiddenChange);
+                    return onDependencyChange(immediate);
                 }
                 return false;
-            }
-
-            @Override
-            public boolean runWithFreshReads(Runnable task) {
-                SerializableExecutor executor;
-                try (var ignored = lock.lock()) {
-                    executor = freshReadDispatcher;
-                }
-                executor.execute(() -> {
-                    deliveringHiddenChange = true;
-                    try {
-                        task.run();
-                    } finally {
-                        deliveringHiddenChange = false;
-                    }
-                });
-                return true;
             }
         };
     }
 
-    private boolean onDependencyChange(boolean immediate,
-            boolean hiddenChange) {
+    private boolean onDependencyChange(boolean immediate) {
         /*
          * Detect loops by checking if the same effect is already active on this
          * thread. Don't check for immediate updates since an immediate update
@@ -334,14 +270,7 @@ public class Effect implements Serializable {
                     "Infinite loop detected between effect updates. This effect is deactivated.");
         }
 
-        if (hiddenChange) {
-            /*
-             * The change was made outside the session transaction, typically by
-             * another thread, even though the new access that delivers it runs
-             * with the owner UI as the current UI
-             */
-            invalidatedFromBackground = true;
-        } else if (ownerUI != null) {
+        if (ownerUI != null) {
             invalidatedFromBackground = UI.getCurrent() != ownerUI;
         } else {
             invalidatedFromBackground = VaadinRequest.getCurrent() == null;
@@ -421,26 +350,6 @@ public class Effect implements Serializable {
         assert dispatcher != null;
         try (var ignored = lock.lock()) {
             this.dispatcher = dispatcher;
-        }
-    }
-
-    /**
-     * Sets the dispatcher to use for handling changes that the current
-     * transaction hides. This can be used to change the execution context
-     * before re-activating a passivated effect.
-     *
-     * @see #Effect(ContextualEffectAction, SerializableExecutor,
-     *      SerializableExecutor)
-     *
-     * @param freshReadDispatcher
-     *            the new fresh read dispatcher to use, not <code>null</code>
-     */
-    public void setFreshReadDispatcher(
-            SerializableExecutor freshReadDispatcher) {
-        Objects.requireNonNull(freshReadDispatcher,
-                "Fresh read dispatcher cannot be null");
-        try (var ignored = lock.lock()) {
-            this.freshReadDispatcher = freshReadDispatcher;
         }
     }
 

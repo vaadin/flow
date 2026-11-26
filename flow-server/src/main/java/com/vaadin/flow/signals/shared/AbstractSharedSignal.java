@@ -468,11 +468,6 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
 
             @Override
             public Registration onNextChange(TransientListener listener) {
-                return listen(listener, true);
-            }
-
-            private Registration listen(TransientListener listener,
-                    boolean deliverHiddenChange) {
                 SignalTree tree = tree();
                 Transaction transaction = Transaction.getCurrent();
 
@@ -499,13 +494,8 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
                             return () -> {
                             };
                         }
-                    } else if (deliverHiddenChange
-                            && isChangeHidden(transaction, tree)) {
-                        Registration registration = listenWithFreshReads(
-                                listener);
-                        if (registration != null) {
-                            return registration;
-                        }
+                    } else if (isChangeHidden(transaction, tree)) {
+                        return listenAfterEnd(transaction, listener);
                     }
 
                     // avoid lambda to allow proper deserialization
@@ -554,20 +544,18 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
             }
 
             /*
-             * Listens again from a context where the hidden change is visible
-             * so that the listener runs there, if the listener provides such a
-             * context. Listening again from that context doesn't defer a second
-             * time, since a context that still can't see the change would
-             * otherwise defer forever.
+             * Adds the listener again once the transaction has ended, in the
+             * context that ended it, so that the listener sees the change as if
+             * it had happened at that moment. If an outer transaction still
+             * hides the change, the listener is deferred again until that one
+             * ends.
              */
-            private @Nullable Registration listenWithFreshReads(
+            private Registration listenAfterEnd(Transaction transaction,
                     TransientListener listener) {
                 DeferredRegistration registration = new DeferredRegistration();
-                if (listener.runWithFreshReads(() -> registration
-                        .resolve(() -> listen(listener, false)))) {
-                    return registration;
-                }
-                return null;
+                transaction.runAfterEnd(() -> registration
+                        .resolve(() -> onNextChange(listener)));
+                return registration;
             }
         };
     }

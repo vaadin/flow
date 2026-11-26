@@ -642,6 +642,54 @@ class ElementEffectTest {
     }
 
     @Test
+    void effect_sharedSignalChangedWhileOtherUIOfLockedSessionIsCurrent_reRunsBeforeResponse() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+        var ui = new MockUI(session);
+        var otherUI = new MockUI(session);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> observed = new ArrayList<>();
+        UI.setCurrent(ui);
+        Signal.effect(ui, () -> observed.add(signal.get()));
+
+        UI.setCurrent(otherUI);
+        signal.set("changed");
+        assertEquals(List.of("initial"), observed);
+
+        service.runPendingAccessTasks(session);
+
+        assertEquals(List.of("initial", "changed"), observed);
+    }
+
+    @Test
+    void effect_createdInAccessTaskAfterHiddenSharedSignalChange_reRunsBeforeResponse() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+        var ui = new MockUI(session);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> observed = new ArrayList<>();
+        ui.access(() -> {
+            signal.peek();
+            Signal.runWithoutTransaction(() -> signal.set("changed"));
+            Signal.effect(ui, () -> observed.add(signal.get()));
+        });
+
+        service.runPendingAccessTasks(session);
+
+        assertEquals(List.of("initial", "changed"), observed);
+    }
+
+    @Test
     void effect_sharedSignalChangedInSessionTransaction_reRunsRightAway() {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);

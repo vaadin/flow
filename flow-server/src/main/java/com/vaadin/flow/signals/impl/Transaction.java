@@ -16,8 +16,11 @@
 package com.vaadin.flow.signals.impl;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.jspecify.annotations.Nullable;
@@ -45,6 +48,8 @@ import com.vaadin.flow.signals.shared.impl.TreeRevision;
  * @since 25.1
  */
 public abstract class Transaction implements Serializable {
+    private transient @Nullable List<Runnable> endTasks;
+
     /**
      * Creates a new transaction.
      */
@@ -340,6 +345,7 @@ public abstract class Transaction implements Serializable {
             } else {
                 currentTransaction.set(previousThreadLocal);
             }
+            inner.runEndTasks();
         }
     }
 
@@ -489,6 +495,44 @@ public abstract class Transaction implements Serializable {
      * @return a tree revision to read from, not <code>null</code>
      */
     public abstract TreeRevision read(SignalTree tree);
+
+    /**
+     * Registers a task to run once this transaction has ended. The task runs
+     * outside this transaction, in the context of the code that ended it. This
+     * can be used to react to changes that this transaction hides because it
+     * keeps returning the values it first read.
+     * <p>
+     * The tasks of a transaction run with {@link #runInTransaction} are run
+     * when that method returns. For other transactions, the code that owns the
+     * transaction runs them with {@link #runEndTasks()}.
+     *
+     * @param task
+     *            the task to run, not <code>null</code>
+     */
+    public void runAfterEnd(Runnable task) {
+        Objects.requireNonNull(task, "Task cannot be null");
+        if (endTasks == null) {
+            endTasks = new ArrayList<>();
+        }
+        endTasks.add(task);
+    }
+
+    /**
+     * Runs and forgets the tasks registered with
+     * {@link #runAfterEnd(Runnable)}. This is intended for the code that owns a
+     * transaction that isn't run with {@link #runInTransaction}, to be called
+     * when that transaction ends or when it no longer applies to the code that
+     * is about to run. The caller must make sure that this transaction isn't
+     * the current transaction while the tasks run.
+     */
+    public void runEndTasks() {
+        List<Runnable> tasks = endTasks;
+        if (tasks == null) {
+            return;
+        }
+        endTasks = null;
+        tasks.forEach(Runnable::run);
+    }
 
     /**
      * Commits any staged commands in this transaction.
