@@ -60,12 +60,14 @@ import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
-import com.vaadin.flow.internal.CspViolationReporter;
+import com.vaadin.flow.internal.ContentSecurityPolicyViolationReporter;
 import com.vaadin.flow.internal.DiscardAwareExecution;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.SuppressForbidden;
 import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
@@ -73,10 +75,12 @@ import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
-import com.vaadin.flow.server.CspMode;
-import com.vaadin.flow.server.CspViolationException;
+import com.vaadin.flow.server.ContentSecurityPolicyMode;
+import com.vaadin.flow.server.ContentSecurityPolicyViolationException;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.ElementRequestHandler;
@@ -1027,7 +1031,10 @@ public class Element extends Node<Element> {
      * propagate the change back to the signal. After the callback, the signal
      * is re-consulted: if its value differs from what was being set (e.g., the
      * callback applied a transformation), the signal's updated value wins and
-     * the property is reverted to it.
+     * the property is reverted to it. This also applies when the callback
+     * leaves the signal unchanged, so the write callback must update the signal
+     * synchronously: otherwise, a client-side value is reverted to the current
+     * signal value until the signal changes.
      * <p>
      * Example of a read-only binding:
      *
@@ -1993,7 +2000,7 @@ public class Element extends Node<Element> {
      *            for no arguments
      * @return a pending result that can be used to get a return value from the
      *         execution
-     * @since 2.0
+     * @since 25.4
      */
     @Deprecated
     public PendingJavaScriptResult callJsFunction(String functionName,
@@ -2043,9 +2050,9 @@ public class Element extends Node<Element> {
      * <p>
      * The expression is sent to the browser and compiled there, which a content
      * security policy without <code>unsafe-eval</code> does not allow, so the
-     * {@link CspMode} of the application reports or refuses the call.
-     * {@link #executeJs(Class)} runs JavaScript that is declared in Java and
-     * collected into the bundle instead, and sends no expression.
+     * {@link ContentSecurityPolicyMode} of the application reports or refuses
+     * the call. {@link #executeJs(Class)} runs JavaScript that is declared in
+     * Java and collected into the bundle instead, and sends no expression.
      *
      * @param expression
      *            the JavaScript expression to invoke
@@ -2056,14 +2063,25 @@ public class Element extends Node<Element> {
      *         the expression
      * @see #executeJs(Class)
      * @since 25.0
-     * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode
+     * @throws ContentSecurityPolicyViolationException
+     *             in the {@link ContentSecurityPolicyMode#STRICT} Content
+     *             Security Policy mode, unless the string is declared in an
+     *             interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
     public PendingJavaScriptResult executeJs(String expression,
             @Nullable Object @Nullable... parameters) {
-        CspViolationReporter.reportStringJavaScript();
-        return scheduleExecuteJs(expression,
-                parameters == null ? new @Nullable Object[0] : parameters);
+        @Nullable
+        Object[] arguments = parameters == null ? new @Nullable Object[0]
+                : parameters;
+        JsCall fallback = JsStringFallbacks.findDeclaredCall(expression,
+                arguments);
+        if (fallback != null) {
+            return scheduleJsCall(fallback);
+        }
+        ContentSecurityPolicyViolationReporter.reportStringExecuteJs(expression,
+                arguments.length);
+        return scheduleExecuteJs(expression, arguments);
     }
 
     /**
@@ -2073,12 +2091,13 @@ public class Element extends Node<Element> {
      * implementation runs the JavaScript that the method declares, with the
      * arguments of the call as its parameters.
      * <p>
-     * The interface is annotated with {@link JsDefinition}, and each of its
-     * methods declares the JavaScript it runs with {@link JsExpression}:
+     * The interface is annotated with {@link JsDefinition}, which is what the
+     * build finds it by, extends {@link JsInvokers}, and each of its methods
+     * declares the JavaScript it runs with {@link JsExpression}:
      *
      * <pre>
      * &#64;JsDefinition
-     * public interface GreeterJs extends Serializable {
+     * public interface GreeterJs extends JsInvokers {
      *     &#64;JsExpression("window.alert($0)")
      *     void showGreeting(String greeting);
      * }
@@ -2134,14 +2153,15 @@ public class Element extends Node<Element> {
      *         JavaScript through, not <code>null</code>
      * @throws IllegalArgumentException
      *             if the type is not an interface, is not annotated with
-     *             {@link JsDefinition}, or has a method that can not be
-     *             answered
+     *             {@link JsDefinition}, also extends {@link JsSnippets}, or has
+     *             a method that can not be answered
      * @since 25.4
      */
-    public <T> T executeJs(Class<T> definitionType) {
+    public <T extends JsInvokers> T executeJs(Class<T> definitionType) {
         return JsDefinitionProxy.create(definitionType, this::scheduleJsCall);
     }
 
+    @SuppressForbidden
     private PendingJavaScriptResult scheduleExecuteJs(String expression,
             @Nullable Object[] parameters) {
 
@@ -2149,8 +2169,8 @@ public class Element extends Node<Element> {
         String wrappedExpression = "return (async function() { " + expression
                 + "}).apply($" + parameters.length + ")";
 
-        return scheduleJavaScriptInvocation(null, wrappedExpression,
-                withElementAsLastParameter(parameters));
+        return scheduleJavaScriptInvocation(new JavaScriptInvocation(
+                wrappedExpression, withElementAsLastParameter(parameters)));
     }
 
     /**
@@ -2162,8 +2182,8 @@ public class Element extends Node<Element> {
      * expression.
      */
     private PendingJavaScriptResult scheduleJsCall(JsCall call) {
-        return scheduleJavaScriptInvocation(call, call.getExpression(),
-                call.parametersFor(this));
+        return scheduleJavaScriptInvocation(new JavaScriptInvocation(call,
+                call.getExpression(), call.parametersFor(this)));
     }
 
     private @Nullable Object[] withElementAsLastParameter(
@@ -2189,9 +2209,10 @@ public class Element extends Node<Element> {
      *            no parameters
      * @return a pending result that can be used to get a value returned from
      *         the expression
-     * @since 2.0
+     * @since 25.4
      */
     @Deprecated
+    @SuppressForbidden
     public PendingJavaScriptResult executeJs(String expression,
             @Nullable Serializable @Nullable [] parameters) {
         return executeJs(expression, (Object[]) parameters);
@@ -2236,9 +2257,13 @@ public class Element extends Node<Element> {
      * @return a registration that, when removed, invokes the cleanup callback
      *         on the client
      * @since 25.2
-     * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode
+     * @throws ContentSecurityPolicyViolationException
+     *             in the {@link ContentSecurityPolicyMode#STRICT} Content
+     *             Security Policy mode, unless the string is declared in an
+     *             interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
+    @SuppressForbidden
     public Registration addJsInitializer(String expression,
             @Nullable Object @Nullable... parameters) {
         Objects.requireNonNull(expression, "Expression cannot be null");
@@ -2254,14 +2279,14 @@ public class Element extends Node<Element> {
      * <p>
      * This works like {@link #addJsInitializer(String, Object...)}, but takes
      * the initializer as a function rather than as an expression. Declared as a
-     * snippet by a {@link JsDefinition} interface, the function is in the
+     * snippet by a {@link JsSnippets} interface, the function is in the
      * frontend bundle, so nothing is compiled from a string in the browser and
      * the initializer works under a Content Security Policy that does not allow
      * <code>unsafe-eval</code>:
      *
      * <pre>
      * &#64;JsDefinition
-     * public interface ListenJs extends Serializable {
+     * public interface ListenJs extends JsSnippets {
      *
      *     &#64;JsExpression("""
      *             const listener = () =&gt; this.classList.toggle($0);
@@ -2313,12 +2338,8 @@ public class Element extends Node<Element> {
     }
 
     private PendingJavaScriptResult scheduleJavaScriptInvocation(
-            @Nullable JsCall jsCall, String expression,
-            @Nullable Object[] parameters) {
+            JavaScriptInvocation invocation) {
         StateNode node = getNode();
-
-        JavaScriptInvocation invocation = new JavaScriptInvocation(jsCall,
-                expression, parameters);
 
         PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
                 node, invocation);
@@ -2663,7 +2684,7 @@ public class Element extends Node<Element> {
      * @since 25.4
      */
     @JsDefinition
-    public interface CallFunctionJs extends Serializable {
+    public interface CallFunctionJs extends JsInvokers {
 
         /**
          * Calls the named function on the element, with the element as
@@ -2699,7 +2720,7 @@ public class Element extends Node<Element> {
      * @since 25.4
      */
     @JsDefinition
-    public interface ScrollIntoViewJs extends Serializable {
+    public interface ScrollIntoViewJs extends JsInvokers {
 
         /**
          * Scrolls the element into view the way the browser does by default,
@@ -2729,7 +2750,7 @@ public class Element extends Node<Element> {
      * @since 25.4
      */
     @JsDefinition
-    public interface ElementJs extends Serializable {
+    public interface ElementJs extends JsInvokers {
 
         /**
          * Adds the CSS class to the element and removes it again when the

@@ -19,8 +19,15 @@ package com.vaadin.flow.component.html;
  * Mode settings for anchor.
  *
  * {@link #DOWNLOAD} will set the download attribute to Anchor, where as
- * {@link #INLINE} will remove it.
- * 
+ * {@link #INLINE} will remove it. When the anchor links to a
+ * {@link com.vaadin.flow.server.streams.DownloadHandler}, the type also decides
+ * whether its content is served as an attachment or inline, when the handler
+ * gives only a file name, as the built-in handlers do.
+ * <p>
+ * Content served inline is rendered by the browser on the application's origin.
+ * Do not serve untrusted content, such as user uploaded HTML or SVG files,
+ * inline.
+ *
  * @since 24.8
  */
 public enum AttachmentType {

@@ -361,6 +361,7 @@ export class ResourceLoader {
   loadDynamicImport(
     expression: string,
     resourceLoadListener: ResourceLoadListener,
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval -- the string Page.addDynamicImport, remove with it
     load: () => unknown = new Function(expression) as () => unknown
   ): void {
     const event = this.#makeEvent(expression);
