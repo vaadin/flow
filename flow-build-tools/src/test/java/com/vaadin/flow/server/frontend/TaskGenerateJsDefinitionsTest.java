@@ -45,6 +45,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsStringFallbacks;
@@ -571,7 +572,7 @@ class TaskGenerateJsDefinitionsTest {
                     "vite.generated.ts should read "
                             + TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME);
             for (String line : List.of(
-                    BundleValidationUtil.JS_DEFINITION_FUNCTION_IDS_STATS_KEY
+                    BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY
                             + ": jsDefinitionIds."
                             + TaskGenerateJsDefinitions.FUNCTION_IDS_KEY + ",",
                     BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY

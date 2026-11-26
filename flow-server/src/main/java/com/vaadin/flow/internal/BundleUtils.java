@@ -20,10 +20,13 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +34,8 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.VaadinService;
 
 /**
  * Utility class for bundle operations.
@@ -40,6 +45,20 @@ import com.vaadin.flow.component.Component;
  * @since 25.1
  */
 public final class BundleUtils {
+
+    /**
+     * The key of the stats.json entry that lists the identifiers of the
+     * functions the bundle registers for JavaScript definitions, event data and
+     * event filters.
+     */
+    public static final String JS_DEFINITION_FUNCTION_IDS_STATS_KEY = "jsDefinitionFunctionIds";
+
+    /**
+     * The classes that {@link #checkJsFunctionsBundled(Class, Supplier)} has
+     * checked, so that each is reported once rather than on every use.
+     */
+    private static final Set<String> checkedJsFunctionDeclarers = ConcurrentHashMap
+            .newKeySet();
 
     private BundleUtils() {
         // Util methods only
@@ -170,6 +189,60 @@ public final class BundleUtils {
     public static boolean isPreCompiledProductionBundle() {
         JsonNode stats = loadStatsJson();
         return stats.has("pre-compiled");
+    }
+
+    /**
+     * Logs an error when the production bundle does not carry a function that
+     * the given class declares JavaScript for, the way a missing
+     * {@code @JsModule} of a component is reported. The browser can not run
+     * such a function, and in production mode it does not log why, so the
+     * server says which class is missing and how to get it into the bundle.
+     * <p>
+     * Checks a class once, and only in production mode with a bundle whose
+     * stats list the functions it registers.
+     * <p>
+     * Calls that a {@code @JsStringFallback} interface stands in for are not
+     * checked: the build always keeps those interfaces in the bundle, as they
+     * are found by the string an add-on sends rather than through a class
+     * reference, so naming them in {@code @Uses} would not help.
+     *
+     * @param declaringType
+     *            the JavaScript definition or event type that declares the
+     *            functions, not <code>null</code>
+     * @param functionIds
+     *            the identifiers of the functions that the class declares,
+     *            asked for only when the class is checked, not
+     *            <code>null</code>
+     */
+    public static void checkJsFunctionsBundled(Class<?> declaringType,
+            Supplier<Collection<String>> functionIds) {
+        VaadinService service = VaadinService.getCurrent();
+        // A service mocked for a test may have no configuration
+        DeploymentConfiguration configuration = service == null ? null
+                : service.getDeploymentConfiguration();
+        if (configuration == null || !configuration.isProductionMode()
+                || !checkedJsFunctionDeclarers.add(declaringType.getName())) {
+            return;
+        }
+        JsonNode bundled = loadStatsJson()
+                .get(JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
+        if (bundled == null || !bundled.isArray()) {
+            // Built before the stats listed the functions, so there is nothing
+            // to tell a missing function by
+            return;
+        }
+        Set<String> bundledIds = new HashSet<>();
+        bundled.forEach(id -> bundledIds.add(id.asString()));
+        if (!bundledIds.containsAll(functionIds.get())) {
+            String name = declaringType.getSimpleName();
+            getLogger().error("{} declares JavaScript that was not included"
+                    + " when creating the production bundle, so using it"
+                    + " fails in the browser. Check that a class the"
+                    + " application uses refers to {} and that it is not used"
+                    + " only through reflection. If needed add a @Uses({}.class)"
+                    + " to a class that the application uses.",
+                    declaringType.getName(), name, name);
+        }
     }
 
     private static Logger getLogger() {
