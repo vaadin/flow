@@ -29,11 +29,14 @@ import com.vaadin.flow.dom.Element;
  * declared JavaScript to run on the client.
  * <p>
  * A call through {@link Page#executeJs(Class)} runs on no element, so it can
- * not call a method on one: an interface with a method without
- * {@link JsExpression}, declared in the interface itself or in one it extends,
- * can only be used with {@link Element#executeJs(Class)}.
- * {@link Page#executeJs(Class)} throws an {@link IllegalArgumentException} for
- * it.
+ * not call a method on one. An interface that has a method without
+ * {@link JsExpression} that calls the method of the same name on the element,
+ * declared in the interface itself or inherited from another interface that
+ * extends {@link JsInvokers}, can only be used with
+ * {@link Element#executeJs(Class)}: {@link Page#executeJs(Class)} throws an
+ * {@link IllegalArgumentException} for it. See
+ * {@link JsCall#declaredExpression(java.lang.reflect.Method)} for which methods
+ * call the element method.
  * <p>
  * The interface is also annotated with {@link JsDefinition}, which is what
  * makes it findable during the build: its JavaScript is collected into the
