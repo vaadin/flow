@@ -379,7 +379,7 @@ public class DomEvent extends EventObject {
      *
      * <pre>
      * &#64;JsDefinition
-     * public interface PathJs extends Serializable {
+     * public interface PathJs extends JsSnippets {
      *
      *     &#64;JsExpression("return event.composedPath()[0];")
      *     DomEventData&lt;Element&gt; originalTarget();

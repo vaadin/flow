@@ -18,7 +18,6 @@ package com.vaadin.flow.dom;
 import java.util.Objects;
 
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
@@ -29,7 +28,7 @@ import com.vaadin.flow.js.JsSnippets;
  * {@link DomListenerRegistration#setFilterExpression(DomEventFilter)}.
  * <p>
  * To declare a filter, add a method that returns this type to a
- * {@link JsDefinition} interface. To create a filter, call that method on the
+ * {@link JsSnippets} interface. To create a filter, call that method on the
  * object that {@link JsSnippets#of(Class)} returns.
  * <p>
  * The expression is the body of a function. The function gets two parameters:
@@ -40,7 +39,7 @@ import com.vaadin.flow.js.JsSnippets;
  *
  * <pre>
  * &#64;JsDefinition
- * public interface KeyFilters extends Serializable {
+ * public interface KeyFilters extends JsSnippets {
  *
  *     &#64;JsExpression("return event.key === $0 &amp;&amp; !event.repeat;")
  *     DomEventFilter isKey(String key);
@@ -100,7 +99,7 @@ public final class DomEventFilter implements JsSnippet {
     }
 
     /**
-     * Creates a filter for the given call of a {@link JsDefinition} method. The
+     * Creates a filter for the given call of a {@link JsSnippets} method. The
      * method must return a filter.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
@@ -122,8 +121,8 @@ public final class DomEventFilter implements JsSnippet {
     }
 
     /**
-     * Gets the call of the {@link JsDefinition} method that declared this
-     * filter. The call tells which function of the bundle to run.
+     * Gets the call of the {@link JsSnippets} method that declared this filter.
+     * The call tells which function of the bundle to run.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      *
