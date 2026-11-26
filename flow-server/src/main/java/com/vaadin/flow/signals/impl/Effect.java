@@ -250,18 +250,33 @@ public class Effect implements Serializable {
     private TransientListener createChangeListener(boolean[] changeHandled) {
         // avoid lambda to allow proper deserialization
         return new TransientListener() {
+            /*
+             * Set while the listener is added again from a new access to
+             * deliver a change that another thread made but that the original
+             * context didn't show.
+             */
+            private boolean deliveringHiddenChange;
+
             @Override
             public boolean invoke(boolean immediate) {
                 if (!changeHandled[0]) {
                     changeHandled[0] = true;
-                    return onDependencyChange(immediate);
+                    return onDependencyChange(immediate,
+                            deliveringHiddenChange);
                 }
                 return false;
             }
 
             @Override
             public boolean runWithFreshReads(Runnable task) {
-                return runInNextAccess(task);
+                return runInNextAccess(() -> {
+                    deliveringHiddenChange = true;
+                    try {
+                        task.run();
+                    } finally {
+                        deliveringHiddenChange = false;
+                    }
+                });
             }
         };
     }
@@ -300,7 +315,8 @@ public class Effect implements Serializable {
         return true;
     }
 
-    private boolean onDependencyChange(boolean immediate) {
+    private boolean onDependencyChange(boolean immediate,
+            boolean hiddenChange) {
         /*
          * Detect loops by checking if the same effect is already active on this
          * thread. Don't check for immediate updates since an immediate update
@@ -312,7 +328,13 @@ public class Effect implements Serializable {
                     "Infinite loop detected between effect updates. This effect is deactivated.");
         }
 
-        if (ownerUI != null) {
+        if (hiddenChange) {
+            /*
+             * Another thread made the change, even though the new access that
+             * delivers it runs with the owner UI as the current UI
+             */
+            invalidatedFromBackground = true;
+        } else if (ownerUI != null) {
             invalidatedFromBackground = UI.getCurrent() != ownerUI;
         } else {
             invalidatedFromBackground = VaadinRequest.getCurrent() == null;

@@ -521,8 +521,12 @@ class ElementEffectTest {
 
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         List<String> observed = new ArrayList<>();
+        List<Boolean> backgroundChanges = new ArrayList<>();
         TestComponent component = new TestComponent();
-        Signal.effect(component, () -> observed.add(signal.get()));
+        Signal.effect(component, ctx -> {
+            observed.add(signal.get());
+            backgroundChanges.add(ctx.isBackgroundChange());
+        });
 
         // Another thread changes the signal while the session transaction
         // still caches "initial", and the component is attached afterwards
@@ -534,6 +538,7 @@ class ElementEffectTest {
         service.runPendingAccessTasks(session);
 
         assertEquals(List.of("initial", "changed"), observed);
+        assertEquals(List.of(false, true), backgroundChanges);
     }
 
     @Test
@@ -552,12 +557,17 @@ class ElementEffectTest {
         Signal.runWithoutTransaction(() -> signal.set("changed"));
 
         List<String> observed = new ArrayList<>();
-        Signal.effect(ui, () -> observed.add(signal.get()));
+        List<Boolean> backgroundChanges = new ArrayList<>();
+        Signal.effect(ui, ctx -> {
+            observed.add(signal.get());
+            backgroundChanges.add(ctx.isBackgroundChange());
+        });
         assertEquals(List.of("initial"), observed);
 
         service.runPendingAccessTasks(session);
 
         assertEquals(List.of("initial", "changed"), observed);
+        assertEquals(List.of(false, true), backgroundChanges);
     }
 
     @ParameterizedTest
