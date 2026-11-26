@@ -35,6 +35,11 @@ import java.util.Optional;
  * response, session or request handler, even though the matching
  * {@link RequestStartedEvent} has a response, so a missing response does not by
  * itself mean a push message.
+ * <p>
+ * Listeners are called without holding the session lock and without a current
+ * UI. Use {@link VaadinSession#access(Command)} or
+ * {@link com.vaadin.flow.component.UI#access(Command)} to reach session or UI
+ * state.
  *
  * @see RequestStartedEvent
  * @since 25.4

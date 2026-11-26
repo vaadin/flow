@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -51,7 +52,7 @@ import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
-import com.vaadin.flow.internal.CspViolationReporter;
+import com.vaadin.flow.internal.ContentSecurityPolicyViolationReporter;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.js.JsDefinition;
@@ -67,13 +68,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-class CspModeTest {
+class ContentSecurityPolicyModeTest {
 
     @JsDefinition
     interface LoggerJs extends JsSnippets {
@@ -194,7 +196,7 @@ class CspModeTest {
                         }).setFilter("event.x == 1")),
                 // The deprecated locator is an expression for the browser
                 call(JsFunction.class, "of",
-                        CspModeTest::delegateShortcutToStringLocator));
+                        ContentSecurityPolicyModeTest::delegateShortcutToStringLocator));
     }
 
     private static Arguments call(Class<?> api, String method,
@@ -206,10 +208,12 @@ class CspModeTest {
     @MethodSource("stringJavaScriptCalls")
     void strict_stringJavaScript_throwsWithTraceFromApiToCaller(Class<?> api,
             String method, Consumer<UI> call) {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
 
-        CspViolationException exception = assertThrows(
-                CspViolationException.class, () -> call.accept(ui));
+        ContentSecurityPolicyViolationException exception = assertThrows(
+                ContentSecurityPolicyViolationException.class,
+                () -> call.accept(ui));
 
         assertFalse(exception.getMessage().contains("The JavaScript is in"),
                 exception.getMessage());
@@ -218,7 +222,8 @@ class CspModeTest {
 
     @Test
     void strict_javaScriptWithoutString_doesNotThrow() {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
 
         assertDoesNotThrow(() -> {
             ui.getElement().callJsFunction("focus");
@@ -291,7 +296,8 @@ class CspModeTest {
 
     @Test
     void strict_uiStartsWithoutViolation() {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
 
         // The constructor of Page adds the detail of an event, and the events
         // of the navigation and of connecting a web component carry keys of
@@ -306,7 +312,8 @@ class CspModeTest {
 
     @Test
     void strict_stringJavaScriptWithoutCurrentService_doesNotThrow() {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
         // As for a component built in a background thread before attaching
         CurrentInstance.clearAll();
 
@@ -314,27 +321,30 @@ class CspModeTest {
             new Element("div").executeJs("return 1");
             JsFunction.of("return 1");
         });
-        assertFalse(CspViolationReporter.isEnabled());
+        assertFalse(ContentSecurityPolicyViolationReporter.isEnabled());
     }
 
     @ParameterizedTest
     @CsvSource({ "OFF, false", "WARN, true", "STRICT, true" })
-    void isEnabled_onlyInModesThatReport(CspMode mode, boolean enabled) {
-        setup.getDeploymentConfiguration().setCspMode(mode);
+    void isEnabled_onlyInModesThatReport(ContentSecurityPolicyMode mode,
+            boolean enabled) {
+        setup.getDeploymentConfiguration().setContentSecurityPolicyMode(mode);
 
-        assertEquals(enabled, CspViolationReporter.isEnabled());
+        assertEquals(enabled,
+                ContentSecurityPolicyViolationReporter.isEnabled());
     }
 
     @ParameterizedTest
     @CsvSource({ "WARN, 2", "OFF, 0" })
     void warnOrOff_stringJavaScript_runsAndLogsOncePerCallSiteOnlyInWarn(
-            CspMode mode, int expectedWarnings) {
-        setup.getDeploymentConfiguration().setCspMode(mode);
+            ContentSecurityPolicyMode mode, int expectedWarnings) {
+        setup.getDeploymentConfiguration().setContentSecurityPolicyMode(mode);
         Logger logger = mock(Logger.class);
         try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
                 LoggerFactory.class)) {
-            loggerFactory.when(
-                    () -> LoggerFactory.getLogger(CspViolationReporter.class))
+            loggerFactory
+                    .when(() -> LoggerFactory.getLogger(
+                            ContentSecurityPolicyViolationReporter.class))
                     .thenReturn(logger);
 
             // Two callers of one line that calls the API are one call site
@@ -355,28 +365,31 @@ class CspModeTest {
 
     @Test
     void strict_stringJavaScriptWithDetail_throwsWithDetailAndTraceFromApi() {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
 
-        CspViolationException exception = assertThrows(
-                CspViolationException.class,
+        ContentSecurityPolicyViolationException exception = assertThrows(
+                ContentSecurityPolicyViolationException.class,
                 () -> reportFromComponent("series[2].formatter"));
 
         assertTrue(
                 exception.getMessage().endsWith(
                         " The JavaScript is in \"series[2].formatter\"."),
                 exception.getMessage());
-        assertTraceLeadsFromApiToTest(exception, CspModeTest.class,
-                "reportFromComponent");
+        assertTraceLeadsFromApiToTest(exception,
+                ContentSecurityPolicyModeTest.class, "reportFromComponent");
     }
 
     @Test
     void warn_stringJavaScriptWithDetail_logsOncePerCallSiteAndDetail() {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.WARN);
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.WARN);
         Logger logger = mock(Logger.class);
         try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
                 LoggerFactory.class)) {
-            loggerFactory.when(
-                    () -> LoggerFactory.getLogger(CspViolationReporter.class))
+            loggerFactory
+                    .when(() -> LoggerFactory.getLogger(
+                            ContentSecurityPolicyViolationReporter.class))
                     .thenReturn(logger);
 
             // One call site, as for a component that reports before the
@@ -398,27 +411,233 @@ class CspModeTest {
         assertTrue(
                 messages.getAllValues().get(2).contains("tooltip.formatter"));
         assertTraceLeadsFromApiToTest(warnings.getAllValues().get(0),
-                CspModeTest.class, "reportFromComponent");
+                ContentSecurityPolicyModeTest.class, "reportFromComponent");
         assertTraceLeadsFromApiToTest(warnings.getAllValues().get(1),
-                CspModeTest.class, "reportFromComponent");
+                ContentSecurityPolicyModeTest.class, "reportFromComponent");
         assertTraceLeadsFromApiToTest(warnings.getAllValues().get(2),
-                CspModeTest.class, "reportFromOtherComponent");
+                ContentSecurityPolicyModeTest.class,
+                "reportFromOtherComponent");
     }
 
     @Test
     void stringJavaScriptWithNullDetail_throws() {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.WARN);
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.WARN);
 
         assertThrows(NullPointerException.class,
-                () -> CspViolationReporter.reportStringJavaScript(null));
+                () -> ContentSecurityPolicyViolationReporter
+                        .reportStringJavaScript(null));
+    }
+
+    @Test
+    void strict_stringExecuteJs_messageHasMethodToDeclareForIt() {
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
+
+        ContentSecurityPolicyViolationException exception = assertThrows(
+                ContentSecurityPolicyViolationException.class,
+                () -> executeJsOnUi("return \"a\"\n  + $0", "b"));
+
+        assertTrue(exception.getMessage().contains("@JsStringFallback"),
+                exception.getMessage());
+        assertTrue(
+                exception.getMessage().contains(
+                        """
+                                    @JsDefinition
+                                    public interface YourJs extends JsInvokers {
+                                        @JsExpression("return \\"a\\"\\n  + $0")
+                                        PendingJavaScriptResult contentSecurityPolicyModeTestExecuteJsOnUi(Object arg0);
+                                    }
+                                """),
+                exception.getMessage());
+        // Own code calls the method, an add-on gets the interface marked
+        assertTrue(exception.getMessage().contains(
+                "element.executeJs(YourJs.class).contentSecurityPolicyModeTestExecuteJsOnUi(arg0)"),
+                exception.getMessage());
+        assertTraceLeadsFromApiToTest(exception, Element.class, "executeJs");
+
+        Page page = ui.getPage();
+        ContentSecurityPolicyViolationException onPage = assertThrows(
+                ContentSecurityPolicyViolationException.class,
+                () -> page.executeJs("return 1"));
+        assertTrue(
+                onPage.getMessage().contains("page.executeJs(YourJs.class)."),
+                onPage.getMessage());
+    }
+
+    @Test
+    void strict_stringFunction_messageDeclaresFunctionForEachUse() {
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
+
+        String plain = assertThrows(
+                ContentSecurityPolicyViolationException.class,
+                () -> JsFunction.of("this.title = $0", "tip")).getMessage();
+        Element element = ui.getElement();
+        String initializer = assertThrows(
+                ContentSecurityPolicyViolationException.class,
+                () -> element.addJsInitializer("this.title = $0", "tip"))
+                .getMessage();
+        Page page = ui.getPage();
+        String dynamicImport = assertThrows(
+                ContentSecurityPolicyViolationException.class,
+                () -> page.addDynamicImport("return Promise.resolve()"))
+                .getMessage();
+
+        assertTrue(
+                plain.contains(
+                        """
+                                        @JsExpression("this.title = $0")
+                                        JsFunction contentSecurityPolicyModeTestStrict_stringFunction_messageDeclaresFunctionForEachUse(Object arg0);
+                                """),
+                plain);
+        assertTrue(
+                plain.contains(
+                        "public interface YourFunctions extends JsSnippets {"),
+                plain);
+        assertTrue(plain.contains(": JsSnippets.of(YourFunctions.class)."),
+                plain);
+        assertTrue(initializer.contains(
+                "element.addJsInitializer(JsSnippets.of(YourFunctions.class)."),
+                initializer);
+        assertTrue(dynamicImport.contains(
+                "page.addDynamicImport(JsSnippets.of(YourFunctions.class)."),
+                dynamicImport);
+        assertTrue(dynamicImport.contains("@JsStringFallback"), dynamicImport);
+    }
+
+    @Test
+    void strict_stringFilterAndEventData_messagesDeclareThemBothWays() {
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
+        DomListenerRegistration registration = ui.getElement()
+                .addEventListener("click", e -> {
+                });
+
+        String filter = assertThrows(
+                ContentSecurityPolicyViolationException.class,
+                () -> registration.setFilter("event.button == \"left\""))
+                .getMessage();
+        String eventData = assertThrows(
+                ContentSecurityPolicyViolationException.class,
+                () -> registration.addEventData("event.x * 2")).getMessage();
+
+        // Own code declares a snippet, an add-on lists the string
+        assertTrue(filter.contains(
+                "@JsExpression(\"return (event.button == \\\"left\\\");\")"),
+                filter);
+        assertTrue(filter.contains("DomEventFilter "), filter);
+        assertTrue(filter.contains(
+                "@JsStringFallback(filters = \"event.button == \\\"left\\\"\")"),
+                filter);
+        assertTrue(eventData.contains("DomEventData<Object> "), eventData);
+        assertTrue(
+                eventData.contains(
+                        "@JsStringFallback(eventData = \"event.x * 2\")"),
+                eventData);
+        for (String message : List.of(filter, eventData)) {
+            assertTrue(message.contains(
+                    "public interface YourEventJs extends JsSnippets {"),
+                    message);
+            assertTrue(message.contains(
+                    "public interface YourFallbacks extends JsSnippets {"),
+                    message);
+        }
+    }
+
+    @Test
+    void strict_callSiteSendingManyDifferentStrings_messageSaysOneDeclarationMatchesOneString() {
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
+
+        // One call site, as for an add-on that concatenates a value into the
+        // expression. A few different strings, as from a helper called with
+        // constants, can each be declared, so they get no hint
+        List<String> messages = new ArrayList<>();
+        for (String color : List.of("orange", "orange", "blue", "green", "red",
+                "black")) {
+            messages.add(
+                    assertThrows(ContentSecurityPolicyViolationException.class,
+                            () -> executeJsOnUi("return '" + color + "'"))
+                            .getMessage());
+        }
+
+        String hint = "different JavaScript strings, so the string is probably built";
+        for (String message : messages.subList(0, 5)) {
+            assertFalse(message.contains(hint), message);
+        }
+        String varying = messages.get(5);
+        assertTrue(varying.contains(hint), varying);
+        assertTrue(
+                varying.contains(
+                        "@JsStringFallback does not support strings like this"),
+                varying);
+    }
+
+    @Test
+    void warn_stringExecuteJs_logsOncePerCallSiteAndExpression() {
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.WARN);
+        Logger logger = mock(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            loggerFactory
+                    .when(() -> LoggerFactory.getLogger(
+                            ContentSecurityPolicyViolationReporter.class))
+                    .thenReturn(logger);
+
+            // One call site, as for an add-on that concatenates a value into
+            // the expression
+            executeJsOnUi("return 1");
+            executeJsOnUi("return 1");
+            executeJsOnUi("return 2");
+        }
+
+        ArgumentCaptor<String> messages = ArgumentCaptor.forClass(String.class);
+        verify(logger, times(2)).warn(messages.capture(), any(Throwable.class));
+        assertTrue(messages.getAllValues().get(0)
+                .contains("@JsExpression(\"return 1\")"));
+        assertTrue(messages.getAllValues().get(1)
+                .contains("@JsExpression(\"return 2\")"));
+    }
+
+    @Test
+    void warn_callSiteSendingManyStrings_stopsLoggingAtTheLimit() {
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.WARN);
+        Logger logger = mock(Logger.class);
+        // The number of reports a call site logs at most
+        int limit = 10;
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            loggerFactory
+                    .when(() -> LoggerFactory.getLogger(
+                            ContentSecurityPolicyViolationReporter.class))
+                    .thenReturn(logger);
+
+            // One call site, as for an add-on that concatenates a changing
+            // value into the expression
+            for (int i = 0; i < limit + 5; i++) {
+                executeJsOnUi("return " + i);
+            }
+            executeJsOnUi("return 0");
+        }
+
+        ArgumentCaptor<String> messages = ArgumentCaptor.forClass(String.class);
+        verify(logger, times(limit)).warn(messages.capture(),
+                any(Throwable.class));
+        assertFalse(messages.getAllValues().get(limit - 2)
+                .contains("further ones from it are not logged"));
+        assertTrue(messages.getAllValues().get(limit - 1)
+                .contains("further ones from it are not logged"));
     }
 
     private static void reportFromComponent(String detail) {
-        CspViolationReporter.reportStringJavaScript(detail);
+        ContentSecurityPolicyViolationReporter.reportStringJavaScript(detail);
     }
 
     private static void reportFromOtherComponent(String detail) {
-        CspViolationReporter.reportStringJavaScript(detail);
+        ContentSecurityPolicyViolationReporter.reportStringJavaScript(detail);
     }
 
     @SuppressWarnings("removal")
@@ -434,16 +653,20 @@ class CspModeTest {
         ui.getElement().executeJs("return 1");
     }
 
+    private void executeJsOnUi(String expression, Object... parameters) {
+        ui.getElement().executeJs(expression, parameters);
+    }
+
     private static void assertTraceLeadsFromApiToTest(Throwable violation,
             Class<?> api, String method) {
         StackTraceElement[] stack = violation.getStackTrace();
         assertTrue(api.isAssignableFrom(loadClass(stack[0].getClassName())),
                 stack[0].toString());
         assertEquals(method, stack[0].getMethodName());
-        assertTrue(
-                Stream.of(stack)
-                        .noneMatch(frame -> frame.getClassName()
-                                .equals(CspViolationReporter.class.getName())),
+        assertTrue(Stream.of(stack)
+                .noneMatch(frame -> frame.getClassName()
+                        .equals(ContentSecurityPolicyViolationReporter.class
+                                .getName())),
                 Arrays.toString(stack));
     }
 

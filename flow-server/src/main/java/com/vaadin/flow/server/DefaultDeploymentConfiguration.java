@@ -120,7 +120,7 @@ public class DefaultDeploymentConfiguration
     private boolean requestTiming;
     private boolean frontendHotdeploy;
     private SessionLockCheckStrategy sessionLockCheckStrategy;
-    private CspMode cspMode;
+    private ContentSecurityPolicyMode contentSecurityPolicyMode;
 
     private static AtomicBoolean logging = new AtomicBoolean(true);
     private final List<String> warnings = new ArrayList<>();
@@ -160,7 +160,7 @@ public class DefaultDeploymentConfiguration
         checkSendUrlsAsParameters();
         checkFrontendHotdeploy();
         checkSessionLockCheckStrategy();
-        checkCspMode();
+        checkContentSecurityPolicyMode();
 
         if (log) {
             logMessages();
@@ -310,8 +310,8 @@ public class DefaultDeploymentConfiguration
     }
 
     @Override
-    public CspMode getCspMode() {
-        return cspMode;
+    public ContentSecurityPolicyMode getContentSecurityPolicyMode() {
+        return contentSecurityPolicyMode;
     }
 
     @Override
@@ -466,10 +466,12 @@ public class DefaultDeploymentConfiguration
         }
     }
 
-    private void checkCspMode() {
-        cspMode = getApplicationOrSystemProperty(InitParameters.CSP,
-                CspMode.OFF,
-                value -> parseEnum(CspMode.class, InitParameters.CSP, value));
+    private void checkContentSecurityPolicyMode() {
+        contentSecurityPolicyMode = getApplicationOrSystemProperty(
+                InitParameters.CONTENT_SECURITY_POLICY,
+                ContentSecurityPolicyMode.OFF,
+                value -> parseEnum(ContentSecurityPolicyMode.class,
+                        InitParameters.CONTENT_SECURITY_POLICY, value));
     }
 
     /**
