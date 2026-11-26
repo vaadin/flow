@@ -204,6 +204,9 @@
                 <phase>pre-integration-test</phase>
                 <configuration>
                   <executable>${project.build.directory}/${project.artifactId}</executable>
+                  <arguments>
+                    <argument>-Dvaadin.contentSecurityPolicy=${vaadin.contentSecurityPolicy}</argument>
+                  </arguments>
                   <async>true</async>
                   <asyncDestroyOnShutdown>true</asyncDestroyOnShutdown>
                 </configuration>

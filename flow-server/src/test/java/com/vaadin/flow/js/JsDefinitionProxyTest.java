@@ -20,16 +20,22 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -42,7 +48,9 @@ import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
@@ -54,6 +62,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mockStatic;
 
 class JsDefinitionProxyTest {
 
@@ -838,5 +849,63 @@ class JsDefinitionProxyTest {
 
         assertTrue(exception.getMessage().contains("@JsWithExecutionContext"),
                 exception.getMessage());
+    }
+
+    @Test
+    void createAndCreateSnippets_checkEveryFunctionIsBundled()
+            throws NoSuchMethodException {
+        try (MockedStatic<BundleUtils> bundleUtils = mockStatic(
+                BundleUtils.class, CALLS_REAL_METHODS)) {
+            JsDefinitionProxy.create(GreeterJs.class, call -> null);
+            JsDefinitionProxy.createSnippets(TemplateJs.class);
+
+            assertEquals(
+                    Set.of(JsCall.functionId("window.alert($0)", 1, false),
+                            JsCall.functionId("return this.value;", 0, false)),
+                    captureCheckedIds(bundleUtils, GreeterJs.class));
+            assertEquals(
+                    Set.of(JsCall.functionId(
+                            TemplateJs.class.getMethod("label", String.class)),
+                            JsCall.functionId(TemplateJs.class.getMethod("echo",
+                                    Object.class)),
+                            JsCall.functionId(TemplateJs.class.getMethod("join",
+                                    String[].class))),
+                    captureCheckedIds(bundleUtils, TemplateJs.class));
+        }
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    public interface FocusFallbacks extends JsInvokers {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
+    @Test
+    void create_stringFallback_checksTheIdsTheCallSends()
+            throws NoSuchMethodException {
+        try (MockedStatic<BundleUtils> bundleUtils = mockStatic(
+                BundleUtils.class, CALLS_REAL_METHODS)) {
+            JsDefinitionProxy.create(FocusFallbacks.class, call -> null);
+
+            // The build registers the function under the identifier of a
+            // string fallback, not under that of its JavaScript
+            Method focus = FocusFallbacks.class.getMethod("focus");
+            String fallbackId = JsStringFallbacks
+                    .functionId(FocusFallbacks.class, focus);
+            assertNotEquals(JsCall.functionId(focus), fallbackId);
+            assertEquals(Set.of(fallbackId),
+                    captureCheckedIds(bundleUtils, FocusFallbacks.class));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Set<String> captureCheckedIds(
+            MockedStatic<BundleUtils> bundleUtils, Class<?> definition) {
+        ArgumentCaptor<Supplier<Collection<String>>> ids = ArgumentCaptor
+                .forClass(Supplier.class);
+        bundleUtils.verify(() -> BundleUtils
+                .checkJsFunctionsBundled(eq(definition), ids.capture()));
+        return Set.copyOf(ids.getValue().get());
     }
 }

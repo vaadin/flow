@@ -170,6 +170,10 @@ def target(module, submodule, pkg, cls, sub):
         # ones whose behavior turns out to be mode-independent move to
         # test-default as part of the migration PR (permutation policy).
         return ("test-production", feat_flat(cls), "move")
+    if M in ("test-csp-strict", "test-csp-strict-spring-security",
+             "test-csp-off"):
+        # Each pins its own Content Security Policy mode, see README.md
+        return (M + "(keep)", "csp", "keep")
     if M in ("test-multi-war", "servlet-containers", "test-commercial-banner",
              "test-devloop", "test-push-startup"):
         return (M + "(keep)", "infra", "keep")

@@ -22,7 +22,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.ContentSecurityPolicy;
-import com.vaadin.flow.server.CspMode;
+import com.vaadin.flow.server.ContentSecurityPolicyMode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 
@@ -38,7 +38,7 @@ public class IndexHtmlResponse {
     private final VaadinRequest vaadinRequest;
     private final VaadinResponse vaadinResponse;
     private final Document document;
-    private @Nullable String cspNonce;
+    private @Nullable String contentSecurityPolicyNonce;
     private @Nullable ContentSecurityPolicy contentSecurityPolicy;
 
     /**
@@ -125,27 +125,27 @@ public class IndexHtmlResponse {
      * {@code script-src} directive of the Content Security Policy.
      * <p>
      * A new nonce is created for every response when the application runs with
-     * the {@link CspMode#STRICT} mode. Scripts added by an
+     * the {@link ContentSecurityPolicyMode#STRICT} mode. Scripts added by an
      * {@link IndexHtmlRequestListener} get the nonce automatically, but the
      * value can also be used for other content that needs it. The nonce is not
      * put on the scripts in development mode.
      *
      * @return the nonce, or {@code null} if the mode is not
-     *         {@link CspMode#STRICT}
+     *         {@link ContentSecurityPolicyMode#STRICT}
      * @since 25.4
      */
-    public @Nullable String getCspNonce() {
-        return cspNonce;
+    public @Nullable String getContentSecurityPolicyNonce() {
+        return contentSecurityPolicyNonce;
     }
 
     /**
      * Gets the Content Security Policy that is sent with this response.
      * <p>
      * The policy is created when the application runs with the
-     * {@link CspMode#STRICT} mode. An {@link IndexHtmlRequestListener} can add
-     * or override directives for resources of the application, such as
-     * {@code connect-src}, {@code img-src}, {@code frame-src} or
-     * {@code report-to}.
+     * {@link ContentSecurityPolicyMode#STRICT} mode. An
+     * {@link IndexHtmlRequestListener} can add or override directives for
+     * resources of the application, such as {@code connect-src},
+     * {@code img-src}, {@code frame-src} or {@code report-to}.
      * <p>
      * Do not change {@code script-src}: it holds the nonce and
      * {@code 'strict-dynamic'}, so replacing it with
@@ -166,16 +166,16 @@ public class IndexHtmlResponse {
      * policy should be configured here instead.
      *
      * @return the mutable policy, or {@code null} if the mode is not
-     *         {@link CspMode#STRICT}
+     *         {@link ContentSecurityPolicyMode#STRICT}
      * @since 25.4
      */
     public @Nullable ContentSecurityPolicy getContentSecurityPolicy() {
         return contentSecurityPolicy;
     }
 
-    void setContentSecurityPolicy(String cspNonce,
+    void setContentSecurityPolicy(String contentSecurityPolicyNonce,
             ContentSecurityPolicy contentSecurityPolicy) {
-        this.cspNonce = cspNonce;
+        this.contentSecurityPolicyNonce = contentSecurityPolicyNonce;
         this.contentSecurityPolicy = contentSecurityPolicy;
     }
 }
