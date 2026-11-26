@@ -20,9 +20,10 @@ package com.vaadin.flow.server;
  * i.e. a nonce-based {@code script-src} policy without {@code 'unsafe-inline'}
  * and {@code 'unsafe-eval'}.
  * <p>
- * The mode is configured with the {@link InitParameters#CSP} configuration
- * parameter and read with
- * {@link com.vaadin.flow.function.DeploymentConfiguration#getCspMode()}.
+ * The mode is configured with the
+ * {@link InitParameters#CONTENT_SECURITY_POLICY} configuration parameter and
+ * read with
+ * {@link com.vaadin.flow.function.DeploymentConfiguration#getContentSecurityPolicyMode()}.
  * <p>
  * The {@link #WARN} and {@link #STRICT} modes act on the APIs that send
  * JavaScript to the browser as a string, such as
@@ -34,7 +35,7 @@ package com.vaadin.flow.server;
  *
  * @since 25.4
  */
-public enum CspMode {
+public enum ContentSecurityPolicyMode {
     /**
      * The default mode. The application behaves as if no strict Content
      * Security Policy is in use.
@@ -50,8 +51,8 @@ public enum CspMode {
     WARN,
     /**
      * Vaadin sends a nonce-based Content Security Policy, and APIs that need
-     * {@code eval} throw a {@link CspViolationException}, whose stack trace
-     * leads from the API to its caller.
+     * {@code eval} throw a {@link ContentSecurityPolicyViolationException},
+     * whose stack trace leads from the API to its caller.
      * <p>
      * In production mode, every index HTML response gets a new nonce that is
      * put on every {@code <script>} element of the page, and a
@@ -64,7 +65,10 @@ public enum CspMode {
      * <p>
      * <strong>Note:</strong> An API that needs {@code eval} throws for every
      * caller, including a Vaadin component or an add-on that uses one. Run the
-     * application in the {@link #WARN} mode first to find such uses.
+     * application in the {@link #WARN} mode first to find such uses. A string
+     * that the application declares in a
+     * {@link com.vaadin.flow.js.JsStringFallback} interface runs the bundled
+     * JavaScript instead, which makes an add-on that sends it work.
      */
     STRICT
 }
