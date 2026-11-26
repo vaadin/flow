@@ -39,7 +39,13 @@ env:
   # that list defaults to 429,503, so a 403 failed the build on the first
   # artifact a job asked for. connectionMaxTtl keeps the 25 seconds the wagon
   # property was meant to set, against a resolver default of 300.
+  #
+  # The global settings file resolves Central through Google's mirror, because
+  # Central rate-limits the IP ranges GitHub-hosted runners share with every
+  # other project. See the comment in that file. The path is absolute because
+  # tests fork mvn from module directories.
   MAVEN_ARGS: >-
+    -gs ${{ github.workspace }}/.github/maven/settings.xml
     -Daether.connector.http.retryHandler.count=3
     -Daether.connector.http.retryHandler.serviceUnavailable=429,503,403
     -Daether.connector.http.connectionMaxTtl=25
@@ -93,8 +99,14 @@ jobs:
           mkdir -p ~/.vaadin/
           echo '{"username":"'$(echo $TB_LICENSE | cut -d / -f1)'","proKey":"'$(echo $TB_LICENSE | cut -d / -f2)'"}' > ~/.vaadin/proKey
       - name: Compile and Install Flow
+        # -Pcoverage only so that the JaCoCo plugin the unit-tests jobs run
+        # enters the cache this job saves: those jobs restore it with an exact
+        # hit, so actions/cache skips their save, and all of them would
+        # otherwise download the plugin from Maven Central at once, which
+        # answers that burst with HTTP 429. With the tests skipped the plugin
+        # only sets a property and skips its report.
         run: |
-          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
+          cmd="mvn install -B -ntp -DskipTests -Pcoverage -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Save workspace
         run: |
