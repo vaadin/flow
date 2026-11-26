@@ -74,7 +74,7 @@ function readMaintainedBranches() {
 
 /**
  * The version line `main` is currently building, taken from the `flow-project`
- * POM version (`25.4-SNAPSHOT` -> `25.4`). Unlike a maintained branch, `main`
+ * POM version (`25.5-SNAPSHOT` -> `25.4`). Unlike a maintained branch, `main`
  * is not named after its line, so its tags cannot be found from the branch
  * name alone.
  */

@@ -57,7 +57,9 @@ abstract class MediaTest extends ComponentTest {
         whitelistProperty("controlsVisible");
         addProperty("autoplay", boolean.class, false, true, false, true);
         addProperty("loop", boolean.class, false, true, false, true);
-        addProperty("muted", boolean.class, false, true, false, true);
+        // a property rather than an attribute, and kept when set back to false
+        // so that it unmutes a player that is already muted
+        addProperty("muted", boolean.class, false, true, false, false);
         addProperty("preload", Media.Preload.class, null,
                 Media.Preload.METADATA, false, true);
     }

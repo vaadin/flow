@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-test-devloop-tomee</artifactId>
-    <version>25.4-SNAPSHOT</version>
+    <version>25.5-SNAPSHOT</version>
   </parent>
   <artifactId>flow-test-devloop-tomee-app</artifactId>
   <!-- A WAR, and unlike the Jetty fixture's one it is deployed rather than
@@ -181,6 +181,7 @@
                  <systemProperties>. The dev loop's own flags cannot carry it:
                  tomee-plugin.args is the channel it takes for its agents. -->
             <vaadin.frontend.hotdeploy>false</vaadin.frontend.hotdeploy>
+            <vaadin.contentSecurityPolicy>${vaadin.contentSecurityPolicy}</vaadin.contentSecurityPolicy>
           </systemVariables>
         </configuration>
         <!-- No executions: the daemon owns the application process, and for

@@ -1677,6 +1677,7 @@ function getOrCreateExpression(expressionString: string): EventExpression {
     expression =
       createPropertyPathExpression(expressionString) ??
       createConditionalSideEffectExpression(expressionString) ??
+      // eslint-disable-next-line @typescript-eslint/no-implied-eval -- event filter expressions, see setFilter(String)
       (new Function('event', 'element', `return (${expressionString})`) as EventExpression);
     expressionCache.set(expressionString, expression);
   }

@@ -49,6 +49,7 @@ import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -445,7 +446,7 @@ public class PublishedServerEventHandlerRpcHandler
      * @since 25.4
      */
     @JsDefinition
-    public interface PromiseJs extends Serializable {
+    public interface PromiseJs extends JsInvokers {
 
         /**
          * Settles the promise with what the method returned.
