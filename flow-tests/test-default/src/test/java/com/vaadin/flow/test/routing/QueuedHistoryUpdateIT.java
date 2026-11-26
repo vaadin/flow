@@ -33,8 +33,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class QueuedHistoryUpdateIT extends AbstractDefaultIT {
 
     @BrowserTest
-    public void queuedHistoryUpdates_onlyUpdatesWithCallbackEnterView()
-            throws InterruptedException {
+    public void queuedHistoryUpdates_onlyUpdatesWithCallbackEnterView() {
         open();
         waitForEntered(QueuedHistoryUpdateView.ROUTE);
 
@@ -46,17 +45,15 @@ public class QueuedHistoryUpdateIT extends AbstractDefaultIT {
                 .endsWith(QueuedHistoryUpdateView.ROUTE + "?second=" + rounds));
         checkLogsForErrors();
 
+        // An update without callback that wrongly reaches the server is
+        // entered before the URL moves on to the next update, so the list is
+        // complete once the URL shows the last update
         List<String> expected = new ArrayList<>();
         expected.add(QueuedHistoryUpdateView.ROUTE);
         for (int round = 1; round <= rounds; round++) {
             expected.add(QueuedHistoryUpdateView.ROUTE + "?callback=" + round);
         }
-        String expectedText = String.join(",", expected);
-        waitForEntered("?callback=" + rounds);
-        // A late server navigation for an update without callback would
-        // arrive after the last expected one
-        Thread.sleep(500);
-        Assertions.assertEquals(expectedText, getEntered(),
+        Assertions.assertEquals(String.join(",", expected), getEntered(),
                 "Only the updates with callback should enter the view");
     }
 

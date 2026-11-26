@@ -288,16 +288,16 @@ function useQueuedNavigate(
     const [navigateQueueLength, setNavigateQueueLength] = useState(0);
 
     const dequeueNavigation = useCallback(() => {
+        if (navigateQueue.length === 0) {
+            // Empty queue, do nothing.
+            return;
+        }
         if (navigateInProgress || commitPending.current) {
             dequeueNavigationAfterCurrentTask();
             return;
         }
 
-        const navigateArgs = navigateQueue.shift();
-        if (navigateArgs === undefined) {
-            // Empty queue, do nothing.
-            return;
-        }
+        const navigateArgs = navigateQueue.shift()!;
 
         const blockingNavigate = async () => {
             if (waitReference.current) {
@@ -543,6 +543,8 @@ function Flow() {
 
     useEffect(() => {
         if (blocker.state === 'blocked') {
+            // A new navigation is only blocked once the previous one is done
+            commitPending.current = false;
             const skip = skipServer.current;
             skipServer.current = false;
             if (blockerHandled.current) {
