@@ -29,16 +29,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.server.ErrorHandler;
@@ -56,8 +61,12 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -110,6 +119,10 @@ class StreamReceiverHandlerTest {
     private String requestCharacterEncoding;
     private String xFilenameHeader;
 
+    private final List<UI> inErrorHandler = new ArrayList<>();
+
+    private final List<Boolean> lockedInErrorHandler = new ArrayList<>();
+
     @BeforeEach
     void setup() throws Exception {
         contentLength = "6";
@@ -133,7 +146,26 @@ class StreamReceiverHandlerTest {
                 .thenAnswer(invocationOnMock -> outputStream);
         when(response.getOutputStream()).thenReturn(responseOutput);
 
-        when(session.getErrorHandler()).thenReturn(mock(ErrorHandler.class));
+        trackSessionLock();
+        when(session.getErrorHandler()).thenReturn(errorHandler);
+        doAnswer(i -> {
+            lockedInErrorHandler.add(session.hasLock());
+            inErrorHandler.add(UI.getCurrent());
+            return null;
+        }).when(errorHandler).error(any());
+    }
+
+    @AfterEach
+    void clearCurrentInstances() {
+        CurrentInstance.clearAll();
+    }
+
+    private void trackSessionLock() {
+        when(session.hasLock()).thenReturn(false);
+        doAnswer(i -> when(session.hasLock()).thenReturn(true)).when(session)
+                .lock();
+        doAnswer(i -> when(session.hasLock()).thenReturn(false)).when(session)
+                .unlock();
     }
 
     private void mockReceiverAndRegistry() {
@@ -270,6 +302,8 @@ class StreamReceiverHandlerTest {
         when(uiInternals.getStateTree()).thenReturn(stateTree);
         when(stateTree.getNodeById(anyInt())).thenReturn(stateNode);
         when(session.getUIById(uiId)).thenReturn(ui);
+        when(stateNode.getOwner()).thenReturn(stateTree);
+        when(stateTree.getUI()).thenReturn(ui);
     }
 
     @Test
@@ -290,12 +324,42 @@ class StreamReceiverHandlerTest {
 
         doThrow(RuntimeException.class).when(outputStream).write(any(),
                 anyInt(), anyInt());
+        List<UI> inFailed = new ArrayList<>();
+        doAnswer(i -> inFailed.add(UI.getCurrent())).when(streamVariable)
+                .streamingFailed(any());
 
         handler.doHandleXhrFilePost(session, request, response, streamReceiver,
                 stateNode, 1);
 
         verify(response)
                 .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+        assertEquals(List.of(ui), inFailed);
+        verify(errorHandler).error(any());
+        assertEquals(List.of(ui), inErrorHandler);
+        assertEquals(List.of(true), lockedInErrorHandler);
+        assertNull(UI.getCurrent());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void nodeDetached_errorHandlerCalledWithLockAndUI(boolean multipart)
+            throws IOException {
+        when(stateNode.isAttached()).thenReturn(false);
+
+        if (multipart) {
+            parts = List.of(createPart(createInputStream("foobar"),
+                    "text/plain", "foobar.txt", 6));
+            handler.doHandleMultipartFileUpload(session, request, response,
+                    streamReceiver, stateNode);
+        } else {
+            handler.doHandleXhrFilePost(session, request, response,
+                    streamReceiver, stateNode, 1);
+        }
+
+        verify(errorHandler).error(any());
+        assertEquals(List.of(ui), inErrorHandler);
+        assertEquals(List.of(true), lockedInErrorHandler);
+        assertNull(UI.getCurrent());
     }
 
     @Test
@@ -362,6 +426,45 @@ class StreamReceiverHandlerTest {
 
         verify(response)
                 .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+    }
+
+    @Test
+    void handleRequest_uiIsCurrentOnlyInStreamVariableCallbacks()
+            throws IOException {
+        // The UI comes from the node's owner, not from the request's UI id
+        UI uiById = mock(UI.class);
+        when(session.getUIById(uiId)).thenReturn(uiById);
+        List<UI> inCallbacks = new ArrayList<>();
+        doAnswer(i -> inCallbacks.add(UI.getCurrent())).when(streamVariable)
+                .streamingStarted(any());
+        doAnswer(i -> inCallbacks.add(UI.getCurrent())).when(streamVariable)
+                .streamingFinished(any());
+        when(streamVariable.listenProgress()).thenReturn(true);
+        List<UI> inProgress = new ArrayList<>();
+        doAnswer(i -> inProgress.add(UI.getCurrent())).when(streamVariable)
+                .onProgress(any());
+        List<UI> inWrite = new ArrayList<>();
+        outputStream = new OutputStream() {
+            @Override
+            public void write(int b) {
+                inWrite.add(UI.getCurrent());
+            }
+
+            @Override
+            public void write(byte[] b, int off, int len) {
+                inWrite.add(UI.getCurrent());
+            }
+        };
+
+        handler.handleRequest(session, request, response, streamReceiver,
+                String.valueOf(uiId), expectedSecurityKey);
+
+        assertEquals(List.of(ui, ui), inCallbacks);
+        assertFalse(inProgress.isEmpty());
+        assertTrue(inProgress.stream().allMatch(ui::equals));
+        assertFalse(inWrite.isEmpty());
+        assertTrue(inWrite.stream().allMatch(Objects::isNull));
+        assertNull(UI.getCurrent());
     }
 
     @Test

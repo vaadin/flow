@@ -17,11 +17,26 @@ package com.vaadin.flow.server;
 
 import java.time.Duration;
 
+import com.vaadin.flow.component.UI;
+
 /**
  * Event fired through the {@link VaadinService#getEventBus() service event bus}
  * when a Vaadin session lock has been released, for the outermost release only.
  * It is fired in reverse registration order so that listeners nest: a listener
  * added first is notified of the release last.
+ * <p>
+ * Listeners run on the thread that released the lock, after the release, so
+ * they do not hold the session lock and {@link UI#getCurrent()} returns
+ * {@code null}. A listener that needs a UI keeps its own reference to it.
+ * <p>
+ * Any session access a listener makes takes the lock again and fires the lock
+ * events again when it is released: on this thread if the lock is free,
+ * otherwise on the thread that holds it. This includes
+ * {@link UI#access(Command)}, {@link VaadinSession#access(Command)} and
+ * changing a signal that a UI's effect depends on, since the effect then runs
+ * through {@link UI#access(Command)}. A listener that accesses the session on
+ * every release therefore never stops: it must recognize the release caused by
+ * its own access and skip it.
  *
  * @see AbstractSessionLockEvent
  * @since 25.3
