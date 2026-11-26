@@ -39,6 +39,7 @@ import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
+import com.vaadin.flow.signals.function.ContextualEffectAction;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedListSignal;
@@ -133,6 +134,20 @@ class EffectTest extends SignalTestBase {
 
         signal.set("update");
         assertEquals(List.of("initial", "update"), observed);
+    }
+
+    @Test
+    @SuppressWarnings("NullAway")
+    void nullFreshReadDispatcher_throws() {
+        var dependency = createDependency();
+        ContextualEffectAction action = ctx -> dependency.get();
+
+        assertThrows(NullPointerException.class,
+                () -> new Effect(action, Runnable::run, null));
+
+        Effect effect = new Effect(action, Runnable::run, Runnable::run);
+        assertThrows(NullPointerException.class,
+                () -> effect.setFreshReadDispatcher(null));
     }
 
     @Test
