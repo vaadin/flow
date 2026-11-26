@@ -445,16 +445,15 @@ public final class ElementEffect implements Serializable {
                 // Reported like other effect failures on attach, so that it
                 // does not abort attaching the rest of the tree
                 newEffect.dispose();
-                if (effect == newEffect) {
-                    effect = null;
-                }
+                effect = null;
                 addCreationSite(e);
                 uiErrorHandler.accept(e, owner);
                 return;
             } finally {
                 attachingThread[0] = null;
             }
-            if (effect != newEffect) {
+            // The run may have closed the effect, which sets the field to null
+            if (effect != newEffect) { // NOSONAR
                 // Closed by its own first run
                 return;
             }
