@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.dom.impl;
 
-import java.io.Serializable;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
@@ -26,9 +25,11 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.SuppressForbidden;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.server.Command;
@@ -77,6 +78,7 @@ public final class ElementJsInitializerRegistration implements Registration {
      * @param parameters
      *            the user-supplied parameters, captured by the JsFunction
      */
+    @SuppressForbidden
     public ElementJsInitializerRegistration(StateNode node, String expression,
             @Nullable Object[] parameters) {
         // JsFunction.of validates each capture, so unsupported parameter
@@ -99,6 +101,7 @@ public final class ElementJsInitializerRegistration implements Registration {
      *            the owning state node, not {@code null}
      * @param initializer
      *            the initializer to run, not {@code null}
+     * @since 25.4
      */
     public ElementJsInitializerRegistration(StateNode node,
             JsFunction initializer) {
@@ -186,9 +189,11 @@ public final class ElementJsInitializerRegistration implements Registration {
      * definition. Both calls run on the element of the registration.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
      */
     @JsDefinition
-    public interface InitializerJs extends Serializable {
+    public interface InitializerJs extends JsInvokers {
 
         /**
          * Applies the initializer to the element and registers the cleanup

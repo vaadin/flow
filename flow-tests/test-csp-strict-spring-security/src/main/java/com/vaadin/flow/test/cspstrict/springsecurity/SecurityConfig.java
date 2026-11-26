@@ -26,7 +26,7 @@ import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
 /**
  * A Vaadin security configuration where Spring Security is also told to send a
  * Content Security Policy, as an application may have done before it turned on
- * {@code vaadin.csp=strict}.
+ * {@code vaadin.contentSecurityPolicy=strict}.
  */
 @EnableWebSecurity
 @Configuration

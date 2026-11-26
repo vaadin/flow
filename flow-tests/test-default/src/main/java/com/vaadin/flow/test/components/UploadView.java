@@ -24,6 +24,10 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResourceRegistry;
@@ -37,6 +41,34 @@ public class UploadView extends Div {
     public static final String UPLOAD_ID = "upload-button";
     public static final String REFRESH_ID = "refresh-button";
     public static final String UPLOAD_STATUS_ID = "upload-status";
+
+    @JsDefinition
+    public interface UploadJs extends JsInvokers {
+
+        @JsExpression("""
+                const file = $0.files[0];
+                if (!file) {
+                    alert("No file selected");
+                    return;
+                }
+                const formData = new FormData();
+                formData.append("file", file);
+                fetch($1, {
+                    method: "POST",
+                    body: formData
+                }).then(response => {
+                    const result = document.createElement("div");
+                    result.id = $2;
+                    if (response.ok) {
+                        result.innerText = "Upload successful";
+                    } else {
+                        result.innerText = "Upload failed";
+                    }
+                    $0.parentElement.parentElement.appendChild(result);
+                });
+                """)
+        void upload(Element input, String uploadUrl, String statusId);
+    }
 
     public UploadView() {
         Span result = new Span("--empty--");
@@ -71,28 +103,9 @@ public class UploadView extends Div {
         container.add(input);
 
         NativeButton uploadButton = new NativeButton("Upload",
-                (event) -> event.getSource().getElement().executeJs("""
-                        const file = $0.files[0];
-                        if (!file) {
-                            alert("No file selected");
-                            return;
-                        }
-                        const formData = new FormData();
-                        formData.append("file", file);
-                        fetch($1, {
-                            method: "POST",
-                            body: formData
-                        }).then(response => {
-                            const result = document.createElement("div");
-                            result.id = $2;
-                            if (response.ok) {
-                                result.innerText = "Upload successful";
-                            } else {
-                                result.innerText = "Upload failed";
-                            }
-                            $0.parentElement.parentElement.appendChild(result);
-                        });
-                        """, input.getElement(), uploadUrl, UPLOAD_STATUS_ID));
+                (event) -> event.getSource().getElement()
+                        .executeJs(UploadJs.class).upload(input.getElement(),
+                                uploadUrl, UPLOAD_STATUS_ID));
         uploadButton.setId(UPLOAD_ID);
         add(new Span(container, uploadButton));
     }

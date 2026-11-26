@@ -44,8 +44,10 @@ concurrency:
 
 env:
   # The same flags validation.yml sets, for the same reason: a 403 from Central
-  # is retried rather than failing the build outright. See the note there.
+  # is retried rather than failing the build outright, and the public groups on
+  # repository.jboss.org are read from Central. See the note there.
   MAVEN_ARGS: >-
+    -gs ${{ github.workspace }}/.github/maven/settings.xml
     -Daether.connector.http.retryHandler.count=3
     -Daether.connector.http.retryHandler.serviceUnavailable=429,500,502,503,504,403
     -Daether.connector.http.connectionMaxTtl=25
@@ -81,7 +83,7 @@ jobs:
         # the common case.
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-warm-v2-${{ hashFiles('**/pom.xml') }}
+          key: ${{ runner.os }}-maven-warm-v3-${{ hashFiles('**/pom.xml') }}
           lookup-only: true
       - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         if: ${{ steps.probe.outputs.cache-hit != 'true' }}
@@ -98,10 +100,11 @@ jobs:
           # restore is an exact hit and their save is skipped. What they need
           # is resolved here, and by that build job when its poms differ.
           #
-          # The v2 segment tells entries that hold the integration test
-          # dependencies from older ones that do not, which validation.yml
-          # must not trust; the restore keys still start from either.
-          key: ${{ runner.os }}-maven-warm-v2-${{ hashFiles('**/pom.xml') }}
+          # The v3 segment tells entries that hold the integration test
+          # dependencies, those of the Quarkus suite included, from older ones
+          # that do not, which validation.yml must not trust; the restore keys
+          # still start from any of them.
+          key: ${{ runner.os }}-maven-warm-v3-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-warm-
       - name: Populate the local repository
         if: ${{ steps.probe.outputs.cache-hit != 'true' }}
@@ -112,7 +115,7 @@ jobs:
         # Eclipse stays quiet and which resolves nowhere, and dependency:resolve
         # would leave every build plugin uncached.
         run: |
-          cmd="mvn install -B -ntp -DskipTests -pl \!flow-plugins/flow-gradle-plugin"
+          cmd="mvn install -B -ntp -DskipTests -Pcoverage -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Resolve what only the integration test modules pull
         if: ${{ steps.probe.outputs.cache-hit != 'true' }}
@@ -190,7 +193,7 @@ jobs:
         # has nothing to add to that entry and should not race it for the key.
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-warm-v2-${{ hashFiles('**/pom.xml') }}
+          key: ${{ runner.os }}-maven-warm-v3-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-warm-
       - name: Install what the plugin build resolves
         # The plugin depends on com.vaadin:flow-plugin-base, so that module and
