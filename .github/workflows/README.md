@@ -16,7 +16,7 @@ files directly — edit the source `.md` file and regenerate.
 | Source (edit this) | Generated (do not edit) | Purpose |
 |---|---|---|
 | `doc-bot.md` | `doc-bot.lock.yml` | Documentation bot that analyzes a pull request merged into `main` and opens a draft documentation pull request for it in `vaadin/docs`. |
-| `diagram-bot.md` | `diagram-bot.lock.yml` | Diagram bot that posts a Mermaid diagram on pull requests whose change is about structure, flow, or ordering. |
+| `diagram-bot.md` | `diagram-bot.lock.yml` | Diagram bot that posts a Mermaid diagram of a pull request's change when the `diagram` label is added. |
 | `guidelines-bot.md` | `guidelines-bot.lock.yml` | Guidelines bot that distils recurring code review feedback into `CONVENTIONS.md` and `guidelines/`. |
 | _(none — generated automatically)_ | `agentics-maintenance.yml` | Scheduled maintenance job that closes expired discussions, issues, and pull requests created by agentic workflows. Regenerated whenever any agentic workflow uses the `expires` field on a safe-output. |
 
@@ -86,14 +86,14 @@ undocumented.
 
 ### Diagram Bot
 
-`diagram-bot.md` runs once per pull request, on `opened` and on
-`ready_for_review`. It reads the diff and the surrounding code, then
-decides for itself whether a picture would help the reviewer. Most pull
-requests do not get one: the bot only draws when the change is about
+`diagram-bot.md` is opt-in: it runs only when the `diagram` label is
+added to a pull request, drafts included. It reads the diff and the
+surrounding code, then draws the part of the change that is about
 structure, flow, or ordering — a rerouted call path, a changed lifecycle,
 a hop added or removed, a different shape of data crossing the
-client/server boundary. When it decides against a diagram it records the
-reason in the run log and leaves the pull request untouched.
+client/server boundary. When the change has no such structure, it says so
+in a one-line comment instead of inventing a figure. To run it again,
+remove the label and add it back.
 
 The diagram is a Mermaid block, which GitHub renders inline in the
 comment. A re-run hides the previous comment instead of stacking another
@@ -109,10 +109,6 @@ extracts, or the figure on stdin, and it is useful by hand too:
 ```bash
 node .github/scripts/validate-mermaid.mjs .github/workflows/diagram-bot.md
 ```
-
-To ask for a diagram on a pull request the bot passed over, add the
-`diagram` label. That skips the decision and draws the most useful figure
-the change supports.
 
 Like every agentic workflow, it runs only for pull requests from branches
 in this repository, opened by users with write access — `gh-aw` gates
