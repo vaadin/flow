@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-tests</artifactId>
-    <version>25.4-SNAPSHOT</version>
+    <version>25.5-SNAPSHOT</version>
   </parent>
 
   <artifactId>vaadin-quarkus-tests</artifactId>
@@ -138,6 +138,7 @@
                    test application if JUL has already been initialized. -->
               <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
               <maven.repo>${settings.localRepository}</maven.repo>
+              <vaadin.contentSecurityPolicy>${vaadin.contentSecurityPolicy}</vaadin.contentSecurityPolicy>
             </systemPropertyVariables>
           </configuration>
         </plugin>
@@ -157,6 +158,10 @@
             <systemPropertyVariables>
               <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
               <maven.repo>${settings.localRepository}</maven.repo>
+              <vaadin.contentSecurityPolicy>${vaadin.contentSecurityPolicy}</vaadin.contentSecurityPolicy>
+              <!-- @QuarkusIntegrationTest starts the application in its own
+                   JVM, with these arguments -->
+              <quarkus.test.arg-line>-Dvaadin.contentSecurityPolicy=${vaadin.contentSecurityPolicy}</quarkus.test.arg-line>
             </systemPropertyVariables>
           </configuration>
         </plugin>
