@@ -42,6 +42,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.SessionLockScope;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.RequestBodyTooLargeException;
@@ -357,50 +358,53 @@ public class PushHandler {
             }
             cleanDisconnectedUuidBuffer(resource);
 
-            UI ui = null;
-            session.lock();
-            try {
-                ui = service.findUI(vaadinRequest);
-                assert UI.getCurrent() == ui;
-
-                if (ui == null) {
-                    sendNotificationAndDisconnect(resource,
-                            VaadinService.createUINotFoundJSON(true));
-                } else {
-                    callback.run(resource, ui);
-                }
-            } catch (final IOException e) {
-                service.recordRequestFailure(vaadinRequest, e);
-                callErrorHandler(session, e);
-            } catch (final Exception e) {
-                SystemMessages msg = service.getSystemMessages(
-                        HandlerHelper.findLocale(null, vaadinRequest),
-                        vaadinRequest);
-
-                AtmosphereResource errorResource = resource;
-                if (ui != null
-                        && ui.getInternals().getPushConnection() != null) {
-                    // We MUST use the opened push connection if there is one.
-                    // Otherwise we will write the response to the wrong request
-                    // when using streaming (the client -> server request
-                    // instead of the opened push channel)
-                    errorResource = ((AtmospherePushConnection) ui
-                            .getInternals().getPushConnection()).getResource();
-                }
-
-                sendNotificationAndDisconnect(errorResource,
-                        VaadinService.createCriticalNotificationJSON(
-                                msg.getInternalErrorCaption(),
-                                msg.getInternalErrorMessage(), null,
-                                msg.getInternalErrorURL()));
-                service.recordRequestFailure(vaadinRequest, e);
-                callErrorHandler(session, e);
-            } finally {
+            try (SessionLockScope lock = SessionLockScope.lock(session)
+                    .onUnlockFailure(PushHandler::logUnlockFailure)) {
+                UI ui = null;
+                /*
+                 * The catch blocks of the try-with-resources statement would
+                 * run after the session is unlocked, but the error handling
+                 * needs the lock.
+                 */
                 try {
-                    session.unlock();
-                } catch (Exception e) {
-                    getLogger().warn("Error while unlocking session", e);
-                    // can't call ErrorHandler, we (hopefully) don't have a lock
+                    ui = service.findUI(vaadinRequest);
+                    assert UI.getCurrent() == ui;
+
+                    if (ui == null) {
+                        sendNotificationAndDisconnect(resource,
+                                VaadinService.createUINotFoundJSON(true));
+                    } else {
+                        callback.run(resource, ui);
+                    }
+                } catch (final IOException e) {
+                    service.recordRequestFailure(vaadinRequest, e);
+                    callErrorHandler(session, e);
+                } catch (final Exception e) {
+                    SystemMessages msg = service.getSystemMessages(
+                            HandlerHelper.findLocale(null, vaadinRequest),
+                            vaadinRequest);
+
+                    AtmosphereResource errorResource = resource;
+                    if (ui != null
+                            && ui.getInternals().getPushConnection() != null) {
+                        /*
+                         * We MUST use the opened push connection if there is
+                         * one. Otherwise we will write the response to the
+                         * wrong request when using streaming (the client ->
+                         * server request instead of the opened push channel)
+                         */
+                        errorResource = ((AtmospherePushConnection) ui
+                                .getInternals().getPushConnection())
+                                .getResource();
+                    }
+
+                    sendNotificationAndDisconnect(errorResource,
+                            VaadinService.createCriticalNotificationJSON(
+                                    msg.getInternalErrorCaption(),
+                                    msg.getInternalErrorMessage(), null,
+                                    msg.getInternalErrorURL()));
+                    service.recordRequestFailure(vaadinRequest, e);
+                    callErrorHandler(session, e);
                 }
             }
         } finally {
@@ -524,89 +528,91 @@ public class PushHandler {
             return null;
         }
 
-        UI ui;
-        session.lock();
-        try {
-            VaadinSession.setCurrent(session);
-            // Sets UI.currentInstance
-            ui = service.findUI(vaadinRequest);
-            if (ui == null) {
-                /*
-                 * UI not found, could be because FF has asynchronously closed
-                 * the websocket connection and Atmosphere has already done
-                 * cleanup of the request attributes.
-                 *
-                 * In that case, we still have a chance of finding the right UI
-                 * by iterating through the UIs in the session looking for one
-                 * using the same AtmosphereResource.
-                 */
-                ui = findUiUsingResource(resource, session.getUIs());
-
+        try (SessionLockScope lock = SessionLockScope.lock(session)
+                .onUnlockFailure(PushHandler::logUnlockFailure)) {
+            UI ui;
+            try {
+                VaadinSession.setCurrent(session);
+                // Sets UI.currentInstance
+                ui = service.findUI(vaadinRequest);
                 if (ui == null) {
-                    getLogger()
-                            .debug("Could not get UI. This should never happen,"
-                                    + " except when reloading in Firefox and Chrome -"
-                                    + " see https://github.com/vaadin/framework/issues/5449.");
-                    return session;
-                } else {
-                    getLogger().info(
-                            "No UI was found based on data in the request,"
-                                    + " but a slower lookup based on the AtmosphereResource succeeded."
-                                    + " See https://github.com/vaadin/framework/issues/5449 for more details.");
-                }
-            }
-
-            PushMode pushMode = ui.getPushConfiguration().getPushMode();
-            AtmospherePushConnection pushConnection = getConnectionForUI(ui);
-
-            String id = resource.uuid();
-
-            if (pushConnection == null) {
-                getLogger().warn(
-                        "Could not find push connection to close: {} with transport {}",
-                        id, resource.transport());
-            } else if (pushConnection.getResource() != null
-                    && pushConnection.getResource() != resource) {
-                /*
-                 * The client has already reconnected and the connection uses a
-                 * newer resource, so this is a late event for the old one.
-                 * Atmosphere reuses the tracking id on reconnect, so the
-                 * resources are told apart by identity, not by uuid.
-                 */
-                getLogger().debug(
-                        "Ignoring disconnect of stale resource {} with transport {}",
-                        id, resource.transport());
-            } else {
-                if (!pushMode.isEnabled()) {
                     /*
-                     * The client is expected to close the connection after push
-                     * mode has been set to disabled.
+                     * UI not found, could be because FF has asynchronously
+                     * closed the websocket connection and Atmosphere has
+                     * already done cleanup of the request attributes.
+                     *
+                     * In that case, we still have a chance of finding the right
+                     * UI by iterating through the UIs in the session looking
+                     * for one using the same AtmosphereResource.
                      */
-                    getLogger().debug("Connection closed for resource {}", id);
-                } else {
+                    ui = findUiUsingResource(resource, session.getUIs());
+
+                    if (ui == null) {
+                        getLogger().debug(
+                                "Could not get UI. This should never happen,"
+                                        + " except when reloading in Firefox and Chrome -"
+                                        + " see https://github.com/vaadin/framework/issues/5449.");
+                        return session;
+                    } else {
+                        getLogger().info(
+                                "No UI was found based on data in the request,"
+                                        + " but a slower lookup based on the AtmosphereResource succeeded."
+                                        + " See https://github.com/vaadin/framework/issues/5449 for more details.");
+                    }
+                }
+
+                PushMode pushMode = ui.getPushConfiguration().getPushMode();
+                AtmospherePushConnection pushConnection = getConnectionForUI(
+                        ui);
+
+                String id = resource.uuid();
+
+                if (pushConnection == null) {
+                    getLogger().warn(
+                            "Could not find push connection to close: {} with transport {}",
+                            id, resource.transport());
+                } else if (pushConnection.getResource() != null
+                        && pushConnection.getResource() != resource) {
                     /*
-                     * Unexpected cancel, e.g. if the user closes the browser
-                     * tab.
+                     * The client has already reconnected and the connection
+                     * uses a newer resource, so this is a late event for the
+                     * old one. Atmosphere reuses the tracking id on reconnect,
+                     * so the resources are told apart by identity, not by uuid.
                      */
                     getLogger().debug(
-                            "Connection unexpectedly closed for resource {} with transport {}",
+                            "Ignoring disconnect of stale resource {} with transport {}",
                             id, resource.transport());
+                } else {
+                    if (!pushMode.isEnabled()) {
+                        /*
+                         * The client is expected to close the connection after
+                         * push mode has been set to disabled.
+                         */
+                        getLogger().debug("Connection closed for resource {}",
+                                id);
+                    } else {
+                        /*
+                         * Unexpected cancel, e.g. if the user closes the
+                         * browser tab.
+                         */
+                        getLogger().debug(
+                                "Connection unexpectedly closed for resource {} with transport {}",
+                                id, resource.transport());
+                    }
+
+                    pushConnection.connectionLost();
                 }
 
-                pushConnection.connectionLost();
-            }
-
-        } catch (final Exception e) {
-            callErrorHandler(session, e);
-        } finally {
-            try {
-                session.unlock();
-            } catch (Exception e) {
-                getLogger().warn("Error while unlocking session", e);
-                // can't call ErrorHandler, we (hopefully) don't have a lock
+            } catch (final Exception e) {
+                callErrorHandler(session, e);
             }
         }
         return session;
+    }
+
+    private static void logUnlockFailure(RuntimeException e) {
+        getLogger().warn("Error while unlocking session", e);
+        // can't call ErrorHandler, we (hopefully) don't have a lock
     }
 
     private static UI findUiUsingResource(AtmosphereResource resource,
