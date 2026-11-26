@@ -65,7 +65,10 @@ public enum ContentSecurityPolicyMode {
      * <p>
      * <strong>Note:</strong> An API that needs {@code eval} throws for every
      * caller, including a Vaadin component or an add-on that uses one. Run the
-     * application in the {@link #WARN} mode first to find such uses.
+     * application in the {@link #WARN} mode first to find such uses. A string
+     * that the application declares in a
+     * {@link com.vaadin.flow.js.JsStringFallback} interface runs the bundled
+     * JavaScript instead, which makes an add-on that sends it work.
      */
     STRICT
 }
