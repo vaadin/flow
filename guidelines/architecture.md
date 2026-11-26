@@ -118,8 +118,10 @@ to copy: lock the session, set the current instances with
 `CurrentInstance.setCurrent`, run the work, then unlock and restore the
 previous instances with `CurrentInstance.restoreInstances` in a `finally`
 block. Restoring right after `unlock()` keeps the session current for as long
-as the lock is held, and the window in between is harmless because the access
-tasks that `unlock()` runs set their own instances under the lock. A request
+as the lock is held. The window in between is harmless: the access tasks that
+`unlock()` runs set their own instances under the lock, and the lock clears the
+current UI while it fires `SessionLockReleasedEvent`, whose listeners run
+after the release. A request
 handler that sets the current UI while it holds the lock — to find the UI of a
 UIDL or heartbeat request, or to bootstrap a page — is no different: everything
 after it unlocks, from writing the response to the request end callbacks, runs
