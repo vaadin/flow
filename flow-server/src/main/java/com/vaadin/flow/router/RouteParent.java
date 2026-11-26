@@ -54,10 +54,11 @@ public @interface RouteParent {
     /**
      * Gets the static logical parent navigation target.
      * <p>
-     * The parent must be a registered navigation target, typically a class
-     * annotated with {@link Route}. Building a link to a class that is not a
-     * route, such as a router layout that is not itself a route, fails when the
-     * hierarchy is used, for example by a breadcrumb trail.
+     * The parent has to be a registered navigation target itself, such as a
+     * class annotated with {@link Route}. A router layout that is not a route
+     * cannot be a parent; resolving the hierarchy fails with an
+     * {@link com.vaadin.flow.server.InvalidRouteConfigurationException} in that
+     * case.
      * <p>
      * The parent inherits the {@link RouteParameters} of the annotated route,
      * narrowed to the names the parent's own route template declares (so a

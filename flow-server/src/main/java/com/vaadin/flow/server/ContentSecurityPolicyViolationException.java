@@ -16,18 +16,19 @@
 package com.vaadin.flow.server;
 
 /**
- * Thrown in the {@link CspMode#STRICT} Content Security Policy mode by an API
- * that sends JavaScript to the browser as a string, such as
- * {@link com.vaadin.flow.dom.Element#executeJs(String, Object...)}. The browser
- * would compile such a string with <code>new Function</code>, which a strict
- * policy without <code>unsafe-eval</code> blocks, so the call fails on the
- * server instead, where the stack trace points at the code that made it.
+ * Thrown in the {@link ContentSecurityPolicyMode#STRICT} Content Security
+ * Policy mode by an API that sends JavaScript to the browser as a string, such
+ * as {@link com.vaadin.flow.dom.Element#executeJs(String, Object...)}. The
+ * browser would compile such a string with <code>new Function</code>, which a
+ * strict policy without <code>unsafe-eval</code> blocks, so the call fails on
+ * the server instead, where the stack trace points at the code that made it.
  * <p>
  * The stack trace starts at the API and leads to the code that called it.
  * 
  * @since 25.4
  */
-public class CspViolationException extends IllegalStateException {
+public class ContentSecurityPolicyViolationException
+        extends IllegalStateException {
 
     /**
      * Creates a new exception with the given detail message.
@@ -35,7 +36,7 @@ public class CspViolationException extends IllegalStateException {
      * @param message
      *            the detail message, not <code>null</code>
      */
-    public CspViolationException(String message) {
+    public ContentSecurityPolicyViolationException(String message) {
         super(message);
     }
 }

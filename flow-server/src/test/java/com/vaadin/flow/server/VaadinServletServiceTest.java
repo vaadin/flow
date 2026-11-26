@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -44,11 +45,15 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -288,6 +293,93 @@ class VaadinServletServiceTest {
         assertEquals("BOOM!", failed.getFailure().orElseThrow().getMessage());
         assertFalse(failed.getHandler().isPresent());
         assertFalse(failed.getSession().isPresent());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "handler", "handlerOutsideLock",
+            "responseWriter" })
+    void handleRequest_handlingFailsWithCurrentUI_errorHandlerSeesUIAndRequestEndDoesNot(
+            String failingPart) {
+        CurrentInstance.clearAll();
+        AtomicReference<UI> ui = new AtomicReference<>();
+        List<UI> inErrorHandler = new ArrayList<>();
+        List<Boolean> lockedInErrorHandler = new ArrayList<>();
+        List<Throwable> errors = new ArrayList<>();
+        service.getRequestHandlers().clear();
+        service.getRequestHandlers()
+                .add(new FailingUIRequestHandler(failingPart, session -> {
+                    session.setErrorHandler(event -> {
+                        inErrorHandler.add(UI.getCurrent());
+                        lockedInErrorHandler.add(session.hasLock());
+                        errors.add(event.getThrowable());
+                    });
+                    // Like VaadinService.findUI, sets the UI as current
+                    ui.set(new MockUI(session));
+                }));
+        List<UI> inRequestEnd = new ArrayList<>();
+        List<Exception> failures = new ArrayList<>();
+        service.getEventBus().addListener(RequestEndedEvent.class, event -> {
+            inRequestEnd.add(UI.getCurrent());
+            failures.add(event.getFailure().orElseThrow());
+        });
+
+        assertThrows(ServiceException.class,
+                () -> service.handleRequest(createVaadinRequest(),
+                        mock(VaadinResponse.class)));
+
+        assertEquals(List.of(ui.get()), inErrorHandler);
+        assertEquals(List.of(true), lockedInErrorHandler);
+        assertEquals(Collections.singletonList(null), inRequestEnd);
+        // The error handling and the event get the handler's own exception
+        assertEquals(1, errors.size());
+        assertEquals("BOOM", errors.get(0).getMessage());
+        assertEquals(errors, failures);
+    }
+
+    private VaadinRequest createVaadinRequest() throws Exception {
+        return servlet.createVaadinRequest(createRequest(
+                "http://dummy.host:8080/", "/contextpath", "/servlet", "/"));
+    }
+
+    /*
+     * Runs the given setup with the session locked, then fails in the given
+     * part of the handling.
+     */
+    private static class FailingUIRequestHandler
+            extends SynchronizedRequestHandler {
+        private final String failingPart;
+        private final SerializableConsumer<VaadinSession> setup;
+
+        private FailingUIRequestHandler(String failingPart,
+                SerializableConsumer<VaadinSession> setup) {
+            this.failingPart = failingPart;
+            this.setup = setup;
+        }
+
+        @Override
+        public boolean isReadAndWriteOutsideSessionLock() {
+            return !"handler".equals(failingPart);
+        }
+
+        @Override
+        public boolean synchronizedHandleRequest(VaadinSession session,
+                VaadinRequest request, VaadinResponse response) {
+            setup.accept(session);
+            throw new IllegalStateException("BOOM");
+        }
+
+        @Override
+        public Optional<ResponseWriter> synchronizedHandleRequest(
+                VaadinSession session, VaadinRequest request,
+                VaadinResponse response, String requestBody) {
+            setup.accept(session);
+            if ("handlerOutsideLock".equals(failingPart)) {
+                throw new IllegalStateException("BOOM");
+            }
+            return Optional.of(() -> {
+                throw new IOException("BOOM");
+            });
+        }
     }
 
     @Test

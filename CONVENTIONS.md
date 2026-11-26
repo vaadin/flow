@@ -179,10 +179,49 @@ identity hash is what tells instances apart.
 
 Never put a password, token or other credential in `toString()`.
 
+## Session Lock and Current Instances
+
+Run application code — listeners, callbacks, handlers, signal effects — with a
+current `UI` only while holding the lock of that UI's session. Code that sets
+the current `UI` for locked work restores the previous current instances
+before any application code runs without the lock, instead of leaving them
+for `CurrentInstance.clearAll()` at the end of the request. See
+`guidelines/architecture.md`.
+
+Keep the locked session current for as long as the lock is held: code that
+locks a session sets it as the current `VaadinSession` if it is not already,
+and restores the previous current instances in a `finally` block right after
+`unlock()`. Deadlock detection
+(`VaadinService.verifyNoOtherSessionLocked`) finds the other locked session
+only through `VaadinSession.getCurrent()`. See `guidelines/architecture.md`.
+
+Lock a session, or go through `access`, before touching its state, also when
+it is the current `VaadinSession`. A current session does not mean the lock is
+held: it stays current during request phases that run without the lock. See
+`guidelines/architecture.md`.
+
+Run a callback in the same lock state every time it fires. Do not acquire the
+session lock only to fire an event: a callback that can fire for a request
+that never touched a session, such as `RequestEndedEvent` listeners and
+`VaadinRequestInterceptor.requestEnd`, is fired without the lock and without a
+current `UI`, and its code reaches the session through its parameters.
+
+State in the Javadoc of every new listener or callback API whether it runs
+with the session lock held.
+
 ## Client-Side JavaScript
 
 Never concatenate values into an `executeJs` expression string. Pass them as
 parameters and reference them positionally (`$0`, `$1`, …).
+
+Do not send JavaScript as a string from Flow's own code, and do not compile a
+string in `flow-client`, because a Content Security Policy without
+`unsafe-eval` blocks both. The forbiddenapis signatures in
+`forbidden-apis/string-javascript.txt` report the server APIs, and the ESLint
+rules `no-eval` and `@typescript-eslint/no-implied-eval` report `eval` and
+`new Function`. Only the code that keeps a string API working suppresses them,
+with `@SuppressForbidden` or an inline disable comment that names that API. A
+new API that takes JavaScript as a string gets a signature in the same file.
 
 Never build JSON by string concatenation. Use Jackson for construction.
 
