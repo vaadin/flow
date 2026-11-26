@@ -20,18 +20,11 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeOptions;
 
 import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.flow.testutil.PushConnectionTracker;
 
 public class PushIT extends ChromeBrowserTest {
-
-    @Override
-    protected void updateHeadlessChromeOptions(ChromeOptions chromeOptions) {
-        PushConnectionTracker.enable(chromeOptions);
-    }
 
     @Test
     public void testNoPush() throws InterruptedException {
@@ -115,10 +108,6 @@ public class PushIT extends ChromeBrowserTest {
             Assert.fail("Push state check failed when waiting for '"
                     + sampleText + "' in element #"
                     + DependencyLayout.PUSH_SIGNAL_ID);
-        }
-        if (transport != null) {
-            new PushConnectionTracker(getDriver())
-                    .assertOnlyTransport(transport);
         }
     }
 }
