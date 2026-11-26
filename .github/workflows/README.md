@@ -111,8 +111,8 @@ node .github/scripts/validate-mermaid.mjs .github/workflows/diagram-bot.md
 ```
 
 Like every agentic workflow, it runs only for pull requests from branches
-in this repository, opened by users with write access — `gh-aw` gates
-both. Pull requests from forks never trigger it.
+in this repository, and only when the label is added by a user with write
+access — `gh-aw` gates both. Pull requests from forks never trigger it.
 
 ### Guidelines Bot
 

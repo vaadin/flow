@@ -7,10 +7,10 @@ description: >
 on:
   pull_request:
     types: [labeled]
-  # The role gate only admits actors with write access, and a GitHub App actor
-  # never satisfies it however the app is permissioned. Coding agents that open
-  # pull requests in this repository are listed here so their work gets the
-  # same reading as a human contributor's.
+  # The role gate checks whoever added the label, so a maintainer labelling a
+  # coding agent's pull request passes it without this list. A GitHub App
+  # actor never satisfies the gate however the app is permissioned, so coding
+  # agents are listed here for the case where one adds the label itself.
   bots:
     - totally-not-ai[bot]
 
