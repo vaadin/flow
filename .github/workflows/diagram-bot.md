@@ -64,8 +64,9 @@ safe-outputs:
     # A re-run supersedes its predecessor rather than stacking another
     # diagram onto the conversation.
     hide-older-comments: true
-  # Lets the agent record why it posted nothing, such as a figure that would
-  # not parse, in the run log without putting anything on the pull request.
+  # Every run answers a maintainer's request on the pull request itself, so the
+  # agent is not meant to use this. It stays so that a run that cannot comment
+  # still ends with its reason in the run log instead of as a failure.
   noop:
     report-as-issue: false
 ---
@@ -237,10 +238,10 @@ It prints `OK` and exits 0 when the figure is sound. Otherwise every problem com
 - A `PARSE` line is what GitHub would show as an error box instead of the picture. Fix the figure and run the validator again.
 - A `lint` line is a figure that parses but draws something other than what it says. Fix it too.
 - Fix the figure, never the check.
-- If it still does not pass after three attempts, `noop` with the parse error as the reason. Never post a figure you could not get to parse.
+- If it still does not pass after three attempts, post a one-line comment instead, saying that no figure could be made to parse, quoting the parse error, and that removing and re-adding the `diagram` label retries. Never post a figure you could not get to parse.
 - Exit code 2 means the validator could not reach npm and only its lint rules ran. Read the syntax rules in step 3 against your figure line by line before you post.
 
-## Step 5 — Post, or do not
+## Step 5 — Post
 
 When you decided to draw, add exactly one comment in this shape:
 
@@ -261,4 +262,4 @@ When you decided not to draw, post the one-line comment from step 2 instead, for
 4. `validate-mermaid.mjs` printed `OK` for the figure exactly as you are about to post it. Twelve nodes or fewer; no HTML, no `%%{init}%%`; every `classDef` that sets `fill:` also sets `color:`.
 5. A before/after pair reads left to right — both halves are subgraphs of one `flowchart LR`, joined by `Before ~~~ After`, and neither sits above the other.
 6. The caption makes one claim, attributes or marks its intent statement, and contains no verdict and no instruction to the reviewer.
-7. If a check fails and you cannot fix it, `noop` instead of posting.
+7. If a check fails and you cannot fix it, post a one-line comment saying which check the figure failed instead of the figure.
