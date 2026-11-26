@@ -89,9 +89,18 @@ final class Launch {
     private static final Pattern JVM_ARGS_SEPARATOR = Pattern
             .compile("[\\s|]+");
 
+    /**
+     * The packages HotswapAgent reflects into. {@code jdk.internal.loader} is
+     * for its ProxyPlugin, which clears the JDK's proxy class cache after an
+     * interface is redefined: without it the plugin fails, the stale proxy
+     * class stays, and calling a method added to the interface - for example
+     * through an {@code executeJs(Class)} proxy - throws
+     * {@code AbstractMethodError} until the application is restarted.
+     */
     private static final List<String> ADD_OPENS = List.of("java.base/java.lang",
             "java.base/java.lang.reflect", "java.base/java.io",
-            "java.base/java.util", "java.desktop/java.beans");
+            "java.base/java.util", "java.base/jdk.internal.loader",
+            "java.desktop/java.beans");
 
     /**
      * Where each module is told to write its classpath, <em>relative</em> on

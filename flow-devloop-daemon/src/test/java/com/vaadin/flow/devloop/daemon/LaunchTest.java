@@ -322,6 +322,23 @@ class LaunchTest {
     }
 
     /**
+     * HotswapAgent's ProxyPlugin regenerates the JDK proxy class of a redefined
+     * interface through jdk.internal.loader. Without the open, a method added
+     * to such an interface throws AbstractMethodError on the proxy until a
+     * restart.
+     */
+    @Test
+    void jvmFlags_openJdkInternalLoaderForProxyRegeneration(@TempDir Path repo)
+            throws IOException {
+        List<String> flags = launchWithAgents(repo).jvmFlags(text -> {
+        });
+
+        int open = flags.indexOf("java.base/jdk.internal.loader=ALL-UNNAMED");
+        assertTrue(open > 0, flags.toString());
+        assertEquals("--add-opens", flags.get(open - 1), flags.toString());
+    }
+
+    /**
      * The developer's flags come after the loop's and the runtime's, the
      * property's before those of {@code --jvm-args}, because the JVM lets the
      * last of a repeated flag win.
