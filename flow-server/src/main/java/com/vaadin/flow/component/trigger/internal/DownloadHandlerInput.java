@@ -23,6 +23,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
@@ -50,10 +51,17 @@ final class DownloadHandlerInput extends Action.Input<String> {
     private static final String ATTR_PREFIX = "data-flow-download-";
 
     private final DownloadHandler handler;
+    private final DownloadDisposition disposition;
     private final Map<Trigger, URI> uriByTrigger = new IdentityHashMap<>();
 
-    DownloadHandlerInput(DownloadHandler handler) {
+    /**
+     * Creates an input that serves the content of the given handler with the
+     * given disposition when the handler gives only a file name.
+     */
+    DownloadHandlerInput(DownloadHandler handler,
+            DownloadDisposition disposition) {
         this.handler = handler;
+        this.disposition = disposition;
     }
 
     @Override
@@ -72,7 +80,7 @@ final class DownloadHandlerInput extends Action.Input<String> {
     private URI register(Trigger trigger) {
         Element host = trigger.getHost();
         StreamResourceRegistry.ElementStreamResource resource = new StreamResourceRegistry.ElementStreamResource(
-                handler, host);
+                handler, host, disposition);
         String attribute = ATTR_PREFIX + resource.getId();
         host.setAttribute(attribute, resource);
         // Removing the attribute also unregisters the resource, so the

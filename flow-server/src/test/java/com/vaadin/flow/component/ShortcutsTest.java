@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.stream.Collectors;
@@ -37,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 class ShortcutsTest {
 
     @JsDefinition
-    public interface LocatorJs extends Serializable {
+    public interface LocatorJs extends JsSnippets {
 
         @JsExpression("return this.firstElementChild;")
         JsFunction locateFirstChild();

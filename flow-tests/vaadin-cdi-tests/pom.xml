@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-tests</artifactId>
-    <version>25.4-SNAPSHOT</version>
+    <version>25.5-SNAPSHOT</version>
   </parent>
 
   <artifactId>vaadin-cdi-tests</artifactId>
@@ -136,6 +136,11 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <skipTests>${cdi.container.tests.skip}</skipTests>
+          <systemPropertyVariables>
+            <!-- ArchiveProvider turns it into a context parameter of each
+                 deployment, as the containers take no shared JVM options -->
+            <vaadin.contentSecurityPolicy>${vaadin.contentSecurityPolicy}</vaadin.contentSecurityPolicy>
+          </systemPropertyVariables>
         </configuration>
       </plugin>
       <plugin>

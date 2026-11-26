@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-servlet-containers-test</artifactId>
-        <version>25.4-SNAPSHOT</version>
+        <version>25.5-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-tomcat10-server</artifactId>
     <name>Flow Tomcat 9 Test</name>
@@ -55,6 +55,7 @@
                         <containerId>tomcat10x</containerId>
                         <systemProperties>
                             <vaadin.frontend.url.es5>context://frontend-es6/</vaadin.frontend.url.es5>
+                            <vaadin.contentSecurityPolicy>${vaadin.contentSecurityPolicy}</vaadin.contentSecurityPolicy>
                         </systemProperties>
                         <artifactInstaller>
                             <groupId>org.apache.tomcat</groupId>
