@@ -305,6 +305,7 @@ function getOrCreateExpression(expressionString: string): ServerEventDataExpress
     // A property path is read without compiling it.
     expression =
       createPropertyPathExpression(expressionString) ??
+      // eslint-disable-next-line @typescript-eslint/no-implied-eval -- event data expressions, see addEventData(String)
       (new Function(EVENT_PREFIX, 'element', `return (${expressionString})`) as ServerEventDataExpression);
     expressionCache.set(expressionString, expression);
   }
