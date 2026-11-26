@@ -27,8 +27,15 @@ import com.vaadin.flow.component.UI;
  * <p>
  * Listeners run on the thread that released the lock, after the release, so
  * they do not hold the session lock and {@link UI#getCurrent()} returns
- * {@code null}. A listener that needs to touch a UI goes through
- * {@link UI#access(Command)}.
+ * {@code null}. A listener that needs a UI keeps its own reference to it.
+ * <p>
+ * Any session access a listener makes takes the lock again on the same thread
+ * and fires the lock events again when it is released. This includes
+ * {@link UI#access(Command)}, {@link VaadinSession#access(Command)} and
+ * changing a signal that a UI's effect depends on, since the effect then runs
+ * through {@link UI#access(Command)}. Such a listener must guard against being
+ * called again from its own access, or hand the work to another thread, as
+ * doing it on every release never ends.
  *
  * @see AbstractSessionLockEvent
  * @since 25.3
