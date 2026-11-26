@@ -19,8 +19,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,6 +37,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
@@ -83,6 +86,13 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
  * definition that does not pass
  * {@link JsDefinitionProxy#checkDefinition(Class)} is left out, with an error
  * in the log.
+ * <p>
+ * A production build that uses the bytecode scanner renders only the
+ * definitions and event types that the scanner reaches from the entry points of
+ * the application, together with those of Flow's own jar (the one that holds
+ * {@link JsDefinition}), the same way it collects {@code @JsModule}. A class
+ * that is only used through reflection is reached by naming it in {@code @Uses}
+ * on a class that is reached.
  * <p>
  * The snippet registry also holds the {@link EventData} values and the
  * {@link DomEvent#filter()} of the {@link DomEvent} classes on the class path
@@ -347,7 +357,10 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     }
 
     /**
-     * Renders the file for the definitions and event types on the class path.
+     * Renders the file for the definitions and event types on the class path,
+     * or, for an optimized production bundle, for those of them the application
+     * can reach, those of Flow's own jar and the {@link JsStringFallback}
+     * interfaces.
      *
      * @return the content of the file and the functions it registers
      */
@@ -358,8 +371,53 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         ClassFinder classFinder = Objects.requireNonNull(
                 options.getClassFinder(),
                 "Generating the file needs a class finder to scan for the JavaScript definitions with");
-        return render(classFinder.getAnnotatedClasses(JsDefinition.class),
-                findDomEventTypes(classFinder), !options.isProductionMode());
+        Collection<Class<?>> definitions = classFinder
+                .getAnnotatedClasses(JsDefinition.class);
+        Collection<Class<?>> eventTypes = findDomEventTypes(classFinder);
+        if (options.isProductionMode() && options.isUseByteCodeScanner()) {
+            // An optimized production bundle carries what the application can
+            // reach, as it does for @JsModule, so that a library declaring
+            // JavaScript the application does not use leaves the bundle as it
+            // is. Development keeps everything: the dev server calls
+            // definitions of its own that no entry point leads to, and a
+            // hotswapped class may start using any definition.
+            Predicate<Class<?>> needed = createNeededFilter(classFinder);
+            definitions = definitions.stream().filter(needed).toList();
+            eventTypes = eventTypes.stream().filter(needed).toList();
+        }
+        return render(definitions, eventTypes, !options.isProductionMode());
+    }
+
+    /**
+     * What an optimized bundle carries the JavaScript of: the classes the
+     * bytecode scanner reaches from the entry points of the application, every
+     * class of Flow's own jar, and every {@link JsStringFallback} interface.
+     * Flow calls some of its definitions from request handlers that no entry
+     * point leads to, and its own JavaScript is what the framework needs to
+     * work. A fallback interface is found by the string an add-on sends rather
+     * than through a class reference, and the server is told about all of them,
+     * so the bundle has to carry their functions too.
+     */
+    private Predicate<Class<?>> createNeededFilter(ClassFinder classFinder) {
+        Set<String> reached = options.getFrontendDependenciesScanner()
+                .getClasses();
+        URL flowLocation;
+        try {
+            flowLocation = findLocation(
+                    classFinder.loadClass(JsDefinition.class.getName()));
+        } catch (ClassNotFoundException e) {
+            // Nothing can declare a definition without the annotation
+            flowLocation = null;
+        }
+        URL flow = flowLocation;
+        return type -> reached.contains(type.getName())
+                || type.isAnnotationPresent(JsStringFallback.class)
+                || Objects.equals(flow, findLocation(type));
+    }
+
+    private static URL findLocation(Class<?> type) {
+        CodeSource codeSource = type.getProtectionDomain().getCodeSource();
+        return codeSource == null ? null : codeSource.getLocation();
     }
 
     /**

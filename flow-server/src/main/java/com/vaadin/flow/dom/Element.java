@@ -67,6 +67,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.SuppressForbidden;
 import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
@@ -2116,12 +2117,15 @@ public class Element extends Node<Element> {
      * handlers already converted to that type.
      * <p>
      * What differs is that nothing about the JavaScript is decided at the call
-     * site: the build collects the declarations of every JavaScript definition
+     * site: the build collects the declarations of the JavaScript definitions
      * into the bundle, and the client runs the collected function after looking
-     * it up by an identifier of the JavaScript itself. No expression is sent
-     * and none is compiled in the browser, so the call works under a content
-     * security policy without <code>unsafe-eval</code>, and what declared the
-     * JavaScript in Java is not sent to a production browser either.
+     * it up by an identifier of the JavaScript itself. An optimized production
+     * build collects only the definitions it can reach from the entry points of
+     * the application; see {@link JsDefinition} for how to keep one that it
+     * does not reach. No expression is sent and none is compiled in the
+     * browser, so the call works under a content security policy without
+     * <code>unsafe-eval</code>, and what declared the JavaScript in Java is not
+     * sent to a production browser either.
      * <p>
      * The scheduled invocation carries the call as a {@link JsCall}, so a
      * driver of the client side that can not run JavaScript can recognize it,
@@ -2160,6 +2164,7 @@ public class Element extends Node<Element> {
         return JsDefinitionProxy.create(definitionType, this::scheduleJsCall);
     }
 
+    @SuppressForbidden
     private PendingJavaScriptResult scheduleExecuteJs(String expression,
             @Nullable Object[] parameters) {
 
@@ -2167,8 +2172,8 @@ public class Element extends Node<Element> {
         String wrappedExpression = "return (async function() { " + expression
                 + "}).apply($" + parameters.length + ")";
 
-        return scheduleJavaScriptInvocation(null, wrappedExpression,
-                withElementAsLastParameter(parameters));
+        return scheduleJavaScriptInvocation(new JavaScriptInvocation(
+                wrappedExpression, withElementAsLastParameter(parameters)));
     }
 
     /**
@@ -2180,8 +2185,8 @@ public class Element extends Node<Element> {
      * expression.
      */
     private PendingJavaScriptResult scheduleJsCall(JsCall call) {
-        return scheduleJavaScriptInvocation(call, call.getExpression(),
-                call.parametersFor(this));
+        return scheduleJavaScriptInvocation(new JavaScriptInvocation(call,
+                call.getExpression(), call.parametersFor(this)));
     }
 
     private @Nullable Object[] withElementAsLastParameter(
@@ -2210,6 +2215,7 @@ public class Element extends Node<Element> {
      * @since 25.4
      */
     @Deprecated
+    @SuppressForbidden
     public PendingJavaScriptResult executeJs(String expression,
             @Nullable Serializable @Nullable [] parameters) {
         return executeJs(expression, (Object[]) parameters);
@@ -2260,6 +2266,7 @@ public class Element extends Node<Element> {
      *             interface marked with
      *             {@link com.vaadin.flow.js.JsStringFallback}
      */
+    @SuppressForbidden
     public Registration addJsInitializer(String expression,
             @Nullable Object @Nullable... parameters) {
         Objects.requireNonNull(expression, "Expression cannot be null");
@@ -2334,12 +2341,8 @@ public class Element extends Node<Element> {
     }
 
     private PendingJavaScriptResult scheduleJavaScriptInvocation(
-            @Nullable JsCall jsCall, String expression,
-            @Nullable Object[] parameters) {
+            JavaScriptInvocation invocation) {
         StateNode node = getNode();
-
-        JavaScriptInvocation invocation = new JavaScriptInvocation(jsCall,
-                expression, parameters);
 
         PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
                 node, invocation);

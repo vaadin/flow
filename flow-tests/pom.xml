@@ -32,6 +32,9 @@
 
     <maven.deploy.skip>true</maven.deploy.skip>
     <flow.apicmp.skip>true</flow.apicmp.skip>
+    <!-- The test applications call the APIs that send JavaScript as a
+         string on purpose, see forbidden-apis/string-javascript.txt -->
+    <forbiddenapis.skip>true</forbiddenapis.skip>
     <!-- Used in the tests, should be overridden for each module to support
             concurrent running of test modules. -->
     <server.port>8888</server.port>

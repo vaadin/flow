@@ -155,7 +155,7 @@
     <!-- Modules with no Jandex consumer (tooling, tests, the Spring and CDI
          integrations) set this to true -->
     <jandex.skip>false</jandex.skip>
-    <spotless.plugin.version>3.11.0</spotless.plugin.version>
+    <spotless.plugin.version>3.12.0</spotless.plugin.version>
     <spotless.license-header>${maven.multiModuleProjectDirectory}/eclipse/apache2-license-header.txt</spotless.license-header>
     <spotless.ratchetFrom/>
     <spotless.prettier.version>3.9.9</spotless.prettier.version>
@@ -175,6 +175,8 @@
          jar sets it following the naming rule in CONVENTIONS.md (Build &
          Dependencies). Empty means no entry. -->
     <jpms.module.name/>
+
+    <forbiddenapis.version>3.11</forbiddenapis.version>
 
     <!-- OSGi -->
     <!-- Note: the parserVersion value is set by build-helper-maven-plugin -->
@@ -286,7 +288,7 @@
       <dependency>
         <groupId>com.vaadin</groupId>
         <artifactId>license-checker</artifactId>
-        <version>3.1.5</version>
+        <version>3.1.6</version>
       </dependency>
 
       <!-- Test dependencies -->
@@ -926,6 +928,31 @@
             <id>make-index</id>
             <goals>
               <goal>jandex</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!-- Reports calls of the APIs that send JavaScript as a string in the
+             main classes, so that Flow itself keeps working with a strict
+             Content Security Policy. flow-tests sets forbiddenapis.skip,
+             because its test applications call these APIs on purpose. -->
+        <groupId>de.thetaphi</groupId>
+        <artifactId>forbiddenapis</artifactId>
+        <version>${forbiddenapis.version}</version>
+        <configuration>
+          <signaturesFiles>
+            <signaturesFile>${maven.multiModuleProjectDirectory}/forbidden-apis/string-javascript.txt</signaturesFile>
+          </signaturesFiles>
+          <suppressAnnotations>
+            <suppressAnnotation>com.vaadin.flow.internal.SuppressForbidden</suppressAnnotation>
+          </suppressAnnotations>
+        </configuration>
+        <executions>
+          <execution>
+            <id>string-javascript</id>
+            <goals>
+              <goal>check</goal>
             </goals>
           </execution>
         </executions>
