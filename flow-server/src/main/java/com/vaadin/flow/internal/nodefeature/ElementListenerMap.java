@@ -54,6 +54,7 @@ import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.ParameterizedConstantPoolKey;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.SuppressForbidden;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.js.JsCall;
@@ -1077,6 +1078,7 @@ public class ElementListenerMap extends NodeMap {
      * @since 25.4
      */
     @SuppressWarnings("deprecation")
+    @SuppressForbidden
     public static void addEventData(DomListenerRegistration registration,
             List<String> eventData) {
         Objects.requireNonNull(registration, "Registration cannot be null");
