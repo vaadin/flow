@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>flow-project</artifactId>
-  <version>25.4-SNAPSHOT</version>
+  <version>25.5-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Flow</name>
   <url>https://vaadin.com/flow</url>
@@ -112,9 +112,9 @@
     <processAllModules>true</processAllModules>
 
     <!-- Dependencies -->
-    <spring.boot.version>4.2.0-RC2</spring.boot.version>
+    <spring.boot.version>4.2.0</spring.boot.version>
     <jakarta.ee.version>11.0.0</jakarta.ee.version>
-    <hibernate.validator.version>9.1.6.Final</hibernate.validator.version>
+    <hibernate.validator.version>9.2.0.Final</hibernate.validator.version>
     <slf4j.version>2.0.20</slf4j.version>
     <polymer.version>2.6.1</polymer.version>
     <jackson.version>3.1.8</jackson.version>
@@ -142,7 +142,7 @@
     <jetty.version>12.1.15</jetty.version>
     <properties-maven-plugin.version>1.4.0</properties-maven-plugin.version>
     <build-helper-maven-plugin.version>3.8.0</build-helper-maven-plugin.version>
-    <maven.version>3.10.1</maven.version>
+    <maven.version>3.10.2</maven.version>
     <maven-plugin-annotations.version>3.16.0</maven-plugin-annotations.version>
     <jandex.plugin.version>3.6.1</jandex.plugin.version>
     <!-- The Jandex index format that the plugin writes, set apart from the
@@ -155,7 +155,7 @@
     <!-- Modules with no Jandex consumer (tooling, tests, the Spring and CDI
          integrations) set this to true -->
     <jandex.skip>false</jandex.skip>
-    <spotless.plugin.version>3.11.0</spotless.plugin.version>
+    <spotless.plugin.version>3.12.0</spotless.plugin.version>
     <spotless.license-header>${maven.multiModuleProjectDirectory}/eclipse/apache2-license-header.txt</spotless.license-header>
     <spotless.ratchetFrom/>
     <spotless.prettier.version>3.9.9</spotless.prettier.version>
@@ -175,6 +175,8 @@
          jar sets it following the naming rule in CONVENTIONS.md (Build &
          Dependencies). Empty means no entry. -->
     <jpms.module.name/>
+
+    <forbiddenapis.version>3.11</forbiddenapis.version>
 
     <!-- OSGi -->
     <!-- Note: the parserVersion value is set by build-helper-maven-plugin -->
@@ -206,9 +208,13 @@
          Failsafe runs in parallel. -->
     <vaadin.test.quietOutput>true</vaadin.test.quietOutput>
 
-    <!-- Skip these categories in validation, use -Pslow-tests to run them
-            and override slow-tests profile to add more categories -->
-    <excludedGroups>com.vaadin.flow.testcategory.SlowTests</excludedGroups>
+    <!-- Skip these categories in validation, use -Pslow-tests to run them.
+            Both excludedGroups and the slow-tests profile read
+            slowTestGroups. scripts/computeMatrix.js reads it from this pom
+            and flow-tests/pom.xml only, so override it there to add
+            categories the Slow Tests job runs -->
+    <slowTestGroups>com.vaadin.flow.testcategory.SlowTests</slowTestGroups>
+    <excludedGroups>${slowTestGroups}</excludedGroups>
     <failsafe.parallel>all</failsafe.parallel>
     <failsafe.threadCount>2</failsafe.threadCount>
     <failsafe.perCoreThreadCount>true</failsafe.perCoreThreadCount>
@@ -282,7 +288,7 @@
       <dependency>
         <groupId>com.vaadin</groupId>
         <artifactId>license-checker</artifactId>
-        <version>3.1.4</version>
+        <version>3.1.6</version>
       </dependency>
 
       <!-- Test dependencies -->
@@ -777,12 +783,12 @@
             <path>
               <groupId>com.google.errorprone</groupId>
               <artifactId>error_prone_core</artifactId>
-              <version>2.52.0</version>
+              <version>2.53.0</version>
             </path>
             <path>
               <groupId>com.uber.nullaway</groupId>
               <artifactId>nullaway</artifactId>
-              <version>0.14.3</version>
+              <version>0.14.4</version>
             </path>
           </annotationProcessorPaths>
           <fork>true</fork>
@@ -926,6 +932,31 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <!-- Reports calls of the APIs that send JavaScript as a string in the
+             main classes, so that Flow itself keeps working with a strict
+             Content Security Policy. flow-tests sets forbiddenapis.skip,
+             because its test applications call these APIs on purpose. -->
+        <groupId>de.thetaphi</groupId>
+        <artifactId>forbiddenapis</artifactId>
+        <version>${forbiddenapis.version}</version>
+        <configuration>
+          <signaturesFiles>
+            <signaturesFile>${maven.multiModuleProjectDirectory}/forbidden-apis/string-javascript.txt</signaturesFile>
+          </signaturesFiles>
+          <suppressAnnotations>
+            <suppressAnnotation>com.vaadin.flow.internal.SuppressForbidden</suppressAnnotation>
+          </suppressAnnotations>
+        </configuration>
+        <executions>
+          <execution>
+            <id>string-javascript</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
     <extensions>
       <!-- Enabling the use of SSH for deployment -->
@@ -1001,7 +1032,7 @@
     <profile>
       <id>slow-tests</id>
       <properties>
-        <groups>com.vaadin.flow.testcategory.SlowTests</groups>
+        <groups>${slowTestGroups}</groups>
         <excludedGroups/>
       </properties>
     </profile>

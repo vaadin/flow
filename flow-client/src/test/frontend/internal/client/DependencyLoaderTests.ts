@@ -11,6 +11,11 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 // eager counter never leaks between cases.
 const active: Array<{ completeAll(): void }> = [];
 
+// A case may replace Function to act like a page without unsafe-eval. Restored
+// afterwards, also when the case ends with a timeout, so that later suites can
+// compile strings again.
+const originalFunction = globalThis.Function;
+
 const eventLoader = new ResourceLoader(testRegistry({ SystemErrorHandler: { handleError: () => {} } }), false);
 
 function makeRegistry() {
@@ -58,6 +63,7 @@ function makeRegistry() {
 // com.vaadin.client.GwtDependencyLoaderTest.
 describe('DependencyLoader (class)', () => {
   afterEach(() => {
+    globalThis.Function = originalFunction;
     active.splice(0, active.length).forEach((registry) => registry.completeAll());
   });
 
@@ -135,6 +141,37 @@ describe('DependencyLoader (class)', () => {
     } finally {
       delete snippets['import-fn'];
     }
+  });
+
+  it('loads a dynamic import sent as a function without compiling a string', async () => {
+    // What a page without unsafe-eval allows: the ResourceLoader gets the
+    // function from the bundle, so it compiles nothing from the description
+    const global = window as unknown as { Vaadin?: { Flow?: { jsSnippets?: Record<string, unknown> } } };
+    global.Vaadin ??= {};
+    global.Vaadin.Flow ??= {};
+    const snippets = (global.Vaadin.Flow.jsSnippets ??= {});
+    let loads = 0;
+    snippets['import-fn'] = () => () => {
+      loads += 1;
+      return Promise.resolve();
+    };
+    const registry = testRegistry({ SystemErrorHandler: { handleError: () => {} }, StateTree: {} });
+    registry.register('ResourceLoader', new ResourceLoader(registry, false));
+    const compiled: string[] = [];
+    globalThis.Function = function (...args: string[]) {
+      compiled.push(args.join(','));
+      throw new EvalError('Refused to compile a string');
+    } as unknown as FunctionConstructor;
+    try {
+      new DependencyLoader(registry).loadDependencies(
+        new Map([['LAZY', [{ type: 'DYNAMIC_IMPORT', url: { '@v-fn': { id: 'import-fn', captures: [] } } }]]])
+      );
+      await new Promise<void>((resolve) => runWhenEagerDependenciesLoaded(resolve));
+    } finally {
+      delete snippets['import-fn'];
+    }
+    expect(compiled).to.eql([]);
+    expect(loads).to.equal(1);
   });
 
   it('fails only the dynamic import when its function cannot be decoded', async () => {

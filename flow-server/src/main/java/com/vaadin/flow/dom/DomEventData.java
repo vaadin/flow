@@ -23,7 +23,6 @@ import tools.jackson.databind.JavaType;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
@@ -34,7 +33,7 @@ import com.vaadin.flow.js.JsSnippets;
  * it with {@link DomListenerRegistration#addEventData(DomEventData)}.
  * <p>
  * To declare event data, add a method that returns this type to a
- * {@link JsDefinition} interface. To create event data, call that method on the
+ * {@link JsSnippets} interface. To create event data, call that method on the
  * object that {@link JsSnippets#of(Class)} returns.
  * <p>
  * The expression is the body of a function. The function gets two parameters:
@@ -52,7 +51,7 @@ import com.vaadin.flow.js.JsSnippets;
  *
  * <pre>
  * &#64;JsDefinition
- * public interface ClipboardJs extends Serializable {
+ * public interface ClipboardJs extends JsSnippets {
  *
  *     &#64;JsExpression("return event.clipboardData?.getData($0) || null;")
  *     DomEventData&lt;String&gt; clipboardData(String mimeType);
@@ -129,8 +128,8 @@ public final class DomEventData<T> implements JsSnippet {
     }
 
     /**
-     * Creates event data for the given call of a {@link JsDefinition} method.
-     * The method must return event data.
+     * Creates event data for the given call of a {@link JsSnippets} method. The
+     * method must return event data.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      * Create event data by calling the relevant method on the implementation
@@ -164,7 +163,7 @@ public final class DomEventData<T> implements JsSnippet {
     }
 
     /**
-     * Gets the call of the {@link JsDefinition} method that declared this event
+     * Gets the call of the {@link JsSnippets} method that declared this event
      * data. The call tells which function of the bundle to run.
      * <p>
      * For internal use only. May be renamed or removed in a future release.

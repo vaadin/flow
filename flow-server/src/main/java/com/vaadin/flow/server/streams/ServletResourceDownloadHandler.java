@@ -103,11 +103,7 @@ public class ServletResourceDownloadHandler
                 String resourceName = getUrlPostfix();
                 downloadEvent.setContentType(
                         resolveContentType(resourceName, response));
-                if (isInline()) {
-                    downloadEvent.inline(resourceName);
-                } else {
-                    downloadEvent.setFileName(resourceName);
-                }
+                writeContentDisposition(downloadEvent, resourceName);
                 transferContent(downloadEvent, inputStream, outputStream,
                         connection.getContentLengthLong(),
                         rangeRequestsEnabled

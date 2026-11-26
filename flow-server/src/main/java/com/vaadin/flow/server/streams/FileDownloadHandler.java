@@ -80,11 +80,7 @@ public class FileDownloadHandler
         try (OutputStream outputStream = downloadEvent.getOutputStream();
                 FileInputStream inputStream = new FileInputStream(file)) {
             String resourceName = getUrlPostfix();
-            if (isInline()) {
-                downloadEvent.inline(resourceName);
-            } else {
-                downloadEvent.setFileName(resourceName);
-            }
+            writeContentDisposition(downloadEvent, resourceName);
             downloadEvent
                     .setContentType(resolveContentType(resourceName, response));
             transferContent(downloadEvent, inputStream, outputStream,

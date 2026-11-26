@@ -67,7 +67,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.CspMode;
+import com.vaadin.flow.server.ContentSecurityPolicyMode;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinContext;
@@ -268,7 +268,8 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void serveIndexHtml_strictCsp_sendsPolicyWithNonceOnEveryScript()
             throws IOException {
-        deploymentConfiguration.setCspMode(CspMode.STRICT);
+        deploymentConfiguration
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
         service.addIndexHtmlRequestListener(evt -> {
             evt.getDocument().body().appendElement("script").attr("src",
                     "listener.js");
@@ -284,16 +285,15 @@ public class IndexHtmlRequestHandlerTest {
         });
 
         String header = serveIndexHtmlAndCaptureCspHeader();
-        Matcher matcher = Pattern
-                .compile(
-                        "script-src 'nonce-([A-Za-z0-9+/=]+)' 'strict-dynamic'")
+        Matcher matcher = Pattern.compile(
+                "script-src 'nonce-([A-Za-z0-9+/]{22})' 'strict-dynamic'")
                 .matcher(header);
         assertTrue(matcher.find(), header);
         String nonce = matcher.group(1);
         assertEquals("default-src 'self'; script-src 'nonce-" + nonce
                 + "' 'strict-dynamic'; style-src 'self' 'unsafe-inline'; "
                 + "img-src 'self' data:; font-src 'self' data:; "
-                + "connect-src 'self' https://api.example.com; "
+                + "connect-src 'self' data: https://api.example.com; "
                 + "worker-src 'self'; object-src 'none'; base-uri 'self'",
                 header);
 
@@ -317,14 +317,16 @@ public class IndexHtmlRequestHandlerTest {
 
     @Test
     public void serveIndexHtml_strictCspAndHeaderAlreadyPresent_throws() {
-        deploymentConfiguration.setCspMode(CspMode.STRICT);
+        deploymentConfiguration
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
         when(response.containsHeader("Content-Security-Policy"))
                 .thenReturn(true);
         VaadinServletRequest request = createVaadinRequest("/");
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class, () -> indexHtmlRequestHandler
                         .synchronizedHandleRequest(session, request, response));
-        assertTrue(exception.getMessage().contains("csp=strict"),
+        assertTrue(
+                exception.getMessage().contains("contentSecurityPolicy=strict"),
                 exception.getMessage());
         verify(response, never()).setHeader(eq("Content-Security-Policy"),
                 any());
@@ -334,8 +336,10 @@ public class IndexHtmlRequestHandlerTest {
     @ParameterizedTest
     @CsvSource({ "OFF, true", "WARN, true", "STRICT, false" })
     public void serveIndexHtml_noStrictCspInProduction_noHeaderOrNonce(
-            CspMode cspMode, boolean productionMode) throws Exception {
-        deploymentConfiguration.setCspMode(cspMode);
+            ContentSecurityPolicyMode contentSecurityPolicyMode,
+            boolean productionMode) throws Exception {
+        deploymentConfiguration
+                .setContentSecurityPolicyMode(contentSecurityPolicyMode);
         // A header set elsewhere is fine when Vaadin sends no policy
         when(response.containsHeader("Content-Security-Policy"))
                 .thenReturn(true);
@@ -355,8 +359,9 @@ public class IndexHtmlRequestHandlerTest {
         // In development mode, listeners still get the policy so that they
         // work the same way in both modes
         assertEquals(1, responses.size());
-        boolean strict = cspMode == CspMode.STRICT;
-        assertEquals(strict, responses.get(0).getCspNonce() != null);
+        boolean strict = contentSecurityPolicyMode == ContentSecurityPolicyMode.STRICT;
+        assertEquals(strict,
+                responses.get(0).getContentSecurityPolicyNonce() != null);
         assertEquals(strict,
                 responses.get(0).getContentSecurityPolicy() != null);
         verify(response, never()).setHeader(eq("Content-Security-Policy"),
@@ -581,6 +586,25 @@ public class IndexHtmlRequestHandlerTest {
         Element initialUidlScript = findScript(scripts,
                 INITIAL_UIDL_SEARCH_STRING);
         assertEquals("", initialUidlScript.attr("initial"));
+    }
+
+    @Test
+    public void oldBrowserCheck_usesOnlySyntaxThatOldBrowsersParse()
+            throws IOException {
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        Document document = Jsoup
+                .parse(responseOutput.toString(StandardCharsets.UTF_8));
+
+        Element oldBrowserCheck = findScript(
+                document.head().getElementsByTag("script"), "v-r=oldbrowser");
+        assertNotNull(oldBrowserCheck);
+        // The check is not transpiled, and a syntax error would keep the
+        // browsers it is meant for from being redirected
+        String script = oldBrowserCheck.data();
+        for (String newerSyntax : List.of("?.", "??", "=>", "`")) {
+            assertFalse(script.contains(newerSyntax), script);
+        }
     }
 
     private static Element findScript(Elements scripts, String needle) {

@@ -84,6 +84,7 @@ import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -1562,6 +1563,34 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
+    void getText_innerHtml_includesItsText() {
+        Element child = ElementFactory.createSpan();
+        child.setProperty("innerHTML", "Hi <b>there</b>");
+        Element element = ElementFactory.createDiv();
+        element.appendChild(child, Element.createText("!"));
+
+        assertEquals("Hi there!", element.getTextRecursively());
+        assertEquals("Hi ", child.getText());
+    }
+
+    @Test
+    void getTextRecursively_innerHtmlWithBr_brAddsNoText() {
+        Element element = ElementFactory.createParagraph();
+        element.setProperty("innerHTML", "a<br>b");
+
+        assertEquals("ab", element.getTextRecursively());
+    }
+
+    @Test
+    void getTextRecursively_innerHtmlWithStyleAndScript_includesTheirContent() {
+        Element element = ElementFactory.createDiv();
+        element.setProperty("innerHTML",
+                "a<style>.x{}</style><script>var y;</script>b");
+
+        assertEquals("a.x{}var y;b", element.getTextRecursively());
+    }
+
+    @Test
     void setResourceAttribute_elementIsNotAttached_elementHasAttribute() {
         UI.setCurrent(createUI());
         Element element = ElementFactory.createDiv();
@@ -2663,6 +2692,26 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
+    void callFunctionAndExecuteJs_nullArgumentArray_treatedAsNoArguments() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        element.callJsFunction("method", (Object[]) null);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        assertPendingFunctionCall(ui, element, "method");
+
+        element.executeJs("foo", (Object[]) null);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pendingJs.size());
+        assertEquals(List.of(element),
+                pendingJs.get(0).getInvocation().getParameters(),
+                "only the element should be passed to the expression");
+    }
+
+    @Test
     void callFunctionWithBean() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
@@ -2747,13 +2796,13 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @JsDefinition
-    interface ResultJs extends Serializable {
+    interface ResultJs extends JsInvokers {
         @JsExpression("return this.value;")
         PendingJavaScriptResult readValue();
     }
 
     @JsDefinition
-    interface TestJs extends Serializable {
+    interface TestJs extends JsInvokers {
         @JsExpression("this.method($0)")
         void method(String value);
 
@@ -2840,7 +2889,7 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @JsDefinition
-    interface InitializerSnippetsJs extends Serializable {
+    interface InitializerSnippetsJs extends JsSnippets {
         @JsExpression("""
                 this.classList.add($0);
                 return () => this.classList.remove($0);""")
