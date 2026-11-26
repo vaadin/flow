@@ -208,6 +208,11 @@ public abstract class Transaction implements Serializable {
      * <p>
      * The supplier should return <code>null</code> if no fallback is available
      * for the current context (e.g. no session lock is held).
+     * <p>
+     * The code that provides a fallback transaction owns it and must call
+     * {@link #runEndTasks()} on it when it stops providing it, since signal
+     * listeners that are added while the transaction hides a change are only
+     * added again at that point.
      *
      * @param fallback
      *            the fallback supplier, or <code>null</code> to remove the
@@ -524,6 +529,10 @@ public abstract class Transaction implements Serializable {
      * when that transaction ends or when it no longer applies to the code that
      * is about to run. The caller must make sure that this transaction isn't
      * the current transaction while the tasks run.
+     * <p>
+     * An exception from a task is passed to the uncaught exception handler of
+     * the current thread so that the remaining tasks still run and the caller
+     * can finish ending the transaction.
      */
     public void runEndTasks() {
         List<Runnable> tasks = endTasks;
@@ -531,7 +540,15 @@ public abstract class Transaction implements Serializable {
             return;
         }
         endTasks = null;
-        tasks.forEach(Runnable::run);
+        for (Runnable task : tasks) {
+            try {
+                task.run();
+            } catch (RuntimeException e) {
+                Thread thread = Thread.currentThread();
+                thread.getUncaughtExceptionHandler().uncaughtException(thread,
+                        e);
+            }
+        }
     }
 
     /**

@@ -763,8 +763,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     void clearSessionScopedTransaction() {
         assert hasLock();
-        runSessionScopedTransactionEndTasks();
+        Transaction transaction = sessionScopedTransaction;
         sessionScopedTransaction = null;
+        runEndTasks(transaction);
     }
 
     /**
@@ -780,7 +781,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     void runSessionScopedTransactionEndTasks() {
         assert hasLock();
-        Transaction transaction = sessionScopedTransaction;
+        runEndTasks(sessionScopedTransaction);
+    }
+
+    private void runEndTasks(Transaction transaction) {
         if (transaction == null) {
             return;
         }

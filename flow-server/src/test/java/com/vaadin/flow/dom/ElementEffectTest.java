@@ -690,6 +690,58 @@ class ElementEffectTest {
     }
 
     @Test
+    void effect_hiddenSharedSignalChangeDeferredInAccessTask_releasedWhenNextTaskStarts() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+        var ui = new MockUI(session);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> observed = new ArrayList<>();
+        List<String> seenByNextTask = new ArrayList<>();
+        ui.access(() -> {
+            signal.peek();
+            Signal.runWithoutTransaction(() -> signal.set("changed"));
+            Signal.effect(ui, () -> observed.add(signal.get()));
+        });
+        // The listener is released when this task clears the transaction,
+        // so the effect re-runs in an access queued before this one ends
+        ui.access(() -> seenByNextTask.addAll(observed));
+
+        service.runPendingAccessTasks(session);
+
+        assertEquals(List.of("initial"), seenByNextTask);
+        assertEquals(List.of("initial", "changed"), observed);
+    }
+
+    @Test
+    void effect_uiDetachedBeforeHiddenSharedSignalChangeReleased_doesNotReRun() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+        var ui = new MockUI(session);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        signal.peek();
+        Signal.runWithoutTransaction(() -> signal.set("changed"));
+
+        List<String> observed = new ArrayList<>();
+        TestComponent component = new TestComponent();
+        ui.add(component);
+        Signal.effect(component, () -> observed.add(signal.get()));
+        session.removeUI(ui);
+
+        assertDoesNotThrow(() -> service.runPendingAccessTasks(session));
+        assertEquals(List.of("initial"), observed);
+    }
+
+    @Test
     void effect_sharedSignalChangedInSessionTransaction_reRunsRightAway() {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);
