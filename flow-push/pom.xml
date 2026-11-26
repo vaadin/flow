@@ -99,27 +99,7 @@
                                 <property name="javascript.unpack" location="${project.build.directory}/temp" />
                                 <property name="templates.dir" location="${project.build.sourceDirectory}/../templates" />
 
-                                <!-- Chromium blocks unload listeners by default via the
-                                     unload permissions policy, so listen to pagehide instead -->
-                                <loadfile srcfile="${javascript.unpack}/javascript/atmosphere.js" property="atmosphere.js.contents">
-                                    <filterchain>
-                                        <tokenfilter>
-                                            <replacestring from="(window, &quot;unload&quot;, atmosphere.callbacks.unload)" to="(window, &quot;pagehide&quot;, atmosphere.callbacks.unload)" />
-                                        </tokenfilter>
-                                    </filterchain>
-                                </loadfile>
-                                <fail message="atmosphere.js still registers an unload listener, update the pagehide replacement in flow-push/pom.xml">
-                                    <condition>
-                                        <contains string="${atmosphere.js.contents}" substring="&quot;unload&quot;" />
-                                    </condition>
-                                </fail>
-                                <fail message="atmosphere.js does not register the pagehide listener, update the pagehide replacement in flow-push/pom.xml">
-                                    <condition>
-                                        <not>
-                                            <contains string="${atmosphere.js.contents}" substring="atmosphere.util.on(window, &quot;pagehide&quot;, atmosphere.callbacks.unload)" />
-                                        </not>
-                                    </condition>
-                                </fail>
+                                <loadfile srcfile="${javascript.unpack}/javascript/atmosphere.js" property="atmosphere.js.contents" />
 
                                 <loadfile srcfile="${templates.dir}/vaadinPush.js.tpl" property="vaadinPush.js.contents">
                                     <filterchain>
