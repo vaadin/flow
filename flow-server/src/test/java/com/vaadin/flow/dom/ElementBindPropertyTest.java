@@ -25,6 +25,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -35,6 +38,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JacksonUtilsTest;
+import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementListenersTest;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
@@ -47,6 +51,7 @@ import com.vaadin.flow.signals.shared.SharedValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -110,6 +115,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
         component.getElement().bindProperty("foo", signal, signal::set);
+        collectPropertyChanges(component.getElement());
 
         // Should NOT throw; should propagate through the write callback
         component.getElement().setProperty("foo", "baz");
@@ -118,6 +124,8 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         assertEquals("baz", signal.peek());
         // Property value should reflect the signal's new value
         assertEquals("baz", component.getElement().getProperty("foo"));
+        assertEquals(Map.of("foo", "baz"),
+                collectPropertyChanges(component.getElement()));
     }
 
     @Test
@@ -129,6 +137,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         // Write callback that always forces the signal to uppercase
         component.getElement().bindProperty("foo", signal,
                 v -> signal.set(v.toUpperCase()));
+        collectPropertyChanges(component.getElement());
 
         component.getElement().setProperty("foo", "baz");
 
@@ -136,6 +145,8 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         assertEquals("BAZ", signal.peek());
         // Property should reflect the signal's value (BAZ wins)
         assertEquals("BAZ", component.getElement().getProperty("foo"));
+        assertEquals(Map.of("foo", "BAZ"),
+                collectPropertyChanges(component.getElement()));
     }
 
     @Test
@@ -147,6 +158,7 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         // Write callback that doesn't set signal value
         component.getElement().bindProperty("foo", signal, v -> {
         });
+        collectPropertyChanges(component.getElement());
 
         component.getElement().setProperty("foo", "baz");
 
@@ -154,6 +166,8 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         assertEquals("bar", signal.peek());
         // Property should revert to signal's "bar"
         assertEquals("bar", component.getElement().getProperty("foo"));
+        // The client never saw "baz", so nothing is sent
+        assertEquals(Map.of(), collectPropertyChanges(component.getElement()));
     }
 
     @Test
@@ -987,13 +1001,17 @@ class ElementBindPropertyTest extends SignalsUnitTest {
                     counter.incrementAndGet();
                 });
 
+        collectPropertyChanges(component.getElement());
+
         emulateClientUpdate(component.getElement(), "prop", "bar");
         assertEquals("BAR", eventValue.get());
         assertEquals(1, counter.get());
+        assertEquals(Map.of("prop", "BAR"),
+                collectPropertyChanges(component.getElement()));
     }
 
     @Test
-    void bindProperty_noOpCallback_valueChangeEventNotTriggered() {
+    void bindProperty_noOpCallback_noEventAndSignalValueSentToClient() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
         ValueSignal<String> signal = new ValueSignal<>("foo");
@@ -1005,9 +1023,52 @@ class ElementBindPropertyTest extends SignalsUnitTest {
                     fail("Property change listener should not be triggered with a no-op callback");
                 });
 
+        collectPropertyChanges(component.getElement());
+
         // With a no-op callback, value is not changed and event should not be
         // triggered
         emulateClientUpdate(component.getElement(), "prop", "bar");
+
+        // The client shows "bar", so it has to be told to go back to "foo"
+        assertEquals("foo", component.getElement().getProperty("prop"));
+        assertEquals(Map.of("prop", "foo"),
+                collectPropertyChanges(component.getElement()));
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = "foo")
+    void bindProperty_clientSendsNullAndCallbackAcceptsIt_nothingSentBack(
+            String initialValue) {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        ValueSignal<String> signal = new ValueSignal<>(initialValue);
+        component.getElement().bindProperty("prop", signal, signal::set);
+        component.getElement().addPropertyChangeListener("prop", "change",
+                event -> {
+                });
+        collectPropertyChanges(component.getElement());
+
+        emulateClientUpdate(component.getElement(), "prop", null);
+
+        // The client already shows null, so echoing it back is pointless
+        assertNull(signal.peek());
+        assertEquals(Map.of(), collectPropertyChanges(component.getElement()));
+    }
+
+    @Test
+    void bindProperty_serverSetsNullAndCallbackAcceptsIt_nullSentToClient() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        component.getElement().bindProperty("prop", signal, signal::set);
+        collectPropertyChanges(component.getElement());
+
+        component.getElement().setProperty("prop", (String) null);
+
+        assertNull(signal.peek());
+        assertEquals(Map.of("prop", JacksonUtils.nullNode()),
+                collectPropertyChanges(component.getElement()));
     }
 
     @Test
@@ -1056,11 +1117,33 @@ class ElementBindPropertyTest extends SignalsUnitTest {
             signal.set((String) notAString);
         });
         rejectPropertyChanges(component.getElement());
+        collectPropertyChanges(component.getElement());
 
         emulateClientUpdate(component.getElement(), "prop", "bar");
 
         assertEquals("foo", signal.peek());
         assertEquals("foo", component.getElement().getProperty("prop"));
+        assertEquals(Map.of("prop", "foo"),
+                collectPropertyChanges(component.getElement()));
+    }
+
+    @Test
+    void bindBeanProperty_clientSendsMismatchedValue_signalValueSentToClientAsJson() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        JacksonUtilsTest.Person person = createPerson("Jack", 52, false);
+        ValueSignal<JacksonUtilsTest.Person> signal = new ValueSignal<>(person);
+        // The client always sends JSON, which the typed callback cannot cast
+        // to a Person, so the signal keeps its value
+        component.getElement().bindProperty("prop", signal, signal::set);
+        rejectPropertyChanges(component.getElement());
+        collectPropertyChanges(component.getElement());
+
+        emulateClientUpdate(component.getElement(), "prop", mismatchedJson());
+
+        Map<String, Object> changes = collectPropertyChanges(
+                component.getElement());
+        assertEquals(Map.of("prop", JacksonUtils.beanToJson(person)), changes);
     }
 
     @Test
@@ -1105,6 +1188,20 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         ObjectNode json = JacksonUtils.createObjectNode();
         json.put("evil", true);
         return json;
+    }
+
+    private Map<String, Object> collectPropertyChanges(Element element) {
+        ElementPropertyMap propertyMap = ElementPropertyMap
+                .getModel(element.getNode());
+        Map<String, Object> changes = new HashMap<>();
+        UI.getCurrent().getInternals().getStateTree().collectChanges(change -> {
+            if (change instanceof MapPutChange put
+                    && put.getFeature() == propertyMap.getClass()
+                    && put.getNode() == element.getNode()) {
+                changes.put(put.getKey(), put.getValue());
+            }
+        });
+        return changes;
     }
 
     private void emulateClientUpdate(Element element, String property,

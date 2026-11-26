@@ -370,28 +370,29 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    void cspMode_defaultsToOff() {
+    void contentSecurityPolicyMode_defaultsToOff() {
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 new Properties());
 
-        assertEquals(CspMode.OFF, config.getCspMode());
+        assertEquals(ContentSecurityPolicyMode.OFF,
+                config.getContentSecurityPolicyMode());
     }
 
     @ParameterizedTest
     @CsvSource({ "off, OFF", "warn, WARN", "strict, STRICT", "Strict, STRICT" })
-    void cspMode_configurableViaPropertyParameter(String value,
-            CspMode expected) {
+    void contentSecurityPolicyMode_configurableViaPropertyParameter(
+            String value, ContentSecurityPolicyMode expected) {
         Properties init = new Properties();
-        init.put(InitParameters.CSP, value);
+        init.put(InitParameters.CONTENT_SECURITY_POLICY, value);
         DefaultDeploymentConfiguration config = createDeploymentConfig(init);
 
-        assertEquals(expected, config.getCspMode());
+        assertEquals(expected, config.getContentSecurityPolicyMode());
     }
 
     @Test
-    void cspMode_unrecognizedValue_throws() {
+    void contentSecurityPolicyMode_unrecognizedValue_throws() {
         Properties init = new Properties();
-        init.put(InitParameters.CSP, "stirct");
+        init.put(InitParameters.CONTENT_SECURITY_POLICY, "stirct");
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,

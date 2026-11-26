@@ -73,6 +73,14 @@ public final class Constants implements Serializable {
             + "templates/";
 
     /**
+     * The resource that lists the {@code @JsStringFallback} interfaces the
+     * build found, one class name per entry of a JSON array, relative to
+     * {@link #VAADIN_SERVLET_RESOURCES}.
+     */
+    public static final String JS_STRING_FALLBACKS_FILE = Constants.VAADIN_CONFIGURATION
+            + "js-string-fallbacks.json";
+
+    /**
      * Name of the <code>npm</code> main file.
      * 
      * @since 2.0

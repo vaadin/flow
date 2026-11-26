@@ -39,6 +39,7 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.Template;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
@@ -77,7 +78,7 @@ class DevModeClassFinderTest {
                 Component.class, TypeScriptBootstrapModifier.class,
                 DevToolsMessageHandler.class, Layout.class, StyleSheet.class,
                 StyleSheet.Container.class, JsDefinition.class,
-                ComponentEvent.class);
+                JsStringFallback.class, ComponentEvent.class);
 
         for (Class<?> clz : classes) {
             assertTrue(knownClasses.contains(clz),

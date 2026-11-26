@@ -95,10 +95,16 @@ public @interface DomEvent {
      * Any other filter is put into the frontend bundle as a function when the
      * application is built, and the browser runs that function. Both work with
      * a Content Security Policy without <code>unsafe-eval</code> and in the
-     * {@link com.vaadin.flow.server.CspMode#STRICT} mode. If the bundle does
-     * not have the function, for example because the filter changed after the
-     * bundle was built, the browser compiles the filter from a string, which
-     * such a policy does not allow.
+     * {@link com.vaadin.flow.server.ContentSecurityPolicyMode#STRICT} mode. If
+     * the bundle does not have the function, for example because the filter
+     * changed after the bundle was built, the browser compiles the filter from
+     * a string, which such a policy does not allow. A production build that
+     * optimizes the bundle, which is the default, carries the filters and the
+     * {@link EventData} values only of the event types it can reach from the
+     * entry points of the application. An event type that is only used through
+     * reflection, or from code that no route leads to, has to be named in
+     * {@link com.vaadin.flow.component.dependency.Uses} on a class that is
+     * reached.
      *
      * @see DomListenerRegistration#setFilter(String)
      *

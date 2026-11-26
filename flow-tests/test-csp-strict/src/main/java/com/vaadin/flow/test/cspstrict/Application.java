@@ -23,7 +23,8 @@ import com.vaadin.flow.component.page.Push;
 
 /**
  * Spring Boot entry point for the strict Content Security Policy test module.
- * The application runs in production mode with {@code vaadin.csp=strict}, see
+ * The application runs in production mode with
+ * {@code vaadin.contentSecurityPolicy=strict}, see
  * {@code application.properties}, so every page is served with Vaadin's
  * nonce-based policy and the browser enforces it.
  * <p>
