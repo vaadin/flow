@@ -62,7 +62,6 @@ import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsDefinitionProxy.Kind;
-import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
@@ -945,7 +944,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         // Not getMethods(), whose inherited methods keep the annotations they
         // had before the interface declaring them was hotswapped
         for (Method method : ReflectTools.getCurrentPublicMethods(definition)) {
-            if (method.isAnnotationPresent(JsExpression.class)) {
+            if (JsCall.declaredExpression(method) != null) {
                 methods.add(method);
             }
         }
@@ -966,8 +965,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                             : "$" + index)
                     .reduce((first, second) -> first + ", " + second)
                     .orElse("");
-            String expression = method.getAnnotation(JsExpression.class)
-                    .value();
+            String expression = JsCall.declaredExpression(method);
             List<String> function = new ArrayList<>();
             if (snippets) {
                 // A snippet is evaluated by what it is passed to, which may

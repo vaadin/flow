@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -29,6 +30,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.node.ArrayNode;
@@ -193,21 +196,20 @@ public record JsCall(Class<?> definitionType, String methodName,
      * a leading parameter, and is told apart the same way.
      *
      * @param method
-     *            a method annotated with {@link JsExpression}, not
-     *            <code>null</code>
+     *            a method that {@link #declaredExpression(Method) declares
+     *            JavaScript}, not <code>null</code>
      * @return the function identifier, not <code>null</code>
      * @throws IllegalArgumentException
-     *             if the method is not annotated with {@link JsExpression}, or
-     *             declares parameter names that can not be generated
+     *             if the method declares no JavaScript, or declares parameter
+     *             names that can not be generated
      */
     public static String functionId(Method method) {
-        JsExpression annotation = method.getAnnotation(JsExpression.class);
-        if (annotation == null) {
+        String expression = declaredExpression(method);
+        if (expression == null) {
             throw new IllegalArgumentException("Method " + method.getName()
                     + " of " + method.getDeclaringClass().getName()
-                    + " is not annotated with @JsExpression");
+                    + " declares no JavaScript. Annotate it with @JsExpression");
         }
-        String expression = annotation.value();
         int parameterCount = method.getParameterCount();
         boolean variadic = method.isVarArgs();
         if (method.isAnnotationPresent(JsWithExecutionContext.class)) {
@@ -225,6 +227,49 @@ public record JsCall(Class<?> definitionType, String methodName,
         }
         return snippetFunctionId(expression, getFunctionParameterNames(method),
                 parameterCount, variadic);
+    }
+
+    /**
+     * Gets the JavaScript that the given method of a JavaScript definition
+     * declares.
+     * <p>
+     * That is the value of {@link JsExpression} on the method. A method without
+     * the annotation that is declared in an interface extending
+     * {@link JsInvokers}, and that is neither a default nor a static method,
+     * declares a call of the method of the same name on <code>this</code>, with
+     * the arguments of the call, the last one spread for a variadic method, and
+     * the value of that call as its result: <code>void doSomething(String
+     * value)</code> declares <code>return this.doSomething($0);</code>.
+     * <p>
+     * Which interface declares the method is what counts, not the definition it
+     * is called through: a method that a definition inherits from an interface
+     * that does not extend {@link JsInvokers} declares nothing without the
+     * annotation.
+     *
+     * @param method
+     *            a method of a JavaScript definition, not <code>null</code>
+     * @return the declared JavaScript, or <code>null</code> if the method
+     *         declares none
+     */
+    public static @Nullable String declaredExpression(Method method) {
+        JsExpression annotation = method.getAnnotation(JsExpression.class);
+        if (annotation != null) {
+            return annotation.value();
+        }
+        Class<?> declaringClass = method.getDeclaringClass();
+        if (!declaringClass.isInterface()
+                || !JsInvokers.class.isAssignableFrom(declaringClass)
+                || method.isDefault()
+                || Modifier.isStatic(method.getModifiers())) {
+            return null;
+        }
+        String arguments = IntStream.range(0, method.getParameterCount())
+                .mapToObj(index -> (method.isVarArgs()
+                        && index == method.getParameterCount() - 1 ? "...$"
+                                : "$")
+                        + index)
+                .collect(Collectors.joining(", "));
+        return "return this." + method.getName() + "(" + arguments + ");";
     }
 
     /**
@@ -505,8 +550,8 @@ public record JsCall(Class<?> definitionType, String methodName,
     }
 
     /**
-     * Gets the JavaScript that this call runs in a browser, as declared by
-     * {@link JsExpression} on the called method.
+     * Gets the JavaScript that this call runs in a browser, as
+     * {@link #declaredExpression(Method) declared} by the called method.
      * <p>
      * The expression is not sent to the client, which runs the function that
      * the build generated from the same declaration. It is available here for
@@ -520,17 +565,17 @@ public record JsCall(Class<?> definitionType, String methodName,
     }
 
     private String expressionOf(Method method) {
-        JsExpression annotation = method.getAnnotation(JsExpression.class);
-        if (annotation == null) {
+        String expression = declaredExpression(method);
+        if (expression == null) {
             throw notDeclaredException();
         }
-        return annotation.value();
+        return expression;
     }
 
     private IllegalStateException notDeclaredException() {
-        return new IllegalStateException(
-                "Method " + methodName + " of " + definitionType.getName()
-                        + " is not annotated with @JsExpression");
+        return new IllegalStateException("Method " + methodName + " of "
+                + definitionType.getName()
+                + " declares no JavaScript. Annotate it with @JsExpression");
     }
 
     /**
@@ -599,8 +644,7 @@ public record JsCall(Class<?> definitionType, String methodName,
         // had before the interface declaring them was hotswapped
         for (Method method : ReflectTools
                 .getCurrentPublicMethods(definitionType)) {
-            boolean declaresJavaScript = method
-                    .isAnnotationPresent(JsExpression.class);
+            boolean declaresJavaScript = declaredExpression(method) != null;
             // Only a snippet wraps a function around its expression, so only
             // a snippet has names to check
             boolean declaresSnippet = declaresJavaScript

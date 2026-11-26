@@ -32,6 +32,7 @@ import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Element.ElementJs;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -80,6 +81,42 @@ class PageTest {
                 invocation.getJsCall());
         assertEquals(Arrays.asList("Hello", null), invocation.getParameters(),
                 "the arguments should be followed by nothing to run the function on");
+    }
+
+    // Only extended, so not annotated
+    interface PopoverJs extends JsInvokers {
+        void showPopover();
+    }
+
+    @JsDefinition
+    interface MenuJs extends PopoverJs {
+        @JsExpression("window.alert($0)")
+        void showGreeting(String greeting);
+    }
+
+    @Test
+    void executeJsWithDefinition_inheritedMethodWithoutExpression_refusedForThePageButRunOnAnElement() {
+        MockUI mockUI = new MockUI();
+
+        // Calls the method of the same name on this, which a call through the
+        // page does not have
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> mockUI.getPage().executeJs(MenuJs.class));
+        assertTrue(exception.getMessage().contains("showPopover"),
+                exception.getMessage());
+
+        Element element = new Element("div");
+        mockUI.getElement().appendChild(element);
+        element.executeJs(MenuJs.class).showPopover();
+        mockUI.getInternals().getStateTree()
+                .runExecutionsBeforeClientResponse();
+
+        JavaScriptInvocation invocation = mockUI.onlyScheduledInvocation();
+        assertEquals(new JsCall(MenuJs.class, "showPopover", List.of()),
+                invocation.getJsCall());
+        assertEquals("return this.showPopover();", invocation.getExpression());
+        assertEquals(List.of(element), invocation.getParameters());
     }
 
     @Test

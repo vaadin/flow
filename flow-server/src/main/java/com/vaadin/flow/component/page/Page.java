@@ -16,11 +16,13 @@
 package com.vaadin.flow.component.page;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -42,6 +44,8 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ContentSecurityPolicyViolationReporter;
 import com.vaadin.flow.internal.CssBundler;
 import com.vaadin.flow.internal.JsStringFallbacks;
+import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.SuppressForbidden;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.js.JsCall;
@@ -71,6 +75,16 @@ import com.vaadin.flow.signals.local.ValueSignal;
 public class Page implements Serializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Page.class);
+
+    /**
+     * The methods of each JavaScript definition passed to
+     * {@link #executeJs(Class)} that declare JavaScript without
+     * {@link JsExpression}, which call the method of the same name on an
+     * element that a call through the page does not have. Cleared before a
+     * redefined class is hotswapped, so a changed interface is checked again.
+     */
+    private static final ReflectionCache<Object, List<String>> shorthandMethods = ReflectionCache
+            .clearedBeforeHotswap(Page::collectShorthandMethods);
 
     private final UI ui;
     private final History history;
@@ -536,7 +550,9 @@ public class Page implements Serializable {
      * <code>return</code> value the same way. It runs on nothing in particular
      * - page JavaScript works on globals - where the JavaScript of
      * {@link Element#executeJs(Class)} runs on the element it was obtained
-     * from.
+     * from. So every method of the interface is annotated with
+     * {@link JsExpression}, even when {@link Element#executeJs(Class)} would
+     * call the method of the same name on the element for a method without it.
      * <p>
      * What differs from an expression is that nothing about the JavaScript is
      * decided at the call site: the build collects the declarations of the
@@ -557,15 +573,38 @@ public class Page implements Serializable {
      *         JavaScript through, not <code>null</code>
      * @throws IllegalArgumentException
      *             if the type is not an interface, is not annotated with
-     *             {@link JsDefinition}, also extends {@link JsSnippets}, or has
-     *             a method that can not be answered
+     *             {@link JsDefinition}, also extends {@link JsSnippets}, has a
+     *             method that can not be answered, or has a method that is not
+     *             annotated with {@link JsExpression}
      * @since 25.4
      */
     public <T extends JsInvokers> T executeJs(Class<T> definitionType) {
         // Queued the way an expression given to the page is, so that the two
         // reach the client in the order they were made
-        return JsDefinitionProxy.create(definitionType,
+        T invokers = JsDefinitionProxy.create(definitionType,
                 ui.getInternals()::addJavaScriptInvocation);
+        List<String> shorthand = shorthandMethods.get(definitionType);
+        if (!shorthand.isEmpty()) {
+            throw new IllegalArgumentException(definitionType.getName()
+                    + " has " + String.join(", ", shorthand)
+                    + " without @JsExpression, which calls the method of the"
+                    + " same name on the element the call runs on. A call"
+                    + " through the page runs on no element, so annotate"
+                    + " them with @JsExpression, or call them through"
+                    + " Element.executeJs(Class)");
+        }
+        return invokers;
+    }
+
+    private static List<String> collectShorthandMethods(
+            Class<?> definitionType) {
+        // Not getMethods(), whose inherited methods keep the annotations they
+        // had before the interface declaring them was hotswapped
+        return ReflectTools.getCurrentPublicMethods(definitionType).stream()
+                .filter(method -> !method
+                        .isAnnotationPresent(JsExpression.class)
+                        && JsCall.declaredExpression(method) != null)
+                .map(Method::getName).sorted().toList();
     }
 
     // When updating JavaDocs here, keep in sync with Element.executeJavaScript

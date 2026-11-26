@@ -69,7 +69,6 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ThemeUtils;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinitionProxy;
-import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.server.VaadinService;
@@ -1470,7 +1469,7 @@ final class DevLoopRedefiner {
         // generated as part of every definition that extends it.
         if (type.isInterface()) {
             for (Method method : ReflectTools.getCurrentPublicMethods(type)) {
-                if (method.isAnnotationPresent(JsExpression.class)) {
+                if (JsCall.declaredExpression(method) != null) {
                     imports.add("jsdefinition:" + fingerprintOf(method));
                 }
             }

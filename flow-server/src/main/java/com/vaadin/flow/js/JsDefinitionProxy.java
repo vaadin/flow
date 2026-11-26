@@ -251,8 +251,8 @@ public final class JsDefinitionProxy {
     // The identifiers a call through the definition sends, which for a method
     // that stands in for a string call differ from those of its JavaScript
     private static List<String> collectFunctionIds(Class<?> definitionType) {
-        return Stream.of(definitionType.getMethods()).filter(
-                method -> method.isAnnotationPresent(JsExpression.class))
+        return Stream.of(definitionType.getMethods())
+                .filter(method -> JsCall.declaredExpression(method) != null)
                 .map(method -> JsStringFallbacks.functionId(definitionType,
                         method))
                 .toList();
@@ -290,6 +290,9 @@ public final class JsDefinitionProxy {
         List<String> unanswerable = new ArrayList<>();
         List<String> untyped = new ArrayList<>();
         List<String> inJava = new ArrayList<>();
+        List<String> unmatchable = new ArrayList<>();
+        boolean fallback = definitionType
+                .isAnnotationPresent(JsStringFallback.class);
         // Not the shared mapper's factory, whose cache would keep the classes
         // of the project that the build checks reachable after the build
         TypeFactory types = TypeFactory.createDefaultInstance();
@@ -300,12 +303,18 @@ public final class JsDefinitionProxy {
                 inJava.add(method.getName());
                 continue;
             }
-            if (!method.isAnnotationPresent(JsExpression.class)) {
+            if (JsCall.declaredExpression(method) == null) {
                 // What it returns is beside the point until it declares
                 // something to return it from, and the first list that has
                 // anything in it is the one that is reported, so this changes
                 // what the lists hold rather than what is said
                 undeclared.add(method.getName());
+                continue;
+            }
+            if (fallback && !method.isAnnotationPresent(JsExpression.class)) {
+                // A string is matched by the text of the expression, which a
+                // method of the same name on the element never is
+                unmatchable.add(method.getName());
                 continue;
             }
             if (!snippets && method.getReturnType() == JavaScriptResult.class
@@ -337,7 +346,17 @@ public final class JsDefinitionProxy {
             throw new IllegalArgumentException(definitionType.getName()
                     + " declares no JavaScript to run for "
                     + String.join(", ", undeclared)
-                    + ". Annotate every method with @JsExpression");
+                    + ". Annotate every method with @JsExpression, or declare"
+                    + " it in an interface that extends JsInvokers to call the"
+                    + " method of the same name on the element");
+        }
+        if (!unmatchable.isEmpty()) {
+            throw new IllegalArgumentException(definitionType.getName()
+                    + " is annotated with @JsStringFallback, which matches a"
+                    + " string by the JavaScript a method declares in"
+                    + " @JsExpression, but has "
+                    + String.join(", ", unmatchable)
+                    + " without it. Annotate every method with @JsExpression");
         }
         if (!unanswerable.isEmpty()) {
             throw new IllegalArgumentException(definitionType.getName()

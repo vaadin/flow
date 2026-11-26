@@ -145,9 +145,33 @@ class JsDefinitionProxyTest {
         JavaScriptResult<List<T>> readVariable();
     }
 
-    @JsDefinition
-    interface UndeclaredJs extends JsInvokers {
+    // Does not extend JsInvokers, so a method without @JsExpression declares
+    // nothing even when a definition mixes it in
+    interface UndeclaredMixin {
         void undeclared();
+    }
+
+    @JsDefinition
+    interface UndeclaredJs extends JsInvokers, UndeclaredMixin {
+    }
+
+    @JsDefinition
+    interface UndeclaredSnippetsJs extends JsSnippets {
+        JsFunction undeclared();
+    }
+
+    // Calls the method of the same name on the element
+    @JsDefinition
+    interface ShorthandJs extends JsInvokers {
+        void showPopover(String source);
+
+        PendingJavaScriptResult checkVisibility(String... options);
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    interface ShorthandFallbacks extends JsInvokers {
+        void focus();
     }
 
     @JsDefinition
@@ -597,6 +621,47 @@ class JsDefinitionProxyTest {
         // A definition that fails the check is not remembered as checked
         assertThrows(IllegalArgumentException.class,
                 () -> proxy(UndeclaredJs.class));
+        // Snippets are not called on the element, so there is no shorthand
+        assertTrue(assertThrows(IllegalArgumentException.class,
+                () -> JsDefinitionProxy
+                        .createSnippets(UndeclaredSnippetsJs.class))
+                .getMessage().contains("undeclared"));
+    }
+
+    @Test
+    void create_methodsWithoutExpression_runAsCallsOfTheElementMethod() {
+        try (MockedStatic<BundleUtils> bundleUtils = mockStatic(
+                BundleUtils.class, CALLS_REAL_METHODS)) {
+            ShorthandJs shorthand = JsDefinitionProxy.create(ShorthandJs.class,
+                    call -> {
+                        calls.add(call);
+                        return result;
+                    });
+
+            shorthand.showPopover("menu");
+
+            assertEquals(List.of(new JsCall(ShorthandJs.class, "showPopover",
+                    List.of("menu"))), calls);
+            // Checked against the bundle like any declared JavaScript
+            assertEquals(Set.of(
+                    JsCall.functionId("return this.showPopover($0);", 1, false),
+                    JsCall.functionId("return this.checkVisibility(...$0);", 1,
+                            true)),
+                    captureCheckedIds(bundleUtils, ShorthandJs.class));
+        }
+    }
+
+    @Test
+    void create_stringFallbackMethodWithoutExpression_throws() {
+        // A string is matched by the text of the declared expression
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> proxy(ShorthandFallbacks.class));
+
+        assertTrue(exception.getMessage().contains("focus"),
+                exception.getMessage());
+        assertTrue(exception.getMessage().contains("@JsStringFallback"),
+                exception.getMessage());
     }
 
     @Test

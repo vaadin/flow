@@ -22,10 +22,11 @@ import com.vaadin.flow.dom.Element;
 
 /**
  * Marks an interface whose methods declare, with {@link JsExpression}, the
- * JavaScript they run when they are called. An implementation is obtained from
- * {@link Element#executeJs(Class)} or {@link Page#executeJs(Class)}, and
- * calling a method of it schedules the declared JavaScript to run on the
- * client.
+ * JavaScript they run when they are called. A method without the annotation
+ * calls the method of the same name on the element. An implementation is
+ * obtained from {@link Element#executeJs(Class)} or
+ * {@link Page#executeJs(Class)}, and calling a method of it schedules the
+ * declared JavaScript to run on the client.
  * <p>
  * The interface is also annotated with {@link JsDefinition}, which is what
  * makes it findable during the build: its JavaScript is collected into the
@@ -45,6 +46,9 @@ import com.vaadin.flow.dom.Element;
  *
  *     &#64;JsExpression("this.scrollTop = $0;")
  *     void scrollTo(int top);
+ *
+ *     // Runs this.scrollIntoView($0) on the element
+ *     void scrollIntoView(JsonNode options);
  * }
  *
  * element.executeJs(ScrollJs.class).scrollTo(100);
