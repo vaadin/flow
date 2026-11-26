@@ -123,11 +123,11 @@ class PageTest {
 
     @Test
     void executeJsWithDefinition_overloadsWithoutExpression_namedOnce() {
-        Page page = new MockUI().getPage();
+        Page uiPage = new MockUI().getPage();
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> page.executeJs(ToggleJs.class));
+                () -> uiPage.executeJs(ToggleJs.class));
 
         assertTrue(
                 exception.getMessage()
@@ -138,13 +138,13 @@ class PageTest {
     private static <T extends JsInvokers> void assertRefusedForThePageButRunOnAnElement(
             Class<T> definition, SerializableConsumer<T> showPopover) {
         MockUI mockUI = new MockUI();
-        Page page = mockUI.getPage();
+        Page uiPage = mockUI.getPage();
 
         // Calls the method of the same name on this, which a call through the
         // page does not have
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> page.executeJs(definition));
+                () -> uiPage.executeJs(definition));
         assertTrue(exception.getMessage().contains("showPopover"),
                 exception.getMessage());
 
