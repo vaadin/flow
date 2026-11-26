@@ -37,6 +37,7 @@ import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -198,6 +199,24 @@ class JsCallTest {
         assertEquals(
                 JsCall.functionId("return this.whisper($0, ...$1);", 2, true),
                 whisper.getFunctionId());
+    }
+
+    interface JavaImplementedJs extends JsInvokers {
+        default void twice() {
+        }
+
+        static void helper() {
+        }
+    }
+
+    @Test
+    void declaredExpression_defaultOrStaticMethod_declaresNothing()
+            throws NoSuchMethodException {
+        // Implemented in Java, so not a call of a method on the element
+        assertNull(JsCall.declaredExpression(
+                JavaImplementedJs.class.getMethod("twice")));
+        assertNull(JsCall.declaredExpression(
+                JavaImplementedJs.class.getMethod("helper")));
     }
 
     @Test

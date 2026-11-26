@@ -621,11 +621,20 @@ class JsDefinitionProxyTest {
         // A definition that fails the check is not remembered as checked
         assertThrows(IllegalArgumentException.class,
                 () -> proxy(UndeclaredJs.class));
+    }
+
+    @Test
+    void createSnippets_methodWithoutExpression_throws() {
         // Snippets are not called on the element, so there is no shorthand
-        assertTrue(assertThrows(IllegalArgumentException.class,
-                () -> JsDefinitionProxy
-                        .createSnippets(UndeclaredSnippetsJs.class))
-                .getMessage().contains("undeclared"));
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> JsDefinitionProxy
+                        .createSnippets(UndeclaredSnippetsJs.class));
+
+        assertTrue(exception.getMessage().contains("undeclared"),
+                exception.getMessage());
+        assertFalse(exception.getMessage().contains("JsInvokers"),
+                "a snippet can only be declared with @JsExpression: "
+                        + exception.getMessage());
     }
 
     @Test

@@ -346,9 +346,11 @@ public final class JsDefinitionProxy {
             throw new IllegalArgumentException(definitionType.getName()
                     + " declares no JavaScript to run for "
                     + String.join(", ", undeclared)
-                    + ". Annotate every method with @JsExpression, or declare"
-                    + " it in an interface that extends JsInvokers to call the"
-                    + " method of the same name on the element");
+                    + ". Annotate every method with @JsExpression"
+                    + (snippets ? ""
+                            : ", or declare it in an interface that extends"
+                                    + " JsInvokers to call the method of the"
+                                    + " same name on the element"));
         }
         if (!unmatchable.isEmpty()) {
             throw new IllegalArgumentException(definitionType.getName()
