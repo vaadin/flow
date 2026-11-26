@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -67,6 +68,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -427,6 +429,209 @@ class ContentSecurityPolicyModeTest {
                         .reportStringJavaScript(null));
     }
 
+    @Test
+    void strict_stringExecuteJs_messageHasMethodToDeclareForIt() {
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
+
+        ContentSecurityPolicyViolationException exception = assertThrows(
+                ContentSecurityPolicyViolationException.class,
+                () -> executeJsOnUi("return \"a\"\n  + $0", "b"));
+
+        assertTrue(exception.getMessage().contains("@JsStringFallback"),
+                exception.getMessage());
+        assertTrue(
+                exception.getMessage().contains(
+                        """
+                                    @JsDefinition
+                                    public interface YourJs extends JsInvokers {
+                                        @JsExpression("return \\"a\\"\\n  + $0")
+                                        PendingJavaScriptResult contentSecurityPolicyModeTestExecuteJsOnUi(Object arg0);
+                                    }
+                                """),
+                exception.getMessage());
+        // Own code calls the method, an add-on gets the interface marked
+        assertTrue(exception.getMessage().contains(
+                "element.executeJs(YourJs.class).contentSecurityPolicyModeTestExecuteJsOnUi(arg0)"),
+                exception.getMessage());
+        assertTraceLeadsFromApiToTest(exception, Element.class, "executeJs");
+
+        Page page = ui.getPage();
+        ContentSecurityPolicyViolationException onPage = assertThrows(
+                ContentSecurityPolicyViolationException.class,
+                () -> page.executeJs("return 1"));
+        assertTrue(
+                onPage.getMessage().contains("page.executeJs(YourJs.class)."),
+                onPage.getMessage());
+    }
+
+    @Test
+    void strict_stringFunction_messageDeclaresFunctionForEachUse() {
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
+
+        String plain = assertThrows(
+                ContentSecurityPolicyViolationException.class,
+                () -> JsFunction.of("this.title = $0", "tip")).getMessage();
+        Element element = ui.getElement();
+        String initializer = assertThrows(
+                ContentSecurityPolicyViolationException.class,
+                () -> element.addJsInitializer("this.title = $0", "tip"))
+                .getMessage();
+        Page page = ui.getPage();
+        String dynamicImport = assertThrows(
+                ContentSecurityPolicyViolationException.class,
+                () -> page.addDynamicImport("return Promise.resolve()"))
+                .getMessage();
+
+        assertTrue(
+                plain.contains(
+                        """
+                                        @JsExpression("this.title = $0")
+                                        JsFunction contentSecurityPolicyModeTestStrict_stringFunction_messageDeclaresFunctionForEachUse(Object arg0);
+                                """),
+                plain);
+        assertTrue(
+                plain.contains(
+                        "public interface YourFunctions extends JsSnippets {"),
+                plain);
+        assertTrue(plain.contains(": JsSnippets.of(YourFunctions.class)."),
+                plain);
+        assertTrue(initializer.contains(
+                "element.addJsInitializer(JsSnippets.of(YourFunctions.class)."),
+                initializer);
+        assertTrue(dynamicImport.contains(
+                "page.addDynamicImport(JsSnippets.of(YourFunctions.class)."),
+                dynamicImport);
+        assertTrue(dynamicImport.contains("@JsStringFallback"), dynamicImport);
+    }
+
+    @Test
+    void strict_stringFilterAndEventData_messagesDeclareThemBothWays() {
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
+        DomListenerRegistration registration = ui.getElement()
+                .addEventListener("click", e -> {
+                });
+
+        String filter = assertThrows(
+                ContentSecurityPolicyViolationException.class,
+                () -> registration.setFilter("event.button == \"left\""))
+                .getMessage();
+        String eventData = assertThrows(
+                ContentSecurityPolicyViolationException.class,
+                () -> registration.addEventData("event.x * 2")).getMessage();
+
+        // Own code declares a snippet, an add-on lists the string
+        assertTrue(filter.contains(
+                "@JsExpression(\"return (event.button == \\\"left\\\");\")"),
+                filter);
+        assertTrue(filter.contains("DomEventFilter "), filter);
+        assertTrue(filter.contains(
+                "@JsStringFallback(filters = \"event.button == \\\"left\\\"\")"),
+                filter);
+        assertTrue(eventData.contains("DomEventData<Object> "), eventData);
+        assertTrue(
+                eventData.contains(
+                        "@JsStringFallback(eventData = \"event.x * 2\")"),
+                eventData);
+        for (String message : List.of(filter, eventData)) {
+            assertTrue(message.contains(
+                    "public interface YourEventJs extends JsSnippets {"),
+                    message);
+            assertTrue(message.contains(
+                    "public interface YourFallbacks extends JsSnippets {"),
+                    message);
+        }
+    }
+
+    @Test
+    void strict_callSiteSendingManyDifferentStrings_messageSaysOneDeclarationMatchesOneString() {
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
+
+        // One call site, as for an add-on that concatenates a value into the
+        // expression. A few different strings, as from a helper called with
+        // constants, can each be declared, so they get no hint
+        List<String> messages = new ArrayList<>();
+        for (String color : List.of("orange", "orange", "blue", "green", "red",
+                "black")) {
+            messages.add(
+                    assertThrows(ContentSecurityPolicyViolationException.class,
+                            () -> executeJsOnUi("return '" + color + "'"))
+                            .getMessage());
+        }
+
+        String hint = "different JavaScript strings, so the string is probably built";
+        for (String message : messages.subList(0, 5)) {
+            assertFalse(message.contains(hint), message);
+        }
+        String varying = messages.get(5);
+        assertTrue(varying.contains(hint), varying);
+        assertTrue(
+                varying.contains(
+                        "@JsStringFallback does not support strings like this"),
+                varying);
+    }
+
+    @Test
+    void warn_stringExecuteJs_logsOncePerCallSiteAndExpression() {
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.WARN);
+        Logger logger = mock(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            loggerFactory
+                    .when(() -> LoggerFactory.getLogger(
+                            ContentSecurityPolicyViolationReporter.class))
+                    .thenReturn(logger);
+
+            // One call site, as for an add-on that concatenates a value into
+            // the expression
+            executeJsOnUi("return 1");
+            executeJsOnUi("return 1");
+            executeJsOnUi("return 2");
+        }
+
+        ArgumentCaptor<String> messages = ArgumentCaptor.forClass(String.class);
+        verify(logger, times(2)).warn(messages.capture(), any(Throwable.class));
+        assertTrue(messages.getAllValues().get(0)
+                .contains("@JsExpression(\"return 1\")"));
+        assertTrue(messages.getAllValues().get(1)
+                .contains("@JsExpression(\"return 2\")"));
+    }
+
+    @Test
+    void warn_callSiteSendingManyStrings_stopsLoggingAtTheLimit() {
+        setup.getDeploymentConfiguration()
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.WARN);
+        Logger logger = mock(Logger.class);
+        // The number of reports a call site logs at most
+        int limit = 10;
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            loggerFactory
+                    .when(() -> LoggerFactory.getLogger(
+                            ContentSecurityPolicyViolationReporter.class))
+                    .thenReturn(logger);
+
+            // One call site, as for an add-on that concatenates a changing
+            // value into the expression
+            for (int i = 0; i < limit + 5; i++) {
+                executeJsOnUi("return " + i);
+            }
+            executeJsOnUi("return 0");
+        }
+
+        ArgumentCaptor<String> messages = ArgumentCaptor.forClass(String.class);
+        verify(logger, times(limit)).warn(messages.capture(),
+                any(Throwable.class));
+        assertFalse(messages.getAllValues().get(limit - 2)
+                .contains("further ones from it are not logged"));
+        assertTrue(messages.getAllValues().get(limit - 1)
+                .contains("further ones from it are not logged"));
+    }
+
     private static void reportFromComponent(String detail) {
         ContentSecurityPolicyViolationReporter.reportStringJavaScript(detail);
     }
@@ -446,6 +651,10 @@ class ContentSecurityPolicyModeTest {
 
     private void executeJsOnUi() {
         ui.getElement().executeJs("return 1");
+    }
+
+    private void executeJsOnUi(String expression, Object... parameters) {
+        ui.getElement().executeJs(expression, parameters);
     }
 
     private static void assertTraceLeadsFromApiToTest(Throwable violation,
