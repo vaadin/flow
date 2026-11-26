@@ -41,6 +41,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.simple.SimpleLoggerFactory;
 
+import com.vaadin.experimental.CoreFeatureFlagProvider;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.Tag;
@@ -130,6 +132,11 @@ public class VaadinAppShellInitializerTest {
     @Push(value = PushMode.MANUAL, transport = Transport.WEBSOCKET)
     @Theme(themeClass = AbstractTheme.class)
     public static class OffendingClass {
+    }
+
+    @Push(transport = Transport.SERVER_SENT_EVENTS)
+    public static class MyAppShellWithServerSentEventsPush
+            implements AppShellConfigurator {
     }
 
     public static class WebHolder extends Component {
@@ -437,6 +444,38 @@ public class VaadinAppShellInitializerTest {
 
         verify(pushConfiguration).setPushMode(PushMode.MANUAL);
         verify(pushConfiguration).setTransport(Transport.WEBSOCKET);
+    }
+
+    @Test
+    public void should_throw_when_appShellPushUsesServerSentEventsWithoutFeatureFlag() {
+        classes.add(MyAppShellWithServerSentEventsPush.class);
+
+        InvalidApplicationConfigurationException thrown = assertThrows(
+                InvalidApplicationConfigurationException.class,
+                () -> initializer.process(classes, servletContext));
+        assertTrue(thrown.getMessage()
+                .contains("com.vaadin.experimental.ssePushTransport=true"));
+        assertTrue(thrown.getMessage().contains(
+                "property `vaadin.experimental.ssePushTransport=true`"));
+        assertTrue(thrown.getMessage()
+                .contains(MyAppShellWithServerSentEventsPush.class.getName()));
+        // Copilot cannot be used when the application does not start
+        assertFalse(thrown.getMessage().contains("Copilot"));
+    }
+
+    @Test
+    public void should_modifyPushConfiguration_when_appShellPushUsesServerSentEventsWithFeatureFlag()
+            throws Exception {
+        FeatureFlags.get(context).getFeatures().stream()
+                .filter(CoreFeatureFlagProvider.SSE_PUSH_TRANSPORT::equals)
+                .forEach(feature -> feature.setEnabled(true));
+        classes.add(MyAppShellWithServerSentEventsPush.class);
+        initializer.process(classes, servletContext);
+
+        AppShellRegistry.getInstance(context)
+                .modifyPushConfiguration(pushConfiguration);
+
+        verify(pushConfiguration).setTransport(Transport.SERVER_SENT_EVENTS);
     }
 
     @Test

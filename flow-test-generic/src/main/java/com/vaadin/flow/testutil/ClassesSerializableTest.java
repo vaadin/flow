@@ -140,8 +140,10 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeFeatureRegistry",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeFeatures",
                 "com\\.vaadin\\.flow\\.internal\\.CustomElementNameValidator",
-                "com\\.vaadin\\.flow\\.internal\\.CspViolationReporter",
+                "com\\.vaadin\\.flow\\.internal\\.ContentSecurityPolicyViolationReporter(\\$.*)?",
+                "com\\.vaadin\\.flow\\.internal\\.JsStringFallbacks(\\$.*)?",
                 "com\\.vaadin\\.flow\\.internal\\.StackTraceUtil",
+                "com\\.vaadin\\.flow\\.internal\\.SessionLockScope",
                 "com\\.vaadin\\.flow\\.router\\.HighlightActions",
                 "com\\.vaadin\\.flow\\.router\\.HighlightConditions",
                 "com\\.vaadin\\.flow\\.router\\.ParameterDeserializer",
@@ -278,7 +280,6 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 // Static Utilities
                 "com\\.vaadin\\.flow\\.component\\.wakelock\\.WakeLock",
                 "com\\.vaadin\\.flow\\.js\\.JsDefinitionProxy",
-                "com\\.vaadin\\.flow\\.js\\.JsSnippets",
 
                 // Flow client classes
                 "com\\.vaadin\\.client\\..*",

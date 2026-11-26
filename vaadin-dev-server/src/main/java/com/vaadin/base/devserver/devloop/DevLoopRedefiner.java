@@ -65,12 +65,13 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ThemeUtils;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.theme.Theme;
 
@@ -1463,11 +1464,30 @@ final class DevLoopRedefiner {
         // browser through a restart that regenerates the file and rebuilds the
         // bundle. What identifies a function is what it runs, so that is what
         // the fingerprint is made of: renaming a method changes nothing the
-        // browser has, and editing what it declares changes everything.
-        if (type.isAnnotationPresent(JsDefinition.class)) {
-            for (Method method : type.getMethods()) {
+        // browser has, and editing what it declares changes everything. Any
+        // interface counts, not only a definition: an interface that is only
+        // extended by one does not need @JsDefinition, and its methods are
+        // generated as part of every definition that extends it.
+        if (type.isInterface()) {
+            for (Method method : ReflectTools.getCurrentPublicMethods(type)) {
                 if (method.isAnnotationPresent(JsExpression.class)) {
                     imports.add("jsdefinition:" + fingerprintOf(method));
+                }
+            }
+            // A fallback interface also puts the filters and event data it
+            // lists into the bundle, and its calls are generated apart from
+            // other calls, so marking or unmarking it changes their functions
+            JsStringFallback fallback = type
+                    .getAnnotation(JsStringFallback.class);
+            if (fallback != null) {
+                imports.add("jsstringfallback");
+                for (String filter : fallback.filters()) {
+                    imports.add("eventfilter:"
+                            + BundledEventData.getFunctionId(filter));
+                }
+                for (String eventData : fallback.eventData()) {
+                    imports.add("eventdata:"
+                            + BundledEventData.getFunctionId(eventData));
                 }
             }
         }
@@ -1481,8 +1501,9 @@ final class DevLoopRedefiner {
             imports.add("jssnippet:" + (parameterNames == null ? ""
                     : String.join(",", parameterNames.value())));
         }
-        // An @EventData value that the client would compile is generated into
-        // the bundle in the same way, and identified by the same kind of hash
+        // An @EventData value or a @DomEvent filter that the client would
+        // compile is generated into the bundle in the same way, and identified
+        // by the same kind of hash
         if (type.isAnnotationPresent(DomEvent.class)
                 && ComponentEvent.class.isAssignableFrom(type)) {
             imports.addAll(eventDataFingerprints(type));
@@ -1510,12 +1531,23 @@ final class DevLoopRedefiner {
 
     /**
      * What identifies the functions the build generates for the
-     * {@link com.vaadin.flow.component.EventData} values of a DOM event type.
-     * Scanned without a cache, as the build does, so the comparison sees what
-     * the class declares now.
+     * {@link com.vaadin.flow.component.EventData} values and the
+     * {@link DomEvent#filter()} of a DOM event type. Scanned without a cache,
+     * as the build does, so the comparison sees what the class declares now.
      */
-    @SuppressWarnings("unchecked")
     private static List<String> eventDataFingerprints(Class<?> type) {
+        List<String> fingerprints = new ArrayList<>(
+                bundledEventDataFingerprints(type));
+        String filter = BundledEventData.getBundledFilter(type);
+        if (filter != null) {
+            fingerprints.add(
+                    "eventfilter:" + BundledEventData.getFunctionId(filter));
+        }
+        return fingerprints;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<String> bundledEventDataFingerprints(Class<?> type) {
         try {
             return BundledEventData
                     .getBundledEventData(

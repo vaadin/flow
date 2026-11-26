@@ -38,6 +38,8 @@ import org.atmosphere.cpr.AtmosphereResourceImpl;
 import org.atmosphere.cpr.AtmosphereResponse;
 import org.atmosphere.cpr.Broadcaster;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 
 import com.vaadin.flow.component.UI;
@@ -45,6 +47,7 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -219,9 +222,10 @@ class PushHandlerTest {
                 pushed);
     }
 
-    @Test
-    void callWithUi_handlingFails_requestEndedEventReportsFailure()
-            throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void callWithUi_handlingFails_requestEndedEventReportsFailureWithoutCurrentUI(
+            boolean unlockFails) throws Exception {
         AtomicReference<UI> currentUi = new AtomicReference<>();
         AtomicReference<VaadinSession> currentSession = new AtomicReference<>();
         MockVaadinServletService service = new MockVaadinServletService() {
@@ -237,12 +241,24 @@ class PushHandlerTest {
                 return currentUi.get();
             }
         };
-        MockVaadinSession session = new MockVaadinSession(service);
+        AtomicBoolean failUnlock = new AtomicBoolean();
+        MockVaadinSession session = new MockVaadinSession(service) {
+            @Override
+            public void unlock() {
+                super.unlock();
+                if (failUnlock.get()) {
+                    // An unlock failure is logged, not thrown
+                    throw new IllegalStateException("unlock");
+                }
+            }
+        };
         currentSession.set(session);
         session.runWithLock(() -> {
             currentUi.set(new MockUI(session));
             return null;
         });
+        // A websocket message thread starts without current instances
+        CurrentInstance.clearAll();
         AtmosphereResource resource = mockWebsocketResource("1");
         Map<String, Object> attributes = new HashMap<>();
         AtmosphereRequest request = resource.getRequest();
@@ -252,8 +268,13 @@ class PushHandlerTest {
                 i.getArgument(1))).when(request)
                 .setAttribute(anyString(), any());
         List<RequestEndedEvent> ended = new ArrayList<>();
-        service.getEventBus().addListener(RequestEndedEvent.class, ended::add);
+        AtomicReference<UI> currentInListener = new AtomicReference<>();
+        service.getEventBus().addListener(RequestEndedEvent.class, event -> {
+            ended.add(event);
+            currentInListener.set(UI.getCurrent());
+        });
         IllegalStateException failure = new IllegalStateException("BOOM");
+        failUnlock.set(unlockFails);
 
         new PushHandler(service).callWithUi(resource, (r, ui) -> {
             throw failure;
@@ -262,6 +283,8 @@ class PushHandlerTest {
         assertEquals(1, ended.size());
         assertSame(failure, ended.get(0).getFailure().orElseThrow());
         assertTrue(ended.get(0).getResponse().isEmpty());
+        // The UI found under the lock is not current after the unlock
+        assertNull(currentInListener.get());
     }
 
     @Test
@@ -707,7 +730,7 @@ class PushHandlerTest {
 
             assertNull(VaadinSession.getCurrent());
         } finally {
-            VaadinSession.setCurrent(null);
+            CurrentInstance.clearAll();
         }
     }
 
@@ -717,8 +740,10 @@ class PushHandlerTest {
         try {
             mockConnectionLost(new MockVaadinSession(), true);
             assertNotNull(VaadinSession.getCurrent());
+            // The UI found under the lock is not current after the unlock
+            assertNull(UI.getCurrent());
         } finally {
-            VaadinSession.setCurrent(null);
+            CurrentInstance.clearAll();
         }
     }
 
@@ -943,7 +968,8 @@ class PushHandlerTest {
 
             @Override
             public UI findUI(VaadinRequest request) {
-                return null;
+                // Sets the UI as current, like the real findUI
+                return new MockUI(session);
             }
         };
         setProductionMode(service, false);

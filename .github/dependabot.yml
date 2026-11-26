@@ -21,3 +21,7 @@ updates:
       # Flow still supports JDK 21, and moving to 5.x is a deliberate decision.
       - dependency-name: "io.github.classgraph:classgraph"
         versions: [">= 5"]
+      # Stay on Jackson LTS releases. 3.1 is an LTS release and 3.4 is expected
+      # to be the next one, so the non-LTS 3.2 and 3.3 releases are skipped.
+      - dependency-name: "tools.jackson*"
+        versions: ["[3.2,3.4)"]

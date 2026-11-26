@@ -22,6 +22,11 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.Route;
 
 /**
@@ -36,6 +41,18 @@ import com.vaadin.flow.router.Route;
  */
 @Route(value = "com.vaadin.flow.uitest.ui.DelegateLeakView")
 public class DelegateLeakView extends Div {
+
+    @JsDefinition
+    public interface PopoverJs extends JsInvokers {
+        @JsExpression("this.showPopover();")
+        void showPopover();
+    }
+
+    @JsDefinition
+    public interface OverlayJs extends JsSnippets {
+        @JsExpression("return document.getElementById('overlay');")
+        JsFunction locateOverlay();
+    }
 
     public static final String EVENT_LOG_ID = "event-log";
     public static final String FIELD_ID = "field";
@@ -57,8 +74,8 @@ public class DelegateLeakView extends Div {
 
         // The component the delegate relays keydowns to; outside the overlay.
         final Div host = new Div(overlay);
-        Shortcuts.setShortcutListenOnElement(
-                "document.getElementById('overlay')", host);
+        Shortcuts.setShortcutListenOnElementLocator(
+                JsSnippets.of(OverlayJs.class).locateOverlay(), host);
 
         // (1) owner INSIDE the overlay, reached through the delegate.
         // Must fire for a keydown in that overlay.
@@ -72,8 +89,8 @@ public class DelegateLeakView extends Div {
                 () -> log.add(new Div(new Text(OUTSIDE_FIRED))), Key.KEY_S,
                 KeyModifier.ALT);
 
-        final NativeButton open = new NativeButton("Open overlay",
-                e -> overlay.getElement().executeJs("this.showPopover();"));
+        final NativeButton open = new NativeButton("Open overlay", e -> overlay
+                .getElement().executeJs(PopoverJs.class).showPopover());
         open.setId(OPEN_ID);
 
         add(open, host, log);

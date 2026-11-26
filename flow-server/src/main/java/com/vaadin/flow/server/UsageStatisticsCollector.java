@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -73,6 +74,26 @@ class UsageStatisticsCollector implements Serializable {
         addKotlinUsageStatistics(routeDataList);
         addFrontendToolUsageStatistics(configuration);
         addThemeAnnotationUsageStatistics(service);
+        addContentSecurityPolicyModeUsageStatistics(configuration);
+    }
+
+    /**
+     * Reports the configured {@link ContentSecurityPolicyMode} as a
+     * {@code flow/csp-<mode>} entry, also when it is
+     * {@link ContentSecurityPolicyMode#OFF}, so that the share of applications
+     * using each mode can be measured.
+     *
+     * @param configuration
+     *            the deployment configuration to read the mode from
+     */
+    private static void addContentSecurityPolicyModeUsageStatistics(
+            DeploymentConfiguration configuration) {
+        // A mocked configuration returns null instead of the default OFF
+        ContentSecurityPolicyMode mode = Objects.requireNonNullElse(
+                configuration.getContentSecurityPolicyMode(),
+                ContentSecurityPolicyMode.OFF);
+        UsageStatistics.markAsUsed(
+                "flow/csp-" + mode.name().toLowerCase(Locale.ROOT), null);
     }
 
     /**

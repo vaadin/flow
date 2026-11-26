@@ -23,12 +23,16 @@ import java.nio.file.Files;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.slf4j.Logger;
@@ -46,6 +50,7 @@ import com.vaadin.flow.testutil.FrontendStubs;
 import static com.vaadin.flow.server.frontend.NodeInstallation.LAST_USED_FILE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.mockito.ArgumentMatchers.any;
@@ -140,6 +145,78 @@ class NodeResolverTest {
                 "An installation unused for over 6 months should be removed once a new version is installed");
         assertTrue(recent.getDirectory().isDirectory(),
                 "A recently used installation should be kept");
+    }
+
+    @Test
+    void resolve_whileAnotherBuildInstalls_waitsAndUsesItsInstallation()
+            throws Exception {
+        requireShellStubs();
+        LockFile otherBuild = lockInstallOf(VERSION);
+        otherBuild.acquire();
+        // The other build is in the middle of copying, so the binary is
+        // already there. Nothing is downloadable, so installing again would
+        // fail.
+        NodeInstallation installation = stubInstallation(VERSION);
+        CompletableFuture<ActiveNodeInstallation> resolved = CompletableFuture
+                .supplyAsync(() -> resolve(VERSION));
+
+        Thread.sleep(200);
+        assertFalse(resolved.isDone(),
+                "Resolving should wait while another build is installing, even when the binary is already there");
+        otherBuild.release();
+
+        assertEquals(installation.getNodeExecutable().getAbsolutePath(),
+                resolved.get(30, TimeUnit.SECONDS).nodeExecutable());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void resolve_incompleteInstallation_isInstalledAgain(boolean npmCliCopied)
+            throws IOException {
+        requireShellStubs();
+        NodeInstallation partlyCopied = stubInstallation(VERSION);
+        File npmCli = partlyCopied.getNpmCliScript();
+        if (npmCliCopied) {
+            // Died after npm-cli.js but before the rest of npm
+            Files.writeString(
+                    new File(partlyCopied.getDirectory(),
+                            NodeInstallation.INSTALLING_FILE).toPath(),
+                    "", StandardCharsets.UTF_8);
+            Files.writeString(npmCli.toPath(), "partly copied",
+                    StandardCharsets.UTF_8);
+        } else {
+            // Died before npm, as an older Flow version without a marker
+            assertTrue(npmCli.delete());
+        }
+        prepareDownloadableNode(VERSION);
+
+        ActiveNodeInstallation active = resolve(VERSION);
+
+        assertEquals("", Files.readString(npmCli.toPath()),
+                "Installing again should replace the partly copied npm");
+        assertFalse(partlyCopied.isIncomplete(),
+                "A completed install should no longer be marked incomplete");
+        assertEquals(npmCli.getAbsolutePath(), active.npmCliScript());
+    }
+
+    @Test
+    void resolve_whileAnotherBuildInstallsOtherVersion_installsWithoutWaiting()
+            throws Exception {
+        requireShellStubs();
+        LockFile otherBuild = lockInstallOf("v22.0.0");
+        otherBuild.acquire();
+        prepareDownloadableNode(VERSION);
+        try {
+            ActiveNodeInstallation active = assertTimeoutPreemptively(
+                    Duration.ofSeconds(30), () -> resolve(VERSION));
+
+            assertEquals(
+                    NodeInstallation.forVersion(vaadinHome, VERSION)
+                            .getNodeExecutable().getAbsolutePath(),
+                    active.nodeExecutable());
+        } finally {
+            otherBuild.release();
+        }
     }
 
     @Test
@@ -243,6 +320,11 @@ class NodeResolverTest {
             assertFalse(resolver.isSupportedGlobalVersion(
                     new FrontendVersion(major, 0, 0), GLOBAL_NODE_FOLDER));
         }
+    }
+
+    private LockFile lockInstallOf(String version) {
+        return new LockFile(NodeInstallation.forVersion(vaadinHome, version)
+                .getInstallLockFile().toPath(), "test");
     }
 
     private ActiveNodeInstallation resolve(String nodeVersion) {
