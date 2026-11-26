@@ -280,14 +280,15 @@ let navigateInProgress = false;
  */
 function useQueuedNavigate(
     waitReference: React.MutableRefObject<Promise<void> | undefined>,
-    skipServer: React.MutableRefObject<boolean>
+    skipServer: React.MutableRefObject<boolean>,
+    commitPending: React.MutableRefObject<boolean>
 ): NavigateFn {
     const navigate = useNavigate();
     const navigateQueue = useRef<NavigateOpts[]>([]).current;
     const [navigateQueueLength, setNavigateQueueLength] = useState(0);
 
     const dequeueNavigation = useCallback(() => {
-        if (navigateInProgress) {
+        if (navigateInProgress || commitPending.current) {
             dequeueNavigationAfterCurrentTask();
             return;
         }
@@ -359,18 +360,23 @@ function Flow() {
     });
     const location = useLocation();
     // Whether the blocked navigation is applied without a server round-trip.
-    // Only the blocker effect of that navigation reads and clears it.
+    // The blocker effect of that navigation reads and clears it, the location
+    // effect clears it for a navigation that was not blocked.
     const skipServer = useRef<boolean>(false);
     // Whether the server has handled the location that is committed next, so
     // the location effect only fires 'vaadin-navigated'. Kept apart from
     // skipServer because the location effect of a navigation can run after
     // the next queued navigation has started.
     const navigated = useRef<boolean>(false);
+    // Whether a navigation that the blocker let through has not reached the
+    // location effect yet. React Router does not block a navigation started
+    // in that window, so the queue waits for it to end.
+    const commitPending = useRef<boolean>(false);
     const blockerHandled = useRef<boolean>(false);
     const fromAnchor = useRef<boolean>(false);
     const containerRef = useRef<RouterContainer | undefined>(undefined);
     const roundTrip = useRef<Promise<void> | undefined>(undefined);
-    const queuedNavigate = useQueuedNavigate(roundTrip, skipServer);
+    const queuedNavigate = useQueuedNavigate(roundTrip, skipServer, commitPending);
     const basename = useHref('/');
     const blockerRef = useRef<Blocker>(blocker);
     blockerRef.current = blocker;
@@ -386,7 +392,13 @@ function Flow() {
     const proceedBlocker = useCallback(() => {
         const current = blockerRef.current;
         if (current.state === 'blocked') {
-            current.proceed();
+            commitPending.current = true;
+            try {
+                current.proceed();
+            } catch (e) {
+                commitPending.current = false;
+                throw e;
+            }
         }
     }, []);
 
@@ -631,9 +643,13 @@ function Flow() {
     }, [blocker.state, blocker.location]);
 
     useEffect(() => {
+        commitPending.current = false;
         if (blocker.state === 'blocked') {
             return;
         }
+        // A navigation that reaches this point without being blocked leaves
+        // its decision unused, so it must not apply to the next navigation.
+        skipServer.current = false;
         if (navigated.current) {
             navigated.current = false;
             fireNavigated(location.pathname, location.search);
