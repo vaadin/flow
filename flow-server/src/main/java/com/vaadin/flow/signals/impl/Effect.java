@@ -252,8 +252,9 @@ public class Effect implements Serializable {
         return new TransientListener() {
             /*
              * Set while the listener is added again from a new access to
-             * deliver a change that another thread made but that the original
-             * context didn't show.
+             * deliver a change that was made outside the original context's
+             * transaction, typically by another thread, and that the original
+             * context thus didn't show.
              */
             private boolean deliveringHiddenChange;
 
@@ -330,8 +331,9 @@ public class Effect implements Serializable {
 
         if (hiddenChange) {
             /*
-             * Another thread made the change, even though the new access that
-             * delivers it runs with the owner UI as the current UI
+             * The change was made outside the session transaction, typically by
+             * another thread, even though the new access that delivers it runs
+             * with the owner UI as the current UI
              */
             invalidatedFromBackground = true;
         } else if (ownerUI != null) {

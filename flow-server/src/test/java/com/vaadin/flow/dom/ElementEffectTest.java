@@ -568,6 +568,13 @@ class ElementEffectTest {
 
         assertEquals(List.of("initial", "changed"), observed);
         assertEquals(List.of(false, true), backgroundChanges);
+
+        // A later change made by the UI itself is not a background change
+        UI.setCurrent(ui);
+        signal.set("again");
+
+        assertEquals(List.of("initial", "changed", "again"), observed);
+        assertEquals(List.of(false, true, false), backgroundChanges);
     }
 
     @ParameterizedTest
