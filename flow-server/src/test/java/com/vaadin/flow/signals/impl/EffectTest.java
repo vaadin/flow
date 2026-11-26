@@ -77,6 +77,48 @@ class EffectTest extends SignalTestBase {
     }
 
     @Test
+    void changeHiddenByTransaction_defaultFreshReadDispatcher_reRunsAsBackgroundChange() {
+        TestExecutor freshReadDispatcher = useTestEffectDispatcher();
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> observed = new ArrayList<>();
+
+        Transaction.runInTransaction(() -> {
+            signal.peek();
+            Signal.runWithoutTransaction(() -> signal.set("hidden"));
+            new Effect(
+                    ctx -> observed
+                            .add(signal.get() + ":" + ctx.isBackgroundChange()),
+                    Runnable::run);
+        }, Transaction.Type.WRITE_THROUGH);
+        assertEquals(List.of("initial:false"), observed);
+
+        freshReadDispatcher.runPendingTasks();
+        assertEquals(List.of("initial:false", "hidden:true"), observed);
+    }
+
+    @Test
+    void changeHiddenByTransaction_customFreshReadDispatcher_isUsed() {
+        TestExecutor defaultDispatcher = useTestEffectDispatcher();
+        List<Runnable> freshReadTasks = new ArrayList<>();
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> observed = new ArrayList<>();
+
+        Transaction.runInTransaction(() -> {
+            signal.peek();
+            Signal.runWithoutTransaction(() -> signal.set("hidden"));
+            new Effect(ctx -> observed.add(signal.get()), Runnable::run,
+                    freshReadTasks::add);
+        }, Transaction.Type.WRITE_THROUGH);
+
+        defaultDispatcher.runPendingTasks();
+        assertEquals(List.of("initial"), observed);
+
+        assertEquals(1, freshReadTasks.size());
+        freshReadTasks.get(0).run();
+        assertEquals(List.of("initial", "hidden"), observed);
+    }
+
+    @Test
     void newEffect_closeImmediately_actionIsRunOnce() {
         var dependency = createDependency();
         AtomicInteger count = new AtomicInteger();

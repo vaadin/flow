@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jspecify.annotations.Nullable;
@@ -27,10 +26,8 @@ import org.jspecify.annotations.Nullable;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableExecutor;
 import com.vaadin.flow.function.SerializableRunnable;
-import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.DeniedSignalUsageException;
 import com.vaadin.flow.signals.EffectContext;
@@ -58,6 +55,7 @@ public class Effect implements Serializable {
             .withInitial(() -> new LinkedList<>());
 
     private SerializableExecutor dispatcher;
+    private SerializableExecutor freshReadDispatcher;
     private final List<Registration> registrations = new ArrayList<>();
     private final List<UsageTracker.Usage> usages = new ArrayList<>();
 
@@ -152,7 +150,42 @@ public class Effect implements Serializable {
      */
     public Effect(ContextualEffectAction action,
             SerializableExecutor dispatcher) {
+        this(action, dispatcher,
+                SignalEnvironment.getDefaultEffectDispatcher()::execute);
+    }
+
+    /**
+     * Creates a context-aware signal effect with the given action, a custom
+     * dispatcher and a custom dispatcher for changes that a transaction hides.
+     * <p>
+     * A transaction with repeatable reads keeps returning the values it first
+     * read, so a change that is made outside the transaction in the meantime
+     * isn't visible to the effect while the transaction applies. The effect
+     * uses the fresh read dispatcher to start listening again from a context
+     * where the change is visible, and is then run again for that change with
+     * {@link EffectContext#isBackgroundChange()} returning <code>true</code>.
+     * The fresh read dispatcher must thus run its tasks outside the transaction
+     * that is current when it is invoked, e.g. on another thread or after the
+     * transaction has ended. A dispatcher that runs the task right away means
+     * that the effect only reacts to changes made after that.
+     *
+     * @see SignalEnvironment#getDefaultEffectDispatcher()
+     *
+     * @param action
+     *            the context-aware action to use, not <code>null</code>
+     * @param dispatcher
+     *            the dispatcher to use when handling changes, not
+     *            <code>null</code>
+     * @param freshReadDispatcher
+     *            the dispatcher to use for handling changes that the current
+     *            transaction hides, not <code>null</code>
+     */
+    public Effect(ContextualEffectAction action,
+            SerializableExecutor dispatcher,
+            SerializableExecutor freshReadDispatcher) {
         assert action != null;
+        assert freshReadDispatcher != null;
+        this.freshReadDispatcher = freshReadDispatcher;
         this.action = () -> {
             try {
                 EffectContext ctx = new EffectContext(firstRun,
@@ -270,7 +303,11 @@ public class Effect implements Serializable {
 
             @Override
             public boolean runWithFreshReads(Runnable task) {
-                return runInNextAccess(() -> {
+                SerializableExecutor executor;
+                try (var ignored = lock.lock()) {
+                    executor = freshReadDispatcher;
+                }
+                executor.execute(() -> {
                     deliveringHiddenChange = true;
                     try {
                         task.run();
@@ -278,42 +315,9 @@ public class Effect implements Serializable {
                         deliveringHiddenChange = false;
                     }
                 });
+                return true;
             }
         };
-    }
-
-    /*
-     * While a session is locked, shared signals are read through a
-     * session-scoped transaction that is cleared before each pending access
-     * task. Running the task as a new access thus lets it see changes that the
-     * current access doesn't show. The access runs before the response is
-     * written, so the effect's update is sent in the same round trip.
-     *
-     * The task runs with the current UI as the current UI if that UI is still
-     * in the session, so that the effect runs right away in that access instead
-     * of being queued once more. The access is queued on the session rather
-     * than on the UI so that it still runs if the UI is closed in the meantime.
-     */
-    private static boolean runInNextAccess(Runnable task) {
-        VaadinSession session = VaadinSession.getCurrent();
-        if (session == null || !session.hasLock()) {
-            return false;
-        }
-        UI ui = UI.getCurrent();
-        session.access(() -> {
-            if (ui != null && ui.getSession() == session) {
-                Map<Class<?>, CurrentInstance> old = CurrentInstance
-                        .setCurrent(ui);
-                try {
-                    task.run();
-                } finally {
-                    CurrentInstance.restoreInstances(old);
-                }
-            } else {
-                task.run();
-            }
-        });
-        return true;
     }
 
     private boolean onDependencyChange(boolean immediate,
@@ -416,6 +420,25 @@ public class Effect implements Serializable {
         assert dispatcher != null;
         try (var ignored = lock.lock()) {
             this.dispatcher = dispatcher;
+        }
+    }
+
+    /**
+     * Sets the dispatcher to use for handling changes that the current
+     * transaction hides. This can be used to change the execution context
+     * before re-activating a passivated effect.
+     *
+     * @see #Effect(ContextualEffectAction, SerializableExecutor,
+     *      SerializableExecutor)
+     *
+     * @param freshReadDispatcher
+     *            the new fresh read dispatcher to use, not <code>null</code>
+     */
+    public void setFreshReadDispatcher(
+            SerializableExecutor freshReadDispatcher) {
+        assert freshReadDispatcher != null;
+        try (var ignored = lock.lock()) {
+            this.freshReadDispatcher = freshReadDispatcher;
         }
     }
 

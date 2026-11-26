@@ -45,7 +45,6 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.DeniedSignalUsageException;
 import com.vaadin.flow.signals.Signal;
-import com.vaadin.flow.signals.impl.Effect;
 import com.vaadin.flow.signals.local.ListSignal;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.SharedListSignal;
@@ -609,61 +608,6 @@ class ElementEffectTest {
         service.runPendingAccessTasks(session);
 
         assertEquals(List.of(7, 8), observed);
-    }
-
-    @Test
-    void effect_sharedSignalChangeHiddenBySessionTransactionWithoutUI_reRunsInNextAccess() {
-        CurrentInstance.clearAll();
-        VaadinService.setCurrent(service);
-
-        var session = new MockVaadinSession(service);
-        session.lock();
-        VaadinSession.setCurrent(session);
-
-        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
-        signal.peek();
-        Signal.runWithoutTransaction(() -> signal.set("changed"));
-
-        List<String> observed = new ArrayList<>();
-        new Effect(() -> observed.add(signal.get()), Runnable::run);
-        assertEquals(List.of("initial"), observed);
-
-        service.runPendingAccessTasks(session);
-
-        assertEquals(List.of("initial", "changed"), observed);
-    }
-
-    @ParameterizedTest
-    @ValueSource(booleans = { false, true })
-    void effect_hiddenSharedSignalChangeDelivered_runsWithUIOnlyIfStillInSession(
-            boolean closeUI) {
-        CurrentInstance.clearAll();
-        VaadinService.setCurrent(service);
-
-        var session = new MockVaadinSession(service);
-        session.lock();
-        VaadinSession.setCurrent(session);
-        var ui = new MockUI(session);
-        UI.setCurrent(ui);
-
-        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
-        signal.peek();
-        Signal.runWithoutTransaction(() -> signal.set("changed"));
-
-        List<String> observed = new ArrayList<>();
-        AtomicReference<UI> currentUI = new AtomicReference<>();
-        new Effect(() -> {
-            observed.add(signal.get());
-            currentUI.set(UI.getCurrent());
-        }, Runnable::run);
-        if (closeUI) {
-            session.removeUI(ui);
-        }
-
-        service.runPendingAccessTasks(session);
-
-        assertEquals(List.of("initial", "changed"), observed);
-        assertSame(closeUI ? null : ui, currentUI.get());
     }
 
     @Test

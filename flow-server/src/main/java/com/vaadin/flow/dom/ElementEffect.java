@@ -84,8 +84,11 @@ public final class ElementEffect implements Serializable {
             // at the call site rather than delayed until attach. The probe uses
             // Runnable::run so the first revalidation is synchronous. The
             // effect is then passivated so it does not actively listen for
-            // changes while the element is detached.
-            effect = new Effect(this::executeAction, Runnable::run);
+            // changes while the element is detached. Changes hidden by the
+            // current transaction are also handled synchronously, i.e. not at
+            // all, since the effect checks for changes again on attach.
+            effect = new Effect(this::executeAction, Runnable::run,
+                    Runnable::run);
             effect.passivate();
         }
 
@@ -299,16 +302,34 @@ public final class ElementEffect implements Serializable {
             }
         };
 
+        /*
+         * While the session is locked, shared signals are read through a
+         * session-scoped transaction that is cleared before each pending access
+         * task. A change that another thread made after this access first read
+         * a signal is thus visible in a new access. Such an access is run
+         * before the response is written, so the update is sent in the same
+         * round trip.
+         */
+        SerializableExecutor freshReadDispatcher = command -> {
+            try {
+                ui.access(command::run);
+            } catch (UIDetachedException e) {
+                // Effect was concurrently disabled -> nothing do to
+            }
+        };
+
         if (effect == null) {
             // First attach for the already-attached path (effect not yet
             // created): create the Effect directly with the UI dispatcher so
             // that the initial run uses the proper execution context.
-            effect = new Effect(this::executeAction, uiDispatcher);
+            effect = new Effect(this::executeAction, uiDispatcher,
+                    freshReadDispatcher);
         } else {
             // Re-attach after detach (or the not-attached probe path):
-            // swap the dispatcher and activate. activate() will only re-run
+            // swap the dispatchers and activate. activate() will only re-run
             // the callback if a signal changed while the element was detached.
             effect.setDispatcher(uiDispatcher);
+            effect.setFreshReadDispatcher(freshReadDispatcher);
             effect.activate();
         }
         effect.setOwnerUI(ui);
