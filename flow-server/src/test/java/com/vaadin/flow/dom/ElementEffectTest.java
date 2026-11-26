@@ -541,6 +541,37 @@ class ElementEffectTest {
     }
 
     @Test
+    void effect_detachedComponentReadsHiddenSharedSignalChange_reRunsAfterAttach() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+        var ui = new MockUI(session);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        // Primes the session transaction's repeatable read with "initial"
+        signal.peek();
+        Signal.runWithoutTransaction(() -> signal.set("changed"));
+
+        List<String> observed = new ArrayList<>();
+        List<Boolean> backgroundChanges = new ArrayList<>();
+        TestComponent component = new TestComponent();
+        Signal.effect(component, ctx -> {
+            observed.add(signal.get());
+            backgroundChanges.add(ctx.isBackgroundChange());
+        });
+        assertEquals(List.of("initial"), observed);
+
+        ui.add(component);
+        service.runPendingAccessTasks(session);
+
+        assertEquals(List.of("initial", "changed"), observed);
+        assertEquals(List.of(false, true), backgroundChanges);
+    }
+
+    @Test
     void effect_createdAfterSharedSignalUpdatedOutsideSessionTransaction_reRunsBeforeResponse() {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);
