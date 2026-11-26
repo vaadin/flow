@@ -28,6 +28,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
@@ -54,7 +56,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -559,8 +560,10 @@ class ElementEffectTest {
         assertEquals(List.of("initial", "changed"), observed);
     }
 
-    @Test
-    void effect_readsComputedOfSharedSignalUpdatedOutsideSessionTransaction_reRunsBeforeResponse() {
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void effect_readsComputedOfSharedSignalUpdatedOutsideSessionTransaction_reRunsBeforeResponse(
+            boolean otherThreadReadsComputed) {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);
 
@@ -573,10 +576,13 @@ class ElementEffectTest {
         Signal<Integer> length = Signal.computed(() -> signal.get().length());
         // Primes the session transaction with the cached value 7
         length.peek();
-        // Another thread changes the signal and caches the new value 8
+        // Another thread changes the signal and possibly caches the new
+        // value 8
         Signal.runWithoutTransaction(() -> {
             signal.set("changed!");
-            length.peek();
+            if (otherThreadReadsComputed) {
+                length.peek();
+            }
         });
 
         List<Integer> observed = new ArrayList<>();
@@ -610,8 +616,10 @@ class ElementEffectTest {
         assertEquals(List.of("initial", "changed"), observed);
     }
 
-    @Test
-    void effect_uiClosedBeforeHiddenSharedSignalChangeDelivered_stillReRuns() {
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void effect_hiddenSharedSignalChangeDelivered_runsWithUIOnlyIfStillInSession(
+            boolean closeUI) {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);
 
@@ -626,17 +634,19 @@ class ElementEffectTest {
         Signal.runWithoutTransaction(() -> signal.set("changed"));
 
         List<String> observed = new ArrayList<>();
-        AtomicReference<UI> currentUI = new AtomicReference<>(ui);
+        AtomicReference<UI> currentUI = new AtomicReference<>();
         new Effect(() -> {
             observed.add(signal.get());
             currentUI.set(UI.getCurrent());
         }, Runnable::run);
-        session.removeUI(ui);
+        if (closeUI) {
+            session.removeUI(ui);
+        }
 
         service.runPendingAccessTasks(session);
 
         assertEquals(List.of("initial", "changed"), observed);
-        assertNull(currentUI.get());
+        assertSame(closeUI ? null : ui, currentUI.get());
     }
 
     @Test
