@@ -109,6 +109,12 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
      * detection: they are few, and they are usually rebuilt with the same
      * file name, so a change to their bytecode alone (e.g. the JavaScript of
      * a `@JsDefinition` interface) must still invalidate the bundle.
+     *
+     * A jar that differs on every build, e.g. because its manifest carries a
+     * build timestamp, therefore reruns this task every time. Such attributes
+     * can be left out of the comparison with Gradle's runtime classpath
+     * normalization:
+     * `normalization { runtimeClasspath { metaInf { ignoreAttribute("Build-Time") } } }`.
      */
     @get:Classpath
     internal abstract val projectDependencyFiles: ConfigurableFileCollection
