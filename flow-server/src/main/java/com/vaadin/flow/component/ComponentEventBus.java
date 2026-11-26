@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import tools.jackson.databind.JsonNode;
 
@@ -38,6 +39,7 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.SuppressForbidden;
@@ -332,7 +334,16 @@ public class ComponentEventBus implements Serializable {
                     bundledEventData);
         }
 
-        if (BundledEventData.isBundledFilter(filter)) {
+        boolean bundledFilter = BundledEventData.isBundledFilter(filter);
+        if (!bundledEventData.isEmpty() || bundledFilter) {
+            BundleUtils.checkJsFunctionsBundled(eventType,
+                    () -> Stream
+                            .concat(bundledEventData.stream(),
+                                    bundledFilter ? Stream.of(filter)
+                                            : Stream.empty())
+                            .map(BundledEventData::getFunctionId).toList());
+        }
+        if (bundledFilter) {
             ElementListenerMap.setBundledFilter(registration, filter);
         } else if (!"".equals(filter)) {
             registration.setFilter(filter);
