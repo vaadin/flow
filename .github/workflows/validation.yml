@@ -40,12 +40,14 @@ env:
   # artifact a job asked for. connectionMaxTtl keeps the 25 seconds the wagon
   # property was meant to set, against a resolver default of 300.
   #
-  # The global settings file reads the public repository groups on
-  # repository.jboss.org from Central instead. JBoss parent poms the
+  # The global settings file resolves Central through Google's mirror, because
+  # Central rate-limits the IP ranges GitHub-hosted runners share with every
+  # other project, and reads the public repository groups on
+  # repository.jboss.org from that mirror too. JBoss parent poms the
   # wildfly-maven-plugin pulls in list that host ahead of Central for some
   # BOMs, and when it answers 503 the retries above held the JBoss EAP dev loop
-  # job for up to 11 minutes before its tests started. The path is absolute
-  # because tests fork mvn from module directories.
+  # job for up to 11 minutes before its tests started. See the comment in that
+  # file. The path is absolute because tests fork mvn from module directories.
   MAVEN_ARGS: >-
     -gs ${{ github.workspace }}/.github/maven/settings.xml
     -Daether.connector.http.retryHandler.count=3
