@@ -115,7 +115,7 @@ jobs:
         # Eclipse stays quiet and which resolves nowhere, and dependency:resolve
         # would leave every build plugin uncached.
         run: |
-          cmd="mvn install -B -ntp -DskipTests -pl \!flow-plugins/flow-gradle-plugin"
+          cmd="mvn install -B -ntp -DskipTests -Pcoverage -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Resolve what only the integration test modules pull
         if: ${{ steps.probe.outputs.cache-hit != 'true' }}
