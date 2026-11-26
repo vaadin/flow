@@ -35,6 +35,8 @@ public class QueuedHistoryUpdateView extends Div
 
     static final String ROUTE = "queued-history-update";
     static final String UPDATE_BUTTON_ID = "update";
+    static final String LEAVE_BUTTON_ID = "leave";
+    static final String CLIENT_ROUTE = "react";
     static final String ENTERED_ID = "entered";
     static final int ROUNDS = 10;
 
@@ -51,8 +53,18 @@ public class QueuedHistoryUpdateView extends Div
             }
         });
         update.setId(UPDATE_BUTTON_ID);
+
+        NativeButton leave = new NativeButton(
+                "Leave to client route and update history", e -> {
+                    History history = getUI().orElseThrow().getPage()
+                            .getHistory();
+                    history.pushState(null, CLIENT_ROUTE, true);
+                    history.replaceState(null, CLIENT_ROUTE + "?updated");
+                });
+        leave.setId(LEAVE_BUTTON_ID);
+
         entered.setId(ENTERED_ID);
-        add(update, entered);
+        add(update, leave, entered);
     }
 
     @Override

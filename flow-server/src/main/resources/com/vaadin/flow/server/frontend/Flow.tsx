@@ -370,7 +370,8 @@ function Flow() {
     const navigated = useRef<boolean>(false);
     // Whether a navigation that the blocker let through has not reached the
     // location effect yet. React Router does not block a navigation started
-    // in that window, so the queue waits for it to end.
+    // in that window, so the queue waits for it to end. Cleared also when
+    // Flow unmounts.
     const commitPending = useRef<boolean>(false);
     const blockerHandled = useRef<boolean>(false);
     const fromAnchor = useRef<boolean>(false);
@@ -538,6 +539,9 @@ function Flow() {
             window.removeEventListener("popstate", flowNavigation);
             window.removeEventListener('click', navigateEventHandler);
             flowReact.active = false;
+            // Leaving to a client route unmounts Flow before its location
+            // effect runs, so the queue must not keep waiting for it
+            commitPending.current = false;
         };
     }, []);
 

@@ -57,6 +57,26 @@ public class QueuedHistoryUpdateIT extends AbstractDefaultIT {
                 "Only the updates with callback should enter the view");
     }
 
+    @BrowserTest
+    public void leaveToClientRoute_queuedHistoryUpdateIsApplied() {
+        open();
+        waitForEntered(QueuedHistoryUpdateView.ROUTE);
+
+        $(NativeButtonElement.class).id(QueuedHistoryUpdateView.LEAVE_BUTTON_ID)
+                .click();
+
+        waitForElementPresent(By.id("react"));
+        String expectedUrl = getRootURL() + "/"
+                + QueuedHistoryUpdateView.CLIENT_ROUTE + "?updated";
+        try {
+            waitUntil(driver -> expectedUrl.equals(driver.getCurrentUrl()));
+        } catch (TimeoutException e) {
+            fail("Expected the history update queued after leaving to the client route to be applied, URL: "
+                    + getDriver().getCurrentUrl());
+        }
+        checkLogsForErrors();
+    }
+
     private void waitForEntered(String location) {
         try {
             waitUntil(driver -> getEntered().endsWith(location));
