@@ -21,6 +21,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +48,9 @@ import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.js.JsStringFallback;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.Options;
@@ -74,6 +78,13 @@ class JsDefinitionHotswapperTest {
     interface CounterJs extends JsInvokers {
         @JsExpression("this.count = ($0 || 0) + 1")
         void count(Integer from);
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    interface FallbackJs extends JsInvokers {
+        @JsExpression("this.focus()")
+        void focus();
     }
 
     @JsFunctionParameterNames({ "item" })
@@ -430,5 +441,36 @@ class JsDefinitionHotswapperTest {
 
         assertTrue(hotswapper.reported.isEmpty(),
                 "a class that declares no JavaScript is not a frontend change");
+    }
+
+    @Test
+    void stringFallbackChanged_listedForTheServer() throws IOException {
+        classesChanged(FallbackJs.class);
+
+        File list = Path.of(projectFolder.getPath(), "target", "classes",
+                Constants.VAADIN_SERVLET_RESOURCES,
+                Constants.JS_STRING_FALLBACKS_FILE).toFile();
+        assertTrue(Files.readString(list.toPath())
+                .contains(FallbackJs.class.getName()), list::toString);
+    }
+
+    @Test
+    void stringFallbackChanged_gradleProject_listedWithGradleResources()
+            throws IOException {
+        ((MockDeploymentConfiguration) service.getDeploymentConfiguration())
+                .setApplicationOrSystemProperty(InitParameters.BUILD_FOLDER,
+                        "build");
+        // What Gradle has on the class path of the running application
+        File gradleResources = Path
+                .of(projectFolder.getPath(), "build", "resources", "main")
+                .toFile();
+        gradleResources.mkdirs();
+
+        classesChanged(FallbackJs.class);
+
+        File list = new File(gradleResources, Constants.VAADIN_SERVLET_RESOURCES
+                + Constants.JS_STRING_FALLBACKS_FILE);
+        assertTrue(Files.readString(list.toPath())
+                .contains(FallbackJs.class.getName()), list::toString);
     }
 }
