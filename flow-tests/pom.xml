@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.4-SNAPSHOT</version>
+    <version>25.5-SNAPSHOT</version>
   </parent>
   <artifactId>flow-tests</artifactId>
   <packaging>pom</packaging>
@@ -32,6 +32,9 @@
 
     <maven.deploy.skip>true</maven.deploy.skip>
     <flow.apicmp.skip>true</flow.apicmp.skip>
+    <!-- The test applications call the APIs that send JavaScript as a
+         string on purpose, see forbidden-apis/string-javascript.txt -->
+    <forbiddenapis.skip>true</forbiddenapis.skip>
     <!-- Used in the tests, should be overridden for each module to support
             concurrent running of test modules. -->
     <server.port>8888</server.port>
@@ -41,9 +44,10 @@
     <exclude.windows.failed.it.tests/>
 
     <!-- Skip these categories in validation, use -Pslow-tests to run them -->
-    <excludedGroups>com.vaadin.flow.testcategory.SlowTests,
+    <slowTestGroups>com.vaadin.flow.testcategory.SlowTests,
             com.vaadin.flow.testcategory.ScreenshotTests,
-            com.vaadin.flow.testcategory.PushTests,</excludedGroups>
+            com.vaadin.flow.testcategory.PushTests,</slowTestGroups>
+    <excludedGroups>${slowTestGroups}</excludedGroups>
 
     <!-- Surefire/Failsafe test framework provider for the IT modules. Defaults
             to the JUnit 4 provider; modules running their ITs on JUnit Platform
@@ -65,6 +69,11 @@
     <vaadin.devServerPort>0</vaadin.devServerPort>
     <vaadin.frontend.hotdeploy>true</vaadin.frontend.hotdeploy>
     <vaadin.devmode.hostsAllowed>*</vaadin.devmode.hostsAllowed>
+    <!-- Content Security Policy mode of the test applications: off, warn or
+            strict. Run with -Dvaadin.contentSecurityPolicy=off to test without it.
+            test-csp-off, test-csp-strict and test-csp-strict-spring-security
+            pin their own value and ignore this property. -->
+    <vaadin.contentSecurityPolicy>strict</vaadin.contentSecurityPolicy>
   </properties>
 
   <dependencies>
@@ -113,6 +122,17 @@
   <build>
     <pluginManagement>
       <plugins>
+        <!-- spring-boot:start for the modules that run a Spring Boot
+             application -->
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <configuration>
+            <systemPropertyVariables>
+              <vaadin.contentSecurityPolicy>${vaadin.contentSecurityPolicy}</vaadin.contentSecurityPolicy>
+            </systemPropertyVariables>
+          </configuration>
+        </plugin>
         <plugin>
           <groupId>com.vaadin</groupId>
           <artifactId>flow-maven-plugin</artifactId>
@@ -209,6 +229,7 @@
               <vaadin.devmode.vite.options>${vaadin.devmode.vite.options}</vaadin.devmode.vite.options>
               <vaadin.frontend.hotdeploy>${vaadin.frontend.hotdeploy}</vaadin.frontend.hotdeploy>
               <vaadin.devmode.hostsAllowed>${vaadin.devmode.hostsAllowed}</vaadin.devmode.hostsAllowed>
+              <vaadin.contentSecurityPolicy>${vaadin.contentSecurityPolicy}</vaadin.contentSecurityPolicy>
             </systemProperties>
           </configuration>
           <dependencies>
@@ -350,8 +371,12 @@
       </activation>
       <modules>
         <module>test-default</module>
+        <module>test-csp-strict</module>
+        <module>test-csp-strict-spring-security</module>
+        <module>test-csp-off</module>
         <module>test-pwa</module>
         <module>test-pwa/pom-production.xml</module>
+        <module>test-pwa/pom-devbundle.xml</module>
         <module>test-pwa-disabled-offline</module>
         <module>test-pwa-disabled-offline/pom-production.xml</module>
         <module>test-router-custom-context</module>
@@ -486,9 +511,7 @@
       </activation>
       <properties>
         <groups/>
-        <excludedGroups>com.vaadin.flow.testcategory.SlowTests,
-                    com.vaadin.flow.testcategory.ScreenshotTests,
-                    com.vaadin.flow.testcategory.PushTests,
+        <excludedGroups>${slowTestGroups}
                     com.vaadin.flow.testcategory.IgnoreIE11,</excludedGroups>
       </properties>
     </profile>
@@ -502,7 +525,9 @@
     <profile>
       <id>slow-tests</id>
       <properties>
-        <groups>${excludedGroups}</groups>
+        <!-- Not ${excludedGroups}, which this profile empties, so it would
+             resolve to no filter and run every test. -->
+        <groups>${slowTestGroups}</groups>
         <excludedGroups/>
       </properties>
     </profile>

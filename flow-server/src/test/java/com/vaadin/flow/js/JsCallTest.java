@@ -32,6 +32,7 @@ import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class JsCallTest {
 
     @JsDefinition
-    interface GreeterJs extends Serializable {
+    interface GreeterJs extends JsInvokers {
         @JsExpression("window.alert($0)")
         void showGreeting(String greeting);
 
@@ -107,17 +108,17 @@ class JsCallTest {
         JsFunction createWithoutParameters(String prefix);
 
         @JsExpression("console.log($0, value)")
-        @JsCalledWith("value")
+        @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
 
         @JsExpression("console.log($0, value)")
-        @JsCalledWith("other")
+        @JsFunctionParameterNames("other")
         JsFunction createOtherLogger(String prefix);
     }
 
-    interface EmptyCalledWithJs extends Serializable {
+    interface EmptyFunctionParameterNamesJs extends Serializable {
         @JsExpression("console.log($0, value)")
-        @JsCalledWith({})
+        @JsFunctionParameterNames({})
         JsFunction createWithoutParameters(String prefix);
     }
 
@@ -126,25 +127,25 @@ class JsCallTest {
         DomEventFilter isKey(String key);
 
         @JsExpression("return e.key === $0;")
-        @JsCalledWith("e")
+        @JsFunctionParameterNames("e")
         DomEventFilter isKeyOf(String key);
     }
 
     interface InvalidNamesJs extends Serializable {
         @JsExpression("value")
-        @JsCalledWith("not-a-name")
+        @JsFunctionParameterNames("not-a-name")
         JsFunction notAnIdentifier();
 
         @JsExpression("value")
-        @JsCalledWith("class")
+        @JsFunctionParameterNames("class")
         JsFunction reservedWord();
 
         @JsExpression("value")
-        @JsCalledWith("$0")
+        @JsFunctionParameterNames("$0")
         JsFunction captureName(String value);
 
         @JsExpression("value")
-        @JsCalledWith({ "value", "value" })
+        @JsFunctionParameterNames({ "value", "value" })
         JsFunction duplicate();
     }
 
@@ -176,6 +177,52 @@ class JsCallTest {
                 "the message should name what the method is missing: "
                         + exception.getMessage());
         assertThrows(IllegalStateException.class, undeclared::getFunctionId);
+    }
+
+    // Only extended, so not annotated
+    interface ScrollableJs extends JsInvokers {
+        @JsExpression("this.scrollTop = $0")
+        void scrollTo(int top);
+    }
+
+    @JsDefinition
+    interface DoubleScrollJs extends ScrollableJs {
+        @Override
+        @JsExpression("this.scrollTop = $0 * 2")
+        void scrollTo(int top);
+    }
+
+    @Test
+    void getFunctionId_overriddenMethod_namesTheJavaScriptOfTheType() {
+        assertEquals(JsCall.functionId("this.scrollTop = $0 * 2", 1, false),
+                new JsCall(DoubleScrollJs.class, "scrollTo", List.of(1))
+                        .getFunctionId(),
+                "the override is what runs through the sub-interface");
+        assertEquals(JsCall.functionId("this.scrollTop = $0", 1, false),
+                new JsCall(ScrollableJs.class, "scrollTo", List.of(1))
+                        .getFunctionId(),
+                "the interface it overrides still runs its own JavaScript");
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    interface ScrollFallbacks extends ScrollableJs {
+    }
+
+    @Test
+    void getFunctionId_methodInheritedByStringFallback_isTheFallbackFunction()
+            throws NoSuchMethodException {
+        String functionId = new JsCall(ScrollFallbacks.class, "scrollTo",
+                List.of(1)).getFunctionId();
+
+        assertEquals(
+                JsStringFallbacks.functionId(ScrollFallbacks.class,
+                        ScrollableJs.class.getMethod("scrollTo", int.class)),
+                functionId);
+        // Generated to also see the element after the arguments, so it must
+        // not run the plain function of the interface it is inherited from
+        assertNotEquals(JsCall.functionId("this.scrollTop = $0", 1, false),
+                functionId);
     }
 
     @Test
@@ -301,48 +348,51 @@ class JsCallTest {
     }
 
     @Test
-    void functionId_snippetWithoutCalledWith_isTheFunctionOfAnEmptyList()
+    void functionId_snippetWithoutParameterNames_isTheFunctionOfAnEmptyList()
             throws Exception {
         // Both declare a function without parameters around the expression
         assertEquals(
                 JsCall.functionId(LoggerJs.class
                         .getMethod("createWithoutParameters", String.class)),
-                JsCall.functionId(EmptyCalledWithJs.class
+                JsCall.functionId(EmptyFunctionParameterNamesJs.class
                         .getMethod("createWithoutParameters", String.class)));
     }
 
     @Test
-    void getCalledWithNames_answersWhatTheMethodDeclares() throws Exception {
-        assertEquals(List.of("value"), JsCall.getCalledWithNames(
+    void getFunctionParameterNames_answersWhatTheMethodDeclares()
+            throws Exception {
+        assertEquals(List.of("value"), JsCall.getFunctionParameterNames(
                 LoggerJs.class.getMethod("createLogger", String.class)));
         assertEquals(List.of(),
-                JsCall.getCalledWithNames(LoggerJs.class
+                JsCall.getFunctionParameterNames(LoggerJs.class
                         .getMethod("createWithoutParameters", String.class)),
                 "a method without the annotation calls its function without parameters");
         // A call reads them off the method it calls, and only a snippet has
         // a function around its expression to name parameters of
         assertEquals(List.of("value"),
                 new JsCall(LoggerJs.class, "createLogger", List.of("a"))
-                        .getCalledWithNames());
-        assertEquals(List.of(), new JsCall(LoggerJs.class,
-                "createWithoutParameters", List.of("a")).getCalledWithNames());
+                        .getFunctionParameterNames());
+        assertEquals(List.of(),
+                new JsCall(LoggerJs.class, "createWithoutParameters",
+                        List.of("a")).getFunctionParameterNames());
         assertEquals(List.of(), new JsCall(LoggerJs.class, "log", List.of("a"))
-                .getCalledWithNames());
+                .getFunctionParameterNames());
     }
 
     @Test
-    void getCalledWithNames_snippetTypeDeclaresNames_methodTakesPrecedence()
+    void getFunctionParameterNames_snippetTypeDeclaresNames_methodTakesPrecedence()
             throws Exception {
-        assertEquals(List.of("event", "element"), JsCall.getCalledWithNames(
-                EventJs.class.getMethod("isKey", String.class)));
-        assertEquals(List.of("e"), JsCall.getCalledWithNames(
+        assertEquals(List.of("event", "element"),
+                JsCall.getFunctionParameterNames(
+                        EventJs.class.getMethod("isKey", String.class)));
+        assertEquals(List.of("e"), JsCall.getFunctionParameterNames(
                 EventJs.class.getMethod("isKeyOf", String.class)));
     }
 
     @ParameterizedTest
     @ValueSource(strings = { "notAnIdentifier", "reservedWord", "captureName",
             "duplicate" })
-    void getCalledWithNames_nameAFunctionCanNotDeclare_throws(
+    void getFunctionParameterNames_nameAFunctionCanNotDeclare_throws(
             String methodName) {
         // The names go into the generated module, where one of these is a
         // syntax error that would break every function in it
@@ -352,7 +402,7 @@ class JsCallTest {
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> JsCall.getCalledWithNames(method));
+                () -> JsCall.getFunctionParameterNames(method));
         assertTrue(exception.getMessage().contains(methodName),
                 "the message should name the method: "
                         + exception.getMessage());

@@ -28,7 +28,7 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
@@ -96,6 +96,16 @@ class ReflectToolsTest {
 
     public static class OkToCreate {
 
+    }
+
+    public static class PackagePrivateConstructorClass {
+        PackagePrivateConstructorClass() {
+        }
+    }
+
+    public static class ProtectedConstructorClass {
+        protected ProtectedConstructorClass() {
+        }
     }
 
     public static class VarArgsCtor {
@@ -184,6 +194,70 @@ class ReflectToolsTest {
         assertError(
                 ReflectTools.CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION,
                 ConstructorThrowsExceptionClass.class);
+    }
+
+    @Test
+    void createInstanceWithAccessibleConstructor_nonPublicClassOrConstructor_created() {
+        assertSame(PackagePrivateConstructorClass.class,
+                ReflectTools
+                        .createInstanceWithAccessibleConstructor(
+                                PackagePrivateConstructorClass.class)
+                        .getClass());
+        assertSame(PrivateStaticInnerClassPublicConstructor.class,
+                ReflectTools
+                        .createInstanceWithAccessibleConstructor(
+                                PrivateStaticInnerClassPublicConstructor.class)
+                        .getClass());
+        assertSame(ProtectedConstructorClass.class,
+                ReflectTools.createInstanceWithAccessibleConstructor(
+                        ProtectedConstructorClass.class).getClass());
+    }
+
+    @Test
+    void createInstanceWithAccessibleConstructor_noNoArgConstructor_usesVarArgsConstructor() {
+        assertSame(VarArgsCtor.class, ReflectTools
+                .createInstanceWithAccessibleConstructor(VarArgsCtor.class)
+                .getClass());
+    }
+
+    @Test
+    void createInstanceWithAccessibleConstructor_packageNotOpen_descriptiveError()
+            throws ClassNotFoundException {
+        // A JDK class whose package java.base neither exports nor opens
+        Class<?> cls = Class.forName("sun.nio.cs.UTF_8");
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> ReflectTools
+                        .createInstanceWithAccessibleConstructor(cls));
+        assertEquals(String.format(
+                ReflectTools.CREATE_INSTANCE_FAILED_INACCESSIBLE_CONSTRUCTOR,
+                cls.getName(), cls.getPackageName()), exception.getMessage());
+    }
+
+    @Test
+    void createInstanceWithAccessibleConstructor_privateConstructor_rejected() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> ReflectTools.createInstanceWithAccessibleConstructor(
+                        StaticInnerPrivateConstructorClass.class));
+        assertEquals(String.format(
+                ReflectTools.CREATE_INSTANCE_FAILED_NO_NON_PRIVATE_NOARG_CONSTRUCTOR,
+                StaticInnerPrivateConstructorClass.class.getName()),
+                exception.getMessage());
+    }
+
+    @Test
+    void createInstanceWithAccessibleConstructor_constructorThrows_descriptiveError() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> ReflectTools.createInstanceWithAccessibleConstructor(
+                        ConstructorThrowsExceptionClass.class));
+        assertEquals(String.format(
+                ReflectTools.CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION,
+                ConstructorThrowsExceptionClass.class.getName()),
+                exception.getMessage());
+        assertSame(NullPointerException.class,
+                exception.getCause().getCause().getClass());
     }
 
     @Test
@@ -479,7 +553,7 @@ class ReflectToolsTest {
     @Test
     void getSetters_classIsGeneric_syntheticMethodsAreFilteredOut() {
         List<Method> setters = ReflectTools.getSetterMethods(Category.class)
-                .collect(Collectors.toList());
+                .toList();
         assertEquals(1, setters.size());
         Method setter = setters.get(0);
         assertEquals("setId", setter.getName());
@@ -755,5 +829,29 @@ class ReflectToolsTest {
             assertEquals(String.format(expectedError, cls.getName()),
                     re.getMessage());
         }
+    }
+
+    interface ParentType {
+        void inherited();
+
+        void overridden();
+    }
+
+    interface ChildType extends ParentType {
+        @Override
+        void overridden();
+
+        void own();
+    }
+
+    @Test
+    void getCurrentPublicMethods_sameMethodsAsGetMethods() {
+        // Each read from its declaring class, so an override has to replace
+        // the method it overrides rather than come along with it
+        List<Method> methods = ReflectTools
+                .getCurrentPublicMethods(ChildType.class);
+
+        assertEquals(ChildType.class.getMethods().length, methods.size());
+        assertEquals(Set.of(ChildType.class.getMethods()), Set.copyOf(methods));
     }
 }

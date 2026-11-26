@@ -46,6 +46,12 @@ class DefaultInstantiatorTest {
 
     }
 
+    @Tag(Tag.A)
+    static class PackagePrivateComponent extends Component {
+        PackagePrivateComponent() {
+        }
+    }
+
     @Test
     void createComponent_dontDependOnGetOrCreate() {
         DefaultInstantiator instantiator = mock(DefaultInstantiator.class);
@@ -58,6 +64,15 @@ class DefaultInstantiatorTest {
         assertNotNull(component);
 
         verify(instantiator, times(0)).getOrCreate(any());
+    }
+
+    @Test
+    void createComponent_packagePrivateConstructor_created() {
+        DefaultInstantiator instantiator = new DefaultInstantiator(
+                mock(VaadinService.class));
+
+        assertSame(PackagePrivateComponent.class, instantiator
+                .createComponent(PackagePrivateComponent.class).getClass());
     }
 
     @Test

@@ -23,8 +23,7 @@ import tools.jackson.databind.JavaType;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsCalledWith;
-import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
 
@@ -34,7 +33,7 @@ import com.vaadin.flow.js.JsSnippets;
  * it with {@link DomListenerRegistration#addEventData(DomEventData)}.
  * <p>
  * To declare event data, add a method that returns this type to a
- * {@link JsDefinition} interface. To create event data, call that method on the
+ * {@link JsSnippets} interface. To create event data, call that method on the
  * object that {@link JsSnippets#of(Class)} returns.
  * <p>
  * The expression is the body of a function. The function gets two parameters:
@@ -45,11 +44,14 @@ import com.vaadin.flow.js.JsSnippets;
  * <p>
  * In the listener, read the value with
  * {@link DomEvent#getEventData(DomEventData)}. The value has the type that the
- * method declares:
+ * method declares. For <code>DomEventData&lt;Element&gt;</code>, the expression
+ * returns a DOM node, and the value is the closest {@link Element} of the
+ * server that is an ancestor of the node or the node itself, see
+ * {@link DomEvent#getEventDataElement(DomEventData)}:
  *
  * <pre>
  * &#64;JsDefinition
- * public interface ClipboardJs extends Serializable {
+ * public interface ClipboardJs extends JsSnippets {
  *
  *     &#64;JsExpression("return event.clipboardData?.getData($0) || null;")
  *     DomEventData&lt;String&gt; clipboardData(String mimeType);
@@ -110,8 +112,9 @@ import com.vaadin.flow.js.JsSnippets;
  *            the type of the value
  * @see JsSnippets#of(Class)
  * @see DomEventFilter
+ * @since 25.4
  */
-@JsCalledWith({ "event", "element" })
+@JsFunctionParameterNames({ "event", "element" })
 public final class DomEventData<T> implements JsSnippet {
 
     private final JsCall declaredCall;
@@ -125,8 +128,8 @@ public final class DomEventData<T> implements JsSnippet {
     }
 
     /**
-     * Creates event data for the given call of a {@link JsDefinition} method.
-     * The method must return event data.
+     * Creates event data for the given call of a {@link JsSnippets} method. The
+     * method must return event data.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      * Create event data by calling the relevant method on the implementation
@@ -160,7 +163,7 @@ public final class DomEventData<T> implements JsSnippet {
     }
 
     /**
-     * Gets the call of the {@link JsDefinition} method that declared this event
+     * Gets the call of the {@link JsSnippets} method that declared this event
      * data. The call tells which function of the bundle to run.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
@@ -192,5 +195,19 @@ public final class DomEventData<T> implements JsSnippet {
      */
     JavaType getValueType() {
         return valueType;
+    }
+
+    /**
+     * Checks whether the value of this event data is an {@link Element}. The
+     * browser then sends the closest element that the server knows instead of
+     * the DOM node that the expression returns.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @return <code>true</code> if the value type is {@link Element},
+     *         <code>false</code> otherwise
+     */
+    public boolean isElementValue() {
+        return valueType.getRawClass() == Element.class;
     }
 }

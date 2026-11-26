@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -492,7 +491,7 @@ class TreeDataProviderTest
                 .fetch(createQuery(QuerySortOrder.asc("randomNumber").build(),
                         Comparator.comparing(StrBean::getRandomNumber), null,
                         null))
-                .collect(Collectors.toList());
+                .toList();
 
         assertEquals(
                 getDataProvider().fetch(new HierarchicalQuery<>(null, null))
@@ -524,8 +523,7 @@ class TreeDataProviderTest
                 Comparator.comparing(StrBean::getValue));
 
         List<StrBean> list = getDataProvider()
-                .fetch(new HierarchicalQuery<>(null, null))
-                .collect(Collectors.toList());
+                .fetch(new HierarchicalQuery<>(null, null)).toList();
 
         assertEquals(rootData.size(), list.size(),
                 "Sorted data and original data sizes don't match");
@@ -555,7 +553,7 @@ class TreeDataProviderTest
         List<StrBean> list = getDataProvider().fetch(
                 createQuery(QuerySortOrder.asc("value").thenAsc("randomNumber")
                         .thenAsc("id").build(), comp, null, null))
-                .collect(Collectors.toList());
+                .toList();
 
         assertNotEquals(rootData.get(0), list.get(0),
                 "First value should not match");

@@ -29,6 +29,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.server.VaadinSession;
@@ -373,7 +374,7 @@ public final class WakeLock {
      * @since 25.4
      */
     @JsDefinition
-    public interface WakeLockJs extends Serializable {
+    public interface WakeLockJs extends JsInvokers {
 
         /**
          * Asks the browser to hold the wake lock on behalf of the UI.

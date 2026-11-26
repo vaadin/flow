@@ -21,23 +21,119 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.flow.component.page.JavaScriptResult;
+import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.dom.DomEventData;
+import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
 
 /**
- * Marks an interface whose methods declare the JavaScript they run with
- * {@link JsExpression}, to be called through {@link Element#executeJs(Class)},
- * or, when its methods return {@link JsSnippet snippets}, through
- * {@link JsSnippets#of(Class)}. An interface declares one of the two kinds.
+ * Marks an interface that declares JavaScript, so that the build and the
+ * development server find it. Every annotated interface is collected into the
+ * generated bundle as a function per method, so the JavaScript an application
+ * can invoke from the server is known before it runs and the client never has
+ * to build a function from a string. That is what keeps a server-initiated call
+ * compatible with a content security policy that does not allow
+ * <code>unsafe-eval</code>.
  * <p>
- * The annotation is what makes the interface findable during the build: every
- * annotated interface is collected into the generated bundle as a function per
- * method, so the JavaScript an application can invoke from the server is known
- * before it runs and the client never has to build a function from a string.
- * That is what keeps a server-initiated call compatible with a content security
- * policy that does not allow <code>unsafe-eval</code>.
+ * What the interface declares is up to the marker interface it extends: an
+ * interface that extends {@link JsInvokers} declares, with
+ * {@link JsExpression}, JavaScript that runs when a method is called through
+ * {@link Element#executeJs(Class)}, and one that extends {@link JsSnippets}
+ * declares {@link JsSnippet snippets}, obtained through
+ * {@link JsSnippets#of(Class)}. An interface that is used through either of
+ * them without this annotation is refused, since its JavaScript would be
+ * missing from the bundle.
+ * <p>
+ * A production build that optimizes the bundle, which is the default, collects
+ * only the definitions it can reach from the entry points of the application,
+ * the same way it collects {@code @JsModule}: a definition is reached when a
+ * reached class refers to it, such as by passing it to
+ * {@link Element#executeJs(Class)}. The definitions in the flow-server jar and
+ * those annotated with {@link JsStringFallback} are always collected. Any other
+ * definition that is only used through reflection, or from code that no route
+ * or other entry point leads to, is left out of that bundle, and a call to it
+ * fails in the browser. Name it in
+ * {@link com.vaadin.flow.component.dependency.Uses} on a class that is reached
+ * to keep it. Development mode collects every definition.
+ * <p>
+ * The annotation, rather than the marker interface, is what the interface is
+ * found by, since a servlet container is not required to report the interfaces
+ * that extend a type listed in <code>&#64;HandlesTypes</code>, while it does
+ * report the types annotated with one listed there.
  *
+ * <pre>
+ * &#64;JsDefinition
+ * public interface ScrollJs extends JsInvokers {
+ *
+ *     &#64;JsExpression("this.scrollTop = $0;")
+ *     void scrollTo(int top);
+ * }
+ * </pre>
+ *
+ * <h2>Which marker to extend</h2>
+ *
+ * Extend {@link JsInvokers} when the server wants JavaScript to run now,
+ * optionally with a result. Its methods return <code>void</code>,
+ * {@link JavaScriptResult JavaScriptResult&lt;T&gt;} or
+ * {@link PendingJavaScriptResult}. For an implementation obtained from
+ * {@link Element#executeJs(Class)}, <code>this</code> is the element; one
+ * obtained from {@link Page#executeJs(Class)} runs on nothing in particular.
+ * <p>
+ * Extend {@link JsSnippets} when you need a function to pass on: as an argument
+ * of an invoker method, as a {@link DomEventFilter} or {@link DomEventData} of
+ * a listener, or as a snippet type that a component accepts. Its methods return
+ * {@link JsFunction}, {@link JsSnippet}, {@link DomEventFilter},
+ * {@link DomEventData} or an interface that extends {@link JsSnippet}. They run
+ * nothing when called, and <code>this</code> is whatever calls the function.
+ * Implementations are obtained from {@link JsSnippets#of(Class)}.
+ * <p>
+ * One interface can not do both. Declare the two kinds in two interfaces, as in
+ * the example of {@link JsSnippets}. {@link JsFunctionParameterNames} applies
+ * only to the methods of a {@link JsSnippets} interface.
+ *
+ * <h2>Inheritance</h2>
+ *
+ * A definition can extend other interfaces, and the methods it inherits are
+ * part of it: they are collected into the bundle with the definition and can be
+ * called through its implementation, as if the definition declared them itself.
+ * <p>
+ * Annotations on interfaces are not inherited, so every interface that is
+ * passed to {@link Element#executeJs(Class)}, {@link Page#executeJs(Class)} or
+ * {@link JsSnippets#of(Class)} needs its own {@code @JsDefinition}, even when
+ * an interface it extends has one. An interface that is only extended, and
+ * never passed to any of them itself, does not need the annotation:
+ *
+ * <pre>
+ * // Only extended, so not annotated
+ * public interface ScrollableJs extends JsInvokers {
+ *
+ *     &#64;JsExpression("this.scrollTop = $0;")
+ *     void scrollTo(int top);
+ * }
+ *
+ * &#64;JsDefinition
+ * public interface ListJs extends ScrollableJs {
+ *
+ *     &#64;JsExpression("this.scrollTop = this.scrollHeight;")
+ *     void scrollToEnd();
+ * }
+ *
+ * element.executeJs(ListJs.class).scrollTo(100);
+ * </pre>
+ *
+ * A sub-interface can override an inherited method with another
+ * {@link JsExpression}. The JavaScript of the override is what runs for that
+ * method when it is called through the sub-interface; the inherited one still
+ * runs through the interface that declares it.
+ *
+ * @see JsInvokers
+ * @see JsSnippets
  * @see JsExpression
  * @see Element#executeJs(Class)
+ * @see Page#executeJs(Class)
  * @see JsSnippets#of(Class)
  * @since 25.4
  */

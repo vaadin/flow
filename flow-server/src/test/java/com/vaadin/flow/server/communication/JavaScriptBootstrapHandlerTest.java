@@ -22,6 +22,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.mockito.ArgumentCaptor;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.PushConfiguration;
@@ -84,6 +85,15 @@ class JavaScriptBootstrapHandlerTest {
         mocks.cleanup();
     }
 
+    private UI getCreatedUI() {
+        // The UI is not left current after the request handler unlocks the
+        // session
+        assertNull(UI.getCurrent());
+        ArgumentCaptor<UI> ui = ArgumentCaptor.forClass(UI.class);
+        verify(session).addUI(ui.capture());
+        return ui.getValue();
+    }
+
     @Test
     void should_handleRequest_when_initTypeRequest() throws Exception {
         VaadinRequest request = mocks.createRequest(mocks, "/", "v-r=init&foo");
@@ -139,8 +149,7 @@ class JavaScriptBootstrapHandlerTest {
                 "v-r=init&foo&location=");
         jsInitHandler.handleRequest(session, request, response);
 
-        assertNotNull(UI.getCurrent());
-        assertEquals(UI.class, UI.getCurrent().getClass());
+        assertEquals(UI.class, getCreatedUI().getClass());
     }
 
     @Test
@@ -149,7 +158,8 @@ class JavaScriptBootstrapHandlerTest {
                 "v-r=init&foo&location=");
         jsInitHandler.handleRequest(session, request, response);
 
-        UI ui = UI.getCurrent();
+        UI ui = getCreatedUI();
+        UI.setCurrent(ui);
         ui.browserNavigate(new BrowserNavigateEvent(ui, true, "a-route", "", "",
                 null, ""));
 
@@ -259,7 +269,7 @@ class JavaScriptBootstrapHandlerTest {
                 "v-r=init&foo&location=");
         jsInitHandler.handleRequest(session, request, response);
 
-        PushConfiguration push = UI.getCurrent().getPushConfiguration();
+        PushConfiguration push = getCreatedUI().getPushConfiguration();
         assertEquals(PushMode.MANUAL, push.getPushMode());
         assertEquals(Transport.LONG_POLLING, push.getTransport());
     }
@@ -318,7 +328,7 @@ class JavaScriptBootstrapHandlerTest {
                         + "&v-tzid=Europe%2FBerlin");
         jsInitHandler.handleRequest(session, request, response);
 
-        ExtendedClientDetails details = UI.getCurrent().getInternals()
+        ExtendedClientDetails details = getCreatedUI().getInternals()
                 .getExtendedClientDetails();
         assertNotNull(details, "Browser details should be stored");
         assertEquals(1641, details.getScreenWidth());

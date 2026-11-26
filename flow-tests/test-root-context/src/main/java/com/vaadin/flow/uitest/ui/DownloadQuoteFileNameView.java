@@ -34,7 +34,7 @@ public class DownloadQuoteFileNameView extends Div {
         DownloadHandler handler = new DownloadHandler() {
             @Override
             public void handleDownloadRequest(DownloadEvent event) {
-                event.setFileName(FILE_NAME);
+                event.fileName(FILE_NAME);
                 event.getWriter().print(CONTENT);
             }
 

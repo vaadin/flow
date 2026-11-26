@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.URL;
 import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -55,17 +54,14 @@ import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.EntryPointType;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
 
-import static com.vaadin.flow.internal.FrontendUtils.FRONTEND_FOLDER_ALIAS;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 
 /**
  * Common logic for generate import file JS content.
@@ -108,7 +104,6 @@ abstract class AbstractUpdateImports implements Runnable {
             + " while(ae&&ae.shadowRoot) ae = ae.shadowRoot.activeElement;\n"
             + " return !ae || ae.blur() || ae.focus() || true;\n" + "}";
     private static final String IMPORT_TEMPLATE = "import '%s';";
-    private static final Pattern STARTING_DOT_SLASH = Pattern.compile("^\\./+");
     private static final Pattern VAADIN_LUMO_GLOBAL_IMPORT = Pattern
             .compile(".*@vaadin/vaadin-lumo-styles/.*-global.js.*");
     final Options options;
@@ -117,7 +112,7 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private final Map<Path, List<String>> resolvedImportPathsCache = new HashMap<>();
 
-    private ClassFinder classFinder;
+    private FrontendModuleResolver moduleResolver;
 
     final File generatedFlowImports;
     final File generatedFlowWebComponentImports;
@@ -136,7 +131,6 @@ abstract class AbstractUpdateImports implements Runnable {
             GeneratedFilesSupport generatedFilesSupport) {
         this.generatedFilesSupport = generatedFilesSupport;
         this.options = options;
-        this.classFinder = options.getClassFinder();
         this.themeToLocalPathConverter = createThemeToLocalPathConverter(
                 options.getFrontendDependenciesScanner().getTheme());
 
@@ -547,17 +541,6 @@ abstract class AbstractUpdateImports implements Runnable {
     }
 
     /**
-     * Get a resource from the classpath.
-     *
-     * @param name
-     *            class literal
-     * @return the resource
-     */
-    private URL getResource(String name) {
-        return classFinder.getResource(name);
-    }
-
-    /**
      * Get generated modules to import.
      *
      * @return generated modules
@@ -580,15 +563,13 @@ abstract class AbstractUpdateImports implements Runnable {
                         && !module.startsWith(
                                 ApplicationConstants.BASE_PROTOCOL_PREFIX))
                 .filter(module -> !UrlUtil.isExternal(module))
-                .map(module -> resolveResource(module))
-                .collect(Collectors.toList());
+                .map(module -> resolveResource(module)).toList();
     }
 
     private Collection<? extends String> resolveGeneratedModules(
             Collection<String> generatedModules) {
         return generatedModules.stream()
-                .map(module -> resolveGeneratedModule(module))
-                .collect(Collectors.toList());
+                .map(module -> resolveGeneratedModule(module)).toList();
     }
 
     String resolveGeneratedModule(String module) {
@@ -647,24 +628,16 @@ abstract class AbstractUpdateImports implements Runnable {
     }
 
     protected String resolveResource(String importPath) {
-        String resolved = importPath;
-        if (!importPath.startsWith("@")) {
+        return getModuleResolver().resolveResource(importPath);
+    }
 
-            // We only should check here those paths starting with './' when all
-            // flow components have the './' prefix
-            String resource = STARTING_DOT_SLASH.matcher(resolved)
-                    .replaceFirst("");
-            if (hasMetaInfResource(resource)) {
-                if (!resolved.startsWith("./")) {
-                    getLogger().warn(
-                            "Use the './' prefix for files in JAR files: '{}', please update your component.",
-                            importPath);
-                }
-                resolved = FrontendUtils.JAR_RESOURCES_IMPORT_FRONTEND_RELATIVE
-                        + resource;
-            }
+    // Created when first used, since the logger of a subclass is not there
+    // yet while this constructor runs
+    private FrontendModuleResolver getModuleResolver() {
+        if (moduleResolver == null) {
+            moduleResolver = new FrontendModuleResolver(options, getLogger());
         }
-        return resolved;
+        return moduleResolver;
     }
 
     protected void addLines(Collection<String> lines, String content) {
@@ -824,8 +797,7 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private List<String> getModuleLines(Collection<String> modules) {
         return getUniqueEs6ImportPaths(modules).stream()
-                .map(path -> String.format(IMPORT_TEMPLATE, path))
-                .collect(Collectors.toList());
+                .map(path -> String.format(IMPORT_TEMPLATE, path)).toList();
     }
 
     private boolean frontendFileExists(String jsImport) {
@@ -911,11 +883,6 @@ abstract class AbstractUpdateImports implements Runnable {
         return getFile(base, path).isFile();
     }
 
-    private boolean isFileOrDirectory(File base, String... path) {
-        File file = getFile(base, path);
-        return file.isFile() || file.isDirectory();
-    }
-
     /**
      * Adds CSS imports to the generated flow imports file based on the given
      * CssImport data.
@@ -984,23 +951,8 @@ abstract class AbstractUpdateImports implements Runnable {
                 String.join("\n      - ", files), suffix);
     }
 
-    private boolean hasMetaInfResource(String resource) {
-        return getResource(RESOURCES_FRONTEND_DEFAULT + "/" + resource) != null
-                || getResource(COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT + "/"
-                        + resource) != null;
-    }
-
     private String toValidBrowserImport(String jsImport) {
-        if (isFileOrDirectory(options.getFrontendDirectory(), jsImport)) {
-            if (!jsImport.startsWith("./")) {
-                getLogger().warn(
-                        "Use the './' prefix for files in the '{}' folder: '{}', please update your annotations.",
-                        options.getFrontendDirectory(), jsImport);
-            }
-            return FRONTEND_FOLDER_ALIAS
-                    + STARTING_DOT_SLASH.matcher(jsImport).replaceFirst("");
-        }
-        return jsImport;
+        return getModuleResolver().toValidBrowserImport(jsImport);
     }
 
     private void visitImportsRecursively(Path filePath, String path,
@@ -1051,7 +1003,7 @@ abstract class AbstractUpdateImports implements Runnable {
                         }
                         return normalizePath(
                                 resolvedPath.replaceAll("\\\\", "/"));
-                    }).filter(Objects::nonNull).collect(Collectors.toList()));
+                    }).filter(Objects::nonNull).toList());
         }
         List<String> resolvedPaths = resolvedImportPathsCache.get(filePath);
 

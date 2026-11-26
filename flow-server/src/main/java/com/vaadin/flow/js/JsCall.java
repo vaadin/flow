@@ -37,6 +37,8 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JsStringFallbacks;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
@@ -111,8 +113,8 @@ public record JsCall(Class<?> definitionType, String methodName,
      * since a call is resolved several times when it is sent, and resolving it
      * otherwise copies the methods of the interface, hashes the declared
      * JavaScript and checks the declared names every time. Keyed by any class,
-     * since a JavaScript definition is marked by an annotation rather than by a
-     * common supertype.
+     * since a JavaScript definition extends one of two marker interfaces rather
+     * than a common supertype.
      */
     private static final ReflectionCache<Object, List<DeclaredMethod>> declaredMethods = new ReflectionCache<>(
             JsCall::collectDeclaredMethods);
@@ -124,7 +126,7 @@ public record JsCall(Class<?> definitionType, String methodName,
      * declares none.
      */
     private record DeclaredMethod(Method method, @Nullable String functionId,
-            List<String> calledWithNames) {
+            List<String> functionParameterNames) {
     }
 
     /**
@@ -183,10 +185,10 @@ public record JsCall(Class<?> definitionType, String methodName,
      * {@link JsSnippet}, the generated function is not run by the call but
      * evaluated later by what the snippet is passed to, and it is generated
      * differently: it is not <code>async</code>, and it wraps the expression in
-     * a function taking the {@link JsCalledWith} parameters. What sets it apart
-     * is hashed with the JavaScript, so a snippet and a call that declare the
-     * same JavaScript are different functions, and so are two snippets called
-     * with different parameters. A method annotated with
+     * a function taking the {@link JsFunctionParameterNames} parameters. What
+     * sets it apart is hashed with the JavaScript, so a snippet and a call that
+     * declare the same JavaScript are different functions, and so are two
+     * snippets called with different parameters. A method annotated with
      * {@link JsWithExecutionContext} is generated with the execution context as
      * a leading parameter, and is told apart the same way.
      *
@@ -221,19 +223,43 @@ public record JsCall(Class<?> definitionType, String methodName,
         if (!JsSnippet.class.isAssignableFrom(method.getReturnType())) {
             return functionId(expression, parameterCount, variadic);
         }
-        List<String> calledWith = getCalledWithNames(method);
+        return snippetFunctionId(expression, getFunctionParameterNames(method),
+                parameterCount, variadic);
+    }
+
+    /**
+     * Gets the identifier of the function that a method declaring a
+     * {@link JsSnippet} registers in the generated bundle, from what the method
+     * declares.
+     *
+     * @param expression
+     *            the declared JavaScript, not <code>null</code>
+     * @param parameterNames
+     *            the names of the parameters of the snippet function, as
+     *            {@link JsFunctionParameterNames} declares them, not
+     *            <code>null</code>
+     * @param parameterCount
+     *            the number of parameters of the declaring method, which are
+     *            the captures of the snippet
+     * @param variadic
+     *            whether its last parameter collects a variable number of
+     *            arguments
+     * @return the function identifier, not <code>null</code>
+     */
+    public static String snippetFunctionId(String expression,
+            List<String> parameterNames, int parameterCount, boolean variadic) {
         // A call is hashed from what starts with the parameter count, so a
         // snippet starting with anything else never shares its hash input
-        String kind = "(" + String.join(",", calledWith) + ")=>";
+        String kind = "(" + String.join(",", parameterNames) + ")=>";
         return StringUtil.getHash(kind + parameterCount + (variadic ? "*" : "")
                 + ":" + expression, StandardCharsets.UTF_8);
     }
 
     /**
      * Gets the names of the parameters that the function a snippet evaluates to
-     * is called with. They come from {@link JsCalledWith} on the given method.
-     * If the method has no such annotation, they come from the annotation on
-     * the snippet type that the method returns.
+     * is called with. They come from {@link JsFunctionParameterNames} on the
+     * given method. If the method has no such annotation, they come from the
+     * annotation on the snippet type that the method returns.
      * <p>
      * The names become parameters of the generated function, so each of them is
      * checked to be one that a function in a JavaScript module can declare and
@@ -243,18 +269,19 @@ public record JsCall(Class<?> definitionType, String methodName,
      *            a method of a JavaScript definition, not <code>null</code>
      * @return the parameter names in the order they are passed, empty when
      *         neither the method nor the snippet type it returns is annotated
-     *         with {@link JsCalledWith}
+     *         with {@link JsFunctionParameterNames}
      * @throws IllegalArgumentException
      *             if a name is not a JavaScript identifier, is a reserved word,
      *             names a captured argument or is declared twice
      */
-    public static List<String> getCalledWithNames(Method method) {
-        JsCalledWith annotation = method.getAnnotation(JsCalledWith.class);
+    public static List<String> getFunctionParameterNames(Method method) {
+        JsFunctionParameterNames annotation = method
+                .getAnnotation(JsFunctionParameterNames.class);
         if (annotation == null) {
             // A snippet type that is always called in the same way declares
             // the names once, for all methods that return it
             annotation = method.getReturnType()
-                    .getAnnotation(JsCalledWith.class);
+                    .getAnnotation(JsFunctionParameterNames.class);
         }
         if (annotation == null) {
             return List.of();
@@ -267,7 +294,7 @@ public record JsCall(Class<?> definitionType, String methodName,
                 throw new IllegalArgumentException("Method " + method.getName()
                         + " of " + method.getDeclaringClass().getName()
                         + " declares '" + name
-                        + "' in @JsCalledWith, which can not name a parameter."
+                        + "' in @JsFunctionParameterNames, which can not name a parameter."
                         + " Use a JavaScript identifier that is not a reserved"
                         + " word and not $0, $1, ..., which name the captured"
                         + " arguments");
@@ -276,7 +303,7 @@ public record JsCall(Class<?> definitionType, String methodName,
         if (Set.copyOf(names).size() != names.size()) {
             throw new IllegalArgumentException("Method " + method.getName()
                     + " of " + method.getDeclaringClass().getName()
-                    + " declares a name more than once in @JsCalledWith: "
+                    + " declares a name more than once in @JsFunctionParameterNames: "
                     + names);
         }
         return names;
@@ -303,10 +330,10 @@ public record JsCall(Class<?> definitionType, String methodName,
      * declares is called with.
      *
      * @return the parameter names, empty when the called method declares none
-     * @see #getCalledWithNames(Method)
+     * @see #getFunctionParameterNames(Method)
      */
-    public List<String> getCalledWithNames() {
-        return resolveMethod().calledWithNames();
+    public List<String> getFunctionParameterNames() {
+        return resolveMethod().functionParameterNames();
     }
 
     /**
@@ -568,7 +595,10 @@ public record JsCall(Class<?> definitionType, String methodName,
     private static List<DeclaredMethod> collectDeclaredMethods(
             Class<?> definitionType) {
         List<DeclaredMethod> declared = new ArrayList<>();
-        for (Method method : definitionType.getMethods()) {
+        // Not getMethods(), whose inherited methods keep the annotations they
+        // had before the interface declaring them was hotswapped
+        for (Method method : ReflectTools
+                .getCurrentPublicMethods(definitionType)) {
             boolean declaresJavaScript = method
                     .isAnnotationPresent(JsExpression.class);
             // Only a snippet wraps a function around its expression, so only
@@ -576,8 +606,12 @@ public record JsCall(Class<?> definitionType, String methodName,
             boolean declaresSnippet = declaresJavaScript
                     && JsSnippet.class.isAssignableFrom(method.getReturnType());
             declared.add(new DeclaredMethod(method,
-                    declaresJavaScript ? functionId(method) : null,
-                    declaresSnippet ? getCalledWithNames(method) : List.of()));
+                    declaresJavaScript
+                            ? JsStringFallbacks.functionId(definitionType,
+                                    method)
+                            : null,
+                    declaresSnippet ? getFunctionParameterNames(method)
+                            : List.of()));
         }
         return List.copyOf(declared);
     }

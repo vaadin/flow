@@ -143,15 +143,16 @@ const hasCommercialBanner = existsSync(commercialBannerComponent);
 // built with.
 const jsDefinitionsFile = path.resolve(frontendFolder, settings.generatedFolder, 'vaadin-js-definitions.js');
 const hasJsDefinitions = existsSync(jsDefinitionsFile);
+const jsDefinitionIdsFile = path.resolve(frontendFolder, settings.generatedFolder, 'vaadin-js-definition-ids.json');
 
 // The browsers that Vaadin supports: Chrome, Edge and Firefox evergreen at the
-// versions current today, Firefox ESR, and Safari 17 in its latest minor
-// version. Vite uses this as the cssTarget as well, and an ES year would map to
-// browsers that are much older than these, which makes Lightning CSS rewrite
-// light-dark() into custom properties that only follow the operating system
-// preference. Keep the old browser check in IndexHtmlRequestHandler in line
+// versions current at release, Firefox 153 ESR, and Safari 17 in its latest
+// minor version. Vite uses this as the cssTarget as well, and an ES year would
+// map to browsers that are much older than these, which makes Lightning CSS
+// rewrite light-dark() into custom properties that only follow the operating
+// system preference. Keep the old browser check in IndexHtmlRequestHandler in line
 // with this list.
-const target = ['chrome152', 'edge152', 'firefox140', 'safari17.6', 'ios17.6'];
+const target = ['chrome158', 'edge158', 'firefox153', 'safari17.6', 'ios17.6'];
 
 // Block debug and trace logs.
 console.trace = () => {};
@@ -331,6 +332,19 @@ function statsExtracterPlugin(): PluginOption {
         );
         frontendFiles[`index.ts`] = createHash('sha256').update(fileBuffer, 'utf8').digest('hex');
       }
+      // A service worker in the frontend folder replaces the default one. It is
+      // built separately from the modules collected above, so hash it on its own.
+      if (settings.offlineEnabled) {
+        ['sw.ts', 'sw.js']
+          .filter((file) => existsSync(path.resolve(frontendFolder, file)))
+          .forEach((file) => {
+            const fileBuffer = readFileSync(path.resolve(frontendFolder, file), { encoding: 'utf-8' }).replace(
+              /\r\n/g,
+              '\n'
+            );
+            frontendFiles[file] = createHash('sha256').update(fileBuffer, 'utf8').digest('hex');
+          });
+      }
       if (hasCommercialBanner) {
         const fileBuffer = readFileSync(commercialBannerComponent, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
         frontendFiles[settings.generatedFolder + '/commercial-banner.js'] = createHash('sha256').update(fileBuffer, 'utf8').digest('hex');
@@ -341,6 +355,17 @@ function statsExtracterPlugin(): PluginOption {
           .update(fileBuffer, 'utf8')
           .digest('hex');
       }
+      // The identifier of a function is a hash of its JavaScript, so listing
+      // them lets a build tell whether the bundle carries every function it
+      // needs, even when the bundle carries more. TaskGenerateJsDefinitions
+      // writes them next to the file it generates, with the names that a
+      // development bundle gives them. Without the list, the build compares
+      // the whole file instead.
+      const jsDefinitionIds: { functionIds?: string[]; names?: Record<string, string> } = existsSync(
+        jsDefinitionIdsFile
+      )
+        ? JSON.parse(readFileSync(jsDefinitionIdsFile, { encoding: 'utf-8' }))
+        : {};
 
       const themeJsonContents: Record<string, string> = {};
       const themesFolder = path.resolve(jarResourcesFolder, 'themes');
@@ -368,6 +393,8 @@ function statsExtracterPlugin(): PluginOption {
         npmModules: npmModuleAndVersion,
         bundleImports: generatedImports,
         frontendHashes: frontendFiles,
+        jsDefinitionFunctionIds: jsDefinitionIds.functionIds,
+        jsDefinitionNames: jsDefinitionIds.names,
         themeJsonContents: themeJsonContents,
         pwaOfflinePath: settings.offlinePath,
         pwaOfflineEnabled: settings.offlineEnabled,

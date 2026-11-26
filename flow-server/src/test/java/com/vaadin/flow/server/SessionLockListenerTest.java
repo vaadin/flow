@@ -24,10 +24,13 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.shared.Registration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -175,6 +178,34 @@ public class SessionLockListenerTest {
 
         assertEquals(List.of("acquired-first", "acquired-second",
                 "released-second", "released-first"), order);
+    }
+
+    @Test
+    public void releasedListener_runsUnlockedWithoutCurrentUi() {
+        MockVaadinServletService service = new MockVaadinServletService();
+        InstrumentedReentrantLock lock = new InstrumentedReentrantLock(service);
+        List<UI> currentUis = new ArrayList<>();
+        List<Boolean> locked = new ArrayList<>();
+        service.getEventBus().addListener(SessionLockReleasedEvent.class,
+                event -> {
+                    currentUis.add(UI.getCurrent());
+                    locked.add(lock.isHeldByCurrentThread());
+                });
+        UI ui = mock(UI.class);
+
+        try {
+            lock.lock();
+            UI.setCurrent(ui);
+            lock.unlock();
+
+            assertEquals(1, currentUis.size());
+            assertNull(currentUis.get(0));
+            assertEquals(List.of(false), locked);
+            assertSame("The UI current before unlocking is restored", ui,
+                    UI.getCurrent());
+        } finally {
+            CurrentInstance.clearAll();
+        }
     }
 
     @Test

@@ -41,12 +41,81 @@ env:
   # is overloaded or behind a failing proxy (500, 502, 504) are just as
   # transient. connectionMaxTtl keeps the 25 seconds the wagon property was
   # meant to set, against a resolver default of 300.
+  #
+  # The global settings file resolves Central through Google's mirror, because
+  # Central rate-limits the IP ranges GitHub-hosted runners share with every
+  # other project, and reads the public repository groups on
+  # repository.jboss.org from that mirror too. JBoss parent poms the
+  # wildfly-maven-plugin pulls in list that host ahead of Central for some
+  # BOMs, and when it answers 503 the retries above held the JBoss EAP dev loop
+  # job for up to 11 minutes before its tests started. See the comment in that
+  # file. The path is absolute because tests fork mvn from module directories.
   MAVEN_ARGS: >-
+    -gs ${{ github.workspace }}/.github/maven/settings.xml
     -Daether.connector.http.retryHandler.count=3
     -Daether.connector.http.retryHandler.serviceUnavailable=429,500,502,503,504,403
     -Daether.connector.http.connectionMaxTtl=25
 jobs:
+  changes:
+    name: Detect docs-only changes
+    # A change that only touches Markdown in the repository root or in
+    # guidelines/ cannot affect the build or any test, so build is skipped for
+    # it and every job that needs build is skipped with it. A skipped job
+    # counts as passed for the required checks, which is why test-results only
+    # stands down when this job positively reports docs-only: if this job
+    # fails, build is skipped too and test-results reports the failure.
+    # Same diff base as the gated test jobs below: a push or a manual run has
+    # nothing to compare against and always builds.
+    timeout-minutes: 10
+    runs-on: ubuntu-26.04
+    outputs:
+      docs-only: ${{ steps.decide.outputs.docs-only }}
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: ${{env._HEAD_SHA}}
+          fetch-depth: 0  # Full history required to diff against the merge base
+      - name: Decide whether only docs changed
+        id: decide
+        run: |
+          set -euo pipefail
+          docs_only=false
+          DIFF_BASE=
+          case "$GITHUB_EVENT_NAME" in
+            pull_request)
+              if git fetch --no-tags origin \
+                  "+refs/heads/$_BASE_REF:refs/remotes/origin/$_BASE_REF"; then
+                DIFF_BASE=$(git merge-base HEAD "refs/remotes/origin/$_BASE_REF" || true)
+              fi
+              ;;
+            merge_group)
+              DIFF_BASE=$_MERGE_GROUP_BASE_SHA
+              ;;
+            *)
+              ;;
+          esac
+          if [ -z "$DIFF_BASE" ]; then
+            echo "No base to compare against, running the build."
+          elif ! CHANGED=$(git diff --name-only --no-renames "$DIFF_BASE" HEAD); then
+            echo "Could not diff against $DIFF_BASE, running the build."
+          elif [ -z "$CHANGED" ]; then
+            echo "No changed files found, running the build."
+          else
+            OTHER=$(printf '%s\n' "$CHANGED" | grep -vE '^([^/]+|guidelines/.+)\.md$' || true)
+            if [ -z "$OTHER" ]; then
+              echo "Only Markdown docs in the root or guidelines/ changed, skipping build and tests:" \
+                | tee -a "$GITHUB_STEP_SUMMARY"
+              printf '%s\n' "$CHANGED" | tee -a "$GITHUB_STEP_SUMMARY"
+              docs_only=true
+            else
+              echo "Changes that need the build:"
+              printf '%s\n' "$OTHER"
+            fi
+          fi
+          echo "docs-only=$docs_only" >> "$GITHUB_OUTPUT"
   build:
+    needs: changes
+    if: ${{ needs.changes.outputs.docs-only != 'true' }}
     timeout-minutes: 30
     runs-on: ubuntu-26.04
     outputs:
@@ -75,11 +144,23 @@ jobs:
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
-      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      - name: Hash the poms
+        id: pom-hash
+        # Once, before anything is built: the build below unpacks a war that
+        # carries a pom.xml of its own, so hashFiles evaluated after it no
+        # longer matches the key the entry was restored and saved under.
+        run: echo "hash=${{ hashFiles('**/pom.xml') }}" >> "$GITHUB_OUTPUT"
+      - id: maven-cache
+        # Restore and save are separate steps so that the step resolving the
+        # integration test dependencies below can tell which entry was
+        # restored, which actions/cache does not report.
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          key: ${{ runner.os }}-maven-${{ steps.pom-hash.outputs.hash }}
           restore-keys: ${{ runner.os }}-maven-
+      - name: Test the slow-tests module list
+        run: node --test scripts/computeMatrix.test.js
       - name: Generate matrices
         id: set-matrix
         run: |
@@ -95,9 +176,42 @@ jobs:
           mkdir -p ~/.vaadin/
           echo '{"username":"'$(echo $TB_LICENSE | cut -d / -f1)'","proKey":"'$(echo $TB_LICENSE | cut -d / -f2)'"}' > ~/.vaadin/proKey
       - name: Compile and Install Flow
+        # -Pcoverage only so that the JaCoCo plugin the unit-tests jobs run
+        # enters the cache this job saves: those jobs restore it with an exact
+        # hit, so actions/cache skips their save, and all of them would
+        # otherwise download the plugin from Maven Central at once, which
+        # answers that burst with HTTP 429. With the tests skipped the plugin
+        # only sets a property and skips its report.
         run: |
-          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
+          cmd="mvn install -B -ntp -DskipTests -Pcoverage -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
+      - name: Resolve what only the integration test modules pull
+        # The it-tests jobs restore the cache this job saves, and cannot add to
+        # it: their primary key is an exact hit, so actions/cache skips their
+        # save. So the dependencies and plugins only flow-tests declares have to
+        # enter the entry here. Otherwise a pom change, such as a dependency
+        # bump, has every it-tests job download the same new artifacts from
+        # Maven Central at once, and Central answers that burst with HTTP 429.
+        # The Quarkus suite, which is not part of the flow-tests reactor, is
+        # resolved here too. What plugins fetch only while they run, and the
+        # reactor of the CDI job, are not covered.
+        #
+        # Skipped when what was restored already holds it: an exact hit, or
+        # the entry warm-caches.yml saved for main with these same poms, which
+        # resolves the same graph. A run's own primary key almost never hits,
+        # since only a re-run or a later push to the same pull request can
+        # read it, so the warmed entry is the common case.
+        #
+        # dependency:resolve rather than a build, which would cost this job the
+        # time the it-tests jobs spend on it anyway; see the script for how it
+        # handles the test modules that are not packaged here.
+        if: ${{ steps.maven-cache.outputs.cache-hit != 'true' && steps.maven-cache.outputs.cache-matched-key != format('{0}-maven-warm-v3-{1}', runner.os, steps.pom-hash.outputs.hash) }}
+        run: ./scripts/resolveItDependencies.sh
+      - uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        if: ${{ steps.maven-cache.outputs.cache-hit != 'true' }}
+        with:
+          path: ~/.m2/repository
+          key: ${{ steps.maven-cache.outputs.cache-primary-key }}
       - name: Save workspace
         run: |
           tar cf workspace.tar -C ~/ $(cd ~/ && echo .m2/repository/com/vaadin/*/999.99-SNAPSHOT)
@@ -115,6 +229,12 @@ jobs:
       matrix: ${{fromJson(needs.build.outputs.matrix-unit)}}
     runs-on: ubuntu-26.04
     steps:
+      # Keep in sync with the job's timeout-minutes: a retry of a Maven build
+      # must end before the job timeout cancels it and hides the transfer
+      # error that caused it. The minute left over is for the report, upload
+      # and cache-save steps that run after the build.
+      - name: Set retry deadline
+        run: echo "MAVEN_RETRY_DEADLINE=$(( $(date +%s) + 29 * 60 ))" >> "$GITHUB_ENV"
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
@@ -156,19 +276,20 @@ jobs:
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Unit Test
+        # A full run's expected length, generously above the longest seen, for
+        # runMavenWithRetry.sh to size a retry by: a transfer error usually
+        # stops the build within a minute.
+        env:
+          MAVEN_RETRY_DURATION: 600
         run: |
           echo Running TESTS: ${{ strategy.job-index }} ${{matrix.module}} ${{ matrix.args }}
           [ -n "${{matrix.module}}" ] && \
             ARGS="-pl ${{matrix.module}} -Dtest=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
-          cmd="mvn -B -ntp -T 1C -Pcoverage $ARGS"
+          args="-B -ntp -T 1C -Pcoverage $ARGS"
           set -x -e
-          LOG=mvn-unit-tests-${{matrix.current}}.out
-          : > "$LOG"
-          $cmd verify -Dmaven.javadoc.skip=false </dev/null >"$LOG" 2>&1 &
-          MVN_PID=$!
-          tail -f --pid=$MVN_PID "$LOG" &
-          wait $MVN_PID
+          scripts/runMavenWithRetry.sh mvn-unit-tests-${{matrix.current}}.out \
+            $args verify -Dmaven.javadoc.skip=false
       - name: Package coverage reports
         # Some modules (see moduleSplits in computeMatrix.js) run their tests
         # split over several matrix jobs, each producing a partial
@@ -218,6 +339,12 @@ jobs:
       matrix: ${{fromJson(needs.build.outputs.matrix-it)}}
     runs-on: ubuntu-26.04
     steps:
+      # Keep in sync with the job's timeout-minutes: a retry of a Maven build
+      # must end before the job timeout cancels it and hides the transfer
+      # error that caused it. The minute left over is for the report, upload
+      # and cache-save steps that run after the build.
+      - name: Set retry deadline
+        run: echo "MAVEN_RETRY_DEADLINE=$(( $(date +%s) + 29 * 60 ))" >> "$GITHUB_ENV"
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
@@ -295,21 +422,26 @@ jobs:
           fi
       - name: Run ITs
         timeout-minutes: 22
+        # A full run's expected length, generously above the longest seen, for
+        # runMavenWithRetry.sh to size a retry by: a transfer error usually
+        # stops the build within a minute.
+        env:
+          MAVEN_RETRY_DURATION: 1080
         run: |
           [ -n "${{matrix.module}}" ] && \
             ARGS="-Dfailsafe.forkCount=4 -pl ${{matrix.module}} -Dit.test=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
-          cmd="mvn -V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Pbun $ARGS"
+          args="-V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Dbun $ARGS"
           set -x -e
-          LOG=mvn-it-tests-${{matrix.current}}.out
-          : > "$LOG"
-          # Detach mvn's stdio from this shell so an orphan child JVM (e.g. a
+          # Detaches mvn's stdio from this shell so an orphan child JVM (e.g. a
           # Spring Boot fork that spring-boot:stop failed to kill) can't pin
-          # the step open by holding the pipe to tee.
-          $cmd verify </dev/null >"$LOG" 2>&1 &
-          MVN_PID=$!
-          tail -f --pid=$MVN_PID "$LOG" &
-          wait $MVN_PID
+          # the step open by holding the pipe to tee, and retries a build that
+          # failed to download from a repository.
+          # Keep in sync with this step's timeout-minutes: a retry must end
+          # before the step timeout too, when that comes before the job's.
+          step_deadline=$(( $(date +%s) + 21 * 60 ))
+          [ "$step_deadline" -lt "$MAVEN_RETRY_DEADLINE" ] && MAVEN_RETRY_DEADLINE=$step_deadline
+          scripts/runMavenWithRetry.sh mvn-it-tests-${{matrix.current}}.out $args verify
       - name: Kill leftover Java processes
         if: ${{ always() }}
         run: |
@@ -341,6 +473,12 @@ jobs:
         profile: [tomee, wildfly, payara, liberty, tomcat-weld]
     runs-on: ubuntu-26.04
     steps:
+      # Keep in sync with the job's timeout-minutes: a retry of a Maven build
+      # must end before the job timeout cancels it and hides the transfer
+      # error that caused it. The minute left over is for the report, upload
+      # and cache-save steps that run after the build.
+      - name: Set retry deadline
+        run: echo "MAVEN_RETRY_DEADLINE=$(( $(date +%s) + 44 * 60 ))" >> "$GITHUB_ENV"
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
@@ -458,24 +596,26 @@ jobs:
       - name: Run CDI ITs
         if: ${{ steps.decide.outputs.run == 'true' }}
         timeout-minutes: 35
+        # A full run's expected length, as in the Unit Test step.
+        env:
+          MAVEN_RETRY_DURATION: 300
         run: |
           # enforcer:enforce has to be named explicitly: the Flow parent keeps
           # the dependencyConvergence rule in the default-cli execution, so no
           # lifecycle phase evaluates it. Each container profile brings its own
           # Arquillian adapter, so this is where a divergence would appear.
-          cmd="mvn -V -B -ntp -e -pl flow-tests/vaadin-cdi-tests -P${{ matrix.profile }} -Dcom.vaadin.testbench.Parameters.maxAttempts=2"
+          args="-V -B -ntp -e -pl flow-tests/vaadin-cdi-tests -P${{ matrix.profile }} -Dcom.vaadin.testbench.Parameters.maxAttempts=2"
           set -x -e
-          LOG=mvn-cdi-tests-${{ matrix.profile }}.out
-          : > "$LOG"
           # Detached the same way the it-tests job detaches its Maven, and for
           # the same reason twice over: these tests fork application server
           # JVMs that can outlive Maven and pin the step open by holding a pipe
           # to tee, and piping would also make the step exit with tee's status
           # instead of Maven's, so a failing container would report success.
-          $cmd enforcer:enforce verify </dev/null >"$LOG" 2>&1 &
-          MVN_PID=$!
-          tail -f --pid=$MVN_PID "$LOG" &
-          wait $MVN_PID
+          # Keep in sync with this step's timeout-minutes: a retry must end
+          # before the step timeout too, when that comes before the job's.
+          step_deadline=$(( $(date +%s) + 34 * 60 ))
+          [ "$step_deadline" -lt "$MAVEN_RETRY_DEADLINE" ] && MAVEN_RETRY_DEADLINE=$step_deadline
+          scripts/runMavenWithRetry.sh mvn-cdi-tests-${{ matrix.profile }}.out $args enforcer:enforce verify
       - name: Kill leftover Java processes
         if: ${{ always() && steps.decide.outputs.run == 'true' }}
         run: |
@@ -522,6 +662,12 @@ jobs:
       matrix: ${{ fromJson(needs.build.outputs.matrix-quarkus) }}
     runs-on: ubuntu-26.04
     steps:
+      # Keep in sync with the job's timeout-minutes: a retry of a Maven build
+      # must end before the job timeout cancels it and hides the transfer
+      # error that caused it. The minute left over is for the report, upload
+      # and cache-save steps that run after the build.
+      - name: Set retry deadline
+        run: echo "MAVEN_RETRY_DEADLINE=$(( $(date +%s) + 39 * 60 ))" >> "$GITHUB_ENV"
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
@@ -615,6 +761,9 @@ jobs:
       - name: Run Quarkus ITs
         if: ${{ steps.decide.outputs.run == 'true' }}
         timeout-minutes: 35
+        # A full run's expected length, as in the Unit Test step.
+        env:
+          MAVEN_RETRY_DURATION: 240
         run: |
           # -am, and the reactor rooted at the suite rather than at the
           # repository: the build job installs with -DskipTests, which
@@ -626,23 +775,20 @@ jobs:
           # Flow suites these tests share a single Quarkus application per
           # module and have never been run in parallel. Flaky runs are retried
           # instead.
-          cmd="mvn -V -B -ntp -e -f flow-tests/vaadin-quarkus-tests/pom.xml \
+          args="-V -B -ntp -e -f flow-tests/vaadin-quarkus-tests/pom.xml \
             -pl ${{ matrix.module }} -am \
             -Dcom.vaadin.testbench.Parameters.maxAttempts=2 \
-            -Dfailsafe.rerunFailingTestsCount=2 \
-            -Dmaven.wagon.httpconnectionManager.ttlSeconds=25 \
-            -Dmaven.wagon.http.retryHandler.count=3"
+            -Dfailsafe.rerunFailingTestsCount=2"
           set -x -e
-          LOG=mvn-quarkus-tests-${{ matrix.name }}.out
-          : > "$LOG"
           # Detached the same way the it-tests job detaches its Maven: these
           # tests fork Quarkus JVMs that can outlive Maven and pin the step
           # open by holding a pipe to tee, and piping would also make the step
           # exit with tee's status instead of Maven's.
-          $cmd verify </dev/null >"$LOG" 2>&1 &
-          MVN_PID=$!
-          tail -f --pid=$MVN_PID "$LOG" &
-          wait $MVN_PID
+          # Keep in sync with this step's timeout-minutes: a retry must end
+          # before the step timeout too, when that comes before the job's.
+          step_deadline=$(( $(date +%s) + 34 * 60 ))
+          [ "$step_deadline" -lt "$MAVEN_RETRY_DEADLINE" ] && MAVEN_RETRY_DEADLINE=$step_deadline
+          scripts/runMavenWithRetry.sh mvn-quarkus-tests-${{ matrix.name }}.out $args verify
       - name: Kill leftover Java processes
         if: ${{ always() && steps.decide.outputs.run == 'true' }}
         run: |
@@ -866,6 +1012,108 @@ jobs:
           files: 'flow-plugins/flow-gradle-plugin/build/test-results/**/TEST-*.xml'
           comment_mode: 'off'
           check_run_annotations: all tests, skipped tests
+  slow-tests:
+    name: Slow Tests
+    # Ports the TeamCity 'Validation-SlowTests' build. The validation profiles
+    # leave out the tests tagged SlowTests (and, under flow-tests, PushTests
+    # and ScreenshotTests); -Pslow-tests runs only those. computeMatrix.js
+    # lists the modules whose tests use those categories, leaving out the
+    # modules excluded from the other test jobs too. So the slow tests of
+    # vaadin-cdi-tests and vaadin-quarkus-tests are not run here: they
+    # need an application server or a separate build, and neither the cdi-tests
+    # nor the quarkus-tests job enables their slow-tests profiles either. A
+    # separate check rather than part of test-results, so it can be made
+    # required on its own. Needs the TestBench license, so not for forks.
+    permissions:
+      contents: read
+      checks: write
+    needs: build
+    if: ${{ !github.event.pull_request.head.repo.fork }}
+    timeout-minutes: 60
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: ${{env._HEAD_SHA}}
+      # No global pnpm: Flow installs the pnpm it needs itself, and
+      # FrontendToolsTest installs an old global pnpm and expects to find it,
+      # which fails when pnpm/action-setup puts a current one first on PATH.
+      - uses: ./.github/actions/setup-frontend-tools
+      - name: Set up JDK
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version-file: .tool-versions
+          distribution: 'temurin'
+      - name: Set flow version to 999.99-SNAPSHOT
+        run: |
+          ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: ${{ github.run_attempt == 1 }}
+        with:
+          name: saved-workspace
+      - name: Restore Workspace
+        if: ${{ github.run_attempt == 1 }}
+        run: |
+          tar xf workspace.tar
+          tar cf - .m2 | (cd ~ && tar xf -)
+      - name: Set TB License
+        # Written before the fallback compile below, so a re-run does
+        # not build the reactor without a license.
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
+        run: |
+          mkdir -p ~/.vaadin/
+          echo '{"username":"'$(echo $TB_LICENSE | cut -d / -f1)'","proKey":"'$(echo $TB_LICENSE | cut -d / -f2)'"}' > ~/.vaadin/proKey
+      - name: Compile and Install Flow
+        # On re-runs the saved-workspace artifact has already been deleted,
+        # so compile from scratch like the test jobs do.
+        if: ${{ github.run_attempt > 1 }}
+        run: |
+          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
+          eval $cmd -T 2C -q || eval $cmd
+      - name: Run Slow Tests
+        run: |
+          MODULES=$(./scripts/computeMatrix.js slow-tests)
+          echo "Running slow tests in $MODULES"
+          cmd="mvn -V -B -ntp -e -fae -Pslow-tests -pl $MODULES -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2"
+          set -x -e
+          LOG=mvn-slow-tests.out
+          : > "$LOG"
+          # Detach mvn's stdio from this shell so an orphan child JVM can't
+          # pin the step open by holding the pipe to tail.
+          $cmd verify </dev/null >"$LOG" 2>&1 &
+          MVN_PID=$!
+          tail -f --pid=$MVN_PID "$LOG" &
+          wait $MVN_PID
+      - name: Kill leftover Java processes
+        if: ${{ always() }}
+        run: |
+          pkill -TERM java || true
+          sleep 2
+          pkill -KILL java || true
+      - name: Package test-report files
+        if: ${{ always() }}
+        run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" -o -name "jetty-start.out" | tar -czf slow-tests-report.tgz -T -
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() }}
+        with:
+          # Deliberately not named tests-output-*: the test-results job merges
+          # that pattern, and this job publishes its own results below.
+          name: slow-tests-report
+          path: slow-tests-report.tgz
+      - name: Publish Slow Test Results
+        if: ${{ always() }}
+        uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
+        with:
+          check_name: Slow Test Results
+          files: '**/target/*-reports/TEST*.xml'
+          comment_mode: 'off'
+          check_run_annotations: all tests, skipped tests
   sonar-analysis:
     name: Sonar Analysis
     # Runs after the unit tests so the analysis can reuse their JaCoCo
@@ -970,19 +1218,17 @@ jobs:
     # failure() || success() it would be skipped when any matrix entry
     # was cancelled, and a skipped required check satisfies branch
     # protection — letting auto-merge proceed past a cancelled IT.
-    if: ${{ always() && !github.event.pull_request.head.repo.fork }}
-    needs: [unit-tests, it-tests, cdi-tests, quarkus-tests]
+    # A docs-only change skips the tests, and with them this job; anything
+    # else, including the changes job failing, still runs it.
+    if: ${{ always() && !github.event.pull_request.head.repo.fork && needs.changes.outputs.docs-only != 'true' }}
+    needs: [changes, unit-tests, it-tests, cdi-tests, quarkus-tests]
     runs-on: ubuntu-26.04
     steps:
-      - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: tests-output
-          pattern: tests-output-*
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: tests-output
+          pattern: tests-output-*
+          merge-multiple: true
       - name: extract downloaded files
         run: for i in *.tgz; do tar xvf $i; done
       - name: Publish Unit Test Results
@@ -1004,8 +1250,8 @@ jobs:
     # The saved-workspace artifact can only be deleted once every job that
     # restores it has run: deleting it in test-results could race with the
     # Sonar analysis, which starts as soon as the unit tests finish.
-    if: ${{ always() && !github.event.pull_request.head.repo.fork }}
-    needs: [test-results, sonar-analysis, gradle-tests]
+    if: ${{ always() && !github.event.pull_request.head.repo.fork && needs.changes.outputs.docs-only != 'true' }}
+    needs: [changes, test-results, sonar-analysis, gradle-tests, slow-tests]
     runs-on: ubuntu-26.04
     steps:
       - uses: geekyeggo/delete-artifact@176a747ab7e287e3ff4787bf8a148716375ca118 # v6.0.0
@@ -1068,6 +1314,13 @@ jobs:
       issues: write
       pull-requests: write
     steps:
+      # Keep in sync with the job's timeout-minutes. Both builds below run
+      # whole reactors and retry a transfer error. A retry that the job
+      # timeout cuts off would hide that error, so a retry must end a minute
+      # before the timeout. That minute is for the report, upload and
+      # cache-save steps that run after the builds.
+      - name: Set retry deadline
+        run: echo "MAVEN_RETRY_DEADLINE=$(( $(date +%s) + 14 * 60 ))" >> "$GITHUB_ENV"
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
@@ -1119,10 +1372,15 @@ jobs:
           echo "BASE_API_VERSION=${baseVersion}" >> $GITHUB_OUTPUT
       - name: Build base version locally
         working-directory: ../base-build
+        # A full run's expected length, as in the Unit Test step, plus that of
+        # the apicmp build below, which still has to fit after a retry.
+        env:
+          MAVEN_RETRY_DURATION: 540
         run: |
           echo "Building base version ${{ steps.base-version.outputs.BASE_API_VERSION }} from merge base ${{ steps.merge-base.outputs.merge_base_sha }} with ${{ env._BASE_REF }}"
           echo "Running in $(pwd)"
-          mvn clean install -B -ntp -DskipTests
+          "$GITHUB_WORKSPACE/scripts/runMavenWithRetry.sh" mvn-api-diff-base.out \
+            clean install -B -ntp -DskipTests
       - name: Use temporary flow version for PR
         # working-directory is not set, so it defaults back to the PR branch checkout
         run: |
@@ -1134,6 +1392,9 @@ jobs:
         # profile comes from vaadin-parent, which compares the file named
         # after the packaging and so cannot handle the maven-plugin modules.
         # flow-tests is left out too, as it builds with flow-maven-plugin.
+        # A full run's expected length, as in the Unit Test step.
+        env:
+          MAVEN_RETRY_DURATION: 240
         run: |
           echo "Running in $(pwd)"
           MODULES=$(sed -n 's|.*<module>\(.*\)</module>.*|\1|p' pom.xml | while read -r m; do
@@ -1142,7 +1403,8 @@ jobs:
             fi
           done | paste -sd, -)
           echo "Comparing $MODULES"
-          mvn clean install -B -ntp -e -V -pl "$MODULES" -am -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
+          scripts/runMavenWithRetry.sh mvn-api-diff.out \
+            clean install -B -ntp -e -V -pl "$MODULES" -am -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
       - name: Move API diff results
         run: |
           #!/bin/bash

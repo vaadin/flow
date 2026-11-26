@@ -17,7 +17,6 @@ package com.vaadin.flow.server.communication;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +29,8 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -57,6 +58,7 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -64,12 +66,16 @@ import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockVaadinContext.RoutePathProviderImpl;
+import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.tests.util.MockUI;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -149,6 +155,8 @@ class UidlWriterTest {
 
     @Tag("using")
     @Uses(UsedComponent.class)
+    // Not a component, so it has no chunk of its own
+    @Uses(TestJs.class)
     public static class UsingComponent extends Component {
     }
 
@@ -213,7 +221,7 @@ class UidlWriterTest {
                 .of(invocation1, invocation2)
                 .map(invocation -> new PendingJavaScriptInvocation(
                         element.getNode(), invocation))
-                .collect(Collectors.toList());
+                .toList();
 
         ConstantPool constantPool = new ConstantPool();
         ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(
@@ -416,12 +424,34 @@ class UidlWriterTest {
     }
 
     @JsDefinition
-    interface TestJs extends Serializable {
+    interface TestJs extends JsInvokers {
         @JsExpression("this.method($0)")
         void method(String value);
 
         @JsExpression("this.method($0, ...$1)")
         void methodWithMany(String value, Object... rest);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void createUidl_sessionDestroyedByPendingTask_respondsSessionExpired(
+            boolean async) throws Exception {
+        MockVaadinSession session = new MockVaadinSession();
+        ObjectNode response = session.runWithLock(() -> {
+            UI ui = new MockUI(session);
+            ui.doInit(mock(VaadinRequest.class), session.getNextUIid(), "foo");
+            session.addUI(ui);
+            // Queued like when another thread invalidates the HTTP session
+            // while this one holds the session lock
+            session.getService().fireSessionDestroy(session);
+
+            return new UidlWriter().createUidl(ui, async);
+        });
+
+        assertTrue(JacksonUtils.jsonEquals(
+                JacksonUtils.readTree(
+                        VaadinService.createSessionExpiredJSON(async)),
+                response), response.toString());
     }
 
     @Test
@@ -577,7 +607,7 @@ class UidlWriterTest {
         assertThat("Eager dependencies should not have inline contents",
                 eagerDependencies.stream()
                         .filter(json -> json.has(Dependency.KEY_CONTENTS))
-                        .collect(Collectors.toList()),
+                        .toList(),
                 hasSize(0));
 
         ObjectNode eagerDependency = eagerDependencies.get(0);
@@ -757,8 +787,7 @@ class UidlWriterTest {
                 hasSize(1));
         assertThat("Eager dependencies should not have urls",
                 inlineDependencies.stream()
-                        .filter(json -> json.has(Dependency.KEY_URL))
-                        .collect(Collectors.toList()),
+                        .filter(json -> json.has(Dependency.KEY_URL)).toList(),
                 hasSize(0));
 
         ObjectNode inlineDependency = inlineDependencies.get(0);
