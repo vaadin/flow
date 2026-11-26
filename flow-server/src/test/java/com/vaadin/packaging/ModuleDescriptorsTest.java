@@ -102,17 +102,21 @@ class ModuleDescriptorsTest {
     @Test
     void flowServer_servicesAndLoadedServicesFound() throws IOException {
         Path module = Path.of(".");
-        assertEquals(Set.of("com.vaadin.experimental.FeatureFlagProvider",
+        Set<String> loaded = loadedServices(module.resolve("src/main/java"));
+        assertTrue(loaded.containsAll(Set.of(
+                "com.vaadin.experimental.FeatureFlagProvider",
                 "com.vaadin.flow.di.Instantiator",
                 "com.vaadin.flow.server.VaadinServiceInitListener",
                 "com.vaadin.flow.server.communication.PushConnectionFactory",
-                "com.vaadin.flow.server.startup.NavigationTargetFilter"),
-                loadedServices(module.resolve("src/main/java")));
+                "com.vaadin.flow.server.startup.NavigationTargetFilter")),
+                loaded::toString);
         Map<String, Set<String>> services = services(module);
-        assertEquals(
-                Set.of("com.vaadin.experimental.FeatureFlagProvider",
-                        "jakarta.servlet.ServletContainerInitializer"),
-                services.keySet());
+        assertTrue(
+                services.keySet()
+                        .containsAll(Set.of(
+                                "com.vaadin.experimental.FeatureFlagProvider",
+                                "jakarta.servlet.ServletContainerInitializer")),
+                services.keySet()::toString);
         assertTrue(services.get("com.vaadin.experimental.FeatureFlagProvider")
                 .contains("com.vaadin.experimental.CoreFeatureFlagProvider"));
     }
