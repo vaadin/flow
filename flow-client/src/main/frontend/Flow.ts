@@ -72,13 +72,6 @@ function getClients() {
     .map((id) => $wnd.Vaadin.Flow.clients[id]);
 }
 
-// Whether the UI of any client on the page has stopped, e.g. after an
-// "Internal error". Navigation events go to every client (see sendEvent), so a
-// stopped one leaves the navigation without an answer.
-function isAnyClientTerminated(): boolean {
-  return getClients().some((client) => client.isTerminated?.());
-}
-
 function sendEvent(eventName: string, data: any) {
   getClients().forEach((client) => client.sendEventMessage(ROOT_NODE_ID, eventName, data));
 }
@@ -249,7 +242,7 @@ export class Flow {
       this.pathname === ctx.pathname ||
       !this.isFlowClientLoaded() ||
       connectionState.offline ||
-      isAnyClientTerminated()
+      this.isUiTerminated()
     ) {
       return Promise.resolve({});
     }
@@ -297,7 +290,7 @@ export class Flow {
           this.loadingFinished();
         };
 
-        if (isAnyClientTerminated()) {
+        if (this.isUiTerminated()) {
           // A stopped UI cannot show the route
           serverConnected(true);
           return;
@@ -446,10 +439,8 @@ export class Flow {
         const initializing = getClients().reduce((prev, client) => prev || client.isActive(), false);
         if (!initializing) {
           clearInterval(intervalId);
-          // A UI that stopped before this point is seen by isAnyClientTerminated()
-          getClients().forEach((client) =>
-            client.events?.addEventListener('vaadin-ui-terminated', () => this.settleRoundTrip?.())
-          );
+          // A UI that stopped before this point is seen by isUiTerminated()
+          this.getUiClient()?.events?.addEventListener('vaadin-ui-terminated', () => this.settleRoundTrip?.());
           resolve();
         }
       }, 5);
@@ -581,5 +572,19 @@ export class Flow {
 
   private isFlowClientLoaded(): boolean {
     return this.response !== undefined;
+  }
+
+  // The client of the UI this router navigates in. Exported web components on
+  // the same page have clients of their own, which do not answer navigations.
+  private getUiClient(): any {
+    const appId = this.response?.appConfig.appId;
+    // Published under the application id without its window-name suffix
+    return appId === undefined ? undefined : $wnd.Vaadin.Flow.clients[appId.replace(/-\d+$/, '')];
+  }
+
+  // Whether the UI has stopped, e.g. after an "Internal error": the server
+  // answers no more navigations.
+  private isUiTerminated(): boolean {
+    return this.getUiClient()?.isTerminated?.() === true;
   }
 }

@@ -427,6 +427,21 @@ describe('Flow', () => {
     document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
   });
 
+  it('should navigate on the server when only an exported web component on the page has stopped', async () => {
+    stubServerRemoteFunction('foobar-12345');
+    mockInitResponse('foobar-12345');
+    const elem: any = await new Flow().serverSideRoutes[0].action({ pathname: 'Foo' });
+    $wnd.Vaadin.Flow.clients.embedded = {
+      isActive: () => false,
+      isTerminated: () => true,
+      sendEventMessage: () => {}
+    };
+    const cmd = { prevent: () => 'prevented' };
+
+    expect(await settledSoon(elem.onBeforeEnter({ pathname: 'Foo' }, cmd))).to.equal(elem);
+    expect(elem.children.length).to.equal(1);
+  });
+
   it('should cancel a server navigation when the UI stopped while the client started', async () => {
     stubServerRemoteFunction('foobar-12345');
     server.addHandler('GET', /^.*\?v-r=init.*/, (req) => {
