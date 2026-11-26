@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jspecify.annotations.Nullable;
@@ -184,8 +185,8 @@ public class Effect implements Serializable {
             SerializableExecutor dispatcher,
             SerializableExecutor freshReadDispatcher) {
         assert action != null;
-        assert freshReadDispatcher != null;
-        this.freshReadDispatcher = freshReadDispatcher;
+        this.freshReadDispatcher = Objects.requireNonNull(freshReadDispatcher,
+                "Fresh read dispatcher cannot be null");
         this.action = () -> {
             try {
                 EffectContext ctx = new EffectContext(firstRun,
@@ -436,7 +437,8 @@ public class Effect implements Serializable {
      */
     public void setFreshReadDispatcher(
             SerializableExecutor freshReadDispatcher) {
-        assert freshReadDispatcher != null;
+        Objects.requireNonNull(freshReadDispatcher,
+                "Fresh read dispatcher cannot be null");
         try (var ignored = lock.lock()) {
             this.freshReadDispatcher = freshReadDispatcher;
         }

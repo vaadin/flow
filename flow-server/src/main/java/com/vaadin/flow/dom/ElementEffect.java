@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -314,7 +315,11 @@ public final class ElementEffect implements Serializable {
             try {
                 ui.access(command::run);
             } catch (UIDetachedException e) {
-                // Effect was concurrently disabled -> nothing do to
+                // The effect is passivated when the UI is detached and checks
+                // for changes again when it is attached
+                LoggerFactory.getLogger(ElementEffect.class).debug(
+                        "Not delivering a hidden signal change to a detached UI",
+                        e);
             }
         };
 
