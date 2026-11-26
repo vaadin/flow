@@ -26,6 +26,18 @@ import com.vaadin.flow.server.HttpStatusCode;
  * <p>
  * The given input stream will be read at a later time and will be automatically
  * closed by the caller.
+ * <p>
+ * An error response, created with one of the {@code error(...)} methods, only
+ * sets the HTTP status code of the response. The response body stays empty: the
+ * error message and the exception are not sent to the browser. Instead, they
+ * are passed to the handler's transfer listeners: the error message is the
+ * message of the {@link java.io.IOException} given to
+ * {@link TransferProgressListener#onError(TransferContext, java.io.IOException)},
+ * and {@link TransferContext#exception()} returns the given exception, or else
+ * that {@code IOException}. To show the error to the user, add a listener, for
+ * example with
+ * {@link TransferProgressAwareHandler#whenComplete(com.vaadin.flow.function.SerializableBiConsumer)}
+ * and update the UI from there.
  *
  * @since 24.8
  */
@@ -146,7 +158,8 @@ public class DownloadResponse implements Serializable {
      * @param statusCode
      *            error status code
      * @param message
-     *            error message for details on what went wrong
+     *            error message for details on what went wrong, given to the
+     *            transfer listeners but not written to the response
      * @return DownloadResponse for request
      */
     public static DownloadResponse error(int statusCode, String message) {
@@ -162,7 +175,8 @@ public class DownloadResponse implements Serializable {
      * @param statusCode
      *            error status code
      * @param message
-     *            error message for details on what went wrong
+     *            error message for details on what went wrong, given to the
+     *            transfer listeners but not written to the response
      * @param exception
      *            exception that caused the error
      * @return DownloadResponse for request
@@ -214,7 +228,8 @@ public class DownloadResponse implements Serializable {
      * @param statusCode
      *            error status code
      * @param message
-     *            error message for details on what went wrong
+     *            error message for details on what went wrong, given to the
+     *            transfer listeners but not written to the response
      * @return DownloadResponse for request
      */
     public static DownloadResponse error(HttpStatusCode statusCode,
@@ -231,7 +246,8 @@ public class DownloadResponse implements Serializable {
      * @param statusCode
      *            error status code
      * @param message
-     *            error message for details on what went wrong
+     *            error message for details on what went wrong, given to the
+     *            transfer listeners but not written to the response
      * @param exception
      *            exception that caused the error
      * @return DownloadResponse for request
@@ -284,7 +300,8 @@ public class DownloadResponse implements Serializable {
      * @param error
      *            error code
      * @param errorMessage
-     *            error message
+     *            error message, given to the transfer listeners but not written
+     *            to the response
      */
     public void setError(int error, String errorMessage) {
         this.error = error;
@@ -297,7 +314,8 @@ public class DownloadResponse implements Serializable {
      * @param error
      *            error code
      * @param errorMessage
-     *            error message
+     *            error message, given to the transfer listeners but not written
+     *            to the response
      * @param exception
      *            exception that caused the error
      * @since 24.9
@@ -337,7 +355,8 @@ public class DownloadResponse implements Serializable {
      * @param error
      *            error code
      * @param errorMessage
-     *            error message
+     *            error message, given to the transfer listeners but not written
+     *            to the response
      */
     public void setError(HttpStatusCode error, String errorMessage) {
         this.error = error.getCode();
@@ -350,7 +369,8 @@ public class DownloadResponse implements Serializable {
      * @param error
      *            error code
      * @param errorMessage
-     *            error message
+     *            error message, given to the transfer listeners but not written
+     *            to the response
      * @param exception
      *            exception that caused the error
      * @since 24.9
@@ -375,6 +395,8 @@ public class DownloadResponse implements Serializable {
 
     /**
      * Get error message if set for error response.
+     * <p>
+     * The message is not written to the response, see the class description.
      *
      * @return error message or null if not set
      */
