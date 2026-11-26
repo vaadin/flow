@@ -23,11 +23,26 @@ import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.SessionLockScope;
+
 /**
  * RequestHandler which takes care of locking and unlocking of the VaadinSession
  * automatically. The session is locked before
  * {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
  * is called and unlocked after it has completed.
+ * <p>
+ * The current instances, such as the current {@link UI}, are restored to what
+ * they were before locking right after the session is unlocked, so the handler
+ * can set the current UI for the work it does with the lock held, and nothing
+ * that runs after the unlock sees that UI as current. If the handler or its
+ * {@link ResponseWriter} throws, the UI the handler left current is made
+ * current again while the session {@link ErrorHandler} and the
+ * {@link VaadinRequestInterceptor#handleException request interceptors} handle
+ * the exception, with the session locked. For this, an exception thrown while a
+ * UI is current leaves
+ * {@link #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)} wrapped
+ * in a {@link FailedUIRequestException} that {@link VaadinService} unwraps.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -42,7 +57,8 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      *
      * The ResponseWriter will be executed by
      * {@link #handleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
-     * without holding Vaadin session lock.
+     * without holding Vaadin session lock, and with the current instances
+     * restored to what they were before the session was locked.
      * 
      * @since 24.5.6
      */
@@ -51,6 +67,15 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
         void writeResponse() throws IOException;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * If handling fails while a UI is current, the exception is thrown wrapped
+     * in a {@link FailedUIRequestException}, so that {@link VaadinService} can
+     * show the error for that UI. A caller that handles the exception itself
+     * can get the original exception with
+     * {@link FailedUIRequestException#getCause()}.
+     */
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
@@ -58,34 +83,67 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
             return false;
         }
 
-        try {
-            if (isReadAndWriteOutsideSessionLock()) {
-                BufferedReader reader = request.getReader();
-                String requestBody;
-                try {
-                    requestBody = reader == null ? null
-                            : getRequestBody(reader,
-                                    getMaxRequestBodySize(request));
-                } catch (RequestBodyTooLargeException e) {
-                    return rejectOversizedRequest(response, e);
-                }
-                session.lock();
-                Optional<ResponseWriter> responseWriter = synchronizedHandleRequest(
-                        session, request, response, requestBody);
-                session.unlock();
-                if (responseWriter.isPresent()) {
-                    responseWriter.get().writeResponse();
-                }
-                return responseWriter.isPresent();
-            } else {
-                session.lock();
-                return synchronizedHandleRequest(session, request, response);
+        if (isReadAndWriteOutsideSessionLock()) {
+            BufferedReader reader = request.getReader();
+            String requestBody;
+            try {
+                requestBody = reader == null ? null
+                        : getRequestBody(reader,
+                                getMaxRequestBodySize(request));
+            } catch (RequestBodyTooLargeException e) {
+                return rejectOversizedRequest(response, e);
             }
-        } finally {
-            if (session.hasLock()) {
-                session.unlock();
+            Optional<ResponseWriter> responseWriter;
+            UI handledUI = null;
+            try (SessionLockScope lock = SessionLockScope.lock(session)) {
+                try {
+                    responseWriter = synchronizedHandleRequest(session, request,
+                            response, requestBody);
+                } finally {
+                    handledUI = UI.getCurrent();
+                }
+            } catch (IOException | RuntimeException e) {
+                throw withFailedUI(e, handledUI);
+            }
+            if (responseWriter.isPresent()) {
+                try {
+                    responseWriter.get().writeResponse();
+                } catch (IOException | RuntimeException e) {
+                    throw withFailedUI(e, handledUI);
+                }
+            }
+            return responseWriter.isPresent();
+        } else {
+            UI handledUI = null;
+            try (SessionLockScope lock = SessionLockScope.lock(session)) {
+                try {
+                    return synchronizedHandleRequest(session, request,
+                            response);
+                } finally {
+                    handledUI = UI.getCurrent();
+                }
+            } catch (IOException | RuntimeException e) {
+                throw withFailedUI(e, handledUI);
             }
         }
+    }
+
+    /*
+     * The UI is the one that was current when the handler returned or threw, so
+     * a failure from unlocking the session is wrapped with it too. The current
+     * instances are restored before the exception reaches the error handling in
+     * VaadinService, which unwraps it and makes the UI current again while it
+     * holds the lock, so that the error handler still sees it.
+     */
+    private static RuntimeException withFailedUI(Exception failure, UI ui)
+            throws IOException {
+        if (ui != null && !(failure instanceof FailedUIRequestException)) {
+            return new FailedUIRequestException(failure, ui);
+        }
+        if (failure instanceof IOException ioException) {
+            throw ioException;
+        }
+        return (RuntimeException) failure;
     }
 
     /**
