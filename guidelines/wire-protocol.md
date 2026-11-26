@@ -284,7 +284,10 @@ wire shape:
   `@JsDefinition` that extends `JsInvokers`, whose methods carry their JavaScript in
   `@JsExpression`. The build collects every such method into the bundle as
   a function, so nothing is compiled in the browser: this is the path that
-  works under a content security policy without `unsafe-eval`.
+  works under a content security policy without `unsafe-eval`. An optimized
+  production build collects only the definitions the bytecode scanner
+  reaches, plus those in flow-server's jar and the `@JsStringFallback`
+  interfaces; `@Uses` on a reached class keeps one it does not reach.
 
 ### Server side
 

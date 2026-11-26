@@ -164,7 +164,7 @@
               <async>true</async>
               <asyncDestroyOnShutdown>true</asyncDestroyOnShutdown>
               <workingDirectory>${project.build.directory}</workingDirectory>
-              <commandlineArgs>-jar vaadin-test-spring-boot-jar-${project.version}.jar</commandlineArgs>
+              <commandlineArgs>-Dvaadin.contentSecurityPolicy=${vaadin.contentSecurityPolicy} -jar vaadin-test-spring-boot-jar-${project.version}.jar</commandlineArgs>
             </configuration>
           </execution>
           <execution>

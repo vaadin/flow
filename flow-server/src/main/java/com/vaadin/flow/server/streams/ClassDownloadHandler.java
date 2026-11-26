@@ -114,7 +114,7 @@ public class ClassDownloadHandler
             String resourceName = getUrlPostfix();
             downloadEvent.setContentType(resolveContentType(resourceName,
                     downloadEvent.getResponse()));
-            downloadEvent.fileName(resourceName, isInline());
+            writeContentDisposition(downloadEvent, resourceName);
             transferContent(downloadEvent, inputStream, outputStream,
                     connection.getContentLengthLong(),
                     rangeRequestsEnabled

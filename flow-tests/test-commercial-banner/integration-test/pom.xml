@@ -46,6 +46,9 @@
         <configuration>
           <container>
             <containerId>jetty12x</containerId>
+            <systemProperties>
+              <vaadin.contentSecurityPolicy>${vaadin.contentSecurityPolicy}</vaadin.contentSecurityPolicy>
+            </systemProperties>
           </container>
           <configuration>
             <type>standalone</type>

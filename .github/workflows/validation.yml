@@ -41,7 +41,17 @@ env:
   # is overloaded or behind a failing proxy (500, 502, 504) are just as
   # transient. connectionMaxTtl keeps the 25 seconds the wagon property was
   # meant to set, against a resolver default of 300.
+  #
+  # The global settings file resolves Central through Google's mirror, because
+  # Central rate-limits the IP ranges GitHub-hosted runners share with every
+  # other project, and reads the public repository groups on
+  # repository.jboss.org from that mirror too. JBoss parent poms the
+  # wildfly-maven-plugin pulls in list that host ahead of Central for some
+  # BOMs, and when it answers 503 the retries above held the JBoss EAP dev loop
+  # job for up to 11 minutes before its tests started. See the comment in that
+  # file. The path is absolute because tests fork mvn from module directories.
   MAVEN_ARGS: >-
+    -gs ${{ github.workspace }}/.github/maven/settings.xml
     -Daether.connector.http.retryHandler.count=3
     -Daether.connector.http.retryHandler.serviceUnavailable=429,500,502,503,504,403
     -Daether.connector.http.connectionMaxTtl=25
@@ -166,8 +176,14 @@ jobs:
           mkdir -p ~/.vaadin/
           echo '{"username":"'$(echo $TB_LICENSE | cut -d / -f1)'","proKey":"'$(echo $TB_LICENSE | cut -d / -f2)'"}' > ~/.vaadin/proKey
       - name: Compile and Install Flow
+        # -Pcoverage only so that the JaCoCo plugin the unit-tests jobs run
+        # enters the cache this job saves: those jobs restore it with an exact
+        # hit, so actions/cache skips their save, and all of them would
+        # otherwise download the plugin from Maven Central at once, which
+        # answers that burst with HTTP 429. With the tests skipped the plugin
+        # only sets a property and skips its report.
         run: |
-          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
+          cmd="mvn install -B -ntp -DskipTests -Pcoverage -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Resolve what only the integration test modules pull
         # The it-tests jobs restore the cache this job saves, and cannot add to
@@ -176,8 +192,9 @@ jobs:
         # enter the entry here. Otherwise a pom change, such as a dependency
         # bump, has every it-tests job download the same new artifacts from
         # Maven Central at once, and Central answers that burst with HTTP 429.
-        # What plugins fetch only while they run, and the reactors of the CDI
-        # and Quarkus jobs, are not covered.
+        # The Quarkus suite, which is not part of the flow-tests reactor, is
+        # resolved here too. What plugins fetch only while they run, and the
+        # reactor of the CDI job, are not covered.
         #
         # Skipped when what was restored already holds it: an exact hit, or
         # the entry warm-caches.yml saved for main with these same poms, which
@@ -188,7 +205,7 @@ jobs:
         # dependency:resolve rather than a build, which would cost this job the
         # time the it-tests jobs spend on it anyway; see the script for how it
         # handles the test modules that are not packaged here.
-        if: ${{ steps.maven-cache.outputs.cache-hit != 'true' && steps.maven-cache.outputs.cache-matched-key != format('{0}-maven-warm-v2-{1}', runner.os, steps.pom-hash.outputs.hash) }}
+        if: ${{ steps.maven-cache.outputs.cache-hit != 'true' && steps.maven-cache.outputs.cache-matched-key != format('{0}-maven-warm-v3-{1}', runner.os, steps.pom-hash.outputs.hash) }}
         run: ./scripts/resolveItDependencies.sh
       - uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         if: ${{ steps.maven-cache.outputs.cache-hit != 'true' }}
@@ -1207,15 +1224,11 @@ jobs:
     needs: [changes, unit-tests, it-tests, cdi-tests, quarkus-tests]
     runs-on: ubuntu-26.04
     steps:
-      - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: tests-output
-          pattern: tests-output-*
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: tests-output
+          pattern: tests-output-*
+          merge-multiple: true
       - name: extract downloaded files
         run: for i in *.tgz; do tar xvf $i; done
       - name: Publish Unit Test Results

@@ -23,15 +23,30 @@ import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.MockedStatic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.VaadinService;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 class BundleUtilsTest {
 
@@ -151,5 +166,98 @@ class BundleUtilsTest {
         // All should return same result
         assertEquals(first, second, "Should return consistent results");
         assertEquals(second, third, "Should return consistent results");
+    }
+
+    interface CarriedJs {
+    }
+
+    interface MissingJs {
+    }
+
+    interface DevelopmentJs {
+    }
+
+    interface UnlistedJs {
+    }
+
+    interface NoConfigurationJs {
+    }
+
+    @Test
+    void checkJsFunctionsBundled_productionMode_logsErrorOnceForMissingFunction() {
+        Logger logger = mock(Logger.class);
+
+        runCheck(logger, true, true, () -> {
+            BundleUtils.checkJsFunctionsBundled(CarriedJs.class,
+                    () -> List.of("f00d"));
+            verifyNoInteractions(logger);
+
+            BundleUtils.checkJsFunctionsBundled(MissingJs.class,
+                    () -> List.of("f00d", "dead"));
+            BundleUtils.checkJsFunctionsBundled(MissingJs.class,
+                    () -> List.of("f00d", "dead"));
+        });
+
+        // Says how to get the class into the bundle
+        verify(logger, times(1)).error(contains("@Uses({}.class)"),
+                eq(MissingJs.class.getName()), eq("MissingJs"),
+                eq("MissingJs"));
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "false, true", "true, false" })
+    void checkJsFunctionsBundled_developmentModeOrUnlistedFunctions_logsNothing(
+            boolean productionMode, boolean statsListFunctions) {
+        Logger logger = mock(Logger.class);
+
+        runCheck(logger, productionMode, statsListFunctions,
+                () -> BundleUtils.checkJsFunctionsBundled(
+                        productionMode ? UnlistedJs.class : DevelopmentJs.class,
+                        () -> List.of("dead")));
+
+        verifyNoInteractions(logger);
+    }
+
+    @Test
+    void checkJsFunctionsBundled_serviceWithoutConfiguration_logsNothing() {
+        Logger logger = mock(Logger.class);
+
+        runCheck(logger, null, true, () -> BundleUtils.checkJsFunctionsBundled(
+                NoConfigurationJs.class, () -> List.of("dead")));
+
+        verifyNoInteractions(logger);
+    }
+
+    /**
+     * Runs the given checks with a current service in the given mode, or
+     * without a configuration when the mode is <code>null</code>, stats that
+     * list the given functions or none, and the given logger for BundleUtils.
+     */
+    private static void runCheck(Logger logger, Boolean productionMode,
+            boolean statsListFunctions, Runnable checks) {
+        ObjectNode statsJson = JacksonUtils.createObjectNode();
+        if (statsListFunctions) {
+            statsJson.putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
+                    .add("f00d").add("beef");
+        }
+        DeploymentConfiguration configuration = null;
+        if (productionMode != null) {
+            configuration = mock(DeploymentConfiguration.class);
+            when(configuration.isProductionMode()).thenReturn(productionMode);
+        }
+        VaadinService service = mock(VaadinService.class);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
+        try (MockedStatic<BundleUtils> bundleUtils = mockStatic(
+                BundleUtils.class, CALLS_REAL_METHODS);
+                MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                        LoggerFactory.class)) {
+            bundleUtils.when(BundleUtils::loadStatsJson).thenReturn(statsJson);
+            loggerFactory.when(() -> LoggerFactory.getLogger(BundleUtils.class))
+                    .thenReturn(logger);
+            VaadinService.setCurrent(service);
+            checks.run();
+        } finally {
+            CurrentInstance.clearAll();
+        }
     }
 }

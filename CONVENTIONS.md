@@ -214,6 +214,15 @@ with the session lock held.
 Never concatenate values into an `executeJs` expression string. Pass them as
 parameters and reference them positionally (`$0`, `$1`, …).
 
+Do not send JavaScript as a string from Flow's own code, and do not compile a
+string in `flow-client`, because a Content Security Policy without
+`unsafe-eval` blocks both. The forbiddenapis signatures in
+`forbidden-apis/string-javascript.txt` report the server APIs, and the ESLint
+rules `no-eval` and `@typescript-eslint/no-implied-eval` report `eval` and
+`new Function`. Only the code that keeps a string API working suppresses them,
+with `@SuppressForbidden` or an inline disable comment that names that API. A
+new API that takes JavaScript as a string gets a signature in the same file.
+
 Never build JSON by string concatenation. Use Jackson for construction.
 
 Log client-side `executeJs` errors at `DEBUG`, not at `WARN` or `ERROR`. A
