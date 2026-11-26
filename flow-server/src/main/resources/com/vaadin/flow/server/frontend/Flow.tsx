@@ -280,7 +280,7 @@ let navigateInProgress = false;
  */
 function useQueuedNavigate(
     waitReference: React.MutableRefObject<Promise<void> | undefined>,
-    navigated: React.MutableRefObject<boolean>
+    skipServer: React.MutableRefObject<boolean>
 ): NavigateFn {
     const navigate = useNavigate();
     const navigateQueue = useRef<NavigateOpts[]>([]).current;
@@ -303,7 +303,7 @@ function useQueuedNavigate(
                 await waitReference.current;
                 waitReference.current = undefined;
             }
-            navigated.current = !navigateArgs.callback;
+            skipServer.current = !navigateArgs.callback;
             navigateInProgress = true;
             navigate(navigateArgs.to, navigateArgs.opts);
             setNavigateQueueLength(navigateQueue.length);
@@ -350,20 +350,27 @@ function Flow() {
     const ref = useRef<HTMLOutputElement>(null);
     const navigate = useNavigate();
     const blocker = useBlocker(({ currentLocation, nextLocation }) => {
-        navigated.current =
-            navigated.current ||
+        skipServer.current =
+            skipServer.current ||
             (nextLocation.pathname === currentLocation.pathname &&
                 nextLocation.search === currentLocation.search &&
                 nextLocation.hash === currentLocation.hash);
         return true;
     });
     const location = useLocation();
+    // Whether the blocked navigation is applied without a server round-trip.
+    // Only the blocker effect of that navigation reads and clears it.
+    const skipServer = useRef<boolean>(false);
+    // Whether the server has handled the location that is committed next, so
+    // the location effect only fires 'vaadin-navigated'. Kept apart from
+    // skipServer because the location effect of a navigation can run after
+    // the next queued navigation has started.
     const navigated = useRef<boolean>(false);
     const blockerHandled = useRef<boolean>(false);
     const fromAnchor = useRef<boolean>(false);
     const containerRef = useRef<RouterContainer | undefined>(undefined);
     const roundTrip = useRef<Promise<void> | undefined>(undefined);
-    const queuedNavigate = useQueuedNavigate(roundTrip, navigated);
+    const queuedNavigate = useQueuedNavigate(roundTrip, skipServer);
     const basename = useHref('/');
     const blockerRef = useRef<Blocker>(blocker);
     blockerRef.current = blocker;
@@ -524,6 +531,8 @@ function Flow() {
 
     useEffect(() => {
         if (blocker.state === 'blocked') {
+            const skip = skipServer.current;
+            skipServer.current = false;
             if (blockerHandled.current) {
                 // Blocker is handled and the new navigation
                 // gets queued to be executed after the current handling ends.
@@ -551,7 +560,8 @@ function Flow() {
 
             // Proceed to the blocked location, unless the navigation originates from a click on a link.
             // In that case continue with function execution and perform a server round-trip
-            if (navigated.current && !fromAnchor.current) {
+            if (skip && !fromAnchor.current) {
+                navigated.current = true;
                 proceedBlocker();
                 blockingPromise.resolve();
                 navigateInProgress = false;
