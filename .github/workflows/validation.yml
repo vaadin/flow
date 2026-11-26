@@ -111,8 +111,14 @@ jobs:
           mkdir -p ~/.vaadin/
           echo '{"username":"'$(echo $TB_LICENSE | cut -d / -f1)'","proKey":"'$(echo $TB_LICENSE | cut -d / -f2)'"}' > ~/.vaadin/proKey
       - name: Compile and Install Flow
+        # -Pcoverage only so that the JaCoCo plugin the unit-tests jobs run
+        # enters the cache this job saves: those jobs restore it with an exact
+        # hit, so actions/cache skips their save, and all of them would
+        # otherwise download the plugin from Maven Central at once, which
+        # answers that burst with HTTP 429. With the tests skipped the plugin
+        # only sets a property and skips its report.
         run: |
-          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
+          cmd="mvn install -B -ntp -DskipTests -Pcoverage -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Resolve what only the integration test modules pull
         # The it-tests jobs restore the cache this job saves, and cannot add to
