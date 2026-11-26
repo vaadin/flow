@@ -72,6 +72,7 @@ import com.vaadin.flow.i18n.TranslationFileRequestHandler;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.LocaleUtil;
+import com.vaadin.flow.internal.SessionLockScope;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
 import com.vaadin.flow.router.internal.RouteUtil;
@@ -1459,13 +1460,7 @@ public abstract class VaadinService implements Serializable {
         // Initial WebBrowser data comes from the request
         session.setBrowser(new WebBrowser(request));
 
-        SessionLockCheckStrategy sessionLockCheckStrategy = getDeploymentConfiguration()
-                .isProductionMode()
-                        ? getDeploymentConfiguration()
-                                .getSessionLockCheckStrategy()
-                        : SessionLockCheckStrategy.THROW;
-        assert sessionLockCheckStrategy != null;
-        session.applyLockStrategy(sessionLockCheckStrategy);
+        applySessionLockCheckStrategy(session);
 
         // Initial locale comes from the request
         if (getInstantiator().getI18NProvider() != null) {
@@ -1475,6 +1470,38 @@ public abstract class VaadinService implements Serializable {
         onVaadinSessionStarted(request, session);
 
         return session;
+    }
+
+    /**
+     * Sets the strategy that the given session uses to check that it is locked
+     * when its state is accessed.
+     * <p>
+     * In development mode, the session always uses
+     * {@link SessionLockCheckStrategy#THROW}, so that accessing a session or UI
+     * without holding its lock fails right away. In production mode, it uses
+     * the strategy configured with
+     * {@link InitParameters#SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY}.
+     * <p>
+     * The framework calls this for every session it creates while handling a
+     * request. Call it for a session created with
+     * {@link #createVaadinSession(VaadinRequest)} outside that flow, for
+     * example in a test framework, so that the session checks its lock the same
+     * way. A session that this method was not called for uses
+     * {@link SessionLockCheckStrategy#ASSERT}.
+     *
+     * @param session
+     *            the session to set the lock check strategy for, not
+     *            {@code null}
+     * @see VaadinSession#checkHasLock()
+     * @since 25.4
+     */
+    protected void applySessionLockCheckStrategy(VaadinSession session) {
+        SessionLockCheckStrategy sessionLockCheckStrategy = getDeploymentConfiguration()
+                .isProductionMode()
+                        ? getDeploymentConfiguration()
+                                .getSessionLockCheckStrategy()
+                        : SessionLockCheckStrategy.THROW;
+        session.applyLockStrategy(sessionLockCheckStrategy);
     }
 
     private void setLocale(VaadinRequest request, VaadinSession session) {
@@ -1693,6 +1720,11 @@ public abstract class VaadinService implements Serializable {
      * related to any particular UI or have the UI information encoded in a
      * non-standard way. The returned UI is also set as the current UI (
      * {@link UI#setCurrent(UI)}).
+     * <p>
+     * The caller must hold the session lock, and must restore the current
+     * instances it had before locking right after it unlocks the session, so
+     * that no code runs with the UI as current without holding its session
+     * lock.
      *
      * @param request
      *            the request for which a UI is desired
@@ -2240,21 +2272,29 @@ public abstract class VaadinService implements Serializable {
 
         } catch (final SessionExpiredException e) {
             handleSessionExpired(request, response);
+        } catch (final FailedUIRequestException e) {
+            recordRequestFailure(request, e.getCause());
+            handleExceptionDuringRequest(request, response, vaadinSession,
+                    e.getCause(), e.getUI());
         } catch (final Exception e) {
             recordRequestFailure(request, e);
-            handleExceptionDuringRequest(request, response, vaadinSession, e);
+            handleExceptionDuringRequest(request, response, vaadinSession, e,
+                    null);
         } finally {
             requestEnd(request, response, vaadinSession);
         }
     }
 
+    /*
+     * The failed UI is the UI that was current when the request handler failed.
+     * It is made current again while the error is handled, as the handler
+     * restored the current instances when it unlocked the session.
+     */
     private void handleExceptionDuringRequest(VaadinRequest request,
-            VaadinResponse response, VaadinSession vaadinSession, Exception t)
-            throws ServiceException {
-        if (vaadinSession != null) {
-            vaadinSession.lock();
-        }
-        try {
+            VaadinResponse response, VaadinSession vaadinSession, Exception t,
+            UI failedUI) throws ServiceException {
+        try (SessionLockScope lock = lockForErrorHandling(vaadinSession,
+                failedUI)) {
             try {
                 vaadinRequestInterceptors
                         .forEach(requestInterceptor -> requestInterceptor
@@ -2293,12 +2333,17 @@ public abstract class VaadinService implements Serializable {
                 // Re-throw other exceptions
                 throw new ServiceException(t);
             }
-        } finally {
-            if (vaadinSession != null) {
-                vaadinSession.unlock();
-            }
         }
 
+    }
+
+    private static SessionLockScope lockForErrorHandling(VaadinSession session,
+            UI failedUI) {
+        if (session == null) {
+            return null;
+        }
+        return failedUI == null ? SessionLockScope.lock(session)
+                : SessionLockScope.lock(session, failedUI);
     }
 
     /**

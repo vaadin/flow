@@ -98,3 +98,53 @@ constructing implementations directly.
 Prefer reaching the UI through the component (`getUI()`) or through an event
 that provides it (e.g. `AttachEvent`). `UI.getCurrent()` is a last resort for
 code that has no component instance available.
+
+## Session lock and current instances
+
+The rules are in the Session Lock and Current Instances section of
+[`CONVENTIONS.md`](../CONVENTIONS.md#session-lock-and-current-instances).
+
+`UI.getCurrent()` is a promise to the code that reads it: the UI is safe to
+touch from this thread right now. Application code relies on that promise
+without checking it, and so does the framework — a signal effect, for example,
+treats a signal change made on a thread where its UI is current as a change
+made inside that UI's locked work, and handles it without going through
+`UI.access`. A current UI without the lock breaks that promise silently: the
+code mutates the state tree concurrently with the thread that does hold the
+lock, and nothing fails until the data is corrupted.
+
+`UI.accessSynchronously` and `VaadinSession.accessSynchronously` show the shape
+to copy: lock the session, set the current instances with
+`CurrentInstance.setCurrent`, run the work, then unlock and restore the
+previous instances with `CurrentInstance.restoreInstances` in a `finally`
+block. Restoring right after `unlock()` keeps the session current for as long
+as the lock is held. The window in between is harmless: the access tasks that
+`unlock()` runs set their own instances under the lock, and the lock clears the
+current UI while it fires `SessionLockReleasedEvent`, whose listeners run
+after the release. A request
+handler that sets the current UI while it holds the lock — to find the UI of a
+UIDL or heartbeat request, or to bootstrap a page — is no different: everything
+after it unlocks, from writing the response to the request end callbacks, runs
+without the lock, so a UI left current there would break the promise.
+
+The current `VaadinSession` is a weaker promise. It is set for the whole
+request, including phases that run without the lock, such as download and
+upload handlers that transfer data while other requests use the session. Being
+able to reach the session therefore says nothing about holding its lock.
+
+The opposite direction is a promise, though, because deadlock detection relies
+on it. Flow avoids deadlocks between sessions by refusing to lock a session
+while the thread holds the lock of another one
+(`VaadinService.verifyNoOtherSessionLocked`), and it finds that other session
+only through `VaadinSession.getCurrent()`. A thread that locks session A
+without making it current can go on to lock session B unchallenged, while
+another thread does the same in the opposite order, and both wait forever.
+The `access` methods avoid this by setting the session as current together
+with the UI; a direct call to `lock()` outside a request does not.
+
+Whether a callback runs with the lock is part of its contract, and a contract
+that depends on the request is no contract at all. A request end callback also
+fires for requests that never used a session, so taking the lock only to fire
+it would add lock contention to every request, and it would still have no lock
+to take for the sessionless ones. Code in such a callback that needs the UI or
+the session gets the lock through `access`.

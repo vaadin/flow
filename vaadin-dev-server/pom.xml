@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.4-SNAPSHOT</version>
+    <version>25.5-SNAPSHOT</version>
   </parent>
   <artifactId>vaadin-dev-server</artifactId>
   <packaging>jar</packaging>
@@ -12,6 +12,7 @@
   <description>${project.name}</description>
 
   <properties>
+    <jpms.module.name>com.vaadin.base.devserver</jpms.module.name>
     <surefire.argLine>--add-opens=java.base/java.net=ALL-UNNAMED</surefire.argLine>
     <!-- Allows to skip running NPM tests via exec-maven-plugin with both -Dmaven.test.skip=true and -DskipTests=true -->
     <maven.test.skip>false</maven.test.skip>
@@ -52,7 +53,7 @@
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>open</artifactId>
-      <version>8.5.0.5</version>
+      <version>8.5.0.6</version>
     </dependency>
 
     <dependency>
