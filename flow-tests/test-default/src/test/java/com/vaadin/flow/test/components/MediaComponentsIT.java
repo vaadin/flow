@@ -83,6 +83,16 @@ public class MediaComponentsIT extends AbstractStreamResourceIT {
     }
 
     @BrowserTest
+    public void videoSetMuted_mutesThePlayer() {
+        open();
+
+        VideoElement video = $(VideoElement.class).id("video-player");
+        Assertions.assertEquals(Boolean.TRUE,
+                executeScript("return arguments[0].muted", video),
+                "The video should be muted, not only have the muted attribute");
+    }
+
+    @BrowserTest
     public void videoPoster_isServedByTheDownloadHandler() throws IOException {
         open();
 

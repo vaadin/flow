@@ -36,7 +36,7 @@ import com.vaadin.flow.shared.Registration;
 class AttachScope implements Registration {
 
     private final Element owner;
-    private final SerializableFunction<UI, Registration> attachHandler;
+    private final SerializableFunction<UI, @Nullable Registration> attachHandler;
 
     private @Nullable Registration attachListener;
     private @Nullable Registration detachListener;
@@ -57,7 +57,7 @@ class AttachScope implements Registration {
     private boolean removed;
 
     AttachScope(Element owner,
-            SerializableFunction<UI, Registration> attachHandler) {
+            SerializableFunction<UI, @Nullable Registration> attachHandler) {
         this.owner = Objects.requireNonNull(owner, "Owner cannot be null");
         this.attachHandler = Objects.requireNonNull(attachHandler,
                 "Attach handler cannot be null");

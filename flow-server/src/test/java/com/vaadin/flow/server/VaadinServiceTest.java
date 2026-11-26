@@ -46,6 +46,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.MockedStatic;
 
 import com.vaadin.flow.component.Component;
@@ -411,6 +413,25 @@ class VaadinServiceTest {
                 "@Theme on the app shell should be reported");
     }
 
+    @ParameterizedTest
+    @CsvSource({ "OFF, flow/csp-off", "WARN, flow/csp-warn",
+            "STRICT, flow/csp-strict" })
+    void contentSecurityPolicyMode_modeReported(ContentSecurityPolicyMode mode,
+            String expectedKey) {
+        UsageStatistics.resetEntries();
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setContentSecurityPolicyMode(mode);
+        MockVaadinServletService service = new MockVaadinServletService(
+                configuration, false);
+
+        service.init(new MockInstantiator());
+
+        assertEquals(List.of(expectedKey),
+                getUsageStatisticsNames().stream()
+                        .filter(name -> name.startsWith("flow/csp-")).toList(),
+                "Only the configured CSP mode should be reported");
+    }
+
     @Test
     void productionMode_noUsageStatisticsCollected() {
         UsageStatistics.resetEntries();
@@ -421,6 +442,8 @@ class VaadinServiceTest {
 
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         configuration.setProductionMode(true);
+        configuration
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
         configuration.setApplicationOrSystemProperty(
                 InitParameters.SERVLET_PARAMETER_ENABLE_PNPM, "true");
         VaadinServiceInitListener initListener = event -> {

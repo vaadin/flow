@@ -20,7 +20,7 @@ import java.util.Arrays;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.CspViolationException;
+import com.vaadin.flow.server.ContentSecurityPolicyViolationException;
 
 /**
  * Calls {@code executeJs(String)}, which the strict mode rejects in Java at the
@@ -39,7 +39,7 @@ public class StringJsView extends Div {
         try {
             getElement().executeJs("this.textContent = $0", "never runs");
             message.setText("no exception");
-        } catch (CspViolationException e) {
+        } catch (ContentSecurityPolicyViolationException e) {
             message.setText(e.getMessage());
             callSite.setText(Arrays.stream(e.getStackTrace())
                     .filter(frame -> frame.getClassName()

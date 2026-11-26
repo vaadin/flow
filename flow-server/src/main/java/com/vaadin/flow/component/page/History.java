@@ -24,6 +24,7 @@ import tools.jackson.databind.node.BaseJsonNode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -419,7 +420,7 @@ public class History implements Serializable {
      * @since 25.4
      */
     @JsDefinition
-    public interface HistoryJs extends Serializable {
+    public interface HistoryJs extends JsInvokers {
 
         /**
          * Hands the address to the client side router, which pushes the history

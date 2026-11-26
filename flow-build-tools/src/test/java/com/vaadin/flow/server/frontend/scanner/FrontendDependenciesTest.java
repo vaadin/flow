@@ -41,8 +41,12 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
@@ -115,6 +119,19 @@ class FrontendDependenciesTest {
 
         DepsTests.assertImportsExcludingUI(dependencies.getModules(), "foo.js");
         DepsTests.assertImports(dependencies.getScripts(), "bar.js");
+    }
+
+    @Test
+    void usesNonComponent_usedClassReachedFromRoute() {
+        when(classFinder.getAnnotatedClasses(Route.class))
+                .thenReturn(Collections.singleton(UsesDefinitionRoute.class));
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false, null, true);
+
+        assertTrue(dependencies.getClasses()
+                .contains(UsedDefinition.class.getName()));
+        DepsTests.assertImportsExcludingUI(dependencies.getModules(),
+                "used-by-definition.js");
     }
 
     @Test
@@ -818,6 +835,19 @@ class FrontendDependenciesTest {
                 MyComponent component) {
             Referenced ref = new Referenced();
         }
+    }
+
+    @JsModule("used-by-definition.js")
+    @JsDefinition
+    public interface UsedDefinition extends JsInvokers {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
+    @Route("uses-definition")
+    @Uses(UsedDefinition.class)
+    @Tag("div")
+    public static class UsesDefinitionRoute extends Component {
     }
 
     @Route(value = "dev-only", developmentOnly = true)
