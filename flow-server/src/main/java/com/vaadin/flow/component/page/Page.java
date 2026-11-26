@@ -41,7 +41,10 @@ import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ContentSecurityPolicyViolationReporter;
 import com.vaadin.flow.internal.CssBundler;
+import com.vaadin.flow.internal.JsStringFallbacks;
+import com.vaadin.flow.internal.SuppressForbidden;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
@@ -439,10 +442,19 @@ public class Page implements Serializable {
      * @since 2.1
      * @throws ContentSecurityPolicyViolationException
      *             in the {@link ContentSecurityPolicyMode#STRICT} Content
-     *             Security Policy mode
+     *             Security Policy mode, unless the string is declared in an
+     *             interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
     public void addDynamicImport(String expression) {
-        ContentSecurityPolicyViolationReporter.reportStringJavaScript();
+        JsCall fallback = JsStringFallbacks.findDeclaredFunction(expression,
+                new Object[0]);
+        if (fallback != null) {
+            addDynamicImport(JsFunction.ofDeclaredCall(fallback));
+            return;
+        }
+        ContentSecurityPolicyViolationReporter
+                .reportStringDynamicImport(expression);
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
     }
 
@@ -527,13 +539,15 @@ public class Page implements Serializable {
      * from.
      * <p>
      * What differs from an expression is that nothing about the JavaScript is
-     * decided at the call site: the build collects the declarations of every
-     * JavaScript definition into the bundle, and the client runs the collected
+     * decided at the call site: the build collects the declarations of the
+     * JavaScript definitions into the bundle, and the client runs the collected
      * function after looking it up by an identifier of the JavaScript itself.
-     * No expression is sent and none is compiled in the browser, so the call
-     * works under a content security policy without <code>unsafe-eval</code>,
-     * and what declared the JavaScript in Java is not sent to a production
-     * browser either.
+     * An optimized production build collects only the definitions it can reach
+     * from the entry points of the application; see {@link JsDefinition} for
+     * how to keep one that it does not reach. No expression is sent and none is
+     * compiled in the browser, so the call works under a content security
+     * policy without <code>unsafe-eval</code>, and what declared the JavaScript
+     * in Java is not sent to a production browser either.
      *
      * @param <T>
      *            the JavaScript definition type
@@ -609,14 +623,23 @@ public class Page implements Serializable {
      * @since 25.0
      * @throws ContentSecurityPolicyViolationException
      *             in the {@link ContentSecurityPolicyMode#STRICT} Content
-     *             Security Policy mode
+     *             Security Policy mode, unless the string is declared in an
+     *             interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
+    @SuppressForbidden
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
-        ContentSecurityPolicyViolationReporter.reportStringJavaScript();
-        return ui.getInternals()
-                .addJavaScriptInvocation(new JavaScriptInvocation(expression,
-                        parameters == null ? new Object[0] : parameters));
+        Object[] arguments = parameters == null ? new Object[0] : parameters;
+        JsCall fallback = JsStringFallbacks.findDeclaredCall(expression,
+                arguments);
+        if (fallback != null) {
+            return ui.getInternals().addJavaScriptInvocation(fallback);
+        }
+        ContentSecurityPolicyViolationReporter.reportStringExecuteJs(expression,
+                arguments.length);
+        return ui.getInternals().addJavaScriptInvocation(
+                new JavaScriptInvocation(expression, arguments));
     }
 
     /**
@@ -634,6 +657,7 @@ public class Page implements Serializable {
      * @since 2.0
      */
     @Deprecated
+    @SuppressForbidden
     public PendingJavaScriptResult executeJs(String expression,
             Serializable[] parameters) {
         return executeJs(expression, (Object[]) parameters);

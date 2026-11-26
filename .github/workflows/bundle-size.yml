@@ -28,9 +28,13 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   _BASE_SHA: ${{ github.event.pull_request.base.sha }}
-  # The same flags validation.yml sets, for the same reason: a 403 from Central
-  # is retried rather than failing the build outright. See the note there.
+  # The same flags validation.yml sets, for the same reasons: Central and the
+  # public groups on repository.jboss.org are read through Google's mirror of
+  # Central, and a 403 is retried rather than failing the build outright. See
+  # the note there. The settings file is the head's, so the base build in its
+  # worktree reads it too.
   MAVEN_ARGS: >-
+    -gs ${{ github.workspace }}/.github/maven/settings.xml
     -Daether.connector.http.retryHandler.count=3
     -Daether.connector.http.retryHandler.serviceUnavailable=429,500,502,503,504,403
     -Daether.connector.http.connectionMaxTtl=25

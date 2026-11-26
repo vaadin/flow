@@ -24,6 +24,7 @@ import tools.jackson.core.type.TypeReference;
 
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.BeanUtil;
+import com.vaadin.flow.internal.SuppressForbidden;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.server.ContentSecurityPolicyMode;
 import com.vaadin.flow.server.ContentSecurityPolicyViolationException;
@@ -76,7 +77,8 @@ public interface DomListenerRegistration extends Registration {
      * @throws ContentSecurityPolicyViolationException
      *             in the {@link ContentSecurityPolicyMode#STRICT} Content
      *             Security Policy mode, unless the expression is a property
-     *             path
+     *             path or is listed in
+     *             {@link com.vaadin.flow.js.JsStringFallback#eventData()}
      * @see #addEventDataElementPath(String) for mapping an element
      * @see #mapEventTargetElement() to map the {@code event.target} to an
      *      element
@@ -192,7 +194,9 @@ public interface DomListenerRegistration extends Registration {
      * @return this registration, for chaining
      * @throws ContentSecurityPolicyViolationException
      *             in the {@link ContentSecurityPolicyMode#STRICT} Content
-     *             Security Policy mode, unless the filter is a property path
+     *             Security Policy mode, unless the filter is a property path or
+     *             is listed in
+     *             {@link com.vaadin.flow.js.JsStringFallback#filters()}
      */
     DomListenerRegistration setFilter(String filter);
 
@@ -589,6 +593,8 @@ public interface DomListenerRegistration extends Registration {
      *            the token or property path, not <code>null</code>
      * @return this registration, for chaining
      */
+    // Also gets the expressions of the deprecated addEventDataElement(String)
+    @SuppressForbidden
     private DomListenerRegistration addEventDataEntry(String eventData) {
         ElementListenerMap.addEventData(this, List.of(eventData));
         return this;
@@ -710,6 +716,7 @@ public interface DomListenerRegistration extends Registration {
      * @see #addEventDataPath(String)
      * @since 25.0
      */
+    @SuppressForbidden
     default DomListenerRegistration addEventData(Class<?> type) {
         if (type == null) {
             throw new IllegalArgumentException("Type cannot be null");
@@ -843,6 +850,7 @@ public interface DomListenerRegistration extends Registration {
      * @see DomEvent#getEventDetail(TypeReference)
      * @since 25.0
      */
+    @SuppressForbidden
     default DomListenerRegistration addEventDetail(Class<?> type) {
         if (type == null) {
             throw new IllegalArgumentException("Type cannot be null");

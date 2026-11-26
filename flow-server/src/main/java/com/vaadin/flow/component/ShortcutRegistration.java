@@ -40,6 +40,7 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.SuppressForbidden;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
@@ -1116,6 +1117,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      *            a locator given as a string
      * @return the locator function
      */
+    @SuppressForbidden
     private static JsFunction toLocatorFunction(Object elementLocator) {
         if (elementLocator instanceof JsFunction function) {
             return function;

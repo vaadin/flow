@@ -273,6 +273,23 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
       }
     });
 
+    it('runs declared event data and a declared filter without compiling them', () => {
+      snippets()['data-id'] = (prefix) => (event) => `${prefix as string} ${event.type}`;
+      snippets()['filter-id'] = (name) => (_event, target) => target.hasAttribute(name as string);
+      bindWithClickSettings({
+        '@data': { f: 'data-id', d: false, c: ['declared'] },
+        '@filter': { f: 'filter-id', d: [[200, 'leading']], c: ['id'] }
+      });
+
+      element.click();
+      expect(harness.collectedNodes).to.have.length(0);
+
+      element.setAttribute('id', 'set');
+      element.click();
+      expect(harness.collectedNodes).to.have.length(1);
+      expect(harness.collectedEventData[0]).to.include({ '@data': 'declared click' });
+    });
+
     it('runs the function from the bundle for an expression key with snippet settings', () => {
       // A bundled @EventData value keeps the expression as its key, so it is
       // the shape of the settings that says not to compile the key
