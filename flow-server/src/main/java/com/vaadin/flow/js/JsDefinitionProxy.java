@@ -49,8 +49,10 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
@@ -150,6 +152,8 @@ public final class JsDefinitionProxy {
             throw new IllegalArgumentException(definitionType.getName()
                     + " does not extend " + JsInvokers.class.getSimpleName());
         }
+        BundleUtils.checkJsFunctionsBundled(definitionType,
+                () -> collectFunctionIds(definitionType));
         return (T) Proxy.newProxyInstance(definitionType.getClassLoader(),
                 new Class<?>[] { definitionType },
                 new JsDefinitionHandler(runner, definitionType));
@@ -180,6 +184,8 @@ public final class JsDefinitionProxy {
             throw new IllegalArgumentException(definitionType.getName()
                     + " does not extend " + JsSnippets.class.getSimpleName());
         }
+        BundleUtils.checkJsFunctionsBundled(definitionType,
+                () -> collectFunctionIds(definitionType));
         return (T) Proxy.newProxyInstance(definitionType.getClassLoader(),
                 new Class<?>[] { definitionType },
                 new JsSnippetHandler(definitionType));
@@ -240,6 +246,16 @@ public final class JsDefinitionProxy {
         }
         checkMethods(definitionType, snippets);
         return snippets ? Kind.SNIPPETS : Kind.CALLS;
+    }
+
+    // The identifiers a call through the definition sends, which for a method
+    // that stands in for a string call differ from those of its JavaScript
+    private static List<String> collectFunctionIds(Class<?> definitionType) {
+        return Stream.of(definitionType.getMethods()).filter(
+                method -> method.isAnnotationPresent(JsExpression.class))
+                .map(method -> JsStringFallbacks.functionId(definitionType,
+                        method))
+                .toList();
     }
 
     /**

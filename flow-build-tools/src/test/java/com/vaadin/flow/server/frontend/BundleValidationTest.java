@@ -44,6 +44,7 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.DevBundleUtils;
 import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
@@ -1146,8 +1147,8 @@ class BundleValidationTest {
                 FrontendUtils.GENERATED
                         + FrontendUtils.JS_DEFINITIONS_FILE_NAME,
                 "not the hash of what the interfaces declare");
-        ArrayNode functionIds = stats.putArray(
-                BundleValidationUtil.JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
+        ArrayNode functionIds = stats
+                .putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
         bundledFunctionIds.forEach(functionIds::add);
         if (mode == Mode.DEVELOPMENT_BUNDLE) {
             // A development bundle names its functions as the application
@@ -1204,8 +1205,7 @@ class BundleValidationTest {
                 FrontendUtils.GENERATED
                         + FrontendUtils.JS_DEFINITIONS_FILE_NAME,
                 "not the hash of what the interfaces declare");
-        stats.putArray(
-                BundleValidationUtil.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
+        stats.putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
                 .add(JsCall.functionId("this.blur()", 0, false));
         setupFrontendUtilsMock(stats);
 
@@ -1233,8 +1233,8 @@ class BundleValidationTest {
         doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
 
         ObjectNode stats = getBasicStats();
-        ArrayNode functionIds = stats.putArray(
-                BundleValidationUtil.JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
+        ArrayNode functionIds = stats
+                .putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
         String focus = JsCall.functionId("this.focus()", 0, false);
         String blur = JsCall.functionId("this.blur()", 0, false);
         functionIds.add(focus);
