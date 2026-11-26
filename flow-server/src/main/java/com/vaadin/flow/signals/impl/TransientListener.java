@@ -51,7 +51,9 @@ public interface TransientListener extends Serializable {
      * <p>
      * The default implementation doesn't run the task and returns
      * <code>false</code>. The usage then only invokes the listener for changes
-     * that happen after the listener was added.
+     * that happen after the listener was added. A listener that wraps another
+     * listener should delegate to the wrapped listener so that the wrapped
+     * listener's context is used.
      *
      * @param task
      *            the task to run, not <code>null</code>

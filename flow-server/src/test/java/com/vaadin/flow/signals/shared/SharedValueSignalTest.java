@@ -32,6 +32,7 @@ import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalCommand.SetCommand;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
+import com.vaadin.flow.signals.impl.Effect;
 import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.impl.TransientListener;
 import com.vaadin.flow.signals.impl.UsageTracker;
@@ -472,6 +473,54 @@ public class SharedValueSignalTest extends SignalTestBase {
 
         freshReadTasks.get(0).run();
         assertEquals(List.of("hidden"), notified);
+    }
+
+    @Test
+    void usageTracking_listenerRemovedBeforeFreshReadTaskRuns_isNotAdded() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> notified = new ArrayList<>();
+        List<Runnable> freshReadTasks = new ArrayList<>();
+
+        Transaction.runInTransaction(() -> {
+            Usage usage = UsageTracker.track(signal::get);
+            Signal.runWithoutTransaction(() -> signal.set("hidden"));
+
+            usage.onNextChange(new TransientListener() {
+                @Override
+                public boolean invoke(boolean immediate) {
+                    notified.add(signal.peek());
+                    return true;
+                }
+
+                @Override
+                public boolean runWithFreshReads(Runnable task) {
+                    freshReadTasks.add(task);
+                    return true;
+                }
+            }).remove();
+        }, Transaction.Type.WRITE_THROUGH);
+
+        freshReadTasks.forEach(Runnable::run);
+        signal.set("again");
+
+        assertEquals(1, freshReadTasks.size());
+        assertEquals(List.of(), notified);
+    }
+
+    @Test
+    void effect_changeHiddenByExplicitTransactionWithoutSession_reRunsOnLaterChange() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> observed = new ArrayList<>();
+
+        Transaction.runInTransaction(() -> {
+            signal.peek();
+            Signal.runWithoutTransaction(() -> signal.set("hidden"));
+            new Effect(() -> observed.add(signal.get()), Runnable::run);
+        }, Transaction.Type.WRITE_THROUGH);
+        assertEquals(List.of("initial"), observed);
+
+        signal.set("update");
+        assertEquals(List.of("initial", "update"), observed);
     }
 
     @Test

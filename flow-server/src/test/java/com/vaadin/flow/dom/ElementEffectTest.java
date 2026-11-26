@@ -640,28 +640,6 @@ class ElementEffectTest {
     }
 
     @Test
-    void effect_disposedBeforeHiddenSharedSignalChangeDelivered_doesNotReRun() {
-        CurrentInstance.clearAll();
-        VaadinService.setCurrent(service);
-
-        var session = new MockVaadinSession(service);
-        session.lock();
-        VaadinSession.setCurrent(session);
-
-        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
-        signal.peek();
-        Signal.runWithoutTransaction(() -> signal.set("changed"));
-
-        List<String> observed = new ArrayList<>();
-        new Effect(() -> observed.add(signal.get()), Runnable::run).dispose();
-
-        service.runPendingAccessTasks(session);
-        Signal.runWithoutTransaction(() -> signal.set("again"));
-
-        assertEquals(List.of("initial"), observed);
-    }
-
-    @Test
     void effect_sharedSignalChangedInSessionTransaction_reRunsRightAway() {
         CurrentInstance.clearAll();
         VaadinService.setCurrent(service);
