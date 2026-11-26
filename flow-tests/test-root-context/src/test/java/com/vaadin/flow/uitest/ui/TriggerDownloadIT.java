@@ -30,7 +30,7 @@ public class TriggerDownloadIT extends ChromeBrowserTest {
     @Test
     public void clickUrl_invokesStartWithUrlAndNoFilename() {
         open();
-        installRecordingShim();
+        installDownloadShim();
 
         findElement(By.id("download-url")).click();
 
@@ -42,7 +42,7 @@ public class TriggerDownloadIT extends ChromeBrowserTest {
     @Test
     public void clickUrlWithFilename_invokesStartWithBothAndQuotesRoundTrip() {
         open();
-        installRecordingShim();
+        installDownloadShim();
 
         findElement(By.id("download-url-filename")).click();
 
@@ -58,7 +58,7 @@ public class TriggerDownloadIT extends ChromeBrowserTest {
     @Test
     public void clickHandler_emitsRegisteredResourceUrl_andUrlServesHandlerBody() {
         open();
-        installRecordingShim();
+        installDownloadShim();
 
         findElement(By.id("download-handler")).click();
 
@@ -78,7 +78,7 @@ public class TriggerDownloadIT extends ChromeBrowserTest {
     @Test
     public void clickInput_resolvesUrlFromInputValueAtFireTime() {
         open();
-        installRecordingShim();
+        installDownloadShim();
 
         WebElement field = findElement(By.id("url-source"));
         ((JavascriptExecutor) getDriver()).executeScript(
@@ -93,7 +93,7 @@ public class TriggerDownloadIT extends ChromeBrowserTest {
     @Test
     public void clickDownloadOnClick_urlServesBodyWithLazyFilename() {
         open();
-        installRecordingShim();
+        installDownloadShim();
 
         findElement(By.id("download-on-click")).click();
 
@@ -106,7 +106,7 @@ public class TriggerDownloadIT extends ChromeBrowserTest {
     @Test
     public void clickDownloadOnClickFailure_urlRespondsWithServerError() {
         open();
-        installRecordingShim();
+        installDownloadShim();
 
         findElement(By.id("download-on-click-failure")).click();
 
@@ -119,7 +119,7 @@ public class TriggerDownloadIT extends ChromeBrowserTest {
     // Replace window.Vaadin.Flow.download.start with a recorder so the IT
     // never actually triggers a save dialog or navigation. Each invocation
     // pushes {url, filename} onto window.__downloads.
-    private void installRecordingShim() {
+    private void installDownloadShim() {
         ((JavascriptExecutor) getDriver())
                 .executeScript("window.__downloads = [];"
                         + "window.Vaadin.Flow.download.start = "
@@ -157,5 +157,138 @@ public class TriggerDownloadIT extends ChromeBrowserTest {
                           .catch(e => done('FETCH_ERROR:' + e));
                         """,
                 url);
+    }
+
+    @Test
+    public void clickOpenTabUrl_callsWindowOpenWithBlankTargetAndDefaultFeatures() {
+        open();
+        installOpenShim();
+
+        findElement(By.id("open-tab")).click();
+
+        Map<String, Object> recorded = waitForFirstOpen();
+        Assert.assertEquals("https://example.com/docs", recorded.get("url"));
+        Assert.assertEquals("_blank", recorded.get("target"));
+        Assert.assertEquals("noopener,noreferrer", recorded.get("features"));
+    }
+
+    @Test
+    public void clickOpenTabUrlWithFeatures_passesCustomFeaturesVerbatim() {
+        open();
+        installOpenShim();
+
+        findElement(By.id("open-tab-features")).click();
+
+        Map<String, Object> recorded = waitForFirstOpen();
+        Assert.assertEquals("https://example.com/help", recorded.get("url"));
+        Assert.assertEquals("_blank", recorded.get("target"));
+        // Custom features replace the defaults; the action passes whatever
+        // the caller gave through to window.open verbatim.
+        Assert.assertEquals(TriggerDownloadView.CUSTOM_FEATURES,
+                recorded.get("features"));
+    }
+
+    @Test
+    public void clickOpenTabInput_resolvesUrlFromInputValueAtFireTime() {
+        open();
+        installOpenShim();
+
+        WebElement field = findElement(By.id("open-tab-url-source"));
+        ((JavascriptExecutor) getDriver()).executeScript(
+                "arguments[0].value = 'https://example.com/from-input';",
+                field);
+
+        findElement(By.id("open-tab-input")).click();
+
+        Map<String, Object> recorded = waitForFirstOpen();
+        Assert.assertEquals("https://example.com/from-input",
+                recorded.get("url"));
+        Assert.assertEquals("_blank", recorded.get("target"));
+    }
+
+    @Test
+    public void clickOpenTabJavascriptInput_blocksWindowOpen() {
+        open();
+        installOpenShim();
+
+        WebElement field = findElement(By.id("open-tab-url-source"));
+        // Plain javascript: URL — the simplest variant. Leading
+        // whitespace/case variants are covered by the unit test; here we
+        // only need to prove the client guard prevents window.open from
+        // being called at all.
+        ((JavascriptExecutor) getDriver()).executeScript(
+                "arguments[0].value = 'javascript:window.__pwned = true';",
+                field);
+
+        findElement(By.id("open-tab-js-input")).click();
+
+        // Click a safe URL afterwards so we have a positive signal that the
+        // recording shim works end-to-end — without this we couldn't tell
+        // "blocked correctly" from "click did nothing at all".
+        ((JavascriptExecutor) getDriver()).executeScript(
+                "arguments[0].value = 'https://example.com/after-block';",
+                field);
+        findElement(By.id("open-tab-input")).click();
+
+        Map<String, Object> recorded = waitForFirstOpen();
+        Assert.assertEquals(
+                "javascript: URL must not reach window.open — should be"
+                        + " skipped, and only the subsequent safe click should"
+                        + " be recorded",
+                "https://example.com/after-block", recorded.get("url"));
+        // Make sure the inline payload never ran in the page either.
+        Object pwned = ((JavascriptExecutor) getDriver())
+                .executeScript("return window.__pwned;");
+        Assert.assertNull("javascript: URL must not execute in the opener",
+                pwned);
+    }
+
+    @Test
+    public void clickOpenTabHandler_opensRegisteredResourceServedInline() {
+        open();
+        installOpenShim();
+
+        findElement(By.id("open-tab-handler")).click();
+
+        Map<String, Object> recorded = waitForFirstOpen();
+        Assert.assertEquals("_blank", recorded.get("target"));
+        Assert.assertEquals("noopener,noreferrer", recorded.get("features"));
+        // Fetch the URL the new tab would load to check that the content is
+        // served inline, which is what makes the browser show it in the tab.
+        @SuppressWarnings("unchecked")
+        Map<String, Object> response = (Map<String, Object>) ((JavascriptExecutor) getDriver())
+                .executeAsyncScript("""
+                        const done = arguments[arguments.length - 1];
+                        fetch(arguments[0]).then(r => r.text().then(t => done({
+                            disposition: r.headers.get('Content-Disposition'),
+                            body: t})));
+                        """, recorded.get("url"));
+        Assert.assertTrue(
+                "Expected inline content, got: " + response.get("disposition"),
+                String.valueOf(response.get("disposition"))
+                        .startsWith("inline"));
+        Assert.assertEquals(TriggerDownloadView.NEW_TAB_CONTENT,
+                response.get("body"));
+    }
+
+    // Replace window.open with a recorder so the IT does not depend on Chrome
+    // actually opening a popup (headless Chrome's popup behaviour is fragile)
+    // and so the popup blocker is irrelevant. Each invocation pushes
+    // {url, target, features} onto window.__opens; the shim returns a stub
+    // object so callers checking the return value for null don't blow up.
+    private void installOpenShim() {
+        ((JavascriptExecutor) getDriver()).executeScript("window.__opens = [];"
+                + "window.open = (url, target, features) => {"
+                + "  window.__opens.push("
+                + "    {url: url, target: target, features: features});"
+                + "  return {closed: false};" + "};");
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> waitForFirstOpen() {
+        return (Map<String, Object>) waitUntil(
+                d -> ((JavascriptExecutor) d).executeScript(
+                        "return (window.__opens && window.__opens.length)"
+                                + " ? window.__opens[0] : null;"));
     }
 }

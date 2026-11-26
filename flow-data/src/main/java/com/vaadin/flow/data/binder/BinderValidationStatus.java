@@ -99,8 +99,9 @@ public class BinderValidationStatus<BEAN> implements Serializable {
             Binder<BEAN> source) {
         return new BinderValidationStatus<>(source,
                 source.getBindings().stream()
-                        .map(BindingValidationStatus::createUnresolvedStatus)
-                        .collect(Collectors.toList()),
+                        .<BindingValidationStatus<?>> map(
+                                BindingValidationStatus::createUnresolvedStatus)
+                        .toList(),
                 Collections.emptyList());
     }
 
@@ -142,8 +143,7 @@ public class BinderValidationStatus<BEAN> implements Serializable {
     public List<ValidationResult> getValidationErrors() {
         List<ValidationResult> errors = new ArrayList<>(
                 getFieldValidationErrors().stream()
-                        .map(s -> s.getResult().get())
-                        .collect(Collectors.toList()));
+                        .map(s -> s.getResult().get()).toList());
         errors.addAll(getBeanValidationErrors());
         return errors;
     }

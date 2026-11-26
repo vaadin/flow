@@ -13,6 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
+/*
+ * Connects React Router to Flow: server-side views are rendered by the `Flow`
+ * component under the `serverSideRoutes` catch-all route. For how the
+ * bootstrap and navigation work, see `flow-client/ARCHITECTURE.md` in
+ * https://github.com/vaadin/flow.
+ */
 /// <reference lib="es2018" />
 import { Flow as _Flow } from 'Frontend/generated/jar-resources/Flow.js';
 import React, { useCallback, useEffect, useReducer, useRef, useState, type ReactNode } from 'react';
@@ -273,33 +280,51 @@ let navigateInProgress = false;
  */
 function useQueuedNavigate(
     waitReference: React.MutableRefObject<Promise<void> | undefined>,
-    navigated: React.MutableRefObject<boolean>
+    skipServer: React.MutableRefObject<boolean>,
+    commitPending: React.MutableRefObject<boolean>
 ): NavigateFn {
     const navigate = useNavigate();
     const navigateQueue = useRef<NavigateOpts[]>([]).current;
     const [navigateQueueLength, setNavigateQueueLength] = useState(0);
+    const mounted = useRef<boolean>(true);
+
+    useEffect(() => {
+        mounted.current = true;
+        return () => {
+            mounted.current = false;
+        };
+    }, []);
 
     const dequeueNavigation = useCallback(() => {
-        if (navigateInProgress) {
+        if (navigateQueue.length === 0) {
+            // Empty queue, do nothing.
+            return;
+        }
+        if (navigateInProgress || commitPending.current) {
             dequeueNavigationAfterCurrentTask();
             return;
         }
 
-        const navigateArgs = navigateQueue.shift();
-        if (navigateArgs === undefined) {
-            // Empty queue, do nothing.
-            return;
-        }
+        const navigateArgs = navigateQueue.shift()!;
 
         const blockingNavigate = async () => {
             if (waitReference.current) {
                 await waitReference.current;
                 waitReference.current = undefined;
             }
-            navigated.current = !navigateArgs.callback;
-            navigateInProgress = true;
+            skipServer.current = !navigateArgs.callback;
+            // Once Flow is unmounted, no blocker effect is left to reset the
+            // shared flag, which would stop the queue of the next Flow instance
+            if (mounted.current) {
+                navigateInProgress = true;
+            }
             navigate(navigateArgs.to, navigateArgs.opts);
-            setNavigateQueueLength(navigateQueue.length);
+            if (mounted.current) {
+                setNavigateQueueLength(navigateQueue.length);
+            } else {
+                // Without re-renders nothing else triggers the next dequeue
+                dequeueNavigationAfterCurrentTask();
+            }
         };
         blockingNavigate();
     }, [navigate, setNavigateQueueLength]);
@@ -343,20 +368,33 @@ function Flow() {
     const ref = useRef<HTMLOutputElement>(null);
     const navigate = useNavigate();
     const blocker = useBlocker(({ currentLocation, nextLocation }) => {
-        navigated.current =
-            navigated.current ||
+        skipServer.current =
+            skipServer.current ||
             (nextLocation.pathname === currentLocation.pathname &&
                 nextLocation.search === currentLocation.search &&
                 nextLocation.hash === currentLocation.hash);
         return true;
     });
     const location = useLocation();
+    // Whether the blocked navigation is applied without a server round-trip.
+    // The blocker effect of that navigation reads and clears it, the location
+    // effect clears it for a navigation that was not blocked.
+    const skipServer = useRef<boolean>(false);
+    // Whether the server has handled the location that is committed next, so
+    // the location effect only fires 'vaadin-navigated'. Kept apart from
+    // skipServer because the location effect of a navigation can run after
+    // the next queued navigation has started.
     const navigated = useRef<boolean>(false);
+    // Whether a navigation that the blocker let through has not reached the
+    // location effect yet. React Router does not block a navigation started
+    // in that window, so the queue waits for it to end. Cleared also when
+    // Flow unmounts.
+    const commitPending = useRef<boolean>(false);
     const blockerHandled = useRef<boolean>(false);
     const fromAnchor = useRef<boolean>(false);
     const containerRef = useRef<RouterContainer | undefined>(undefined);
     const roundTrip = useRef<Promise<void> | undefined>(undefined);
-    const queuedNavigate = useQueuedNavigate(roundTrip, navigated);
+    const queuedNavigate = useQueuedNavigate(roundTrip, skipServer, commitPending);
     const basename = useHref('/');
     const blockerRef = useRef<Blocker>(blocker);
     blockerRef.current = blocker;
@@ -372,7 +410,13 @@ function Flow() {
     const proceedBlocker = useCallback(() => {
         const current = blockerRef.current;
         if (current.state === 'blocked') {
-            current.proceed();
+            commitPending.current = true;
+            try {
+                current.proceed();
+            } catch (e) {
+                commitPending.current = false;
+                throw e;
+            }
         }
     }, []);
 
@@ -512,11 +556,18 @@ function Flow() {
             window.removeEventListener("popstate", flowNavigation);
             window.removeEventListener('click', navigateEventHandler);
             flowReact.active = false;
+            // Leaving to a client route unmounts Flow before its location
+            // effect runs, so the queue must not keep waiting for it
+            commitPending.current = false;
         };
     }, []);
 
     useEffect(() => {
         if (blocker.state === 'blocked') {
+            // A new navigation is only blocked once the previous one is done
+            commitPending.current = false;
+            const skip = skipServer.current;
+            skipServer.current = false;
             if (blockerHandled.current) {
                 // Blocker is handled and the new navigation
                 // gets queued to be executed after the current handling ends.
@@ -544,7 +595,8 @@ function Flow() {
 
             // Proceed to the blocked location, unless the navigation originates from a click on a link.
             // In that case continue with function execution and perform a server round-trip
-            if (navigated.current && !fromAnchor.current) {
+            if (skip && !fromAnchor.current) {
+                navigated.current = true;
                 proceedBlocker();
                 blockingPromise.resolve();
                 navigateInProgress = false;
@@ -614,9 +666,13 @@ function Flow() {
     }, [blocker.state, blocker.location]);
 
     useEffect(() => {
+        commitPending.current = false;
         if (blocker.state === 'blocked') {
             return;
         }
+        // A navigation that reaches this point without being blocked leaves
+        // its decision unused, so it must not apply to the next navigation.
+        skipServer.current = false;
         if (navigated.current) {
             navigated.current = false;
             fireNavigated(location.pathname, location.search);

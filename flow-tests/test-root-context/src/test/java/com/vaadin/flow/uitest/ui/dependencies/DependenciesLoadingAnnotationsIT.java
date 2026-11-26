@@ -17,7 +17,6 @@ package com.vaadin.flow.uitest.ui.dependencies;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -82,7 +81,7 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
 
         List<String> testMessages = findElements(
                 By.className("dependenciesTest" + getCssSuffix())).stream()
-                .map(WebElement::getText).collect(Collectors.toList());
+                .map(WebElement::getText).toList();
 
         assertThat(
                 "5 elements are expected to be added: 2 for eager dependencies, 2 for inline dependencies, 1 for UI 'onAttach' method, 2 for lazy dependencies",
@@ -91,14 +90,12 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
         List<String> inlineAndEagerMessages = testMessages.subList(0, 4);
 
         List<String> eagerMessages = inlineAndEagerMessages.stream()
-                .filter(message -> message.startsWith(EAGER_PREFIX))
-                .collect(Collectors.toList());
+                .filter(message -> message.startsWith(EAGER_PREFIX)).toList();
         assertThat("2 eager messages should be posted before lazy messages",
                 eagerMessages, hasSize(2));
 
         List<String> inlineMessages = inlineAndEagerMessages.stream()
-                .filter(message -> message.startsWith(INLINE_PREFIX))
-                .collect(Collectors.toList());
+                .filter(message -> message.startsWith(INLINE_PREFIX)).toList();
         assertThat("1 inline message should be posted before lazy messages",
                 inlineMessages, hasSize(1));
 

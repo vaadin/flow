@@ -60,7 +60,13 @@ public class ComponentMetaData {
         private final List<StyleSheet> styleSheets = new ArrayList<>();
         private final List<CssImport> cssImports = new ArrayList<>();
 
-        List<JavaScript> getJavaScripts() {
+        /**
+         * Gets the JavaScript files defined for the component.
+         *
+         * @return a list of JavaScript annotations
+         * @since 25.4
+         */
+        public List<JavaScript> getJavaScripts() {
             return Collections.unmodifiableList(javaScripts);
         }
 
@@ -157,31 +163,32 @@ public class ComponentMetaData {
     }
 
     private static DependencyInfo findDependencies(VaadinService service,
-            Class<? extends Component> componentClass,
-            DependencyInfo dependencyInfo,
-            Set<Class<? extends Component>> scannedClasses) {
-        assert !scannedClasses.contains(componentClass);
+            Class<?> type, DependencyInfo dependencyInfo,
+            Set<Class<?>> scannedClasses) {
+        assert !scannedClasses.contains(type);
 
-        scannedClasses.add(componentClass);
+        scannedClasses.add(type);
 
-        List<JsModule> jsModules = AnnotationReader
-                .getJsModuleAnnotations(componentClass);
+        // The build treats only components and interfaces as classes whose
+        // runtime values are loaded, and bundles those of any other class
+        // instead, so loading them here too would load them twice. An
+        // interface named in @Uses is read like one the component implements
+        if (type.isInterface() || Component.class.isAssignableFrom(type)) {
+            dependencyInfo.jsModules.addAll(
+                    AnnotationReader.getAnnotationsFor(type, JsModule.class));
+            dependencyInfo.javaScripts.addAll(
+                    AnnotationReader.getAnnotationsFor(type, JavaScript.class));
+            dependencyInfo.styleSheets.addAll(
+                    AnnotationReader.getAnnotationsFor(type, StyleSheet.class));
+            dependencyInfo.cssImports.addAll(
+                    AnnotationReader.getAnnotationsFor(type, CssImport.class));
+        }
 
-        dependencyInfo.jsModules.addAll(jsModules);
-
-        dependencyInfo.javaScripts.addAll(
-                AnnotationReader.getJavaScriptAnnotations(componentClass));
-        dependencyInfo.styleSheets.addAll(
-                AnnotationReader.getStyleSheetAnnotations(componentClass));
-        dependencyInfo.cssImports.addAll(
-                AnnotationReader.getCssImportAnnotations(componentClass));
-
-        List<Uses> usesList = AnnotationReader.getAnnotationsFor(componentClass,
-                Uses.class);
-        for (Uses uses : usesList) {
-            Class<? extends Component> otherClass = uses.value();
-            if (!scannedClasses.contains(otherClass)) {
-                findDependencies(service, otherClass, dependencyInfo,
+        // Followed from any class, as the build follows the classes that
+        // any used class names in turn
+        for (Uses uses : AnnotationReader.getAnnotationsFor(type, Uses.class)) {
+            if (!scannedClasses.contains(uses.value())) {
+                findDependencies(service, uses.value(), dependencyInfo,
                         scannedClasses);
             }
         }

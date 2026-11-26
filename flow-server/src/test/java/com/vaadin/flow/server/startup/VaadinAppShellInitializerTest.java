@@ -41,10 +41,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.simple.SimpleLoggerFactory;
 
+import com.vaadin.experimental.CoreFeatureFlagProvider;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.BodySize;
@@ -67,6 +71,7 @@ import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
@@ -127,6 +132,11 @@ public class VaadinAppShellInitializerTest {
     @Push(value = PushMode.MANUAL, transport = Transport.WEBSOCKET)
     @Theme(themeClass = AbstractTheme.class)
     public static class OffendingClass {
+    }
+
+    @Push(transport = Transport.SERVER_SENT_EVENTS)
+    public static class MyAppShellWithServerSentEventsPush
+            implements AppShellConfigurator {
     }
 
     public static class WebHolder extends Component {
@@ -249,6 +259,26 @@ public class VaadinAppShellInitializerTest {
 
     @StyleSheet("../secrets.css")
     public static class MyAppShellWithTraversal
+            implements AppShellConfigurator {
+    }
+
+    @JavaScript("./bundled.js")
+    @JavaScript("context://js/eager.js")
+    @JavaScript(value = "/js/lazy.js", loadMode = LoadMode.LAZY)
+    @JavaScript(value = "js/module.js", type = JavaScript.Type.MODULE)
+    @JavaScript("https://cdn.example.com/remote.js")
+    @JavaScript(value = "./js/module.js", type = JavaScript.Type.MODULE)
+    @JavaScript(value = "js/lazy-module.js", type = JavaScript.Type.MODULE, loadMode = LoadMode.LAZY)
+    @JavaScript(value = "context://js/dev.js", developmentOnly = true)
+    @JsModule("./bundled-module.js")
+    @JsModule("context://js/runtime-module.js")
+    @JsModule(value = "https://cdn.example.com/dev-module.js", developmentOnly = true)
+    public static class MyAppShellWithJavaScripts
+            implements AppShellConfigurator {
+    }
+
+    @JavaScript(value = "context://js/inline.js", loadMode = LoadMode.INLINE)
+    public static class MyAppShellWithInlineJavaScript
             implements AppShellConfigurator {
     }
 
@@ -417,6 +447,38 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
+    public void should_throw_when_appShellPushUsesServerSentEventsWithoutFeatureFlag() {
+        classes.add(MyAppShellWithServerSentEventsPush.class);
+
+        InvalidApplicationConfigurationException thrown = assertThrows(
+                InvalidApplicationConfigurationException.class,
+                () -> initializer.process(classes, servletContext));
+        assertTrue(thrown.getMessage()
+                .contains("com.vaadin.experimental.ssePushTransport=true"));
+        assertTrue(thrown.getMessage().contains(
+                "property `vaadin.experimental.ssePushTransport=true`"));
+        assertTrue(thrown.getMessage()
+                .contains(MyAppShellWithServerSentEventsPush.class.getName()));
+        // Copilot cannot be used when the application does not start
+        assertFalse(thrown.getMessage().contains("Copilot"));
+    }
+
+    @Test
+    public void should_modifyPushConfiguration_when_appShellPushUsesServerSentEventsWithFeatureFlag()
+            throws Exception {
+        FeatureFlags.get(context).getFeatures().stream()
+                .filter(CoreFeatureFlagProvider.SSE_PUSH_TRANSPORT::equals)
+                .forEach(feature -> feature.setEnabled(true));
+        classes.add(MyAppShellWithServerSentEventsPush.class);
+        initializer.process(classes, servletContext);
+
+        AppShellRegistry.getInstance(context)
+                .modifyPushConfiguration(pushConfiguration);
+
+        verify(pushConfiguration).setTransport(Transport.SERVER_SENT_EVENTS);
+    }
+
+    @Test
     public void should_not_haveMetas_when_not_callingInitializer()
             throws Exception {
         AppShellRegistry.getInstance(context).modifyIndexHtml(document,
@@ -534,6 +596,70 @@ public class VaadinAppShellInitializerTest {
         assertEquals("./my-styles.css", links.get(0).attr("href"));
         assertEquals("https://cdn.example.com/ui.css",
                 links.get(1).attr("href"));
+    }
+
+    @Test
+    public void runtimeJavaScriptOnAppShell_injectedAsScriptsInOrder()
+            throws Exception {
+        classes.add(MyAppShellWithJavaScripts.class);
+        initializer.process(classes, servletContext);
+
+        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
+                createVaadinRequest("/"));
+
+        // The bundled value is loaded through the bundle, and
+        // "./js/module.js" denotes the same module as "js/module.js"
+        List<Element> scripts = document.head().select("script");
+        assertEquals(8, scripts.size());
+        assertScript(scripts.get(0), "./js/eager.js", null, false);
+        assertScript(scripts.get(1), "/js/lazy.js", null, true);
+        assertScript(scripts.get(2), "./js/module.js", "module", false);
+        assertScript(scripts.get(3), "https://cdn.example.com/remote.js", null,
+                false);
+        // A module script is deferred anyway
+        assertScript(scripts.get(4), "./js/lazy-module.js", "module", false);
+        assertScript(scripts.get(5), "./js/dev.js", null, false);
+        // Runtime URL @JsModule values are not bundled either
+        assertScript(scripts.get(6), "./js/runtime-module.js", "module", false);
+        assertScript(scripts.get(7), "https://cdn.example.com/dev-module.js",
+                "module", false);
+    }
+
+    @Test
+    public void runtimeJavaScriptOnAppShell_productionMode_developmentOnlySkipped()
+            throws Exception {
+        mocks.setProductionMode(true);
+        classes.add(MyAppShellWithJavaScripts.class);
+        initializer.process(classes, servletContext);
+
+        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
+                createVaadinRequest("/"));
+
+        List<String> srcs = document.head().select("script").stream()
+                .map(script -> script.attr("src")).toList();
+        assertEquals(List.of("./js/eager.js", "/js/lazy.js", "./js/module.js",
+                "https://cdn.example.com/remote.js", "./js/lazy-module.js",
+                "./js/runtime-module.js"), srcs);
+    }
+
+    @Test
+    public void inlineJavaScriptOnAppShell_throws() throws Exception {
+        classes.add(MyAppShellWithInlineJavaScript.class);
+        initializer.process(classes, servletContext);
+        VaadinServletRequest request = createVaadinRequest("/");
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+
+        InvalidApplicationConfigurationException exception = assertThrows(
+                InvalidApplicationConfigurationException.class,
+                () -> registry.modifyIndexHtml(document, request));
+        assertTrue(exception.getMessage().contains("@Inline"));
+    }
+
+    private static void assertScript(Element script, String src, String type,
+            boolean defer) {
+        assertEquals(src, script.attr("src"));
+        assertEquals(type, script.hasAttr("type") ? script.attr("type") : null);
+        assertEquals(defer, script.hasAttr("defer"));
     }
 
     @Test

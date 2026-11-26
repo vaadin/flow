@@ -23,21 +23,25 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.shared.util.SharedUtil;
@@ -65,6 +69,8 @@ public class ReflectTools implements Serializable {
     static final String CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR = "Unable to create an instance of '%s'. Make sure the class has a public no-arg constructor.";
     static final String CREATE_INSTANCE_FAILED_LOCAL_CLASS = "Cannot instantiate local class '%s'. Move class declaration outside the method.";
     static final String CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION = "Unable to create an instance of '%s'. The constructor threw an exception.";
+    static final String CREATE_INSTANCE_FAILED_NO_NON_PRIVATE_NOARG_CONSTRUCTOR = "Unable to create an instance of '%s'. Make sure the class has a no-arg constructor that is not private.";
+    static final String CREATE_INSTANCE_FAILED_INACCESSIBLE_CONSTRUCTOR = "Unable to create an instance of '%s'. Its module does not open the package '%s' to Vaadin. Make the class and its no-arg constructor public, or open the package in module-info.java.";
 
     private static final Predicate<Method> IS_SYNTHETIC = Method::isSynthetic;
 
@@ -167,30 +173,38 @@ public class ReflectTools implements Serializable {
     }
 
     /**
-     * Locates the public methods of the given type that have the given name and
-     * take the given number of parameters, which is the lookup available to a
-     * caller that has the arguments of a call rather than the parameter types
-     * of the method - values, whose classes are not the declarations.
+     * Gets the public methods of the given type, like
+     * {@link Class#getMethods()}, but with each method read from the class that
+     * declares it.
      * <p>
-     * More than one is returned when the type overloads the name with the same
-     * number of parameters, which such a caller cannot tell apart.
+     * A class keeps the methods it inherits as they were when it first listed
+     * them. Redefining the class that declares a method, as a hotswap does,
+     * refreshes the methods of that class but not the copies its subtypes hold,
+     * so the annotations of an inherited method would still be the ones from
+     * before the redefinition. Reading each method from its declaring class
+     * gives the current ones.
      *
-     * @param cls
-     *            the type to look the methods up in
-     * @param methodName
-     *            the name of the methods
-     * @param parameterCount
-     *            the number of parameters the methods take
-     * @return the methods with that name and that number of parameters, empty
-     *         if the type has none
-     * @since 25.4
+     * @param type
+     *            the type to get the public methods of, not <code>null</code>
+     * @return the public methods of the type, not <code>null</code>
      */
-    public static List<Method> getMethodsWithParameterCount(Class<?> cls,
-            String methodName, int parameterCount) {
-        return Stream.of(cls.getMethods())
-                .filter(method -> method.getName().equals(methodName)
-                        && method.getParameterCount() == parameterCount)
-                .toList();
+    public static List<Method> getCurrentPublicMethods(Class<?> type) {
+        List<Method> methods = new ArrayList<>();
+        for (Method method : type.getMethods()) {
+            Class<?> declaringClass = method.getDeclaringClass();
+            if (declaringClass == type) {
+                methods.add(method);
+                continue;
+            }
+            try {
+                methods.add(declaringClass.getDeclaredMethod(method.getName(),
+                        method.getParameterTypes()));
+            } catch (NoSuchMethodException e) { // NOSONAR
+                // Only a redefinition between the two lookups can remove it
+                methods.add(method);
+            }
+        }
+        return methods;
     }
 
     /**
@@ -553,6 +567,65 @@ public class ReflectTools implements Serializable {
     }
 
     /**
+     * Creates an instance of the given class with its no-arg constructor, also
+     * when the class or the constructor is not public.
+     * <p>
+     * Unlike {@link #createInstance(Class)}, a package-private or protected
+     * no-arg constructor, or a public constructor of a non-public class, is
+     * made accessible and used, the same way dependency injection containers
+     * do. A private no-arg constructor is not used, since it usually means the
+     * class is not meant to be instantiated. A class without a usable no-arg
+     * constructor is created with its public varargs constructor, like in
+     * {@link #createInstance(Class)}, when it has one.
+     * <p>
+     * Catches all exceptions which might occur and wraps them in a
+     * {@link IllegalArgumentException} with a descriptive error message hinting
+     * of what might be wrong with the class that could not be instantiated.
+     *
+     * @param <T>
+     *            the instance type
+     * @param cls
+     *            the class to instantiate
+     * @return an instance of the class
+     * @throws IllegalArgumentException
+     *             if class instance creation fails, for example when the
+     *             constructor is not public and the package of the class is in
+     *             a named module that does not open it to Vaadin
+     * @since 25.4
+     */
+    public static <T> T createInstanceWithAccessibleConstructor(Class<T> cls) {
+        checkClassAccessibility(cls);
+        Constructor<T> constructor;
+        try {
+            constructor = cls.getDeclaredConstructor();
+        } catch (NoSuchMethodException e) {
+            constructor = null;
+        }
+        if (constructor == null
+                || Modifier.isPrivate(constructor.getModifiers())) {
+            boolean hasVarArgsConstructor = Stream.of(cls.getConstructors())
+                    .anyMatch(ctor -> ctor.getParameterCount() == 1
+                            && ctor.isVarArgs());
+            if (hasVarArgsConstructor) {
+                return createInstance(cls);
+            }
+            throw new IllegalArgumentException(String.format(
+                    CREATE_INSTANCE_FAILED_NO_NON_PRIVATE_NOARG_CONSTRUCTOR,
+                    cls.getName()));
+        }
+        if (!constructor.trySetAccessible()) {
+            throw new IllegalArgumentException(String.format(
+                    CREATE_INSTANCE_FAILED_INACCESSIBLE_CONSTRUCTOR,
+                    cls.getName(), cls.getPackageName()));
+        }
+        try {
+            return constructor.newInstance();
+        } catch (Exception e) {
+            throw convertInstantiationException(e, cls);
+        }
+    }
+
+    /**
      * Creates an instance of the given {@code proxyClass} with no-arg
      * constructor.
      * <p>
@@ -697,6 +770,134 @@ public class ReflectTools implements Serializable {
     }
 
     /**
+     * Gets the type that is bound to the given type variable when viewed from
+     * the given type, e.g. {@code String} for the second type parameter of
+     * {@code HasValue} when viewed from {@code TextField}.
+     * <p>
+     * Type variables nested inside a parameterized type argument (e.g. the
+     * {@code X} in {@code List<X>}) are returned as is.
+     *
+     * @param type
+     *            the type to inspect, not {@code null}
+     * @param variable
+     *            the type variable to resolve, declared by a class or an
+     *            interface that {@code type} extends or implements
+     * @return the type bound to the variable, possibly a {@link TypeVariable}
+     *         if the variable is bound to another, unresolved, type variable;
+     *         {@code null} if {@code type} is not a subtype of the class
+     *         declaring the variable or if the type information is lost because
+     *         of raw types
+     * @since 25.4
+     */
+    public static Type getTypeParameter(Type type,
+            TypeVariable<? extends Class<?>> variable) {
+        if (type instanceof TypeVariable<?> typeVariable) {
+            return getTypeParameter(typeVariable.getBounds()[0], variable);
+        }
+        if (type instanceof WildcardType wildcardType) {
+            return getTypeParameter(wildcardType.getUpperBounds()[0], variable);
+        }
+        Class<?> declaringClass = variable.getGenericDeclaration();
+        Class<?> rawType = erase(type);
+        if (rawType == null || !declaringClass.isAssignableFrom(rawType)) {
+            return null;
+        }
+        if (type instanceof ParameterizedType parameterizedType) {
+            return findTypeParameter(rawType,
+                    bindTypeArguments(parameterizedType, Map.of()), variable);
+        }
+        return findTypeParameter(rawType, bindingsOfClass(rawType), variable);
+    }
+
+    /**
+     * Gets the class that the given type erases to.
+     *
+     * @param type
+     *            the type to erase, not {@code null}
+     * @return the erased class, or {@code null} if the type is of an unknown
+     *         kind
+     * @since 25.4
+     */
+    public static Class<?> erase(Type type) {
+        if (type instanceof Class<?> clazz) {
+            return clazz;
+        } else if (type instanceof ParameterizedType parameterizedType) {
+            return (Class<?>) parameterizedType.getRawType();
+        } else if (type instanceof GenericArrayType arrayType) {
+            Class<?> componentType = erase(arrayType.getGenericComponentType());
+            return componentType == null ? null : componentType.arrayType();
+        } else if (type instanceof TypeVariable<?> typeVariable) {
+            return erase(typeVariable.getBounds()[0]);
+        } else if (type instanceof WildcardType wildcardType) {
+            return erase(wildcardType.getUpperBounds()[0]);
+        }
+        return null;
+    }
+
+    /*
+     * The bindings are null when clazz is used as a raw type. The super types
+     * of a raw type are erased, but a non-generic class among them still has
+     * its declared generic super types (JLS 4.8).
+     */
+    private static Type findTypeParameter(Class<?> clazz,
+            Map<TypeVariable<?>, Type> bindings,
+            TypeVariable<? extends Class<?>> variable) {
+        Class<?> declaringClass = variable.getGenericDeclaration();
+        if (clazz.equals(declaringClass)) {
+            return bindings == null ? null : bindings.get(variable);
+        }
+        Type[] superTypes = Stream
+                .concat(Stream.ofNullable(clazz.getGenericSuperclass()),
+                        Stream.of(clazz.getGenericInterfaces()))
+                .toArray(Type[]::new);
+        for (Type superType : superTypes) {
+            Class<?> rawSuperType = erase(superType);
+            if (!declaringClass.isAssignableFrom(rawSuperType)) {
+                continue;
+            }
+            if (bindings != null
+                    && superType instanceof ParameterizedType parameterizedType) {
+                return findTypeParameter(rawSuperType,
+                        bindTypeArguments(parameterizedType, bindings),
+                        variable);
+            }
+            return findTypeParameter(rawSuperType,
+                    bindingsOfClass(rawSuperType), variable);
+        }
+        return null;
+    }
+
+    private static Map<TypeVariable<?>, Type> bindingsOfClass(Class<?> clazz) {
+        // A generic class used without type arguments is a raw type
+        return clazz.getTypeParameters().length > 0 ? null : Map.of();
+    }
+
+    private static Map<TypeVariable<?>, Type> bindTypeArguments(
+            ParameterizedType type, Map<TypeVariable<?>, Type> bindings) {
+        TypeVariable<?>[] typeParameters = erase(type).getTypeParameters();
+        Type[] typeArguments = type.getActualTypeArguments();
+        Map<TypeVariable<?>, Type> result = new HashMap<>();
+        for (int i = 0; i < typeParameters.length; i++) {
+            result.put(typeParameters[i],
+                    substitute(typeArguments[i], bindings));
+        }
+        return result;
+    }
+
+    private static Type substitute(Type type,
+            Map<TypeVariable<?>, Type> bindings) {
+        if (type instanceof TypeVariable<?> && bindings.containsKey(type)) {
+            return bindings.get(type);
+        }
+        if (type instanceof GenericArrayType arrayType
+                && substitute(arrayType.getGenericComponentType(),
+                        bindings) instanceof Class<?> componentType) {
+            return componentType.arrayType();
+        }
+        return type;
+    }
+
+    /**
      * Finds the Class type for the generic interface class extended by given
      * class if exists.
      *
@@ -708,11 +909,11 @@ public class ReflectTools implements Serializable {
      */
     public static Class<?> getGenericInterfaceType(Class<?> clazz,
             Class<?> interfaceType) {
-        Type type = GenericTypeReflector.getTypeParameter(clazz,
+        Type type = getTypeParameter(clazz,
                 interfaceType.getTypeParameters()[0]);
 
         if (type instanceof Class || type instanceof ParameterizedType) {
-            return GenericTypeReflector.erase(type);
+            return erase(type);
         }
         return null;
     }
@@ -731,12 +932,11 @@ public class ReflectTools implements Serializable {
     public static List<Class<?>> getGenericInterfaceTypes(Class<?> clazz,
             Class<?> interfaceType) {
         return Stream.of(interfaceType.getTypeParameters())
-                .map(typeParam -> GenericTypeReflector.getTypeParameter(clazz,
-                        typeParam))
+                .map(typeParam -> getTypeParameter(clazz, typeParam))
                 .map(type -> {
                     if (type instanceof Class
                             || type instanceof ParameterizedType) {
-                        return GenericTypeReflector.erase(type);
+                        return erase(type);
                     }
                     return null;
                 }).collect(Collectors.toList());

@@ -19,7 +19,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>vaadin-spring-tests</artifactId>
-    <version>25.4-SNAPSHOT</version>
+    <version>25.5-SNAPSHOT</version>
   </parent>
   <artifactId>vaadin-test-spring-native</artifactId>
   <name>Vaadin Spring Boot native image integration tests</name>
@@ -45,7 +45,7 @@
     <!-- Neither the Spring Boot bom nor the Flow poms manage the GraalVM
          build tools. Keep this in step with native-build-tools-plugin.version
          in spring-boot-dependencies for spring.boot.version. -->
-    <native-maven-plugin.version>1.1.14</native-maven-plugin.version>
+    <native-maven-plugin.version>1.1.19</native-maven-plugin.version>
   </properties>
 
   <dependencies>
@@ -204,6 +204,9 @@
                 <phase>pre-integration-test</phase>
                 <configuration>
                   <executable>${project.build.directory}/${project.artifactId}</executable>
+                  <arguments>
+                    <argument>-Dvaadin.contentSecurityPolicy=${vaadin.contentSecurityPolicy}</argument>
+                  </arguments>
                   <async>true</async>
                   <asyncDestroyOnShutdown>true</asyncDestroyOnShutdown>
                 </configuration>

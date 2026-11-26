@@ -3,6 +3,21 @@
 How the core pieces of Flow fit together, and what to keep in mind when
 touching them.
 
+The more involved features have their own architecture notes next to the code:
+
+| Feature                               | Note                                                         |
+| ------------------------------------- | ------------------------------------------------------------ |
+| Client-side bootstrap and routing     | [`flow-client/ARCHITECTURE.md`](../flow-client/ARCHITECTURE.md) |
+| Connection state and loading indicator | [`flow-client/ARCHITECTURE.md`](../flow-client/ARCHITECTURE.md#connection-state-and-loading-indicator) |
+| React component adapter               | [`flow-react/ARCHITECTURE.md`](../flow-react/ARCHITECTURE.md) |
+| `@PWA` and the offline service worker | [`vite-plugin-service-worker/ARCHITECTURE.md`](../flow-build-tools/src/main/resources/plugins/vite-plugin-service-worker/ARCHITECTURE.md) |
+| Translations for Hilla views          | [`rollup-plugin-vaadin-i18n/ARCHITECTURE.md`](../flow-build-tools/src/main/resources/plugins/rollup-plugin-vaadin-i18n/ARCHITECTURE.md) |
+| Spring Security for client-side views | [`vaadin-spring/.../security/ARCHITECTURE.md`](../vaadin-spring/src/main/java/com/vaadin/flow/spring/security/ARCHITECTURE.md) |
+| Stateless authentication with JWT     | [`vaadin-spring/.../security/stateless/ARCHITECTURE.md`](../vaadin-spring/src/main/java/com/vaadin/flow/spring/security/stateless/ARCHITECTURE.md) |
+| npm dependency pinning                | [`flow-build-tools/ARCHITECTURE.md`](../flow-build-tools/ARCHITECTURE.md#npm-dependency-pinning) |
+| Tailwind CSS                          | [`flow-build-tools/ARCHITECTURE.md`](../flow-build-tools/ARCHITECTURE.md#tailwind-css) |
+| `vaadin-dev` dev loop daemon          | [`flow-devloop-daemon/README.md`](../flow-devloop-daemon/README.md), and the [Dev Loop](dev-loop.md) chapter |
+
 ## State management
 
 Flow keeps the server-side representation of the UI in a tree and synchronizes
@@ -58,6 +73,10 @@ before-leave, before-enter and after-navigation observers. Route resolution is
 driven by `@Route` annotations, discovered at startup or registered
 programmatically.
 
+In the browser, the router of the application (React Router by default) owns
+the URL, and server-side routes are its catch-all fallback. See
+[Client-side bootstrap and routing](../flow-client/ARCHITECTURE.md).
+
 ## Instantiation and lookup
 
 `Instantiator` creates the objects Flow needs (views, listeners, converters) so
@@ -79,3 +98,51 @@ constructing implementations directly.
 Prefer reaching the UI through the component (`getUI()`) or through an event
 that provides it (e.g. `AttachEvent`). `UI.getCurrent()` is a last resort for
 code that has no component instance available.
+
+## Session lock and current instances
+
+The rules are in the Session Lock and Current Instances section of
+[`CONVENTIONS.md`](../CONVENTIONS.md#session-lock-and-current-instances).
+
+`UI.getCurrent()` is a promise to the code that reads it: the UI is safe to
+touch from this thread right now. Application code relies on that promise
+without checking it, and so does the framework — a signal effect, for example,
+treats a signal change made on a thread where its UI is current as a change
+made inside that UI's locked work, and handles it without going through
+`UI.access`. A current UI without the lock breaks that promise silently: the
+code mutates the state tree concurrently with the thread that does hold the
+lock, and nothing fails until the data is corrupted.
+
+`UI.accessSynchronously` and `VaadinSession.accessSynchronously` show the shape
+to copy: lock the session, set the current instances with
+`CurrentInstance.setCurrent`, run the work, then unlock and restore the
+previous instances with `CurrentInstance.restoreInstances` in a `finally`
+block. Restoring right after `unlock()` keeps the session current for as long
+as the lock is held, and the window in between is harmless because the access
+tasks that `unlock()` runs set their own instances under the lock. A request
+handler that sets the current UI while it holds the lock — to find the UI of a
+UIDL or heartbeat request, or to bootstrap a page — is no different: everything
+after it unlocks, from writing the response to the request end callbacks, runs
+without the lock, so a UI left current there would break the promise.
+
+The current `VaadinSession` is a weaker promise. It is set for the whole
+request, including phases that run without the lock, such as download and
+upload handlers that transfer data while other requests use the session. Being
+able to reach the session therefore says nothing about holding its lock.
+
+The opposite direction is a promise, though, because deadlock detection relies
+on it. Flow avoids deadlocks between sessions by refusing to lock a session
+while the thread holds the lock of another one
+(`VaadinService.verifyNoOtherSessionLocked`), and it finds that other session
+only through `VaadinSession.getCurrent()`. A thread that locks session A
+without making it current can go on to lock session B unchallenged, while
+another thread does the same in the opposite order, and both wait forever.
+The `access` methods avoid this by setting the session as current together
+with the UI; a direct call to `lock()` outside a request does not.
+
+Whether a callback runs with the lock is part of its contract, and a contract
+that depends on the request is no contract at all. A request end callback also
+fires for requests that never used a session, so taking the lock only to fire
+it would add lock contention to every request, and it would still have no lock
+to take for the sessionless ones. Code in such a callback that needs the UI or
+the session gets the lock through `access`.

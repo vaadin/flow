@@ -52,6 +52,8 @@ public record PasteOptions(
     }
 
     /**
+     * Returns options that also forward pastes targeting editable elements.
+     *
      * @return options that also forward pastes targeting input fields, text
      *         areas, and {@code contenteditable} elements; equivalent to
      *         {@code new PasteOptions(true)}.

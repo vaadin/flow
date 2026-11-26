@@ -2,6 +2,7 @@ import { expect } from '@open-wc/testing';
 import { testRegistry } from './testRegistry';
 import { DependencyLoader } from '../../../../main/frontend/internal/client/DependencyLoader';
 import { ResourceLoader } from '../../../../main/frontend/internal/client/ResourceLoader';
+import { runWhenEagerDependenciesLoaded } from '../../../../main/frontend/internal/client/EagerDependencyTracker';
 import type { ResourceLoadListener } from '../../../../main/frontend/internal/client/ResourceRegistry';
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -9,6 +10,11 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 // Registries created by the case that is running, completed afterwards so the
 // eager counter never leaks between cases.
 const active: Array<{ completeAll(): void }> = [];
+
+// A case may replace Function to act like a page without unsafe-eval. Restored
+// afterwards, also when the case ends with a timeout, so that later suites can
+// compile strings again.
+const originalFunction = globalThis.Function;
 
 const eventLoader = new ResourceLoader(testRegistry({ SystemErrorHandler: { handleError: () => {} } }), false);
 
@@ -45,7 +51,8 @@ function makeRegistry() {
     completeAll,
     registry: testRegistry({
       URIResolver: { resolveVaadinUri: (uri: string) => `resolved:${uri}` },
-      ResourceLoader: resourceLoader
+      ResourceLoader: resourceLoader,
+      StateTree: {}
     })
   };
   active.push(fixture);
@@ -56,6 +63,7 @@ function makeRegistry() {
 // com.vaadin.client.GwtDependencyLoaderTest.
 describe('DependencyLoader (class)', () => {
   afterEach(() => {
+    globalThis.Function = originalFunction;
     active.splice(0, active.length).forEach((registry) => registry.completeAll());
   });
 
@@ -112,6 +120,82 @@ describe('DependencyLoader (class)', () => {
     // DYNAMIC_IMPORT is always eager, so it loads immediately.
     const call = registry.calls.find((c) => c.method === 'loadDynamicImport');
     expect(call?.args[0]).to.equal('import("x")');
+  });
+
+  it('loads a dynamic import sent as a function by calling the function from the bundle', () => {
+    // Registered as the generated bundle registers a snippet called with no parameters
+    const global = window as unknown as { Vaadin?: { Flow?: { jsSnippets?: Record<string, unknown> } } };
+    global.Vaadin ??= {};
+    global.Vaadin.Flow ??= {};
+    const snippets = (global.Vaadin.Flow.jsSnippets ??= {});
+    snippets['import-fn'] = ($0: unknown) => () => `loaded ${String($0)}`;
+    const dynamicImport = { '@v-fn': { id: 'import-fn', captures: ['chunk-7'] } };
+    const registry = makeRegistry();
+    try {
+      new DependencyLoader(registry.registry).loadDependencies(
+        new Map([['LAZY', [{ type: 'DYNAMIC_IMPORT', url: dynamicImport }]]])
+      );
+      const call = registry.calls.find((c) => c.method === 'loadDynamicImport');
+      expect(call?.args[0]).to.equal(JSON.stringify(dynamicImport));
+      expect((call?.args[2] as () => unknown)()).to.equal('loaded chunk-7');
+    } finally {
+      delete snippets['import-fn'];
+    }
+  });
+
+  it('loads a dynamic import sent as a function without compiling a string', async () => {
+    // What a page without unsafe-eval allows: the ResourceLoader gets the
+    // function from the bundle, so it compiles nothing from the description
+    const global = window as unknown as { Vaadin?: { Flow?: { jsSnippets?: Record<string, unknown> } } };
+    global.Vaadin ??= {};
+    global.Vaadin.Flow ??= {};
+    const snippets = (global.Vaadin.Flow.jsSnippets ??= {});
+    let loads = 0;
+    snippets['import-fn'] = () => () => {
+      loads += 1;
+      return Promise.resolve();
+    };
+    const registry = testRegistry({ SystemErrorHandler: { handleError: () => {} }, StateTree: {} });
+    registry.register('ResourceLoader', new ResourceLoader(registry, false));
+    const compiled: string[] = [];
+    globalThis.Function = function (...args: string[]) {
+      compiled.push(args.join(','));
+      throw new EvalError('Refused to compile a string');
+    } as unknown as FunctionConstructor;
+    try {
+      new DependencyLoader(registry).loadDependencies(
+        new Map([['LAZY', [{ type: 'DYNAMIC_IMPORT', url: { '@v-fn': { id: 'import-fn', captures: [] } } }]]])
+      );
+      await new Promise<void>((resolve) => runWhenEagerDependenciesLoaded(resolve));
+    } finally {
+      delete snippets['import-fn'];
+    }
+    expect(compiled).to.eql([]);
+    expect(loads).to.equal(1);
+  });
+
+  it('fails only the dynamic import when its function cannot be decoded', async () => {
+    // A node the client does not have, which the codec cannot resolve
+    const dynamicImport = { '@v-fn': { id: 'import-fn', captures: [{ '@v-node': 42 }] } };
+    const registry = testRegistry({
+      SystemErrorHandler: { handleError: () => {} },
+      StateTree: { getNode: () => null }
+    });
+    const resourceLoader = new ResourceLoader(registry, false);
+    registry.register('ResourceLoader', resourceLoader);
+    const errors: string[] = [];
+    const originalError = console.error;
+    console.error = (error: unknown) => errors.push(String(error));
+    try {
+      new DependencyLoader(registry).loadDependencies(
+        new Map([['LAZY', [{ type: 'DYNAMIC_IMPORT', url: dynamicImport }]]])
+      );
+      // The eager gate opens again, so the rest of the message is processed
+      await new Promise<void>((resolve) => runWhenEagerDependenciesLoaded(resolve));
+    } finally {
+      console.error = originalError;
+    }
+    expect(errors.some((error) => error.includes('getDomNode'))).to.be.true;
   });
 
   it('defers lazy dependencies until after eager ones complete', async () => {

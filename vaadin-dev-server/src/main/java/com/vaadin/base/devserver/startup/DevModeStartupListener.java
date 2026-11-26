@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.DevToolsMessageHandler;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -41,6 +42,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.Template;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
@@ -74,7 +76,8 @@ import com.vaadin.flow.theme.Theme;
         Template.class, LoadDependenciesOnStartup.class,
         TypeScriptBootstrapModifier.class, DevToolsMessageHandler.class,
         Component.class, Layout.class, StyleSheet.class,
-        StyleSheet.Container.class, JsDefinition.class })
+        StyleSheet.Container.class, JsDefinition.class, JsStringFallback.class,
+        ComponentEvent.class })
 @WebListener
 public class DevModeStartupListener
         implements VaadinServletContextStartupInitializer, Serializable,

@@ -23,6 +23,7 @@ import java.util.Properties;
 import java.util.function.Function;
 
 import com.vaadin.flow.server.AbstractDeploymentConfiguration;
+import com.vaadin.flow.server.ContentSecurityPolicyMode;
 import com.vaadin.flow.server.SessionLockCheckStrategy;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -49,6 +50,7 @@ public class MockDeploymentConfiguration
     private boolean devToolsEnabled = true;
     private boolean isReactEnabled = true;
     private SessionLockCheckStrategy sessionLockCheckStrategy = SessionLockCheckStrategy.ASSERT;
+    private ContentSecurityPolicyMode contentSecurityPolicyMode = ContentSecurityPolicyMode.OFF;
 
     private File projectFolder = null;
 
@@ -68,6 +70,16 @@ public class MockDeploymentConfiguration
 
     public void setProductionMode(boolean productionMode) {
         this.productionMode = productionMode;
+    }
+
+    @Override
+    public ContentSecurityPolicyMode getContentSecurityPolicyMode() {
+        return contentSecurityPolicyMode;
+    }
+
+    public void setContentSecurityPolicyMode(
+            ContentSecurityPolicyMode contentSecurityPolicyMode) {
+        this.contentSecurityPolicyMode = contentSecurityPolicyMode;
     }
 
     public void setReuseDevServer(boolean reuseDevServer) {

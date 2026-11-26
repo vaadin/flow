@@ -19,11 +19,14 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.InetAddress;
+import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -60,7 +63,10 @@ import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.ContentSecurityPolicy;
+import com.vaadin.flow.server.ContentSecurityPolicyMode;
 import com.vaadin.flow.server.DevToolsToken;
+import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
@@ -91,6 +97,13 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private static final String SCRIPT = "script";
     private static final String SCRIPT_INITIAL = "initial";
     public static final String LIVE_RELOAD_PORT_ATTR = "livereload.port";
+    private static final String CONTENT_SECURITY_POLICY_HEADER = "Content-Security-Policy";
+    private static final String CSP_SELF = "'self'";
+    private static final String CSP_DATA = "data:";
+
+    // Not static: a SecureRandom in a static field would be created at build
+    // time in native images that initialize classes at build time (Quarkus)
+    private final SecureRandom nonceRandom = new SecureRandom();
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
@@ -139,6 +152,13 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                     indexDocument);
         }
 
+        if (config
+                .getContentSecurityPolicyMode() == ContentSecurityPolicyMode.STRICT) {
+            String nonce = createContentSecurityPolicyNonce();
+            indexHtmlResponse.setContentSecurityPolicy(nonce,
+                    createDefaultContentSecurityPolicy(nonce));
+        }
+
         addInitialFlow(initialJson, indexDocument, request);
 
         configureErrorDialogStyles(indexDocument);
@@ -148,6 +168,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         addStyleTagReferences(indexDocument, config.isProductionMode());
 
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
+
+        // The page references hashed bundle files and embeds session bound
+        // data, so a stored copy must not be reused, e.g. when the browser
+        // restores a tab after the application has been redeployed.
+        HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
+                response::setDateHeader);
 
         String frameOptions = config.getFrameOptions();
         if (frameOptions != null && !frameOptions.isEmpty()) {
@@ -232,6 +258,14 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         addCommercialBanner(service.getDeploymentConfiguration(),
                 indexDocument);
 
+        // The dev server and dev tools need eval, so the policy is only sent
+        // in production mode
+        if (config
+                .getContentSecurityPolicyMode() == ContentSecurityPolicyMode.STRICT
+                && config.isProductionMode()) {
+            applyContentSecurityPolicy(indexHtmlResponse);
+        }
+
         try {
             response.getOutputStream()
                     .write(indexDocument.html().getBytes(UTF_8));
@@ -240,6 +274,62 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             return false;
         }
         return true;
+    }
+
+    private String createContentSecurityPolicyNonce() {
+        byte[] bytes = new byte[16];
+        nonceRandom.nextBytes(bytes);
+        // Padding is not needed since the nonce is only compared as a string
+        return Base64.getEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    private static ContentSecurityPolicy createDefaultContentSecurityPolicy(
+            String nonce) {
+        // 'strict-dynamic' trusts the scripts that nonced scripts load, such
+        // as the chunks of the bundle. connect-src also covers push. Workers
+        // need their own directive since script-src only allows nonced
+        // scripts. connect-src allows data: because vaadin-icon fetches the
+        // src of SvgIcon, which can be a data: URL.
+        return new ContentSecurityPolicy().setDirective("default-src", CSP_SELF)
+                .setDirective("script-src", "'nonce-" + nonce + "'",
+                        "'strict-dynamic'")
+                .setDirective("style-src", CSP_SELF, "'unsafe-inline'")
+                .setDirective("img-src", CSP_SELF, CSP_DATA)
+                .setDirective("font-src", CSP_SELF, CSP_DATA)
+                .setDirective("connect-src", CSP_SELF, CSP_DATA)
+                .setDirective("worker-src", CSP_SELF)
+                .setDirective("object-src", "'none'")
+                .setDirective("base-uri", CSP_SELF);
+    }
+
+    private static void applyContentSecurityPolicy(
+            IndexHtmlResponse indexHtmlResponse) {
+        VaadinResponse response = indexHtmlResponse.getVaadinResponse();
+        if (response.containsHeader(CONTENT_SECURITY_POLICY_HEADER)) {
+            // Sending the page without Vaadin's policy would silently drop
+            // the protection the strict mode promises
+            throw new IllegalStateException(String.format(
+                    "The response already has a %s header, but the '%s=strict' "
+                            + "setting requires Vaadin to send its own policy. "
+                            + "Remove the code that sets the header, and adjust "
+                            + "the policy through "
+                            + "IndexHtmlResponse.getContentSecurityPolicy() "
+                            + "in an IndexHtmlRequestListener instead.",
+                    CONTENT_SECURITY_POLICY_HEADER,
+                    InitParameters.CONTENT_SECURITY_POLICY));
+        }
+        // Both are created for the strict mode, which the caller checks
+        String nonce = Objects.requireNonNull(
+                indexHtmlResponse.getContentSecurityPolicyNonce());
+        ContentSecurityPolicy policy = Objects
+                .requireNonNull(indexHtmlResponse.getContentSecurityPolicy());
+        // Done after the listeners have run so that every script in the page
+        // gets the nonce, whichever code added it
+        indexHtmlResponse.getDocument().select(
+                "script, link[rel=modulepreload], link[rel=preload][as=script]")
+                .attr("nonce", nonce);
+        response.setHeader(CONTENT_SECURITY_POLICY_HEADER,
+                policy.toHeaderValue());
     }
 
     private void initializeFeatureFlags(Document indexDocument,
@@ -353,16 +443,21 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private void redirectToOldBrowserPageWhenNeeded(Document indexDocument) {
-        // The CSS Custom Highlight API needs Firefox 140 (ESR), Chrome 105 or
-        // Safari 17.2, and light-dark() needs Firefox 120, Chrome 123 or Safari
+        // Intl.Locale#getWeekInfo needs Firefox 153 (ESR), Chrome 130 or
+        // Safari 17, and light-dark() needs Firefox 120, Chrome 123 or Safari
         // 17.5. Together they match the build target in vite.generated.ts
-        // without turning away Chrome that is a few versions behind.
-        addScript(indexDocument, """
-                if (typeof Highlight !== "function"
-                        || !CSS.supports("color", "light-dark(red, red)")) {
-                    window.location.search='v-r=oldbrowser';
-                }
-                """);
+        // without turning away Chrome that is a few versions behind. The
+        // script is not transpiled, so it must parse in the old browsers it
+        // turns away.
+        addScript(indexDocument,
+                """
+                        if (typeof Intl === "undefined"
+                                || typeof Intl.Locale !== "function"
+                                || typeof Intl.Locale.prototype.getWeekInfo !== "function"
+                                || !CSS.supports("color", "light-dark(red, red)")) {
+                            window.location.search='v-r=oldbrowser';
+                        }
+                        """);
     }
 
     private void catchErrorsInDevMode(Document indexDocument) {

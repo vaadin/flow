@@ -75,7 +75,36 @@ public @interface DomEvent {
 
     /**
      * The filter expression to run in the browser to determine whether fired
-     * events should be passed to the server.
+     * events should be passed to the server. The event is sent only if the
+     * expression returns a truthy value. The expression is evaluated in a
+     * context where <code>element</code> refers to the element for which the
+     * listener is registered and <code>event</code> refers to the fired event.
+     * <p>
+     * A filter that is a property path, which is <code>event</code> or
+     * <code>element</code> followed by property names separated with
+     * <code>.</code> or <code>?.</code>, is read in the browser without
+     * compiling it. Many filters can be written as a path, as the value only
+     * has to be truthy:
+     * <ul>
+     * <li><code>event.key?.length</code> instead of
+     * <code>typeof(event.key) === 'string' &amp;&amp; event.key.length &gt;
+     * 0</code>, for a keyboard event with a non-empty key</li>
+     * <li><code>event.detail</code> instead of <code>event.detail !==
+     * 0</code>, for a mouse event with a non-zero click count</li>
+     * </ul>
+     * Any other filter is put into the frontend bundle as a function when the
+     * application is built, and the browser runs that function. Both work with
+     * a Content Security Policy without <code>unsafe-eval</code> and in the
+     * {@link com.vaadin.flow.server.ContentSecurityPolicyMode#STRICT} mode. If
+     * the bundle does not have the function, for example because the filter
+     * changed after the bundle was built, the browser compiles the filter from
+     * a string, which such a policy does not allow. A production build that
+     * optimizes the bundle, which is the default, carries the filters and the
+     * {@link EventData} values only of the event types it can reach from the
+     * entry points of the application. An event type that is only used through
+     * reflection, or from code that no route leads to, has to be named in
+     * {@link com.vaadin.flow.component.dependency.Uses} on a class that is
+     * reached.
      *
      * @see DomListenerRegistration#setFilter(String)
      *

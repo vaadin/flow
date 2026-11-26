@@ -17,45 +17,96 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.internal.BundledEventData;
+import com.vaadin.flow.component.internal.PrebuiltEventData;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.dom.DomEventFilter;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsInvokers;
+import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.js.JsStringFallback;
+import com.vaadin.flow.js.internal.JsWithExecutionContext;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.communication.UidlRequestHandler.MprPushStateJs;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+import com.vaadin.flow.shared.JsonConstants;
 
 import static com.vaadin.flow.internal.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
 import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class TaskGenerateJsDefinitionsTest {
 
     private static final String GREETING_EXPRESSION = "window.alert({ text: $0, kind: 'greeting' })";
 
+    private static final String SCROLL_EXPRESSION = "this.scrollTop = $0";
+
+    private static final String SCROLL_TO_END_EXPRESSION = "this.scrollTop = this.scrollHeight";
+
+    private static final String SCROLL_OVERRIDE_EXPRESSION = "this.scrollTop = $0 * 2";
+
     private static final String COUNT_EXPRESSION = "this.count = ($0 || 0) + 1";
 
     private static final String SHOUT_EXPRESSION = "window.alert([$0, ...$1].join(' '))";
 
+    private static final String LOG_EXPRESSION = "console.log($0, value);";
+
+    private static final String TICK_EXPRESSION = "console.log($0, Date.now());";
+
+    private static final String KEY_EXPRESSION = "return event.key === $0;";
+
+    private static final String TEMPLATE_EXPRESSION = "return html`${$0}: ${item.name}`;";
+
+    private static final String SNIPPETS_REGISTRY = "window.Vaadin.Flow.jsSnippets = window.Vaadin.Flow.jsSnippets || {};";
+
+    private static final String CONTEXT_REGISTRY = "window.Vaadin.Flow.jsDefinitionsWithExecutionContext = window.Vaadin.Flow.jsDefinitionsWithExecutionContext || {};";
+
     private static final String NAMES_REGISTRY = "window.Vaadin.Flow.jsDefinitionNames = window.Vaadin.Flow.jsDefinitionNames || {};";
 
     @JsDefinition
-    public interface GreeterJs extends Serializable {
+    public interface GreeterJs extends JsInvokers {
         @JsExpression(GREETING_EXPRESSION)
         void showGreeting(String greeting);
 
@@ -63,21 +114,145 @@ class TaskGenerateJsDefinitionsTest {
         void showGreeting();
     }
 
+    // The same JavaScript as GreeterJs, under a name that sorts after it
     @JsDefinition
-    public interface CounterJs extends Serializable {
+    public interface GreeterTwinJs extends JsInvokers {
+        @JsExpression(GREETING_EXPRESSION)
+        void greet(String greeting);
+    }
+
+    // Only extended, so it does not need the annotation
+    public interface ScrollableJs extends JsInvokers {
+        @JsExpression(SCROLL_EXPRESSION)
+        void scrollTo(int top);
+    }
+
+    @JsDefinition
+    public interface ScrollingListJs extends ScrollableJs {
+        @JsExpression(SCROLL_TO_END_EXPRESSION)
+        void scrollToEnd();
+    }
+
+    @JsDefinition
+    public interface OverridingListJs extends ScrollableJs {
+        @Override
+        @JsExpression(SCROLL_OVERRIDE_EXPRESSION)
+        void scrollTo(int top);
+    }
+
+    @JsDefinition
+    public interface LoggerJs extends JsSnippets {
+        @JsExpression(LOG_EXPRESSION)
+        @JsFunctionParameterNames("value")
+        JsFunction createLogger(String prefix);
+
+        @JsExpression(TICK_EXPRESSION)
+        JsFunction createTicker(String label);
+    }
+
+    @JsFunctionParameterNames({ "html", "item" })
+    public interface TemplateSnippet extends JsSnippet {
+    }
+
+    @JsDefinition
+    public interface TemplateJs extends JsSnippets {
+        @JsExpression(TEMPLATE_EXPRESSION)
+        TemplateSnippet label(String prefix);
+    }
+
+    @JsDefinition
+    public interface EventJs extends JsSnippets {
+        @JsExpression(KEY_EXPRESSION)
+        DomEventFilter isKey(String key);
+    }
+
+    @JsDefinition
+    public interface InvalidNameJs extends JsSnippets {
+        @JsExpression(LOG_EXPRESSION)
+        @JsFunctionParameterNames("class")
+        JsFunction createLogger(String prefix);
+    }
+
+    @JsDefinition
+    public interface CounterJs extends JsInvokers {
         @JsExpression(COUNT_EXPRESSION)
         void count(Integer from);
     }
 
     @JsDefinition
-    public interface NothingJs extends Serializable {
+    public interface NothingJs extends JsInvokers {
         void notDeclared();
     }
 
     @JsDefinition
-    public interface ShouterJs extends Serializable {
+    public interface ShouterJs extends JsInvokers {
         @JsExpression(SHOUT_EXPRESSION)
         void shout(String greeting, Object... names);
+    }
+
+    @JsDefinition
+    public interface StopperJs extends JsInvokers {
+        @JsExpression(GREETING_EXPRESSION)
+        @JsWithExecutionContext
+        void stop(String greeting);
+
+        @JsExpression("$executionContext.stopApplication()")
+        @JsWithExecutionContext
+        void stop();
+    }
+
+    private static final String OFFSET_EXPRESSION = "event.clientX - element.getBoundingClientRect().left";
+
+    @DomEvent(value = "offset", filter = "event.isTrusted")
+    public static class OffsetEvent extends ComponentEvent<Component> {
+        public OffsetEvent(Component source, boolean fromClient,
+                @EventData(OFFSET_EXPRESSION) double offset,
+                @EventData("event.clientX") double clientX,
+                @EventData("event.composedPath()[0]") Element target) {
+            super(source, fromClient);
+        }
+    }
+
+    private static final String COMMENTED_EXPRESSION = "event.clientY // y\n + 1";
+
+    private static final String FILTER = "event.button === 2";
+
+    @DomEvent(value = "other-offset", filter = FILTER)
+    public static class OtherOffsetEvent extends ComponentEvent<Component> {
+        public OtherOffsetEvent(Component source, boolean fromClient,
+                @EventData(OFFSET_EXPRESSION) double offset,
+                @EventData(COMMENTED_EXPRESSION) double commented) {
+            super(source, fromClient);
+        }
+    }
+
+    /**
+     * Listened to as a DOM event through the annotation of its superclass.
+     */
+    public static class InheritingOffsetEvent extends OffsetEvent {
+        public InheritingOffsetEvent(Component source, boolean fromClient,
+                @EventData(INHERITING_EXPRESSION) double offset) { // NOSONAR
+            super(source, fromClient, 0, 0, null);
+        }
+    }
+
+    private static final String INHERITING_EXPRESSION = "event.pageX - 1";
+
+    @DomEvent("no-dom-event-constructor")
+    public static class NoDomEventConstructorEvent
+            extends ComponentEvent<Component> {
+        public NoDomEventConstructorEvent(Component source) {
+            super(source, false);
+        }
+    }
+
+    @DomEvent("prebuilt")
+    @PrebuiltEventData
+    public static class PrebuiltEvent extends ComponentEvent<Component> {
+        public PrebuiltEvent(Component source, boolean fromClient,
+                @EventData("values[0]") String value) {
+            super(source, fromClient);
+        }
     }
 
     @TempDir
@@ -123,6 +298,42 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @Test
+    void inheritedMethods_areCollectedWithTheDefinition() {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(ScrollingListJs.class), false);
+
+        assertTrue(
+                content.contains("window.Vaadin.Flow.jsDefinitions[\""
+                        + JsCall.functionId(SCROLL_EXPRESSION, 1, false)
+                        + "\"] = async function ($0) {"),
+                "a method inherited from an interface without the annotation should be collected with the definition: "
+                        + content);
+        assertTrue(
+                content.contains("window.Vaadin.Flow.jsDefinitions[\""
+                        + JsCall.functionId(SCROLL_TO_END_EXPRESSION, 0, false)
+                        + "\"] = async function () {"),
+                "the method the definition declares itself should be collected too: "
+                        + content);
+    }
+
+    @Test
+    void overriddenMethod_collectsTheJavaScriptOfTheOverride() {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(OverridingListJs.class), false);
+
+        assertTrue(
+                content.contains(JsCall.functionId(SCROLL_OVERRIDE_EXPRESSION,
+                        1, false)),
+                "the override declares what runs through the sub-interface: "
+                        + content);
+        assertFalse(
+                content.contains(
+                        JsCall.functionId(SCROLL_EXPRESSION, 1, false)),
+                "what the override replaces is not part of the sub-interface: "
+                        + content);
+    }
+
+    @Test
     void variadicMethod_collectsItsTrailingArgumentsIntoARestParameter() {
         String content = TaskGenerateJsDefinitions
                 .renderFileContent(List.of(ShouterJs.class), false);
@@ -133,6 +344,432 @@ class TaskGenerateJsDefinitionsTest {
                         + "\"] = async function ($0, ...$1) {"),
                 "the last parameter should collect the arguments that follow the fixed ones, as it does in Java: "
                         + content);
+    }
+
+    @Test
+    void executionContextMethod_registersAFunctionTakingTheContextFirst()
+            throws NoSuchMethodException {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(StopperJs.class), false);
+
+        assertTrue(content.contains(CONTEXT_REGISTRY),
+                "the registry the function is assigned into has to be there, or the module throws: "
+                        + content);
+        assertTrue(content.contains(
+                "window.Vaadin.Flow.jsDefinitionsWithExecutionContext[\""
+                        + JsCall.functionId(
+                                StopperJs.class.getMethod("stop", String.class))
+                        + "\"] = async function ($executionContext, $0) {"),
+                "the context should lead the arguments of the call: "
+                        + content);
+        assertTrue(content.contains(
+                "window.Vaadin.Flow.jsDefinitionsWithExecutionContext[\""
+                        + JsCall.functionId(StopperJs.class.getMethod("stop"))
+                        + "\"] = async function ($executionContext) {"),
+                "a method without arguments should take only the context: "
+                        + content);
+        assertFalse(content.contains("jsDefinitions[\""),
+                "the client tells a function that gets the context by the registry it is in: "
+                        + content);
+    }
+
+    @Test
+    void snippetMethod_registersASynchronousFunctionOfTheCaptures()
+            throws NoSuchMethodException {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(LoggerJs.class), false);
+        String separator = System.lineSeparator();
+
+        assertTrue(content.contains(SNIPPETS_REGISTRY),
+                "the registry a snippet is assigned into has to be there, or the module throws: "
+                        + content);
+        assertTrue(
+                content.contains(String.join(separator,
+                        "window.Vaadin.Flow.jsSnippets[\""
+                                + JsCall.functionId(LoggerJs.class.getMethod(
+                                        "createLogger", String.class))
+                                + "\"] = function ($0) {",
+                        "  return function (value) {", LOG_EXPRESSION, "  };",
+                        "};")),
+                "the expression should be the body of a function of the declared parameters, returned by one of the captures: "
+                        + content);
+        String tickerId = JsCall.functionId(
+                LoggerJs.class.getMethod("createTicker", String.class));
+        assertTrue(
+                content.contains(String.join(separator,
+                        "window.Vaadin.Flow.jsSnippets[\"" + tickerId
+                                + "\"] = function ($0) {",
+                        "  return function () {", TICK_EXPRESSION, "  };",
+                        "};")),
+                "without declared parameters the expression should be the body of a function without parameters: "
+                        + content);
+        assertFalse(content.contains("jsDefinitions[\""),
+                "a snippet is not run by a call: " + content);
+    }
+
+    @Test
+    void domEventSnippet_isCalledWithTheNamesItsTypeDeclares()
+            throws NoSuchMethodException {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(EventJs.class), false);
+
+        assertTrue(
+                content.contains(String.join(System.lineSeparator(),
+                        "window.Vaadin.Flow.jsSnippets[\""
+                                + JsCall.functionId(EventJs.class
+                                        .getMethod("isKey", String.class))
+                                + "\"] = function ($0) {",
+                        "  return function (event, element) {", KEY_EXPRESSION,
+                        "  };", "};")),
+                "a DOM event filter should be a function of the event and the element: "
+                        + content);
+    }
+
+    @Test
+    void snippetTypeOfTheApplication_isCalledWithTheNamesItsTypeDeclares()
+            throws NoSuchMethodException {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(TemplateJs.class), false);
+
+        assertTrue(
+                content.contains(String.join(System.lineSeparator(),
+                        "window.Vaadin.Flow.jsSnippets[\""
+                                + JsCall.functionId(TemplateJs.class
+                                        .getMethod("label", String.class))
+                                + "\"] = function ($0) {",
+                        "  return function (html, item) {", TEMPLATE_EXPRESSION,
+                        "  };", "};")),
+                "a snippet type that is not Flow's own should be generated like one of Flow's: "
+                        + content);
+    }
+
+    @Test
+    void domEventClass_registersASnippetPerEventDataTheClientWouldCompile() {
+        String functionId = BundledEventData.getFunctionId(OFFSET_EXPRESSION);
+        Options withEvents = new Options(mock(Lookup.class),
+                // An event that can not be listened to is left out without
+                // failing the build
+                new DefaultClassFinder(Set.of(OffsetEvent.class,
+                        OtherOffsetEvent.class, PrebuiltEvent.class,
+                        NoDomEventConstructorEvent.class)),
+                null).withFrontendDirectory(frontendFolder)
+                .withProductionMode(false);
+        String content = new TaskGenerateJsDefinitions(withEvents)
+                .getFileContent();
+        String function = String.join(System.lineSeparator(),
+                "window.Vaadin.Flow.jsSnippets[\"" + functionId
+                        + "\"] = function () {",
+                "  return function (event, element) {", "    return (",
+                OFFSET_EXPRESSION, "    );", "  };", "};");
+
+        assertTrue(content.contains(function),
+                "the value should be a function of the event and the element, under the identifier the server sends: "
+                        + content);
+        assertEquals(content.indexOf(function), content.lastIndexOf(function),
+                "a value that two events declare should be registered once: "
+                        + content);
+        assertTrue(
+                content.contains("window.Vaadin.Flow.jsDefinitionNames[\""
+                        + functionId + "\"] = \"" + OffsetEvent.class.getName()
+                        + " @EventData(\\\"" + OFFSET_EXPRESSION + "\\\")\";"),
+                "a development bundle should name what declared the value: "
+                        + content);
+        String commentedId = BundledEventData
+                .getFunctionId(COMMENTED_EXPRESSION);
+        assertTrue(
+                content.contains(
+                        String.join(System.lineSeparator(), "    return (",
+                                "event.clientY // y", " + 1", "    );")),
+                "a value ending with a comment should not comment out what closes it: "
+                        + content);
+        assertTrue(content.contains("window.Vaadin.Flow.jsDefinitionNames[\""
+                + commentedId + "\"] = \"" + OtherOffsetEvent.class.getName()
+                + " @EventData(\\\"event.clientY // y\\n + 1\\\")\";"),
+                "the name of a value on several lines should stay on one line: "
+                        + content);
+        assertFalse(content.contains("event.clientX" + System.lineSeparator()),
+                "the client reads a property path without compiling it: "
+                        + content);
+        String filterId = BundledEventData.getFunctionId(FILTER);
+        assertTrue(
+                content.contains(String.join(System.lineSeparator(),
+                        "window.Vaadin.Flow.jsSnippets[\"" + filterId
+                                + "\"] = function () {",
+                        "  return function (event, element) {", "    return (",
+                        FILTER, "    );")),
+                "a filter should be a function like event data: " + content);
+        assertTrue(content.contains("window.Vaadin.Flow.jsDefinitionNames[\""
+                + filterId + "\"] = \"" + OtherOffsetEvent.class.getName()
+                + " @DomEvent(filter = \\\"" + FILTER + "\\\")\";"),
+                "a development bundle should name what declared the filter: "
+                        + content);
+        assertFalse(content.contains("event.isTrusted"),
+                "the client reads a filter that is a property path without compiling it: "
+                        + content);
+        // The client maps what the function of a value of an element returns
+        // to a state node, so the function is the expression without the
+        // prefix, shared with the same expression used as a plain value
+        String mappedId = BundledEventData
+                .getFunctionId(JsonConstants.MAP_STATE_NODE_EVENT_DATA
+                        + "event.composedPath()[0]");
+        assertEquals(BundledEventData.getFunctionId("event.composedPath()[0]"),
+                mappedId);
+        assertTrue(
+                content.contains(String.join(System.lineSeparator(),
+                        "window.Vaadin.Flow.jsSnippets[\"" + mappedId
+                                + "\"] = function () {",
+                        "  return function (event, element) {", "    return (",
+                        "event.composedPath()[0]", "    );")),
+                "a value of an element should be a function of its expression: "
+                        + content);
+        assertFalse(
+                content.contains(JsonConstants.MAP_STATE_NODE_EVENT_DATA
+                        + "event.composedPath()"),
+                "the prefix of a value of an element is not JavaScript: "
+                        + content);
+        assertFalse(content.contains("values[0]"),
+                "the event data of a prebuilt event are keys, not JavaScript: "
+                        + content);
+    }
+
+    @Test
+    void domEventSubclass_inheritingTheAnnotation_registersItsEventData() {
+        // Like the class finder of a build, which reports only the classes an
+        // annotation is written on
+        DefaultClassFinder declaredOnly = new DefaultClassFinder(
+                Set.of(OffsetEvent.class, InheritingOffsetEvent.class)) {
+            @Override
+            public Set<Class<?>> getAnnotatedClasses(
+                    Class<? extends Annotation> annotation) {
+                return super.getAnnotatedClasses(annotation).stream().filter(
+                        type -> type.getDeclaredAnnotation(annotation) != null)
+                        .collect(Collectors.toSet());
+            }
+        };
+        String content = new TaskGenerateJsDefinitions(
+                new Options(mock(Lookup.class), declaredOnly, null)
+                        .withFrontendDirectory(frontendFolder)
+                        .withProductionMode(true))
+                .getFileContent();
+
+        assertTrue(content.contains("window.Vaadin.Flow.jsSnippets[\""
+                + BundledEventData.getFunctionId(INHERITING_EXPRESSION)
+                + "\"]"), content);
+    }
+
+    @Test
+    void viteConfig_copiesTheFunctionIdsIntoTheStats() throws IOException {
+        // The stats of a bundle list its functions and their names from the
+        // file this task writes, and the bundle check reads them under these
+        // keys
+        try (InputStream config = getClass().getClassLoader()
+                .getResourceAsStream("vite.generated.ts")) {
+            assertNotNull(config, "vite.generated.ts is on the class path");
+            String content = new String(config.readAllBytes(),
+                    StandardCharsets.UTF_8);
+            assertTrue(content.contains("'"
+                    + TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME + "'"),
+                    "vite.generated.ts should read "
+                            + TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME);
+            for (String line : List.of(
+                    BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY
+                            + ": jsDefinitionIds."
+                            + TaskGenerateJsDefinitions.FUNCTION_IDS_KEY + ",",
+                    BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY
+                            + ": jsDefinitionIds."
+                            + TaskGenerateJsDefinitions.NAMES_KEY + ",")) {
+                assertTrue(content.contains(line),
+                        "vite.generated.ts should write " + line);
+            }
+        }
+    }
+
+    @Test
+    void render_listsEveryFunctionWithWhatDeclaresIt() {
+        Map<String, String> expected = new HashMap<>();
+        Stream.of(GreeterJs.class, StopperJs.class, TemplateJs.class)
+                .forEach(definition -> Stream.of(definition.getMethods())
+                        .forEach(method -> expected.put(
+                                JsCall.functionId(method),
+                                definition.getName())));
+        BundledEventData.getBundledEventData(OffsetEvent.class).stream()
+                .map(BundledEventData::getFunctionId)
+                .forEach(id -> expected.put(id, OffsetEvent.class.getName()));
+
+        // A function declared twice is one function, named after the
+        // definition that sorts first
+        TaskGenerateJsDefinitions.Rendered rendered = TaskGenerateJsDefinitions
+                .render(List.of(GreeterTwinJs.class, GreeterJs.class,
+                        StopperJs.class, TemplateJs.class),
+                        List.of(OffsetEvent.class), false);
+
+        assertEquals(expected, rendered.functionIds());
+        assertTrue(rendered.names().isEmpty(),
+                "a production file names nothing: " + rendered.names());
+    }
+
+    @Test
+    void render_developmentMode_listsTheNamesOfEveryFunction() {
+        TaskGenerateJsDefinitions.Rendered rendered = TaskGenerateJsDefinitions
+                .render(List.of(GreeterTwinJs.class, GreeterJs.class),
+                        List.of(OffsetEvent.class), true);
+
+        String greeting = JsCall.functionId(GREETING_EXPRESSION, 1, false);
+        // Declared twice, so named after both, the one the file assigns last
+        // at the end
+        List<String> greetingNames = List.of(
+                GreeterJs.class.getName() + ".showGreeting/1",
+                GreeterTwinJs.class.getName() + ".greet/1");
+        assertEquals(greetingNames, rendered.names().get(greeting));
+        String content = rendered.content();
+        assertTrue(
+                content.indexOf("] = \"" + greetingNames.get(1)
+                        + "\";") > content.indexOf(
+                                "] = \"" + greetingNames.get(0) + "\";"),
+                "the file should assign the last name last: " + content);
+        BundledEventData.getBundledEventData(OffsetEvent.class)
+                .forEach(
+                        eventData -> assertEquals(
+                                List.of(OffsetEvent.class.getName()
+                                        + " @EventData(\""
+                                        + BundledEventData.getExpression(
+                                                eventData)
+                                        + "\")"),
+                                rendered.names().get(BundledEventData
+                                        .getFunctionId(eventData))));
+    }
+
+    @Test
+    void execute_writesTheFunctionIdsNextToTheFile()
+            throws ExecutionFailedException, IOException {
+        task.execute();
+
+        File idsFile = new File(new File(frontendFolder, GENERATED),
+                TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME);
+        JsonNode written = JacksonUtils.getMapper()
+                .readTree(Files.readString(idsFile.toPath()));
+        List<String> ids = JacksonUtils
+                .<JsonNode> stream((ArrayNode) written
+                        .get(TaskGenerateJsDefinitions.FUNCTION_IDS_KEY))
+                .map(JsonNode::asString).toList();
+        assertEquals(List.copyOf(task.render().functionIds().keySet()), ids);
+        String greeting = JsCall.functionId(GREETING_EXPRESSION, 1, false);
+        assertTrue(ids.contains(greeting),
+                "the ids should list the declared functions: " + ids);
+        // Written for development, so with what a message names each by
+        assertEquals(GreeterJs.class.getName() + ".showGreeting/1",
+                written.get(TaskGenerateJsDefinitions.NAMES_KEY).get(greeting)
+                        .asString());
+    }
+
+    @Test
+    void byteCodeScanner_rendersReachedAndFlowDefinitionsOnly() {
+        FrontendDependenciesScanner scanner = mock(
+                FrontendDependenciesScanner.class);
+        when(scanner.getClasses()).thenReturn(Set.of(GreeterJs.class.getName(),
+                InheritingOffsetEvent.class.getName()));
+        Options optimized = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(GreeterJs.class, LoggerJs.class,
+                        OffsetEvent.class, InheritingOffsetEvent.class,
+                        MprPushStateJs.class, TitleFallbacks.class,
+                        EventFallbacks.class)),
+                null).withFrontendDirectory(frontendFolder)
+                .withProductionMode(true).useByteCodeScanner(true)
+                .withFrontendDependenciesScanner(scanner);
+
+        Set<String> functionIds = new TaskGenerateJsDefinitions(optimized)
+                .render().functionIds().keySet();
+
+        // Found by the string an add-on sends, not through a reference, so
+        // carried whether reached or not, with their filters and event data
+        Set<String> fallbackIds = TaskGenerateJsDefinitions
+                .render(List.of(TitleFallbacks.class, EventFallbacks.class),
+                        List.of(), false)
+                .functionIds().keySet();
+        assertTrue(fallbackIds.size() >= 3, "fallback ids: " + fallbackIds);
+        assertTrue(functionIds.containsAll(fallbackIds),
+                "string fallbacks are carried whether reached or not: "
+                        + functionIds);
+
+        assertTrue(functionIds.containsAll(collectDeclaredIds(GreeterJs.class)),
+                "a reached definition is carried: " + functionIds);
+        assertTrue(
+                collectDeclaredIds(LoggerJs.class).stream()
+                        .noneMatch(functionIds::contains),
+                "a definition nothing reaches is not: " + functionIds);
+        assertFalse(
+                functionIds.contains(
+                        BundledEventData.getFunctionId(OFFSET_EXPRESSION)),
+                "nor the event data of an event type nothing reaches: "
+                        + functionIds);
+        assertTrue(
+                functionIds.contains(
+                        BundledEventData.getFunctionId(INHERITING_EXPRESSION)),
+                "a reached event type keeps its event data: " + functionIds);
+        assertTrue(
+                functionIds
+                        .containsAll(collectDeclaredIds(MprPushStateJs.class)),
+                "Flow's own definitions are carried whether reached or not: "
+                        + functionIds);
+    }
+
+    @Test
+    void byteCodeScanner_developmentMode_rendersEveryDefinition() {
+        FrontendDependenciesScanner scanner = mock(
+                FrontendDependenciesScanner.class);
+        when(scanner.getClasses()).thenReturn(Set.of());
+        Options development = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(LoggerJs.class)), null)
+                .withFrontendDirectory(frontendFolder).withProductionMode(false)
+                .useByteCodeScanner(true)
+                .withFrontendDependenciesScanner(scanner);
+
+        Set<String> functionIds = new TaskGenerateJsDefinitions(development)
+                .render().functionIds().keySet();
+
+        assertTrue(functionIds.containsAll(collectDeclaredIds(LoggerJs.class)),
+                "a definition nothing reaches is still carried: "
+                        + functionIds);
+    }
+
+    private static Set<String> collectDeclaredIds(Class<?> definition) {
+        Set<String> ids = Stream.of(definition.getMethods()).filter(
+                method -> method.isAnnotationPresent(JsExpression.class))
+                .map(JsCall::functionId).collect(Collectors.toSet());
+        assertFalse(ids.isEmpty(), definition + " declares no JavaScript");
+        return ids;
+    }
+
+    @Test
+    void domEventClass_productionMode_namesNothingOfTheJava() {
+        Options production = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(OffsetEvent.class)), null)
+                .withFrontendDirectory(frontendFolder).withProductionMode(true);
+        String content = new TaskGenerateJsDefinitions(production)
+                .getFileContent();
+
+        assertTrue(content.contains("window.Vaadin.Flow.jsSnippets[\""
+                + BundledEventData.getFunctionId(OFFSET_EXPRESSION) + "\"]"),
+                "the value should still be in the bundle: " + content);
+        assertFalse(content.contains(OffsetEvent.class.getName()),
+                "a production bundle should not tell a browser what declared the value: "
+                        + content);
+    }
+
+    @Test
+    void definitionThatCanNotWork_isLeftOutWithoutFailingTheBuild()
+            throws NoSuchMethodException {
+        // A bad name would be a syntax error that breaks every function in
+        // the module, and the definition may be in an add-on that the
+        // application can not fix, so it is left out and fails when used
+        String content = TaskGenerateJsDefinitions.renderFileContent(
+                List.of(InvalidNameJs.class, LoggerJs.class), false);
+
+        assertFalse(content.contains("function (class)"), content);
+        assertTrue(
+                content.contains(JsCall.functionId(LoggerJs.class
+                        .getMethod("createLogger", String.class))),
+                "the other definitions should still be generated: " + content);
     }
 
     @Test
@@ -185,6 +822,38 @@ class TaskGenerateJsDefinitionsTest {
                 written.contains(
                         JsCall.functionId(GREETING_EXPRESSION, 1, false)),
                 "and what the file held should still be in it: " + written);
+    }
+
+    @Test
+    void updateJsDefinitions_intoAFileWithoutTheirRegistries_addsThem()
+            throws IOException {
+        // A file that a build wrote before snippets and functions that get
+        // the execution context were generated at all
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+        generated.getParentFile().mkdirs();
+        Files.writeString(generated.toPath(), TaskGenerateJsDefinitions
+                .renderFileContent(List.of(GreeterJs.class), true)
+                .replace(SNIPPETS_REGISTRY + System.lineSeparator(), "")
+                .replace(CONTEXT_REGISTRY + System.lineSeparator(), ""));
+
+        TaskGenerateJsDefinitions.updateJsDefinitions(options,
+                List.of(LoggerJs.class, StopperJs.class));
+
+        String written = Files.readString(generated.toPath());
+        assertTrue(written.contains(SNIPPETS_REGISTRY),
+                "the registry should be added to a file that has none: "
+                        + written);
+        assertTrue(
+                written.indexOf(SNIPPETS_REGISTRY) < written
+                        .indexOf("window.Vaadin.Flow.jsSnippets[\""),
+                "and it should come before the snippets it holds: " + written);
+        assertTrue(written.indexOf(CONTEXT_REGISTRY) >= 0
+                && written.indexOf(CONTEXT_REGISTRY) < written.indexOf(
+                        "window.Vaadin.Flow.jsDefinitionsWithExecutionContext[\""),
+                "the registry of functions that get the context should be added before them: "
+                        + written);
     }
 
     @Test
@@ -372,6 +1041,22 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @Test
+    void getFileContent_scansDefinitionsOfBothKinds() {
+        Options scanning = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(GreeterJs.class, LoggerJs.class)),
+                null).withFrontendDirectory(frontendFolder)
+                .withProductionMode(true);
+
+        String content = new TaskGenerateJsDefinitions(scanning)
+                .getFileContent();
+
+        assertEquals(
+                TaskGenerateJsDefinitions.renderFileContent(
+                        List.of(GreeterJs.class, LoggerJs.class), false),
+                content);
+    }
+
+    @Test
     void acceptsItsOwnUpdate() throws ExecutionFailedException {
         task.execute();
         String content = task.getFileContent();
@@ -405,5 +1090,276 @@ class TaskGenerateJsDefinitionsTest {
                 new File(new File(frontendFolder, GENERATED),
                         JS_DEFINITIONS_FILE_NAME).exists(),
                 "the generated file should be where the bootstrap imports it from");
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    public interface TitleFallbacks extends JsInvokers {
+        @JsExpression("document.title = $0")
+        void setTitle(Object title);
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    public interface FocusFallbacks extends JsInvokers {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    public interface VariadicFallbacks extends JsInvokers {
+        @JsExpression("console.log(...$0)")
+        void log(Object... values);
+    }
+
+    @Test
+    void stringFallbacks_areListedByNameForTheServer() throws Exception {
+        File resources = new File(temporaryFolder, "resources");
+        Options withFallbacks = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(TitleFallbacks.class,
+                        FocusFallbacks.class, GreeterJs.class)),
+                null).withFrontendDirectory(frontendFolder)
+                .withBuildResultFolders(new File(temporaryFolder, "webapp"),
+                        resources);
+        TaskGenerateJsDefinitions fallbackTask = new TaskGenerateJsDefinitions(
+                withFallbacks);
+
+        fallbackTask.execute();
+
+        File list = new File(resources, Constants.JS_STRING_FALLBACKS_FILE);
+        assertEquals(
+                List.of(FocusFallbacks.class.getName(),
+                        TitleFallbacks.class.getName()),
+                JacksonUtils.getMapper().readTree(list).valueStream()
+                        .map(JsonNode::asString).toList());
+        assertTrue(
+                fallbackTask.getFileContent()
+                        .contains(JsStringFallbacks.functionId(
+                                TitleFallbacks.class,
+                                TitleFallbacks.class.getMethod("setTitle",
+                                        Object.class))),
+                "a fallback is a definition, so its function is in the bundle");
+    }
+
+    // Only extended, so not annotated
+    public interface FocusableJs extends JsInvokers {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
+    @JsDefinition
+    public interface PlainFocusJs extends FocusableJs {
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    public interface InheritedFocusFallbacks extends FocusableJs {
+    }
+
+    @Test
+    void stringFallbackCall_seesTheElementAfterTheArgumentsLikeTheString()
+            throws Exception {
+        String content = TaskGenerateJsDefinitions.renderFileContent(
+                List.of(FocusFallbacks.class, TitleFallbacks.class), true);
+
+        // Element.executeJs(String) runs the string with the element as `this`
+        // and as $<argument count>, so a string with no arguments can use $0
+        assertTrue(
+                content.contains("  return (async function ($0) {"
+                        + System.lineSeparator() + "this.focus()"
+                        + System.lineSeparator() + "  }).call(this, this);"),
+                content);
+        assertTrue(
+                content.contains("  return (async function ($1) {"
+                        + System.lineSeparator() + "document.title = $0"
+                        + System.lineSeparator() + "  }).call(this, this);"),
+                content);
+    }
+
+    @Test
+    void stringFallbackCall_hasAFunctionOfItsOwn() throws Exception {
+        // Both inherit the method from the same interface
+        String fallback = JsStringFallbacks.functionId(
+                InheritedFocusFallbacks.class,
+                InheritedFocusFallbacks.class.getMethod("focus"));
+        String plain = JsStringFallbacks.functionId(PlainFocusJs.class,
+                PlainFocusJs.class.getMethod("focus"));
+
+        assertNotEquals(plain, fallback,
+                "the fallback is generated differently, so it must not replace"
+                        + " the function of a definition with the same JavaScript");
+        String content = TaskGenerateJsDefinitions.renderFileContent(
+                List.of(InheritedFocusFallbacks.class, PlainFocusJs.class),
+                true);
+        assertTrue(content.contains("[\"" + plain + "\"] = async function () {"
+                + System.lineSeparator() + "this.focus()"), content);
+        assertTrue(content.contains("[\"" + fallback
+                + "\"] = async function () {" + System.lineSeparator()
+                + "  return (async function ($0) {"), content);
+    }
+
+    @Test
+    void noStringFallbacks_removesAListLeftBehind() throws Exception {
+        File resources = new File(temporaryFolder, "resources");
+        File list = new File(resources, Constants.JS_STRING_FALLBACKS_FILE);
+        list.getParentFile().mkdirs();
+        Files.writeString(list.toPath(), "[\"com.example.Removed\"]");
+        options.withBuildResultFolders(new File(temporaryFolder, "webapp"),
+                resources);
+
+        task.execute();
+
+        assertFalse(list.exists());
+    }
+
+    @Test
+    void stringFallback_thatCanNotMatchAStringCall_failsTheBuild() {
+        File resources = new File(temporaryFolder, "resources");
+        Options withVariadic = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(VariadicFallbacks.class)), null)
+                .withFrontendDirectory(frontendFolder).withBuildResultFolders(
+                        new File(temporaryFolder, "webapp"), resources);
+
+        ExecutionFailedException exception = assertThrows(
+                ExecutionFailedException.class,
+                () -> new TaskGenerateJsDefinitions(withVariadic).execute());
+
+        assertTrue(exception.getMessage().contains("log"),
+                exception.getMessage());
+        assertTrue(exception.getMessage().contains("variadic"),
+                exception.getMessage());
+    }
+
+    @Test
+    void updateStringFallbacks_listsNewlyMarkedAndDropsNoLongerMarked()
+            throws Exception {
+        File resources = new File(temporaryFolder, "resources");
+        File list = new File(resources, Constants.JS_STRING_FALLBACKS_FILE);
+        list.getParentFile().mkdirs();
+        // GreeterJs stands for an interface whose annotation was removed
+        Files.writeString(list.toPath(), "[\"" + GreeterJs.class.getName()
+                + "\", \"" + TitleFallbacks.class.getName() + "\"]");
+
+        boolean affected = TaskGenerateJsDefinitions.updateStringFallbacks(
+                resources, Set.of(GreeterJs.class, FocusFallbacks.class));
+
+        assertTrue(affected);
+        assertEquals(
+                List.of(FocusFallbacks.class.getName(),
+                        TitleFallbacks.class.getName()),
+                JacksonUtils.getMapper().readTree(list).valueStream()
+                        .map(JsonNode::asString).toList());
+    }
+
+    @Test
+    void updateStringFallbacks_interfaceAListedOneExtends_affected()
+            throws Exception {
+        File resources = new File(temporaryFolder, "resources");
+        File list = new File(resources, Constants.JS_STRING_FALLBACKS_FILE);
+        list.getParentFile().mkdirs();
+        String listed = "[\"" + InheritedFocusFallbacks.class.getName() + "\"]";
+        Files.writeString(list.toPath(), listed);
+
+        assertTrue(
+                TaskGenerateJsDefinitions.updateStringFallbacks(resources,
+                        Set.of(FocusableJs.class)),
+                "what the listed interface inherits changed");
+        assertEquals(listed, Files.readString(list.toPath()));
+    }
+
+    @Test
+    void updateStringFallbacks_unrelatedClass_listLeftAlone() throws Exception {
+        File resources = new File(temporaryFolder, "resources");
+
+        boolean affected = TaskGenerateJsDefinitions
+                .updateStringFallbacks(resources, Set.of(NothingJs.class));
+
+        assertFalse(affected);
+        assertFalse(new File(resources, Constants.JS_STRING_FALLBACKS_FILE)
+                .exists());
+    }
+
+    @JsDefinition
+    @JsStringFallback(filters = "event.key === 'Escape'", eventData = "event.target.value.trim().length")
+    public interface EventFallbacks extends JsSnippets {
+    }
+
+    @Test
+    void stringFallbackFiltersAndEventData_areBundledLikeEventAnnotations() {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(EventFallbacks.class), true);
+
+        for (String expression : List.of("event.key === 'Escape'",
+                "event.target.value.trim().length")) {
+            assertTrue(content.contains("window.Vaadin.Flow.jsSnippets[\""
+                    + BundledEventData.getFunctionId(expression)
+                    + "\"] = function () {"), content);
+            assertTrue(content.contains(expression), content);
+        }
+    }
+
+    @Test
+    void render_listsTheFunctionsOfStringFallbacksWithWhatDeclaresThem()
+            throws Exception {
+        Map<String, String> expected = new HashMap<>();
+        expected.put(
+                JsStringFallbacks.functionId(InheritedFocusFallbacks.class,
+                        InheritedFocusFallbacks.class.getMethod("focus")),
+                InheritedFocusFallbacks.class.getName());
+        Stream.of("event.key === 'Escape'", "event.target.value.trim().length")
+                .forEach(expression -> expected.put(
+                        BundledEventData.getFunctionId(expression),
+                        EventFallbacks.class.getName()));
+
+        // A bundle is checked against these, so one without the functions of
+        // the fallbacks would be taken as carrying everything
+        TaskGenerateJsDefinitions.Rendered rendered = TaskGenerateJsDefinitions
+                .render(List.of(InheritedFocusFallbacks.class,
+                        EventFallbacks.class), List.of(), false);
+
+        assertEquals(expected, rendered.functionIds());
+    }
+
+    @Test
+    void updateJsDefinitions_stringFallbackListingNewEventData_addsTheirFunctions()
+            throws IOException {
+        // A class change that lists other filters and event data, with no
+        // method that changed
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+        generated.getParentFile().mkdirs();
+        Files.writeString(generated.toPath(), TaskGenerateJsDefinitions
+                .renderFileContent(List.of(GreeterJs.class), true));
+        assertEquals(List.of(EventFallbacks.class),
+                TaskGenerateJsDefinitions.findMissingFromGeneratedFile(options,
+                        List.of(EventFallbacks.class)),
+                "the file has no function for what the interface lists");
+
+        List<Class<?>> missing = TaskGenerateJsDefinitions
+                .updateJsDefinitions(options, List.of(EventFallbacks.class));
+
+        assertTrue(missing.isEmpty());
+        String written = Files.readString(generated.toPath());
+        for (String expression : List.of("event.key === 'Escape'",
+                "event.target.value.trim().length")) {
+            String functionId = BundledEventData.getFunctionId(expression);
+            assertTrue(written.contains("window.Vaadin.Flow.jsSnippets[\""
+                    + functionId + "\"] = function () {"), written);
+            assertTrue(
+                    written.contains("window.Vaadin.Flow.jsDefinitionNames[\""
+                            + functionId + "\"]"),
+                    written);
+        }
+        assertTrue(
+                TaskGenerateJsDefinitions.findMissingFromGeneratedFile(options,
+                        List.of(EventFallbacks.class)).isEmpty(),
+                "the file now has a function for everything listed");
+
+        TaskGenerateJsDefinitions.updateJsDefinitions(options,
+                List.of(EventFallbacks.class));
+        assertEquals(written, Files.readString(generated.toPath()),
+                "a second update should add nothing");
     }
 }

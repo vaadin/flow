@@ -1,0 +1,83 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.js;
+
+import java.io.Serializable;
+
+import com.vaadin.flow.dom.DomEventData;
+import com.vaadin.flow.dom.DomEventFilter;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.JsFunction;
+
+/**
+ * JavaScript that is declared on the server and evaluated later on the client,
+ * by whatever it is passed to.
+ * <p>
+ * A method of a {@link JsSnippets} interface that returns a snippet type does
+ * not run anything. Called on the implementation that {@link JsSnippets#of}
+ * hands out, it answers with a value that names the function the build
+ * generated from its {@link JsExpression} and carries the arguments of the
+ * call, which the expression references as <code>$0</code>, <code>$1</code>,
+ * &hellip;. The value is passed on, for instance as an argument of a method of
+ * a definition obtained from {@link Element#executeJs(Class)}. When the client
+ * decodes the argument, it gets a function with those arguments bound, and the
+ * expression runs when the invoker calls that function, as described for
+ * {@link JsFunctionParameterNames}. Nothing is compiled from a string in the
+ * browser, so a snippet passed that way works under a content security policy
+ * that does not allow <code>unsafe-eval</code>. Passed to
+ * {@link Element#executeJs(String, Object...)} it works as well, but the
+ * expression of that call is itself compiled from a string.
+ * <p>
+ * A snippet has no identity on the client and no lifetime. Passing the same
+ * snippet to several invocations creates its function once per invocation, and
+ * each of them gets a function of its own, so there is nothing to cache and
+ * nothing to release.
+ * <p>
+ * {@link JsFunction} is the snippet type for a function that whoever it is
+ * passed to calls with arguments of its own, which
+ * {@link JsFunctionParameterNames} names. {@link DomEventFilter} and
+ * {@link DomEventData} are snippet types that a DOM event listener runs for
+ * every event.
+ * <p>
+ * A component or an application can declare a snippet type of its own for what
+ * it invokes on the client, as an interface that extends this one and declares
+ * no instance methods. It names what the snippet is for, so an API can accept
+ * only snippets of that kind, and it can declare the parameters every snippet
+ * of it is called with by annotating the type with
+ * {@link JsFunctionParameterNames}:
+ *
+ * <pre>
+ * &#64;JsFunctionParameterNames({ "html", "item" })
+ * public interface ItemTemplate extends JsSnippet {
+ * }
+ *
+ * &#64;JsDefinition
+ * public interface OrderTemplates extends JsSnippets {
+ *     &#64;JsExpression("return html`&lt;b&gt;${$0}: ${item.status}&lt;/b&gt;`;")
+ *     ItemTemplate status(String label);
+ * }
+ * </pre>
+ *
+ * {@link JsSnippets#of(Class)} implements the type, and a snippet of it is sent
+ * to the client like a {@link JsFunction} that a {@link JsSnippets} interface
+ * declares: as the function the client calls with those parameters.
+ *
+ * @see JsSnippets#of(Class)
+ * @see JsFunctionParameterNames
+ * @since 25.4
+ */
+public interface JsSnippet extends Serializable {
+}

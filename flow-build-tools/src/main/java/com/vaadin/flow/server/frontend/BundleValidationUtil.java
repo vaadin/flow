@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -42,6 +43,7 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
+import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.DevBundleUtils;
 import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
@@ -71,6 +73,8 @@ public final class BundleValidationUtil {
 
     private static final String FRONTEND_HASHES_STATS_KEY = "frontendHashes";
 
+    static final String JS_DEFINITION_NAMES_STATS_KEY = "jsDefinitionNames";
+
     private static final String PWA_OFFLINE_PATH_STATS_KEY = "pwaOfflinePath";
 
     private static final String PWA_OFFLINE_ENABLED_STATS_KEY = "pwaOfflineEnabled";
@@ -83,6 +87,10 @@ public final class BundleValidationUtil {
      * reusing that bundle instead of building their own.
      */
     private static final String DEFAULT_PWA_OFFLINE_PATH = "'.'";
+
+    private static final List<String> SERVICE_WORKER_FILES = List.of(
+            FrontendUtils.SERVICE_WORKER_SRC,
+            FrontendUtils.SERVICE_WORKER_SRC_JS);
 
     /**
      * Checks if an application needs a new frontend bundle.
@@ -288,6 +296,17 @@ public final class BundleValidationUtil {
         ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY))
                 .remove(FrontendUtils.GENERATED
                         + FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+
+        if (customServiceWorkerChanged(options, statsJson,
+                frontendDependencies)) {
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-changed-service-worker", null);
+            return true;
+        }
+        // service worker hashes have already been checked, if needed.
+        // removing them from hashes map to prevent other unnecessary checks
+        ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY))
+                .remove(SERVICE_WORKER_FILES);
 
         if (!BundleValidationUtil.frontendImportsFound(statsJson, options)) {
             UsageStatistics.markAsUsed(
@@ -600,12 +619,10 @@ public final class BundleValidationUtil {
                 .stream()
                 // skip checking flow-frontend as it was used in previous
                 // versions as an alias for ./target/flow-frontend
-                .filter(pkg -> !"@vaadin/flow-frontend".equals(pkg))
-                .collect(Collectors.toList());
+                .filter(pkg -> !"@vaadin/flow-frontend".equals(pkg)).toList();
 
         List<String> missingFromBundle = dependenciesList.stream()
-                .filter(pkg -> !bundleModules.has(pkg))
-                .collect(Collectors.toList());
+                .filter(pkg -> !bundleModules.has(pkg)).toList();
 
         if (!missingFromBundle.isEmpty()) {
             for (String dependency : missingFromBundle) {
@@ -620,7 +637,7 @@ public final class BundleValidationUtil {
                 .filter(pkg -> !versionAccepted(
                         dependencies.get(pkg).asString(),
                         bundleModules.get(pkg).asString()))
-                .collect(Collectors.toList());
+                .toList();
 
         if (!missingFromBundle.isEmpty()) {
             for (String pkg : missingFromBundle) {
@@ -696,7 +713,7 @@ public final class BundleValidationUtil {
                 .filter(pkg -> !(dependencies.has(pkg)
                         && versionAccepted(dependencies.get(pkg).asString(),
                                 npmPackages.get(pkg))))
-                .collect(Collectors.toList());
+                .toList();
         if (!collect.isEmpty()) {
             collect.forEach(dependency -> getLogger().info("Dependency "
                     + dependency + " is missing from the bundle"));
@@ -778,14 +795,14 @@ public final class BundleValidationUtil {
                         ? importString.substring(0,
                                 importString.lastIndexOf("?"))
                         : importString)
-                .collect(Collectors.toList());
+                .toList();
         LinkedHashSet<String> uniqueImports = new LinkedHashSet<>(imports);
         ArrayNode statsBundle = statsJson.has("bundleImports")
                 ? (ArrayNode) statsJson.get("bundleImports")
                 : JacksonUtils.createArrayNode();
         final List<String> missingFromBundle = uniqueImports.stream().filter(
                 importString -> !arrayContainsString(statsBundle, importString))
-                .collect(Collectors.toList());
+                .toList();
 
         if (!missingFromBundle.isEmpty()) {
             for (String dependency : missingFromBundle) {
@@ -801,7 +818,7 @@ public final class BundleValidationUtil {
                 .map(importString -> importString
                         .substring(importString.indexOf(resourcePath)
                                 + resourcePath.length()))
-                .collect(Collectors.toList());
+                .toList();
 
         final List<String> projectImports = uniqueImports.stream()
                 .filter(importString -> importString
@@ -809,7 +826,7 @@ public final class BundleValidationUtil {
                         && !importString.contains(resourcePath))
                 .map(importString -> importString.substring(
                         FrontendUtils.FRONTEND_FOLDER_ALIAS.length()))
-                .collect(Collectors.toList());
+                .toList();
 
         final JsonNode frontendHashes = statsJson
                 .get(FRONTEND_HASHES_STATS_KEY);
@@ -966,6 +983,49 @@ public final class BundleValidationUtil {
         return false;
     }
 
+    /**
+     * Checks whether the service worker in the frontend folder differs from the
+     * one the bundle was built with.
+     * <p>
+     * A {@code sw.ts} or {@code sw.js} in the frontend folder replaces the
+     * default service worker. It is built separately from the application's
+     * modules, so none of the import checks look at it, and adding, changing or
+     * removing it only reaches the application through a new bundle. Only that
+     * file is compared, not the modules it imports.
+     */
+    private static boolean customServiceWorkerChanged(Options options,
+            JsonNode statsJson,
+            FrontendDependenciesScanner frontendDependencies)
+            throws IOException {
+        PwaConfiguration pwaConfiguration = frontendDependencies
+                .getPwaConfiguration();
+        if (pwaConfiguration == null || !pwaConfiguration.isOfflineEnabled()) {
+            // Without offline support no service worker is built, so the
+            // bundle does not depend on its source.
+            return false;
+        }
+        JsonNode frontendHashes = statsJson.get(FRONTEND_HASHES_STATS_KEY);
+        List<String> faultyContent = new ArrayList<>();
+        for (String serviceWorkerFile : SERVICE_WORKER_FILES) {
+            File serviceWorker = new File(options.getFrontendDirectory(),
+                    serviceWorkerFile);
+            if (serviceWorker.exists()) {
+                compareFrontendHashes(frontendHashes, faultyContent,
+                        serviceWorkerFile,
+                        Files.readString(serviceWorker.toPath()));
+            } else if (frontendHashes.has(serviceWorkerFile)) {
+                getLogger().info("Detected deleted {} file", serviceWorkerFile);
+                return true;
+            }
+        }
+        if (!faultyContent.isEmpty()) {
+            logChangedFiles(faultyContent,
+                    "Detected changed content for frontend files:");
+            return true;
+        }
+        return false;
+    }
+
     private static boolean isCommercialBannerConditionChanged(Options options,
             JsonNode statsJson) throws IOException {
         final JsonNode frontendHashes = statsJson
@@ -1005,31 +1065,92 @@ public final class BundleValidationUtil {
     }
 
     /**
-     * Checks whether the JavaScript that the {@code @JsDefinition} interfaces
-     * of the application declare differs from what the bundle was built with.
+     * Checks whether the bundle lacks JavaScript that the {@code @JsDefinition}
+     * interfaces, the {@code @EventData} values and the {@code @DomEvent}
+     * filters of the application declare.
      * <p>
      * The functions are generated into the bundle, so a declaration that
-     * changed, a definition that was added and a bundle built before any
-     * definition existed all mean that the bundle no longer contains what a
-     * call would look up, which shows up at runtime as a call that cannot be
-     * run.
+     * changed, a definition, an event data value or a filter that was added and
+     * a bundle built before any of them existed all mean that the bundle does
+     * not contain what a call would look up, which shows up at runtime as a
+     * call that cannot be run.
+     * <p>
+     * When the stats of the bundle list the identifiers of the functions it
+     * registers, the bundle is accepted if it registers every function the
+     * application needs. A bundle that carries more, such as one built with
+     * more definitions or before one was removed, is still accepted. Outside
+     * production mode, each of those functions also has to be registered under
+     * a name that the application gives it, so that a message about a call does
+     * not name a definition or method that was renamed. A bundle whose stats
+     * list the identifiers but no names is rebuilt there. A bundle whose stats
+     * do not list the identifiers is accepted only if it was built from the
+     * same generated file.
      */
     private static boolean jsDefinitionsChanged(Options options,
             JsonNode statsJson) {
         JsonNode frontendHashes = statsJson.get(FRONTEND_HASHES_STATS_KEY);
         String jsDefinitionsPath = FrontendUtils.GENERATED
                 + FrontendUtils.JS_DEFINITIONS_FILE_NAME;
-        String content = new TaskGenerateJsDefinitions(options)
-                .getFileContent();
+        TaskGenerateJsDefinitions.Rendered rendered = new TaskGenerateJsDefinitions(
+                options).render();
 
+        JsonNode bundledIds = statsJson
+                .get(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
+        if (bundledIds != null && bundledIds.isArray()) {
+            // A bundle that registers a function under every identifier the
+            // application needs carries its JavaScript, as the identifier is a
+            // hash of it. One built with more definitions than the application
+            // has, such as the pre-compiled bundle, still serves it.
+            Set<String> bundled = new HashSet<>(
+                    JacksonUtils.stream((ArrayNode) bundledIds)
+                            .map(JsonNode::asString).toList());
+            Set<String> missingFrom = new TreeSet<>();
+            rendered.functionIds().forEach((id, declaredBy) -> {
+                if (!bundled.contains(id)) {
+                    missingFrom.add(declaredBy);
+                }
+            });
+            if (!missingFrom.isEmpty()) {
+                getLogger().info(
+                        "Detected JavaScript that the bundle does not carry, declared by: {}",
+                        String.join(", ", missingFrom));
+                return true;
+            }
+            // The identifier leaves out what a development bundle names a
+            // function by in a message about a call, so a renamed definition
+            // would otherwise keep its old name there. A function that more
+            // than one class declares may be named after any of them, as which
+            // one the bundle names depends on what it was built with.
+            JsonNode bundledNames = statsJson
+                    .get(JS_DEFINITION_NAMES_STATS_KEY);
+            Set<String> renamedIn = new TreeSet<>();
+            rendered.names().forEach((id, names) -> {
+                JsonNode bundledName = bundledNames == null ? null
+                        : bundledNames.get(id);
+                if (bundledName == null
+                        || !names.contains(bundledName.asString())) {
+                    renamedIn.add(rendered.functionIds().get(id));
+                }
+            });
+            if (!renamedIn.isEmpty()) {
+                getLogger().info(
+                        "Detected JavaScript that the bundle names differently, declared by: {}",
+                        String.join(", ", renamedIn));
+                return true;
+            }
+            return false;
+        }
+
+        // A bundle built before its stats listed the functions it registers
+        // is compared by the whole file
         List<String> faultyContent = new ArrayList<>();
         compareFrontendHashes(frontendHashes, faultyContent, jsDefinitionsPath,
-                content);
+                rendered.content());
         if (!faultyContent.isEmpty()) {
             // Either the declarations changed, or the bundle was built before
             // they existed and carries none of their JavaScript
             getLogger().info(
-                    "Detected JavaScript declared by the JavaScript definitions that the bundle does not carry");
+                    "Detected JavaScript declared by the JavaScript definitions, event data or event filters that the bundle does not carry");
             return true;
         }
         return false;
