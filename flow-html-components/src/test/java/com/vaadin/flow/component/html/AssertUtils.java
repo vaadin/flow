@@ -15,11 +15,26 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Assertions;
 
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.StreamResourceRegistry.ElementStreamResource;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.streams.DownloadDisposition;
+import com.vaadin.flow.server.streams.DownloadHandler;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Assert utility class.
@@ -68,4 +83,48 @@ class AssertUtils {
         }
     }
 
+    /**
+     * Serves a request with the given handler and returns the
+     * <code>Content-Disposition</code> header of the response.
+     *
+     * @param handler
+     *            the handler as the component registered it
+     * @return the header value, or <code>null</code> if it was not set
+     */
+    static String servedContentDisposition(DownloadHandler handler)
+            throws IOException {
+        return servedContentDisposition(handler, null);
+    }
+
+    /**
+     * Serves a request with the handler of the given resource, with the
+     * disposition of the resource as the request handler passes it, and returns
+     * the <code>Content-Disposition</code> header of the response.
+     *
+     * @param resource
+     *            the resource as the component registered it
+     * @return the header value, or <code>null</code> if it was not set
+     */
+    static String servedContentDisposition(ElementStreamResource resource)
+            throws IOException {
+        return servedContentDisposition(
+                (DownloadHandler) resource.getElementRequestHandler(),
+                resource.getDisposition());
+    }
+
+    private static String servedContentDisposition(DownloadHandler handler,
+            DownloadDisposition disposition) throws IOException {
+        VaadinRequest request = mock(VaadinRequest.class);
+        when(request.getAttribute(DownloadDisposition.class.getName()))
+                .thenReturn(disposition);
+        VaadinResponse response = mock(VaadinResponse.class);
+        AtomicReference<String> header = new AtomicReference<>();
+        doAnswer(invocation -> {
+            header.set(invocation.getArgument(1));
+            return null;
+        }).when(response).setHeader(eq("Content-Disposition"), any());
+        handler.handleRequest(request, response, mock(VaadinSession.class),
+                mock(Element.class));
+        return header.get();
+    }
 }

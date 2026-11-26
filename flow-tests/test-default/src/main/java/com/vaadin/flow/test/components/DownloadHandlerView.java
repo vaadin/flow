@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.AttachmentType;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
@@ -54,7 +55,8 @@ public class DownloadHandlerView extends Div {
                 .getResource("download.json").getFile());
 
         Anchor fileDownload = new Anchor("", "File DownloadHandler shorthand");
-        fileDownload.setHref(DownloadHandler.forFile(jsonFile).inline());
+        fileDownload.setHref(DownloadHandler.forFile(jsonFile),
+                AttachmentType.INLINE);
         fileDownload.setId("download-handler-file");
 
         Anchor fileDownloadUnicodeName = new Anchor("",
@@ -65,14 +67,15 @@ public class DownloadHandlerView extends Div {
 
         Anchor classDownload = new Anchor("",
                 "Class resource DownloadHandler shorthand");
-        classDownload.setHref(DownloadHandler
-                .forClassResource(this.getClass(), "class-file.json").inline());
+        classDownload.setHref(DownloadHandler.forClassResource(this.getClass(),
+                "class-file.json"), AttachmentType.INLINE);
         classDownload.setId("download-handler-class");
 
         Anchor servletDownload = new Anchor("",
                 "Servlet resource DownloadHandler shorthand");
-        servletDownload.setHref(DownloadHandler
-                .forServletResource("/WEB-INF/servlet.json").inline());
+        servletDownload.setHref(
+                DownloadHandler.forServletResource("/WEB-INF/servlet.json"),
+                AttachmentType.INLINE);
         servletDownload.setId("download-handler-servlet");
 
         DownloadHandler inputStream = DownloadHandler
@@ -80,21 +83,20 @@ public class DownloadHandlerView extends Div {
                         new ByteArrayInputStream(
                                 "foo".getBytes(StandardCharsets.UTF_8)),
                         "file+.jpg", "text/plain",
-                        "foo".getBytes(StandardCharsets.UTF_8).length))
-                .inline();
+                        "foo".getBytes(StandardCharsets.UTF_8).length));
 
         Anchor inputStreamDownload = new Anchor("",
                 "InputStream DownloadHandler shorthand");
-        inputStreamDownload.setHref(inputStream);
+        inputStreamDownload.setHref(inputStream, AttachmentType.INLINE);
         inputStreamDownload.setId("download-handler-input-stream");
 
         Anchor inputStreamErrorDownload = new Anchor("",
                 "InputStream DownloadHandler shorthand (ERROR)");
-        inputStreamErrorDownload
-                .setHref(DownloadHandler
+        inputStreamErrorDownload.setHref(
+                DownloadHandler
                         .fromInputStream(downloadEvent -> DownloadResponse
-                                .error(HttpStatusCode.INTERNAL_SERVER_ERROR))
-                        .inline());
+                                .error(HttpStatusCode.INTERNAL_SERVER_ERROR)),
+                AttachmentType.INLINE);
         inputStreamErrorDownload.setId("download-handler-input-stream-error");
 
         RuntimeException runtimeException = new RuntimeException(
@@ -104,12 +106,12 @@ public class DownloadHandlerView extends Div {
         inputStreamExceptionDownload.setHref(DownloadHandler
                 .fromInputStream(downloadEvent -> DownloadResponse.error(
                         HttpStatusCode.INTERNAL_SERVER_ERROR, runtimeException))
-                .inline().whenComplete((e, t) -> {
+                .whenComplete((e, t) -> {
                     if (e.exception() == runtimeException) {
                         e.response()
                                 .setStatus(HttpStatusCode.FORBIDDEN.getCode());
                     }
-                }));
+                }), AttachmentType.INLINE);
         inputStreamExceptionDownload
                 .setId("download-handler-input-stream-exception");
 
@@ -118,7 +120,7 @@ public class DownloadHandlerView extends Div {
         inputStreamCallbackError
                 .setHref(DownloadHandler.fromInputStream(downloadEvent -> {
                     throw new IOException("Callback exception");
-                }).inline());
+                }), AttachmentType.INLINE);
         inputStreamCallbackError
                 .setId("download-handler-input-stream-callback-error");
 

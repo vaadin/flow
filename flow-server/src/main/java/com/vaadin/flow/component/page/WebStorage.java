@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 
 /**
  * Wrapper for similarly named Browser API. WebStorage may be handy to save some
@@ -324,7 +325,7 @@ public interface WebStorage extends Serializable {
      * @since 25.4
      */
     @JsDefinition
-    public interface WebStorageJs extends Serializable {
+    interface WebStorageJs extends JsInvokers {
 
         /**
          * Writes a value.

@@ -19,9 +19,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * Spring Boot entry point for the module that runs {@code vaadin.csp=strict}
- * together with Spring Security. The application runs in production mode, see
- * {@code application.properties}.
+ * Spring Boot entry point for the module that runs
+ * {@code vaadin.contentSecurityPolicy=strict} together with Spring Security.
+ * The application runs in production mode, see {@code application.properties}.
  */
 @SpringBootApplication
 public class Application {
