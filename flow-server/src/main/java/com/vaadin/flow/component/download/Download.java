@@ -102,14 +102,16 @@ public final class Download implements Serializable {
      * The handler runs only when the browser requests the content, once per
      * click. The file name and response headers come from the handler, for
      * example from
-     * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)
-     * DownloadEvent.setFileName} or the file name of a
+     * {@link com.vaadin.flow.server.streams.DownloadEvent#fileName(String)
+     * DownloadEvent.fileName} or the file name of a
      * {@link com.vaadin.flow.server.streams.DownloadResponse DownloadResponse}.
      * <p>
      * The target decides how the content is served: with
      * {@link DownloadTarget#NEW_TAB} it is served inline, so that the browser
      * shows it, and with {@link DownloadTarget#SAVE_AS_FILE} as an attachment.
-     * This applies to the file name that the handler gives, see
+     * This applies when the handler gives only a file name, as the built-in
+     * handlers do; a handler that asks for inline or attachment itself keeps
+     * its choice, see
      * {@link com.vaadin.flow.server.streams.DownloadDisposition}. The given
      * handler is not changed, so the same instance can be used elsewhere, for
      * example in an {@code Anchor} that downloads the content.

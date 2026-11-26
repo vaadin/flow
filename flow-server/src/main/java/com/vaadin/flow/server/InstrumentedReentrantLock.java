@@ -65,6 +65,11 @@ import com.vaadin.flow.component.UI;
  * matching acquire. {@code lockReleased} is only fired for a hold whose
  * acquisition had a listener for it, which also keeps the events balanced when
  * the service is bound while the lock is held.
+ * <p>
+ * {@code lockReleased} is fired after the lock has been released, so its
+ * listeners run without a current {@link UI}: a current UI means that the
+ * thread holds the lock of its session. The current UI is restored once the
+ * listeners have run.
  */
 class InstrumentedReentrantLock extends ReentrantLock {
 
@@ -172,12 +177,26 @@ class InstrumentedReentrantLock extends ReentrantLock {
         }
         super.unlock();
         if (fireReleased) {
+            fireLockReleased(currentService, heldNanos);
+        }
+    }
+
+    private void fireLockReleased(VaadinService currentService,
+            long heldNanos) {
+        // A UI made current for the locked work is still current here, but
+        // the lock is no longer held, and a signal effect would take the
+        // current UI to mean that the listener may touch it directly
+        UI ui = UI.getCurrent();
+        UI.setCurrent(null);
+        try {
             // Released is fired in reverse registration order so that the
             // listeners nest: a listener notified first of the acquisition is
             // notified last of the release
             currentService.getEventBus().fireEventInReverseOrder(
                     new SessionLockReleasedEvent(currentService, getSession(),
                             Duration.ofNanos(heldNanos)));
+        } finally {
+            UI.setCurrent(ui);
         }
     }
 

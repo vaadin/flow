@@ -185,7 +185,9 @@ public class StreamResourceRegistry implements Serializable {
 
         /**
          * Creates a resource that serves the content of a download handler with
-         * the given disposition, whatever disposition the handler asks for.
+         * the given disposition. The disposition applies when the handler gives
+         * only a file name; a handler that asks for inline or attachment itself
+         * keeps its choice, see {@link #setDisposition(DownloadDisposition)}.
          *
          * @param elementRequestHandler
          *            the handler to serve, not {@code null}
@@ -195,6 +197,7 @@ public class StreamResourceRegistry implements Serializable {
          *            how the content is served, or {@code null} to let the
          *            handler decide
          * @see #setDisposition(DownloadDisposition)
+         * @since 25.4
          */
         public ElementStreamResource(
                 ElementRequestHandler elementRequestHandler, Element owner,
@@ -209,6 +212,7 @@ public class StreamResourceRegistry implements Serializable {
          * resource.
          *
          * @return the disposition, or {@code null} if the handler decides
+         * @since 25.4
          */
         public DownloadDisposition getDisposition() {
             return disposition;
@@ -219,13 +223,15 @@ public class StreamResourceRegistry implements Serializable {
          * resource: shown in the browser or saved as a file. Whether content is
          * shown or saved depends on where it is used, so the code that
          * registers the handler decides, and the handler itself is not changed.
-         * The type of the {@code Content-Disposition} header that the handler
-         * writes through
-         * {@link com.vaadin.flow.server.streams.DownloadEvent#setFileName(String)}
+         * The disposition decides the type of the {@code Content-Disposition}
+         * header when the handler gives only a file name, with
+         * {@link com.vaadin.flow.server.streams.DownloadEvent#fileName(String)},
+         * which the built-in handlers do. A handler that asks for a type
+         * itself, for example with
+         * {@link com.vaadin.flow.server.streams.DownloadEvent#attachment(String)}
          * or
-         * {@link com.vaadin.flow.server.streams.DownloadEvent#inline(String)}
-         * is replaced, and the file name is kept. A header that the handler
-         * sets directly on the response is left as it is.
+         * {@link com.vaadin.flow.server.streams.DownloadEvent#inline(String)},
+         * or sets the header directly on the response, keeps its own choice.
          * <p>
          * The value can be changed while the resource is registered, and
          * applies to the requests that arrive after that. The URL of the
@@ -234,6 +240,7 @@ public class StreamResourceRegistry implements Serializable {
          * @param disposition
          *            how the content is served, or {@code null} to let the
          *            handler decide
+         * @since 25.4
          */
         public void setDisposition(DownloadDisposition disposition) {
             this.disposition = disposition;

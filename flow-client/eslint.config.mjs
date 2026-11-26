@@ -60,6 +60,17 @@ export default [
     }
   },
   {
+    // Engine code must not compile JavaScript from a string, because a
+    // Content Security Policy without unsafe-eval blocks it. The sites that
+    // keep the deprecated string APIs working carry an inline disable comment
+    // and go away with those APIs. no-implied-eval also covers new Function.
+    files: ['src/main/frontend/**/*.ts'],
+    rules: {
+      'no-eval': 'error',
+      '@typescript-eslint/no-implied-eval': 'error'
+    }
+  },
+  {
     files: ['src/**/frontend/**/*'],
     languageOptions: {
       globals: {
