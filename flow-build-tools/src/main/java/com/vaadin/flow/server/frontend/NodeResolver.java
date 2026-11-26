@@ -16,8 +16,10 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.internal.FrontendVersion;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.installer.InstallationException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
@@ -164,7 +167,8 @@ class NodeResolver implements java.io.Serializable {
 
             if (installation != null) {
                 if (!isSupportedGlobalVersion(
-                        new FrontendVersion(installation.nodeVersion()))) {
+                        new FrontendVersion(installation.nodeVersion()),
+                        nodeExecutable.getParentFile())) {
                     return null;
                 }
 
@@ -183,14 +187,23 @@ class NodeResolver implements java.io.Serializable {
      * Checks that a globally installed Node.js is one that Flow is tested
      * against: at least {@link FrontendTools#SUPPORTED_NODE_VERSION} and at
      * most {@link FrontendTools#MAX_SUPPORTED_NODE_MAJOR_VERSION}, which is the
-     * long-term support line Flow is built on.
+     * long-term support line Flow is built on. A newer version is rejected with
+     * a message that tells how to use it anyway through the
+     * {@link InitParameters#NODE_FOLDER} setting, naming the folder to set it
+     * to. The message is a warning only when the Node.js to use instead is not
+     * yet installed in the alternative directory, as the build then depends on
+     * downloading it.
      *
      * @param version
      *            the version of the globally installed Node.js
+     * @param globalNodeFolder
+     *            the folder that contains the globally installed Node.js
+     *            executable
      * @return true when the globally installed Node.js can be used, false when
      *         the one in the alternative directory should be used instead
      */
-    boolean isSupportedGlobalVersion(FrontendVersion version) {
+    boolean isSupportedGlobalVersion(FrontendVersion version,
+            File globalNodeFolder) {
         if (version.isOlderThan(FrontendTools.SUPPORTED_NODE_VERSION)) {
             getLogger().info(
                     "The globally installed Node.js version {} is older than the required minimum version {}. Using Node.js from {}.",
@@ -202,11 +215,21 @@ class NodeResolver implements java.io.Serializable {
 
         if (version
                 .getMajorVersion() > FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION) {
-            getLogger().info(
-                    "The globally installed Node.js version {}.x is newer than the maximum supported version {}.x and may not be compatible. Using Node.js from {}.",
-                    version.getMajorVersion(),
+            String message = "The globally installed Node.js version {}.x is newer than the maximum supported version {}.x and may not be compatible. Using Node.js from {}. To use the newer Node.js anyway, at your own risk, set the '{}' property to the folder that contains it: {}";
+            Object[] arguments = { version.getMajorVersion(),
                     FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION,
-                    alternativeDir);
+                    alternativeDir,
+                    Constants.VAADIN_PREFIX + InitParameters.NODE_FOLDER,
+                    globalNodeFolder.getAbsolutePath() };
+            // A setup that already works should not get a warning on every
+            // build, only one that is about to depend on a download
+            if (NodeInstallation
+                    .forVersion(new File(alternativeDir), nodeVersion)
+                    .hasNodeExecutable()) {
+                getLogger().info(message, arguments);
+            } else {
+                getLogger().warn(message, arguments);
+            }
             return false;
         }
 
@@ -330,23 +353,68 @@ class NodeResolver implements java.io.Serializable {
             nodeInstaller.setNodeDownloadRoot(nodeDownloadRoot);
         }
 
-        // Check whether the requested version is already installed
+        NodeInstallation installation = NodeInstallation
+                .forVersion(alternativeDirFile, nodeVersion);
+        // Using an installed version needs no lock, so that a read-only
+        // installation directory keeps working, unless a build is installing
+        // that version right now and its files may be only partly copied.
+        //
+        // Marked as used first, so that a cleanup by another build that has
+        // not yet decided to remove this version sees it in use, and one that
+        // has holds the lock, which sends this build down the locked path
+        installation.markUsed();
+        if (!installation.getInstallLockFile().exists()) {
+            ActiveNodeInstallation active = tryUseInstalled(installation);
+            if (active != null) {
+                getLogger().debug("Node {} is already installed in {}",
+                        nodeVersion, alternativeDir);
+                return active;
+            }
+        }
+
+        // Installing is not atomic and all builds on the machine share the
+        // directory, so a concurrent install of the same version would
+        // overwrite and delete the files that this one is copying
+        try {
+            Files.createDirectories(alternativeDirFile.toPath());
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    "Failed to create the Node installation directory "
+                            + alternativeDirFile,
+                    e);
+        }
+        LockFile lock = new LockFile(installation.getInstallLockFile().toPath(),
+                "Node installation");
+        lock.acquire();
+        try {
+            return installAlternativeNode(nodeInstaller, alternativeDirFile);
+        } finally {
+            lock.release();
+        }
+    }
+
+    private ActiveNodeInstallation installAlternativeNode(
+            NodeInstaller nodeInstaller, File alternativeDirFile) {
+        // Another build may have installed it while this one was waiting for
+        // the lock
         ActiveNodeInstallation active = tryUseInstalled(
                 NodeInstallation.forVersion(alternativeDirFile, nodeVersion));
         if (active != null) {
-            getLogger().debug("Node {} is already installed in {}", nodeVersion,
-                    alternativeDir);
+            getLogger().debug("Node {} was installed in {} by another build",
+                    nodeVersion, alternativeDir);
             return active;
         }
 
         // No suitable version found, install the requested version
         getLogger().info("Installing Node {} to {}", nodeVersion,
                 alternativeDir);
+        NodeInstallation installation = NodeInstallation
+                .forVersion(alternativeDirFile, nodeVersion);
         try {
+            installation.markInstalling();
             nodeInstaller.setNodeVersion(nodeVersion);
             nodeInstaller.install();
-            NodeInstallation installation = NodeInstallation
-                    .forVersion(alternativeDirFile, nodeVersion);
+            installation.markInstalled();
             installation.markUsed();
             active = createActiveInstallation(installation, nodeVersion);
 
@@ -355,7 +423,7 @@ class NodeResolver implements java.io.Serializable {
             // have been used instead
             NodeInstallations.removeUnused(alternativeDirFile, installation);
             return active;
-        } catch (InstallationException e) {
+        } catch (InstallationException | IOException e) {
             throw new IllegalStateException("Failed to install Node", e);
         }
     }
@@ -372,6 +440,16 @@ class NodeResolver implements java.io.Serializable {
     private ActiveNodeInstallation tryUseInstalled(
             NodeInstallation installation) {
         if (!installation.hasNodeExecutable()) {
+            return null;
+        }
+        // An install that died while copying can leave the binary with only
+        // part of npm. Installing again repairs it. Installs by older Flow
+        // versions have no marker, so a missing npm is checked separately.
+        if (installation.isIncomplete()
+                || !installation.getNpmCliScript().isFile()) {
+            getLogger().debug(
+                    "Node installation {} is incomplete, installing it again",
+                    installation.getDirectory());
             return null;
         }
         File installDirectory = installation.getDirectory().getParentFile();

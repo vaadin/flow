@@ -1,9 +1,5 @@
-import {
-  ConnectionIndicator,
-  ConnectionState,
-  type ConnectionStateChangeListener,
-  type ConnectionStateStore
-} from '@vaadin/common-frontend';
+import { ConnectionIndicator } from './ConnectionIndicator';
+import { ConnectionState, type ConnectionStateChangeListener, type ConnectionStateStore } from './ConnectionState';
 import { collectBrowserDetails } from './BrowserHelpers';
 
 export interface FlowConfig {
@@ -470,8 +466,11 @@ export class Flow {
         );
 
       httpRequest.onload = () => {
+        // A failing init request can still have a JSON body, e.g. Spring
+        // Boot's default error response, which is no AppInitResponse
+        const succeeded = httpRequest.status >= 200 && httpRequest.status < 300;
         const contentType = httpRequest.getResponseHeader('content-type');
-        if (contentType && contentType.indexOf('application/json') !== -1) {
+        if (succeeded && contentType && contentType.indexOf('application/json') !== -1) {
           resolve(JSON.parse(httpRequest.responseText));
         } else {
           httpRequest.onerror();

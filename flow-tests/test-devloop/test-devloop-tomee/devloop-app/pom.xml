@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-test-devloop-tomee</artifactId>
-    <version>25.4-SNAPSHOT</version>
+    <version>25.5-SNAPSHOT</version>
   </parent>
   <artifactId>flow-test-devloop-tomee-app</artifactId>
   <!-- A WAR, and unlike the Jetty fixture's one it is deployed rather than
@@ -26,7 +26,7 @@
     <!-- Pinned rather than left to the plugin, whose default of -1 resolves to
          whatever OpenEJB version the plugin itself was built from - so a TomEE
          release would silently change what this runs on. -->
-    <tomee.version>10.2.0</tomee.version>
+    <tomee.version>10.3.0</tomee.version>
     <!-- Run the ITs on the JUnit Platform (JUnit 6), like the other fixtures. -->
     <failsafe.provider.artifactId>surefire-junit-platform</failsafe.provider.artifactId>
     <!-- The parent's groups/excludedGroups are JUnit 4 @Category class names,
@@ -110,7 +110,8 @@
     </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
-      <artifactId>vaadin-testbench-core-junit5</artifactId>
+      <artifactId>flow-test-util-junit6</artifactId>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <!-- DevLoopPomEditIT adds a dependency below this line and reverts it. The
@@ -180,6 +181,7 @@
                  <systemProperties>. The dev loop's own flags cannot carry it:
                  tomee-plugin.args is the channel it takes for its agents. -->
             <vaadin.frontend.hotdeploy>false</vaadin.frontend.hotdeploy>
+            <vaadin.contentSecurityPolicy>${vaadin.contentSecurityPolicy}</vaadin.contentSecurityPolicy>
           </systemVariables>
         </configuration>
         <!-- No executions: the daemon owns the application process, and for

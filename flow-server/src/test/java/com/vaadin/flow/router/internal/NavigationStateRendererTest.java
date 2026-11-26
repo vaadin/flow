@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import net.bytebuddy.ByteBuddy;
@@ -61,6 +62,7 @@ import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.menu.MenuRegistry;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -468,7 +470,8 @@ class NavigationStateRendererTest {
                 }
 
                 @Override
-                public <T> T executeJs(Class<T> definitionType) {
+                public <T extends JsInvokers> T executeJs(
+                        Class<T> definitionType) {
                     // The details are asked for through declared JavaScript
                     jsInvoked.set(true);
                     return super.executeJs(definitionType);
@@ -619,28 +622,9 @@ class NavigationStateRendererTest {
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
 
         List<String> pushedLocations = new ArrayList<>();
-        MockUI ui = new MockUI(session) {
-            final Page page = new Page(this) {
-                final History history = new History(getUI().get()) {
-                    @Override
-                    public void pushState(BaseJsonNode state,
-                            Location location) {
-                        pushedLocations
-                                .add(location.getPathWithQueryParameters());
-                    }
-                };
-
-                @Override
-                public History getHistory() {
-                    return history;
-                }
-            };
-
-            @Override
-            public Page getPage() {
-                return page;
-            }
-        };
+        MockUI ui = createPushStateRecordingUI(session,
+                location -> pushedLocations
+                        .add(location.getPathWithQueryParameters()));
         ExtendedClientDetails details = mock(ExtendedClientDetails.class);
         when(details.getWindowName()).thenReturn("ROOT.123");
         ui.getInternals().setExtendedClientDetails(details);
@@ -1280,28 +1264,10 @@ class NavigationStateRendererTest {
         // getHistory().pushState calls
         AtomicBoolean pushStateCalled = new AtomicBoolean(false);
         List<Location> pushStateLocations = new ArrayList<>();
-        MockUI ui = new MockUI(session) {
-            final Page page = new Page(this) {
-                final History history = new History(getUI().get()) {
-                    @Override
-                    public void pushState(BaseJsonNode state,
-                            Location location) {
-                        pushStateCalled.set(true);
-                        pushStateLocations.add(location);
-                    }
-                };
-
-                @Override
-                public History getHistory() {
-                    return history;
-                }
-            };
-
-            @Override
-            public Page getPage() {
-                return page;
-            }
-        };
+        MockUI ui = createPushStateRecordingUI(session, location -> {
+            pushStateCalled.set(true);
+            pushStateLocations.add(location);
+        });
 
         renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
                 new Location("regular"), ui, NavigationTrigger.UI_NAVIGATE,
@@ -1338,6 +1304,58 @@ class NavigationStateRendererTest {
                 new Location("regular"), ui, NavigationTrigger.UI_NAVIGATE));
         assertFalse(pushStateCalled.get(),
                 "No pushState invocation is expected when navigating to the current location.");
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = NavigationTrigger.class, names = { "UI_NAVIGATE",
+            "HISTORY", "PAGE_LOAD" })
+    // With the React router the server pushes the state also when the location
+    // does not change, but only for the triggers that push at all
+    void handle_reactEnabledForward_pushStateOnlyForPushingTriggers(
+            NavigationTrigger trigger) {
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+        ((MockDeploymentConfiguration) service.getDeploymentConfiguration())
+                .setReactEnabled(true);
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                navigationStateFromTarget(RegularView.class));
+        List<Location> pushStateLocations = new ArrayList<>();
+        MockUI ui = createPushStateRecordingUI(session,
+                pushStateLocations::add);
+
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
+                new Location("regular"), ui, trigger, (BaseJsonNode) null,
+                true));
+
+        assertEquals(
+                trigger == NavigationTrigger.UI_NAVIGATE ? List.of("regular")
+                        : List.of(),
+                pushStateLocations.stream().map(Location::getPath).toList());
+    }
+
+    private static MockUI createPushStateRecordingUI(MockVaadinSession session,
+            Consumer<Location> pushStateRecorder) {
+        return new MockUI(session) {
+            final Page page = new Page(this) {
+                final History history = new History(getUI().get()) {
+                    @Override
+                    public void pushState(BaseJsonNode state,
+                            Location location) {
+                        pushStateRecorder.accept(location);
+                    }
+                };
+
+                @Override
+                public History getHistory() {
+                    return history;
+                }
+            };
+
+            @Override
+            public Page getPage() {
+                return page;
+            }
+        };
     }
 
     @Test

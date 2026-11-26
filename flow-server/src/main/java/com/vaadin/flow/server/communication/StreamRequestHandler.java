@@ -43,6 +43,7 @@ import com.vaadin.flow.server.UploadException;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.streams.DownloadDisposition;
 import com.vaadin.flow.server.streams.UploadHandler;
 import com.vaadin.flow.shared.Registration;
 
@@ -69,6 +70,16 @@ public class StreamRequestHandler implements RequestHandler {
      * @since 4.0
      */
     public static final String DYN_RES_PREFIX = "VAADIN/dynamic/resource/";
+
+    /**
+     * The request attribute that carries the
+     * {@link com.vaadin.flow.server.streams.DownloadDisposition} of the
+     * resource that is served, for the download event to read.
+     * 
+     * @since 25.4
+     */
+    public static final String DISPOSITION_REQUEST_ATTRIBUTE = DownloadDisposition.class
+            .getName();
 
     private final StreamResourceHandler resourceHandler = new StreamResourceHandler();
     private final StreamReceiverHandler receiverHandler;
@@ -147,6 +158,7 @@ public class StreamRequestHandler implements RequestHandler {
         ActiveTransfer transfer = new ActiveTransfer(pathInfo, owner);
         Registration transferRegistration = null;
 
+        DownloadDisposition disposition;
         session.lock();
         try {
             if (blockInert(elementRequest, node)
@@ -211,13 +223,19 @@ public class StreamRequestHandler implements RequestHandler {
                 transferRegistration = ui.getInternals()
                         .registerActiveTransfer(transfer);
             }
+            // read while locked, as the owner can change it at any time
+            disposition = elementRequest.getDisposition();
         } finally {
             session.unlock();
         }
+        VaadinRequest transferRequest = transfer.wrapRequest(request);
+        if (disposition != null) {
+            transferRequest.setAttribute(DISPOSITION_REQUEST_ATTRIBUTE,
+                    disposition);
+        }
         try {
             elementRequest.getElementRequestHandler().handleRequest(
-                    transfer.wrapRequest(request),
-                    transfer.wrapResponse(response), session,
+                    transferRequest, transfer.wrapResponse(response), session,
                     elementRequest.getOwner());
         } finally {
             if (transferRegistration != null) {

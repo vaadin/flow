@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -50,6 +49,7 @@ import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -65,6 +65,19 @@ import com.vaadin.flow.shared.JsonConstants;
  */
 public class PublishedServerEventHandlerRpcHandler
         extends AbstractRpcInvocationHandler {
+
+    /**
+     * Holds the result of looking up the Polymer template event handler, which
+     * is a property of the deployment. Without the holder a missing handler
+     * (the usual case) cannot be remembered, and the lookup would then scan the
+     * classpath with a {@link java.util.ServiceLoader} for every decoded RPC
+     * argument.
+     */
+    private record PolymerEventHandlerHolder(
+            DeprecatedPolymerPublishedEventHandler handler)
+            implements
+                Serializable {
+    }
 
     private static final Collection<RpcDecoder> DECODERS = loadDecoders();
 
@@ -166,8 +179,7 @@ public class PublishedServerEventHandlerRpcHandler
             Class<?> clazz, String methodName) {
         List<Method> methods = Stream.of(clazz.getDeclaredMethods())
                 .filter(method -> methodName.equals(method.getName()))
-                .filter(method -> hasMethodAnnotation(method))
-                .collect(Collectors.toList());
+                .filter(method -> hasMethodAnnotation(method)).toList();
         if (methods.size() > 1) {
             getLogger().error(String.format(
                     "Method conflict in event handler. Class '%s' contains "
@@ -316,8 +328,11 @@ public class PublishedServerEventHandlerRpcHandler
                 VaadinContext context = ui.get().getSessionOrThrow()
                         .getService().getContext();
                 DeprecatedPolymerPublishedEventHandler handler = context
-                        .getAttribute(Lookup.class)
-                        .lookup(DeprecatedPolymerPublishedEventHandler.class);
+                        .getAttribute(PolymerEventHandlerHolder.class,
+                                () -> new PolymerEventHandlerHolder(context
+                                        .getAttribute(Lookup.class)
+                                        .lookup(DeprecatedPolymerPublishedEventHandler.class)))
+                        .handler();
                 if (handler != null && handler.isTemplateModelValue(instance,
                         argValue, convertedType)) {
                     return handler.getTemplateItem(instance, argValue,
@@ -431,7 +446,7 @@ public class PublishedServerEventHandlerRpcHandler
      * @since 25.4
      */
     @JsDefinition
-    public interface PromiseJs extends Serializable {
+    public interface PromiseJs extends JsInvokers {
 
         /**
          * Settles the promise with what the method returned.

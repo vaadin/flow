@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.AnnotationReader;
@@ -82,6 +83,9 @@ public class RouteUtil {
             + "having the same route.";
     public static final String ROUTE_CONFLICT_WITH_PARAMS = ROUTE_CONFLICT_PREFIX
             + "with parameter having the same route.";
+
+    private static final String NO_ROUTES_PAGE_KEY = RouteUtil.class.getName()
+            + ".noRoutesPage";
 
     protected RouteUtil() {
     }
@@ -862,6 +866,9 @@ public class RouteUtil {
      *            not {@code null}
      * @return the logical parent reference, or an empty {@link Optional} if the
      *         target has no logical parent
+     * @throws InvalidRouteConfigurationException
+     *             if a registry is given and the parent declared through
+     *             {@link RouteParent} is not a route registered in it
      * @since 25.2
      */
     public static Optional<RouteReference> getRouteParent(
@@ -874,16 +881,45 @@ public class RouteUtil {
                 .getAnnotation(RouteParent.class);
         if (annotation != null) {
             if (definesResolver(annotation)) {
-                return instantiateResolver(annotation.resolver()).resolveParent(
-                        new RouteParentContext(navigationTarget, parameters));
+                Optional<RouteReference> parent = instantiateResolver(
+                        annotation.resolver())
+                        .resolveParent(new RouteParentContext(navigationTarget,
+                                parameters));
+                parent.ifPresent(reference -> requireRegisteredRouteParent(
+                        registry, navigationTarget,
+                        reference.navigationTarget()));
+                return parent;
             }
             if (definesStaticParent(annotation)) {
+                requireRegisteredRouteParent(registry, navigationTarget,
+                        annotation.value());
                 return Optional.of(new RouteReference(annotation.value(),
                         narrowParametersToTemplate(registry, annotation.value(),
                                 parameters)));
             }
         }
         return getUrlBasedRouteParent(registry, navigationTarget, parameters);
+    }
+
+    /**
+     * Fails fast when an explicitly declared route parent is not a registered
+     * route. Such a parent, e.g. a router layout, cannot be linked to, and
+     * building a link to it later throws a {@code NotFoundException} that the
+     * router reports as the annotated route itself not being found.
+     */
+    private static void requireRegisteredRouteParent(RouteRegistry registry,
+            Class<? extends Component> navigationTarget,
+            Class<? extends Component> parent) {
+        if (registry != null && !RouteConfiguration.forRegistry(registry)
+                .isRouteRegistered(parent)) {
+            throw new InvalidRouteConfigurationException(String.format(
+                    "The '@%s' of '%s' is '%s', which is not a registered "
+                            + "route. The route parent has to be a navigation "
+                            + "target, not a router layout or another "
+                            + "component.",
+                    RouteParent.class.getSimpleName(),
+                    navigationTarget.getName(), parent.getName()));
+        }
     }
 
     /**
@@ -897,6 +933,7 @@ public class RouteUtil {
      * @return {@code true} if a {@link RouteParent#value()} or
      *         {@link RouteParent#resolver()} is defined for the target,
      *         {@code false} otherwise
+     * @since 25.4
      */
     public static boolean hasExplicitRouteParent(
             Class<? extends Component> navigationTarget) {
@@ -1012,6 +1049,9 @@ public class RouteUtil {
      *            not {@code null}
      * @return the chain of the target and its logical ancestors, ordered from
      *         root to the navigation target, never empty
+     * @throws InvalidRouteConfigurationException
+     *             if a registry is given and a parent declared through
+     *             {@link RouteParent} is not a route registered in it
      * @since 25.2
      */
     public static List<RouteReference> getRouteHierarchy(RouteRegistry registry,
@@ -1068,5 +1108,37 @@ public class RouteUtil {
         return Optional.ofNullable(routeModel.getNavigationRouteTarget(url))
                 .map(NavigationRouteTarget::getRouteTarget)
                 .map(ClientTarget.class::cast).map(ClientTarget::getTemplate);
+    }
+
+    /**
+     * Records whether Copilot has taken over the page for a project without any
+     * routes, shown by the given route-not-found view.
+     *
+     * @param view
+     *            the route-not-found view, not {@code null}
+     * @param noRoutesPage
+     *            {@code true} if Copilot has replaced the page body with its
+     *            page for a project without routes
+     * @see #isNoRoutesPage(Component)
+     * @since 25.4
+     */
+    public static void setNoRoutesPage(Component view, boolean noRoutesPage) {
+        ComponentUtil.setData(view, NO_ROUTES_PAGE_KEY,
+                noRoutesPage ? Boolean.TRUE : null);
+    }
+
+    /**
+     * Checks whether the given view is a route-not-found view whose page for a
+     * project without any routes has been taken over by Copilot, which replaces
+     * the page body in development mode.
+     *
+     * @param view
+     *            the view to check, not {@code null}
+     * @return {@code true} if Copilot has taken over the page of the view
+     * @see #setNoRoutesPage(Component, boolean)
+     * @since 25.4
+     */
+    public static boolean isNoRoutesPage(Component view) {
+        return ComponentUtil.getData(view, NO_ROUTES_PAGE_KEY) != null;
     }
 }

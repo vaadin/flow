@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.brotli.dec.BrotliInputStream;
 import org.junit.Assert;
@@ -105,7 +104,7 @@ public class PwaTestIT extends ChromeDeviceTest {
         elements = head.findElements(By.tagName("script")).stream()
                 .filter(webElement -> getInnerHtml(webElement)
                         .startsWith("if ('serviceWorker' in navigator)"))
-                .collect(Collectors.toList());
+                .toList();
         Assert.assertEquals(1, elements.size());
 
         String serviceWorkerInit = getInnerHtml(elements.get(0));
@@ -232,7 +231,7 @@ public class PwaTestIT extends ChromeDeviceTest {
                 By.cssSelector("link[rel='stylesheet']")).stream()
                 .map(link -> link.getAttribute("href"))
                 .filter(href -> href != null && href.contains("styles.css"))
-                .collect(Collectors.toList());
+                .toList();
         Assert.assertEquals(
                 "Expected exactly one app shell stylesheet link, was: " + hrefs,
                 1, hrefs.size());

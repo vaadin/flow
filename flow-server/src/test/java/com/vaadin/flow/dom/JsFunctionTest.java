@@ -15,18 +15,19 @@
  */
 package com.vaadin.flow.dom;
 
-import java.io.Serializable;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class JsFunctionTest {
@@ -38,21 +39,32 @@ class JsFunctionTest {
     }
 
     @JsDefinition
-    interface LoggerJs extends Serializable {
+    interface LoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value);")
-        @JsCalledWith("value")
+        @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
 
         @JsExpression("console.log($0, value);")
-        @JsCalledWith("value")
+        @JsFunctionParameterNames("value")
         JsFunction createAnyLogger(Object prefix);
 
         @JsExpression("console.log($0);")
         JsFunction createPrefixLogger(String prefix);
+
+        @JsExpression("console.log($0, value);")
+        @JsFunctionParameterNames("value")
+        JsFunction createTaggedLogger(String[] tags);
     }
 
     @JsDefinition
-    interface ConsoleJs extends Serializable {
+    interface OtherLoggerJs extends JsSnippets {
+        @JsExpression("console.info($0, value);")
+        @JsFunctionParameterNames("value")
+        JsFunction createLogger(String prefix);
+    }
+
+    @JsDefinition
+    interface ConsoleJs extends JsInvokers {
         @JsExpression("console.log($0);")
         void log(String message);
     }
@@ -87,7 +99,7 @@ class JsFunctionTest {
         assertEquals(List.of(),
                 JsSnippets.of(LoggerJs.class).createPrefixLogger("Greeting:")
                         .getArgumentNames(),
-                "a function without @JsCalledWith declares no names");
+                "a function without @JsFunctionParameterNames declares no names");
     }
 
     @Test
@@ -104,5 +116,30 @@ class JsFunctionTest {
         assertThrows(RuntimeException.class,
                 () -> JsFunction.of("console.log($0);", capture),
                 "a function with a body should refuse the capture when created");
+    }
+
+    @Test
+    void equals_sameJavaScriptAndCaptures_comparedByContent() {
+        LoggerJs logger = JsSnippets.of(LoggerJs.class);
+        JsFunction tagged = logger.createTaggedLogger(new String[] { "a" });
+
+        assertEquals(tagged, logger.createTaggedLogger(new String[] { "a" }));
+        assertEquals(tagged.hashCode(),
+                logger.createTaggedLogger(new String[] { "a" }).hashCode());
+        assertEquals(JsFunction.of("return $0;", JsFunction.of("return 1;")),
+                JsFunction.of("return $0;", JsFunction.of("return 1;")));
+
+        assertNotEquals(tagged,
+                logger.createTaggedLogger(new String[] { "b" }));
+        // The same JavaScript declared by another method is the same
+        // function of the bundle
+        assertEquals(logger.createLogger("Greeting:"),
+                logger.createAnyLogger("Greeting:"));
+        assertNotEquals(
+                JsSnippets.of(OtherLoggerJs.class).createLogger("Greeting:"),
+                logger.createLogger("Greeting:"));
+        assertNotEquals(JsFunction.of("return a;"), JsFunction.of("return b;"));
+        assertNotEquals(JsFunction.of("return a;"),
+                JsFunction.of("return a;").withArguments("a"));
     }
 }

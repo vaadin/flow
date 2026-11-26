@@ -1,4 +1,6 @@
 import { expect } from '@open-wc/testing';
+import sinon from 'sinon';
+import { Console } from '../../../../../main/frontend/internal/client/Console';
 import { UIState } from '../../../../../main/frontend/internal/client/UILifecycle';
 import { ExecuteJavaScriptProcessor } from '../../../../../main/frontend/internal/client/flow/ExecuteJavaScriptProcessor';
 import { ExistingElementMap } from '../../../../../main/frontend/internal/client/ExistingElementMap';
@@ -97,7 +99,11 @@ describe('ExecuteJavaScriptProcessor', () => {
 
     type DefinitionWindow = Window & {
       Vaadin?: {
-        Flow?: { jsDefinitions?: Record<string, DefinitionFunction>; jsDefinitionNames?: Record<string, string> };
+        Flow?: {
+          jsDefinitions?: Record<string, DefinitionFunction>;
+          jsDefinitionsWithExecutionContext?: Record<string, DefinitionFunction>;
+          jsDefinitionNames?: Record<string, string>;
+        };
       };
     };
 
@@ -113,6 +119,16 @@ describe('ExecuteJavaScriptProcessor', () => {
         vaadin.Flow.jsDefinitionNames = vaadin.Flow.jsDefinitionNames ?? {};
         vaadin.Flow.jsDefinitionNames[functionId] = name;
       }
+    }
+
+    // Registers a function the way the generated bundle does for a method
+    // that gets the execution context.
+    function registerDefinitionWithExecutionContext(functionId: string, fn: DefinitionFunction): void {
+      const vaadin = (window as DefinitionWindow).Vaadin ?? {};
+      (window as DefinitionWindow).Vaadin = vaadin;
+      vaadin.Flow = vaadin.Flow ?? {};
+      vaadin.Flow.jsDefinitionsWithExecutionContext = vaadin.Flow.jsDefinitionsWithExecutionContext ?? {};
+      vaadin.Flow.jsDefinitionsWithExecutionContext[functionId] = fn;
     }
 
     function fixture(): { processor: ExecuteJavaScriptProcessor; registry: TestRegistry } {
@@ -133,6 +149,7 @@ describe('ExecuteJavaScriptProcessor', () => {
       const flow = (window as DefinitionWindow).Vaadin?.Flow;
       for (const functionId of [GREETING, VALUE]) {
         delete flow?.jsDefinitions?.[functionId];
+        delete flow?.jsDefinitionsWithExecutionContext?.[functionId];
         delete flow?.jsDefinitionNames?.[functionId];
       }
     });
@@ -217,6 +234,83 @@ describe('ExecuteJavaScriptProcessor', () => {
       expect(resolved).to.eql(['answer']);
     });
 
+    describe('an error in the function', () => {
+      let reported: unknown[];
+      let logged: unknown[];
+
+      beforeEach(() => {
+        reported = [];
+        logged = [];
+        sinon.stub(Console, 'reportStacktrace').callsFake((exception: unknown) => reported.push(exception));
+        sinon.stub(Console, 'error').callsFake((message: unknown) => logged.push(message));
+      });
+
+      afterEach(() => {
+        sinon.restore();
+      });
+
+      async function settle(): Promise<void> {
+        await Promise.resolve();
+        await Promise.resolve();
+      }
+
+      const throwing = (error: Error) => (): never => {
+        throw error;
+      };
+      const rejecting = (error: Error) => async () => Promise.reject(error);
+
+      [throwing, rejecting].forEach((definition) => {
+        it(`is reported when ${definition === throwing ? 'thrown' : 'rejected'} and the call is not subscribed to`, async () => {
+          const error = new Error('boom');
+          registerDefinition(GREETING, definition(error), 'ErrorJs.throwError');
+
+          run([{ tagName: 'div' }, greeting]);
+          await settle();
+
+          expect(reported).to.eql([error]);
+          expect(logged).to.eql([
+            'Exception is thrown while running ErrorJs.throwError. Stacktrace will be dumped separately.'
+          ]);
+        });
+      });
+
+      function runSubscribed(definition: DefinitionFunction): { resolved: unknown[]; errors: unknown[] } {
+        registerDefinition(VALUE, definition, 'ErrorJs.value');
+        const resolved: unknown[] = [];
+        const errors: unknown[] = [];
+        run([
+          { tagName: 'div' },
+          (returned: unknown) => resolved.push(returned),
+          (e: unknown) => errors.push(e),
+          value
+        ]);
+        return { resolved, errors };
+      }
+
+      it('is reported and sent to the error channel when thrown and the call is subscribed to', async () => {
+        const error = new Error('boom');
+        const { resolved, errors } = runSubscribed(throwing(error));
+        await settle();
+
+        expect(reported).to.eql([error]);
+        expect(logged).to.have.lengthOf(1);
+        expect(resolved).to.eql([]);
+        expect(errors).to.eql(['Error: boom']);
+      });
+
+      it('is only sent to the error channel when rejected and the call is subscribed to', async () => {
+        // The server may expect the rejection, as for a denied permission,
+        // and executeJs(String) does not log it either
+        const { resolved, errors } = runSubscribed(rejecting(new Error('boom')));
+        await settle();
+
+        expect(errors).to.eql(['Error: boom']);
+        expect(resolved).to.eql([]);
+        expect(reported).to.eql([]);
+        expect(logged).to.eql([]);
+      });
+    });
+
     it('does not run a call whose parameters do not match the function', () => {
       let calls = 0;
       registerDefinition(GREETING, (_greeting: unknown) => {
@@ -265,6 +359,60 @@ describe('ExecuteJavaScriptProcessor', () => {
       registerDefinition(GREETING, function (this: unknown, name: unknown, ...rest: unknown[]) {
         calls.push({ thisArg: this, args: [name, rest] });
       });
+      const element = { tagName: 'div' };
+
+      run(['greet', 'Alice', 'Bob', element, { f: GREETING, n: 3 }]);
+
+      expect(calls).to.have.lengthOf(1);
+      expect(calls[0].thisArg).to.equal(element);
+      expect(calls[0].args).to.eql(['greet', ['Alice', 'Bob']]);
+    });
+
+    it('passes the execution context ahead of the arguments to a function registered as getting it', () => {
+      const lifecycleStates: UIState[] = [];
+      const registry = treeRegistry();
+      registry.register('ApplicationConfiguration', {
+        getApplicationId: () => 'ROOT-1',
+        isProductionMode: () => false
+      });
+      registry.register('UILifecycle', {
+        isTerminated: () => false,
+        setState: (state: UIState) => lifecycleStates.push(state)
+      });
+      const node = registeredNode(registry, 10);
+      const element = document.createElement('div');
+      node.setDomNode(element);
+      const calls: Array<{ thisArg: unknown; args: unknown[]; nodeOfElement: unknown }> = [];
+      registerDefinitionWithExecutionContext(
+        GREETING,
+        function (this: unknown, $executionContext: unknown, target: unknown, greeting: unknown) {
+          const context = $executionContext as { getNode: (element: unknown) => unknown; stopApplication: () => void };
+          calls.push({ thisArg: this, args: [target, greeting], nodeOfElement: context.getNode(target) });
+          context.stopApplication();
+        }
+      );
+
+      execute(new ExecuteJavaScriptProcessor(registry), registry, [
+        [{ '@v-node': node.getId() }, 'Hello', null, greeting]
+      ]);
+
+      expect(calls).to.have.lengthOf(1);
+      expect(calls[0].thisArg).to.equal(null);
+      expect(calls[0].args).to.eql([element, 'Hello']);
+      // The same context an expression runs against: an element parameter
+      // maps back to its node, and the callbacks reach the application
+      expect(calls[0].nodeOfElement).to.equal(node);
+      expect(lifecycleStates).to.eql([UIState.TERMINATED]);
+    });
+
+    it('splits the parameters of a variadic call that gets the execution context by the count the server sent', () => {
+      const calls: Array<{ thisArg: unknown; args: unknown[] }> = [];
+      registerDefinitionWithExecutionContext(
+        GREETING,
+        function (this: unknown, _executionContext: unknown, name: unknown, ...rest: unknown[]) {
+          calls.push({ thisArg: this, args: [name, rest] });
+        }
+      );
       const element = { tagName: 'div' };
 
       run(['greet', 'Alice', 'Bob', element, { f: GREETING, n: 3 }]);

@@ -43,6 +43,8 @@ public class BrowserDetails implements Serializable {
     }
 
     /**
+     * Detected browsers.
+     *
      * @since 25.0
      */
     public enum BrowserName {
@@ -50,6 +52,8 @@ public class BrowserDetails implements Serializable {
     }
 
     /**
+     * Detected browser engines.
+     *
      * @since 25.0
      */
     public enum BrowserEngine {

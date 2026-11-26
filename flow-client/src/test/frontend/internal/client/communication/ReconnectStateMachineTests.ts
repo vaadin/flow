@@ -2,7 +2,7 @@
 // it is a TypeScript-only split of DefaultConnectionStateHandler, whose Gwt cases drive the handler — so every case here is beyond the Java suite.
 import { testRegistry } from '../testRegistry';
 import { expect } from '@open-wc/testing';
-import { ConnectionState, ConnectionStateStore } from '@vaadin/common-frontend';
+import { ConnectionState, ConnectionStateStore } from '../../../../../main/frontend/ConnectionState';
 import { getState } from '../../../../../main/frontend/internal/client/ConnectionIndicator';
 import { LoadingIndicatorStateHandler } from '../../../../../main/frontend/internal/client/communication/LoadingIndicatorStateHandler';
 import { ConnectionMessageType } from '../../../../../main/frontend/internal/client/communication/ConnectionMessageType';

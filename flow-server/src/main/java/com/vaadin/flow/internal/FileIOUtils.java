@@ -122,6 +122,7 @@ public class FileIOUtils {
      *            the URL to read
      * @return string from the content
      * @throws IOException
+     *             if reading the content fails
      */
     public static String urlToString(URL url) throws IOException {
         try (InputStream input = url.openStream()) {
@@ -622,19 +623,73 @@ public class FileIOUtils {
      *         output folder of a Gradle source set
      */
     private static File getGradleProjectFolder(Path outputFolder) {
+        Path buildFolder = getGradleBuildFolder(outputFolder);
+        return (buildFolder == null) ? null : buildFolder.getParent().toFile();
+    }
+
+    /**
+     * Gets the build directory of the Gradle project whose source set output
+     * folder is the given folder, following the rules of
+     * {@link #getGradleProjectFolder(Path)}.
+     *
+     * @param outputFolder
+     *            a folder on the classpath
+     * @return the build directory, or {@code null} if the folder is not the
+     *         output folder of a Gradle source set
+     */
+    private static Path getGradleBuildFolder(Path outputFolder) {
         int names = outputFolder.getNameCount();
         Path candidate = null;
         if (names > 2 && "resources"
                 .equals(outputFolder.getName(names - 2).toString())) {
-            candidate = ancestor(outputFolder, 3);
+            candidate = ancestor(outputFolder, 2);
         } else if (names > 3 && "classes"
                 .equals(outputFolder.getName(names - 3).toString())) {
-            candidate = ancestor(outputFolder, 4);
+            candidate = ancestor(outputFolder, 3);
         }
-        if (candidate != null && belongsToGradleBuild(candidate)) {
-            return candidate.toFile();
+        if (candidate != null && candidate.getParent() != null
+                && belongsToGradleBuild(candidate.getParent())) {
+            return candidate;
         }
         return null;
+    }
+
+    /**
+     * Tries to determine, from the classpath, the folder where Gradle puts the
+     * resources of the source set that is running, which is
+     * {@code <project>/<buildDir>/resources/<sourceSet>}.
+     * <p>
+     * The build directory is read from the classpath, so that it is found also
+     * when nothing configured its name, as in development mode before the
+     * Vaadin Gradle plugin has written the build info file.
+     *
+     * @return the resources folder, or {@code null} if the application does not
+     *         run from the output of a Gradle source set or the folder does not
+     *         exist
+     */
+    public static File getGradleResourceFolderFromClasspath() {
+        try {
+            URL url = FileIOUtils.class.getClassLoader().getResource(".");
+            if (url != null && url.getProtocol().equals("file")) {
+                return getGradleResourceFolder(url);
+            }
+        } catch (Exception e) {
+            log().debug("Unable to determine the Gradle resources folder"
+                    + " using classpath", e);
+        }
+        return null;
+    }
+
+    static File getGradleResourceFolder(URL outputFolder)
+            throws URISyntaxException {
+        Path path = Path.of(outputFolder.toURI());
+        Path buildFolder = getGradleBuildFolder(path);
+        if (buildFolder == null) {
+            return null;
+        }
+        File resources = buildFolder.resolve("resources")
+                .resolve(path.getFileName().toString()).toFile();
+        return resources.isDirectory() ? resources : null;
     }
 
     /**

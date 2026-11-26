@@ -27,6 +27,8 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.internal.ToStringBuilder;
+
 /**
  * A mutable Content Security Policy, i.e. a set of directives and the sources
  * of each directive, that is serialized as the value of a
@@ -37,8 +39,8 @@ import java.util.stream.Collectors;
  * as given, so keywords need their quotes, for example {@code "'self'"} or
  * {@code "'none'"}.
  * <p>
- * In the {@link CspMode#STRICT} mode, Vaadin creates the policy for each index
- * HTML response and exposes it through
+ * In the {@link ContentSecurityPolicyMode#STRICT} mode, Vaadin creates the
+ * policy for each index HTML response and exposes it through
  * {@link com.vaadin.flow.server.communication.IndexHtmlResponse#getContentSecurityPolicy()},
  * so that an
  * {@link com.vaadin.flow.server.communication.IndexHtmlRequestListener} can
@@ -145,7 +147,7 @@ public class ContentSecurityPolicy implements Serializable {
 
     @Override
     public String toString() {
-        return toHeaderValue();
+        return ToStringBuilder.of(this).addValue(toHeaderValue()).toString();
     }
 
     private static String normalizeDirective(String directive) {

@@ -25,9 +25,14 @@ export default [
         projectService: {
           // The ported suites belong to src/test/frontend/tsconfig.json, which
           // the project service finds by walking up from each file. Only the
-          // two root-level suites need the default project: they predate the
-          // port and are not type-clean, so that project leaves them out.
-          allowDefaultProject: ['src/test/frontend/*']
+          // root-level suites that predate the port need the default project:
+          // they are not type-clean, so that project leaves them out.
+          allowDefaultProject: [
+            'src/test/frontend/BrowserHelpersTests.ts',
+            'src/test/frontend/DownloadTests.ts',
+            'src/test/frontend/FlowTests.ts',
+            'src/test/frontend/FullscreenTests.ts'
+          ]
         }
       }
     },
@@ -52,6 +57,17 @@ export default [
     ignores: ['src/main/frontend/internal/client/Console.ts'],
     rules: {
       'no-console': 'error'
+    }
+  },
+  {
+    // Engine code must not compile JavaScript from a string, because a
+    // Content Security Policy without unsafe-eval blocks it. The sites that
+    // keep the deprecated string APIs working carry an inline disable comment
+    // and go away with those APIs. no-implied-eval also covers new Function.
+    files: ['src/main/frontend/**/*.ts'],
+    rules: {
+      'no-eval': 'error',
+      '@typescript-eslint/no-implied-eval': 'error'
     }
   },
   {
