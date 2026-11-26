@@ -301,23 +301,19 @@ public final class JsDefinitionProxy {
             if (method.isDefault()
                     || Modifier.isStatic(method.getModifiers())) {
                 inJava.add(method.getName());
-                continue;
-            }
-            if (JsCall.declaredExpression(method) == null) {
+            } else if (JsCall.declaredExpression(method) == null) {
                 // What it returns is beside the point until it declares
                 // something to return it from, and the first list that has
                 // anything in it is the one that is reported, so this changes
                 // what the lists hold rather than what is said
                 undeclared.add(method.getName());
-                continue;
-            }
-            if (fallback && !method.isAnnotationPresent(JsExpression.class)) {
+            } else if (fallback
+                    && !method.isAnnotationPresent(JsExpression.class)) {
                 // A string is matched by the text of the expression, which a
                 // method of the same name on the element never is
                 unmatchable.add(method.getName());
-                continue;
-            }
-            if (!snippets && method.getReturnType() == JavaScriptResult.class
+            } else if (!snippets
+                    && method.getReturnType() == JavaScriptResult.class
                     && typedResultType(method, definitionType, types) == null) {
                 untyped.add(method.getName());
             } else if (snippets ? !returnsSnippet(method)
@@ -348,9 +344,9 @@ public final class JsDefinitionProxy {
                     + String.join(", ", undeclared)
                     + ". Annotate every method with @JsExpression"
                     + (snippets ? ""
-                            : ", or declare it in an interface that extends"
+                            : (", or declare it in an interface that extends"
                                     + " JsInvokers to call the method of the"
-                                    + " same name on the element"));
+                                    + " same name on the element")));
         }
         if (!unmatchable.isEmpty()) {
             throw new IllegalArgumentException(definitionType.getName()

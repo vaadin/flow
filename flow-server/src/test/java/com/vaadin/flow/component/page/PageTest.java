@@ -94,26 +94,47 @@ class PageTest {
         void showGreeting(String greeting);
     }
 
+    @JsDefinition
+    interface OwnPopoverJs extends JsInvokers {
+        @JsExpression("window.alert($0)")
+        void showGreeting(String greeting);
+
+        void showPopover();
+    }
+
+    @Test
+    void executeJsWithDefinition_ownMethodWithoutExpression_refusedForThePageButRunOnAnElement() {
+        assertRefusedForThePageButRunOnAnElement(OwnPopoverJs.class,
+                OwnPopoverJs::showPopover);
+    }
+
     @Test
     void executeJsWithDefinition_inheritedMethodWithoutExpression_refusedForThePageButRunOnAnElement() {
+        assertRefusedForThePageButRunOnAnElement(MenuJs.class,
+                MenuJs::showPopover);
+    }
+
+    private static <T extends JsInvokers> void assertRefusedForThePageButRunOnAnElement(
+            Class<T> definition, SerializableConsumer<T> showPopover) {
         MockUI mockUI = new MockUI();
+        Page page = mockUI.getPage();
 
         // Calls the method of the same name on this, which a call through the
         // page does not have
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> mockUI.getPage().executeJs(MenuJs.class));
+                () -> page.executeJs(definition));
         assertTrue(exception.getMessage().contains("showPopover"),
                 exception.getMessage());
 
         Element element = new Element("div");
         mockUI.getElement().appendChild(element);
-        element.executeJs(MenuJs.class).showPopover();
+        showPopover.accept(element.executeJs(definition));
         mockUI.getInternals().getStateTree()
                 .runExecutionsBeforeClientResponse();
 
         JavaScriptInvocation invocation = mockUI.onlyScheduledInvocation();
-        assertEquals(new JsCall(MenuJs.class, "showPopover", List.of()),
+        assertEquals(new JsCall(definition, "showPopover", List.of()),
                 invocation.getJsCall());
         assertEquals("return this.showPopover();", invocation.getExpression());
         assertEquals(List.of(element), invocation.getParameters());

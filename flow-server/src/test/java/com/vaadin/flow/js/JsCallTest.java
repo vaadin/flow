@@ -80,6 +80,7 @@ class JsCallTest {
 
         @Override
         public void whisper(String greeting, Object... names) {
+            // Only the declaration is used, to resolve the call
         }
 
         @Override

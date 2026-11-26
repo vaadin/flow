@@ -28,6 +28,13 @@ import com.vaadin.flow.dom.Element;
  * {@link Page#executeJs(Class)}, and calling a method of it schedules the
  * declared JavaScript to run on the client.
  * <p>
+ * A call through {@link Page#executeJs(Class)} runs on no element, so it can
+ * not call a method on one: an interface with a method without
+ * {@link JsExpression}, declared in the interface itself or in one it extends,
+ * can only be used with {@link Element#executeJs(Class)}.
+ * {@link Page#executeJs(Class)} throws an {@link IllegalArgumentException} for
+ * it.
+ * <p>
  * The interface is also annotated with {@link JsDefinition}, which is what
  * makes it findable during the build: its JavaScript is collected into the
  * generated bundle, so the client never has to build a function from a string.

@@ -238,8 +238,31 @@ public record JsCall(Class<?> definitionType, String methodName,
      * {@link JsInvokers}, and that is neither a default nor a static method,
      * declares a call of the method of the same name on <code>this</code>, with
      * the arguments of the call, the last one spread for a variadic method, and
-     * the value of that call as its result: <code>void doSomething(String
-     * value)</code> declares <code>return this.doSomething($0);</code>.
+     * the value of that call as its result. The arguments are referenced as
+     * <code>$0</code>, <code>$1</code> and so on, in the order of the
+     * parameters:
+     *
+     * <pre>
+     * void focus();
+     * // return this.focus();
+     *
+     * PendingJavaScriptResult checkVisibility(JsonNode options);
+     * // return this.checkVisibility($0);
+     *
+     * void setAttribute(String name, String value);
+     * // return this.setAttribute($0, $1);
+     *
+     * void append(Object... nodes);
+     * // return this.append(...$0);
+     *
+     * void insertAdjacent(String position, Object... nodes);
+     * // return this.insertAdjacent($0, ...$1);
+     * </pre>
+     *
+     * The array of a variadic method is passed as a single argument, so it is
+     * spread to give the element method one argument per value:
+     * <code>append(a, b)</code> runs <code>this.append(a, b)</code>, not
+     * <code>this.append([a, b])</code>.
      * <p>
      * Which interface declares the method is what counts, not the definition it
      * is called through: a method that a definition inherits from an interface
