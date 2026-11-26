@@ -88,7 +88,9 @@ public interface SessionLockListener extends Serializable {
     /**
      * Invoked on the locking thread immediately after the outermost lock hold
      * has been released (the lock's hold count reached zero). The time since
-     * {@link #lockAcquired} is the lock hold time.
+     * {@link #lockAcquired} is the lock hold time. The callback runs without
+     * the session lock and without a current UI. Accessing the session from
+     * this callback calls it again, see {@link SessionLockReleasedEvent}.
      *
      * @param event
      *            the session lock event
