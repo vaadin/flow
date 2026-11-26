@@ -10,7 +10,7 @@
   <packaging>jar</packaging>
   <name>Flow strict Content Security Policy tests with Spring Security</name>
   <description>Integration tests that run a production-mode Spring Boot
-    application with csp=strict and Spring Security, where Spring Security is
+    application with contentSecurityPolicy=strict and Spring Security, where Spring Security is
     configured with a Content Security Policy of its own. The tests check
     which policy each response carries. Runs on JUnit 6 (Jupiter), without a
     browser.</description>
@@ -111,6 +111,14 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>${spring.boot.version}</version>
+        <!-- A fixed value instead of the ${vaadin.contentSecurityPolicy} that the flow-tests
+             parent passes, so that -Dvaadin.contentSecurityPolicy=... for the whole suite does not
+             change the one setting this module is about -->
+        <configuration>
+          <systemPropertyVariables>
+            <vaadin.contentSecurityPolicy>strict</vaadin.contentSecurityPolicy>
+          </systemPropertyVariables>
+        </configuration>
         <executions>
           <execution>
             <id>pre-integration-test</id>

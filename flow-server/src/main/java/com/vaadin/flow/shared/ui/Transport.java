@@ -45,14 +45,18 @@ public enum Transport {
      * <p>
      * This is an experimental transport and using it requires the
      * {@code com.vaadin.experimental.ssePushTransport} feature flag to be
-     * enabled. Selecting it while the feature flag is disabled throws a
+     * enabled. While the feature flag is disabled, selecting it with
+     * {@code @Push} on the app shell or on a web component exporter makes the
+     * application fail to start with an
+     * {@code InvalidApplicationConfigurationException}, and selecting it
+     * through {@code PushConfiguration} throws a
      * {@code DisabledFeatureException}.
      * 
      * @since 25.3
      */
     SERVER_SENT_EVENTS("sse");
 
-    private String identifier;
+    private final String identifier;
 
     private Transport(String identifier) {
         this.identifier = identifier;

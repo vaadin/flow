@@ -24,9 +24,10 @@ import tools.jackson.core.type.TypeReference;
 
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.BeanUtil;
+import com.vaadin.flow.internal.SuppressForbidden;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
-import com.vaadin.flow.server.CspMode;
-import com.vaadin.flow.server.CspViolationException;
+import com.vaadin.flow.server.ContentSecurityPolicyMode;
+import com.vaadin.flow.server.ContentSecurityPolicyViolationException;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 
@@ -73,9 +74,11 @@ public interface DomListenerRegistration extends Registration {
      *            definition for data that should be passed back to the server
      *            together with the event, not <code>null</code>
      * @return this registration, for chaining
-     * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode,
-     *             unless the expression is a property path
+     * @throws ContentSecurityPolicyViolationException
+     *             in the {@link ContentSecurityPolicyMode#STRICT} Content
+     *             Security Policy mode, unless the expression is a property
+     *             path or is listed in
+     *             {@link com.vaadin.flow.js.JsStringFallback#eventData()}
      * @see #addEventDataElementPath(String) for mapping an element
      * @see #mapEventTargetElement() to map the {@code event.target} to an
      *      element
@@ -189,9 +192,11 @@ public interface DomListenerRegistration extends Registration {
      *            the JavaScript filter expression, or <code>null</code> to
      *            clear the filter
      * @return this registration, for chaining
-     * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode,
-     *             unless the filter is a property path
+     * @throws ContentSecurityPolicyViolationException
+     *             in the {@link ContentSecurityPolicyMode#STRICT} Content
+     *             Security Policy mode, unless the filter is a property path or
+     *             is listed in
+     *             {@link com.vaadin.flow.js.JsStringFallback#filters()}
      */
     DomListenerRegistration setFilter(String filter);
 
@@ -588,6 +593,8 @@ public interface DomListenerRegistration extends Registration {
      *            the token or property path, not <code>null</code>
      * @return this registration, for chaining
      */
+    // Also gets the expressions of the deprecated addEventDataElement(String)
+    @SuppressForbidden
     private DomListenerRegistration addEventDataEntry(String eventData) {
         ElementListenerMap.addEventData(this, List.of(eventData));
         return this;
@@ -709,6 +716,7 @@ public interface DomListenerRegistration extends Registration {
      * @see #addEventDataPath(String)
      * @since 25.0
      */
+    @SuppressForbidden
     default DomListenerRegistration addEventData(Class<?> type) {
         if (type == null) {
             throw new IllegalArgumentException("Type cannot be null");
@@ -842,6 +850,7 @@ public interface DomListenerRegistration extends Registration {
      * @see DomEvent#getEventDetail(TypeReference)
      * @since 25.0
      */
+    @SuppressForbidden
     default DomListenerRegistration addEventDetail(Class<?> type) {
         if (type == null) {
             throw new IllegalArgumentException("Type cannot be null");
