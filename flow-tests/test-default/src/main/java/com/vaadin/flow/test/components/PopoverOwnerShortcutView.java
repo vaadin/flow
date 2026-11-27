@@ -24,6 +24,9 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 
 /**
@@ -61,6 +64,13 @@ public class PopoverOwnerShortcutView extends Div {
     public static final Key UI_SHORTCUT_KEY = Key.KEY_S;
     public static final KeyModifier UI_SHORTCUT_MODIFIER = KeyModifier.ALT;
 
+    @JsDefinition
+    public interface PopoverJs extends JsInvokers {
+
+        @JsExpression("this.showPopover();")
+        void showPopover();
+    }
+
     private final Div eventLog;
     private final AtomicInteger counter = new AtomicInteger();
 
@@ -79,8 +89,8 @@ public class PopoverOwnerShortcutView extends Div {
         popover.setId(POPOVER_ID);
         popover.getElement().setAttribute("popover", "manual");
 
-        final NativeButton open = new NativeButton("Open popover",
-                e -> popover.getElement().executeJs("this.showPopover();"));
+        final NativeButton open = new NativeButton("Open popover", e -> popover
+                .getElement().executeJs(PopoverJs.class).showPopover());
         open.setId(OPEN_BUTTON);
 
         final Input outsideField = new Input();

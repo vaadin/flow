@@ -19,10 +19,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -35,16 +37,25 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.DevBundleUtils;
 import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Template;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionImport;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.Mode;
@@ -61,6 +72,7 @@ import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.internal.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 import static com.vaadin.flow.server.Constants.PROD_BUNDLE_JAR_PATH;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
@@ -1103,6 +1115,280 @@ class BundleValidationTest {
 
         assertTrue(needsBuild,
                 "JavaScript declared by a JavaScript definition that the bundle was not built with should trigger a rebuild, whether the bundle carries another version of it or none at all");
+    }
+
+    static Stream<Arguments> modesAndBundledFunctions() {
+        // What the stats say the bundle registers: the functions the
+        // application needs among others, and only one of them among others
+        String alsoBundled = JsCall.functionId("this.blur()", 0, false);
+        return modes()
+                .flatMap(mode -> Stream.of(
+                        Arguments.of(mode,
+                                List.of("another function", alsoBundled,
+                                        JsCall.functionId("this.focus()", 0,
+                                                false)),
+                                false),
+                        Arguments.of(mode,
+                                List.of("another function", alsoBundled),
+                                true)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("modesAndBundledFunctions")
+    void bundleListsFunctions_rebuildOnlyWhenOneIsMissing(Mode mode,
+            List<String> bundledFunctionIds, boolean expectedNeedsBuild) {
+        setupMode(mode);
+        doReturn(Set.of(BundledJs.class, AlsoBundledJs.class)).when(finder)
+                .getAnnotatedClasses(JsDefinition.class);
+        doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
+
+        ObjectNode stats = getBasicStats();
+        // The whole file differs, as the bundle was built with more
+        // definitions than the application has
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
+                FrontendUtils.GENERATED
+                        + FrontendUtils.JS_DEFINITIONS_FILE_NAME,
+                "not the hash of what the interfaces declare");
+        ArrayNode functionIds = stats
+                .putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
+        bundledFunctionIds.forEach(functionIds::add);
+        if (mode == Mode.DEVELOPMENT_BUNDLE) {
+            // A development bundle names its functions as the application
+            // does, a production bundle names none
+            ObjectNode names = stats.putObject(
+                    BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY);
+            names.put(JsCall.functionId("this.focus()", 0, false),
+                    BundledJs.class.getName() + ".focus/0");
+            names.put(JsCall.functionId("this.blur()", 0, false),
+                    AlsoBundledJs.class.getName() + ".blur/0");
+        }
+        setupFrontendUtilsMock(stats);
+
+        Logger logger = Mockito.spy(Logger.class);
+        boolean needsBuild;
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
+            loggerFactory.when(
+                    () -> LoggerFactory.getLogger(BundleValidationUtil.class))
+                    .thenReturn(logger);
+            needsBuild = BundleValidationUtil.needsBuild(options, depScanner,
+                    mode);
+        }
+
+        assertEquals(expectedNeedsBuild, needsBuild);
+        // A developer has to know which class to look at, and only that one
+        Mockito.verify(logger, Mockito.times(expectedNeedsBuild ? 1 : 0)).info(
+                Mockito.contains("the bundle does not carry"),
+                Mockito.eq(BundledJs.class.getName()));
+    }
+
+    static Stream<Arguments> modesAndImportedFileContents() {
+        // What the frontend file of the project, imported with a query, and
+        // the one of a jar that a definition imports hold, when the bundle was
+        // built with the first. No project file at all is a deleted one.
+        return modes().flatMap(mode -> Stream.of(
+                Arguments.of(mode, "export const project = 1;",
+                        "export const addon = 1;", false),
+                Arguments.of(mode, "export const project = 2;",
+                        "export const addon = 1;", true),
+                Arguments.of(mode, "export const project = 1;",
+                        "export const addon = 2;", true),
+                Arguments.of(mode, null, "export const addon = 1;", true)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("modesAndImportedFileContents")
+    void fileImportedByADefinitionChanged_bundleRebuild(Mode mode,
+            String projectContent, String addonContent,
+            boolean expectedNeedsBuild)
+            throws IOException, NoSuchMethodException {
+        setupMode(mode);
+        doReturn(Set.of(ImportingBundledJs.class)).when(finder)
+                .getAnnotatedClasses(JsDefinition.class);
+        doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
+        // Found in a jar, so imported from where the build copies it
+        doReturn(new File(temporaryFolder, "definition-addon.js").toURI()
+                .toURL()).when(finder)
+                .getResource(Constants.RESOURCES_FRONTEND_DEFAULT
+                        + "/definition-addon.js");
+        File projectFile = new File(options.getFrontendDirectory(),
+                "definition-project.js");
+        FileUtils.forceMkdir(projectFile.getParentFile());
+        if (projectContent != null) {
+            Files.writeString(projectFile.toPath(), projectContent);
+        }
+        jarResources.put("definition-addon.js", addonContent);
+
+        ObjectNode stats = getBasicStats();
+        ObjectNode hashes = (ObjectNode) stats.get(FRONTEND_HASHES);
+        hashes.put("definition-project.js", BundleValidationUtil
+                .calculateHash("export const project = 1;"));
+        hashes.put("definition-addon.js",
+                BundleValidationUtil.calculateHash("export const addon = 1;"));
+        String focus = JsCall
+                .functionId(ImportingBundledJs.class.getMethod("focus"));
+        stats.putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
+                .add(focus);
+        stats.putObject(BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY)
+                .put(focus, ImportingBundledJs.class.getName() + ".focus/0");
+        setupFrontendUtilsMock(stats);
+
+        assertEquals(expectedNeedsBuild,
+                BundleValidationUtil.needsBuild(options, depScanner, mode),
+                "a changed file that a definition imports should make the bundle be rebuilt");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void importsTheBundleHashesNoFileFor_noBundleRebuild(Mode mode)
+            throws IOException, NoSuchMethodException {
+        // Vite builds both, but the stats hash neither under the path it is
+        // imported by: one has a query, the other no extension
+        setupMode(mode);
+        doReturn(Set.of(UnhashedImportsJs.class)).when(finder)
+                .getAnnotatedClasses(JsDefinition.class);
+        doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
+        File frontend = options.getFrontendDirectory();
+        FileUtils.forceMkdir(frontend);
+        Files.writeString(new File(frontend, "definition-styles.css").toPath(),
+                "p {}");
+        Files.writeString(new File(frontend, "definition-probe.js").toPath(),
+                "export const apply = () => {};");
+
+        ObjectNode stats = getBasicStats();
+        String apply = JsCall
+                .functionId(UnhashedImportsJs.class.getMethod("apply"));
+        stats.putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
+                .add(apply);
+        stats.putObject(BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY)
+                .put(apply, UnhashedImportsJs.class.getName() + ".apply/0");
+        setupFrontendUtilsMock(stats);
+
+        assertFalse(BundleValidationUtil.needsBuild(options, depScanner, mode),
+                "a bundle that carries the function should not be rebuilt for an import it hashes no file for");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void fileImportedByADefinitionAndTheApplication_noBundleRebuild(Mode mode)
+            throws IOException, NoSuchMethodException {
+        // The definition check runs first and the check of the imports of the
+        // application still needs the hash of the file afterwards
+        setupMode(mode);
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        createProjectFrontendFileStub();
+        when(depScanner.getModules()).thenReturn(Collections.singletonMap(
+                ChunkInfo.GLOBAL,
+                Collections.singletonList("Frontend/views/lit-view.ts")));
+        doReturn(Set.of(ImportingAppModuleJs.class)).when(finder)
+                .getAnnotatedClasses(JsDefinition.class);
+        doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
+
+        ObjectNode stats = getBasicStats();
+        ((ArrayNode) stats.get(BUNDLE_IMPORTS))
+                .add("Frontend/views/lit-view.ts");
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put("views/lit-view.ts",
+                BundleValidationUtil.calculateHash("Some codes"));
+        String render = JsCall
+                .functionId(ImportingAppModuleJs.class.getMethod("render"));
+        stats.putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
+                .add(render);
+        stats.putObject(BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY).put(
+                render, ImportingAppModuleJs.class.getName() + ".render/0");
+        setupFrontendUtilsMock(stats);
+
+        assertFalse(BundleValidationUtil.needsBuild(options, depScanner, mode),
+                "an unchanged file imported both ways should not make the bundle be rebuilt");
+    }
+
+    static Stream<Arguments> reachedDefinitions() {
+        // The bundle carries the function of AlsoBundledJs only, so it is
+        // rebuilt only when BundledJs is reached
+        return Stream.of(
+                Arguments.of(Set.of(AlsoBundledJs.class.getName()), false),
+                Arguments.of(Set.of(BundledJs.class.getName(),
+                        AlsoBundledJs.class.getName()), true));
+    }
+
+    @ParameterizedTest
+    @MethodSource("reachedDefinitions")
+    void optimizedProductionBundle_rebuildOnlyWhenAReachedDefinitionIsMissing(
+            Set<String> reached, boolean expectedNeedsBuild) {
+        setupMode(Mode.PRODUCTION_PRECOMPILED_BUNDLE);
+        options.useByteCodeScanner(true);
+        when(depScanner.getClasses()).thenReturn(reached);
+        doReturn(Set.of(BundledJs.class, AlsoBundledJs.class)).when(finder)
+                .getAnnotatedClasses(JsDefinition.class);
+        doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
+
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
+                FrontendUtils.GENERATED
+                        + FrontendUtils.JS_DEFINITIONS_FILE_NAME,
+                "not the hash of what the interfaces declare");
+        stats.putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
+                .add(JsCall.functionId("this.blur()", 0, false));
+        setupFrontendUtilsMock(stats);
+
+        assertEquals(expectedNeedsBuild,
+                BundleValidationUtil.needsBuild(options, depScanner, mode),
+                "only a reached definition whose function the bundle lacks should make it be rebuilt");
+    }
+
+    static Stream<Arguments> namesOfTheFocusFunction() {
+        // What the stats of a development bundle name the function of
+        // BundledJs by: what it was named before a rename, nothing, or no
+        // names at all for any function
+        return Stream.of(
+                Arguments.of(BundledJs.class.getName() + ".oldFocus/0", true),
+                Arguments.of(null, true), Arguments.of(null, false));
+    }
+
+    @ParameterizedTest
+    @MethodSource("namesOfTheFocusFunction")
+    void developmentBundleNamesAFunctionDifferently_rebuild(
+            String bundledFocusName, boolean statsHaveNames) {
+        setupMode(Mode.DEVELOPMENT_BUNDLE);
+        doReturn(Set.of(BundledJs.class, AlsoBundledJs.class)).when(finder)
+                .getAnnotatedClasses(JsDefinition.class);
+        doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
+
+        ObjectNode stats = getBasicStats();
+        ArrayNode functionIds = stats
+                .putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
+        String focus = JsCall.functionId("this.focus()", 0, false);
+        String blur = JsCall.functionId("this.blur()", 0, false);
+        functionIds.add(focus);
+        functionIds.add(blur);
+        // The same JavaScript, so the identifier is the same and only the
+        // name a message gives differs
+        if (statsHaveNames) {
+            ObjectNode names = stats.putObject(
+                    BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY);
+            if (bundledFocusName != null) {
+                names.put(focus, bundledFocusName);
+            }
+            names.put(blur, AlsoBundledJs.class.getName() + ".blur/0");
+        }
+        setupFrontendUtilsMock(stats);
+
+        Logger logger = Mockito.spy(Logger.class);
+        boolean needsBuild;
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
+            loggerFactory.when(
+                    () -> LoggerFactory.getLogger(BundleValidationUtil.class))
+                    .thenReturn(logger);
+            needsBuild = BundleValidationUtil.needsBuild(options, depScanner,
+                    mode);
+        }
+
+        assertTrue(needsBuild,
+                "a bundle that names a function by what was renamed should be rebuilt");
+        Mockito.verify(logger).info(Mockito.contains("names differently"),
+                Mockito.eq(statsHaveNames ? BundledJs.class.getName()
+                        : AlsoBundledJs.class.getName() + ", "
+                                + BundledJs.class.getName()));
     }
 
     @ParameterizedTest
@@ -3019,6 +3305,41 @@ class BundleValidationTest {
                         ? new File(temporaryFolder, q.getArgument(0).toString())
                                 .toURI().toURL()
                         : null);
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./definition-project.js?raw", defaultExport = "project")
+    @JsDefinitionImport(from = "./definition-addon.js", namespace = "addon")
+    interface ImportingBundledJs extends JsInvokers {
+        @JsExpression("addon.focus(this, project)")
+        void focus();
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./definition-styles.css?inline", defaultExport = "styles")
+    @JsDefinitionImport(from = "./definition-probe", namespace = "probe")
+    interface UnhashedImportsJs extends JsInvokers {
+        @JsExpression("probe.apply(this, styles)")
+        void apply();
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./views/lit-view.ts", namespace = "view")
+    interface ImportingAppModuleJs extends JsInvokers {
+        @JsExpression("view.render(this)")
+        void render();
+    }
+
+    @JsDefinition
+    interface BundledJs extends JsInvokers {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
+    @JsDefinition
+    interface AlsoBundledJs extends JsInvokers {
+        @JsExpression("this.blur()")
+        void blur();
     }
 
     @LoadDependenciesOnStartup

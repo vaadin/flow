@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import org.atmosphere.cpr.ApplicationConfig;
+import org.atmosphere.cpr.AtmosphereConfig;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
@@ -30,6 +31,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.slf4j.Logger;
@@ -41,8 +44,10 @@ import com.vaadin.flow.server.VaadinServletService;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class PushAtmosphereHandlerTest {
@@ -52,6 +57,8 @@ class PushAtmosphereHandlerTest {
     private AtmosphereRequest request;
     private AtmosphereResponse response;
     private PrintWriter printWriter;
+
+    private AtmosphereConfig atmosphereConfig;
 
     private PushAtmosphereHandler atmosphereHandler;
 
@@ -66,6 +73,11 @@ class PushAtmosphereHandlerTest {
         when(resource.getRequest()).thenReturn(request);
         when(resource.getResponse()).thenReturn(response);
         when(resource.uuid()).thenReturn("1");
+        atmosphereConfig = mock(AtmosphereConfig.class);
+        when(atmosphereConfig
+                .getInitParameter(ApplicationConfig.JSR356_MAPPING_PATH))
+                .thenReturn("/VAADIN/push");
+        when(resource.getAtmosphereConfig()).thenReturn(atmosphereConfig);
 
         // The service must be initialized, otherwise the push handler waits
         // for it to become ready instead of reporting the expired session
@@ -174,6 +186,61 @@ class PushAtmosphereHandlerTest {
                 "Push connection lost while a message was being written",
                 throwable);
         verify(pushHandler).connectionLost(event);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = "/")
+    void webSocketAtPushPath_handled(String pathInfo) throws Exception {
+        when(resource.transport())
+                .thenReturn(AtmosphereResource.TRANSPORT.WEBSOCKET);
+        when(request.getPathInfo()).thenReturn(pathInfo);
+
+        writeSessionExpiredAsync("GET");
+
+        verify(resource, never()).close();
+    }
+
+    @Test
+    void webSocketBelowPushPath_closedWithoutHandling() throws Exception {
+        when(resource.transport())
+                .thenReturn(AtmosphereResource.TRANSPORT.WEBSOCKET);
+        when(request.getPathInfo()).thenReturn("/other");
+        when(request.getMethod()).thenReturn("GET");
+
+        atmosphereHandler.onRequest(resource);
+
+        verify(resource).close();
+        verifyNoInteractions(printWriter);
+    }
+
+    @Test
+    void longPollingWithPathInfo_handled() throws Exception {
+        // HTTP transports arrive through the servlet, so their path info is
+        // the servlet's, not relative to the push path
+        when(resource.transport())
+                .thenReturn(AtmosphereResource.TRANSPORT.LONG_POLLING);
+        when(request.getPathInfo()).thenReturn("/VAADIN/push");
+
+        writeSessionExpiredAsync("GET");
+
+        verify(resource, never()).close();
+    }
+
+    @Test
+    void webSocketWithoutConfiguredPushPath_handled() throws Exception {
+        // Without a configured mapping path, Atmosphere guesses one and the
+        // path info is not relative to the push path
+        when(atmosphereConfig
+                .getInitParameter(ApplicationConfig.JSR356_MAPPING_PATH))
+                .thenReturn(null);
+        when(resource.transport())
+                .thenReturn(AtmosphereResource.TRANSPORT.WEBSOCKET);
+        when(request.getPathInfo()).thenReturn("/VAADIN/push");
+
+        writeSessionExpiredAsync("GET");
+
+        verify(resource, never()).close();
     }
 
 }

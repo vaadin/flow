@@ -31,6 +31,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 import com.vaadin.flow.server.InitParameters;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -93,6 +94,18 @@ class SpringConfigurationMetadataTest {
     }
 
     @Test
+    void additionalMetadata_eachVaadinTypeExists() throws IOException {
+        for (String type : readValues(
+                "META-INF/additional-spring-configuration-metadata.json",
+                "properties", "type")) {
+            if (type != null && type.startsWith("com.vaadin.")) {
+                assertDoesNotThrow(() -> Class.forName(type),
+                        "Property type '" + type + "' does not exist");
+            }
+        }
+    }
+
+    @Test
     void metadata_documentsEveryRuntimeParameter() throws IOException {
         Set<String> documented = new HashSet<>();
         for (String property : readPropertyNames(
@@ -127,12 +140,21 @@ class SpringConfigurationMetadataTest {
 
     private static List<String> readNames(String resource, String section)
             throws IOException {
+        List<String> names = readValues(resource, section, "name");
+        assertFalse(names.contains(null),
+                "An entry in '" + section + "' has no name");
+        return names;
+    }
+
+    private static List<String> readValues(String resource, String section,
+            String field) throws IOException {
         try (InputStream stream = SpringConfigurationMetadataTest.class
                 .getClassLoader().getResourceAsStream(resource)) {
             assertNotNull(stream, resource + " not found");
             JsonNode metadata = JsonMapper.builder().build().readTree(stream);
-            return metadata.get(section).valueStream()
-                    .map(item -> item.get("name").asString()).toList();
+            return metadata.get(section).valueStream().map(
+                    item -> item.has(field) ? item.get(field).asString() : null)
+                    .toList();
         }
     }
 }

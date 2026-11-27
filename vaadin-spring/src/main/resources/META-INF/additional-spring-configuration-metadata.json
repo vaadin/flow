@@ -33,8 +33,8 @@
       }
     },
     {
-      "name": "vaadin.csp",
-      "type": "com.vaadin.flow.server.CspMode",
+      "name": "vaadin.content-security-policy",
+      "type": "com.vaadin.flow.server.ContentSecurityPolicyMode",
       "description": "Content Security Policy mode of the application.",
       "defaultValue": "off"
     },
@@ -150,6 +150,12 @@
       "name": "vaadin.node.version",
       "type": "java.lang.String",
       "description": "Node.js version to install when no suitable installation is found. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the production build and development mode use different values."
+    },
+    {
+      "name": "vaadin.npm.allow-exotic-versions",
+      "type": "java.lang.Boolean",
+      "description": "Whether npm packages may be declared with an exotic version, such as a tarball URL or a git repository, rather than a registry version or a local path. Also set it in the Vaadin Maven or Gradle plugin configuration, otherwise the production build and development mode use different values.",
+      "defaultValue": false
     },
     {
       "name": "vaadin.npm.exclude-postinstall-packages",

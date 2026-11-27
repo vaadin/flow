@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.page;
 
-import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,6 +32,7 @@ import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Element.ElementJs;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -40,6 +40,7 @@ import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -60,7 +61,7 @@ import static org.mockito.Mockito.when;
 class PageTest {
 
     @JsDefinition
-    interface TestPageJs extends Serializable {
+    interface TestPageJs extends JsInvokers {
         @JsExpression("window.alert($0)")
         void showGreeting(String greeting);
 
@@ -80,6 +81,84 @@ class PageTest {
                 invocation.getJsCall());
         assertEquals(Arrays.asList("Hello", null), invocation.getParameters(),
                 "the arguments should be followed by nothing to run the function on");
+    }
+
+    // Only extended, so not annotated
+    interface PopoverJs extends JsInvokers {
+        void showPopover();
+    }
+
+    @JsDefinition
+    interface MenuJs extends PopoverJs {
+        @JsExpression("window.alert($0)")
+        void showGreeting(String greeting);
+    }
+
+    @JsDefinition
+    interface OwnPopoverJs extends JsInvokers {
+        @JsExpression("window.alert($0)")
+        void showGreeting(String greeting);
+
+        void showPopover();
+    }
+
+    @Test
+    void executeJsWithDefinition_ownMethodWithoutExpression_refusedForThePageButRunOnAnElement() {
+        assertRefusedForThePageButRunOnAnElement(OwnPopoverJs.class,
+                OwnPopoverJs::showPopover);
+    }
+
+    @Test
+    void executeJsWithDefinition_inheritedMethodWithoutExpression_refusedForThePageButRunOnAnElement() {
+        assertRefusedForThePageButRunOnAnElement(MenuJs.class,
+                MenuJs::showPopover);
+    }
+
+    @JsDefinition
+    interface ToggleJs extends JsInvokers {
+        void toggleAttribute(String name);
+
+        void toggleAttribute(String name, boolean force);
+    }
+
+    @Test
+    void executeJsWithDefinition_overloadsWithoutExpression_namedOnce() {
+        Page uiPage = new MockUI().getPage();
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> uiPage.executeJs(ToggleJs.class));
+
+        assertTrue(
+                exception.getMessage()
+                        .contains(" has toggleAttribute without @JsExpression"),
+                exception.getMessage());
+    }
+
+    private static <T extends JsInvokers> void assertRefusedForThePageButRunOnAnElement(
+            Class<T> definition, SerializableConsumer<T> showPopover) {
+        MockUI mockUI = new MockUI();
+        Page uiPage = mockUI.getPage();
+
+        // Calls the method of the same name on this, which a call through the
+        // page does not have
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> uiPage.executeJs(definition));
+        assertTrue(exception.getMessage().contains("showPopover"),
+                exception.getMessage());
+
+        Element element = new Element("div");
+        mockUI.getElement().appendChild(element);
+        showPopover.accept(element.executeJs(definition));
+        mockUI.getInternals().getStateTree()
+                .runExecutionsBeforeClientResponse();
+
+        JavaScriptInvocation invocation = mockUI.onlyScheduledInvocation();
+        assertEquals(new JsCall(definition, "showPopover", List.of()),
+                invocation.getJsCall());
+        assertEquals("return this.showPopover();", invocation.getExpression());
+        assertEquals(List.of(element), invocation.getParameters());
     }
 
     @Test
@@ -164,7 +243,7 @@ class PageTest {
         final MockUI mockUI = new MockUI();
         final Page page = new Page(mockUI) {
             @Override
-            public <T> T executeJs(Class<T> definitionType) {
+            public <T extends JsInvokers> T executeJs(Class<T> definitionType) {
                 // The details are asked for through declared JavaScript, so
                 // the stub has to answer that call rather than an expression
                 return JsDefinitionProxy.create(definitionType, call -> {

@@ -28,9 +28,12 @@ import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
@@ -49,16 +52,20 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.js.internal.JsDefinitionImports;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 /**
- * Hands out implementations of {@link JsDefinition} interfaces, which turn a
- * call of a declared method into a {@link JsCall} and give it to whoever runs
- * it.
+ * Hands out implementations of JavaScript definitions, the interfaces annotated
+ * with {@link JsDefinition} that extend {@link JsInvokers} or
+ * {@link JsSnippets}, which turn a call of a declared method into a
+ * {@link JsCall} and give it to whoever runs it.
  * <p>
  * The interface is checked here rather than when a method is called, so one
  * that can not work says so when the implementation is handed out.
@@ -95,8 +102,8 @@ public final class JsDefinitionProxy {
      * implementation of it is handed out. A definition that fails the check is
      * not kept, so it fails again on the next attempt. Cleared before a
      * redefined class is hotswapped, so a changed interface is checked again.
-     * Keyed by any class, since a JavaScript definition is marked by an
-     * annotation rather than by a common supertype.
+     * Keyed by any class, since a JavaScript definition extends one of two
+     * marker interfaces rather than a common supertype.
      */
     private static final ReflectionCache<Object, Kind> checkedDefinitions = ReflectionCache
             .clearedBeforeHotswap(JsDefinitionProxy::checkDefinition);
@@ -110,12 +117,12 @@ public final class JsDefinitionProxy {
     private static final ReflectionCache<Object, Map<Method, JavaType>> resultTypes = ReflectionCache
             .clearedBeforeHotswap(JsDefinitionProxy::collectResultTypes);
 
-    private static final String RETURN_TYPES = "An interface declares either"
-            + " JavaScript to run, with methods returning void,"
-            + " JavaScriptResult or PendingJavaScriptResult, or snippets, with"
-            + " methods returning JsFunction, JsSnippet, DomEventFilter,"
-            + " DomEventData or an interface that extends JsSnippet, but not"
-            + " both";
+    private static final String RETURN_TYPES = "An interface that extends"
+            + " JsInvokers declares JavaScript to run, with methods returning"
+            + " void, JavaScriptResult or PendingJavaScriptResult, and one that"
+            + " extends JsSnippets declares snippets, with methods returning"
+            + " JsFunction, JsSnippet, DomEventFilter, DomEventData or an"
+            + " interface that extends JsSnippet";
 
     private JsDefinitionProxy() {
         // Only static members
@@ -135,20 +142,22 @@ public final class JsDefinitionProxy {
      * @return an implementation of the interface, not <code>null</code>
      * @throws IllegalArgumentException
      *             if the type is not an interface, is not annotated with
-     *             {@link JsDefinition}, or has a method that can not be
-     *             answered
+     *             {@link JsDefinition}, also extends {@link JsSnippets}, or has
+     *             a method that can not be answered
      */
     @SuppressWarnings("unchecked")
-    public static <T> T create(Class<T> definitionType,
+    public static <T extends JsInvokers> T create(Class<T> definitionType,
             SerializableFunction<JsCall, PendingJavaScriptResult> runner) {
         Objects.requireNonNull(definitionType,
                 "Definition type cannot be null");
         Objects.requireNonNull(runner, "Runner cannot be null");
+        // Checked again here for a caller that passes a raw class
         if (checkedDefinitions.get(definitionType) != Kind.CALLS) {
             throw new IllegalArgumentException(definitionType.getName()
-                    + " declares snippets, which are not run on an element."
-                    + " Get its implementation from JsSnippets.of");
+                    + " does not extend " + JsInvokers.class.getSimpleName());
         }
+        BundleUtils.checkJsFunctionsBundled(definitionType,
+                () -> collectFunctionIds(definitionType));
         return (T) Proxy.newProxyInstance(definitionType.getClassLoader(),
                 new Class<?>[] { definitionType },
                 new JsDefinitionHandler(runner, definitionType));
@@ -166,23 +175,21 @@ public final class JsDefinitionProxy {
      * @return an implementation of the interface, not <code>null</code>
      * @throws IllegalArgumentException
      *             if the type is not an interface, is not annotated with
-     *             {@link JsDefinition}, or has a method that does not declare a
-     *             snippet
+     *             {@link JsDefinition}, also extends {@link JsInvokers}, or has
+     *             a method that does not declare a snippet
      */
     @SuppressWarnings("unchecked")
-    public static <T> T createSnippets(Class<T> definitionType) {
+    public static <T extends JsSnippets> T createSnippets(
+            Class<T> definitionType) {
         Objects.requireNonNull(definitionType,
                 "Definition type cannot be null");
+        // Checked again here for a caller that passes a raw class
         if (checkedDefinitions.get(definitionType) != Kind.SNIPPETS) {
-            List<String> names = collectDeclaredNames(definitionType);
-            String reason = names.isEmpty() ? " declares no snippets"
-                    : (" declares JavaScript that runs when "
-                            + String.join(", ", names)
-                            + " is called, not snippets. Get its implementation"
-                            + " from Element.executeJs(Class)");
-            throw new IllegalArgumentException(
-                    definitionType.getName() + reason);
+            throw new IllegalArgumentException(definitionType.getName()
+                    + " does not extend " + JsSnippets.class.getSimpleName());
         }
+        BundleUtils.checkJsFunctionsBundled(definitionType,
+                () -> collectFunctionIds(definitionType));
         return (T) Proxy.newProxyInstance(definitionType.getClassLoader(),
                 new Class<?>[] { definitionType },
                 new JsSnippetHandler(definitionType));
@@ -204,19 +211,35 @@ public final class JsDefinitionProxy {
      * @return what the definition declares, not <code>null</code>
      * @throws IllegalArgumentException
      *             if the type is not an interface, is not annotated with
-     *             {@link JsDefinition}, is annotated with
-     *             {@link JsFunctionParameterNames}, or has a method that does
-     *             not fit what the definition declares
+     *             {@link JsDefinition}, extends neither or both of
+     *             {@link JsInvokers} and {@link JsSnippets}, is annotated with
+     *             {@link JsFunctionParameterNames}, has a method that does not
+     *             fit what the definition declares, or has a method declared by
+     *             an interface whose {@link JsDefinitionImport imports} can not
+     *             be generated
      */
     public static Kind checkDefinition(Class<?> definitionType) {
         if (!definitionType.isInterface()) {
             throw new IllegalArgumentException(
                     definitionType.getName() + " is not an interface");
         }
-        if (!definitionType.isAnnotationPresent(JsDefinition.class)) {
+        boolean invokers = JsInvokers.class.isAssignableFrom(definitionType);
+        boolean snippets = JsSnippets.class.isAssignableFrom(definitionType);
+        if (invokers == snippets) {
             throw new IllegalArgumentException(definitionType.getName()
-                    + " is not annotated with @JsDefinition, so the build does not"
-                    + " collect its JavaScript into the bundle");
+                    + (invokers ? " extends both JsInvokers and JsSnippets"
+                            : " extends neither JsInvokers nor JsSnippets")
+                    + ". Extend JsInvokers for"
+                    + " JavaScript that runs when a method is called, or"
+                    + " JsSnippets for methods that return snippets");
+        }
+        if (!definitionType.isAnnotationPresent(JsDefinition.class)) {
+            // Without it the build does not find the interface, so its
+            // JavaScript would be missing from the bundle
+            throw new IllegalArgumentException(definitionType.getName()
+                    + " is not annotated with @JsDefinition, which the build"
+                    + " finds the JavaScript definitions by. Annotate the"
+                    + " interface with @JsDefinition");
         }
         if (definitionType
                 .isAnnotationPresent(JsFunctionParameterNames.class)) {
@@ -227,19 +250,36 @@ public final class JsDefinitionProxy {
                     + " not to a JavaScript definition. Annotate each method"
                     + " instead");
         }
-        // One snippet makes it a definition of snippets, so that a method
-        // running JavaScript beside it is reported as the odd one out
-        boolean snippets = Stream.of(definitionType.getMethods()).anyMatch(
-                method -> method.isAnnotationPresent(JsExpression.class)
-                        && JsSnippet.class
-                                .isAssignableFrom(method.getReturnType()));
         checkMethods(definitionType, snippets);
         return snippets ? Kind.SNIPPETS : Kind.CALLS;
     }
 
-    private static List<String> collectDeclaredNames(Class<?> definitionType) {
-        return Stream.of(definitionType.getMethods()).map(Method::getName)
-                .sorted().toList();
+    // The identifiers a call through the definition sends, which for a method
+    // that stands in for a string call differ from those of its JavaScript
+    private static List<String> collectFunctionIds(Class<?> definitionType) {
+        return Stream.of(definitionType.getMethods())
+                .filter(method -> JsCall.declaredExpression(method) != null)
+                .map(method -> JsStringFallbacks.functionId(definitionType,
+                        method))
+                .toList();
+    }
+
+    /**
+     * Checks whether the given type is a JavaScript definition, an interface
+     * annotated with {@link JsDefinition}, which the build collects the
+     * JavaScript of. Whether the definition can work is up to
+     * {@link #checkDefinition(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param type
+     *            the type to check, not <code>null</code>
+     * @return <code>true</code> if the type is a JavaScript definition,
+     *         <code>false</code> otherwise
+     */
+    public static boolean isDefinition(Class<?> type) {
+        return type.isInterface()
+                && type.isAnnotationPresent(JsDefinition.class);
     }
 
     /**
@@ -256,24 +296,39 @@ public final class JsDefinitionProxy {
         List<String> unanswerable = new ArrayList<>();
         List<String> untyped = new ArrayList<>();
         List<String> inJava = new ArrayList<>();
+        // The definition itself, even when it declares no methods, so that
+        // an import it can not have is not ignored
+        Set<Class<?>> importingTypes = new LinkedHashSet<>();
+        importingTypes.add(definitionType);
+        Set<Class<?>> declaringTypes = new HashSet<>();
+        List<String> unmatchable = new ArrayList<>();
+        boolean fallback = definitionType
+                .isAnnotationPresent(JsStringFallback.class);
         // Not the shared mapper's factory, whose cache would keep the classes
         // of the project that the build checks reachable after the build
         TypeFactory types = TypeFactory.createDefaultInstance();
-        for (Method method : definitionType.getMethods()) {
+        for (Method method : ReflectTools
+                .getCurrentPublicMethods(definitionType)) {
+            // Any method that is not refused below is generated with the
+            // imports of the interface that declares it
+            importingTypes.add(method.getDeclaringClass());
+            declaringTypes.add(method.getDeclaringClass());
             if (method.isDefault()
                     || Modifier.isStatic(method.getModifiers())) {
                 inJava.add(method.getName());
-                continue;
-            }
-            if (!method.isAnnotationPresent(JsExpression.class)) {
+            } else if (JsCall.declaredExpression(method) == null) {
                 // What it returns is beside the point until it declares
                 // something to return it from, and the first list that has
                 // anything in it is the one that is reported, so this changes
                 // what the lists hold rather than what is said
                 undeclared.add(method.getName());
-                continue;
-            }
-            if (!snippets && method.getReturnType() == JavaScriptResult.class
+            } else if (fallback
+                    && !method.isAnnotationPresent(JsExpression.class)) {
+                // A string is matched by the text of the expression, which a
+                // method of the same name on the element never is
+                unmatchable.add(method.getName());
+            } else if (!snippets
+                    && method.getReturnType() == JavaScriptResult.class
                     && typedResultType(method, definitionType, types) == null) {
                 untyped.add(method.getName());
             } else if (snippets ? !returnsSnippet(method)
@@ -302,7 +357,19 @@ public final class JsDefinitionProxy {
             throw new IllegalArgumentException(definitionType.getName()
                     + " declares no JavaScript to run for "
                     + String.join(", ", undeclared)
-                    + ". Annotate every method with @JsExpression");
+                    + ". Annotate every method with @JsExpression"
+                    + (snippets ? ""
+                            : (", or declare it in an interface that extends"
+                                    + " JsInvokers to call the method of the"
+                                    + " same name on the element")));
+        }
+        if (!unmatchable.isEmpty()) {
+            throw new IllegalArgumentException(definitionType.getName()
+                    + " is annotated with @JsStringFallback, which matches a"
+                    + " string by the JavaScript a method declares in"
+                    + " @JsExpression, but has "
+                    + String.join(", ", unmatchable)
+                    + " without it. Annotate every method with @JsExpression");
         }
         if (!unanswerable.isEmpty()) {
             throw new IllegalArgumentException(definitionType.getName()
@@ -325,6 +392,86 @@ public final class JsDefinitionProxy {
                     + " that declares JavaScript is for. Annotate every method"
                     + " with @JsExpression, and compose the calls in the class"
                     + " that makes them");
+        }
+        for (Class<?> importingType : importingTypes) {
+            checkImports(definitionType, importingType, snippets,
+                    declaringTypes.contains(importingType));
+        }
+    }
+
+    /**
+     * Checks the {@link JsDefinitionImport imports} of an interface that
+     * declares methods of the given definition: they are only for a definition
+     * whose functions are asynchronous and run what was declared, every one of
+     * them names something, every name can be a parameter of the generated
+     * function, once, and the interface declares a method that gets them.
+     */
+    private static void checkImports(Class<?> definitionType,
+            Class<?> importingType, boolean snippets, boolean declaresMethods) {
+        JsDefinitionImport[] imports = importingType
+                .getDeclaredAnnotationsByType(JsDefinitionImport.class);
+        if (imports.length == 0) {
+            return;
+        }
+        String declarer = (importingType == definitionType)
+                ? definitionType.getName()
+                : (definitionType.getName() + " extends "
+                        + importingType.getName() + ", which");
+        if (snippets) {
+            throw new IllegalArgumentException(declarer
+                    + " is annotated with @JsDefinitionImport, which only"
+                    + " applies to an interface that extends JsInvokers. The"
+                    + " function of a snippet is not asynchronous, so it can"
+                    + " not wait for a module to load");
+        }
+        if (definitionType.isAnnotationPresent(JsStringFallback.class)) {
+            throw new IllegalArgumentException(declarer
+                    + " is annotated with @JsDefinitionImport, which does not"
+                    + " apply to an interface annotated with"
+                    + " @JsStringFallback: the string it stands in for can not"
+                    + " name what a module exports");
+        }
+        Set<String> names = new HashSet<>();
+        for (JsDefinitionImport declared : imports) {
+            List<JsDefinitionImports.Binding> bindings = JsDefinitionImports
+                    .collectBindings(declared);
+            if (bindings.isEmpty()) {
+                throw new IllegalArgumentException(declarer
+                        + " has @JsDefinitionImport(from = \"" + declared.from()
+                        + "\") with no names to import. Declare a"
+                        + " defaultExport, a namespace or exports, or use"
+                        + " @JsModule to load the module for its side effects");
+            }
+            for (JsDefinitionImports.Binding binding : bindings) {
+                String name = binding.name();
+                if (!JsCall.isParameterName(name)
+                        || JsDefinitionImports.EXECUTION_CONTEXT.equals(name)) {
+                    throw new IllegalArgumentException(declarer + " declares '"
+                            + name + "' in @JsDefinitionImport(from = \""
+                            + declared.from() + "\"), which can not be"
+                            + " imported as a name. Use a JavaScript"
+                            + " identifier that is not a reserved word, not"
+                            + " $0, $1, ..., which name the arguments, and"
+                            + " not " + JsDefinitionImports.EXECUTION_CONTEXT
+                            + ". Import a module whose export can not be"
+                            + " named so as a namespace");
+                }
+                if (!names.add(name)) {
+                    throw new IllegalArgumentException(declarer + " declares '"
+                            + name + "' more than once in @JsDefinitionImport."
+                            + " Import one of them as a namespace");
+                }
+            }
+        }
+        if (!declaresMethods) {
+            // The imports of an interface are given to the methods it
+            // declares, so these would reach no JavaScript at all
+            throw new IllegalArgumentException(declarer
+                    + " is annotated with @JsDefinitionImport but declares no"
+                    + " method of its own. The imports are given to the"
+                    + " methods of the interface that declares them, so"
+                    + " annotate the interface that declares the methods"
+                    + " that use them");
         }
     }
 

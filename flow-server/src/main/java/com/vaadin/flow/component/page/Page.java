@@ -16,11 +16,13 @@
 package com.vaadin.flow.component.page;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -39,16 +41,22 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Element.ElementJs;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.internal.CspViolationReporter;
+import com.vaadin.flow.internal.ContentSecurityPolicyViolationReporter;
 import com.vaadin.flow.internal.CssBundler;
+import com.vaadin.flow.internal.JsStringFallbacks;
+import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.internal.SuppressForbidden;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
-import com.vaadin.flow.server.CspMode;
-import com.vaadin.flow.server.CspViolationException;
+import com.vaadin.flow.server.ContentSecurityPolicyMode;
+import com.vaadin.flow.server.ContentSecurityPolicyViolationException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -67,6 +75,16 @@ import com.vaadin.flow.signals.local.ValueSignal;
 public class Page implements Serializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Page.class);
+
+    /**
+     * The methods of each JavaScript definition passed to
+     * {@link #executeJs(Class)} that declare JavaScript without
+     * {@link JsExpression}, which call the method of the same name on an
+     * element that a call through the page does not have. Cleared before a
+     * redefined class is hotswapped, so a changed interface is checked again.
+     */
+    private static final ReflectionCache<Object, List<String>> shorthandMethods = ReflectionCache
+            .clearedBeforeHotswap(Page::collectShorthandMethods);
 
     private final UI ui;
     private final History history;
@@ -431,16 +449,26 @@ public class Page implements Serializable {
      * The browser compiles the expression from a string, which a Content
      * Security Policy without {@code unsafe-eval} blocks. Use
      * {@link #addDynamicImport(JsFunction)} with a function declared by a
-     * {@link JsDefinition} interface to keep the JavaScript in the bundle.
+     * {@link JsSnippets} interface to keep the JavaScript in the bundle.
      *
      * @param expression
      *            the JavaScript expression which return a Promise
      * @since 2.1
-     * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode
+     * @throws ContentSecurityPolicyViolationException
+     *             in the {@link ContentSecurityPolicyMode#STRICT} Content
+     *             Security Policy mode, unless the string is declared in an
+     *             interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
     public void addDynamicImport(String expression) {
-        CspViolationReporter.reportStringJavaScript();
+        JsCall fallback = JsStringFallbacks.findDeclaredFunction(expression,
+                new Object[0]);
+        if (fallback != null) {
+            addDynamicImport(JsFunction.ofDeclaredCall(fallback));
+            return;
+        }
+        ContentSecurityPolicyViolationReporter
+                .reportStringDynamicImport(expression);
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
     }
 
@@ -452,13 +480,13 @@ public class Page implements Serializable {
      * {@code Promise} is completed, as with {@link #addDynamicImport(String)}.
      * Unlike that method, which sends an expression that the browser compiles,
      * this one sends a function value, so a function declared by a
-     * {@link JsDefinition} interface and obtained from
+     * {@link JsSnippets} interface and obtained from
      * {@link JsSnippets#of(Class)} loads without anything being compiled in the
      * browser:
      *
      * <pre>
      * &#64;JsDefinition
-     * public interface ReportEditorJs extends Serializable {
+     * public interface ReportEditorJs extends JsSnippets {
      *     &#64;JsExpression("return import('Frontend/report-editor/report-editor.js');")
      *     JsFunction loadEditor();
      * }
@@ -499,12 +527,13 @@ public class Page implements Serializable {
      * that the method declares, with the arguments of the call as its
      * parameters.
      * <p>
-     * The interface is annotated with {@link JsDefinition}, and each of its
-     * methods declares the JavaScript it runs with {@link JsExpression}:
+     * The interface is annotated with {@link JsDefinition}, which is what the
+     * build finds it by, extends {@link JsInvokers}, and each of its methods
+     * declares the JavaScript it runs with {@link JsExpression}:
      *
      * <pre>
      * &#64;JsDefinition
-     * public interface ClipboardJs extends Serializable {
+     * public interface ClipboardJs extends JsInvokers {
      *     &#64;JsExpression("return navigator.clipboard.readText()")
      *     PendingJavaScriptResult readText();
      * }
@@ -521,16 +550,20 @@ public class Page implements Serializable {
      * <code>return</code> value the same way. It runs on nothing in particular
      * - page JavaScript works on globals - where the JavaScript of
      * {@link Element#executeJs(Class)} runs on the element it was obtained
-     * from.
+     * from. So every method of the interface is annotated with
+     * {@link JsExpression}, even when {@link Element#executeJs(Class)} would
+     * call the method of the same name on the element for a method without it.
      * <p>
      * What differs from an expression is that nothing about the JavaScript is
-     * decided at the call site: the build collects the declarations of every
-     * JavaScript definition into the bundle, and the client runs the collected
+     * decided at the call site: the build collects the declarations of the
+     * JavaScript definitions into the bundle, and the client runs the collected
      * function after looking it up by an identifier of the JavaScript itself.
-     * No expression is sent and none is compiled in the browser, so the call
-     * works under a content security policy without <code>unsafe-eval</code>,
-     * and what declared the JavaScript in Java is not sent to a production
-     * browser either.
+     * An optimized production build collects only the definitions it can reach
+     * from the entry points of the application; see {@link JsDefinition} for
+     * how to keep one that it does not reach. No expression is sent and none is
+     * compiled in the browser, so the call works under a content security
+     * policy without <code>unsafe-eval</code>, and what declared the JavaScript
+     * in Java is not sent to a production browser either.
      *
      * @param <T>
      *            the JavaScript definition type
@@ -540,15 +573,38 @@ public class Page implements Serializable {
      *         JavaScript through, not <code>null</code>
      * @throws IllegalArgumentException
      *             if the type is not an interface, is not annotated with
-     *             {@link JsDefinition}, or has a method that can not be
-     *             answered
+     *             {@link JsDefinition}, also extends {@link JsSnippets}, has a
+     *             method that can not be answered, or has a method that is not
+     *             annotated with {@link JsExpression}
      * @since 25.4
      */
-    public <T> T executeJs(Class<T> definitionType) {
+    public <T extends JsInvokers> T executeJs(Class<T> definitionType) {
         // Queued the way an expression given to the page is, so that the two
         // reach the client in the order they were made
-        return JsDefinitionProxy.create(definitionType,
+        T invokers = JsDefinitionProxy.create(definitionType,
                 ui.getInternals()::addJavaScriptInvocation);
+        List<String> shorthand = shorthandMethods.get(definitionType);
+        if (!shorthand.isEmpty()) {
+            throw new IllegalArgumentException(definitionType.getName()
+                    + " has " + String.join(", ", shorthand)
+                    + " without @JsExpression, which calls the method of the"
+                    + " same name on the element the call runs on. A call"
+                    + " through the page runs on no element, so annotate"
+                    + " them with @JsExpression, or call them through"
+                    + " Element.executeJs(Class)");
+        }
+        return invokers;
+    }
+
+    private static List<String> collectShorthandMethods(
+            Class<?> definitionType) {
+        // Not getMethods(), whose inherited methods keep the annotations they
+        // had before the interface declaring them was hotswapped
+        return ReflectTools.getCurrentPublicMethods(definitionType).stream()
+                .filter(method -> !method
+                        .isAnnotationPresent(JsExpression.class)
+                        && JsCall.declaredExpression(method) != null)
+                .map(Method::getName).distinct().sorted().toList();
     }
 
     // When updating JavaDocs here, keep in sync with Element.executeJavaScript
@@ -591,9 +647,9 @@ public class Page implements Serializable {
      * <p>
      * The expression is sent to the browser and compiled there, which a content
      * security policy without <code>unsafe-eval</code> does not allow, so the
-     * {@link CspMode} of the application reports or refuses the call.
-     * {@link #executeJs(Class)} runs JavaScript that is declared in Java and
-     * collected into the bundle instead, and sends no expression.
+     * {@link ContentSecurityPolicyMode} of the application reports or refuses
+     * the call. {@link #executeJs(Class)} runs JavaScript that is declared in
+     * Java and collected into the bundle instead, and sends no expression.
      *
      * @param expression
      *            the JavaScript expression to invoke
@@ -604,15 +660,25 @@ public class Page implements Serializable {
      *         the expression
      * @see #executeJs(Class)
      * @since 25.0
-     * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode
+     * @throws ContentSecurityPolicyViolationException
+     *             in the {@link ContentSecurityPolicyMode#STRICT} Content
+     *             Security Policy mode, unless the string is declared in an
+     *             interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
+    @SuppressForbidden
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
-        CspViolationReporter.reportStringJavaScript();
-        return ui.getInternals()
-                .addJavaScriptInvocation(new JavaScriptInvocation(expression,
-                        parameters == null ? new Object[0] : parameters));
+        Object[] arguments = parameters == null ? new Object[0] : parameters;
+        JsCall fallback = JsStringFallbacks.findDeclaredCall(expression,
+                arguments);
+        if (fallback != null) {
+            return ui.getInternals().addJavaScriptInvocation(fallback);
+        }
+        ContentSecurityPolicyViolationReporter.reportStringExecuteJs(expression,
+                arguments.length);
+        return ui.getInternals().addJavaScriptInvocation(
+                new JavaScriptInvocation(expression, arguments));
     }
 
     /**
@@ -630,6 +696,7 @@ public class Page implements Serializable {
      * @since 2.0
      */
     @Deprecated
+    @SuppressForbidden
     public PendingJavaScriptResult executeJs(String expression,
             Serializable[] parameters) {
         return executeJs(expression, (Object[]) parameters);
@@ -1059,7 +1126,7 @@ public class Page implements Serializable {
      * @since 25.4
      */
     @JsDefinition
-    public interface PageJs extends Serializable {
+    public interface PageJs extends JsInvokers {
 
         /**
          * The address the browser is at.
@@ -1119,7 +1186,7 @@ public class Page implements Serializable {
      * @since 25.4
      */
     @JsDefinition
-    public interface NavigationJs extends Serializable {
+    public interface NavigationJs extends JsInvokers {
 
         /**
          * Opens a URL in the window with the given name, after telling the

@@ -31,6 +31,7 @@ import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.UsageStatistics;
 
 /**
  * Component representing a <code>&lt;table&gt;</code> element.
@@ -72,6 +73,10 @@ import com.vaadin.flow.dom.Element;
 @Tag(Tag.TABLE)
 public class Table extends HtmlComponent
         implements ClickNotifier<Table>, HasAriaLabel {
+
+    static {
+        UsageStatistics.markAsUsed("flow/Table", null);
+    }
 
     /**
      * Ranks of the children of a <code>&lt;table&gt;</code>, in the order the

@@ -32,21 +32,25 @@ import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JsCallTest {
 
     @JsDefinition
-    interface GreeterJs extends Serializable {
+    interface GreeterJs extends JsInvokers {
         @JsExpression("window.alert($0)")
         void showGreeting(String greeting);
 
-        void undeclared();
+        void focus();
+
+        void whisper(String greeting, Object... names);
 
         @JsExpression("this.ambiguous($0)")
         void ambiguous(String value);
@@ -70,8 +74,13 @@ class JsCallTest {
         }
 
         @Override
-        public void undeclared() {
+        public void focus() {
             throw new UnsupportedOperationException("nothing to do here");
+        }
+
+        @Override
+        public void whisper(String greeting, Object... names) {
+            // Only the declaration is used, to resolve the call
         }
 
         @Override
@@ -166,9 +175,55 @@ class JsCallTest {
                 .asList(call("showGreeting", "Hello").parametersFor(null)));
     }
 
+    // Does not extend JsInvokers, so a method without @JsExpression declares
+    // nothing even when a definition mixes it in
+    interface UndeclaredMixin {
+        void undeclared();
+    }
+
+    @JsDefinition
+    interface UndeclaredJs extends JsInvokers, UndeclaredMixin {
+    }
+
+    @Test
+    void getExpression_methodWithoutExpression_callsTheElementMethod() {
+        JsCall focus = call("focus");
+        assertEquals("return this.focus();", focus.getExpression());
+        assertEquals(JsCall.functionId("return this.focus();", 0, false),
+                focus.getFunctionId());
+
+        // The variadic tail is spread, as the generated function collects it
+        // into a rest parameter
+        JsCall whisper = call("whisper", "Hello", new Object[] { "Ada" });
+        assertEquals("return this.whisper($0, ...$1);",
+                whisper.getExpression());
+        assertEquals(
+                JsCall.functionId("return this.whisper($0, ...$1);", 2, true),
+                whisper.getFunctionId());
+    }
+
+    interface JavaImplementedJs extends JsInvokers {
+        default void twice() {
+        }
+
+        static void helper() {
+        }
+    }
+
+    @Test
+    void declaredExpression_defaultOrStaticMethod_declaresNothing()
+            throws NoSuchMethodException {
+        // Implemented in Java, so not a call of a method on the element
+        assertNull(JsCall.declaredExpression(
+                JavaImplementedJs.class.getMethod("twice")));
+        assertNull(JsCall.declaredExpression(
+                JavaImplementedJs.class.getMethod("helper")));
+    }
+
     @Test
     void getExpression_methodWithoutDeclaredJavaScript_throws() {
-        JsCall undeclared = call("undeclared");
+        JsCall undeclared = new JsCall(UndeclaredJs.class, "undeclared",
+                List.of());
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class, undeclared::getExpression);
 
@@ -176,6 +231,52 @@ class JsCallTest {
                 "the message should name what the method is missing: "
                         + exception.getMessage());
         assertThrows(IllegalStateException.class, undeclared::getFunctionId);
+    }
+
+    // Only extended, so not annotated
+    interface ScrollableJs extends JsInvokers {
+        @JsExpression("this.scrollTop = $0")
+        void scrollTo(int top);
+    }
+
+    @JsDefinition
+    interface DoubleScrollJs extends ScrollableJs {
+        @Override
+        @JsExpression("this.scrollTop = $0 * 2")
+        void scrollTo(int top);
+    }
+
+    @Test
+    void getFunctionId_overriddenMethod_namesTheJavaScriptOfTheType() {
+        assertEquals(JsCall.functionId("this.scrollTop = $0 * 2", 1, false),
+                new JsCall(DoubleScrollJs.class, "scrollTo", List.of(1))
+                        .getFunctionId(),
+                "the override is what runs through the sub-interface");
+        assertEquals(JsCall.functionId("this.scrollTop = $0", 1, false),
+                new JsCall(ScrollableJs.class, "scrollTo", List.of(1))
+                        .getFunctionId(),
+                "the interface it overrides still runs its own JavaScript");
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    interface ScrollFallbacks extends ScrollableJs {
+    }
+
+    @Test
+    void getFunctionId_methodInheritedByStringFallback_isTheFallbackFunction()
+            throws NoSuchMethodException {
+        String functionId = new JsCall(ScrollFallbacks.class, "scrollTo",
+                List.of(1)).getFunctionId();
+
+        assertEquals(
+                JsStringFallbacks.functionId(ScrollFallbacks.class,
+                        ScrollableJs.class.getMethod("scrollTo", int.class)),
+                functionId);
+        // Generated to also see the element after the arguments, so it must
+        // not run the plain function of the interface it is inherited from
+        assertNotEquals(JsCall.functionId("this.scrollTop = $0", 1, false),
+                functionId);
     }
 
     @Test
@@ -225,7 +326,7 @@ class JsCallTest {
     void invokeOn_implementationThrows_theFailureReachesTheCaller() {
         UnsupportedOperationException exception = assertThrows(
                 UnsupportedOperationException.class,
-                () -> call("undeclared").invokeOn(new Greeter()));
+                () -> call("focus").invokeOn(new Greeter()));
 
         assertEquals("nothing to do here", exception.getMessage(),
                 "what the implementation threw should not be wrapped");

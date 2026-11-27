@@ -43,9 +43,12 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # The same flags validation.yml sets, for the same reason: a 403 from Central
-  # is retried rather than failing the build outright. See the note there.
+  # The same flags validation.yml sets, for the same reasons: Central and the
+  # public groups on repository.jboss.org are read through Google's mirror of
+  # Central, and a 403 is retried rather than failing the build outright. See
+  # the note there.
   MAVEN_ARGS: >-
+    -gs ${{ github.workspace }}/.github/maven/settings.xml
     -Daether.connector.http.retryHandler.count=3
     -Daether.connector.http.retryHandler.serviceUnavailable=429,500,502,503,504,403
     -Daether.connector.http.connectionMaxTtl=25
@@ -81,26 +84,28 @@ jobs:
         # the common case.
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-warm-${{ hashFiles('**/pom.xml') }}
+          key: ${{ runner.os }}-maven-warm-v3-${{ hashFiles('**/pom.xml') }}
           lookup-only: true
       - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         if: ${{ steps.probe.outputs.cache-hit != 'true' }}
         with:
           path: ~/.m2/repository
           # Deliberately not the key validation.yml computes, even though this
-          # entry is meant for it. actions/cache skips its save when the primary
-          # key was an exact hit, so claiming that key here would stop the test
-          # jobs saving theirs, and theirs is the richer one: this build leaves
-          # flow-tests out, and with it the roughly ninety artifacts only the
-          # integration tests pull. Their restore keys still reach this entry by
-          # prefix, so they start warm.
+          # entry is meant for it: its build job tells this entry apart by the
+          # key it restored, to skip resolving the integration test
+          # dependencies again when the poms match. Its restore keys reach this
+          # entry by prefix, so it starts warm.
           #
-          # They do not, however, keep saving what they add to it, as this note
-          # used to claim. The build job of their own run saves that key before
-          # them, so their restore is an exact hit and actions/cache skips their
-          # save. Nothing an integration test job downloads is ever cached,
-          # which is what the step below exists to work around.
-          key: ${{ runner.os }}-maven-warm-${{ hashFiles('**/pom.xml') }}
+          # The integration test jobs cannot add to what they restore: the
+          # build job of their own run saves that key before them, so their
+          # restore is an exact hit and their save is skipped. What they need
+          # is resolved here, and by that build job when its poms differ.
+          #
+          # The v3 segment tells entries that hold the integration test
+          # dependencies, those of the Quarkus suite included, from older ones
+          # that do not, which validation.yml must not trust; the restore keys
+          # still start from any of them.
+          key: ${{ runner.os }}-maven-warm-v3-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-warm-
       - name: Populate the local repository
         if: ${{ steps.probe.outputs.cache-hit != 'true' }}
@@ -111,7 +116,7 @@ jobs:
         # Eclipse stays quiet and which resolves nowhere, and dependency:resolve
         # would leave every build plugin uncached.
         run: |
-          cmd="mvn install -B -ntp -DskipTests -pl \!flow-plugins/flow-gradle-plugin"
+          cmd="mvn install -B -ntp -DskipTests -Pcoverage -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Resolve what only the integration test modules pull
         if: ${{ steps.probe.outputs.cache-hit != 'true' }}
@@ -133,14 +138,22 @@ jobs:
         # auto-clean executions, so it forces the plugins bound that early to
         # resolve without compiling a line or running npm - six seconds on a
         # warm repository, and around 450 artifacts the install above leaves
-        # out, mostly the poms needed to read these models. Plugins bound later
-        # than initialize are still only cached by the job that runs them.
+        # out, mostly the poms needed to read these models. The step after
+        # this resolves the plugins bound later and the dependency jars.
         #
         # Deliberately no -DskipTests: the it-test-modules profile, which holds
         # most of those modules, activates on the property being absent.
         run: |
           cmd="mvn initialize -B -ntp -Pit-shared-modules,it-shared-spring-modules -pl flow-tests -amd"
           eval $cmd || eval $cmd
+      - name: Resolve the dependencies and plugins of the integration tests
+        if: ${{ steps.probe.outputs.cache-hit != 'true' }}
+        # The initialize above resolves the plugins bound that early, but no
+        # dependency jars. The build job of validation.yml resolves the same
+        # graph when the poms of a run differ from this entry, and skips it
+        # when they match, so this entry has to hold it. See the note on that
+        # step and the script for why it is dependency:resolve.
+        run: ./scripts/resolveItDependencies.sh
       - name: Drop the Flow artifacts before the cache is saved
         if: ${{ steps.probe.outputs.cache-hit != 'true' }}
         # The step that saves the cache runs after every regular step, so
@@ -181,7 +194,7 @@ jobs:
         # has nothing to add to that entry and should not race it for the key.
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-warm-${{ hashFiles('**/pom.xml') }}
+          key: ${{ runner.os }}-maven-warm-v3-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-warm-
       - name: Install what the plugin build resolves
         # The plugin depends on com.vaadin:flow-plugin-base, so that module and
@@ -223,5 +236,9 @@ jobs:
         # the Maven runtime scoped transitives of flow-plugin-base and the
         # TestKit runtime. Those stay cold, and running the tests here to warm
         # them would cost more than they save.
+        #
+        # The same Central mirror init script as validation's build: Gradle
+        # keeps resolved metadata per repository URL, so a home warmed from
+        # Central itself would not answer the mirror's lookups.
         working-directory: flow-plugins/flow-gradle-plugin
-        run: ./gradlew assemble testClasses functionalTestClasses
+        run: ./gradlew assemble testClasses functionalTestClasses --init-script "$GITHUB_WORKSPACE/.github/gradle/central-mirror.init.gradle"

@@ -29,7 +29,7 @@ import java.util.Set;
 public final class Constants implements Serializable {
 
     // Keep the version number in sync with flow-push/pom.xml
-    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "3.0.5.slf4jvaadin1";
+    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "3.0.5.slf4jvaadin2";
 
     /**
      * The prefix used for System property parameters.
@@ -71,6 +71,14 @@ public final class Constants implements Serializable {
      */
     public static final String TEMPLATE_DIRECTORY = Constants.VAADIN_CONFIGURATION
             + "templates/";
+
+    /**
+     * The resource that lists the {@code @JsStringFallback} interfaces the
+     * build found, one class name per entry of a JSON array, relative to
+     * {@link #VAADIN_SERVLET_RESOURCES}.
+     */
+    public static final String JS_STRING_FALLBACKS_FILE = Constants.VAADIN_CONFIGURATION
+            + "js-string-fallbacks.json";
 
     /**
      * Name of the <code>npm</code> main file.

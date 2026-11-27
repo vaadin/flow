@@ -65,12 +65,12 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ThemeUtils;
 import com.vaadin.flow.js.JsCall;
-import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
-import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.theme.Theme;
 
@@ -1462,12 +1462,34 @@ final class DevLoopRedefiner {
         // edited expression or a method added or removed only reaches the
         // browser through a restart that regenerates the file and rebuilds the
         // bundle. What identifies a function is what it runs, so that is what
-        // the fingerprint is made of: renaming a method changes nothing the
-        // browser has, and editing what it declares changes everything.
-        if (type.isAnnotationPresent(JsDefinition.class)) {
-            for (Method method : type.getMethods()) {
-                if (method.isAnnotationPresent(JsExpression.class)) {
+        // the fingerprint is made of: renaming a method annotated with
+        // @JsExpression changes nothing the browser has, and editing what it
+        // declares changes everything. Renaming a method without the
+        // annotation edits what it declares, as it calls the method of the
+        // same name on the element. Any
+        // interface counts, not only a definition: an interface that is only
+        // extended by one does not need @JsDefinition, and its methods are
+        // generated as part of every definition that extends it.
+        if (type.isInterface()) {
+            for (Method method : ReflectTools.getCurrentPublicMethods(type)) {
+                if (JsCall.declaredExpression(method) != null) {
                     imports.add("jsdefinition:" + fingerprintOf(method));
+                }
+            }
+            // A fallback interface also puts the filters and event data it
+            // lists into the bundle, and its calls are generated apart from
+            // other calls, so marking or unmarking it changes their functions
+            JsStringFallback fallback = type
+                    .getAnnotation(JsStringFallback.class);
+            if (fallback != null) {
+                imports.add("jsstringfallback");
+                for (String filter : fallback.filters()) {
+                    imports.add("eventfilter:"
+                            + BundledEventData.getFunctionId(filter));
+                }
+                for (String eventData : fallback.eventData()) {
+                    imports.add("eventdata:"
+                            + BundledEventData.getFunctionId(eventData));
                 }
             }
         }

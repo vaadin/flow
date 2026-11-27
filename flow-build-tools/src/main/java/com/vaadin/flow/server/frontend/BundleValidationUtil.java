@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -42,6 +43,7 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
+import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.DevBundleUtils;
 import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
@@ -70,6 +72,8 @@ import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 public final class BundleValidationUtil {
 
     private static final String FRONTEND_HASHES_STATS_KEY = "frontendHashes";
+
+    static final String JS_DEFINITION_NAMES_STATS_KEY = "jsDefinitionNames";
 
     private static final String PWA_OFFLINE_PATH_STATS_KEY = "pwaOfflinePath";
 
@@ -1061,27 +1065,91 @@ public final class BundleValidationUtil {
     }
 
     /**
-     * Checks whether the JavaScript that the {@code @JsDefinition} interfaces,
-     * the {@code @EventData} values and the {@code @DomEvent} filters of the
-     * application declare differs from what the bundle was built with.
+     * Checks whether the bundle lacks JavaScript that the {@code @JsDefinition}
+     * interfaces, the {@code @EventData} values and the {@code @DomEvent}
+     * filters of the application declare.
      * <p>
      * The functions are generated into the bundle, so a declaration that
      * changed, a definition, an event data value or a filter that was added and
-     * a bundle built before any of them existed all mean that the bundle no
-     * longer contains what a call would look up, which shows up at runtime as a
+     * a bundle built before any of them existed all mean that the bundle does
+     * not contain what a call would look up, which shows up at runtime as a
      * call that cannot be run.
+     * <p>
+     * When the stats of the bundle list the identifiers of the functions it
+     * registers, the bundle is accepted if it registers every function the
+     * application needs. A bundle that carries more, such as one built with
+     * more definitions or before one was removed, is still accepted. Outside
+     * production mode, each of those functions also has to be registered under
+     * a name that the application gives it, so that a message about a call does
+     * not name a definition or method that was renamed. A bundle whose stats
+     * list the identifiers but no names is rebuilt there. A bundle whose stats
+     * do not list the identifiers is accepted only if it was built from the
+     * same generated file.
      */
     private static boolean jsDefinitionsChanged(Options options,
             JsonNode statsJson) {
         JsonNode frontendHashes = statsJson.get(FRONTEND_HASHES_STATS_KEY);
         String jsDefinitionsPath = FrontendUtils.GENERATED
                 + FrontendUtils.JS_DEFINITIONS_FILE_NAME;
-        String content = new TaskGenerateJsDefinitions(options)
-                .getFileContent();
+        TaskGenerateJsDefinitions.Rendered rendered = new TaskGenerateJsDefinitions(
+                options).render();
+        if (definitionImportsChanged(options, frontendHashes,
+                rendered.imports())) {
+            return true;
+        }
 
+        JsonNode bundledIds = statsJson
+                .get(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
+        if (bundledIds != null && bundledIds.isArray()) {
+            // A bundle that registers a function under every identifier the
+            // application needs carries its JavaScript, as the identifier is a
+            // hash of it. One built with more definitions than the application
+            // has, such as the pre-compiled bundle, still serves it.
+            Set<String> bundled = new HashSet<>(
+                    JacksonUtils.stream((ArrayNode) bundledIds)
+                            .map(JsonNode::asString).toList());
+            Set<String> missingFrom = new TreeSet<>();
+            rendered.functionIds().forEach((id, declaredBy) -> {
+                if (!bundled.contains(id)) {
+                    missingFrom.add(declaredBy);
+                }
+            });
+            if (!missingFrom.isEmpty()) {
+                getLogger().info(
+                        "Detected JavaScript that the bundle does not carry, declared by: {}",
+                        String.join(", ", missingFrom));
+                return true;
+            }
+            // The identifier leaves out what a development bundle names a
+            // function by in a message about a call, so a renamed definition
+            // would otherwise keep its old name there. A function that more
+            // than one class declares may be named after any of them, as which
+            // one the bundle names depends on what it was built with.
+            JsonNode bundledNames = statsJson
+                    .get(JS_DEFINITION_NAMES_STATS_KEY);
+            Set<String> renamedIn = new TreeSet<>();
+            rendered.names().forEach((id, names) -> {
+                JsonNode bundledName = bundledNames == null ? null
+                        : bundledNames.get(id);
+                if (bundledName == null
+                        || !names.contains(bundledName.asString())) {
+                    renamedIn.add(rendered.functionIds().get(id));
+                }
+            });
+            if (!renamedIn.isEmpty()) {
+                getLogger().info(
+                        "Detected JavaScript that the bundle names differently, declared by: {}",
+                        String.join(", ", renamedIn));
+                return true;
+            }
+            return false;
+        }
+
+        // A bundle built before its stats listed the functions it registers
+        // is compared by the whole file
         List<String> faultyContent = new ArrayList<>();
         compareFrontendHashes(frontendHashes, faultyContent, jsDefinitionsPath,
-                content);
+                rendered.content());
         if (!faultyContent.isEmpty()) {
             // Either the declarations changed, or the bundle was built before
             // they existed and carries none of their JavaScript
@@ -1090,6 +1158,65 @@ public final class BundleValidationUtil {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Checks whether a frontend file that a JavaScript definition imports, of
+     * the project or of a jar, is not what the bundle was built with. The files
+     * are hashed in the stats under the same keys as the imports of the
+     * application. They stay in the hashes, as a file can also be one of those
+     * imports, which are checked later. An npm package is not hashed, as for
+     * those imports, and neither is a file the stats have no hash for under the
+     * path it is imported by.
+     */
+    private static boolean definitionImportsChanged(Options options,
+            JsonNode frontendHashes, List<String> imports) {
+        String resourcePath = "generated/jar-resources/";
+        List<String> faultyContent = new ArrayList<>();
+        for (String importPath : imports) {
+            if (!importPath.startsWith(FrontendUtils.FRONTEND_FOLDER_ALIAS)) {
+                continue;
+            }
+            String path = importPath;
+            boolean inJar = path.contains(resourcePath);
+            String key = inJar
+                    ? path.substring(
+                            path.indexOf(resourcePath) + resourcePath.length())
+                    : path.substring(
+                            FrontendUtils.FRONTEND_FOLDER_ALIAS.length());
+            if (!frontendHashes.has(key)) {
+                // A file the bundle hashes under another name, such as one
+                // imported without its extension, or does not hash at all.
+                // Whether the bundle carries the import at all is told by the
+                // identifiers of the functions, which hash the imports.
+                continue;
+            }
+            String content = inJar
+                    ? FrontendBuildUtils.getJarResourceString(key,
+                            options.getClassFinder())
+                    : readFrontendFile(
+                            new File(options.getFrontendDirectory(), key));
+            if (content == null) {
+                getLogger().info("No file found for '{}'", key);
+                return true;
+            }
+            compareFrontendHashes(frontendHashes, faultyContent, key, content);
+        }
+        if (!faultyContent.isEmpty()) {
+            logChangedFiles(faultyContent,
+                    "Detected changed content for frontend files that JavaScript definitions import:");
+            return true;
+        }
+        return false;
+    }
+
+    private static String readFrontendFile(File file) {
+        try {
+            return file.isFile() ? Files.readString(file.toPath()) : null;
+        } catch (IOException e) {
+            getLogger().debug("Could not read {}", file, e);
+            return null;
+        }
     }
 
     private static Map<String, String> getRemainingImports(

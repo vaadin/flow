@@ -64,7 +64,7 @@ public class PushRequestHandler
         implements RequestHandler, SessionExpiredHandler {
 
     private AtmosphereFramework atmosphere;
-    private PushHandler pushHandler;
+    private final PushHandler pushHandler;
 
     /**
      * Creates an instance connected to the given service.
@@ -240,8 +240,12 @@ public class PushRequestHandler
                     vaadinServletConfig.getServletName());
         }
 
+        // The push client only connects to the push path itself. Atmosphere
+        // builds differ in how they count this value: upstream Atmosphere
+        // registers no WebSocket endpoint at all for 0, while every build
+        // registers one at the push path for 1
         atmosphere.addInitParameter(
-                ApplicationConfig.JSR356_PATH_MAPPING_LENGTH, "0");
+                ApplicationConfig.JSR356_PATH_MAPPING_LENGTH, "1");
 
         try {
             atmosphere.init(vaadinServletConfig);

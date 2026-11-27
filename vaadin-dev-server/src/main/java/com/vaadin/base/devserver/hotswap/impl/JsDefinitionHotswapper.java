@@ -15,6 +15,7 @@
  */
 package com.vaadin.base.devserver.hotswap.impl;
 
+import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,9 +28,13 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
+import com.vaadin.base.devserver.startup.DevModeInitializer;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.JsStringFallbacks;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
@@ -40,6 +45,7 @@ import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.TaskGenerateJsDefinitions;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
@@ -73,6 +79,11 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * among the definitions the generated file names, which is every one a browser
  * can run.
  * <p>
+ * The methods of an interface that a definition extends, annotated or not, are
+ * generated as part of every definition that extends it. Redefining such an
+ * interface is handled the same way: the definitions the generated file names
+ * that extend it are written again or reported.
+ * <p>
  * For internal use only. May be renamed or removed in a future release.
  * 
  * @since 25.4
@@ -82,20 +93,26 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
     @Override
     public void onClassesChange(HotswapClassEvent event) {
         Set<Class<?>> changed = event.getChangedClasses();
+        // Before anything returns early: a class that is no longer a
+        // definition at all may still be listed as a fallback
+        updateStringFallbacks(event.getVaadinService(), changed);
+
         List<Class<?>> definitions = new ArrayList<>(changed.stream()
-                .filter(type -> type.isAnnotationPresent(JsDefinition.class))
-                .toList());
+                .filter(JsDefinitionProxy::isDefinition).toList());
         List<Class<?>> snippetTypes = changed.stream()
                 .filter(JsDefinitionProxy::isApplicationSnippetType).toList();
-        if (definitions.isEmpty() && snippetTypes.isEmpty()) {
+        List<Class<?>> inheritedTypes = changed.stream()
+                .filter(JsDefinitionHotswapper::declaresJavaScript).toList();
+        if (definitions.isEmpty() && snippetTypes.isEmpty()
+                && inheritedTypes.isEmpty()) {
             return;
         }
 
         VaadinService service = event.getVaadinService();
         Options options = buildOptions(service);
 
-        for (Class<?> definition : findDefinitionsReturning(options,
-                snippetTypes)) {
+        for (Class<?> definition : findAffectedDefinitions(options,
+                snippetTypes, inheritedTypes)) {
             // Not redefined itself, so what was cached of it, such as the
             // identifiers of its functions, is not cleared after the
             // hotswappers run and would still be what the type declared before
@@ -128,22 +145,60 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
     }
 
     /**
-     * The definitions named by the generated file that have a method returning
-     * one of the given snippet types. A name that can not be loaded is skipped:
-     * it is a definition that is no longer on the class path.
+     * Keeps the @JsStringFallback interfaces the server matches string
+     * JavaScript against in step with the changed classes: the list the build
+     * wrote, which a service started later reads, and what the running service
+     * already read from it.
      */
-    private static List<Class<?>> findDefinitionsReturning(Options options,
-            List<Class<?>> snippetTypes) {
-        if (snippetTypes.isEmpty()) {
+    private static void updateStringFallbacks(VaadinService service,
+            Set<Class<?>> changed) {
+        try {
+            if (TaskGenerateJsDefinitions.updateStringFallbacks(
+                    DevModeInitializer.getServletResourceOutputDirectory(
+                            service.getDeploymentConfiguration()),
+                    changed)) {
+                JsStringFallbacks.reloadFallbacks(service);
+            }
+        } catch (UncheckedIOException e) {
+            getLogger().warn(
+                    "Could not update the @JsStringFallback list for the changed classes",
+                    e);
+        }
+    }
+
+    /**
+     * Checks whether the given type is an interface with JavaScript of its own
+     * or inherited, which is generated as part of the definitions that extend
+     * it, whether or not it is a definition itself.
+     */
+    private static boolean declaresJavaScript(Class<?> type) {
+        return type.isInterface()
+                && ReflectTools.getCurrentPublicMethods(type).stream().anyMatch(
+                        method -> JsCall.declaredExpression(method) != null);
+    }
+
+    /**
+     * The definitions named by the generated file that have a method returning
+     * one of the given snippet types or that extend one of the given
+     * interfaces. A name that can not be loaded is skipped: it is a definition
+     * that is no longer on the class path.
+     */
+    private static List<Class<?>> findAffectedDefinitions(Options options,
+            List<Class<?>> snippetTypes, List<Class<?>> inheritedTypes) {
+        if (snippetTypes.isEmpty() && inheritedTypes.isEmpty()) {
             return List.of();
         }
+        List<Class<?>> relatedTypes = new ArrayList<>(snippetTypes);
+        relatedTypes.addAll(inheritedTypes);
         List<Class<?>> definitions = new ArrayList<>();
         for (String name : TaskGenerateJsDefinitions
                 .findDefinitionNamesInGeneratedFile(options)) {
-            Class<?> definition = load(name, snippetTypes);
-            if (definition != null && Arrays.stream(definition.getMethods())
-                    .map(Method::getReturnType)
-                    .anyMatch(snippetTypes::contains)) {
+            Class<?> definition = load(name, relatedTypes);
+            if (definition != null && (Arrays.stream(definition.getMethods())
+                    .map(Method::getReturnType).anyMatch(snippetTypes::contains)
+                    || inheritedTypes.stream()
+                            .anyMatch(type -> type != definition
+                                    && type.isAssignableFrom(definition)))) {
                 definitions.add(definition);
             }
         }
@@ -151,15 +206,14 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
     }
 
     /**
-     * Loads a definition with the loader of one of the snippet types it may
-     * return, or with the context class loader, which is what loads the
-     * application when the definition comes from it and the snippet type from a
-     * library.
+     * Loads a definition with the loader of one of the types it may be related
+     * to, or with the context class loader, which is what loads the application
+     * when the definition comes from it and the related type from a library.
      */
-    private static Class<?> load(String name, List<Class<?>> snippetTypes) {
+    private static Class<?> load(String name, List<Class<?>> relatedTypes) {
         List<ClassLoader> loaders = new ArrayList<>();
         loaders.add(Thread.currentThread().getContextClassLoader());
-        snippetTypes.forEach(type -> loaders.add(type.getClassLoader()));
+        relatedTypes.forEach(type -> loaders.add(type.getClassLoader()));
         for (ClassLoader loader : loaders) {
             if (loader == null) {
                 continue;
@@ -182,14 +236,17 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
 
     /**
      * The least the generated file needs to be read and written: where the
-     * project is and where its frontend folder is. No class finder, since what
-     * the file has to hold is passed in rather than scanned for.
+     * project is and where its frontend folder is, and a class finder that only
+     * finds resources, which tell whether the module of an import is a frontend
+     * file of a jar. It finds no classes, since what the file has to hold is
+     * passed in rather than scanned for.
      */
     private static Options buildOptions(VaadinService service) {
         AbstractConfiguration configuration = service
                 .getDeploymentConfiguration();
         return new Options(service.getContext().getAttribute(Lookup.class),
-                null, configuration.getProjectFolder()).withFrontendDirectory(
+                new ClassFinder.DefaultClassFinder(service.getClassLoader()),
+                configuration.getProjectFolder()).withFrontendDirectory(
                         FrontendUtils.getProjectFrontendDir(configuration));
     }
 

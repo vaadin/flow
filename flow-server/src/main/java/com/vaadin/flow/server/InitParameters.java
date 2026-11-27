@@ -57,13 +57,13 @@ public class InitParameters implements Serializable {
     /**
      * Configuration parameter name for the Content Security Policy mode of the
      * application. The permitted values are {@code off} (the default),
-     * {@code warn} and {@code strict}, see {@link CspMode}. Values are
-     * case-insensitive; any other value fails the deployment configuration with
-     * an {@link IllegalArgumentException}.
+     * {@code warn} and {@code strict}, see {@link ContentSecurityPolicyMode}.
+     * Values are case-insensitive; any other value fails the deployment
+     * configuration with an {@link IllegalArgumentException}.
      *
      * @since 25.4
      */
-    public static final String CSP = "csp";
+    public static final String CONTENT_SECURITY_POLICY = "contentSecurityPolicy";
     /**
      * Configuration parameter name for the value of the {@code X-Frame-Options}
      * HTTP response header sent with the application page. The header lets the
@@ -408,6 +408,13 @@ public class InitParameters implements Serializable {
      * @since 24.6
      */
     public static final String NPM_EXCLUDE_WEB_COMPONENTS = "npm.excludeWebComponents";
+
+    /**
+     * Configuration name for allowing npm packages to be declared with an
+     * exotic version, such as a tarball URL or a git repository, rather than a
+     * registry version or a local path.
+     */
+    public static final String NPM_ALLOW_EXOTIC_VERSIONS = "npm.allowExoticVersions";
 
     /**
      * Configuration name for enabling browserless mode (e.g. for UI unit

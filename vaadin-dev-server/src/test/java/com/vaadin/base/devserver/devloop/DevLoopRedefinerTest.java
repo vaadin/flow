@@ -18,7 +18,6 @@ package com.vaadin.base.devserver.devloop;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -45,9 +44,13 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionImport;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
+import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippet;
+import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.theme.Theme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -175,7 +178,7 @@ class DevLoopRedefinerTest {
     }
 
     @JsDefinition
-    interface GreeterJs extends Serializable {
+    interface GreeterJs extends JsInvokers {
         @JsExpression("window.alert($0)")
         void showGreeting(String greeting);
 
@@ -184,34 +187,34 @@ class DevLoopRedefinerTest {
     }
 
     @JsDefinition
-    interface LoggerJs extends Serializable {
+    interface LoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value)")
         @JsFunctionParameterNames("value")
         JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
-    interface RenamedParameterLoggerJs extends Serializable {
+    interface RenamedParameterLoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value)")
         @JsFunctionParameterNames("message")
         JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
-    interface UnwrappedLoggerJs extends Serializable {
+    interface UnwrappedLoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value)")
         JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
-    interface InvalidNameLoggerJs extends Serializable {
+    interface InvalidNameLoggerJs extends JsSnippets {
         @JsExpression("console.log($0, value)")
         @JsFunctionParameterNames("class")
         JsFunction createLogger(String prefix);
     }
 
     @JsDefinition
-    interface EditedGreeterJs extends Serializable {
+    interface EditedGreeterJs extends JsInvokers {
         @JsExpression("window.alert('edited ' + $0)")
         void showGreeting(String greeting);
     }
@@ -264,6 +267,120 @@ class DevLoopRedefinerTest {
                 .frontendDependencies(RenamedParameterLoggerJs.class));
         assertNotEquals(imports,
                 DevLoopRedefiner.frontendDependencies(UnwrappedLoggerJs.class));
+    }
+
+    @JsDefinition
+    @JsStringFallback(filters = "event.key === 'Escape'")
+    interface EscapeFallbacks extends JsInvokers {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
+    @JsDefinition
+    @JsStringFallback(filters = "event.key === 'Enter'")
+    interface EnterFallbacks extends JsInvokers {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
+    @JsDefinition
+    interface UnmarkedFallbacks extends JsInvokers {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
+    @Test
+    void frontendDependencies_seesWhatAStringFallbackLists() {
+        // The listed filters are functions of the bundle, and a marked
+        // interface generates its calls apart from other calls, while no
+        // method changes in either case
+        String imports = DevLoopRedefiner
+                .frontendDependencies(EscapeFallbacks.class);
+
+        assertNotEquals(imports,
+                DevLoopRedefiner.frontendDependencies(EnterFallbacks.class));
+        assertNotEquals(imports,
+                DevLoopRedefiner.frontendDependencies(UnmarkedFallbacks.class));
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./grid.js", namespace = "grid")
+    interface GridImportJs extends JsInvokers {
+        @JsExpression("grid.refresh(this)")
+        void refresh();
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./grid.js", namespace = "grid", exports = "refresh")
+    interface GridImportWithExportJs extends JsInvokers {
+        @JsExpression("grid.refresh(this)")
+        void refresh();
+    }
+
+    @Test
+    void frontendDependencies_seesTheImportsOfADefinition() {
+        // The names are parameters of the generated function, so importing
+        // one more export changes what the browser has to run while the
+        // module and the expression stay the same
+        assertNotEquals(
+                DevLoopRedefiner.frontendDependencies(GridImportJs.class),
+                DevLoopRedefiner
+                        .frontendDependencies(GridImportWithExportJs.class));
+    }
+
+    // Only extended by definitions, so not annotated
+    interface ScrollableJs extends JsInvokers {
+        @JsExpression("this.scrollTop = $0")
+        void scrollTo(int top);
+    }
+
+    interface EditedScrollableJs extends JsInvokers {
+        @JsExpression("this.scrollLeft = $0")
+        void scrollTo(int top);
+    }
+
+    @Test
+    void frontendDependencies_seesTheJavaScriptOfAnExtendedInterface() {
+        // Its methods are generated as part of every definition extending it,
+        // so editing what it declares changes what the browser has to run
+        assertNotEquals(
+                DevLoopRedefiner.frontendDependencies(ScrollableJs.class),
+                DevLoopRedefiner
+                        .frontendDependencies(EditedScrollableJs.class));
+    }
+
+    // Calls the method of the same name on the element
+    interface PopoverJs extends JsInvokers {
+        void showPopover();
+    }
+
+    interface EditedPopoverJs extends JsInvokers {
+        void showPopover(String source);
+    }
+
+    interface PlainPopover {
+        void showPopover();
+    }
+
+    @Test
+    void frontendDependencies_seesTheParametersOfAMethodWithoutExpression() {
+        String imports = DevLoopRedefiner.frontendDependencies(PopoverJs.class);
+
+        assertTrue(
+                imports.contains("jsdefinition:" + JsCall
+                        .functionId("return this.showPopover();", 0, false)),
+                imports);
+        String edited = DevLoopRedefiner
+                .frontendDependencies(EditedPopoverJs.class);
+        assertTrue(
+                edited.contains("jsdefinition:" + JsCall
+                        .functionId("return this.showPopover($0);", 1, false)),
+                edited);
+        assertNotEquals(imports, edited);
+        // An interface that does not extend JsInvokers declares nothing, so
+        // editing it is no frontend change
+        assertEquals("",
+                DevLoopRedefiner.frontendDependencies(PlainPopover.class));
     }
 
     @JsFunctionParameterNames({ "html", "item" })

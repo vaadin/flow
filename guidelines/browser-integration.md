@@ -20,7 +20,7 @@ anything else:
 ## JavaScript location and globals
 
 - **Non-trivial JS goes in its own file**, never inlined beyond a
-  one-liner in a Java string. Two valid homes:
+  one-liner in a Java string. Three valid homes:
   - `flow-client/src/main/frontend/Xxx.ts` imported from `Flow.ts`
     (`import './Xxx';`). Use this for platform-level features that
     need to be available before the bootstrap handshake (anything
@@ -32,7 +32,14 @@ anything else:
     `UI.java` or a component. Use this when the script is tied to a
     specific Java API surface and does not need to run at bootstrap
     time.
+  - `META-INF/frontend/xxx.js` as an ES module whose exports a
+    `@JsDefinition` names with `@JsDefinitionImport`. Use this when the
+    script is only reached through calls of that definition: the module
+    sets no global and is loaded the first time one of its methods is
+    called. The call then waits for the module, so its JavaScript runs
+    after the calls that follow it in the same round trip.
 - **Global state and helper functions live under `window.Vaadin.Flow`**
+  unless only a `@JsDefinitionImport` definition calls them
   (e.g. `window.Vaadin.Flow.geolocation`,
   `window.Vaadin.Flow.pageVisibility`,
   `window.Vaadin.Flow.componentSizeObserver`). Use annotations on
@@ -48,7 +55,7 @@ anything else:
 
 For how an invocation is encoded, when it is actually sent, why an
 expression must not vary from call to call, and when to declare the
-JavaScript with `@JsDefinition` instead, see
+JavaScript in a `@JsDefinition` interface that extends `JsInvokers` instead, see
 [Wire Protocol](wire-protocol.md).
 
 - **Never** concatenate values into the expression string. Always pass

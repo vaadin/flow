@@ -57,10 +57,12 @@ public class BrowserLoggingIT extends AbstractDefaultIT {
                                 .contains("Setting heartbeat interval to")),
                 "Expected info message not found in log");
 
-        // Check for exception thrown msg (= error level)
-        assertTrue(logMessages.stream()
-                .anyMatch(msg -> String.valueOf(msg).contains(
-                        "Exception is thrown during JavaScript execution.")),
+        // Check for exception thrown msg (= error level). The view throws
+        // from declared JavaScript, whose message names the method.
+        assertTrue(
+                logMessages.stream().map(String::valueOf).anyMatch(
+                        msg -> msg.contains("Exception is thrown while running")
+                                && msg.contains("throwError")),
                 "Expected error message not found in log");
     }
 }

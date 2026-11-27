@@ -15,15 +15,23 @@
  */
 package com.vaadin.flow.js;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.flow.dom.Element;
 
 /**
- * Hands out implementations of {@link JsDefinition} interfaces whose methods
- * declare {@link JsSnippet snippets}: JavaScript that is not run when the
- * method is called, but evaluated later on the client by what the returned
- * value is passed to.
+ * Marks an interface whose methods declare {@link JsSnippet snippets}:
+ * JavaScript that is not run when the method is called, but evaluated later on
+ * the client by what the returned value is passed to. An implementation is
+ * obtained from {@link #of(Class)}.
+ * <p>
+ * Like with {@link JsInvokers}, an interface that is passed to
+ * {@link #of(Class)} must itself be annotated with {@link JsDefinition}, which
+ * is what makes it findable during the build. Annotations on interfaces are not
+ * inherited. An interface can not extend both marker interfaces. See
+ * {@link JsDefinition} for how a definition that extends another interface is
+ * declared.
  * <p>
  * A snippet is not bound to an element, which is why the implementation comes
  * from here rather than from {@link Element#executeJs(Class)}. It holds no
@@ -34,7 +42,7 @@ import com.vaadin.flow.dom.Element;
  *
  * <pre>
  * &#64;JsDefinition
- * public interface LoggerJs extends Serializable {
+ * public interface LoggerJs extends JsSnippets {
  *
  *     &#64;JsExpression("console.log($0, value);")
  *     &#64;JsFunctionParameterNames("value")
@@ -42,7 +50,7 @@ import com.vaadin.flow.dom.Element;
  * }
  *
  * &#64;JsDefinition
- * public interface ClickJs extends Serializable {
+ * public interface ClickJs extends JsInvokers {
  *
  *     &#64;JsExpression("this.addEventListener('click', () =&gt; $0('clicked'));")
  *     void onClick(JsFunction handler);
@@ -81,27 +89,24 @@ import com.vaadin.flow.dom.Element;
  * @see JsFunctionParameterNames
  * @since 25.4
  */
-public final class JsSnippets {
-
-    private JsSnippets() {
-        // Only static members
-    }
+public interface JsSnippets extends Serializable {
 
     /**
-     * Gets an implementation of the given JavaScript definition, whose methods
-     * answer with the snippet they declare.
+     * Gets an implementation of the given interface, whose methods answer with
+     * the snippet they declare.
      *
      * @param <T>
-     *            the JavaScript definition type
+     *            the type of the interface
      * @param definitionType
-     *            the JavaScript definition, not <code>null</code>
+     *            the interface that declares the snippets, annotated with
+     *            {@link JsDefinition}, not <code>null</code>
      * @return an implementation of the interface, not <code>null</code>
      * @throws IllegalArgumentException
      *             if the type is not an interface, is not annotated with
-     *             {@link JsDefinition}, or has a method that does not declare a
-     *             snippet
+     *             {@link JsDefinition}, also extends {@link JsInvokers}, or has
+     *             a method that does not declare a snippet
      */
-    public static <T> T of(Class<T> definitionType) {
+    static <T extends JsSnippets> T of(Class<T> definitionType) {
         Objects.requireNonNull(definitionType,
                 "Definition type cannot be null");
         return JsDefinitionProxy.createSnippets(definitionType);

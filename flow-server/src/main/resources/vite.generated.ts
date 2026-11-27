@@ -143,15 +143,16 @@ const hasCommercialBanner = existsSync(commercialBannerComponent);
 // built with.
 const jsDefinitionsFile = path.resolve(frontendFolder, settings.generatedFolder, 'vaadin-js-definitions.js');
 const hasJsDefinitions = existsSync(jsDefinitionsFile);
+const jsDefinitionIdsFile = path.resolve(frontendFolder, settings.generatedFolder, 'vaadin-js-definition-ids.json');
 
 // The browsers that Vaadin supports: Chrome, Edge and Firefox evergreen at the
-// versions current today, Firefox ESR, and Safari 17 in its latest minor
-// version. Vite uses this as the cssTarget as well, and an ES year would map to
-// browsers that are much older than these, which makes Lightning CSS rewrite
-// light-dark() into custom properties that only follow the operating system
-// preference. Keep the old browser check in IndexHtmlRequestHandler in line
+// versions current at release, Firefox 153 ESR, and Safari 17 in its latest
+// minor version. Vite uses this as the cssTarget as well, and an ES year would
+// map to browsers that are much older than these, which makes Lightning CSS
+// rewrite light-dark() into custom properties that only follow the operating
+// system preference. Keep the old browser check in IndexHtmlRequestHandler in line
 // with this list.
-const target = ['chrome152', 'edge152', 'firefox140', 'safari17.6', 'ios17.6'];
+const target = ['chrome158', 'edge158', 'firefox153', 'safari17.6', 'ios17.6'];
 
 // Block debug and trace logs.
 console.trace = () => {};
@@ -255,6 +256,12 @@ function statsExtracterPlugin(): PluginOption {
       );
       const generatedImports = Array.from(generatedImportsSet).sort();
 
+      const jsDefinitionIds: { functionIds?: string[]; names?: Record<string, string>; imports?: string[] } =
+        existsSync(jsDefinitionIdsFile) ? JSON.parse(readFileSync(jsDefinitionIdsFile, { encoding: 'utf-8' })) : {};
+      // The modules that JavaScript definitions import are frontend files of
+      // the bundle too, so their content is hashed as for the imports above
+      const hashedImports = generatedImports.concat(jsDefinitionIds.imports ?? []);
+
       const frontendFiles: Record<string, string> = {};
       frontendFiles['index.html'] = createHash('sha256').update(customIndexData.replace(/\r\n/g, '\n'), 'utf8').digest('hex');
 
@@ -293,7 +300,7 @@ function statsExtracterPlugin(): PluginOption {
         });
 
       // collects frontend resources from the JARs
-      generatedImports
+      hashedImports
         .filter((line: string) => line.includes('generated/jar-resources'))
         .forEach((line: string) => {
           let filename = line.substring(line.indexOf('generated'));
@@ -310,7 +317,7 @@ function statsExtracterPlugin(): PluginOption {
       // collects and hash rest of the Frontend resources excluding files in /generated/ and /themes/
       // and files already in frontendFiles.
       let frontendFolderAlias = "Frontend";
-      generatedImports
+      hashedImports
         .filter((line: string) => line.startsWith(frontendFolderAlias + '/'))
         .filter((line: string) => !line.startsWith(frontendFolderAlias + '/generated/'))
         .filter((line: string) => !line.startsWith(frontendFolderAlias + '/themes/'))
@@ -354,6 +361,12 @@ function statsExtracterPlugin(): PluginOption {
           .update(fileBuffer, 'utf8')
           .digest('hex');
       }
+      // The identifier of a function is a hash of its JavaScript, so listing
+      // them lets a build tell whether the bundle carries every function it
+      // needs, even when the bundle carries more. TaskGenerateJsDefinitions
+      // writes them next to the file it generates, with the names that a
+      // development bundle gives them. Without the list, the build compares
+      // the whole file instead.
 
       const themeJsonContents: Record<string, string> = {};
       const themesFolder = path.resolve(jarResourcesFolder, 'themes');
@@ -381,6 +394,8 @@ function statsExtracterPlugin(): PluginOption {
         npmModules: npmModuleAndVersion,
         bundleImports: generatedImports,
         frontendHashes: frontendFiles,
+        jsDefinitionFunctionIds: jsDefinitionIds.functionIds,
+        jsDefinitionNames: jsDefinitionIds.names,
         themeJsonContents: themeJsonContents,
         pwaOfflinePath: settings.offlinePath,
         pwaOfflineEnabled: settings.offlineEnabled,
