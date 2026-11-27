@@ -118,7 +118,7 @@ public class DataCommunicator<T> implements Serializable {
     private SerializableComparator<T> inMemorySorting;
 
     private Registration dataProviderUpdateRegistration;
-    private HashSet<T> updatedData = new HashSet<>();
+    private final HashSet<T> updatedData = new HashSet<>();
     private FlushRequest flushRequest;
     private FlushRequest flushUpdatedDataRequest;
     private boolean flushInProgress = false;
@@ -175,9 +175,10 @@ public class DataCommunicator<T> implements Serializable {
     public static final class Filter<F> implements Serializable {
 
         // Serializability of filter is up to the application
-        private F filterObject;
+        @SuppressWarnings("java:S1948")
+        private final F filterObject;
 
-        private boolean notifyOnChange;
+        private final boolean notifyOnChange;
 
         /**
          * Creates the filter object and sets it notify item count change
@@ -1527,15 +1528,15 @@ public class DataCommunicator<T> implements Serializable {
             newActiveKeyOrder.addAll(activation.getActiveKeys());
             sizeRecheckNeeded |= activation.isSizeRecheckNeeded();
 
-            // Pick existing items from the current list
-            Range overlap = partitionWith[1].offsetBy(-activeStart);
-            if (overlap.getStart() < 0) {
-                // If getStart is negative there is no data and empty Activation
-                // needs to be returned
-                return Activation.empty();
+            // Pick existing items from the current list. The overlap is empty
+            // when both the previous and the requested range are empty, and
+            // its position can then be anywhere, e.g. when the client asks for
+            // rows beyond the end of a data set that was just emptied.
+            if (!partitionWith[1].isEmpty()) {
+                Range overlap = partitionWith[1].offsetBy(-activeStart);
+                newActiveKeyOrder.addAll(activeKeyOrder
+                        .subList(overlap.getStart(), overlap.getEnd()));
             }
-            newActiveKeyOrder.addAll(activeKeyOrder.subList(overlap.getStart(),
-                    overlap.getEnd()));
 
             activation = activate(partitionWith[2]);
             newActiveKeyOrder.addAll(activation.getActiveKeys());
