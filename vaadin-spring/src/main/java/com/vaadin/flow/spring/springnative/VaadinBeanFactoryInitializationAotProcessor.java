@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -178,32 +179,32 @@ public class VaadinBeanFactoryInitializationAotProcessor
      * {@code vaadin.blocked-packages} blocks, or, when
      * {@code vaadin.allowed-packages} is set, only the allowed packages besides
      * the ones of Vaadin and of the application. So a definition of an add-on
-     * outside the packages of the application is registered too. Each
-     * definition is implemented with a proxy, which the native image has only
-     * when it is registered.
+     * outside the packages of the application is registered too. The packages
+     * of Vaadin and of the application are always scanned without the
+     * development mode filter, so a definition in a Vaadin package that
+     * development mode never scans, such as the ones of Hilla and Copilot, is
+     * registered as well. Each definition is implemented with a proxy, which
+     * the native image has only when it is registered.
      */
     private void registerJsDefinitions(RuntimeHints hints,
             ConfigurableListableBeanFactory beanFactory) {
         ConfigurableEnvironment environment = beanFactory
                 .getBean(ConfigurableEnvironment.class);
-        Collection<String> packages;
-        ResourceLoader resourceLoader;
+        Set<Class<?>> definitionTypes = new LinkedHashSet<>();
         if (VaadinConfigurationProperties.getAllowedPackages(environment)
                 .isEmpty()) {
             // The empty package is the root of the class path
-            packages = List.of("");
-            resourceLoader = VaadinServletContextInitializer
-                    .createClassPathScanLoader(new DefaultResourceLoader(),
-                            environment);
-        } else {
-            packages = AotScanPackages.getPackagesToScan(beanFactory);
-            resourceLoader = new FilterableResourceResolver(
-                    new DefaultResourceLoader());
+            definitionTypes.addAll(getJsDefinitionTypes("",
+                    VaadinServletContextInitializer.createClassPathScanLoader(
+                            new DefaultResourceLoader(), environment)));
         }
-        for (String pkg : packages) {
-            for (var c : getJsDefinitionTypes(pkg, resourceLoader)) {
-                registerJsDefinition(hints, c);
-            }
+        ResourceLoader resourceLoader = new FilterableResourceResolver(
+                new DefaultResourceLoader());
+        for (String pkg : AotScanPackages.getPackagesToScan(beanFactory)) {
+            definitionTypes.addAll(getJsDefinitionTypes(pkg, resourceLoader));
+        }
+        for (Class<?> definitionType : definitionTypes) {
+            registerJsDefinition(hints, definitionType);
         }
     }
 
