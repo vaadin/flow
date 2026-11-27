@@ -22,19 +22,30 @@ import org.atmosphere.cpr.ApplicationConfig;
 import org.atmosphere.cpr.AtmosphereConfig;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
+import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
+import org.atmosphere.cpr.AtmosphereResourceEvent;
+import org.atmosphere.cpr.AtmosphereResourceEventListener;
+import org.atmosphere.cpr.AtmosphereResourceImpl;
 import org.atmosphere.cpr.AtmosphereResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinServletService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -100,6 +111,81 @@ class PushAtmosphereHandlerTest {
         // response shouldn't contain async
         assertEquals("{\"meta\":{\"async\":true,\"sessionExpired\":true}}",
                 responseContent, "Invalid response");
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "false, false", "true, false", "false, true" })
+    void onStateChange_messageWrittenOnlyWhileClientConnected(boolean cancelled,
+            boolean closedByClient) throws IOException {
+        PushHandler pushHandler = mock(PushHandler.class);
+        atmosphereHandler.setPushHandler(pushHandler);
+
+        AtmosphereResourceImpl resourceImpl = mock(
+                AtmosphereResourceImpl.class);
+        when(resourceImpl.getRequest()).thenReturn(request);
+        when(resourceImpl.getRequest(false)).thenReturn(request);
+        when(resourceImpl.getResponse()).thenReturn(response);
+        when(request.getAttribute(ApplicationConfig.PROPERTY_USE_STREAM))
+                .thenReturn(false);
+
+        AtmosphereResourceEvent event = mock(AtmosphereResourceEvent.class);
+        when(event.getResource()).thenReturn(resourceImpl);
+        when(event.getMessage()).thenReturn("pending push message");
+        when(event.isCancelled()).thenReturn(cancelled);
+        when(event.isClosedByClient()).thenReturn(closedByClient);
+
+        atmosphereHandler.onStateChange(event);
+
+        boolean connected = !cancelled && !closedByClient;
+        verify(printWriter, times(connected ? 1 : 0))
+                .write("pending push message");
+        verify(pushHandler, times(cancelled ? 1 : 0)).connectionLost(event);
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "IllegalStateException, TEXT_FULL_WRITING, WEBSOCKET, false",
+            "IllegalStateException, BINARY_FULL_WRITING, WEBSOCKET, false",
+            "IllegalStateException, TEXT_FULL_WRITING, LONG_POLLING, true",
+            "IllegalStateException, TEXT_PARTIAL_WRITING, WEBSOCKET, true",
+            "RuntimeException, TEXT_FULL_WRITING, WEBSOCKET, true" })
+    void onThrowable_writeRejectedAfterFailedWrite_loggedAsLostConnection(
+            String exceptionType, String endpointState, TRANSPORT transport,
+            boolean loggedAsError) {
+        PushHandler pushHandler = mock(PushHandler.class);
+        atmosphereHandler.setPushHandler(pushHandler);
+        when(request.getMethod()).thenReturn("GET");
+        atmosphereHandler.onRequest(resource);
+        ArgumentCaptor<AtmosphereResourceEventListener> listener = ArgumentCaptor
+                .forClass(AtmosphereResourceEventListener.class);
+        verify(resource).addEventListener(listener.capture());
+
+        // The message Tomcat uses when it rejects a write
+        String message = "The remote endpoint was in state [" + endpointState
+                + "] which is an invalid state for called method";
+        RuntimeException throwable = "IllegalStateException"
+                .equals(exceptionType) ? new IllegalStateException(message)
+                        : new RuntimeException(message);
+        when(resource.transport()).thenReturn(transport);
+        AtmosphereResourceEvent event = mock(AtmosphereResourceEvent.class);
+        when(event.getResource()).thenReturn(resource);
+        when(event.throwable()).thenReturn(throwable);
+
+        Logger logger = mock(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            loggerFactory
+                    .when(() -> LoggerFactory
+                            .getLogger(PushAtmosphereHandler.class.getName()))
+                    .thenReturn(logger);
+            listener.getValue().onThrowable(event);
+        }
+
+        verify(logger, times(loggedAsError ? 1 : 0))
+                .error("Exception in push connection", throwable);
+        verify(logger, times(loggedAsError ? 0 : 1)).debug(
+                "Push connection lost while a message was being written",
+                throwable);
+        verify(pushHandler).connectionLost(event);
     }
 
     @ParameterizedTest
