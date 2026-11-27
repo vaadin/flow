@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.AudioElement;
@@ -38,8 +39,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Verifies that the media components produce a player the browser can really
- * use: an audio file served by a download handler is decoded, and a video whose
- * formats are all unavailable ends up reporting that it found nothing to play.
+ * use: an audio file served by a download handler is decoded and can be driven
+ * from the server, and a video whose formats are all unavailable ends up
+ * reporting that it found nothing to play.
  */
 @TestFor(MediaComponentsView.class)
 public class MediaComponentsIT extends AbstractStreamResourceIT {
@@ -103,6 +105,62 @@ public class MediaComponentsIT extends AbstractStreamResourceIT {
         try (InputStream stream = download(poster)) {
             Assertions.assertEquals(POSTER_PAYLOAD,
                     IOUtils.toString(stream, StandardCharsets.UTF_8));
+        }
+    }
+
+    @BrowserTest
+    public void audioPlayPauseAndSeekFromClickListeners_driveThePlayer() {
+        open();
+        AudioElement audio = $(AudioElement.class).id("playback-audio");
+        // the view starts the sound before any interaction, which the
+        // browser's autoplay policy refuses
+        waitForText("audio-error", "NOT_ALLOWED");
+        waitForText("audio-state", "PAUSED");
+
+        // a server round trip after the click still counts as the visitor
+        // starting the sound; click(x, y) is a real click, unlike click(),
+        // which the browser does not take as an interaction
+        $("button").id("play-audio").click(5, 5);
+        waitForText("audio-state", "PLAYING");
+        assertTrue(audio.isPlaying());
+
+        $("button").id("pause-audio").click();
+        waitForText("audio-state", "PAUSED");
+        Assertions.assertFalse(audio.isPlaying());
+
+        $("button").id("seek-audio-to-end").click();
+        waitUntil(driver -> audio.getPropertyDouble("currentTime") > 2.5);
+        Assertions.assertEquals("PAUSED", $("span").id("audio-state").getText(),
+                "A paused player should stay paused when moved");
+        $("button").id("play-audio").click(5, 5);
+        waitForText("audio-state", "ENDED");
+        Assertions.assertEquals("NOT_ALLOWED",
+                $("span").id("audio-error").getText(),
+                "No play request from a click should have been refused");
+    }
+
+    @BrowserTest
+    public void audioStartedInTheBrowser_isReportedToTheServer() {
+        open();
+        AudioElement audio = $(AudioElement.class).id("playback-audio");
+        waitForText("audio-error", "NOT_ALLOWED");
+        // any real click lets the page play sound, as a click on the
+        // browser's own play button would
+        $("button").id("pause-audio").click(5, 5);
+
+        audio.play();
+        waitForText("audio-state", "PLAYING");
+
+        audio.pause();
+        waitForText("audio-state", "PAUSED");
+    }
+
+    private void waitForText(String id, String expected) {
+        try {
+            waitUntil(driver -> expected.equals($("span").id(id).getText()));
+        } catch (TimeoutException e) {
+            Assertions.fail("Expected '" + expected + "' in #" + id
+                    + " but was '" + $("span").id(id).getText() + "'", e);
         }
     }
 }

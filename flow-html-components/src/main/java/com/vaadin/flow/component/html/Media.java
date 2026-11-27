@@ -15,17 +15,30 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.io.Serializable;
+import java.time.Duration;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HtmlComponent;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.dom.DomEventData;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Base class for the two media players the browser has built in: {@link Video}
@@ -48,6 +61,21 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * for subtitles and captions, and fallback content that a browser without media
  * support shows instead of the player. Both can be added as children too; HTML
  * expects them after the sources.
+ * <p>
+ * The application can also drive the player itself: {@link #play()},
+ * {@link #pause()} and {@link #seek(Duration)} control the playback, and
+ * {@link #playbackStateSignal()} tells whether the player is playing, also when
+ * the visitor started or stopped it through the browser's controls.
+ *
+ * <pre>
+ * NativeButton playIntro = new NativeButton("Play intro",
+ *         event -&gt; video.play());
+ * Signal.effect(video, () -&gt; {
+ *     if (video.playbackStateSignal().get() == PlaybackState.ENDED) {
+ *         markAsWatched();
+ *     }
+ * });
+ * </pre>
  *
  * @see <a href=
  *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Audio_and_video_delivery">MDN:
@@ -63,6 +91,19 @@ public abstract class Media extends HtmlComponent
     private static final String LOOP_ATTRIBUTE = "loop";
     private static final String MUTED_PROPERTY = "muted";
     private static final String PRELOAD_ATTRIBUTE = "preload";
+
+    private static final DomEventData<PlaybackState> PLAYBACK_STATE = JsSnippets
+            .of(PlaybackStateJs.class).readPlaybackState();
+
+    /*
+     * The events after which paused or ended may have changed: a source change
+     * fires emptied, and seeking away from the end clears ended without a play
+     * or pause event.
+     */
+    private static final List<String> PLAYBACK_STATE_EVENTS = List.of("play",
+            "pause", "ended", "emptied", "seeked");
+
+    private @Nullable Signal<PlaybackState> playbackState;
 
     /**
      * How much of the media file the browser should fetch before playback is
@@ -122,6 +163,104 @@ public abstract class Media extends HtmlComponent
                     .filter(preload -> preload.value.equalsIgnoreCase(value))
                     .findFirst().orElse(null);
         }
+    }
+
+    /**
+     * Whether the player is playing, as {@link #playbackStateSignal()} reports
+     * it.
+     */
+    public enum PlaybackState {
+        /**
+         * The browser has not reported the state yet, or the component is not
+         * attached, so there is no player in the browser.
+         */
+        UNKNOWN,
+
+        /**
+         * Playback is stopped before the end of the recording: it has not
+         * started yet, or it has been paused.
+         */
+        PAUSED,
+
+        /**
+         * Playback has been started and not paused since. The player may still
+         * be waiting for data before the picture or the sound actually moves.
+         * <p>
+         * This is what the browser reports, also for a player that was told to
+         * play but none of whose sources can be loaded: such a player stays in
+         * this state without ever moving, and Chrome does not report the play
+         * request as failed either.
+         */
+        PLAYING,
+
+        /**
+         * Playback has stopped because it reached the end of the recording. A
+         * player that {@link Media#setLoop(boolean) loops} never ends.
+         */
+        ENDED
+    }
+
+    /**
+     * Why the browser refused to start the playback, as reported to the
+     * callback of {@link Media#play(SerializableConsumer)}.
+     */
+    public enum PlaybackErrorCode {
+        /**
+         * The browser's autoplay policy blocked the playback. This is what
+         * happens to a player with sound when it is started without the visitor
+         * having interacted with the page, such as from a timer or from a view
+         * that starts playing as soon as it is opened. Muting the player lets
+         * it start.
+         */
+        NOT_ALLOWED,
+
+        /**
+         * None of the sources can be played, because the files cannot be loaded
+         * or the browser cannot decode any of the formats.
+         */
+        NOT_SUPPORTED,
+
+        /**
+         * The playback failed for a reason that does not match a more specific
+         * code. See {@link PlaybackError#message()} for what the browser said.
+         */
+        UNKNOWN
+    }
+
+    /**
+     * The reason why the browser refused to start the playback, as reported to
+     * the callback of {@link Media#play(SerializableConsumer)}.
+     *
+     * @param code
+     *            the reason, not <code>null</code>
+     * @param message
+     *            the browser's description of the failure, for diagnostics; not
+     *            <code>null</code> but may be empty
+     */
+    public record PlaybackError(PlaybackErrorCode code,
+            String message) implements Serializable {
+
+        /**
+         * Creates a playback error.
+         *
+         * @param code
+         *            the reason, not <code>null</code>
+         * @param message
+         *            the browser's description of the failure, not
+         *            <code>null</code>
+         */
+        public PlaybackError {
+            Objects.requireNonNull(code, "code must not be null");
+            Objects.requireNonNull(message, "message must not be null");
+        }
+    }
+
+    /*
+     * What the browser answers to a play request: null when the playback
+     * started, otherwise the name and message of the DOMException.
+     */
+    private record PlayResult(@Nullable String name,
+            @Nullable String message) implements Serializable {
     }
 
     /**
@@ -200,8 +339,9 @@ public abstract class Media extends HtmlComponent
      * Sets whether the browser shows its own playback controls — a play button,
      * a timeline, a volume slider. The controls are shown by default. Without
      * them, nothing on the page starts the playback, so hide them only when the
-     * application drives the player itself, such as for a background video or a
-     * sound the application plays on its own.
+     * application drives the player itself through {@link #play()} and
+     * {@link #pause()}, such as for a background video or a sound the
+     * application plays on its own.
      * <p>
      * The controls are the browser's, so they do not look the same everywhere
      * and cannot be styled through the application theme.
@@ -328,5 +468,244 @@ public abstract class Media extends HtmlComponent
      */
     public @Nullable Preload getPreload() {
         return Preload.fromValue(getElement().getAttribute(PRELOAD_ATTRIBUTE));
+    }
+
+    /**
+     * Starts the playback, or resumes it where it was paused. A player that has
+     * reached the end starts over from the beginning.
+     * <p>
+     * The browser decides whether the playback may start. Its autoplay policy
+     * blocks a player with sound unless the visitor has interacted with the
+     * page, which is why starting the playback from a click listener works, but
+     * starting it from a timer or as soon as a view opens usually only works
+     * for a {@link #setMuted(boolean) muted} player. Safari is the strictest:
+     * it only allows sound for a few seconds after the click. This method
+     * ignores a refusal; use {@link #play(SerializableConsumer)} to be told
+     * about it, and {@link #playbackStateSignal()} to see what the player is
+     * doing.
+     * <p>
+     * When the component is not attached, the playback starts once it is.
+     *
+     * @see #pause()
+     */
+    public void play() {
+        startPlayback(null);
+    }
+
+    /**
+     * Starts the playback, or resumes it where it was paused, and reports to
+     * the given callback when the browser refuses to. A player that has reached
+     * the end starts over from the beginning.
+     * <p>
+     * The browser decides whether the playback may start, see {@link #play()}.
+     * When it refuses, the callback runs with the reason, typically
+     * {@link PlaybackErrorCode#NOT_ALLOWED} for a player with sound that was
+     * started without the visitor having interacted with the page. Muting the
+     * player and asking again is the usual way out. A play request that
+     * {@link #pause()} or a change of sources interrupts is not an error, and
+     * the callback does not run for it.
+     *
+     * @param onError
+     *            the callback to run on the UI thread if the browser refuses to
+     *            start the playback, not <code>null</code>
+     * @see #play()
+     */
+    public void play(SerializableConsumer<PlaybackError> onError) {
+        Objects.requireNonNull(onError, "onError must not be null");
+        startPlayback(onError);
+    }
+
+    private void startPlayback(
+            @Nullable SerializableConsumer<PlaybackError> onError) {
+        getElement().executeJs(PlaybackJs.class).play().then(PlayResult.class,
+                result -> {
+                    if (result != null && onError != null) {
+                        onError.accept(toPlaybackError(result));
+                    }
+                }, error -> {
+                    LoggerFactory.getLogger(Media.class)
+                            .debug("Starting the playback failed: {}", error);
+                    if (onError != null) {
+                        onError.accept(new PlaybackError(
+                                PlaybackErrorCode.UNKNOWN, error));
+                    }
+                });
+    }
+
+    private static PlaybackError toPlaybackError(PlayResult result) {
+        String name = result.name();
+        PlaybackErrorCode code;
+        if ("NotAllowedError".equals(name)) {
+            code = PlaybackErrorCode.NOT_ALLOWED;
+        } else if ("NotSupportedError".equals(name)) {
+            code = PlaybackErrorCode.NOT_SUPPORTED;
+        } else {
+            code = PlaybackErrorCode.UNKNOWN;
+        }
+        String message = result.message();
+        return new PlaybackError(code, message == null ? "" : message);
+    }
+
+    /**
+     * Pauses the playback, keeping the position so that {@link #play()} resumes
+     * where it stopped. Pausing a player that is not playing does nothing.
+     *
+     * @see #play()
+     */
+    public void pause() {
+        getElement().executeJs(PlaybackJs.class).pause();
+    }
+
+    /**
+     * Moves the playback to the given position, counted from the beginning of
+     * the recording. A player that is playing goes on playing from there, and a
+     * paused one stays paused.
+     * <p>
+     * The browser clamps a position past the end of the recording to the end.
+     * When the browser does not yet know how long the recording is, the move
+     * happens once it does.
+     *
+     * @param position
+     *            the position to move to, not <code>null</code> nor negative
+     * @throws IllegalArgumentException
+     *             if the position is negative
+     */
+    public void seek(Duration position) {
+        Objects.requireNonNull(position, "position must not be null");
+        if (position.isNegative()) {
+            throw new IllegalArgumentException(
+                    "position must not be negative: " + position);
+        }
+        double seconds = position.getSeconds() + position.getNano() / 1e9;
+        getElement().executeJs(PlaybackJs.class).seek(seconds);
+    }
+
+    /**
+     * Returns a read-only signal that tells whether the player is playing. It
+     * follows what the player in the browser does, whether the playback was
+     * started from the server, by the visitor through the browser's controls,
+     * or by {@link #setAutoplay(boolean) autoplay}.
+     * <p>
+     * The signal is {@link PlaybackState#UNKNOWN UNKNOWN} while the component
+     * is not attached and until the browser has reported the state, which takes
+     * a round trip after the component is attached or after the signal is first
+     * asked for. The browser only reports changes once the signal has been
+     * asked for, so a player whose state nobody observes causes no extra
+     * traffic.
+     * <p>
+     * Use {@code Signal.effect(owner, ...)} to react to changes, and
+     * {@code peek()} for a snapshot outside a reactive context:
+     *
+     * <pre>
+     * Signal.effect(this, () -&gt; playButton.setText(
+     *         video.playbackStateSignal().get() == PlaybackState.PLAYING ? "Pause"
+     *                 : "Play"));
+     * </pre>
+     *
+     * @return the read-only playback state signal, not <code>null</code>
+     */
+    public Signal<PlaybackState> playbackStateSignal() {
+        if (playbackState == null) {
+            ValueSignal<PlaybackState> state = new ValueSignal<>(
+                    PlaybackState.UNKNOWN);
+            playbackState = state.asReadonly();
+            trackPlaybackState(state);
+        }
+        return playbackState;
+    }
+
+    private void trackPlaybackState(ValueSignal<PlaybackState> state) {
+        for (String event : PLAYBACK_STATE_EVENTS) {
+            getElement().addEventListener(event, domEvent -> {
+                PlaybackState reported = domEvent.getEventData(PLAYBACK_STATE);
+                if (reported != null) {
+                    state.set(reported);
+                }
+            }).addEventData(PLAYBACK_STATE);
+        }
+        addAttachListener(event -> readPlaybackState(state));
+        addDetachListener(event -> state.set(PlaybackState.UNKNOWN));
+        if (isAttached()) {
+            readPlaybackState(state);
+        }
+    }
+
+    /*
+     * Asks the browser for the state of a player that has just appeared,
+     * because a reattached component gets a new player and a component moved
+     * within the page keeps playing without firing any event.
+     */
+    private void readPlaybackState(ValueSignal<PlaybackState> state) {
+        getElement().executeJs(PlaybackJs.class).readPlaybackState()
+                .then(PlaybackState.class, reported -> {
+                    // A detached component has no player to report on
+                    if (reported != null && isAttached()) {
+                        state.set(reported);
+                    }
+                }, error -> LoggerFactory.getLogger(Media.class)
+                        .debug("Reading the playback state failed: {}", error));
+    }
+
+    /**
+     * The playback operations of a media component, as JavaScript definitions
+     * for {@link Element#executeJs(Class)}.
+     */
+    @JsDefinition
+    public interface PlaybackJs extends Serializable {
+
+        /**
+         * Starts the playback. An interrupted request, which the browser
+         * reports as an <code>AbortError</code> when the playback is paused or
+         * the source changes before it has started, is the expected outcome of
+         * those calls, not a failure.
+         *
+         * @return the pending result, which answers with <code>null</code> when
+         *         the playback started, or else with the name and the message
+         *         of the error
+         */
+        @JsExpression("return this.play().then(() => null, e => e.name === 'AbortError' ? null : { name: e.name, message: e.message });")
+        PendingJavaScriptResult play();
+
+        /**
+         * Pauses the playback.
+         */
+        @JsExpression("this.pause()")
+        void pause();
+
+        /**
+         * Moves the playback to a position.
+         *
+         * @param seconds
+         *            the position in seconds from the beginning
+         */
+        @JsExpression("this.currentTime = $0")
+        void seek(double seconds);
+
+        /**
+         * Reads whether the player is playing.
+         *
+         * @return the pending result, which answers with the name of a
+         *         {@link PlaybackState} constant
+         */
+        @JsExpression("return this.ended ? 'ENDED' : this.paused ? 'PAUSED' : 'PLAYING';")
+        PendingJavaScriptResult readPlaybackState();
+    }
+
+    /**
+     * The event data a media component sends with the events after which the
+     * playback state may have changed, as JavaScript definitions for
+     * {@link JsSnippets#of(Class)}.
+     */
+    @JsDefinition
+    public interface PlaybackStateJs extends Serializable {
+
+        /**
+         * Event data that reads whether the player is playing.
+         *
+         * @return the event data, which is the name of a {@link PlaybackState}
+         *         constant
+         */
+        @JsExpression("return element.ended ? 'ENDED' : element.paused ? 'PAUSED' : 'PLAYING';")
+        DomEventData<PlaybackState> readPlaybackState();
     }
 }

@@ -15,20 +15,30 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.signals.Signal;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -37,11 +47,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 abstract class MediaTest extends ComponentTest {
 
+    private MockUI ui;
+
     @BeforeEach
     void setCurrentUi() {
         // adding a source from a DownloadHandler registers a resource in the
         // session of the current UI, which the mock UI becomes
-        new MockUI(
+        ui = new MockUI(
                 new AlwaysLockedVaadinSession(new MockVaadinServletService()));
     }
 
@@ -143,5 +155,113 @@ abstract class MediaTest extends ComponentTest {
 
         media.getElement().setAttribute("preload", "Metadata");
         assertEquals(Media.Preload.METADATA, media.getPreload());
+    }
+
+    @Test
+    void pauseAndSeek_sendTheCommandsToThePlayer() {
+        Media media = createMedia();
+        ui.add(media);
+
+        media.pause();
+        assertEquals(new JsCall(Media.PlaybackJs.class, "pause", List.of()),
+                ui.onlyScheduledJsCall());
+
+        media.seek(Duration.ofSeconds(90, 500_000_000));
+        assertEquals(new JsCall(Media.PlaybackJs.class, "seek", List.of(90.5)),
+                ui.onlyScheduledJsCall());
+
+        Duration negative = Duration.ofMillis(-1);
+        assertThrows(IllegalArgumentException.class,
+                () -> media.seek(negative));
+    }
+
+    @Test
+    void play_reportsWhatTheBrowserRefused_notAnInterruptionOrSuccess() {
+        Media media = createMedia();
+        ui.add(media);
+        List<Media.PlaybackError> errors = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            media.play(errors::add);
+        }
+        List<PendingJavaScriptInvocation> plays = ui.dumpPendingJsInvocations();
+        // the browser answers null for a playback that started or that pause()
+        // interrupted
+        plays.get(0).complete(JacksonUtils.nullNode());
+        plays.get(1).complete(JacksonUtils.readTree("""
+                {"name": "NotAllowedError", "message": "needs a gesture"}"""));
+        plays.get(2).complete(JacksonUtils.readTree("""
+                {"name": "NotSupportedError", "message": "no source"}"""));
+        plays.get(3).complete(JacksonUtils.readTree("""
+                {"name": "SecurityError"}"""));
+        plays.get(4).completeExceptionally(
+                JacksonUtils.createNode("bridge failed"));
+
+        assertEquals(4, errors.size(), "Errors were: " + errors);
+        assertEquals(List.of(
+                new Media.PlaybackError(Media.PlaybackErrorCode.NOT_ALLOWED,
+                        "needs a gesture"),
+                new Media.PlaybackError(Media.PlaybackErrorCode.NOT_SUPPORTED,
+                        "no source"),
+                new Media.PlaybackError(Media.PlaybackErrorCode.UNKNOWN, "")),
+                errors.subList(0, 3));
+        assertEquals(Media.PlaybackErrorCode.UNKNOWN, errors.get(3).code());
+        assertTrue(errors.get(3).message().contains("bridge failed"),
+                errors.get(3).message());
+    }
+
+    @Test
+    void playbackStateSignal_followsThePlayerWhileAttached() {
+        Media media = createMedia();
+        Signal<Media.PlaybackState> state = media.playbackStateSignal();
+        assertSame(state, media.playbackStateSignal());
+        assertEquals(Media.PlaybackState.UNKNOWN, state.peek());
+
+        // a player that appears is asked for its state, since it may already
+        // be playing
+        ui.add(media);
+        ui.dumpPendingJsInvocations().get(0)
+                .complete(JacksonUtils.createNode("PLAYING"));
+        assertEquals(Media.PlaybackState.PLAYING, state.peek());
+
+        String reported = "ENDED";
+        for (String eventType : List.of("play", "pause", "ended", "emptied",
+                "seeked")) {
+            reported = reported.equals("ENDED") ? "PAUSED" : "ENDED";
+            fireWithPlaybackState(media, eventType, reported);
+            assertEquals(Media.PlaybackState.valueOf(reported), state.peek(),
+                    "after " + eventType);
+        }
+
+        ui.remove(media);
+        assertEquals(Media.PlaybackState.UNKNOWN, state.peek());
+    }
+
+    @Test
+    void playbackStateSignal_askedForWhileAttached_readsTheState_ignoresAnAnswerAfterDetach() {
+        Media media = createMedia();
+        ui.add(media);
+        ui.dumpPendingJsInvocations();
+
+        Signal<Media.PlaybackState> state = media.playbackStateSignal();
+        ui.dumpPendingJsInvocations().get(0)
+                .complete(JacksonUtils.createNode("PAUSED"));
+        assertEquals(Media.PlaybackState.PAUSED, state.peek());
+
+        ui.remove(media);
+        ui.add(media);
+        PendingJavaScriptInvocation read = ui.dumpPendingJsInvocations().get(0);
+        ui.remove(media);
+        read.complete(JacksonUtils.createNode("PLAYING"));
+        assertEquals(Media.PlaybackState.UNKNOWN, state.peek());
+    }
+
+    private static void fireWithPlaybackState(Media media, String eventType,
+            String reported) {
+        String key = ElementListenerMap.getEventDataKey(
+                JsSnippets.of(Media.PlaybackStateJs.class).readPlaybackState());
+        media.getElement().getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(new DomEvent(media.getElement(), eventType,
+                        JacksonUtils.createObjectNode().put(key, reported)));
     }
 }
