@@ -82,6 +82,12 @@ import com.vaadin.flow.dom.JsFunction;
  * {@link Element#executeJs(Class)}, <code>this</code> is the element; one
  * obtained from {@link Page#executeJs(Class)} runs on nothing in particular.
  * <p>
+ * A method of a {@link JsInvokers} interface that is not annotated with
+ * {@link JsExpression} calls the method of the same name on the element, with
+ * the arguments of the call, so <code>void showPopover();</code> runs
+ * <code>return this.showPopover();</code>. See {@link JsExpression} for where
+ * that applies.
+ * <p>
  * Extend {@link JsSnippets} when you need a function to pass on: as an argument
  * of an invoker method, as a {@link DomEventFilter} or {@link DomEventData} of
  * a listener, or as a snippet type that a component accepts. Its methods return

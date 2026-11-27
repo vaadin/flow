@@ -307,7 +307,8 @@ class PinnedNpmVersions {
      * @param excludeWebComponents
      *            whether to exclude web component npm packages
      * @param filter
-     *            the filter that keeps the versions the user has not changed
+     *            the filter that decides which versions of each file can be
+     *            pinned
      * @return the npm package names and versions to pin
      */
     ObjectNode getDependencies(boolean reactEnabled,

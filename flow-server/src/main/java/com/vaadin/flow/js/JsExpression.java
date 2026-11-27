@@ -40,6 +40,27 @@ import com.vaadin.flow.dom.Element;
  * expression is evaluated later by what the snippet is passed to, and
  * <code>this</code> is whatever that invoker supplies. See
  * {@link JsFunctionParameterNames} for the parameters it is called with.
+ * <p>
+ * A method of an interface that extends {@link JsInvokers} can leave the
+ * annotation out to call the method of the same name on <code>this</code>, with
+ * the arguments of the call, and answer with what it returns. The two methods
+ * below declare the same JavaScript:
+ *
+ * <pre>
+ * &#64;JsExpression("return this.showPopover($0);")
+ * void showPopover(JsonNode options);
+ *
+ * void showPopover(JsonNode options);
+ * </pre>
+ *
+ * The last argument of a variadic method is spread into the call. What counts
+ * is the interface that declares the method: a method that a definition
+ * inherits from an interface that does not extend {@link JsInvokers}, and a
+ * method of a {@link JsSnippets} interface, need the annotation. So does a
+ * method of an interface annotated with {@link JsStringFallback}, which is
+ * matched by the JavaScript it declares, and a method called through
+ * {@link com.vaadin.flow.component.page.Page#executeJs(Class)}, which runs on
+ * no element.
  *
  * @see Element#executeJs(Class)
  * @see JsSnippets#of(Class)

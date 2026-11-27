@@ -439,8 +439,9 @@ public final class JsStringFallbacks {
      *            the definition the method is called through, not
      *            <code>null</code>
      * @param method
-     *            a method of the definition annotated with
-     *            {@link JsExpression}, not <code>null</code>
+     *            a method of the definition that
+     *            {@link JsCall#declaredExpression(Method) declares JavaScript},
+     *            not <code>null</code>
      * @return <code>true</code> if the method stands in for a string call
      */
     public static boolean isStringFallbackCall(Class<?> definitionType,
@@ -463,8 +464,9 @@ public final class JsStringFallbacks {
      *            the definition the method is called through, not
      *            <code>null</code>
      * @param method
-     *            a method of the definition annotated with
-     *            {@link JsExpression}, not <code>null</code>
+     *            a method of the definition that
+     *            {@link JsCall#declaredExpression(Method) declares JavaScript},
+     *            not <code>null</code>
      * @return the function identifier, not <code>null</code>
      */
     public static String functionId(Class<?> definitionType, Method method) {
