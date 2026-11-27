@@ -62,12 +62,109 @@ final class Jvm {
      *            the feature version, or {@code 0} when it could not be read -
      *            which only survives for an explicitly overridden home, since
      *            discovery drops anything that does not clear {@link #FLOOR}
+     * @param platform
+     *            what the JVM was built for, as far as its {@code release} file
+     *            says
      */
-    record Jdk(Path home, Path binary, int feature, String version,
-            boolean jbr) {
+    record Jdk(Path home, Path binary, int feature, String version, boolean jbr,
+            Platform platform) {
 
         String describe() {
             return (jbr ? "JBR " : "JDK ") + version + " at " + home;
+        }
+    }
+
+    /**
+     * An operating system and CPU architecture, normalized so that the
+     * spellings of a {@code release} file ({@code Darwin}, {@code x86_64}) and
+     * of a running JVM ({@code Mac OS X}, {@code amd64}) compare equal.
+     * <p>
+     * Not {@code com.vaadin.flow.internal.Platform}: the daemon must not depend
+     * on flow-server (see the module's enforcer rule), and that class only
+     * reads the running JVM's properties, so it cannot parse a {@code release}
+     * file's {@code Darwin} or tell whether one platform runs another's
+     * binaries.
+     *
+     * @param os
+     *            the normalized operating system, or {@code null} when unknown
+     * @param arch
+     *            the normalized architecture, or {@code null} when unknown
+     */
+    record Platform(String os, String arch) {
+
+        private static final String MACOS = "macos";
+
+        private static final String WINDOWS = "windows";
+
+        /** The platform the daemon itself runs on. */
+        static Platform current() {
+            return of(System.getProperty("os.name"),
+                    System.getProperty("os.arch"));
+        }
+
+        /**
+         * A platform from the raw names, either a {@code release} file's
+         * {@code OS_NAME} and {@code OS_ARCH} or a JVM's {@code os.name} and
+         * {@code os.arch}; a missing name stays unknown.
+         */
+        static Platform of(String osName, String osArch) {
+            return new Platform(normalizeOs(osName), normalizeArch(osArch));
+        }
+
+        /**
+         * Whether a JVM built for this platform can run on {@code host}. An
+         * unknown part is taken to match: a home whose {@code release} file
+         * does not say was a candidate before platforms were compared, and
+         * rejecting it now would leave a working JDK unused.
+         * <p>
+         * Another operating system never runs. Another architecture only rules
+         * a JVM out where the OS does not emulate it: macOS runs x86_64
+         * binaries on Apple silicon through Rosetta 2 and Windows on Arm runs
+         * x64 ones, and a daemon that is itself emulated reports the emulated
+         * architecture, so there a mismatch says nothing about the hardware.
+         */
+        boolean runsOn(Platform host) {
+            if (os != null && host.os != null && !os.equals(host.os)) {
+                return false;
+            }
+            if (arch == null || host.arch == null || arch.equals(host.arch)) {
+                return true;
+            }
+            String system = os != null ? os : host.os;
+            return MACOS.equals(system) || WINDOWS.equals(system);
+        }
+
+        @Override
+        public String toString() {
+            return (os == null ? "unknown OS" : os) + " "
+                    + (arch == null ? "unknown architecture" : arch);
+        }
+
+        private static String normalizeOs(String name) {
+            if (name == null || name.isBlank()) {
+                return null;
+            }
+            String lower = name.trim().toLowerCase(Locale.ROOT);
+            if (lower.startsWith(WINDOWS)) {
+                return WINDOWS;
+            }
+            if (lower.startsWith("mac") || lower.equals("darwin")) {
+                return MACOS;
+            }
+            return lower;
+        }
+
+        private static String normalizeArch(String name) {
+            if (name == null || name.isBlank()) {
+                return null;
+            }
+            String lower = name.trim().toLowerCase(Locale.ROOT);
+            return switch (lower) {
+            case "amd64", "x64", "x86-64" -> "x86_64";
+            case "i386", "i486", "i586", "i686", "x86_32" -> "x86";
+            case "arm64" -> "aarch64";
+            default -> lower;
+            };
         }
     }
 
@@ -110,7 +207,7 @@ final class Jvm {
      * already, because by the time they wonder, the launch is long past.
      */
     static Jdk select(Optional<Requirement> required, Launch.Log log) {
-        return select(required, candidates(), log);
+        return select(required, candidates(log), log);
     }
 
     /**
@@ -126,6 +223,12 @@ final class Jvm {
             if (forced.feature() > 0 && forced.feature() < FLOOR) {
                 log.line("WARNING: vaadin.dev.javaHome is Java "
                         + forced.feature() + " and Flow requires " + FLOOR
+                        + "; the application will not start");
+            }
+            Platform host = Platform.current();
+            if (!forced.platform().runsOn(host)) {
+                log.line("WARNING: vaadin.dev.javaHome is built for "
+                        + forced.platform() + " and this machine is " + host
                         + "; the application will not start");
             }
             log.line(
@@ -210,34 +313,58 @@ final class Jvm {
         return OptionalInt.of(first);
     }
 
-    /** Every installed JVM that could run the application. */
-    static List<Jdk> candidates() {
-        return candidates(homes());
+    /**
+     * Every installed JVM that could run the application, logging each one
+     * skipped because it is built for another platform.
+     */
+    static List<Jdk> candidates(Launch.Log log) {
+        return candidates(homes(), Platform.current(), log);
     }
 
     /**
-     * As {@link #candidates()}, over given homes, which is how this is tested:
-     * the answer must not depend on what the developer happens to have
-     * installed.
+     * As {@link #candidates(Launch.Log)}, over given homes and for a given host
+     * platform, which is how this is tested: the answer must not depend on what
+     * the developer happens to have installed, nor on the machine the test runs
+     * on.
      */
-    static List<Jdk> candidates(List<Path> homes) {
+    static List<Jdk> candidates(List<Path> homes, Platform host,
+            Launch.Log log) {
         List<Jdk> found = new ArrayList<>();
         List<Path> seen = new ArrayList<>();
         for (Path home : homes) {
             Path real = Reactor.real(home);
-            if (seen.contains(real)) {
-                continue;
-            }
-            seen.add(real);
-            Jdk jdk = describe(real);
-            // Below the floor is not a candidate at all: it cannot load a class
-            // file Flow compiled, so ranking it would only ever produce an
-            // UnsupportedClassVersionError with a JVM the daemon chose itself.
-            if (jdk.feature() >= FLOOR && Files.isRegularFile(jdk.binary())) {
-                found.add(jdk);
+            if (!seen.contains(real)) {
+                seen.add(real);
+                Jdk jdk = describe(real);
+                if (canRun(jdk, host, log)) {
+                    found.add(jdk);
+                }
             }
         }
         return found;
+    }
+
+    /**
+     * Whether a discovered JVM can run the application on {@code host}, logging
+     * it when it is skipped for being built for another platform.
+     */
+    private static boolean canRun(Jdk jdk, Platform host, Launch.Log log) {
+        // Below the floor is not a candidate at all: it cannot load a class
+        // file Flow compiled, so ranking it would only ever produce an
+        // UnsupportedClassVersionError with a JVM the daemon chose itself.
+        if (jdk.feature() < FLOOR || !Files.isRegularFile(jdk.binary())) {
+            return false;
+        }
+        // A home directory shared with a machine of another platform - a
+        // container bind-mounting the host's - holds JVMs that cannot even be
+        // executed here, and the closest version is as likely to be one of
+        // those as not.
+        if (!jdk.platform().runsOn(host)) {
+            log.line("skipped " + jdk.describe() + ": built for "
+                    + jdk.platform() + ", this machine is " + host);
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -316,7 +443,8 @@ final class Jvm {
                 .orElse(0);
         return new Jdk(real, binary, feature,
                 version != null ? version : "unknown version",
-                isJetBrains(release.get("IMPLEMENTOR"), binary));
+                isJetBrains(release.get("IMPLEMENTOR"), binary),
+                Platform.of(release.get("OS_NAME"), release.get("OS_ARCH")));
     }
 
     /** The launcher in a JDK home, whichever platform it is for. */
