@@ -580,7 +580,7 @@ class VaadinServletServiceTest {
         assertEquals("true", request.getAttribute("started"),
                 "Filter was called on request start");
         assertEquals("true", request.getAttribute("exception handled"),
-                "Filter was called on exception handling");
+                "Filter was called on exception handling without the session lock");
         assertEquals("true", request.getAttribute("ended"),
                 "Filter was called in the finally block");
 
@@ -659,7 +659,8 @@ class VaadinServletServiceTest {
                 Exception t) {
             if (t instanceof IllegalStateException ex) {
                 assertEquals("BOOM!", ex.getMessage());
-                request.setAttribute("exception handled", "true");
+                request.setAttribute("exception handled",
+                        String.valueOf(!vaadinSession.hasLock()));
                 return;
             }
             throw new AssertionError(

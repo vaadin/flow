@@ -32,6 +32,10 @@ import com.vaadin.flow.function.SerializableFunction;
  * given, e.g. when user is logged in, otherwise returns an empty Optional if no
  * user information is available. The function MUST never return
  * {@literal null}.
+ * <p>
+ * Called when a request starts, without holding the session lock. Use
+ * {@link com.vaadin.flow.server.VaadinSession#access(com.vaadin.flow.server.Command)}
+ * to reach the state of the session in the {@link UserIdentityContext}.
  *
  * @since 24.5
  */

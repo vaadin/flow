@@ -2293,20 +2293,19 @@ public abstract class VaadinService implements Serializable {
     private void handleExceptionDuringRequest(VaadinRequest request,
             VaadinResponse response, VaadinSession vaadinSession, Exception t,
             UI failedUI) throws ServiceException {
+        try {
+            vaadinRequestInterceptors.forEach(
+                    requestInterceptor -> requestInterceptor.handleException(
+                            request, response, vaadinSession, t));
+        } catch (Exception ex) {
+            // An exception occurred while handling an exception. Log
+            // it and continue handling only the original error.
+            getLogger().warn(
+                    "Failed to handle an exception using request interceptors",
+                    ex);
+        }
         try (SessionLockScope lock = lockForErrorHandling(vaadinSession,
                 failedUI)) {
-            try {
-                vaadinRequestInterceptors
-                        .forEach(requestInterceptor -> requestInterceptor
-                                .handleException(request, response,
-                                        vaadinSession, t));
-            } catch (Exception ex) {
-                // An exception occurred while handling an exception. Log
-                // it and continue handling only the original error.
-                getLogger().warn(
-                        "Failed to handle an exception using request interceptors",
-                        ex);
-            }
             if (vaadinSession != null) {
                 vaadinSession.getErrorHandler().error(new ErrorEvent(t));
             }
@@ -3202,8 +3201,9 @@ public abstract class VaadinService implements Serializable {
         }
     }
 
-    // Tries to get VaadinSession to make it available during
-    // VaadinRequestInterceptor.requestStart call
+    // Tries to get VaadinSession to make it available as the current session
+    // during VaadinRequestInterceptor.requestStart call. The session is not
+    // locked, like for any other interceptor.
     static class VaadinSessionOnRequestStartInterceptorWrapper
             implements VaadinRequestInterceptor {
 
@@ -3221,19 +3221,17 @@ public abstract class VaadinService implements Serializable {
                     .ofNullable(request.getWrappedSession(false))
                     .map(request.getService()::loadSession).orElse(null);
 
-            if (session != null) {
-                session.getLockInstance().lock();
-                VaadinSession.setCurrent(session);
+            if (session == null) {
+                delegate.requestStart(request, response);
+                return;
             }
+            Map<Class<?>, CurrentInstance> previous = CurrentInstance
+                    .setCurrent(session);
             try {
                 delegate.requestStart(request, response);
             } finally {
-                if (session != null) {
-                    session.getLockInstance().unlock();
-                }
-                VaadinSession.setCurrent(null);
+                CurrentInstance.restoreInstances(previous);
             }
-
         }
 
         @Override

@@ -27,6 +27,9 @@ public interface VaadinRequestInterceptor extends Serializable {
 
     /**
      * Called when request is about to be processed.
+     * <p>
+     * Called without holding the session lock and without a current UI. Use
+     * {@link VaadinSession#access(Command)} to reach session state.
      *
      * @param request
      *            request
@@ -36,7 +39,13 @@ public interface VaadinRequestInterceptor extends Serializable {
     void requestStart(VaadinRequest request, VaadinResponse response);
 
     /**
-     * Called when an exception occurred
+     * Called when an exception occurred.
+     * <p>
+     * Called without holding the session lock and without a current UI, before
+     * the exception is passed to the session {@link ErrorHandler}. Use
+     * {@link VaadinSession#access(Command)} or
+     * {@link com.vaadin.flow.component.UI#access(Command)} to reach session or
+     * UI state.
      *
      * @param request
      *            request
