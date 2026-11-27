@@ -333,14 +333,15 @@ export class Flow {
     // literal slashes (path separators) and encoded slashes (%2F, data).
     return context.pathname.replace(this.baseRegex, '');
   }
+
   // The URL of the page that shows the given route. Resolved from the route
   // against the base URL, as callers prefix the path differently: Flow.tsx
   // passes '//foo' at the root context path, which as a URL is another host.
+  // The './' keeps a route like 'user:42' from being read as a URL scheme.
   private getPageUrl(context: NavigationParameters): URL {
     const route = this.getFlowRoutePath(context).replace(/^\/+/, '');
     const hash = (context as { hash?: string }).hash ?? '';
-    // './' for the base path itself, so that the base URL's own query is not kept
-    return new URL((route || './') + (context.search ?? '') + hash, document.baseURI);
+    return new URL(`./${route}${context.search ?? ''}${hash}`, document.baseURI);
   }
 
   private getFlowRouteQuery(context: NavigationParameters | Location): string {

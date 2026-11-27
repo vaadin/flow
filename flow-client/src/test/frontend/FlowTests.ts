@@ -536,13 +536,14 @@ describe('Flow', () => {
     try {
       const elem: any = await new Flow().serverSideRoutes[0].action({ pathname: '/app/Bar' });
       // Flow.tsx passes '/app/Foo' for an app at the context path '/app'
-      expect(await settledSoon(elem.onBeforeEnter({ pathname: '/app/Foo' }, { prevent: () => 'prevented' }))).to.equal(
-        'prevented'
-      );
+      const cmd = { prevent: () => 'prevented' };
+      expect(await settledSoon(elem.onBeforeEnter({ pathname: '/app/Foo' }, cmd))).to.equal('prevented');
+      // A colon in the first segment does not make it a URL scheme
+      expect(await settledSoon(elem.onBeforeEnter({ pathname: '/app/user:42' }, cmd))).to.equal('prevented');
     } finally {
       base.remove();
     }
-    expect(loadPage.args).to.deep.equal([['/app/Foo']]);
+    expect(loadPage.args).to.deep.equal([['/app/Foo'], ['/app/user:42']]);
     document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
   });
 
