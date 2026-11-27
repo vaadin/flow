@@ -31,6 +31,7 @@ import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionO
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.installFns;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.snippetOf;
+import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -102,7 +103,7 @@ class DownloadActionTest {
         UI ui = new MockUI();
         // The mock session has no resource registry by default; install a
         // real one so the action can register its DownloadHandler.
-        VaadinSession session = ui.getSession();
+        VaadinSession session = requireNonNull(ui.getSession());
         when(session.getResourceRegistry())
                 .thenReturn(new StreamResourceRegistry(session));
         TagComponent button = new TagComponent("button");
@@ -130,7 +131,7 @@ class DownloadActionTest {
     @Test
     void downloadHandler_triggerRemoved_unregistersResource() {
         UI ui = new MockUI();
-        VaadinSession session = ui.getSession();
+        VaadinSession session = requireNonNull(ui.getSession());
         StreamResourceRegistry registry = new StreamResourceRegistry(session);
         when(session.getResourceRegistry()).thenReturn(registry);
         TagComponent button = new TagComponent("button");
@@ -156,7 +157,7 @@ class DownloadActionTest {
     @Test
     void downloadHandler_sharedOnSameHost_removingOneTriggerKeepsOther() {
         UI ui = new MockUI();
-        VaadinSession session = ui.getSession();
+        VaadinSession session = requireNonNull(ui.getSession());
         StreamResourceRegistry registry = new StreamResourceRegistry(session);
         when(session.getResourceRegistry()).thenReturn(registry);
         TagComponent button = new TagComponent("button");
