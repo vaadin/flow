@@ -299,7 +299,18 @@ class VaadinServletServiceTest {
     @ValueSource(strings = { "handler", "handlerOutsideLock",
             "responseWriter" })
     void handleRequest_handlingFailsWithCurrentUI_errorHandlerSeesUIAndRequestEndDoesNot(
-            String failingPart) {
+            String failingPart) throws Exception {
+        List<UI> inInterceptor = new ArrayList<>();
+        List<Boolean> lockedInInterceptor = new ArrayList<>();
+        VaadinRequestInterceptor interceptor = mock(
+                VaadinRequestInterceptor.class);
+        doAnswer(invocation -> {
+            inInterceptor.add(UI.getCurrent());
+            lockedInInterceptor
+                    .add(invocation.<VaadinSession> getArgument(2).hasLock());
+            return null;
+        }).when(interceptor).handleException(any(), any(), any(), any());
+        setupWithRequestInterceptor(interceptor);
         CurrentInstance.clearAll();
         AtomicReference<UI> ui = new AtomicReference<>();
         List<UI> inErrorHandler = new ArrayList<>();
@@ -329,11 +340,39 @@ class VaadinServletServiceTest {
 
         assertEquals(List.of(ui.get()), inErrorHandler);
         assertEquals(List.of(true), lockedInErrorHandler);
+        // Interceptors run before the error handler, unlocked and without UI
+        assertEquals(Collections.singletonList(null), inInterceptor);
+        assertEquals(List.of(false), lockedInInterceptor);
         assertEquals(Collections.singletonList(null), inRequestEnd);
         // The error handling and the event get the handler's own exception
         assertEquals(1, errors.size());
         assertEquals("BOOM", errors.get(0).getMessage());
         assertEquals(errors, failures);
+    }
+
+    private void setupWithRequestInterceptor(
+            VaadinRequestInterceptor interceptor) throws Exception {
+        mocks.cleanup();
+        mocks = new MockServletServiceSessionSetup() {
+            @Override
+            public TestVaadinServlet createVaadinServlet() {
+                return new TestVaadinServlet() {
+                    @Override
+                    public TestVaadinServletService createTestVaadinServletService() {
+                        return new TestVaadinServletService(this,
+                                getDeploymentConfiguration()) {
+                            @Override
+                            protected List<VaadinRequestInterceptor> createVaadinRequestInterceptors()
+                                    throws ServiceException {
+                                return Collections.singletonList(interceptor);
+                            }
+                        };
+                    }
+                };
+            }
+        };
+        service = mocks.getService();
+        servlet = mocks.getServlet();
     }
 
     private VaadinRequest createVaadinRequest() throws Exception {
@@ -536,27 +575,7 @@ class VaadinServletServiceTest {
 
     @Test
     void filtersAreCalledAndEventsFiredWhenHandlingARequest() throws Exception {
-        mocks = new MockServletServiceSessionSetup() {
-            @Override
-            public TestVaadinServlet createVaadinServlet() {
-                return new TestVaadinServlet() {
-                    @Override
-                    public TestVaadinServletService createTestVaadinServletService() {
-                        return new TestVaadinServletService(this,
-                                getDeploymentConfiguration()) {
-                            @Override
-                            protected List<VaadinRequestInterceptor> createVaadinRequestInterceptors()
-                                    throws ServiceException {
-                                return Collections.singletonList(
-                                        new MyRequestInterceptor());
-                            }
-                        };
-                    }
-                };
-            }
-        };
-        service = mocks.getService();
-        servlet = mocks.getServlet();
+        setupWithRequestInterceptor(new MyRequestInterceptor());
 
         VaadinRequest request = servlet.createVaadinRequest(createRequest(
                 "http://dummy.host:8080/", "/contextpath", "/servlet", "/"));
@@ -580,7 +599,7 @@ class VaadinServletServiceTest {
         assertEquals("true", request.getAttribute("started"),
                 "Filter was called on request start");
         assertEquals("true", request.getAttribute("exception handled"),
-                "Filter was called on exception handling");
+                "Filter was called on exception handling without the session lock");
         assertEquals("true", request.getAttribute("ended"),
                 "Filter was called in the finally block");
 
@@ -659,7 +678,8 @@ class VaadinServletServiceTest {
                 Exception t) {
             if (t instanceof IllegalStateException ex) {
                 assertEquals("BOOM!", ex.getMessage());
-                request.setAttribute("exception handled", "true");
+                request.setAttribute("exception handled",
+                        String.valueOf(!vaadinSession.hasLock()));
                 return;
             }
             throw new AssertionError(

@@ -16,6 +16,8 @@
 package com.vaadin.flow.server;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -24,9 +26,12 @@ import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.dau.DAUCustomizer;
 import com.vaadin.flow.server.dau.DAUVaadinRequestInterceptor;
 import com.vaadin.flow.server.dau.UserIdentitySupplier;
@@ -34,11 +39,18 @@ import com.vaadin.pro.licensechecker.LicenseException;
 import com.vaadin.pro.licensechecker.dau.DauIntegration;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 public class VaadinServiceDauTest {
 
@@ -139,6 +151,47 @@ public class VaadinServiceDauTest {
         UserIdentitySupplier userIdentitySupplier = extractUserIdentitySupplierFromDauInterceptor(
                 interceptor);
         assertSame(providedIdentitySupplier, userIdentitySupplier);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    public void sessionOnRequestStartWrapper_delegateRunsWithRequestSessionWithoutLock(
+            boolean hasSession) {
+        MockVaadinServletService service = new MockVaadinServletService();
+        MockVaadinSession session = new MockVaadinSession(service);
+        WrappedSession wrappedSession = mock(WrappedSession.class);
+        VaadinService requestService = spy(service);
+        doReturn(session).when(requestService).loadSession(wrappedSession);
+        VaadinRequest request = mock(VaadinRequest.class);
+        when(request.getService()).thenReturn(requestService);
+        when(request.getWrappedSession(false))
+                .thenReturn(hasSession ? wrappedSession : null);
+
+        List<VaadinSession> currentInStart = new ArrayList<>();
+        List<Boolean> lockedInStart = new ArrayList<>();
+        VaadinRequestInterceptor delegate = mock(
+                VaadinRequestInterceptor.class);
+        doAnswer(invocation -> {
+            currentInStart.add(VaadinSession.getCurrent());
+            lockedInStart.add(session.hasLock());
+            return null;
+        }).when(delegate).requestStart(any(), any());
+
+        MockVaadinSession previous = new MockVaadinSession(service);
+        CurrentInstance.clearAll();
+        VaadinSession.setCurrent(previous);
+        try {
+            new VaadinService.VaadinSessionOnRequestStartInterceptorWrapper(
+                    delegate).requestStart(request, null);
+
+            // Without a session, the current instances are left as they are
+            assertEquals(List.of(hasSession ? session : previous),
+                    currentInStart);
+            assertEquals(List.of(false), lockedInStart);
+            assertSame(previous, VaadinSession.getCurrent());
+        } finally {
+            CurrentInstance.clearAll();
+        }
     }
 
     public static VaadinService vaadinServiceWithDau(DAUCustomizer customizer) {
