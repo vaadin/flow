@@ -271,7 +271,8 @@ public class Effect implements Serializable {
         }
 
         if (ownerUI != null) {
-            invalidatedFromBackground = UI.getCurrent() != ownerUI;
+            invalidatedFromBackground = !ownerUI.getInternals()
+                    .isCurrentAndLocked();
         } else {
             invalidatedFromBackground = VaadinRequest.getCurrent() == null;
         }
@@ -324,10 +325,10 @@ public class Effect implements Serializable {
 
     /**
      * Sets the owner UI for this effect. When set, background change detection
-     * compares {@link UI#getCurrent()} against this UI instead of only checking
-     * for the presence of a {@link VaadinRequest}. This allows effects to
-     * correctly detect changes triggered by another user's session on a shared
-     * signal.
+     * checks that this UI is the current UI and that its session is locked by
+     * the current thread, instead of only checking for the presence of a
+     * {@link VaadinRequest}. This allows effects to correctly detect changes
+     * triggered by another user's session on a shared signal.
      *
      * @param ui
      *            the owner UI, or {@code null} to fall back to
